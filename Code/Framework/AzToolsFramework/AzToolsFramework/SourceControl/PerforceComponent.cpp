@@ -20,6 +20,8 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 
+#include <QProcess>
+
 namespace AzToolsFramework
 {
     namespace
@@ -75,9 +77,16 @@ namespace AzToolsFramework
         m_resolveKey = true;
         m_testTrust = false;
 
+
         // set up signals before we start thread.
         m_shutdownThreadSignal = false;
-        m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
+        m_WorkerThread = AZStd::thread(
+            { /*m_name =*/ "Perforce worker" },
+            [this]
+            {
+                ThreadWorker();
+            }
+        );
 
         SourceControlConnectionRequestBus::Handler::BusConnect();
         SourceControlCommandBus::Handler::BusConnect();

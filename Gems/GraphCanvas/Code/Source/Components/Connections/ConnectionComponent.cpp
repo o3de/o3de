@@ -13,6 +13,8 @@
 
 #include <AzCore/Serialization/EditContext.h>
 
+#include <AzQtComponents/Components/ToastNotification.h>
+
 #include <Components/Connections/ConnectionComponent.h>
 
 #include <Components/Connections/ConnectionLayerControllerComponent.h>
@@ -1117,10 +1119,8 @@ namespace GraphCanvas
                 QPointF globalConnectionPoint = ConversionUtils::AZToQPoint(globalConnectionVector);
 
                 QPointF anchorPoint(0.0f, 0.0f);
-
-                ToastConfiguration toastConfiguration(ToastType::Error, "Unable to connect to slot", m_validationResult.m_failureReason);
-
-                toastConfiguration.SetCloseOnClick(false);
+                AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Error, "Unable to connect to slot", m_validationResult.m_failureReason.c_str());
+                toastConfiguration.m_closeOnClick = false;
 
                 m_toastId = viewHandler->ShowToastAtPoint(globalConnectionPoint.toPoint(), anchorPoint, toastConfiguration);
             }

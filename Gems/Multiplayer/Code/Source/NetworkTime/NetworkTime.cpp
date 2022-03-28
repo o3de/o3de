@@ -122,6 +122,7 @@ namespace Multiplayer
                 {
                     AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
                     NetworkEntityHandle entityHandle(entity, networkEntityTracker);
+<<<<<<< HEAD
                     if (entityHandle.GetNetBindComponent() == nullptr)
                     {
                         // Not a net-bound entity, terminate processing of this entity
@@ -138,16 +139,19 @@ namespace Multiplayer
                     }
 
                     if (networkTransform != nullptr)
+=======
+                    if (entityHandle.GetNetBindComponent() != nullptr)
+>>>>>>> development
                     {
-                        // Get the rewound position for target host frame ID plus the one preceding it for potential lerp
-                        AZ::Vector3 rewindCenter = networkTransform->GetTranslation();
-                        const AZ::Vector3 rewindCenterPrevious = networkTransform->GetTranslationPrevious();
-                        const float blendFactor = GetNetworkTime()->GetHostBlendFactor();
-                        if (!AZ::IsClose(blendFactor, 1.0f) && !rewindCenter.IsClose(rewindCenterPrevious))
+                        const AZ::Aabb currentBounds = entityBoundsUnion->GetEntityWorldBoundsUnion(entity->GetId());
+                        const AZ::Vector3 currentCenter = currentBounds.GetCenter();
+                        NetworkTransformComponent* networkTransform = entity->template FindComponent<NetworkTransformComponent>();
+                        if (debugDisplay)
                         {
-                            // If we have a blend factor, lerp the translation for accuracy
-                            rewindCenter = rewindCenterPrevious.Lerp(rewindCenter, blendFactor);
+                            debugDisplay->SetColor(AZ::Colors::White);
+                            debugDisplay->DrawWireBox(currentBounds.GetMin(), currentBounds.GetMax());
                         }
+<<<<<<< HEAD
                         const AZ::Vector3 rewindOffset = rewindCenter - currentCenter; // Compute offset between rewound and current positions
                         const AZ::Aabb rewoundAabb = currentBounds.GetTranslated(rewindOffset); // Apply offset to the entity aabb
                         if (debugDisplay)
@@ -155,10 +159,37 @@ namespace Multiplayer
                             debugDisplay->SetColor(AZ::Colors::Grey);
                             debugDisplay->DrawWireBox(rewoundAabb.GetMin(), rewoundAabb.GetMax());
                         }
+=======
+>>>>>>> development
 
-                        if (AZ::ShapeIntersection::Overlaps(rewoundAabb, rewindVolume)) // Validate the rewound aabb intersects our rewind volume
+                        if (networkTransform != nullptr)
                         {
+<<<<<<< HEAD
                             m_rewoundEntities.push_back(entityHandle);
+=======
+                            // Get the rewound position for target host frame ID plus the one preceding it for potential lerp
+                            AZ::Vector3 rewindCenter = networkTransform->GetTranslation();
+                            const AZ::Vector3 rewindCenterPrevious = networkTransform->GetTranslationPrevious();
+                            const float blendFactor = GetNetworkTime()->GetHostBlendFactor();
+                            if (!AZ::IsClose(blendFactor, 1.0f) && !rewindCenter.IsClose(rewindCenterPrevious))
+                            {
+                                // If we have a blend factor, lerp the translation for accuracy
+                                rewindCenter = rewindCenterPrevious.Lerp(rewindCenter, blendFactor);
+                            }
+                            const AZ::Vector3 rewindOffset = rewindCenter - currentCenter; // Compute offset between rewound and current positions
+                            const AZ::Aabb rewoundAabb = currentBounds.GetTranslated(rewindOffset); // Apply offset to the entity aabb
+                            if (debugDisplay)
+                            {
+                                debugDisplay->SetColor(AZ::Colors::Grey);
+                                debugDisplay->DrawWireBox(rewoundAabb.GetMin(), rewoundAabb.GetMax());
+                            }
+
+                            if (AZ::ShapeIntersection::Overlaps(rewoundAabb, rewindVolume)) // Validate the rewound aabb intersects our rewind volume
+                            {
+                                m_rewoundEntities.push_back(entityHandle);
+                                entityHandle.GetNetBindComponent()->NotifySyncRewindState();
+                            }
+>>>>>>> development
                         }
                     }
                 }

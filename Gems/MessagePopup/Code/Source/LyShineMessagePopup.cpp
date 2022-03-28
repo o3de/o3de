@@ -127,6 +127,7 @@ namespace MessagePopup
             switch (_buttons)
             {
             case EPopupButtons::EPopupButtons_NoButtons:
+<<<<<<< HEAD
                 canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/defaultmessagepopup.uicanvas");
                 break;
             case EPopupButtons::EPopupButtons_Confirm:
@@ -135,13 +136,27 @@ namespace MessagePopup
                 break;
             case EPopupButtons::EPopupButtons_YesNo:
                 canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/defaultmessagepopup_yesno.uicanvas");
+=======
+                canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas("@products@/ui/canvases/defaultmessagepopup.uicanvas");
+                break;
+            case EPopupButtons::EPopupButtons_Confirm:
+                canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas("@products@/ui/canvases/defaultmessagepopup_confirm.uicanvas");
+                isNavigationSupported = true;
+                break;
+            case EPopupButtons::EPopupButtons_YesNo:
+                canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas("@products@/ui/canvases/defaultmessagepopup_yesno.uicanvas");
+>>>>>>> development
                 isNavigationSupported = true;
                 break;
             }
         }
         else if (_kind == EPopupKind_Toaster)
         {
+<<<<<<< HEAD
             canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/toaster.uicanvas");
+=======
+            canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas("@products@/ui/canvases/toaster.uicanvas");
+>>>>>>> development
         }
 
         if (canvasEntityId.IsValid())
@@ -183,7 +198,7 @@ namespace MessagePopup
     {
         // get the canvas ID in the clientdata
         LyShine::CanvasId canvasId = *((LyShine::CanvasId*)&_popupInfo.m_clientData);
-        AZ::EntityId canvasEntityId = gEnv->pLyShine->FindCanvasById(canvasId);
+        AZ::EntityId canvasEntityId = AZ::Interface<ILyShine>::Get()->FindCanvasById(canvasId);
         if (canvasEntityId.IsValid())
         {
             // Hide the cursor if it was shown in LyShineMessagePopup::OnShowPopup
@@ -197,7 +212,7 @@ namespace MessagePopup
             // Disable the popup
             EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetEnabled, false);
 
-            gEnv->pLyShine->ReleaseCanvas(canvasEntityId, false);
+            AZ::Interface<ILyShine>::Get()->ReleaseCanvas(canvasEntityId, false);
 
             UiCanvasNotificationBus::MultiHandler::BusDisconnect(canvasEntityId);
             m_activePopupIdsByCanvasId.erase(canvasEntityId);

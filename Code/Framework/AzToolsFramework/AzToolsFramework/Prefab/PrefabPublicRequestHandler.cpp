@@ -8,9 +8,15 @@
 
 #include <AzToolsFramework/Prefab/PrefabPublicRequestHandler.h>
 
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
-
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+
+#include <AzToolsFramework/Prefab/PrefabLoader.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
 
 namespace AzToolsFramework
 {
@@ -28,13 +34,21 @@ namespace AzToolsFramework
                     ->Event("CreatePrefabInMemory", &PrefabPublicRequests::CreatePrefabInMemory)
                     ->Event("InstantiatePrefab", &PrefabPublicRequests::InstantiatePrefab)
                     ->Event("DeleteEntitiesAndAllDescendantsInInstance", &PrefabPublicRequests::DeleteEntitiesAndAllDescendantsInInstance)
+                    ->Event("DetachPrefab", &PrefabPublicRequests::DetachPrefab)
+                    ->Event("DuplicateEntitiesInInstance", &PrefabPublicRequests::DuplicateEntitiesInInstance)
+                    ->Event("GetOwningInstancePrefabPath", &PrefabPublicRequests::GetOwningInstancePrefabPath)
+                    ->Event("CreateInMemorySpawnableAsset", &PrefabPublicRequests::CreateInMemorySpawnableAsset)
+                    ->Event("RemoveInMemorySpawnableAsset", &PrefabPublicRequests::RemoveInMemorySpawnableAsset)
+                    ->Event("HasInMemorySpawnableAsset", &PrefabPublicRequests::HasInMemorySpawnableAsset)
+                    ->Event("GetInMemorySpawnableAssetId", &PrefabPublicRequests::GetInMemorySpawnableAssetId)
+                    ->Event("RemoveAllInMemorySpawnableAssets", &PrefabPublicRequests::RemoveAllInMemorySpawnableAssets)
                     ;
             }
         }
 
         void PrefabPublicRequestHandler::Connect()
         {
-            m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+            m_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
             AZ_Assert(m_prefabPublicInterface, "PrefabPublicRequestHandler - Could not retrieve instance of PrefabPublicInterface");
 
             PrefabPublicRequestBus::Handler::BusConnect();
@@ -43,7 +57,7 @@ namespace AzToolsFramework
         void PrefabPublicRequestHandler::Disconnect()
         {
             PrefabPublicRequestBus::Handler::BusDisconnect();
-
+            m_spawnableAssetContainer.Deactivate();
             m_prefabPublicInterface = nullptr;
         }
 
@@ -60,6 +74,78 @@ namespace AzToolsFramework
         PrefabOperationResult PrefabPublicRequestHandler::DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds)
         {
             return m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entityIds);
+        }
+
+        PrefabOperationResult PrefabPublicRequestHandler::DetachPrefab(const AZ::EntityId& containerEntityId)
+        {
+            return m_prefabPublicInterface->DetachPrefab(containerEntityId);
+        }
+
+        DuplicatePrefabResult PrefabPublicRequestHandler::DuplicateEntitiesInInstance(const EntityIdList& entityIds)
+        {
+            return m_prefabPublicInterface->DuplicateEntitiesInInstance(entityIds);
+        }
+
+        AZStd::string PrefabPublicRequestHandler::GetOwningInstancePrefabPath(AZ::EntityId entityId) const
+        {
+            return m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId).Native();
+        }
+
+        bool PrefabPublicRequestHandler::TryActivateSpawnableAssetContainer()
+        {
+            bool activated = m_spawnableAssetContainer.IsActivated();
+            if (!activated)
+            {
+                activated = m_spawnableAssetContainer.Activate(PrefabConversionUtils::IntegrationTests);
+            }
+
+            return activated;
+        }
+
+        CreateSpawnableResult PrefabPublicRequestHandler::CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName)
+        {
+            if (!TryActivateSpawnableAssetContainer())
+            {
+                return AZ::Failure(AZStd::string("Failed to activate Spawnable Asset Container"));
+            }
+
+            auto result = m_spawnableAssetContainer.CreateInMemorySpawnableAsset(prefabFilePath, spawnableName);
+            if (result.IsSuccess())
+            {
+                return AZ::Success(result.GetValue().GetId());
+            }
+            else
+            {
+                return AZ::Failure(result.TakeError());
+            }
+        }
+
+        PrefabOperationResult PrefabPublicRequestHandler::RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName)
+        {
+            auto result = m_spawnableAssetContainer.RemoveInMemorySpawnableAsset(spawnableName);
+            if (result.IsSuccess())
+            {
+                return AZ::Success();
+            }
+            else
+            {
+                return AZ::Failure(result.TakeError());
+            }
+        }
+
+        bool PrefabPublicRequestHandler::HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const
+        {
+            return m_spawnableAssetContainer.HasInMemorySpawnableAsset(spawnableName);
+        }
+
+        AZ::Data::AssetId PrefabPublicRequestHandler::GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const
+        {
+            return m_spawnableAssetContainer.GetInMemorySpawnableAssetId(spawnableName);
+        }
+
+        void PrefabPublicRequestHandler::RemoveAllInMemorySpawnableAssets()
+        {
+            m_spawnableAssetContainer.ClearAllInMemorySpawnableAssets();
         }
 
     } // namespace Prefab

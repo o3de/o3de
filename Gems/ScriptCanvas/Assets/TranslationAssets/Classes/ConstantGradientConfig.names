@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ConstantGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ConstantGradientConfig"
+            }
+        }
+    ]
+}

@@ -10,3 +10,8 @@ set(LY_INCLUDE_DIRECTORIES
     PRIVATE
         ${LY_NDK_NATIVE_APP_GLUE_SRC_DIR}
 )
+
+set(LY_BUILD_DEPENDENCIES
+    PRIVATE
+        AZ::AzFramework
+)

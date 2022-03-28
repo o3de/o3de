@@ -6,8 +6,6 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <aws/core/auth/AWSCredentialsProvider.h>
 
 #include <Credential/AWSCredentialBus.h>
@@ -19,14 +17,10 @@ class TestCredentialHandlerOne
     : AWSCredentialRequestBus::Handler
 {
 public:
-    TestCredentialHandlerOne()
+    void ActivateHandler()
     {
         m_handlerCounter = 0;
         m_credentialsProvider = std::make_shared<Aws::Auth::AnonymousAWSCredentialsProvider>();
-    }
-
-    void ActivateHandler()
-    {
         AWSCredentialRequestBus::Handler::BusConnect();
     }
 
@@ -36,14 +30,14 @@ public:
         m_credentialsProvider.reset();
     }
 
-    int GetCredentialHandlerOrder() const
+    int GetCredentialHandlerOrder() const override
     {
         return 1;
     }
 
-    std::shared_ptr<Aws::Auth::AWSCredentialsProvider> GetCredentialsProvider()
+    std::shared_ptr<Aws::Auth::AWSCredentialsProvider> GetCredentialsProvider() override
     {
-        m_handlerCounter++;
+        ++m_handlerCounter;
         return m_credentialsProvider;
     }
 
@@ -55,14 +49,10 @@ class TestCredentialHandlerTwo
     : AWSCredentialRequestBus::Handler
 {
 public:
-    TestCredentialHandlerTwo()
+    void ActivateHandler()
     {
         m_handlerCounter = 0;
         m_credentialsProvider = std::make_shared<Aws::Auth::AnonymousAWSCredentialsProvider>();
-    }
-
-    void ActivateHandler()
-    {
         AWSCredentialRequestBus::Handler::BusConnect();
     }
 
@@ -72,14 +62,14 @@ public:
         m_credentialsProvider.reset();
     }
 
-    int GetCredentialHandlerOrder() const
+    int GetCredentialHandlerOrder() const override
     {
         return 2;
     }
 
-    std::shared_ptr<Aws::Auth::AWSCredentialsProvider> GetCredentialsProvider()
+    std::shared_ptr<Aws::Auth::AWSCredentialsProvider> GetCredentialsProvider() override
     {
-        m_handlerCounter++;
+        ++m_handlerCounter;
         return m_credentialsProvider;
     }
 
@@ -88,7 +78,7 @@ public:
 };
 
 class AWSCredentialBusTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public AWSCoreFixture
 {
 public:
     AWSCredentialBusTest()
@@ -99,6 +89,8 @@ public:
 
     void SetUp() override
     {
+        AWSCoreFixture::SetUpFixture();
+
         m_handlerOne->ActivateHandler();
         m_handlerTwo->ActivateHandler();
     }
@@ -107,6 +99,8 @@ public:
     {
         m_handlerOne->DeactivateHandler();
         m_handlerTwo->DeactivateHandler();
+
+        AWSCoreFixture::TearDownFixture();
     }
 
     AZStd::unique_ptr<TestCredentialHandlerOne> m_handlerOne;
@@ -115,10 +109,10 @@ public:
 
 TEST_F(AWSCredentialBusTest, GetCredentialsProvider_CallFromMultithread_GetExpectedCredentialsProviderAndNumberOfCalls)
 {
-    int testThreadNumber = 10;
+    constexpr int testThreadNumber = 10;
     AZStd::atomic<int> actualEbusCalls = 0;
     AZStd::vector<AZStd::thread> testThreadPool;
-    for (int index = 0; index < testThreadNumber; index++)
+    for (int index = 0; index < testThreadNumber; ++index)
     {
         testThreadPool.emplace_back(AZStd::thread([&]() {
             AWSCredentialResult result;

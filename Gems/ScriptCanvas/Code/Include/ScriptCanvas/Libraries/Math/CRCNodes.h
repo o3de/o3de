@@ -15,7 +15,7 @@ namespace ScriptCanvas
 {
     namespace CRCNodes
     {
-        static const char* k_categoryName = "Math/Crc32";
+        static constexpr const char* k_categoryName = "Math/Crc32";
 
         AZ_INLINE Data::CRCType FromString(Data::StringType value)
         {

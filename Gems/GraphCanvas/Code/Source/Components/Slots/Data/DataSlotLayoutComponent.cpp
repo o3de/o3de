@@ -12,6 +12,8 @@
 #include <qsizepolicy.h>
 #include <QGraphicsSceneDragDropEvent>
 
+#include <AzQtComponents/Components/ToastNotification.h>
+
 #include <Components/Slots/Data/DataSlotLayoutComponent.h>
 
 #include <Components/Slots/Data/DataSlotConnectionPin.h>
@@ -157,8 +159,8 @@ namespace GraphCanvas
                                     anchorPoint = QPointF(1.0f, 0.5f);
                                 }
                                 
-                                ToastConfiguration toastConfiguration(ToastType::Error, "Unable to drop onto to slot", error);
-                                toastConfiguration.SetCloseOnClick(false);
+                                AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Error, "Unable to drop onto to slot", error.c_str());
+                                toastConfiguration.m_closeOnClick = false;
 
                                 m_toastId = viewHandler->ShowToastAtPoint(globalConnectionPoint.toPoint(), anchorPoint, toastConfiguration);
                             }
@@ -335,12 +337,9 @@ namespace GraphCanvas
         {
             m_connectionType = slotRequests->GetConnectionType();
 
-            TranslationKeyedString slotName = slotRequests->GetTranslationKeyedName();
+            m_slotText->SetLabel(slotRequests->GetName());
 
-            m_slotText->SetLabel(slotName);
-
-            TranslationKeyedString toolTip = slotRequests->GetTranslationKeyedTooltip();
-            OnTooltipChanged(toolTip);
+            OnTooltipChanged(slotRequests->GetTooltip());
 
             const SlotConfiguration& configuration = slotRequests->GetSlotConfiguration();
 
@@ -391,12 +390,12 @@ namespace GraphCanvas
         AZ::SystemTickBus::Handler::BusConnect();
     }
 
-    void DataSlotLayout::OnNameChanged(const TranslationKeyedString& name)
+    void DataSlotLayout::OnNameChanged(const AZStd::string& name)
     {
         m_slotText->SetLabel(name);
     }
 
-    void DataSlotLayout::OnTooltipChanged(const TranslationKeyedString& tooltip)
+    void DataSlotLayout::OnTooltipChanged(const AZStd::string& tooltip)
     {
         AZ::Uuid dataType;
         DataSlotRequestBus::EventResult(dataType, m_owner.GetEntityId(), &DataSlotRequests::GetDataTypeId);
@@ -404,7 +403,7 @@ namespace GraphCanvas
         AZStd::string typeString;
         GraphModelRequestBus::EventResult(typeString, GetSceneId(), &GraphModelRequests::GetDataTypeString, dataType);
 
-        AZStd::string displayText = tooltip.GetDisplayString();
+        AZStd::string displayText = tooltip;
 
         if (!typeString.empty())
         {
@@ -484,7 +483,7 @@ namespace GraphCanvas
         if (!iconPath.empty())
         {
             m_textDecoration = new GraphCanvasLabel();
-            m_textDecoration->SetLabel(iconPath, "", "");
+            m_textDecoration->SetLabel(iconPath);
             m_textDecoration->setToolTip(toolTip.c_str());
 
             ApplyTextStyle(m_textDecoration);

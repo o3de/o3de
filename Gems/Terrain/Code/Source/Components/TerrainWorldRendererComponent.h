@@ -9,8 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Math/Vector3.h>
-#include <TerrainSystem/TerrainSystem.h>
+#include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 namespace LmbrCentral
 {
@@ -25,8 +24,11 @@ namespace AZ::RPI
 
 namespace Terrain
 {
+<<<<<<< HEAD
     class TerrainFeatureProcessor;
 
+=======
+>>>>>>> development
     struct TerrainWorldRendererConfig final
         : public AZ::ComponentConfig
     {
@@ -48,13 +50,17 @@ namespace Terrain
             WorldSizeCount,
         };
 
+<<<<<<< HEAD
         WorldSize m_worldSize;
+=======
+        DetailMaterialConfiguration m_detailMaterialConfig;
+        WorldSize m_worldSize = WorldSize::_1024Meters;
+>>>>>>> development
     };
 
 
     class TerrainWorldRendererComponent
         : public AZ::Component
-        , public AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         template<typename, typename>
@@ -77,8 +83,6 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
     protected:
-        void OnTerrainDataDestroyBegin() override;
-        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         AZ::RPI::Scene* GetScene() const;
 

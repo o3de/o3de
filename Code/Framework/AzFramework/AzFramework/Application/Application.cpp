@@ -10,6 +10,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Memory/MemoryComponent.h>
@@ -21,6 +22,7 @@
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
@@ -58,6 +60,7 @@
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
+#include <AzFramework/SurfaceData/SurfaceData.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
@@ -67,6 +70,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <GridMate/Memory.h>
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include "Application.h"
 #include <AzFramework/AzFrameworkModule.h>
@@ -80,12 +84,15 @@ namespace AzFramework
 
     namespace ApplicationInternal
     {
+        static constexpr const char s_editorModeFeedbackKey[] = "/Amazon/Preferences/EnableEditorModeFeedback";
         static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
         static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
         static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
         static constexpr const char* DeprecatedFileIOAliasesRoot = "/O3DE/AzCore/FileIO/DeprecatedAliases";
         static constexpr const char* DeprecatedFileIOAliasesOldAliasKey = "OldAlias";
         static constexpr const char* DeprecatedFileIOAliasesNewAliasKey = "NewAlias";
+
+        static constexpr const char* FilesystemAliasesRoot = "/O3DE/Filesystem/Aliases";
     }
 
     Application::Application()
@@ -119,6 +126,11 @@ namespace AzFramework
             m_archiveFileIO = AZStd::make_unique<AZ::IO::ArchiveFileIO>(m_archive.get());
             AZ::IO::FileIOBase::SetInstance(m_archiveFileIO.get());
             SetFileIOAliases();
+            // The FileIOAvailable event needs to be registered here as this event is sent out
+            // before the settings registry has merged the .setreg files from the <engine-root>
+            // (That happens in MergeSettingsToRegistry
+            AZ::ComponentApplicationLifecycle::RegisterEvent(*m_settingsRegistry, "FileIOAvailable");
+            AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "FileIOAvailable", R"({})");
         }
 
         if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI == nullptr)
@@ -171,6 +183,8 @@ namespace AzFramework
         // Archive classes relies on the FileIOBase DirectInstance to close
         // files properly
         m_directFileIO.reset();
+
+        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "FileIOUnavailable", R"({})");
     }
 
     void Application::Start(const Descriptor& descriptor, const StartupParameters& startupParameters)
@@ -195,20 +209,41 @@ namespace AzFramework
         systemEntity->Activate();
         AZ_Assert(systemEntity->GetState() == AZ::Entity::State::Active, "System Entity failed to activate.");
 
-        m_isStarted = (systemEntity->GetState() == AZ::Entity::State::Active);
+        if (m_isStarted = (systemEntity->GetState() == AZ::Entity::State::Active); m_isStarted)
+        {
+            if (m_startupParameters.m_loadAssetCatalog)
+            {
+                // Start Monitoring Asset changes over the network and load the AssetCatalog
+                auto StartMonitoringAssetsAndLoadCatalog = [this](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+                {
+                    if (AZ::IO::FixedMaxPath assetCatalogPath;
+                        m_settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+                    {
+                        assetCatalogPath /= "assetcatalog.xml";
+                        assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+                    }
+                };
+                using AssetCatalogBus = AZ::Data::AssetCatalogRequestBus;
+                AssetCatalogBus::Broadcast(AZStd::move(StartMonitoringAssetsAndLoadCatalog));
+            }
+        }
     }
-
-    void Application::PreModuleLoad()
-    {
-        SetRootPath(RootPathType::EngineRoot, m_engineRoot.c_str());
-        AZ_TracePrintf(s_azFrameworkWarningWindow, "Engine Path: %s\n", m_engineRoot.c_str());
-    }
-
 
     void Application::Stop()
     {
         if (m_isStarted)
         {
+            if (m_startupParameters.m_loadAssetCatalog)
+            {
+                // Stop Monitoring Assets changes
+                auto StopMonitoringAssets = [](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+                {
+                    assetCatalogRequests->StopMonitoringAssets();
+                };
+                using AssetCatalogBus = AZ::Data::AssetCatalogRequestBus;
+                AssetCatalogBus::Broadcast(AZStd::move(StopMonitoringAssets));
+            }
+
             ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::OnApplicationAboutToStop);
 
             m_pimpl.reset();
@@ -278,7 +313,11 @@ namespace AzFramework
         AzFramework::RemoteStorageDriveConfig::Reflect(context);
 
         Physics::ReflectionUtils::ReflectPhysicsApi(context);
+        AzFramework::SurfaceData::SurfaceTagWeight::Reflect(context);
+        AzFramework::SurfaceData::SurfacePoint::Reflect(context);
         AzFramework::Terrain::TerrainDataRequests::Reflect(context);
+        Physics::HeightfieldProviderRequests::Reflect(context);
+        Physics::HeightMaterialPoint::Reflect(context);
 
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -355,11 +394,6 @@ namespace AzFramework
         outModules.emplace_back(aznew AzFrameworkModule());
     }
 
-    const char* Application::GetAppRoot() const
-    {
-        return m_appRoot.c_str();
-    }
-
     const char* Application::GetCurrentConfigurationName() const
     {
 #if defined(_RELEASE)
@@ -395,19 +429,19 @@ namespace AzFramework
 
     void Application::ResolveEnginePath(AZStd::string& engineRelativePath) const
     {
-        AZ::IO::FixedMaxPath fullPath = m_engineRoot / engineRelativePath;
+        auto fullPath = AZ::IO::FixedMaxPath(GetEngineRoot()) / engineRelativePath;
         engineRelativePath = fullPath.String();
     }
 
     void Application::CalculateBranchTokenForEngineRoot(AZStd::string& token) const
     {
-        AzFramework::StringFunc::AssetPath::CalculateBranchToken(m_engineRoot.String(), token);
+        AZ::StringFunc::AssetPath::CalculateBranchToken(GetEngineRoot(), token);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     void Application::MakePathRootRelative(AZStd::string& fullPath)
     {
-        MakePathRelative(fullPath, m_engineRoot.c_str());
+        MakePathRelative(fullPath, GetEngineRoot());
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -523,11 +557,9 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////
 
-    AZ_CVAR(float, t_frameTimeOverride, 0.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "If > 0, overrides the application delta frame-time with the provided value");
-
-    void Application::Tick(float deltaOverride /*= -1.f*/)
+    void Application::Tick()
     {
-        ComponentApplication::Tick((t_frameTimeOverride > 0.0f) ? t_frameTimeOverride : deltaOverride);
+        ComponentApplication::Tick();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -540,30 +572,6 @@ namespace AzFramework
         else
         {
             exit(errorCode);
-        }
-    }
-
-    void Application::SetRootPath(RootPathType type, const char* source)
-    {
-        [[maybe_unused]] const size_t sourceLen = strlen(source);
-
-        // Copy the source path to the intended root path and correct the path separators as well
-        switch (type)
-        {
-        case RootPathType::AppRoot:
-        {
-            AZ_Assert(sourceLen < m_appRoot.Native().max_size(), "String overflow for App Root: %s", source);
-            m_appRoot = AZ::IO::PathView(source).LexicallyNormal();
-        }
-        break;
-        case RootPathType::EngineRoot:
-        {
-            AZ_Assert(sourceLen < m_engineRoot.Native().max_size(), "String overflow for Engine Root: %s", source);
-            m_engineRoot = AZ::IO::PathView(source).LexicallyNormal();
-        }
-        break;
-        default:
-            AZ_Assert(false, "Invalid RootPathType (%d)", static_cast<int>(type));
         }
     }
 
@@ -679,34 +687,36 @@ namespace AzFramework
         if (auto fileIoBase = m_archiveFileIO.get(); fileIoBase)
         {
             // Set up the default file aliases based on the settings registry
-            fileIoBase->SetAlias("@engroot@", GetEngineRoot());
-            fileIoBase->SetAlias("@projectroot@", GetEngineRoot());
-            fileIoBase->SetAlias("@exefolder@", GetExecutableFolder());
 
+            AZ::IO::FixedMaxPath engineRootPath;
+            if (m_settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
             {
-                AZ::IO::FixedMaxPath pathAliases;
-                pathAliases.clear();
-                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
-                {
-                    fileIoBase->SetAlias("@products@", pathAliases.c_str());
-                }
-                pathAliases.clear();
-                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
-                {
-                    fileIoBase->SetAlias("@engroot@", pathAliases.c_str());
-                }
-                pathAliases.clear();
-                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
-                {
-                    fileIoBase->SetAlias("@projectroot@", pathAliases.c_str());
-                }
+                fileIoBase->SetAlias("@engroot@", engineRootPath.c_str());
+                // default project root to engine root if not set
+                // It should be overridden in the next if block
+                fileIoBase->SetAlias("@projectroot@", engineRootPath.c_str());
             }
 
-            AZ::IO::FixedMaxPath engineRoot = GetEngineRoot();
+            AZ::IO::FixedMaxPath projectRootPath;
+            if (m_settingsRegistry->Get(projectRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
+            {
+                fileIoBase->SetAlias("@projectroot@", projectRootPath.c_str());
+            }
+
+            if (AZ::IO::FixedMaxPath exeFolder; m_settingsRegistry->Get(exeFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_BinaryFolder))
+            {
+                fileIoBase->SetAlias("@exefolder@", exeFolder.c_str());
+            }
+
+            if (AZ::IO::FixedMaxPath pathAliases; m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                fileIoBase->SetAlias("@products@", pathAliases.c_str());
+            }
+
             AZ::IO::FixedMaxPath projectUserPath;
             if (!m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
             {
-                projectUserPath = engineRoot / "user";
+                projectUserPath = engineRootPath / "user";
             }
             fileIoBase->SetAlias("@user@", projectUserPath.c_str());
             fileIoBase->CreatePath(projectUserPath.c_str());
@@ -728,7 +738,44 @@ namespace AzFramework
                     fileIoBase->SetDeprecatedAlias(oldAlias, newAlias);
                 }
             }
+
+            // The following section sets the @gemroot:<gem-name>@ alias for
+            // every loaded gem
+            using Type = AZ::SettingsRegistryInterface::Type;
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            auto AddGemAlias = [&fileIoBase](AZStd::string_view gemName, AZStd::string_view gemRootPath)
+            {
+                const auto gemAlias{ FixedValueString::format("@gemroot:%.*s@", AZ_STRING_ARG(gemName)) };
+                const auto gemAliasPath = FixedValueString(gemRootPath);
+                fileIoBase->SetAlias(gemAlias.c_str(), gemAliasPath.c_str());
+            };
+            AZ::SettingsRegistryMergeUtils::VisitActiveGems(*m_settingsRegistry, AddGemAlias);
+
+            // Load any Filesystem aliases from the SettingsRegistry
+            auto SetAliasesFromSettingsRegistry = [&fileIoBase, &settingsRegistry = *m_settingsRegistry]
+                (AZStd::string_view aliasJsonPath, AZStd::string_view aliasKey, Type)
+            {
+                if (AZ::IO::FixedMaxPath aliasPath; settingsRegistry.Get(aliasPath.Native(), aliasJsonPath))
+                {
+                    if (AZ::IO::SystemFile::Exists(aliasPath.c_str()))
+                    {
+                        fileIoBase->SetAlias(FixedValueString(aliasKey).c_str(), aliasPath.c_str());
+                    }
+                }
+            };
+            AZ::SettingsRegistryVisitorUtils::VisitObject(*m_settingsRegistry, SetAliasesFromSettingsRegistry,
+                ApplicationInternal::FilesystemAliasesRoot);
         }
+    }
+
+    bool Application::IsEditorModeFeedbackEnabled() const
+    {
+        bool value = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(value, ApplicationInternal::s_editorModeFeedbackKey);
+        }
+        return value;
     }
 
     bool Application::IsPrefabSystemEnabled() const
@@ -761,6 +808,7 @@ namespace AzFramework
 
     bool Application::IsPrefabSystemForLevelsEnabled() const
     {
+        AZ_Warning("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, please use 'IsPrefabSystemEnabled' instead.");
         return IsPrefabSystemEnabled();
     }
 

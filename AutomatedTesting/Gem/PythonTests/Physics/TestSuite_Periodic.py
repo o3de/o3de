@@ -169,8 +169,8 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_ForceRegion_SliceFileInstantiates(self, request, workspace, editor, launcher_platform):
-        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
+    def test_ForceRegion_PrefabFileInstantiates(self, request, workspace, editor, launcher_platform):
+        from .tests.force_region import ForceRegion_PrefabFileInstantiates as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
@@ -218,11 +218,6 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ForceRegion_ZeroSplineForceDoesNothing(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_Physics_DynamicSliceWithPhysNotSpawnsStaticSlice(self, request, workspace, editor, launcher_platform):
-        from .tests import Physics_DynamicSliceWithPhysNotSpawnsStaticSlice as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
@@ -401,18 +396,18 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_Collider_SphereShapeEditting(self, request, workspace, editor, launcher_platform):
-        from .tests.collider import Collider_SphereShapeEditting as test_module
+    def test_Collider_SphereShapeEditing(self, request, workspace, editor, launcher_platform):
+        from .tests.collider import Collider_SphereShapeEditing as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_Collider_BoxShapeEditting(self, request, workspace, editor, launcher_platform):
-        from .tests.collider import Collider_BoxShapeEditting as test_module
+    def test_Collider_BoxShapeEditing(self, request, workspace, editor, launcher_platform):
+        from .tests.collider import Collider_BoxShapeEditing as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_Collider_CapsuleShapeEditting(self, request, workspace, editor, launcher_platform):
-        from .tests.collider import Collider_CapsuleShapeEditting as test_module
+    def test_Collider_CapsuleShapeEditing(self, request, workspace, editor, launcher_platform):
+        from .tests.collider import Collider_CapsuleShapeEditing as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_ForceRegion_WithNonTriggerColliderWarning(self, request, workspace, editor, launcher_platform):
@@ -487,12 +482,7 @@ class TestAutomation(TestAutomationBase):
     def test_ShapeCollider_CanBeAddedWitNoWarnings(self, request, workspace, editor, launcher_platform):
         from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
         self._run_test(request, workspace, editor, test_module)
-        
-    @revert_physics_config
-    def test_Physics_UndoRedoWorksOnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
-        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
-        self._run_test(request, workspace, editor, test_module)
-    
+
     def test_Joints_Fixed2BodiesConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_Fixed2BodiesConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -525,12 +515,12 @@ class TestAutomation(TestAutomationBase):
         from .tests.joints import Joints_BallNoLimitsConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Joints_FixedLeadFollowerCollide(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_FixedLeadFollowerCollide as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Joints_GlobalFrameConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_GlobalFrameConstrained as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptCanvas_SpawnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
+        from .tests.script_canvas import ScriptCanvas_SpawnEntityWithPhysComponents as test_module
         self._run_test(request, workspace, editor, test_module)
     
     @revert_physics_config

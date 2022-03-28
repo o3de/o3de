@@ -17,8 +17,6 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
-#include <AzCore/std/sort.h>
 
 namespace AZ
 {
@@ -61,7 +59,7 @@ namespace AZ
 
         void FrameGraph::Begin()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             AZ_Assert(m_isBuilding == false, "FrameGraph::Begin called, but End was never called on the previous build cycle!");
             AZ_Assert(m_isCompiled == false, "FrameGraph::Clear must be called before reuse.");
@@ -109,13 +107,11 @@ namespace AZ
                 {
                     if (attachment->GetFirstScopeAttachment() == nullptr)
                     {
+                        //We allow the rendering to continue even if an attachment is not used.
                         AZ_Error(
                             "FrameGraph", false,
                             "Invalid State: attachment '%s' was added but never used!",
                             attachment->GetId().GetCStr());
-
-                        Clear();
-                        return ResultCode::InvalidOperation;
                     }
                 }
             }
@@ -307,6 +303,8 @@ namespace AZ
 
         ResultCode FrameGraph::UseAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
         {
+            AZ_Assert(!descriptor.m_attachmentId.IsEmpty(), "Calling FrameGraph::UseAttachment with an empty attachment ID");
+
             BufferFrameAttachment* attachment = m_attachmentDatabase.FindAttachment<BufferFrameAttachment>(descriptor.m_attachmentId);
             if (attachment)
             {
@@ -320,6 +318,8 @@ namespace AZ
 
         ResultCode FrameGraph::UseAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
         {
+            AZ_Assert(!descriptor.m_attachmentId.IsEmpty(), "Calling FrameGraph::UseAttachment with an empty attachment ID");
+
             ImageFrameAttachment* attachment = m_attachmentDatabase.FindAttachment<ImageFrameAttachment>(descriptor.m_attachmentId);
             if (attachment)
             {
@@ -331,7 +331,7 @@ namespace AZ
             return ResultCode::InvalidArgument;
         }
 
-        ResultCode FrameGraph::UseAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors, ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
+        ResultCode FrameGraph::UseAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors, ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
         {
             for (const ImageScopeAttachmentDescriptor& descriptor : descriptors)
             {
@@ -358,7 +358,7 @@ namespace AZ
             return ResultCode::InvalidArgument;
         }
 
-        ResultCode FrameGraph::UseColorAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors)
+        ResultCode FrameGraph::UseColorAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
         {
             return UseAttachments(descriptors, ScopeAttachmentAccess::Write, ScopeAttachmentUsage::RenderTarget);
         }
@@ -368,7 +368,7 @@ namespace AZ
             return UseAttachment(descriptor, access, ScopeAttachmentUsage::DepthStencil);
         }
 
-        ResultCode FrameGraph::UseSubpassInputAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors)
+        ResultCode FrameGraph::UseSubpassInputAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
         {
             return UseAttachments(descriptors, ScopeAttachmentAccess::Read, ScopeAttachmentUsage::SubpassInput);
         }

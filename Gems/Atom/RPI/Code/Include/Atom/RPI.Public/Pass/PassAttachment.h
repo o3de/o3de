@@ -10,6 +10,8 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
 
+#include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
+
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
 
 namespace AZ
@@ -103,19 +105,16 @@ namespace AZ
             Pass* m_ownerPass = nullptr;
 
             //! Collection of flags that influence how source data is queried
-            struct
+            union
             {
-                union
+                struct
                 {
-                    struct
-                    {
-                        u8 m_getSizeFromPipeline : 1;
-                        u8 m_getFormatFromPipeline : 1;
-                        u8 m_getMultisampleStateFromPipeline : 1;
-                    };
-                    u8 m_allFlags = 0;
+                    u8 m_getSizeFromPipeline : 1;
+                    u8 m_getFormatFromPipeline : 1;
+                    u8 m_getMultisampleStateFromPipeline : 1;
                 };
-            } m_settingFlags;
+                u8 m_allFlags = 0;
+            };
         };
 
         //! An attachment binding points to a PassAttachment and specifies how the pass uses that attachment.
@@ -132,7 +131,12 @@ namespace AZ
             PassAttachmentBinding(const PassSlot& slot);
             ~PassAttachmentBinding() { };
 
+            //! Getter and Setter for attachment
             void SetAttachment(const Ptr<PassAttachment>& attachment);
+            const Ptr<PassAttachment>& GetAttachment() const { return m_attachment; }
+
+            //! Set the attachment and the original attachment to the provided value
+            void SetOriginalAttachment(Ptr<PassAttachment>& attachment);
 
             //! Returns the corresponding ScopeAttachmentAccess for this binding
             RHI::ScopeAttachmentAccess GetAttachmentAccess() const;
@@ -140,12 +144,19 @@ namespace AZ
             //! Sets all formats to nearest device supported formats and warns if changes where made
             void ValidateDeviceFormats(const AZStd::vector<RHI::Format>& formatFallbacks);
 
+            //! Updates the set attachment from the binding connection
+            void UpdateConnection(bool useFallback);
+
             //! Name of the attachment binding so we can find it in a list of attachment binding
             Name m_name;
 
             //! Name of the SRG member this binds to (see PassSlot::m_shaderInputName for more details)
             Name m_shaderInputName = Name("AutoBind");
-            
+
+            //! Name index of the SRG constant to which, if specified, we automatically calculate
+            //! and bind the image dimensions (if this binding is of type image)
+            RHI::ShaderInputNameIndex m_shaderImageDimensionsNameIndex;
+
             //! Whether binding is an input, output or inputOutput
             PassSlotType m_slotType = PassSlotType::Uninitialized;
 
@@ -154,12 +165,6 @@ namespace AZ
 
             //! The scope descriptor to be used for this binding during rendering
             RHI::UnifiedScopeAttachmentDescriptor m_unifiedScopeDesc;
-
-            //! Pointer to the attachment used by the scope
-            Ptr<PassAttachment> m_attachment = nullptr;
-
-            //! Save the original attachment when using fallback
-            Ptr<PassAttachment> m_originalAttachment = nullptr;
 
             //! Pointer to the binding slot connected to this binding slot
             PassAttachmentBinding* m_connectedBinding = nullptr;
@@ -183,10 +188,18 @@ namespace AZ
             //! An attachment can be used multiple times by the same pass (for example reading an writing to different
             //! mips of the same texture). This indicates which number usage this binding corresponds to.
             uint8_t m_attachmentUsageIndex = 0;
+
+        private:
+            //! Pointer to the attachment used by the scope.
+            //! Used to be public, now use SetAttachment and GetAttachment for access
+            Ptr<PassAttachment> m_attachment = nullptr;
+
+            //! Save the original attachment when using fallback
+            Ptr<PassAttachment> m_originalAttachment = nullptr;
         };
 
         using PassAttachmentBindingList = AZStd::vector<PassAttachmentBinding>;
-        using PassAttachmentBindingListView = AZStd::array_view<PassAttachmentBinding>;
+        using PassAttachmentBindingListView = AZStd::span<const PassAttachmentBinding>;
 
     }   // namespace RPI
 

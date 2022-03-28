@@ -40,7 +40,12 @@
 //!  that can change between passes due to the application of skinning, simulation 
 //!  and physics affect and is then read by the rendering shaders.  
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback 
+<<<<<<< HEAD
 {   //! This shared buffer needs to match the SharedBuffer structure  
+=======
+{   
+    //! This shared buffer needs to match the SharedBuffer structure  
+>>>>>>> development
     //! shared between all draw calls / dispatches for the hair skinning
     StructuredBuffer<int>           m_skinnedHairSharedBuffer;
 
@@ -50,9 +55,12 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     RWTexture2D<uint>               m_fragmentListHead;
     RWStructuredBuffer<PPLL_STRUCT> m_linkedListNodes;
     RWBuffer<uint>                  m_linkedListCounter;
+<<<<<<< HEAD
 
     // Linear depth is used for getting the screen to world transform
     Texture2D<float>                m_linearDepth;
+=======
+>>>>>>> development
 }
 
 //------------------------------------------------------------------------------
@@ -101,6 +109,7 @@ ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance
 #define g_GuideHairVertexTangents   HairDynamicDataSrg::m_hairVertexTangents
 
 //==============================================================================
+<<<<<<< HEAD
 #include <HairStrands.azsli>
 //==============================================================================
 //! Hair input structure to Pixel shaders
@@ -134,6 +143,10 @@ PS_INPUT_HAIR RenderHairVS(uint vertexId : SV_VertexID)
 
     return Output;
 }
+=======
+#include <HairStrands.azsli>        // VS resides here
+//==============================================================================
+>>>>>>> development
 
 // Allocate a new fragment location in fragment color, depth, and link buffers
 int AllocateFragment(int2 vScreenAddress)
@@ -202,9 +215,15 @@ void PPLLFillPS(PS_INPUT_HAIR input)
 
     //////////////////////////////////////////////////////////////////////
     // [To Do] Hair: anti aliasing via coverage requires work and is disabled for now
+<<<<<<< HEAD
     float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
     uint2  dimensions;
     PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
+=======
+//    float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
+//    uint2  dimensions;
+//    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
+>>>>>>> development
 //    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(dimensions.x, dimensions.y));
     float coverage = 1.0;  
     /////////////////////////////////////////////////////////////////////

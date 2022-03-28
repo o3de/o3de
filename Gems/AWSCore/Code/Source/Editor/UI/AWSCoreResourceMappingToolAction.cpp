@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <AWSCoreInternalBus.h>
@@ -24,9 +25,24 @@ namespace AWSCore
     void AWSCoreResourceMappingToolAction::InitAWSCoreResourceMappingToolAction()
     {
         AZ::IO::Path engineRootPath = AZ::IO::PathView(AZ::Utils::GetEnginePath());
+        AZ::IO::Path awsCoreGemPath;
         m_enginePythonEntryPath = (engineRootPath / EngineWindowsPythonEntryScriptPath).LexicallyNormal();
-        m_toolScriptPath = (engineRootPath / ResourceMappingToolDirectoryPath / "resource_mapping_tool.py").LexicallyNormal();
-        m_toolReadMePath = (engineRootPath / ResourceMappingToolDirectoryPath / "README.md").LexicallyNormal();
+
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            if (settingsRegistry->Get(awsCoreGemPath.Native(),
+                FixedValueString::format("%s/AWSCore/Path", AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey)))
+            {
+                m_toolScriptPath = (awsCoreGemPath / ResourceMappingToolDirectoryPath / "resource_mapping_tool.py").LexicallyNormal();
+                m_toolReadMePath = (awsCoreGemPath / ResourceMappingToolDirectoryPath / "README.md").LexicallyNormal();
+            }
+            else
+            {
+                AZ_Error(AWSCoreResourceMappingToolActionName, false,
+                    "Unable to query the path to the AWSCore gem path from the SettingsRegistry");
+            }
+        }
 
         AZ::IO::Path projectPath = AZ::IO::PathView(AZ::Utils::GetProjectPath());
         m_toolLogDirectoryPath = (projectPath / ResourceMappingToolLogDirectoryPath).LexicallyNormal();
@@ -58,7 +74,7 @@ namespace AWSCore
         if (m_isDebug)
         {
             return AZStd::string::format(
-                "\"%s\" debug -B \"%s\" --binaries-path \"%s\" --debug --profile \"%s\" --config-path \"%s\" --log-path \"%s\"",
+                "\"%s\" " AWSCORE_EDITOR_PYTHON_DEBUG_ARGUMENT "-B \"%s\" --binaries-path \"%s\" --debug --profile \"%s\" --config-path \"%s\" --log-path \"%s\"",
                 m_enginePythonEntryPath.c_str(), m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(),
                 profileName.c_str(), m_toolConfigDirectoryPath.c_str(), m_toolLogDirectoryPath.c_str());
         }

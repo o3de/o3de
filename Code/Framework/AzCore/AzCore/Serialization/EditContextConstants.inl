@@ -133,6 +133,8 @@ namespace AZ
             const static AZ::Crc32 AllowClearAsset = AZ_CRC("AllowClearAsset", 0x24827182);
             // Show the name of the asset that was produced from the source asset
             const static AZ::Crc32 ShowProductAssetFileName = AZ_CRC("ShowProductAssetFileName");
+            //! Regular expression pattern filter for source files
+            const static AZ::Crc32 SourceAssetFilterPattern = AZ_CRC_CE("SourceAssetFilterPattern");
 
             //! Component icon attributes
             const static AZ::Crc32 Icon = AZ_CRC("Icon", 0x659429db);
@@ -191,6 +193,9 @@ namespace AZ
 
             //! For use with slice creation tools. See SliceCreationFlags below for details.
             const static AZ::Crc32 SliceFlags = AZ_CRC("SliceFlags", 0xa447e1fb);
+
+            //! Does the clear button in the LineEdit need to have a test for visibility.
+            const static AZ::Crc32 ShowClearButtonHandler = AZ_CRC_CE("ShowClearButtonHandler");
 
             //! For optional use on Getter Events used for Virtual Properties
             const static AZ::Crc32 PropertyPosition = AZ_CRC("Position", 0x462ce4f5);

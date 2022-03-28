@@ -9,18 +9,17 @@
 #pragma once
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <EMotionFX/Source/Allocators.h>
-#include <EMotionFX/Source/EMotionFXConfig.h>
-#include <EMotionFX/Source/EventHandler.h>
-#include <EMotionFX/Source/Transform.h>
-
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
-
 #include <MCore/Source/Endian.h>
+#include <EMotionFX/Source/Allocators.h>
+#include <EMotionFX/Source/EMotionFXConfig.h>
+#include <EMotionFX/Source/EventHandler.h>
+#include <EMotionFX/Source/Transform.h>
+#include <EMotionFX/Source/MotionData/MotionDataSampleSettings.h>
 
 namespace MCore
 {
@@ -109,16 +108,6 @@ namespace EMotionFX
         using QuaternionKey = Key<AZ::Quaternion>;
         using FloatKey = Key<float>;
 
-        struct EMFX_API SampleSettings
-        {
-            const ActorInstance* m_actorInstance = nullptr;
-            const Pose* m_inputPose = nullptr;
-            float m_sampleTime = 0.0f;
-            bool m_mirror = false;
-            bool m_retarget = false;
-            bool m_inPlace = false;
-        };
-
         struct EMFX_API OptimizeSettings
         {
             AZStd::vector<size_t> m_jointIgnoreList; // The joint data indices to skip optimization for.
@@ -162,8 +151,8 @@ namespace EMotionFX
         virtual const char* GetSceneSettingsName() const = 0;
 
         // Sampling
-        virtual Transform SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const = 0;
-        virtual void SamplePose(const SampleSettings& settings, Pose* outputPose) const = 0;
+        virtual Transform SampleJointTransform(const MotionDataSampleSettings& settings, size_t jointSkeletonIndex) const = 0;
+        virtual void SamplePose(const MotionDataSampleSettings& settings, Pose* outputPose) const = 0;
         virtual float SampleMorph(float sampleTime, size_t morphDataIndex) const = 0;
         virtual float SampleFloat(float sampleTime, size_t morphDataIndex) const = 0;
 

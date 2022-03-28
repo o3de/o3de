@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __MCOMMON_FIRSTPERSONCAMERA_H
-#define __MCOMMON_FIRSTPERSONCAMERA_H
+#pragma once
 
 // include required headers
 #include "Camera.h"
@@ -124,6 +123,3 @@ namespace MCommon
         float m_roll;                /**< Rotation around axis of screen. (0=straight, +clockwise, -CCW) */
     };
 } // namespace MCommon
-
-
-#endif

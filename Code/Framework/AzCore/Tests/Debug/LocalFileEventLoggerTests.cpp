@@ -109,7 +109,10 @@ namespace AZ::Debug
         AZStd::thread threads[totalThreads];
         for (size_t threadIndex = 0; threadIndex < totalThreads; ++threadIndex)
         {
+            AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                      // capture. Newer versions issue unused warning
             threads[threadIndex] = AZStd::thread([&startLogging, &messages]()
+            AZ_POP_DISABLE_WARNING
             {
                 while (!startLogging)
                 {
@@ -226,7 +229,10 @@ namespace AZ::Debug
         AZStd::thread threads[totalThreads];
         for (size_t threadIndex = 0; threadIndex < totalThreads; ++threadIndex)
         {
+            AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                      // capture. Newer versions issue unused warning
             threads[threadIndex] = AZStd::thread([&startLogging, &message, &totalRecordsWritten]()
+            AZ_POP_DISABLE_WARNING
             {
                 AZ_UNUSED(message);
 

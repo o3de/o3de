@@ -139,18 +139,11 @@ public:
     bool ImportFromFile(const char* filename);
     const Export::CData& GetData() const {return m_data; };
 
-    //! Exports the stat obj to the obj file specified
-    //! returns true if succeeded, otherwise false
-    bool ExportSingleStatObj(IStatObj* pStatObj, const char* filename) override;
-
     void SetBakedKeysSequenceExport(bool bBaked){m_bBakedKeysSequenceExport = bBaked; };
 
     void SaveNodeKeysTimeToXML();
 
 private:
-    void AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh, Matrix34A* pTm = nullptr);
-    bool AddStatObj(Export::CObject* pObj, IStatObj* pStatObj, Matrix34A* pTm = nullptr);
-    bool AddMeshes(Export::CObject* pObj);
     bool AddObject(CBaseObject* pBaseObj);
     void SolveHierarchy();
 

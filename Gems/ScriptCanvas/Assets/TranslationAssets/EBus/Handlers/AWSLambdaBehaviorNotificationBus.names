@@ -1,0 +1,43 @@
+{
+    "entries": [
+        {
+            "base": "AWSLambdaBehaviorNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "AWS Lambda",
+                "category": "AWS Core"
+            },
+            "methods": [
+                {
+                    "base": "OnInvokeSuccess",
+                    "details": {
+                        "name": "On Invoke Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnInvokeError",
+                    "details": {
+                        "name": "On Invoke Error"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

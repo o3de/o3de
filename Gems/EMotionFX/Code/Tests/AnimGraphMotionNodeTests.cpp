@@ -161,6 +161,8 @@ namespace EMotionFX
             // Make sure all nodes exist.
             ASSERT_TRUE(rootNode && pelvisNode && lHandNode && lLoArmNode && lLoLegNode && lAnkleNode &&
                 rHandNode && rLoArmNode && rLoLegNode && rAnkleNode) << "All nodes used should exist.";
+
+            m_actor->SetMotionExtractionNodeIndex(m_jackRootIndex);
         }
 
         void SetupMirrorNodes()

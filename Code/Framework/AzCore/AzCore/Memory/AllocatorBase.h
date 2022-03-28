@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/Memory/IAllocator.h>
-#include <AzCore/Memory/PlatformMemoryInstrumentation.h>
 
 namespace AZ
 {
@@ -23,7 +22,7 @@ namespace AZ
     class AllocatorBase : public IAllocator
     {
     protected:
-        AllocatorBase(IAllocatorAllocate* allocationSource, const char* name, const char* desc);
+        AllocatorBase(IAllocatorSchema* allocationSchema, const char* name, const char* desc);
         ~AllocatorBase();
 
     public:
@@ -33,11 +32,9 @@ namespace AZ
         //---------------------------------------------------------------------
         const char* GetName() const override;
         const char* GetDescription() const override;
-        IAllocatorAllocate* GetSchema() override;
         Debug::AllocationRecords* GetRecords() final;
         void SetRecords(Debug::AllocationRecords* records) final;
         bool IsReady() const final;
-        bool CanBeOverridden() const final;
         void PostCreate() override;
         void PreDestroy() final;
         void SetLazilyCreated(bool lazy) final;
@@ -69,10 +66,6 @@ namespace AZ
             return byteSize;
         }
 
-        /// Call to disallow this allocator from being overridden.
-        /// Only kernel-level allocators where it would be especially problematic for them to be overridden should do this.
-        void DisableOverriding();
-
         /// Call to disallow this allocator from being registered with the AllocatorManager.
         /// Only kernel-level allocators where it would be especially problematic for them to be registered with the AllocatorManager should do this.
         void DisableRegistration();
@@ -103,16 +96,12 @@ namespace AZ
 
         const char* m_name = nullptr;
         const char* m_desc = nullptr;
-        Debug::AllocationRecords* m_records = nullptr;  // Cached pointer to allocation records. Works together with the MemoryDriller.
+        Debug::AllocationRecords* m_records = nullptr;  // Cached pointer to allocation records
         size_t m_memoryGuardSize = 0;
         bool m_isLazilyCreated = false;
         bool m_isProfilingActive = false;
         bool m_isReady = false;
-        bool m_canBeOverridden = true;
         bool m_registrationEnabled = true;
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        uint16_t m_platformMemoryInstrumentationGroupId = 0;
-#endif
     };
 
     namespace Internal  {

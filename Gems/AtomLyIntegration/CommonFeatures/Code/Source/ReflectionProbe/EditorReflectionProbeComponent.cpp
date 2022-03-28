@@ -14,7 +14,6 @@
 #include <AzCore/IO/SystemFile.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/Utils/DdsFile.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
 
@@ -40,6 +39,7 @@ namespace AZ
                     ->Field("bakedCubeMapQualityLevel", &EditorReflectionProbeComponent::m_bakedCubeMapQualityLevel)
                     ->Field("bakedCubeMapRelativePath", &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath)
                     ->Field("authoredCubeMapAsset", &EditorReflectionProbeComponent::m_authoredCubeMapAsset)
+                    ->Field("bakeExposure", &EditorReflectionProbeComponent::m_bakeExposure)
                 ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -53,6 +53,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                            ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/reflection-probe/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap Bake")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -61,6 +62,13 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Reflection Probe")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::BakeReflectionProbe)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorReflectionProbeComponent::m_bakeExposure, "Bake Exposure", "Exposure to use when baking the cubemap")
+                                ->Attribute(AZ::Edit::Attributes::SoftMin, -16.0f)
+                                ->Attribute(AZ::Edit::Attributes::SoftMax, 16.0f)
+                                ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
+                                ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnBakeExposureChanged)
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &EditorReflectionProbeComponent::m_useBakedCubemap, "Use Baked Cubemap", "Selects between a cubemap that captures the environment at location in the scene or a preauthored cubemap")
@@ -68,11 +76,11 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnUseBakedCubemapChanged)
                             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorReflectionProbeComponent::m_bakedCubeMapQualityLevel, "Baked Cubemap Quality", "Resolution of the baked cubemap")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
-                                ->EnumAttribute(BakedCubeMapQualityLevel::VeryLow, "Very Low")
-                                ->EnumAttribute(BakedCubeMapQualityLevel::Low, "Low")
-                                ->EnumAttribute(BakedCubeMapQualityLevel::Medium, "Medium")
-                                ->EnumAttribute(BakedCubeMapQualityLevel::High, "High")
-                                ->EnumAttribute(BakedCubeMapQualityLevel::VeryHigh, "Very High")
+                                ->EnumAttribute(CubeMapSpecularQualityLevel::VeryLow, "Very Low")
+                                ->EnumAttribute(CubeMapSpecularQualityLevel::Low, "Low")
+                                ->EnumAttribute(CubeMapSpecularQualityLevel::Medium, "Medium")
+                                ->EnumAttribute(CubeMapSpecularQualityLevel::High, "High")
+                                ->EnumAttribute(CubeMapSpecularQualityLevel::VeryHigh, "Very High")
                             ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath, "Baked Cubemap Path", "Baked Cubemap Path")
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
@@ -110,6 +118,11 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ReflectionProbeComponentConfig::m_showVisualization, "Show Visualization", "Show the reflection probe visualization sphere")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &ReflectionProbeComponentConfig::m_renderExposure, "Exposure", "Exposure to use when rendering meshes with the cubemap")
+                                ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
+                                ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)
+                                ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
+                                ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
                         ;
                 }
             }
@@ -177,7 +190,9 @@ namespace AZ
                     if (notificationType == CubeMapAssetNotificationType::Ready)
                     {
                         // bake is complete, update configuration with the new baked cubemap asset
-                        m_controller.m_configuration.m_bakedCubeMapAsset = { cubeMapAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                        AzToolsFramework::ScopedUndoBatch undoBatch("ReflectionProbe Bake");
+                        m_controller.m_configuration.m_bakedCubeMapAsset = cubeMapAsset;
+                        SetDirty();
 
                         // refresh the currently rendered cubemap
                         m_controller.UpdateCubeMap();
@@ -274,6 +289,13 @@ namespace AZ
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 
+        AZ::u32 EditorReflectionProbeComponent::OnBakeExposureChanged()
+        {
+            m_controller.SetBakeExposure(m_bakeExposure);
+
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
         AZ::u32 EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting()
         {
             // controls specific to baked cubemaps call this to determine their visibility
@@ -290,6 +312,7 @@ namespace AZ
 
         AZ::u32 EditorReflectionProbeComponent::BakeReflectionProbe()
         {
+<<<<<<< HEAD
             if (!m_useBakedCubemap)
             {
                 AZ_Assert(false, "BakeReflectionProbe() called on a Reflection Probe set to use an authored cubemap");
@@ -327,154 +350,36 @@ namespace AZ
             // we need to make sure to use the same source cubemap for each bake
             AZStd::string cubeMapRelativePath = m_controller.m_configuration.m_bakedCubeMapRelativePath;
             AZStd::string cubeMapFullPath;
+=======
+            ReflectionProbeComponentConfig& configuration = m_controller.m_configuration;
+>>>>>>> development
 
-            if (!cubeMapRelativePath.empty())
+            // if the quality level changed we need to generate a new filename
+            if (configuration.m_bakedCubeMapQualityLevel != m_bakedCubeMapQualityLevel)
             {
-                // test to see if the cubemap file is actually there, if it was removed we need to
-                // generate a new filename, otherwise it will cause an error in the asset system
-                AzFramework::StringFunc::Path::Join(projectPath, cubeMapRelativePath.c_str(), cubeMapFullPath, true, true);
-
-                if (!AZ::IO::FileIOBase::GetInstance()->Exists(cubeMapFullPath.c_str()))
-                {
-                    // clear it to force the generation of a new filename
-                    cubeMapRelativePath.clear();
-                }
-
-                // if the quality level changed we need to generate a new filename
-                if (m_controller.m_configuration.m_bakedCubeMapQualityLevel != m_bakedCubeMapQualityLevel)
-                {
-                    cubeMapRelativePath.clear();
-                }
+                configuration.m_bakedCubeMapRelativePath.clear();
             }
 
-            // build a new cubemap path if necessary
-            if (cubeMapRelativePath.empty())
-            {
-                // the file name is a combination of the entity name, a UUID, and the filemask
-                Entity* entity = GetEntity();
-                AZ_Assert(entity, "ReflectionProbe entity is null");
+            AzToolsFramework::ScopedUndoBatch undoBatch("ReflectionProbe Bake");
 
-                AZ::Uuid uuid = AZ::Uuid::CreateRandom();
-                AZStd::string uuidString;
-                uuid.ToString(uuidString);
+            AZ::u32 result = RenderCubeMap(
+                [&](RenderCubeMapCallback callback, AZStd::string& relativePath) { m_controller.BakeReflectionProbe(callback, relativePath); },
+                "Baking Reflection Probe...",
+                GetEntity(),
+                "ReflectionProbes",
+                configuration.m_bakedCubeMapRelativePath,
+                CubeMapCaptureType::Specular,
+                m_bakedCubeMapQualityLevel);
 
-                // determine the filemask suffix from the cubemap quality level setting
-                AZStd::string fileSuffix = BakedCubeMapFileSuffixes[aznumeric_cast<uint32_t>(m_bakedCubeMapQualityLevel)];
-
-                cubeMapRelativePath = "ReflectionProbes/" + entity->GetName() + "_" + uuidString + fileSuffix;
-
-                // replace any invalid filename characters
-                auto invalidCharacters = [](char letter)
-                {
-                    return
-                        letter == ':' || letter == '"' || letter == '\'' ||
-                        letter == '{' || letter == '}' ||
-                        letter == '<' || letter == '>';
-                };
-                AZStd::replace_if(cubeMapRelativePath.begin(), cubeMapRelativePath.end(), invalidCharacters, '_');
-
-                // build the full source path
-                AzFramework::StringFunc::Path::Join(projectPath, cubeMapRelativePath.c_str(), cubeMapFullPath, true, true);
-            }
-
-            // make sure the folder is created
-            AZStd::string reflectionProbeFolder;
-            AzFramework::StringFunc::Path::GetFolderPath(cubeMapFullPath.data(), reflectionProbeFolder);
-            AZ::IO::SystemFile::CreateDir(reflectionProbeFolder.c_str());
-
-            // check out the file in source control                
-            bool checkedOutSuccessfully = false;
-            using ApplicationBus = AzToolsFramework::ToolsApplicationRequestBus;
-            ApplicationBus::BroadcastResult(
-                checkedOutSuccessfully,
-                &ApplicationBus::Events::RequestEditForFileBlocking,
-                cubeMapFullPath.c_str(),
-                "Checking out for edit...",
-                ApplicationBus::Events::RequestEditProgressCallback());
-
-            if (!checkedOutSuccessfully)
-            {
-                AZ_Error("ReflectionProbe", false, "Failed to write \"%s\", source control checkout failed", cubeMapFullPath.c_str());
-            }
-
-            // save the relative source path in the configuration
-            AzToolsFramework::ScopedUndoBatch undoBatch("Cubemap path changed.");
-            m_controller.m_configuration.m_bakedCubeMapRelativePath = cubeMapRelativePath;
+            // update quality level
             m_controller.m_configuration.m_bakedCubeMapQualityLevel = m_bakedCubeMapQualityLevel;
-            SetDirty();
 
             // update UI cubemap path display
-            m_bakedCubeMapRelativePath = cubeMapRelativePath;
+            m_bakedCubeMapRelativePath = configuration.m_bakedCubeMapRelativePath;
 
-            // callback from the EnvironmentCubeMapPass when the cubemap render is complete
-            BuildCubeMapCallback buildCubeMapCallback = [=](uint8_t* const* cubeMapFaceTextureData, const RHI::Format cubeMapTextureFormat)
-            {
-                // write the cubemap data to the .dds file
-                WriteOutputFile(cubeMapFullPath.c_str(), cubeMapFaceTextureData, cubeMapTextureFormat);
-                m_bakeInProgress = false;
-            };
+            SetDirty();
 
-            // initiate the cubemap bake, this will invoke the buildCubeMapCallback when the cubemap data is ready
-            m_bakeInProgress = true;
-            AZStd::string cubeMapRelativeAssetPath = cubeMapRelativePath + ".streamingimage";
-            m_controller.BakeReflectionProbe(buildCubeMapCallback, cubeMapRelativeAssetPath);
-
-            // show a dialog box letting the user know the probe is baking
-            QProgressDialog bakeDialog;
-            bakeDialog.setWindowFlags(bakeDialog.windowFlags() & ~Qt::WindowCloseButtonHint);
-            bakeDialog.setLabelText("Baking Reflection Probe...");
-            bakeDialog.setWindowModality(Qt::WindowModal);
-            bakeDialog.setMaximumSize(QSize(256, 96));
-            bakeDialog.setMinimum(0);
-            bakeDialog.setMaximum(0);
-            bakeDialog.setMinimumDuration(0);
-            bakeDialog.setAutoClose(false);
-            bakeDialog.setCancelButton(nullptr);
-            bakeDialog.show();
-
-            // display until finished or canceled
-            while (m_bakeInProgress)
-            {
-                if (bakeDialog.wasCanceled())
-                {
-                    m_bakeInProgress = false;
-                    break;
-                }
-
-                QApplication::processEvents();
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
-            }
-
-            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-        }
-
-        void EditorReflectionProbeComponent::WriteOutputFile(AZStd::string filePath, uint8_t* const* cubeMapTextureData, const RHI::Format cubeMapTextureFormat)
-        {
-            static const u32 CubeMapFaceSize = 1024;
-            static const u32 NumCubeMapFaces = 6;
-
-            u32 bytesPerTexel = RHI::GetFormatSize(cubeMapTextureFormat);
-            u32 bytesPerCubeMapFace = CubeMapFaceSize * CubeMapFaceSize * bytesPerTexel;
-
-            AZStd::vector<uint8_t> buffer;
-            buffer.resize_no_construct(bytesPerCubeMapFace * NumCubeMapFaces);
-            for (AZ::u32 i = 0; i < NumCubeMapFaces; ++i)
-            {
-                memcpy(buffer.data() + (i * bytesPerCubeMapFace), cubeMapTextureData[i], bytesPerCubeMapFace);
-            }
-
-            DdsFile::DdsFileData ddsFileData;
-            ddsFileData.m_size.m_width = CubeMapFaceSize;
-            ddsFileData.m_size.m_height = CubeMapFaceSize;
-            ddsFileData.m_format = cubeMapTextureFormat;
-            ddsFileData.m_isCubemap = true;
-            ddsFileData.m_buffer = &buffer;
-
-            auto outcome = AZ::DdsFile::WriteFile(filePath, ddsFileData);
-            if (!outcome)
-            {
-                AZ_Warning("WriteDds", false, outcome.GetError().m_message.c_str());
-            }
+            return result;
         }
     } // namespace Render
 } // namespace AZ

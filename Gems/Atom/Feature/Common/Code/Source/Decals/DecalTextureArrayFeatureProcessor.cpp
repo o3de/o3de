@@ -7,14 +7,13 @@
  */
 
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
@@ -26,7 +25,7 @@ namespace AZ
     {
         namespace
         {
-            static AZ::RHI::Size GetTextureSizeFromMaterialAsset(const AZ::RPI::MaterialAsset* materialAsset)
+            static AZ::RHI::Size GetTextureSizeFromMaterialAsset(AZ::RPI::MaterialAsset* materialAsset)
             {
                 for (const auto& elem : materialAsset->GetPropertyValues())
                 {
@@ -257,6 +256,22 @@ namespace AZ
             }
         }
 
+        void DecalTextureArrayFeatureProcessor::SetDecalNormalMapOpacity(const DecalHandle handle, float opacity)
+        {
+            if (handle.IsValid())
+            {
+                m_decalData.GetData(handle.GetIndex()).m_normalMapOpacity = opacity;
+
+                m_deviceBufferNeedsUpdate = true;
+            }
+            else
+            {
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor", false,
+                    "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalOpacity().");
+            }
+        }
+
         void DecalTextureArrayFeatureProcessor::SetDecalSortKey(DecalHandle handle, uint8_t sortKey)
         {
             if (handle.IsValid())
@@ -307,6 +322,7 @@ namespace AZ
             }
 
             const auto decalIndex = handle.GetIndex();
+<<<<<<< HEAD
 
             const bool isValidMaterialBeingUsedCurrently = m_decalData.GetData(decalIndex).m_textureArrayIndex != DecalData::UnusedIndex;
             if (isValidMaterialBeingUsedCurrently)
@@ -328,6 +344,29 @@ namespace AZ
                 return;
             }
 
+=======
+
+            const bool isValidMaterialBeingUsedCurrently = m_decalData.GetData(decalIndex).m_textureArrayIndex != DecalData::UnusedIndex;
+            if (isValidMaterialBeingUsedCurrently)
+            {
+                RemoveMaterialFromDecal(decalIndex);
+            }
+
+            if (!material.IsValid())
+            {
+                return;
+            }
+
+            const auto iter = m_materialToTextureArrayLookupTable.find(material);
+            if (iter != m_materialToTextureArrayLookupTable.end())
+            {
+                // This material is already loaded and registered with this feature processor
+                iter->second.m_useCount++;
+                SetDecalTextureLocation(handle, iter->second.m_location);
+                return;
+            }
+
+>>>>>>> development
             // Material not loaded so queue it up for loading.
             QueueMaterialLoadForDecal(material, handle);
         }
@@ -343,10 +382,17 @@ namespace AZ
 
             decalData.m_textureArrayIndex = DecalData::UnusedIndex;
             decalData.m_textureIndex = DecalData::UnusedIndex;
+<<<<<<< HEAD
 
             m_deviceBufferNeedsUpdate = true;
         }
 
+=======
+
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+>>>>>>> development
         void DecalTextureArrayFeatureProcessor::CacheShaderIndices()
         {
             // The azsl shader should define several texture arrays such as:
@@ -357,7 +403,11 @@ namespace AZ
             // Texture2DArray<float2> m_decalTextureArrayNormalMaps0;
             // Texture2DArray<float2> m_decalTextureArrayNormalMaps1;
             // Texture2DArray<float2> m_decalTextureArrayNormalMaps2;
+<<<<<<< HEAD
             static const AZStd::array<AZStd::string, DecalMapType_Num> ShaderNames = { "m_decalTextureArrayDiffuse",
+=======
+            static constexpr AZStd::array<AZStd::string_view, DecalMapType_Num> ShaderNames = { "m_decalTextureArrayDiffuse",
+>>>>>>> development
                                                                                        "m_decalTextureArrayNormalMaps" };
 
             for (int mapType = 0; mapType < DecalMapType_Num; ++mapType)
@@ -365,7 +415,11 @@ namespace AZ
                 for (int texArrayIdx = 0; texArrayIdx < NumTextureArrays; ++texArrayIdx)
                 {
                     const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
+<<<<<<< HEAD
                     const AZStd::string baseName = ShaderNames[mapType] + AZStd::to_string(texArrayIdx);
+=======
+                    const AZStd::string baseName = AZStd::string(ShaderNames[mapType]) + AZStd::to_string(texArrayIdx);
+>>>>>>> development
 
                     m_decalTextureArrayIndices[texArrayIdx][mapType] = viewSrgLayout->FindShaderInputImageIndex(Name(baseName.c_str()));
                     AZ_Warning(
@@ -376,7 +430,7 @@ namespace AZ
             }
         }
 
-        AZStd::optional<AZ::Render::DecalTextureArrayFeatureProcessor::DecalLocation> DecalTextureArrayFeatureProcessor::AddMaterialToTextureArrays(const AZ::RPI::MaterialAsset* materialAsset)
+        AZStd::optional<AZ::Render::DecalTextureArrayFeatureProcessor::DecalLocation> DecalTextureArrayFeatureProcessor::AddMaterialToTextureArrays(AZ::RPI::MaterialAsset* materialAsset)
         {
             const RHI::Size textureSize = GetTextureSizeFromMaterialAsset(materialAsset);
 
@@ -411,7 +465,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "DecalTextureArrayFeatureProcessor: OnAssetReady");
             const Data::AssetId& assetId = asset->GetId();
             
-            const RPI::MaterialAsset* materialAsset = asset.GetAs<AZ::RPI::MaterialAsset>();
+            RPI::MaterialAsset* materialAsset = asset.GetAs<AZ::RPI::MaterialAsset>();
             const bool validDecalMaterial = materialAsset && DecalTextureArray::IsValidDecalMaterial(*materialAsset);
             if (validDecalMaterial)
             {

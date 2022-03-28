@@ -489,6 +489,21 @@ namespace AzFramework
     //=========================================================================
     void AssetCatalog::EnumerateAssets(BeginAssetEnumerationCB beginCB, AssetEnumerationCB enumerateCB, EndAssetEnumerationCB endCB)
     {
+        using AssetCatalogRequestBusContext = typename AZ::Data::AssetCatalogRequestBus::Context;
+
+        // Setting trackCallstack to true causes the context mutex to attempt to re-lock.
+        // That is being avoided here as the code only wants to unlock the Context mutex if it is in a dispatch.
+        constexpr bool trackCallstack = false;
+        AssetCatalogRequestBusContext* assetCatalogContext = AZ::Data::AssetCatalogRequestBus::GetContext(trackCallstack);
+
+        bool hasAssetCatalogMutex = false;
+        if (assetCatalogContext != nullptr && AZ::Data::AssetCatalogRequestBus::IsInDispatchThisThread(assetCatalogContext))
+        {
+            hasAssetCatalogMutex = true;
+            // Unlock the dispatch mutex for the AssetCatalogRequestBus
+            assetCatalogContext->m_contextMutex.unlock();
+        }
+
         if (beginCB)
         {
             beginCB();
@@ -496,9 +511,13 @@ namespace AzFramework
 
         if (enumerateCB)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
+            // Make sure we don't hold on to any locks during the enumerateCB, so copy the registry info to a local variable
+            // and unlock the registryMutex before calling the callback.
+            m_registryMutex.lock();
+            auto assetIdToInfoCopy = m_registry->m_assetIdToInfo;
+            m_registryMutex.unlock();
 
-            for (auto& it : m_registry->m_assetIdToInfo)
+            for (auto& it : assetIdToInfoCopy)
             {
                 enumerateCB(it.first, it.second);
             }
@@ -507,6 +526,12 @@ namespace AzFramework
         if (endCB)
         {
             endCB();
+        }
+
+        if (hasAssetCatalogMutex)
+        {
+            // Relock the mutex if it was unlocked earlier
+            assetCatalogContext->m_contextMutex.lock();
         }
     }
 
@@ -522,9 +547,11 @@ namespace AzFramework
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
             // Get asset root from application.
+            AZStd::string assetRoot;
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Get(m_assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+
+                settingsRegistry->Get(assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
             }
 
             // Reflect registry for serialization.
@@ -536,7 +563,7 @@ namespace AzFramework
                 AssetRegistry::ReflectSerialize(serializeContext);
             }
 
-            AZ_TracePrintf("AssetCatalog", "Initializing asset catalog with root \"%s\"", m_assetRoot.c_str());
+            AZ_TracePrintf("AssetCatalog", "Initializing asset catalog with root \"%s\"", assetRoot.c_str());
 
             // even though this could be a chunk of memory to allocate and deallocate, this is many times faster and more efficient
             // in terms of memory AND fragmentation than allowing it to perform thousands of reads on physical media.
@@ -565,7 +592,7 @@ namespace AzFramework
 
             if (!bytes.empty())
             {
-                AZStd::shared_ptr < AzFramework::AssetRegistry> prevRegistry;
+                AZStd::shared_ptr<AzFramework::AssetRegistry> prevRegistry;
                 if (!m_initialized)
                 {
                     // First time initialization may have updates already processed which we want to apply
@@ -589,7 +616,6 @@ namespace AzFramework
                 AZ_TracePrintf("AssetCatalog", "Loaded registry containing %u assets.\n", m_registry->m_assetIdToInfo.size());
 
                 // It's currently possible in tools for us to have received updates from AP which were applied before the catalog was ready to load
-                // due to CryPak and CrySystem coming online later than our components
                 if (!m_initialized)
                 {
                     ApplyDeltaCatalog(prevRegistry);
@@ -611,12 +637,13 @@ namespace AzFramework
             // the mutex.  If the listener tries to perform a blocking asset load via GetAsset() / BlockUntilLoadComplete(), the spawned asset
             // thread will make a call to the AssetCatalogRequestBus and block on the held mutex.  This would cause a deadlock, since the listener
             // won't free the mutex until the load is complete.
-            // So instead, queue the notification until the next tick, so that it doesn't occur within the AssetCatalogRequestBus mutex, and also
+            // So instead, queue the notification until after the AssetCatalogRequestBus mutex is unlocked for the current thread, and also
             // so that the entire AssetCatalog initialization is complete.
-            AZ::TickBus::QueueFunction([catalogRegistryString = AZStd::string(catalogRegistryFile)]()
-                {
-                    AssetCatalogEventBus::Broadcast(&AssetCatalogEventBus::Events::OnCatalogLoaded, catalogRegistryString.c_str());
-                });
+            auto OnCatalogLoaded = [catalogRegistryString = AZStd::string(catalogRegistryFile)]()
+            {
+                AssetCatalogEventBus::Broadcast(&AssetCatalogEventBus::Events::OnCatalogLoaded, catalogRegistryString.c_str());
+            };
+            AZ::Data::AssetCatalogRequestBus::QueueFunction(AZStd::move(OnCatalogLoaded));
         }
     }
 
@@ -978,6 +1005,7 @@ namespace AzFramework
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
         m_registry->Clear();
+        m_initialized = false;
     }
 
 
@@ -1185,7 +1213,7 @@ namespace AzFramework
     }
 
 
-    bool AssetCatalog::CreateBundleManifest(const AZStd::string& deltaCatalogPath, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& fileDirectory, int bundleVersion, const AZStd::vector<AZStd::string>& levelDirs)
+    bool AssetCatalog::CreateBundleManifest(const AZStd::string& deltaCatalogPath, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& fileDirectory, int bundleVersion, const AZStd::vector<AZ::IO::Path>& levelDirs)
     {
         if (bundleVersion > AzFramework::AssetBundleManifest::CurrentBundleVersion || bundleVersion < 0)
         {

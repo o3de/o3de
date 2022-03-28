@@ -54,6 +54,7 @@ VSOutput ShadowCatcherVS(VSInput IN)
     DirectionalLightShadow::GetShadowCoords(
         ViewSrg::m_shadowIndexDirectionalLight,
         worldPosition,
+        OUT.m_worldNormal,
         OUT.m_shadowCoords);
     
     return OUT;

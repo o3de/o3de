@@ -10,9 +10,15 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/TickBus.h>
+<<<<<<< HEAD
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioConfig.h>
 #include <EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginOptionsBus.h>
+=======
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioConfig.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/PluginOptionsBus.h>
+>>>>>>> development
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/StandardHeaders.h>

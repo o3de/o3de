@@ -57,9 +57,9 @@ namespace AZ
             // Shadows (only used for supported shapes)
             bool m_enableShadow = false;
             float m_bias = 0.1f;
+            float m_normalShadowBias = 0.0f;
             ShadowmapSize m_shadowmapMaxSize = ShadowmapSize::Size256;
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
-            float m_boundaryWidthInDegrees = 0.25f;
             uint16_t m_filteringSampleCount = 12;
             float m_esmExponent = 87.0f;
 

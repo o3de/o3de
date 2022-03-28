@@ -16,7 +16,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <AzFramework/CommandLine/CommandLine.h>
+#include <AzCore/Settings/CommandLine.h>
 
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
@@ -34,7 +34,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // '...' needs to have
 #include <QProxyStyle>
 AZ_POP_DISABLE_WARNING
 
-#include <AzFramework/StringFunc/StringFunc.h>
 
 #ifndef AZ_PLATFORM_WINDOWS
 int __argc = 0;
@@ -201,8 +200,11 @@ namespace AzToolsFramework
             // enable the built-in stylesheet by default:
             bool enableStyleSheet = true;
 
-            const AzFramework::CommandLine* comp = nullptr;
-            EBUS_EVENT_RESULT(comp, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
+            const AZ::CommandLine* comp = nullptr;
+            AZ::ComponentApplicationBus::Broadcast([&comp](AZ::ComponentApplicationRequests* requests)
+                {
+                    comp = requests->GetAzCommandLine();
+                });
             if (comp != nullptr)
             {
                 if (comp->HasSwitch("nostyle"))
@@ -362,23 +364,11 @@ namespace AzToolsFramework
         // Tick the component app.
         AZ::ComponentApplication* pApp = nullptr;
         EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
-        if (pApp)
+        if (pApp && m_ptrTicker)
         {
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-            static AZStd::chrono::system_clock::time_point lastUpdate = now;
-
-            AZStd::chrono::duration<float> delta = now - lastUpdate;
-            float deltaTime = delta.count();
-
-            lastUpdate = now;
-
-            if (m_ptrTicker)
-            {
-                AZ::SystemTickBus::ExecuteQueuedEvents();
-                AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
-                pApp->Tick(deltaTime);
-            }
-
+            AZ::SystemTickBus::ExecuteQueuedEvents();
+            AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
+            pApp->Tick();
         }
 
         m_bTicking = false;
@@ -552,7 +542,6 @@ namespace AzToolsFramework
         //"Application"
         //  + Open Lua Editor
         //  + Open World Editor
-        //  + Open Driller
         //  + Open Model Viewer
         //  + Preferences...
         //  ------------------------

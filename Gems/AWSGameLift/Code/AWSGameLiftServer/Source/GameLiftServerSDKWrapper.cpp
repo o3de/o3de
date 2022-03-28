@@ -22,9 +22,20 @@ namespace AWSGameLift
         return Aws::GameLift::Server::ActivateGameSession();
     }
 
+    Aws::GameLift::DescribePlayerSessionsOutcome GameLiftServerSDKWrapper::DescribePlayerSessions(
+        const Aws::GameLift::Server::Model::DescribePlayerSessionsRequest& describePlayerSessionsRequest)
+    {
+        return Aws::GameLift::Server::DescribePlayerSessions(describePlayerSessionsRequest);
+    }
+
     Aws::GameLift::Server::InitSDKOutcome GameLiftServerSDKWrapper::InitSDK()
     {
         return Aws::GameLift::Server::InitSDK();
+    }
+
+    Aws::GameLift::GetInstanceCertificateOutcome GameLiftServerSDKWrapper::GetInstanceCertificate()
+    {
+        return Aws::GameLift::Server::GetInstanceCertificate();
     }
 
     Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::ProcessReady(
@@ -69,4 +80,17 @@ namespace AWSGameLift
     {
         return Aws::GameLift::Server::RemovePlayerSession(playerSessionId.c_str());
     }
+
+    Aws::GameLift::StartMatchBackfillOutcome GameLiftServerSDKWrapper::StartMatchBackfill(
+        const Aws::GameLift::Server::Model::StartMatchBackfillRequest& startMatchBackfillRequest)
+    {
+        return Aws::GameLift::Server::StartMatchBackfill(startMatchBackfillRequest);
+    }
+
+    Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::StopMatchBackfill(
+        const Aws::GameLift::Server::Model::StopMatchBackfillRequest& stopMatchBackfillRequest)
+    {
+        return Aws::GameLift::Server::StopMatchBackfill(stopMatchBackfillRequest);
+    }
+
 } // namespace AWSGameLift

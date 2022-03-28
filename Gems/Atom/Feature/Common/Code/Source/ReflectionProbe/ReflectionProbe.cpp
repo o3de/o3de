@@ -7,8 +7,7 @@
  */
 
 #include <ReflectionProbe/ReflectionProbe.h>
-#include <AzCore/Debug/EventTrace.h>
-#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
+#include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -52,6 +51,8 @@ namespace AZ
 
             m_scene = scene;
             m_reflectionRenderData = reflectionRenderData;
+
+            CubeMapRenderer::SetScene(m_scene);
 
             // load visualization sphere model and material
             m_meshFeatureProcessor = m_scene->GetFeatureProcessor<Render::MeshFeatureProcessorInterface>();
@@ -107,30 +108,7 @@ namespace AZ
 
         void ReflectionProbe::Simulate(uint32_t probeIndex)
         {
-            if (m_buildingCubeMap)
-            {
-                Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
-
-                if (m_environmentCubeMapPass->IsFinished())
-                {
-                    // all faces of the cubemap have been rendered, invoke the callback
-                    m_callback(m_environmentCubeMapPass->GetTextureData(), m_environmentCubeMapPass->GetTextureFormat());
-
-                    // remove the pipeline
-                    m_scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);
-                    m_environmentCubeMapPass = nullptr;
-
-                    // restore exposure
-                    sceneSrg->SetConstant(m_iblExposureConstantIndex, m_previousExposure);
-
-                    m_buildingCubeMap = false;
-                }
-                else
-                {
-                    // set exposure to 0.0 while baking the cubemap
-                    sceneSrg->SetConstant(m_iblExposureConstantIndex, 0.0f);
-                }
-            }
+            CubeMapRenderer::Update();
 
             // track if we need to update culling based on changes to the draw packets or Srg
             bool updateCulling = false;
@@ -162,6 +140,7 @@ namespace AZ
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
+                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
                 m_renderOuterSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderOuterSrg->Compile();
 
@@ -172,6 +151,7 @@ namespace AZ
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
+                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
                 m_renderInnerSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderInnerSrg->Compile();
 
@@ -220,6 +200,10 @@ namespace AZ
             }
         }
 
+        void ReflectionProbe::OnRenderEnd()
+        {
+            CubeMapRenderer::CheckAndRemovePipeline();
+        }
 
         void ReflectionProbe::SetTransform(const AZ::Transform& transform)
         {
@@ -266,64 +250,30 @@ namespace AZ
             m_updateSrg = true;
         }
 
-        void ReflectionProbe::BuildCubeMap(BuildCubeMapCallback callback)
+        void ReflectionProbe::Bake(RenderCubeMapCallback callback)
         {
-            AZ_Assert(m_buildingCubeMap == false, "ReflectionProbe::BuildCubeMap called while a cubemap build was already in progress");
-            if (m_buildingCubeMap)
-            {
-                return;
-            }
-
-            m_buildingCubeMap = true;
-            m_callback = callback;
-
-            AZ::RPI::RenderPipelineDescriptor environmentCubeMapPipelineDesc;
-            environmentCubeMapPipelineDesc.m_mainViewTagName = "MainCamera";
-            environmentCubeMapPipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
-            environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_width = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
-            environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_height = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
-
-            // create a unique name for the pipeline
-            AZ::Uuid uuid = AZ::Uuid::CreateRandom();
-            AZStd::string uuidString;
-            uuid.ToString(uuidString);
-            environmentCubeMapPipelineDesc.m_name = AZStd::string::format("EnvironmentCubeMapPipeline_%s", uuidString.c_str());
-            RPI::RenderPipelinePtr environmentCubeMapPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(environmentCubeMapPipelineDesc);
-            m_environmentCubeMapPipelineId = environmentCubeMapPipeline->GetId();
-
-            AZStd::shared_ptr<RPI::EnvironmentCubeMapPassData> passData = AZStd::make_shared<RPI::EnvironmentCubeMapPassData>();
-            passData->m_position = m_transform.GetTranslation();
-
-            RPI::PassDescriptor environmentCubeMapPassDescriptor(Name("EnvironmentCubeMapPass"));
-            environmentCubeMapPassDescriptor.m_passData = passData;
-
-            m_environmentCubeMapPass = RPI::EnvironmentCubeMapPass::Create(environmentCubeMapPassDescriptor);
-            m_environmentCubeMapPass->SetRenderPipeline(environmentCubeMapPipeline.get());
-
-            const RPI::Ptr<RPI::ParentPass>& rootPass = environmentCubeMapPipeline->GetRootPass();
-            rootPass->AddChild(m_environmentCubeMapPass);
-
-            // store the current IBL exposure value
-            Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
-            m_previousExposure = sceneSrg->GetConstant<float>(m_iblExposureConstantIndex);
-
-            m_scene->AddRenderPipeline(environmentCubeMapPipeline);
+            CubeMapRenderer::StartRender(callback, m_transform, m_bakeExposure);
         }
 
         void ReflectionProbe::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
-            // check for an active cubemap build, and that the renderPipeline was created by this probe
-            if (m_environmentCubeMapPass
-                && m_buildingCubeMap
-                && m_environmentCubeMapPipelineId == renderPipeline->GetId())
-            {
-                m_environmentCubeMapPass->SetDefaultView();
-            }
+            CubeMapRenderer::SetDefaultView(renderPipeline);
         }
 
         void ReflectionProbe::ShowVisualization(bool showVisualization)
         {
             m_meshFeatureProcessor->SetVisible(m_visualizationMeshHandle, showVisualization);
+        }
+
+        void ReflectionProbe::SetRenderExposure(float renderExposure)
+        {
+            m_renderExposure = renderExposure;
+            m_updateSrg = true;
+        }
+
+        void ReflectionProbe::SetBakeExposure(float bakeExposure)
+        {
+            m_bakeExposure = bakeExposure;
         }
 
         const RHI::DrawPacket* ReflectionProbe::BuildDrawPacket(

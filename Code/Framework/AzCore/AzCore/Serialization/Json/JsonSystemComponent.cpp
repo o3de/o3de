@@ -22,6 +22,7 @@
 #include <AzCore/Serialization/Json/UnorderedSetSerializer.h>
 #include <AzCore/Serialization/Json/UnsupportedTypesSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/ConfigurableStack.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/tuple.h>
@@ -50,6 +51,8 @@ namespace AZ
 
     void JsonSystemComponent::Reflect(ReflectContext* reflectContext)
     {
+        JsonConfigurableStackSerializer::Reflect(reflectContext);
+
         if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(reflectContext))
         {
             jsonContext->Serializer<JsonBoolSerializer>()->HandlesType<bool>();
@@ -104,6 +107,8 @@ namespace AZ
                 ->HandlesType<AZStd::variant>();
             jsonContext->Serializer<JsonOptionalSerializer>()
                 ->HandlesType<AZStd::optional>();
+            jsonContext->Serializer<JsonBitsetSerializer>()
+                ->HandlesType<AZStd::bitset>();
 
             MathReflect(jsonContext);
         }

@@ -71,7 +71,7 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(
                             AZ::Edit::Attributes::HelpPageURL,
-                            "https://o3de.org/docs/user-guide/components/reference/attachment/")
+                            "https://o3de.org/docs/user-guide/components/reference/animation/attachment/")
                         ->DataElement(0, &EditorAttachmentComponent::m_targetId, "Target entity", "Attach to this entity.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetIdChanged)
                         ->DataElement(

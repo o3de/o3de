@@ -20,10 +20,11 @@ namespace Multiplayer
         ServerToClientConnectionData
         (
             AzNetworking::IConnection* connection,
-            AzNetworking::IConnectionListener& connectionListener,
-            NetworkEntityHandle controlledEntity
+            AzNetworking::IConnectionListener& connectionListener
         );
         ~ServerToClientConnectionData() override;
+
+        void SetControlledEntity(NetworkEntityHandle primaryPlayerEntity);
 
         //! IConnectionData interface
         //! @{
@@ -44,7 +45,11 @@ namespace Multiplayer
 
     private:
         void OnControlledEntityRemove();
+<<<<<<< HEAD
         void OnControlledEntityMigration(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, AzNetworking::ConnectionId connectionId);
+=======
+        void OnControlledEntityMigration(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId);
+>>>>>>> development
         void OnGameplayStarted();
 
         EntityReplicationManager m_entityReplicationManager;

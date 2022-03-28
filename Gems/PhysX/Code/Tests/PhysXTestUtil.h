@@ -63,6 +63,7 @@ namespace PhysX
         AzPhysics::SimulatedBodyEvents::OnTriggerExit::Handler m_onTriggerExitHandler;
     };
 
+<<<<<<< HEAD
 
     //! Dummy component emulating presence of terrain by connecting to TerrainDataRequestBus
     //! PhysX Terrain Component skips activation if there's no terrain present,
@@ -127,4 +128,6 @@ namespace PhysX
         ////////////////////////////////////////////////////////////////////////
     };
 
+=======
+>>>>>>> development
 } // namespace PhysX

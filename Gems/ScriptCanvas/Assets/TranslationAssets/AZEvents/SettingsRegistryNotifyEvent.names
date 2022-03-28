@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "SettingsRegistry Notify Event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "SettingsRegistry Notify Event"
+            },
+            "slots": [
+                {
+                    "base": "Json Path",
+                    "details": {
+                        "name": "Json Path"
+                    }
+                },
+                {
+                    "base": "SettingsRegistry Notify Event",
+                    "details": {
+                        "name": "SettingsRegistry Notify Event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

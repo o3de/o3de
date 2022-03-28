@@ -9,8 +9,7 @@
 #pragma once
 
 #include "SystemComponentFixture.h"
-#include <EMotionFX/Source/AutoRegisteredActor.h>
-
+#include <Integration/Assets/ActorAsset.h>
 
 namespace EMotionFX
 {
@@ -31,7 +30,9 @@ namespace EMotionFX
         AZStd::vector<AZStd::string> GetTestJointNames() const;
 
     protected:
-        AutoRegisteredActor m_actor{};
+        Actor* GetActor() const;
+
+        AZ::Data::Asset<Integration::ActorAsset> m_actorAsset;
         ActorInstance* m_actorInstance = nullptr;
     };
 } // namespace EMotionFX

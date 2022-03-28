@@ -58,13 +58,8 @@ namespace GraphCanvas
         {
             m_connectionType = slotRequests->GetConnectionType();
 
-            TranslationKeyedString slotName = slotRequests->GetTranslationKeyedName();
-
-            m_slotText->SetLabel(slotName);
-
-            TranslationKeyedString toolTip = slotRequests->GetTranslationKeyedTooltip();
-
-            OnTooltipChanged(toolTip);
+            m_slotText->SetLabel(slotRequests->GetName());
+            OnTooltipChanged(slotRequests->GetTooltip());
 
             const SlotConfiguration& configuration = slotRequests->GetSlotConfiguration();
 
@@ -88,17 +83,15 @@ namespace GraphCanvas
         OnStyleChanged();
     }
 
-    void ExecutionSlotLayout::OnNameChanged(const TranslationKeyedString& name)
+    void ExecutionSlotLayout::OnNameChanged(const AZStd::string& name)
     {
         m_slotText->SetLabel(name);
     }
 
-    void ExecutionSlotLayout::OnTooltipChanged(const TranslationKeyedString& tooltip)
+    void ExecutionSlotLayout::OnTooltipChanged(const AZStd::string& tooltip)
     {
-        AZStd::string displayText = tooltip.GetDisplayString();
-
-        m_slotConnectionPin->setToolTip(displayText.c_str());
-        m_slotText->setToolTip(displayText.c_str());
+        m_slotConnectionPin->setToolTip(tooltip.c_str());
+        m_slotText->setToolTip(tooltip.c_str());
     }
 
     void ExecutionSlotLayout::OnStyleChanged()
@@ -132,7 +125,7 @@ namespace GraphCanvas
         if (!textDecoration.empty())
         {
             m_textDecoration = new GraphCanvasLabel();
-            m_textDecoration->SetLabel(textDecoration, "", "");
+            m_textDecoration->SetLabel(textDecoration);
             m_textDecoration->setToolTip(toolTip.c_str());
 
             ApplyTextStyle(m_textDecoration);

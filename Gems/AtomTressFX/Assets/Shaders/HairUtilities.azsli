@@ -34,9 +34,12 @@
 
 #pragma once
 
+<<<<<<< HEAD
 #include <viewsrg.srgi>
 
 
+=======
+>>>>>>> development
 #define SHORTCUT_MIN_ALPHA 0.02
 
 #define TRESSFX_FLOAT_EPSILON 1e-7
@@ -52,6 +55,7 @@ float4 MatrixMult(float4x4 m, float4 v)
     return mul(m, v);
 }
 
+<<<<<<< HEAD
 // Given the depth buffer depth of the current pixel and the fragment XY position, 
 // reconstruct the NDC.
 // screenCoords - from 0.. dimension of the screen of the current pixel
@@ -86,6 +90,8 @@ float3 ScreenPosToWorldPos(
     return positionWS.xyz;
 }
 
+=======
+>>>>>>> development
 // Pack a float4 into an uint
 uint PackFloat4IntoUint(float4 vValue)
 {

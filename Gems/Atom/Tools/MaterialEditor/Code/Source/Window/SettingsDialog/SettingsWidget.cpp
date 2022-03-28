@@ -6,33 +6,28 @@
  *
  */
 
-#include <Window/SettingsDialog/SettingsWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
+#include <Window/SettingsDialog/SettingsWidget.h>
 
 namespace MaterialEditor
 {
     SettingsWidget::SettingsWidget(QWidget* parent)
         : AtomToolsFramework::InspectorWidget(parent)
     {
-        m_documentSettings =
-            AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ_CRC_CE("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
-        m_documentSystemSettings = AZ::UserSettings::CreateFind<AtomToolsFramework::AtomToolsDocumentSystemSettings>(
-            AZ_CRC_CE("AtomToolsDocumentSystemSettings"), AZ::UserSettings::CT_GLOBAL);
+        SetGroupSettingsPrefix("/O3DE/Atom/MaterialEditor/SettingsWidget");
     }
 
     SettingsWidget::~SettingsWidget()
     {
-        AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
     }
 
     void SettingsWidget::Populate()
     {
         AddGroupsBegin();
-        AddDocumentSystemSettingsGroup();
-        AddDocumentSettingsGroup();
         AddGroupsEnd();
     }
 
+<<<<<<< HEAD
     void SettingsWidget::AddDocumentSettingsGroup()
     {
         const AZStd::string groupName = "documentSettings";
@@ -59,25 +54,11 @@ namespace MaterialEditor
                 m_documentSystemSettings.get(), nullptr, m_documentSystemSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
     }
 
+=======
+>>>>>>> development
     void SettingsWidget::Reset()
     {
-        AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
-    }
-
-    void SettingsWidget::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)
-    {
-        AZ_UNUSED(pNode);
-    }
-
-    void SettingsWidget::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
-    {
-        AZ_UNUSED(pNode);
-    }
-
-    void SettingsWidget::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)
-    {
-        AZ_UNUSED(pNode);
     }
 } // namespace MaterialEditor
 

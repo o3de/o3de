@@ -1,25 +1,15 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/floor_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/floor_1k_basecolor.png"
+            "textureMap": "../Textures/floor_1k_basecolor.png"
         },
         "clearCoat": {
-            "enable": true,
-            "influenceMap": "Textures/floor_1k_ao.png",
-            "normalMap": "Textures/floor_1k_normal.png",
+            "influenceMap": "../Textures/floor_1k_ao.png",
+            "normalMap": "../Textures/floor_1k_normal.png",
             "roughness": 0.25
         },
         "general": {
@@ -34,20 +24,21 @@
             ]
         },
         "normal": {
-            "textureMap": "Textures/floor_1k_normal.png"
+            "textureMap": "../Textures/floor_1k_normal.png"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/floor_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "parallax": {
-            "algorithm": "POM",
-            "factor": 0.012000000104308129,
+            "factor": 0.012000000104308128,
             "pdo": true,
-            "textureMap": "Textures/floor_1k_height.png",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/floor_1k_roughness.png"
+            "textureMap": "../Textures/floor_1k_roughness.png"
         }
     }
 }

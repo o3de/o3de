@@ -35,7 +35,6 @@ namespace AssetProcessor
     const char* const AutoFailReasonKey = "failreason"; // the key to look in for auto-fail reason.
     const char* const AutoFailLogFile = "faillogfile"; // if this is provided, this is a complete log of the failure and will be added after the failreason.
     const char* const AutoFailOmitFromDatabaseKey = "failreason_omitFromDatabase"; // if set in your job info hash, your job will not be tracked by the database.
-    const char* const JobWarningKey = "ap_warningmessage"; // key used to store a warning message to be shown in the job log
     const char* const PlaceHolderFileName = "$missing_dependency$"; // Used as a placeholder in the dependency system, such as when a source file is deleted and a previously met dependency is broken.
     const unsigned int g_RetriesForFenceFile = 5; // number of retries for fencing
     const int RetriesForJobNetworkError = 1; // number of times to retry a job when a network error is determined to have caused a job failure
@@ -85,7 +84,7 @@ namespace AssetProcessor
 
     enum AssetCatalogStatus
     {
-        RequiresSaving, 
+        RequiresSaving,
         UpToDate
     };
 
@@ -213,15 +212,17 @@ namespace AssetProcessor
 
         bool m_critical = false;
         int m_priority = -1;
-        // indicates whether we need to check the server first for the outputs of this job 
+        // indicates whether we need to check the server first for the outputs of this job
         // before we start processing locally
         bool m_checkServer = false;
-         
-        // Indicates whether this job needs to be processed irrespective of whether its fingerprint got modified or not. 
+
+        // Indicates whether this job needs to be processed irrespective of whether its fingerprint got modified or not.
         bool m_autoProcessJob = false;
 
         AssetBuilderSDK::AssetBuilderDesc   m_assetBuilderDesc;
         AssetBuilderSDK::JobParameterMap    m_jobParam;
+
+        AZStd::vector<AZStd::string> m_warnings;
 
         // autoFail makes jobs which are added to the list and will automatically fail, and are used
         // to make sure that a "failure" shows up on the list so that the user can click to inspect the job and see why
@@ -251,9 +252,9 @@ namespace AssetProcessor
 
         JobDetails() = default;
     };
- 
-    //! JobDesc struct is used for identifying jobs that need to be processed again 
-    //! because of job dependency declared on them by other jobs  
+
+    //! JobDesc struct is used for identifying jobs that need to be processed again
+    //! because of job dependency declared on them by other jobs
     struct JobDesc
     {
         AZStd::string m_databaseSourceName;
@@ -283,7 +284,7 @@ namespace AssetProcessor
         }
     };
 
-    //! JobIndentifier is an internal structure that store all the data that can uniquely identify a job 
+    //! JobIndentifier is an internal structure that store all the data that can uniquely identify a job
     struct JobIndentifier
     {
         JobDesc m_jobDesc;

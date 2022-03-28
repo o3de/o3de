@@ -12,6 +12,7 @@
 #include <AzCore/JSON/document.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 namespace AZ
 {
@@ -21,21 +22,24 @@ namespace AZ
         {
             // Declarations...
 
-            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& sourcePath, uint32_t productSubId);
+            // Note that these functions default to TraceLevel::Error to preserve legacy behavior of these APIs. It would be nice to make the default match
+            // RPI.Reflect/Asset/AssetUtils.h which is TraceLevel::Warning, but we are close to a release so it isn't worth the risk at this time.
 
-            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId);
+            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& sourcePath, uint32_t productSubId, TraceLevel reporting = TraceLevel::Error);
 
-            template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& sourcePath, uint32_t productSubId = 0);
-
-            template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId = 0);
+            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId, TraceLevel reporting = TraceLevel::Error);
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, const char* sourcePathForDebug);
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& sourcePath, uint32_t productSubId = 0, TraceLevel reporting = TraceLevel::Error);
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId);
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId = 0, TraceLevel reporting = TraceLevel::Error);
+
+            template<typename AssetDataT>
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, const char* sourcePathForDebug, TraceLevel reporting = TraceLevel::Error);
+
+            template<typename AssetDataT>
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, TraceLevel reporting = TraceLevel::Error);
 
             //! Attempts to resolve the full path to a product asset given its ID
             AZStd::string GetProductPathByAssetId(const AZ::Data::AssetId& assetId);
@@ -62,15 +66,20 @@ namespace AZ
             //! @return the list of possible paths, ordered from highest priority to lowest priority
             AZStd::vector<AZStd::string> GetPossibleDepenencyPaths(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
 
+            //! Takes an arbitrary string and replaces some characters to make it a valid filename. The result will be compatible with AzQtComponents::FileDialog.
+            //! Ex. SanitizeFileName("Left=>Right.txt") == "Left_Right.txt"
+            //! Ex. SanitizeFileName("Material::Red#1") == "Material_Red_1"
+            AZStd::string SanitizeFileName(AZStd::string filename);
+
             // Definitions...
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& sourcePath, uint32_t productSubId)
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& sourcePath, uint32_t productSubId, TraceLevel reporting)
             {
-                auto assetId = MakeAssetId(sourcePath, productSubId);
+                auto assetId = MakeAssetId(sourcePath, productSubId, reporting);
                 if (assetId.IsSuccess())
                 {
-                    return LoadAsset<AssetDataT>(assetId.GetValue(), sourcePath.c_str());
+                    return LoadAsset<AssetDataT>(assetId.GetValue(), sourcePath.c_str(), reporting);
                 }
                 else
                 {
@@ -79,20 +88,20 @@ namespace AZ
             }
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId)
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId, TraceLevel reporting)
             {
                 AZStd::string resolvedPath = ResolvePathReference(originatingSourcePath, referencedSourceFilePath);
-                return LoadAsset<AssetDataT>(resolvedPath, productSubId);
+                return LoadAsset<AssetDataT>(resolvedPath, productSubId, reporting);
             }
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId)
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, TraceLevel reporting)
             {
-                return LoadAsset<AssetDataT>(assetId, nullptr);
+                return LoadAsset<AssetDataT>(assetId, nullptr, reporting);
             }
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, [[maybe_unused]] const char* sourcePathForDebug)
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, [[maybe_unused]] const char* sourcePathForDebug, TraceLevel reporting)
             {
                 if (nullptr == AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@"))
                 {
@@ -111,11 +120,11 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Error("AssetUtils", false, "Could not load %s [Source='%s' Cache='%s' AssetID=%s] ",
+                    AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not load %s [Source='%s' Cache='%s' AssetID=%s] ",
                         AzTypeInfo<AssetDataT>::Name(),
                         sourcePathForDebug ? sourcePathForDebug : "<unknown>",
                         asset.GetHint().empty() ? "<unknown>" : asset.GetHint().c_str(),
-                        assetId.ToString<AZStd::string>().c_str());
+                        assetId.ToString<AZStd::string>().c_str()).c_str());
 
                     return AZ::Failure();
                 }

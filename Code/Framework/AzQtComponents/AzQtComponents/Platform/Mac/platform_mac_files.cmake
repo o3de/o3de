@@ -12,4 +12,7 @@ set(FILES
     ../../Utilities/QtWindowUtilities_mac.mm
     ../../Utilities/ScreenGrabber_mac.mm
     ../../../Platform/Mac/AzQtComponents/Components/StyledDockWidget_Mac.cpp
+    ../../../Platform/Mac/AzQtComponents/Utilities/DesktopUtilities_Mac.cpp
+    ../../../Platform/Mac/AzQtComponents/AzQtComponents_Traits_Mac.h
+    ../../../Platform/Mac/AzQtComponents/AzQtComponents_Traits_Platform.h
 )

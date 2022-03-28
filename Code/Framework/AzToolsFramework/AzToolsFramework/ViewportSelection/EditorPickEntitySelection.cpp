@@ -17,7 +17,7 @@ namespace AzToolsFramework
     AZ_CLASS_ALLOCATOR_IMPL(EditorPickEntitySelection, AZ::SystemAllocator, 0)
 
     EditorPickEntitySelection::EditorPickEntitySelection(
-        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+        const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
         : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
         , m_viewportEditorModeTracker(viewportEditorModeTracker)
     {
@@ -80,7 +80,7 @@ namespace AzToolsFramework
 
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
-        m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
+        m_cachedEntityIdUnderCursor = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction).ContainerAncestorEntityId();
 
         // when left clicking, if we successfully clicked an entity, assign that
         // to the entity field selected in the entity inspector (RPE)

@@ -5,7 +5,9 @@
     // DrawListTag. If your pipeline doesn't have a "lowEndForward" DrawListTag, no draw items
     // for this shader will be created.
 
-    "Source" : "./StandardPBR_LowEndForward.azsl",
+    "Source" : "./StandardPBR_ForwardPass.azsl",
+
+    "Definitions": ["QUALITY_LOW_END=1"],
 
     "DepthStencilState" :
     {
@@ -34,10 +36,6 @@
                 "PassOp" : "Replace"
             }
         }
-    },
-
-    "CompilerHints" : { 
-        "DisableOptimizations" : false
     },
 
     "ProgramSettings":

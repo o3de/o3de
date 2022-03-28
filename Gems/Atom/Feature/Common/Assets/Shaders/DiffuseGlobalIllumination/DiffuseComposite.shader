@@ -1,5 +1,5 @@
 {
-    "Source" : "DiffuseComposite",
+    "Source" : "DiffuseComposite.azsl",
 
     "RasterState" :
     {
@@ -58,8 +58,9 @@
     [
         {
             "Name": "NoMSAA",
-            "PlusArguments": "--no-ms",
-            "MinusArguments": ""
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            }
         }
     ]
 }

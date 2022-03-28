@@ -18,14 +18,12 @@
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <CubeMapCapture/CubeMapRenderer.h>
 
 namespace AZ
 {
     namespace Render
     {
-        class ReflectionProbeFeatureProcessor;
-        using BuildCubeMapCallback = AZStd::function<void(uint8_t* const* cubeMapTextureData, const RHI::Format cubeMapTextureFormat)>;
-
         // shared data for rendering reflections, loaded and stored by the ReflectionProbeFeatureProcessor and passed to all probes
         struct ReflectionRenderData
         {
@@ -61,12 +59,14 @@ namespace AZ
             RHI::ShaderInputNameIndex m_outerObbHalfLengthsRenderConstantIndex = "m_outerObbHalfLengths";
             RHI::ShaderInputNameIndex m_innerObbHalfLengthsRenderConstantIndex = "m_innerObbHalfLengths";
             RHI::ShaderInputNameIndex m_useParallaxCorrectionRenderConstantIndex = "m_useParallaxCorrection";
+            RHI::ShaderInputNameIndex m_exposureConstantIndex = "m_exposure";
             RHI::ShaderInputNameIndex m_reflectionCubeMapRenderImageIndex = "m_reflectionCubeMap";
         };
 
         // ReflectionProbe manages all aspects of a single probe, including rendering, visualization, and cubemap generation
-        class ReflectionProbe final :
-            public AZ::Data::AssetBus::MultiHandler
+        class ReflectionProbe final
+            : public AZ::Data::AssetBus::MultiHandler
+            , private CubeMapRenderer
         {
         public:
             ReflectionProbe() = default;
@@ -74,6 +74,7 @@ namespace AZ
 
             void Init(RPI::Scene* scene, ReflectionRenderData* reflectionRenderData);
             void Simulate(uint32_t probeIndex);
+            void OnRenderEnd();
 
             const Vector3& GetPosition() const { return m_transform.GetTranslation(); }
             const AZ::Transform& GetTransform() const { return m_transform; }
@@ -96,15 +97,22 @@ namespace AZ
             bool GetUseParallaxCorrection() const { return m_useParallaxCorrection; }
             void SetUseParallaxCorrection(bool useParallaxCorrection) { m_useParallaxCorrection = useParallaxCorrection; }
 
-            // initiates the cubemap bake and invokes the callback when all faces of the cubemap are rendered
-            void BuildCubeMap(BuildCubeMapCallback callback);
-            bool IsBuildingCubeMap() { return m_buildingCubeMap; }
+            // initiates the reflection probe bake and invokes the callback when the cubemap is finished rendering
+            void Bake(RenderCubeMapCallback callback);
 
             // called by the feature processor so the probe can set the default view for the pipeline
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline);
 
             // enables or disables rendering of the visualization sphere
             void ShowVisualization(bool showVisualization);
+
+            // the exposure to use when rendering meshes with this probe's cubemap
+            void SetRenderExposure(float renderExposure);
+            float GetRenderExposure() const { return m_renderExposure; }
+
+            // the exposure to use when baking the probe cubemap
+            void SetBakeExposure(float bakeExposure);
+            float GetBakeExposure() const { return m_bakeExposure; }
 
         private:
 
@@ -157,6 +165,8 @@ namespace AZ
             RHI::ConstPtr<RHI::DrawPacket> m_blendWeightDrawPacket;
             RHI::ConstPtr<RHI::DrawPacket> m_renderOuterDrawPacket;
             RHI::ConstPtr<RHI::DrawPacket> m_renderInnerDrawPacket;
+            float m_renderExposure = 0.0f;
+            float m_bakeExposure = 0.0f;
             bool m_updateSrg = false;
 
             const RHI::DrawItemSortKey InvalidSortKey = static_cast<RHI::DrawItemSortKey>(-1);
@@ -164,14 +174,6 @@ namespace AZ
 
             // culling
             RPI::Cullable m_cullable;
-
-            // probe baking
-            RPI::Ptr<RPI::EnvironmentCubeMapPass> m_environmentCubeMapPass = nullptr;
-            RPI::RenderPipelineId m_environmentCubeMapPipelineId;
-            BuildCubeMapCallback m_callback;
-            RHI::ShaderInputNameIndex m_iblExposureConstantIndex = "m_iblExposure";
-            float m_previousExposure = 0.0f;
-            bool m_buildingCubeMap = false;
         };
 
     } // namespace Render

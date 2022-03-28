@@ -33,12 +33,20 @@ namespace AZ
             ID3D12DeviceX* dx12Device = device.GetDevice();
 
             m_copyQueue = CommandQueue::Create();
-            
+
+            // The async upload queue should always use the primary copy queue,
+            // but because this change is being made in the stabilization branch
+            // we will put it behind a define out of an abundance of caution, and
+            // change it to always do this once the change gets back to development.
+        #if defined(AZ_DX12_USE_PRIMARY_COPY_QUEUE_FOR_ASYNC_UPLOAD_QUEUE)
+            m_copyQueue = &device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
+        #else
             // Make a secondary Copy queue, the primary queue is owned by the CommandQueueContext
             CommandQueueDescriptor commandQueueDesc;
             commandQueueDesc.m_hardwareQueueClass = RHI::HardwareQueueClass::Copy;
             commandQueueDesc.m_hardwareQueueSubclass = HardwareQueueSubclass::Secondary;
             m_copyQueue->Init(device, commandQueueDesc);
+        #endif // defined(AZ_DX12_ASYNC_UPLOAD_QUEUE_USE_PRIMARY_COPY_QUEUE)
             m_uploadFence.Init(dx12Device, RHI::FenceState::Signaled);
 
             for (size_t i = 0; i < descriptor.m_frameCount; ++i)
@@ -66,6 +74,7 @@ namespace AZ
 
                 
                 Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+<<<<<<< HEAD
                 AssertSuccess(dx12Device->CreateCommandAllocator(
                     D3D12_COMMAND_LIST_TYPE_COPY,
                     IID_GRAPHICS_PPV_ARGS(commandAllocator.GetAddressOf())));
@@ -81,6 +90,23 @@ namespace AZ
 
                 framePacket.m_commandList = commandList.Get();
                 AssertSuccess(framePacket.m_commandList->Close());
+=======
+                device.AssertSuccess(dx12Device->CreateCommandAllocator(
+                    D3D12_COMMAND_LIST_TYPE_COPY,
+                    IID_GRAPHICS_PPV_ARGS(commandAllocator.GetAddressOf())));
+                framePacket.m_commandAllocator = commandAllocator.Get();
+
+                Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+                device.AssertSuccess(dx12Device->CreateCommandList(
+                    0,
+                    D3D12_COMMAND_LIST_TYPE_COPY,
+                    framePacket.m_commandAllocator.get(),
+                    nullptr,
+                    IID_GRAPHICS_PPV_ARGS(commandList.GetAddressOf())));
+
+                framePacket.m_commandList = commandList.Get();
+                device.AssertSuccess(framePacket.m_commandList->Close());
+>>>>>>> development
             }
         }
 

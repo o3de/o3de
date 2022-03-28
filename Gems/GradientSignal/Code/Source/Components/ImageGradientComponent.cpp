@@ -6,7 +6,9 @@
  *
  */
 
-#include "ImageGradientComponent.h"
+#include <GradientSignal/Components/ImageGradientComponent.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/Profiler.h>
@@ -18,16 +20,146 @@
 
 namespace GradientSignal
 {
+    AZ::JsonSerializationResult::Result JsonImageGradientConfigSerializer::Load(
+        void* outputValue, [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context)
+    {
+        // We can distinguish between version 1 and 2 by the presence of the "ImageAsset" field,
+        // which is only in version 1.
+        // For version 2, we don't need to do any special processing, so just let the base class
+        // load the JSON if we don't find the "ImageAsset" field.
+        rapidjson::Value::ConstMemberIterator itr = inputValue.FindMember("ImageAsset");
+        if (itr == inputValue.MemberEnd())
+        {
+            return AZ::BaseJsonSerializer::Load(outputValue, outputValueTypeId, inputValue, context);
+        }
+
+        namespace JSR = AZ::JsonSerializationResult;
+
+        auto configInstance = reinterpret_cast<ImageGradientConfig*>(outputValue);
+        AZ_Assert(configInstance, "Output value for JsonImageGradientConfigSerializer can't be null.");
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+
+        result.Combine(ContinueLoadingFromJsonObjectField(
+            &configInstance->m_tilingX, azrtti_typeid<decltype(configInstance->m_tilingX)>(), inputValue, "TilingX", context));
+
+        result.Combine(ContinueLoadingFromJsonObjectField(
+            &configInstance->m_tilingY, azrtti_typeid<decltype(configInstance->m_tilingY)>(), inputValue, "TilingY", context));
+
+        // Version 1 stored a custom GradientSignal::ImageAsset as the image asset.
+        // In Version 2, we changed the image asset to use the generic AZ::RPI::StreamingImageAsset,
+        // so they are both AZ::Data::Asset but reference different types.
+        // Using the assetHint, which will be something like "my_test_image.gradimage",
+        // we need to find the valid streaming image asset product from the same source,
+        // which will be something like "my_test_image.png.streamingimage"
+        AZStd::string assetHint;
+        AZ::Data::AssetId fixedAssetId;
+        auto it = itr->value.FindMember("assetHint");
+        if (it != itr->value.MemberEnd())
+        {
+            AZ::ScopedContextPath subPath(context, "assetHint");
+            result.Combine(ContinueLoading(&assetHint, azrtti_typeid<AZStd::string>(), it->value, context));
+
+            if (assetHint.ends_with(".gradimage"))
+            {
+                // We don't know what image format the original source was, so we need to loop through
+                // all the supported image extensions to check if they have a valid corresponding
+                // streaming image asset
+                for (auto& supportedImageExtension : ImageProcessingAtom::s_SupportedImageExtensions)
+                {
+                    AZStd::string imageExtension(supportedImageExtension);
+
+                    // The image extensions are stored with a wildcard (e.g. *.png) so we need to strip that off first
+                    AZ::StringFunc::Replace(imageExtension, "*", "");
+
+                    // Form potential streaming image path (e.g. my_test_image.png.streamingimage)
+                    AZStd::string potentialStreamingImagePath(assetHint);
+                    AZ::StringFunc::Replace(potentialStreamingImagePath, ".gradimage", "");
+                    potentialStreamingImagePath += imageExtension + ".streamingimage";
+
+                    // Check if there is a valid streaming image asset for this path
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(fixedAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, potentialStreamingImagePath.c_str(), azrtti_typeid<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(), false);
+                    if (fixedAssetId.IsValid())
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Replace the old gradimage with new AssetId for streaming image asset
+        if (fixedAssetId.IsValid())
+        {
+            configInstance->m_imageAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::StreamingImageAsset>(fixedAssetId, AZ::Data::AssetLoadBehavior::QueueLoad);
+        }
+
+        return context.Report(result,
+            result.GetProcessing() != JSR::Processing::Halted ?
+            "Successfully loaded ImageGradientConfig information." :
+            "Failed to load ImageGradientConfig information.");
+    }
+
+    AZ_CLASS_ALLOCATOR_IMPL(JsonImageGradientConfigSerializer, AZ::SystemAllocator, 0);
+
+    AZStd::vector<AZ::Edit::EnumConstant<ChannelToUse>> SupportedChannelOptions()
+    {
+        AZStd::vector<AZ::Edit::EnumConstant<ChannelToUse>> options;
+
+        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Red, "Red"));
+        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Green, "Green"));
+        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Blue, "Blue"));
+        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Alpha, "Alpha"));
+        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Terrarium, "Terrarium"));
+
+        return options;
+    }
+
+    AZStd::vector<AZ::Edit::EnumConstant<CustomScaleType>> SupportedScaleOptions()
+    {
+        AZStd::vector<AZ::Edit::EnumConstant<CustomScaleType>> options;
+
+        options.push_back(AZ::Edit::EnumConstant<CustomScaleType>(CustomScaleType::None, "None"));
+        options.push_back(AZ::Edit::EnumConstant<CustomScaleType>(CustomScaleType::Auto, "Auto"));
+        options.push_back(AZ::Edit::EnumConstant<CustomScaleType>(CustomScaleType::Manual, "Manual"));
+
+        return options;
+    }
+
+    bool DoesFormatSupportTerrarium(AZ::RHI::Format format)
+    {
+        // The terrarium type is only supported by 8-bit formats that have
+        // at least RGB
+        switch (format)
+        {
+        case AZ::RHI::Format::R8G8B8A8_UNORM:
+        case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
+            return true;
+        }
+
+        return false;
+    }
+
     void ImageGradientConfig::Reflect(AZ::ReflectContext* context)
     {
+        if (auto jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<JsonImageGradientConfigSerializer>()->HandlesType<ImageGradientConfig>();
+        }
+
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
             serialize->Class<ImageGradientConfig, AZ::ComponentConfig>()
-                ->Version(1)
-                ->Field("ImageAsset", &ImageGradientConfig::m_imageAsset)
+                ->Version(3)
                 ->Field("TilingX", &ImageGradientConfig::m_tilingX)
                 ->Field("TilingY", &ImageGradientConfig::m_tilingY)
+                ->Field("StreamingImageAsset", &ImageGradientConfig::m_imageAsset)
+                ->Field("AdvancedMode", &ImageGradientConfig::m_advancedMode)
+                ->Field("ChannelToUse", &ImageGradientConfig::m_channelToUse)
+                ->Field("CustomScale", &ImageGradientConfig::m_customScaleType)
+                ->Field("ScaleRangeMin", &ImageGradientConfig::m_scaleRangeMin)
+                ->Field("ScaleRangeMax", &ImageGradientConfig::m_scaleRangeMax)
                 ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -39,6 +171,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &ImageGradientConfig::m_imageAsset, "Image Asset", "Image asset whose values will be mapped as gradient output.")
+                    ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("GradientSignalStreamingImageAsset"))
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_tilingX, "Tiling X", "Number of times to tile horizontally.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
@@ -51,6 +184,24 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
+
+                    ->GroupElementToggle("Advanced", &ImageGradientConfig::m_advancedMode)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse, "Channel To Use", "The channel to use from the image.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::EnumValues, &SupportedChannelOptions)
+
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_customScaleType, "Custom Scale", "Choose a type of scaling to be applied to the image data.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->Attribute(AZ::Edit::Attributes::EnumValues, &SupportedScaleOptions)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMin, "Range Minimum", "The minimum range each value from the image data is scaled against.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMax, "Range Maximum", "The maximum range each value from the image data is scaled against.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
                     ;
             }
         }
@@ -64,6 +215,16 @@ namespace GradientSignal
                 ->Property("tilingY", BehaviorValueProperty(&ImageGradientConfig::m_tilingY))
                 ;
         }
+    }
+
+    bool ImageGradientConfig::IsAdvancedModeReadOnly() const
+    {
+        return !m_advancedMode;
+    }
+
+    AZ::Crc32 ImageGradientConfig::GetManualScaleVisibility() const
+    {
+        return (m_customScaleType == CustomScaleType::Manual) ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     void ImageGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -102,6 +263,8 @@ namespace GradientSignal
 
             behaviorContext->EBus<ImageGradientRequestBus>("ImageGradientRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "vegetation")
                 ->Event("GetImageAssetPath", &ImageGradientRequestBus::Events::GetImageAssetPath)
                 ->Event("SetImageAssetPath", &ImageGradientRequestBus::Events::SetImageAssetPath)
                 ->VirtualProperty("ImageAssetPath", "GetImageAssetPath", "SetImageAssetPath")
@@ -127,16 +290,238 @@ namespace GradientSignal
         m_dependencyMonitor.ConnectDependency(m_configuration.m_imageAsset.GetId());
     }
 
+    void ImageGradientComponent::GetSubImageData()
+    {
+        if (!m_configuration.m_imageAsset || !m_configuration.m_imageAsset.IsReady())
+        {
+            return;
+        }
+
+        // If we have loaded in an old image asset with an unsupported pixel format,
+        // don't try to access the image data because there will be spam of asserts,
+        // so just log an error message and bail out
+        AZ::RHI::Format format = m_configuration.m_imageAsset->GetImageDescriptor().m_format;
+        bool isFormatSupported = AZ::RPI::IsImageDataPixelAPISupported(format);
+        if (!isFormatSupported)
+        {
+            AZ_Error("GradientSignal", false, "Image asset (%s) has an unsupported pixel format: %s",
+                m_configuration.m_imageAsset.GetHint().c_str(), AZ::RHI::ToString(format));
+            return;
+        }
+
+        // Prevent loading of the image data if an invalid advanced configuration
+        // was specified by the user
+        if (m_configuration.m_advancedMode)
+        {
+            const auto numComponents = AZ::RHI::GetFormatComponentCount(format);
+            const AZ::u8 channel = aznumeric_cast<AZ::u8>(m_configuration.m_channelToUse);
+            if (m_configuration.m_channelToUse == ChannelToUse::Terrarium)
+            {
+                if (!DoesFormatSupportTerrarium(format))
+                {
+                    AZ_Error("GradientSignal", false, "Unable to interpret image as Terrarium because image asset (%s) has pixel format (%s), which only supports %d channels",
+                        m_configuration.m_imageAsset.GetHint().c_str(), AZ::RHI::ToString(format), numComponents);
+                    return;
+                }
+            }
+            else if (channel >= numComponents)
+            {
+                const auto channelOptions = SupportedChannelOptions();
+                AZ_Error("GradientSignal", false, "Unable to use channel (%s) because image asset (%s) has pixel format (%s), which only supports %d channels",
+                    channelOptions[channel].m_description.c_str(), m_configuration.m_imageAsset.GetHint().c_str(), AZ::RHI::ToString(format), numComponents);
+                return;
+            }
+
+            m_currentChannel = m_configuration.m_channelToUse;
+
+            // Calculate the multiplier and offset based on our custom scale type
+            switch (m_configuration.m_customScaleType)
+            {
+            case CustomScaleType::Auto:
+                SetupAutoScaleMultiplierAndOffset();
+                break;
+
+            case CustomScaleType::Manual:
+                SetupManualScaleMultiplierAndOffset();
+                break;
+
+            case CustomScaleType::None:
+            default:
+                SetupDefaultMultiplierAndOffset();
+                break;
+            }
+        }
+        else
+        {
+            m_currentChannel = ChannelToUse::Red;
+            SetupDefaultMultiplierAndOffset();
+        }
+
+        m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
+    }
+
+    float ImageGradientComponent::GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const
+    {
+        if (!m_imageData.empty())
+        {
+            const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
+            auto width = imageDescriptor.m_size.m_width;
+            auto height = imageDescriptor.m_size.m_height;
+
+            if (width > 0 && height > 0)
+            {
+                // When "rasterizing" from uvs, a range of 0-1 has slightly different meanings depending on the sampler state.
+                // For repeating states (Unbounded/None, Repeat), a uv value of 1 should wrap around back to our 0th pixel.
+                // For clamping states (Clamp to Zero, Clamp to Edge), a uv value of 1 should point to the last pixel.
+
+                // We assume here that the code handling sampler states has handled this for us in the clamping cases
+                // by reducing our uv by a small delta value such that anything that wants the last pixel has a value
+                // just slightly less than 1.
+
+                // Keeping that in mind, we scale our uv from 0-1 to 0-image size inclusive.  So a 4-pixel image will scale
+                // uv values of 0-1 to 0-4, not 0-3 as you might expect.  This is because we want the following range mappings:
+                // [0 - 1/4)   = pixel 0
+                // [1/4 - 1/2) = pixel 1
+                // [1/2 - 3/4) = pixel 2
+                // [3/4 - 1)   = pixel 3
+                // [1 - 1 1/4) = pixel 0
+                // ...
+
+                // Also, based on our tiling settings, we extend the size of our image virtually by a factor of tilingX and tilingY.  
+                // A 16x16 pixel image and tilingX = tilingY = 1  maps the uv range of 0-1 to 0-16 pixels.  
+                // A 16x16 pixel image and tilingX = tilingY = 1.5 maps the uv range of 0-1 to 0-24 pixels.
+
+                const AZ::Vector3 tiledDimensions((width * m_configuration.m_tilingX),
+                    (height * m_configuration.m_tilingY),
+                    0.0f);
+
+                // Convert from uv space back to pixel space
+                AZ::Vector3 pixelLookup = (uvw * tiledDimensions);
+
+                // UVs outside the 0-1 range are treated as infinitely tiling, so that we behave the same as the 
+                // other gradient generators.  As mentioned above, if clamping is desired, we expect it to be applied
+                // outside of this function.
+                auto x = aznumeric_cast<AZ::u32>(pixelLookup.GetX()) % width;
+                auto y = aznumeric_cast<AZ::u32>(pixelLookup.GetY()) % height;
+
+                // Flip the y because images are stored in reverse of our world axes
+                y = (height - 1) - y;
+
+                // For terrarium, there is a separate algorithm for retrieving the value
+                const float value = (m_currentChannel == ChannelToUse::Terrarium)
+                    ? GetTerrariumPixelValue(x, y, m_imageData)
+                    : AZ::RPI::GetImageDataPixelValue<float>(
+                        m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+
+                // Scale (inverse lerp) the value into a 0 - 1 range. We also clamp it because manual scale values could cause
+                // the result to fall outside of the expected output range.
+                return AZStd::clamp((value - m_offset) * m_multiplier, 0.0f, 1.0f);
+            }
+        }
+
+        return defaultValue;
+    }
+
+    float ImageGradientComponent::GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y, AZStd::span<const uint8_t> imageData) const
+    {
+        const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
+
+        float r = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Red));
+        float g = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
+        float b = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
+
+        /*
+            "Terrarium" is an image-based terrain file format as defined here:  https://www.mapzen.com/blog/terrain-tile-service/
+            According to the website:  "Terrarium format PNG tiles contain raw elevation data in meters, in Mercator projection (EPSG:3857).
+            All values are positive with a 32,768 offset, split into the red, green, and blue channels, with 16 bits of integer and 8 bits of fraction. To decode:  (red * 256 + green + blue / 256) - 32768"
+            This gives a range -32768 to 32768 meters at a constant 1/256 meter resolution. For reference, the lowest point on Earth (Mariana Trench) is at -10911 m, and the highest point (Mt Everest) is at 8848 m.
+            The equation of (red * 256 + green + blue / 256) - 32768 is based on red/green/blue being u8 values, but we are getting float values back
+            in the range of 0.0f - 1.0f, so the multipliers below have been modified slightly to account for that scaling
+        */
+        constexpr float redMultiplier = (255.0f * 256.0f) / 65536.0f;
+        constexpr float greenMultiplier = 255.0f / 65536.0f;
+        constexpr float blueMultiplier = (255.0f / 256.0f) / 65536.0f;
+        return (r * redMultiplier) + (g * greenMultiplier) + (b * blueMultiplier);
+    }
+
+    void ImageGradientComponent::SetupMultiplierAndOffset(float min, float max)
+    {
+        // Pre-calculate values for scaling our input range to our output range of 0 - 1. Scaling just uses the standard inverse lerp
+        // formula of "output = (input - min) / (max - min)", or "output = (input - offset) * multiplier" where
+        // multiplier is 1 / (max - min) and offset is min. Precalculating this way lets us gracefully handle the case where min and
+        // max are equal, since we don't want to divide by infinity, without needing to check for that case on every pixel.
+
+        // If our range is equivalent, set our multiplier and offset so that
+        // any input value > min goes to 1 and any input value <= min goes to 0. 
+        m_multiplier = (min == max) ? AZStd::numeric_limits<float>::max() : (1.0f / (max - min));
+        m_offset = min;
+    }
+
+    void ImageGradientComponent::SetupDefaultMultiplierAndOffset()
+    {
+        // By default, don't perform any scaling - assume the input range is from 0 - 1, same as the desired output.
+        SetupMultiplierAndOffset(0.0f, 1.0f);
+    }
+
+    void ImageGradientComponent::SetupAutoScaleMultiplierAndOffset()
+    {
+        const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
+        auto width = imageDescriptor.m_size.m_width;
+        auto height = imageDescriptor.m_size.m_height;
+
+        // Retrieve all the pixel values from our image data
+        AZStd::vector<float> pixelValues(width * height);
+
+        if (m_currentChannel == ChannelToUse::Terrarium)
+        {
+            const auto& imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
+            for (uint32_t y = 0; y < height; y++)
+            {
+                for (uint32_t x = 0; x < width; x++)
+                {
+                    pixelValues[(y * width) + x] = GetTerrariumPixelValue(x, y, imageData);
+                }
+            }
+        }
+        else
+        {
+            auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
+            auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(width, height);
+
+            AZ::RPI::GetSubImagePixelValues(
+                m_configuration.m_imageAsset, topLeft, bottomRight, pixelValues, aznumeric_cast<AZ::u8>(m_currentChannel));
+        }
+
+        // Retrieve the min/max values from our image data and set our multiplier and offset based on that
+        auto [min, max] = AZStd::minmax_element(pixelValues.begin(), pixelValues.end());
+        SetupMultiplierAndOffset(*min, *max);
+    }
+
+    void ImageGradientComponent::SetupManualScaleMultiplierAndOffset()
+    {
+        m_configuration.m_scaleRangeMin = AZStd::clamp(m_configuration.m_scaleRangeMin, 0.0f, 1.0f);
+        m_configuration.m_scaleRangeMax = AZStd::clamp(m_configuration.m_scaleRangeMax, 0.0f, 1.0f);
+        // Set our multiplier and offset based on the manual scale range. Note that the manual scale range might be less than the
+        // input range and possibly even inverted.
+        SetupMultiplierAndOffset(m_configuration.m_scaleRangeMin, m_configuration.m_scaleRangeMax);
+    }
+
     void ImageGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         SetupDependencies();
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
         GradientRequestBus::Handler::BusConnect(GetEntityId());
-        AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
 
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        // Invoke the QueueLoad before connecting to the AssetBus, so that
+        // if the asset is already ready, then OnAssetReady will be triggered immediately
+        m_imageData = AZStd::span<const uint8_t>();
         m_configuration.m_imageAsset.QueueLoad();
+
+        AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
     }
 
     void ImageGradientComponent::Deactivate()
@@ -144,10 +529,11 @@ namespace GradientSignal
         AZ::Data::AssetBus::Handler::BusDisconnect();
         GradientRequestBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
+        GradientTransformNotificationBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
 
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.Release();
     }
 
@@ -173,40 +559,91 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
+
+        GetSubImageData();
     }
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
+
+        GetSubImageData();
     }
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
+
+        GetSubImageData();
+    }
+
+    void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
+    {
+        AZStd::unique_lock<decltype(m_imageMutex)> lock(m_imageMutex);
+        m_gradientTransform = newTransform;
     }
 
     float ImageGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         AZ::Vector3 uvw = sampleParams.m_position;
-
         bool wasPointRejected = false;
-        const bool shouldNormalizeOutput = true;
-        GradientTransformRequestBus::Event(
-            GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
 
-        if (!wasPointRejected)
+        // Return immediately if our cached image data hasn't been retrieved yet
+        if (m_imageData.empty())
         {
-            AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
-            return GetValueFromImageAsset(m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            return 0.0f;
+        }
+
+        {
+            AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+            m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                return GetValueFromImageData(uvw, 0.0f);
+            }
         }
 
         return 0.0f;
+    }
+
+    void ImageGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        // Return immediately if our cached image data hasn't been retrieved yet
+        if (m_imageData.empty())
+        {
+            return;
+        }
+
+        AZ::Vector3 uvw;
+        bool wasPointRejected = false;
+
+        AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            m_gradientTransform.TransformPositionToUVWNormalized(positions[index], uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                outValues[index] = GetValueFromImageData(uvw, 0.0f);
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
+        }
     }
 
     AZStd::string ImageGradientComponent::GetImageAssetPath() const
@@ -219,17 +656,42 @@ namespace GradientSignal
     void ImageGradientComponent::SetImageAssetPath(const AZStd::string& assetPath)
     {
         AZ::Data::AssetId assetId;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, assetPath.c_str(), AZ::Data::s_invalidAssetType, false);
-        if (assetId.IsValid())
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, assetPath.c_str(), AZ::Data::s_invalidAssetType, false);
+        if (assetId.IsValid() || assetPath.empty())
         {
+            // If we were given a valid asset, then make sure it is the right type
+            if (assetId.IsValid())
+            {
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
+
+                if (assetInfo.m_assetType != azrtti_typeid<AZ::RPI::StreamingImageAsset>())
+                {
+                    AZ_Warning("GradientSignal", false, "Asset type for %s is not AZ::RPI::StreamingImageAsset, will be ignored", assetPath.c_str());
+                    return;
+                }
+            }
+
             AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
             {
-                AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
-                m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<ImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
+                AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+                // Clear our cached image data
+                m_imageData = AZStd::span<const uint8_t>();
+
+                if (assetPath.empty())
+                {
+                    m_configuration.m_imageAsset.Reset();
+                }
+                else
+                {
+                    m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<AZ::RPI::StreamingImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
+                }
             }
 
             SetupDependencies();
+            m_configuration.m_imageAsset.QueueLoad();
             AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
             LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
         }

@@ -11,6 +11,8 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/optional.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
@@ -18,16 +20,44 @@
 
 namespace AzToolsFramework
 {
+    //! Read-only interface for EditorVisibleEntityDataCache to be used by systems that want to efficiently
+    //! query the state of visible entities in the viewport.
+    class EditorVisibleEntityDataCacheInterface
+    {
+        using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
+
+    public:
+        virtual ~EditorVisibleEntityDataCacheInterface() = default;
+
+        virtual size_t VisibleEntityDataCount() const = 0;
+        virtual AZ::Vector3 GetVisibleEntityPosition(size_t index) const = 0;
+        virtual const AZ::Transform& GetVisibleEntityTransform(size_t index) const = 0;
+        virtual AZ::EntityId GetVisibleEntityId(size_t index) const = 0;
+        virtual ComponentEntityAccentType GetVisibleEntityAccent(size_t index) const = 0;
+        virtual bool IsVisibleEntityLocked(size_t index) const = 0;
+        virtual bool IsVisibleEntityVisible(size_t index) const = 0;
+        virtual bool IsVisibleEntitySelected(size_t index) const = 0;
+        virtual bool IsVisibleEntityIconHidden(size_t index) const = 0;
+        //! Returns true if the entity is individually selectable (none of its ancestors are a closed container entity).
+        //! @note It may still be desirable to be able to 'click' an entity that is a descendant of a closed container
+        //! to select the container itself, not the individual entity.
+        virtual bool IsVisibleEntityIndividuallySelectableInViewport(size_t index) const = 0;
+        virtual AZStd::optional<size_t> GetVisibleEntityIndexFromId(AZ::EntityId entityId) const = 0;
+    };
+
     //! A cache of packed EntityData that can be iterated over efficiently without
     //! the need to make individual EBus calls
     class EditorVisibleEntityDataCache
-        : private EditorEntityVisibilityNotificationBus::Router
+        : public EditorVisibleEntityDataCacheInterface
+        , private EditorEntityVisibilityNotificationBus::Router
         , private EditorEntityLockComponentNotificationBus::Router
         , private AZ::TransformNotificationBus::Router
         , private EditorComponentSelectionNotificationsBus::Router
         , private EntitySelectionEvents::Bus::Router
         , private EditorEntityIconComponentNotificationBus::Router
         , private ToolsApplicationNotificationBus::Handler
+        , private ContainerEntityNotificationBus::Handler
+        , private FocusModeNotificationBus::Handler
     {
     public:
         EditorVisibleEntityDataCache();
@@ -41,44 +71,49 @@ namespace AzToolsFramework
 
         void CalculateVisibleEntityDatas(const AzFramework::ViewportInfo& viewportInfo);
 
-        //! EditorVisibleEntityDataCache interface
-        size_t VisibleEntityDataCount() const;
-        AZ::Vector3 GetVisibleEntityPosition(size_t index) const;
-        const AZ::Transform& GetVisibleEntityTransform(size_t index) const;
-        AZ::EntityId GetVisibleEntityId(size_t index) const;
-        ComponentEntityAccentType GetVisibleEntityAccent(size_t index) const;
-        bool IsVisibleEntityLocked(size_t index) const;
-        bool IsVisibleEntityVisible(size_t index) const;
-        bool IsVisibleEntitySelected(size_t index) const;
-        bool IsVisibleEntityIconHidden(size_t index) const;
-        bool IsVisibleEntitySelectableInViewport(size_t index) const;
-
-        AZStd::optional<size_t> GetVisibleEntityIndexFromId(AZ::EntityId entityId) const;
+        //! EditorVisibleEntityDataCacheInterface overrides ...
+        size_t VisibleEntityDataCount() const override;
+        AZ::Vector3 GetVisibleEntityPosition(size_t index) const override;
+        const AZ::Transform& GetVisibleEntityTransform(size_t index) const override;
+        AZ::EntityId GetVisibleEntityId(size_t index) const override;
+        ComponentEntityAccentType GetVisibleEntityAccent(size_t index) const override;
+        bool IsVisibleEntityLocked(size_t index) const override;
+        bool IsVisibleEntityVisible(size_t index) const override;
+        bool IsVisibleEntitySelected(size_t index) const override;
+        bool IsVisibleEntityIconHidden(size_t index) const override;
+        bool IsVisibleEntityIndividuallySelectableInViewport(size_t index) const override;
+        AZStd::optional<size_t> GetVisibleEntityIndexFromId(AZ::EntityId entityId) const override;
 
         void AddEntityIds(const EntityIdList& entityIds);
 
     private:
-        // ToolsApplicationNotificationBus
+        // ToolsApplicationNotificationBus overrides ...
         void AfterUndoRedo() override;
 
-        // EditorEntityVisibilityNotificationBus
+        // EditorEntityVisibilityNotificationBus overrides ...
         void OnEntityVisibilityChanged(bool visibility) override;
 
-        // EditorEntityLockComponentNotificationBus
+        // EditorEntityLockComponentNotificationBus overrides ...
         void OnEntityLockChanged(bool locked) override;
 
-        // TransformNotificationBus
+        // TransformNotificationBus overrides ...
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        // EditorComponentSelectionNotificationsBus
+        // EditorComponentSelectionNotificationsBus overrides ...
         void OnAccentTypeChanged(EntityAccentType accent) override;
 
-        // EntitySelectionEvents::Bus
+        // EntitySelectionEvents::Bus overrides ...
         void OnSelected() override;
         void OnDeselected() override;
 
-        // EditorEntityIconComponentNotificationBus
+        // EditorEntityIconComponentNotificationBus overrides ...
         void OnEntityIconChanged(const AZ::Data::AssetId& entityIconAssetId) override;
+
+        // ContainerEntityNotificationBus overrides ...
+        void OnContainerEntityStatusChanged(AZ::EntityId entityId, bool open) override;
+
+        // FocusModeNotificationBus overrides ...
+        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
         class EditorVisibleEntityDataCacheImpl;
         AZStd::unique_ptr<EditorVisibleEntityDataCacheImpl> m_impl; //!< Internal representation of entity data cache.

@@ -32,7 +32,8 @@ namespace AZ
             ReadField,          //!< Task to read a field from JSON to a value.
             WriteValue,         //!< Task to write a value to a JSON field.
             Merge,              //!< Task to merge two JSON values/documents together.
-            CreatePatch         //!< Task to create a patch to transform one value/document to another.
+            CreatePatch,        //!< Task to create a patch to transform one value/document to another.
+            Import              //!< Task to import a JSON document.
         };
 
         //! Describes how the task was processed.

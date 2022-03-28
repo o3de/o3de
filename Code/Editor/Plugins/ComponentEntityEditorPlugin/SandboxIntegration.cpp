@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
@@ -38,24 +37,27 @@
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Commands/SliceDetachEntityCommand.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Slice/SliceRequestBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
-#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
+#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Layer/AddToLayerMenu.h>
+#include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
-#include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -67,7 +69,6 @@
 #include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
 
-#include <LmbrCentral/Rendering/EditorLightComponentBus.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <LmbrCentral/Scripting/EditorTagComponentBus.h>
 
@@ -207,7 +208,12 @@ void SandboxIntegrationManager::Setup()
     m_editorEntityAPI = AZ::Interface<AzToolsFramework::EditorEntityAPI>::Get();
     AZ_Assert(m_editorEntityAPI, "SandboxIntegrationManager requires an EditorEntityAPI instance to be present on Setup().");
 
+    m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+    AZ_Assert(m_readOnlyEntityPublicInterface, "SandboxIntegrationManager requires an ReadOnlyEntityPublicInterface instance to be present on Setup().");
+
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
+
+    m_contextMenuBottomHandler.Setup();
 }
 
 void SandboxIntegrationManager::SaveSlice(const bool& QuickPushToFirstLevel)
@@ -391,6 +397,8 @@ void SandboxIntegrationManager::GetEntitiesInSlices(
 
 void SandboxIntegrationManager::Teardown()
 {
+    m_contextMenuBottomHandler.Teardown();
+
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
@@ -446,7 +454,7 @@ void SandboxIntegrationManager::OnEndUndo(const char* label, bool changed)
     // Add the undo only after we know it's got a legit change, we can't remove undos from the cry undo system so we do it here instead of OnBeginUndo
     if (changed && CUndo::IsRecording())
     {
-        CUndo::Record(new CToolsApplicationUndoLink(label));
+        CUndo::Record(new CToolsApplicationUndoLink());
     }
     if (m_startedUndoRecordingNestingLevel)
     {
@@ -497,13 +505,11 @@ void SandboxIntegrationManager::EntityParentChanged(
     // before finally being saved, it will result in all of those layers saving, too.
     AZ::EntityId oldAncestor = oldParentId;
 
-    bool wasNotInLayer = false;
     AZ::EntityId oldLayer;
     do
     {
         if (!oldAncestor.IsValid())
         {
-            wasNotInLayer = true;
             break;
         }
 
@@ -529,13 +535,11 @@ void SandboxIntegrationManager::EntityParentChanged(
 
     AZ::EntityId newAncestor = newParentId;
 
-    bool isGoingToRootScene = false;
     AZ::EntityId newLayer;
     do
     {
         if (!newAncestor.IsValid())
         {
-            isGoingToRootScene = true;
             break;
         }
 
@@ -642,33 +646,43 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     AzToolsFramework::EntityIdList selected;
     GetSelectedOrHighlightedEntities(selected);
 
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     QAction* action = nullptr;
 
     // when nothing is selected, entity is created at root level
     if (selected.size() == 0)
     {
         action = menu->addAction(QObject::tr("Create entity"));
+        action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_N));
         QObject::connect(
             action, &QAction::triggered, action,
             [this]
             {
                 ContextMenu_NewEntity();
-            });
+            }
+        );
     }
     // when a single entity is selected, entity is created as its child
     else if (selected.size() == 1)
     {
-        action = menu->addAction(QObject::tr("Create entity"));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [selected]
-            {
-                EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, CreateNewEntityAsChild, selected.front());
-            });
+        AZ::EntityId selectedEntityId = selected.front();
+        bool selectedEntityIsReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
+        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+        if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly))
+        {
+            action = menu->addAction(QObject::tr("Create entity"));
+            action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_N));
+            QObject::connect(
+                action, &QAction::triggered, action,
+                [selectedEntityId]
+                {
+                    AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selectedEntityId);
+                }
+            );
+        }
     }
-
-    bool prefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!prefabSystemEnabled)
     {
@@ -687,17 +701,30 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
 
         SetupSliceContextMenu(menu);
-    }
 
-    action = menu->addAction(QObject::tr("Duplicate"));
-    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
-    if (selected.size() == 0)
-    {
-        action->setDisabled(true);
-    }
+        if (!selected.empty())
+        {
+            // Don't allow duplication if any of the selected entities are direct descendants of a read-only entity
+            bool selectionContainsDescendantOfReadOnlyEntity = false;
+            for (const auto& entityId : selected)
+            {
+                AZ::EntityId parentEntityId;
+                AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
 
-    if (!prefabSystemEnabled)
-    {
+                if (parentEntityId.IsValid() && m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+                {
+                    selectionContainsDescendantOfReadOnlyEntity = true;
+                    break;
+                }
+            }
+
+            if (!selectionContainsDescendantOfReadOnlyEntity)
+            {
+                action = menu->addAction(QObject::tr("Duplicate"));
+                QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
+            }
+        }
+
         action = menu->addAction(QObject::tr("Delete"));
         QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_DeleteSelected(); });
         if (selected.size() == 0)
@@ -710,20 +737,14 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
 
     if (selected.size() > 0)
     {
-        action = menu->addAction(QObject::tr("Open pinned Inspector"));
-        QObject::connect(action, &QAction::triggered, action, [this, selected]
-        {
-            AzToolsFramework::EntityIdSet pinnedEntities(selected.begin(), selected.end());
-            OpenPinnedInspector(pinnedEntities);
-        });
-        if (selected.size() > 0)
-        {
-            action = menu->addAction(QObject::tr("Find in Entity Outliner"));
-            QObject::connect(action, &QAction::triggered, [selected]
+        action = menu->addAction(QObject::tr("Find in Entity Outliner"));
+        QObject::connect(
+            action, &QAction::triggered,
+            [selected]
             {
-                AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
+                AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
+                    &EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
             });
-        }
         menu->addSeparator();
     }
 }
@@ -1388,13 +1409,13 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
 {
     AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
 
-    CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
     // If we don't have a viewport active to aid in placement, the object
     // will be created at the origin.
-    if (view)
+    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
     {
-        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
-        worldPosition = view->GetHitLocation(viewPoint);
+        worldPosition = AzToolsFramework::FindClosestPickIntersection(
+            view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
+            AzToolsFramework::GetDefaultEntityPlacementDistance());
     }
 
     CreateNewEntityAtPosition(worldPosition);
@@ -1669,6 +1690,12 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
         {
             const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+            // do not attempt to interpolate to where we currently are
+            if (cameraTransform.GetTranslation().IsClose(center))
+            {
+                continue;
+            }
+
             const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
 
             // move camera 25% further back than required
@@ -1786,6 +1813,11 @@ AZStd::string SandboxIntegrationManager::GetComponentEditorIcon(const AZ::Uuid& 
 {
     AZStd::string iconPath = GetComponentIconPath(componentType, AZ::Edit::Attributes::Icon, component);
     return iconPath;
+}
+
+AZStd::string SandboxIntegrationManager::GetComponentTypeEditorIcon(const AZ::Uuid& componentType)
+{
+    return GetComponentEditorIcon(componentType, nullptr);
 }
 
 AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& componentType,
@@ -1950,9 +1982,4 @@ void SandboxIntegrationManager::CloseViewPane(const char* paneName)
 void SandboxIntegrationManager::BrowseForAssets(AssetSelectionModel& selection)
 {
     AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, GetMainWindow());
-}
-
-bool SandboxIntegrationManager::DisplayHelpersVisible()
-{
-    return GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
 }

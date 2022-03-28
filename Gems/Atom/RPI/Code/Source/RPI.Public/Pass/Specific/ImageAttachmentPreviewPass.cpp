@@ -14,7 +14,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RPI.Public/Pass/RenderPass.h>
+#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -32,7 +32,7 @@ namespace AZ
             m_destAttachmentId = destAttachmentId;
 
             // Use the unique destination attachment id as scope id
-            SetScopeId(m_destAttachmentId);
+            InitScope(m_destAttachmentId);
 
             // Clear the previous attachment and copy item
             m_copyItem = {};
@@ -54,13 +54,14 @@ namespace AZ
 
         void ImageAttachmentCopy::FrameBegin(Pass::FramePrepareParams params)
         {
+            RHI::FrameGraphAttachmentInterface attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
+
             if (m_srcAttachmentId.IsEmpty())
             {
                 return;
             }
 
             // Return if the source attachment is not imported
-            RHI::FrameGraphAttachmentInterface attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
             if (!attachmentDatabase.IsAttachmentValid(m_srcAttachmentId))
             {
                 Reset();
@@ -123,7 +124,7 @@ namespace AZ
         ImageAttachmentPreviewPass::ImageAttachmentPreviewPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
-            SetScopeId(RHI::ScopeId(GetPathName()));
+            InitScope(RHI::ScopeId(GetPathName()));
         }
 
         ImageAttachmentPreviewPass::~ImageAttachmentPreviewPass()
@@ -131,7 +132,7 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(RenderPass* pass, const PassAttachment* passAttachment)
+        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment)
         {
             if (passAttachment->GetAttachmentType() != RHI::AttachmentType::Image)
             {
@@ -144,9 +145,9 @@ namespace AZ
             uint32_t bindingIndex = 0;
             for (auto& binding : pass->GetAttachmentBindings())
             {
-                if (passAttachment == binding.m_attachment)
+                if (passAttachment == binding.GetAttachment())
                 {
-                    RHI::AttachmentId attachmentId = binding.m_attachment->GetAttachmentId();
+                    RHI::AttachmentId attachmentId = binding.GetAttachment()->GetAttachmentId();
                     
                     // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
                     AZStd::string readbackName = AZStd::string::format("%s_%d_%s", attachmentId.GetCStr(),
@@ -175,14 +176,25 @@ namespace AZ
                 RenderPipeline* pipeline = pass->GetRenderPipeline();
                 if (pipeline)
                 {
-                    for (const auto& binding : pipeline->GetRootPass()->GetAttachmentBindings())
+                    Pass* pipelinePass = pipeline->GetRootPass().get();
+                    PassAttachmentBinding* binding = nullptr;
+
+                    // Get either first output or first input/output
+                    if (pipelinePass->GetOutputCount() > 0)
                     {
-                        if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget
-                            && binding.m_slotType == PassSlotType::Output)
-                        {
-                            SetOutputColorAttachment(binding.m_attachment);
-                        }
+                        binding = &pipelinePass->GetOutputBinding(0);
                     }
+                    else if (pipelinePass->GetInputOutputCount() > 0)
+                    {
+                        binding = &pipelinePass->GetInputOutputBinding(0);
+                    }
+
+                    if (binding)
+                    {
+                        SetOutputColorAttachment(binding->GetAttachment());
+                    }
+
+                    AZ_Warning("PassSystem", binding != nullptr, "ImageAttachmentPreviewPass couldn't find a color attachment on pipeline");
                 }
             }
         }
@@ -231,7 +243,7 @@ namespace AZ
 
         void ImageAttachmentPreviewPass::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            Data::Asset<ShaderAsset> shaderAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            Data::Asset<ShaderAsset> shaderAsset = Data::static_pointer_cast<ShaderAsset>(asset);
             if (shaderAsset)
             {
                 m_needsShaderLoad = true;
@@ -244,7 +256,7 @@ namespace AZ
             m_needsShaderLoad = false;
 
             // Load Shader
-            const char* ShaderPath = "shader/imagepreview.azshader";
+            const char* ShaderPath = "shaders/imagepreview.azshader";
             Data::Asset<ShaderAsset> shaderAsset = RPI::FindShaderAsset(ShaderPath);
             m_shader = Shader::FindOrCreate(shaderAsset);
             if (m_shader == nullptr)
@@ -310,13 +322,31 @@ namespace AZ
             Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
         }
 
+        void ImageAttachmentPreviewPass::BuildInternal()
+        {
+            m_updateDrawData = true;
+        }
+
         void ImageAttachmentPreviewPass::FrameBeginInternal(FramePrepareParams params)
         {
             bool scopeImported = false;
             if (!m_imageAttachmentId.IsEmpty() && m_outputColorAttachment)
             {
                 // Only import the scope if the attachment is valid
-                if (params.m_frameGraphBuilder->GetAttachmentDatabase().IsAttachmentValid(m_imageAttachmentId))
+                auto attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
+                bool isAttachmentValid = attachmentDatabase.IsAttachmentValid(m_imageAttachmentId);
+                if (!isAttachmentValid)
+                {
+                    // Import the cached copy dest image if it exists (copied)
+                    // So the attachment can be still previewed when the pass is disabled.
+                    if (m_attachmentCopy && m_attachmentCopy->m_destImage)
+                    {
+                        attachmentDatabase.ImportImage(m_attachmentCopy->m_destAttachmentId, m_attachmentCopy->m_destImage->GetRHIImage());
+                        isAttachmentValid = true;
+                    }
+                }
+
+                if (isAttachmentValid)
                 {
                     if (m_needsShaderLoad)
                     {
@@ -352,7 +382,23 @@ namespace AZ
         {
             // add attachments to the scope
             // input attachment
-            frameGraph.UseAttachment(RHI::ImageScopeAttachmentDescriptor{ m_imageAttachmentId }, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
+            RHI::FrameGraphAttachmentInterface attachmentDatabase = frameGraph.GetAttachmentDatabase();
+            RHI::ImageDescriptor imageDesc = attachmentDatabase.GetImageDescriptor(m_imageAttachmentId);
+            // only preview mip 0 and array 0
+            RHI::ImageViewDescriptor imageViewDesc = RHI::ImageViewDescriptor::Create(
+                RHI::Format::Unknown, // no overwrite
+                0,  //mipSliceMin
+                0,  //mipSliceMax
+                0,  //arraySliceMin
+                0   //arraySliceMax
+            );
+
+            // If the format contains depth, set m_aspectFlags to depth, otherwise set it to color
+            imageViewDesc.m_aspectFlags = RHI::CheckBitsAny(RHI::GetImageAspectFlags(imageDesc.m_format), RHI::ImageAspectFlags::Depth) ? 
+                RHI::ImageAspectFlags::Depth : RHI::ImageAspectFlags::Color;
+
+            auto scopeAttachmentDesc = RHI::ImageScopeAttachmentDescriptor{ m_imageAttachmentId, imageViewDesc};
+            frameGraph.UseAttachment(scopeAttachmentDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
 
             // output attachment
             frameGraph.UseColorAttachment(RHI::ImageScopeAttachmentDescriptor{ m_outputColorAttachment->GetAttachmentId() });

@@ -10,8 +10,6 @@
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace DX12
@@ -150,9 +148,8 @@ namespace AZ
         
             // create the pipeline state object
             Microsoft::WRL::ComPtr<ID3D12StateObject> rayTracingPipelineStateComPtr;
-            [[maybe_unused]] HRESULT hr = device.GetDevice()->CreateStateObject(&pipelineDesc, IID_GRAPHICS_PPV_ARGS(rayTracingPipelineStateComPtr.GetAddressOf()));
-            AZ_Assert(SUCCEEDED(hr), "Failed to create ray tracing pipeline state");
-            m_rayTracingPipelineState = rayTracingPipelineStateComPtr.Get();
+            device.AssertSuccess(device.GetDevice()->CreateStateObject(&pipelineDesc, IID_GRAPHICS_PPV_ARGS(rayTracingPipelineStateComPtr.GetAddressOf())));
+             m_rayTracingPipelineState = rayTracingPipelineStateComPtr.Get();
 #endif  
             return RHI::ResultCode::Success;
         }

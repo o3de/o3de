@@ -10,6 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/bitset.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -65,8 +66,35 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // EBusTraits overrides - Application is a singleton
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-            typedef AZStd::recursive_mutex MutexType;
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            using MutexType = AZStd::recursive_mutex;
+
+            static constexpr bool EnableEventQueue = true;
+            using EventQueueMutexType = AZStd::mutex;
+            struct PostThreadDispatchInvoker
+            {
+                ~PostThreadDispatchInvoker();
+            };
+
+            template <typename DispatchMutex>
+            struct ThreadDispatchLockGuard
+            {
+                ThreadDispatchLockGuard(DispatchMutex& contextMutex)
+                    : m_lock{ contextMutex }
+                {}
+                ThreadDispatchLockGuard(DispatchMutex& contextMutex, AZStd::adopt_lock_t adopt_lock)
+                    : m_lock{ contextMutex, adopt_lock }
+                {}
+                ThreadDispatchLockGuard(const ThreadDispatchLockGuard&) = delete;
+                ThreadDispatchLockGuard& operator=(const ThreadDispatchLockGuard&) = delete;
+            private:
+                PostThreadDispatchInvoker m_threadPolicyInvoker;
+                using LockType = AZStd::conditional_t<LocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
+                LockType m_lock;
+            };
+
+            template <typename DispatchMutex, bool>
+            using DispatchLockGuard = ThreadDispatchLockGuard<DispatchMutex>;
             //////////////////////////////////////////////////////////////////////////
 
             virtual ~AssetCatalogRequests() = default;
@@ -102,7 +130,8 @@ namespace AZ
             /// Remove a catalog from our delta list and rebuild the catalog from remaining items
             virtual bool RemoveDeltaCatalog(AZStd::shared_ptr<AzFramework::AssetRegistry> /*deltaCatalog*/) { return true; }
             /// Creates a manifest with the given DeltaCatalog name
-            virtual bool CreateBundleManifest(const AZStd::string& /*deltaCatalogPath*/, const AZStd::vector<AZStd::string>& /*dependentBundleNames*/, const AZStd::string& /*fileDirectory*/, int /*bundleVersion*/, const AZStd::vector<AZStd::string>& /*levelDirs*/) { return false; }
+            virtual bool CreateBundleManifest(const AZStd::string& /*deltaCatalogPath*/, const AZStd::vector<AZStd::string>& /*dependentBundleNames*/,
+                const AZStd::string& /*fileDirectory*/, int /*bundleVersion*/, const AZStd::vector<AZ::IO::Path>& /*levelDirs*/) { return false; }
             /// Creates an instance of a registry containing info for just the specified files, and writes it out to a file at the specified path
             virtual bool CreateDeltaCatalog(const AZStd::vector<AZStd::string>& /*files*/, const AZStd::string& /*filePath*/) { return false; }
 
@@ -199,6 +228,17 @@ namespace AZ
         };
 
         using AssetCatalogRequestBus = AZ::EBus<AssetCatalogRequests>;
+
+        inline AssetCatalogRequests::PostThreadDispatchInvoker::~PostThreadDispatchInvoker()
+        {
+            if (!AssetCatalogRequestBus::IsInDispatchThisThread())
+            {
+                if (AssetCatalogRequestBus::QueuedEventCount())
+                {
+                    AssetCatalogRequestBus::ExecuteQueuedEvents();
+                }
+            }
+        }
 
         /*
          * Events that AssetManager listens for

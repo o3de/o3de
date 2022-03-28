@@ -1,17 +1,11 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/lion_1k_basecolor.png"
+            "textureMap": "../Textures/lion_1k_basecolor.png"
         },
         "emissive": {
             "color": [
@@ -21,8 +15,22 @@
                 1.0
             ]
         },
+        "irradiance": {
+            "color": [
+                0.5583428740501404,
+                0.496940553188324,
+                0.4125429093837738,
+                1.0
+            ]
+        },
+        "normal": {
+            "textureMap": "../Textures/lion_1k_normal.jpg"
+        },
         "opacity": {
             "factor": 1.0
+        },
+        "roughness": {
+            "textureMap": "../Textures/lion_1k_roughness.png"
         }
     }
 }

@@ -50,7 +50,9 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     request.addfinalizer(lambda: teardown_editor(editor))
     logger.debug("Running automated test: {}".format(editor_script))
     editor.args.extend(["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
-                        "--regset=/Amazon/Preferences/EnablePrefabSystem=false", run_python, test_case,
+                        run_python, test_case,
+                        "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                        f"--regset-file={os.path.join(editor.workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}",
                         f"--pythontestcase={request.node.name}", "--runpythonargs", " ".join(cfg_args)])
     if auto_test_mode:
         editor.args.extend(["--autotest_mode"])

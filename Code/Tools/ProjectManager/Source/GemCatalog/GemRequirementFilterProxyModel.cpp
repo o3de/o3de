@@ -13,10 +13,8 @@
 
 namespace O3DE::ProjectManager
 {
-    GemRequirementFilterProxyModel::GemRequirementFilterProxyModel(GemModel* sourceModel, const QVector<QModelIndex>& addedGems, QObject* parent)
+    GemRequirementFilterProxyModel::GemRequirementFilterProxyModel(GemModel* sourceModel, QObject* parent)
         : QSortFilterProxyModel(parent)
-        , m_sourceModel(sourceModel)
-        , m_addedGems(addedGems)
     {
         setSourceModel(sourceModel);
         m_selectionProxyModel = new AzQtComponents::SelectionProxyModel(sourceModel->GetSelectionModel(), this, parent);
@@ -26,22 +24,7 @@ namespace O3DE::ProjectManager
     {
         // Do not use sourceParent->child because an invalid parent does not produce valid children (which our index function does)
         QModelIndex sourceIndex = sourceModel()->index(sourceRow, 0, sourceParent);
-        if (!sourceIndex.isValid())
-        {
-            return false;
-        }
-
-        if (!m_addedGems.contains(sourceIndex))
-        {
-            return false;
-        }
-
-        if (!m_sourceModel->HasRequirement(sourceIndex))
-        {
-            return false;
-        }
-
-        return true;
+        return GemModel::IsAdded(sourceIndex) && GemModel::HasRequirement(sourceIndex);
     }
 
 } // namespace O3DE::ProjectManager

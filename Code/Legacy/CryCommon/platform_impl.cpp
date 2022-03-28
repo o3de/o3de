@@ -24,7 +24,6 @@
 #define PLATFORM_IMPL_H_SECTION_TRAITS 1
 #define PLATFORM_IMPL_H_SECTION_CRYLOWLATENCYSLEEP 2
 #define PLATFORM_IMPL_H_SECTION_CRYGETFILEATTRIBUTES 3
-#define PLATFORM_IMPL_H_SECTION_CRYSETFILEATTRIBUTES 4
 #define PLATFORM_IMPL_H_SECTION_CRY_FILE_ATTRIBUTE_STUBS 5
 #define PLATFORM_IMPL_H_SECTION_CRY_SYSTEM_FUNCTIONS 6
 #define PLATFORM_IMPL_H_SECTION_VIRTUAL_ALLOCATORS 7
@@ -74,7 +73,7 @@ void InitCRTHandlers() {}
 //////////////////////////////////////////////////////////////////////////
 // This is an entry to DLL initialization function that must be called for each loaded module
 //////////////////////////////////////////////////////////////////////////
-extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
+void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
 {
     if (gEnv) // Already registered.
     {
@@ -96,25 +95,9 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
     } // if pSystem
 }
 
-extern "C" AZ_DLL_EXPORT void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
+void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
 {
     // Unregister with AZ environment.
-    AZ::Environment::Detach();
-}
-
-extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env)
-{
-    static bool injected = false;
-    if (!injected)
-    {
-        AZ::Environment::Attach(reinterpret_cast<AZ::EnvironmentInstance>(env));
-        AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
-        injected = true;
-    }
-}
-
-extern "C" AZ_DLL_EXPORT void DetachEnvironment()
-{
     AZ::Environment::Detach();
 }
 
@@ -126,16 +109,6 @@ void* GetModuleShutdownISystemSymbol()
 {
     return reinterpret_cast<void*>(&ModuleShutdownISystem);
 }
-void* GetInjectEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&InjectEnvironment);
-}
-void* GetDetachEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&DetachEnvironment);
-}
-
-bool g_bProfilerEnabled = false;
 
 //////////////////////////////////////////////////////////////////////////
 // global random number generator used by cry_random functions
@@ -183,18 +156,12 @@ void __stl_debug_message(const char* format_str, ...)
 #include <intrin.h>
 #endif
 
-#if defined(APPLE) || defined(LINUX)
-#include "CryAssert_impl.h"
-#endif
-
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRY_SYSTEM_FUNCTIONS
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
 
 #if defined (_WIN32)
-
-#include "CryAssert_impl.h"
 
 //////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)
@@ -204,21 +171,21 @@ void CrySleep(unsigned int dwMilliseconds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
+void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
 {
 #ifdef WIN32
     ICVar* const pCVar = gEnv && gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
     if ((pCVar && pCVar->GetIVal() != 0) || (gEnv && gEnv->bNoAssertDialog))
     {
-        return 0;
+        return;
     }
     AZStd::wstring lpTextW;
     AZStd::to_wstring(lpTextW, lpText);
     AZStd::wstring lpCaptionW;
     AZStd::to_wstring(lpCaptionW, lpCaption);
-    return MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
+    MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
 #else
-    return 0;
+    return;
 #endif
 }
 
@@ -271,22 +238,6 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes)
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRYSETFILEATTRIBUTES
-    #include AZ_RESTRICTED_FILE(platform_impl_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    AZStd::wstring lpFileNameW;
-    AZStd::to_wstring(lpFileNameW, lpFileName);
-    return SetFileAttributes(lpFileNameW.c_str(), dwFileAttributes) != 0;
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
 threadID CryGetCurrentThreadId()
 {
     return GetCurrentThreadId();
@@ -307,12 +258,6 @@ int64 CryGetTicks()
     return li.QuadPart;
 }
 
-int64 CryGetTicksPerSec()
-{
-    LARGE_INTEGER li;
-    QueryPerformanceFrequency(&li);
-    return li.QuadPart;
-}
 #endif
 
 

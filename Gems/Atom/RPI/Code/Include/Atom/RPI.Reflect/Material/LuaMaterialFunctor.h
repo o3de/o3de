@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <Atom/RHI.Reflect/Limits.h>
 
 namespace UnitTest
@@ -60,12 +61,8 @@ namespace AZ
             AZStd::unique_ptr<AZ::BehaviorContext> m_sriptBehaviorContext;
             AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext;
             
-            // These are prefix strings that will be applied to every name lookup in the lua functor.
-            // This allows the lua script to be reused in different contexts.
-            AZStd::string m_propertyNamePrefix;
-            AZStd::string m_srgNamePrefix;
-            AZStd::string m_optionsNamePrefix;
-
+            MaterialNameContext m_materialNameContext;
+            
             enum class ScriptStatus
             {
                 Uninitialized,
@@ -84,15 +81,11 @@ namespace AZ
 
             explicit LuaMaterialFunctorCommonContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
                 const MaterialPropertyFlags* materialPropertyDependencies,
-                const AZStd::string& propertyNamePrefix,
-                const AZStd::string& srgNamePrefix,
-                const AZStd::string& optionsNamePrefix);
+                const MaterialNameContext &materialNameContext);
 
             explicit LuaMaterialFunctorCommonContext(MaterialFunctor::EditorContext* editorContextImpl,
                 const MaterialPropertyFlags* materialPropertyDependencies,
-                const AZStd::string& propertyNamePrefix,
-                const AZStd::string& srgNamePrefix,
-                const AZStd::string& optionsNamePrefix);
+                const MaterialNameContext &materialNameContext);
             
             //! Returns false if PSO changes are not allowed, and may report errors or warnings
             bool CheckPsoChangesAllowed();
@@ -112,11 +105,7 @@ namespace AZ
 
             AZStd::string GetMaterialPropertyDependenciesString() const;
 
-            // These are prefix strings that will be applied to every name lookup in the lua functor.
-            // This allows the lua script to be reused in different contexts.
-            const AZStd::string& m_propertyNamePrefix;
-            const AZStd::string& m_srgNamePrefix;
-            const AZStd::string& m_optionsNamePrefix;
+            const MaterialNameContext &m_materialNameContext;
 
         private:
 
@@ -284,12 +273,12 @@ namespace AZ
 
             explicit LuaMaterialFunctorRuntimeContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
                 const MaterialPropertyFlags* materialPropertyDependencies,
-                const AZStd::string& propertyNamePrefix,
-                const AZStd::string& srgNamePrefix,
-                const AZStd::string& optionsNamePrefix);
+                const MaterialNameContext &materialNameContext);
 
             template<typename Type>
             Type GetMaterialPropertyValue(const char* name) const;
+
+            bool HasMaterialValue(const char* name) const;
 
             //! Set the value of a shader option. Applies to any shader that has an option with this name.
             //! @param name the name of the shader option to set
@@ -324,9 +313,7 @@ namespace AZ
 
             explicit LuaMaterialFunctorEditorContext(MaterialFunctor::EditorContext* editorContextImpl,
                 const MaterialPropertyFlags* materialPropertyDependencies,
-                const AZStd::string& propertyNamePrefix,
-                const AZStd::string& srgNamePrefix,
-                const AZStd::string& optionsNamePrefix);
+                const MaterialNameContext &materialNameContext);
 
             template<typename Type>
             Type GetMaterialPropertyValue(const char* name) const;

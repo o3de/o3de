@@ -8,7 +8,6 @@
 
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -94,17 +93,27 @@ namespace AZ
             int colorAttachmentIndex = 0;
             AZStd::unordered_map<RHI::AttachmentId, ResolveAttachmentData> attachmentsIndex;
             
-            for (const RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
+            for (RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
                 m_isWritingToSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
                 if(m_isWritingToSwapChainScope)
                 {
-                    //Check if the scope attachment for the next scope is going to capture the frame.
-                    //We can use this information to cache the swapchain texture for reading purposes.
-                    const RHI::ScopeAttachment* frameCaptureScopeAttachment = scopeAttachment->GetNext();
-                    if(frameCaptureScopeAttachment)
+                    //The way Metal works is that we ask the drivers for the swapchain texture right before we write to it.
+                    //And if we have to read from the swapchain texture we need to tell the driver this information when requesting the
+                    //texture. Hence we need to check if we will be reading from the swapchain texture here. We traverse all the
+                    //scopeattachments for the scopes after CopyToSwapchain Scope and see if any of them is trying to read from
+                    //the swapchain texture. If it is we cache this information within m_isSwapChainAndFrameCaptureEnabled which will
+                    //be used when we request the swapchain texture.
+                    RHI::ScopeAttachment* frameCaptureScopeAttachment = scopeAttachment;
+                    while(frameCaptureScopeAttachment)
                     {
-                        m_isSwapChainAndFrameCaptureEnabled = frameCaptureScopeAttachment->HasAccessAndUsage(RHI::ScopeAttachmentUsage::Copy, RHI::ScopeAttachmentAccess::Read);
+                        frameCaptureScopeAttachment = frameCaptureScopeAttachment->GetNext();
+                        if(frameCaptureScopeAttachment &&
+                           frameCaptureScopeAttachment->HasAccessAndUsage(RHI::ScopeAttachmentUsage::Copy, RHI::ScopeAttachmentAccess::Read))
+                        {
+                            m_isSwapChainAndFrameCaptureEnabled = true;
+                            break;
+                        }
                     }
                     
                     //Cache this as we will use this to request the drawable from the driver in the Execute phase (i.e Scope::Begin)
@@ -273,7 +282,7 @@ namespace AZ
             AZ::u32 commandListIndex,
             AZ::u32 commandListCount) const
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if(m_isWritingToSwapChainScope)
             {
@@ -331,7 +340,7 @@ namespace AZ
             AZ::u32 commandListIndex,
             AZ::u32 commandListCount) const
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             const bool isEpilogue = (commandListIndex + 1) == commandListCount;
             
             commandList.FlushEncoder();

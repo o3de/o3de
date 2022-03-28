@@ -18,7 +18,6 @@
 #include <Components/LevelSettingsComponent.h>
 #include <Components/MeshBlockerComponent.h>
 #include <Components/PositionModifierComponent.h>
-#include <Components/ReferenceShapeComponent.h>
 #include <Components/RotationModifierComponent.h>
 #include <Components/ScaleModifierComponent.h>
 #include <Components/ShapeIntersectionFilterComponent.h>
@@ -52,7 +51,6 @@ namespace Vegetation
             LevelSettingsComponent::CreateDescriptor(),
             MeshBlockerComponent::CreateDescriptor(),
             PositionModifierComponent::CreateDescriptor(),
-            ReferenceShapeComponent::CreateDescriptor(),
             RotationModifierComponent::CreateDescriptor(),
             ScaleModifierComponent::CreateDescriptor(),
             ShapeIntersectionFilterComponent::CreateDescriptor(),

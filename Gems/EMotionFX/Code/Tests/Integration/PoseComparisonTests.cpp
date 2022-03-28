@@ -154,14 +154,14 @@ namespace EMotionFX
         return MakeMatcher(new KeyTrackMatcher<T>(expected, nodeName));
     }
 
-    void INTEG_PoseComparisonFixture::SetUp()
+    void PoseComparisonFixture::SetUp()
     {
         SystemComponentFixture::SetUp();
 
         LoadAssets();
     }
 
-    void INTEG_PoseComparisonFixture::TearDown()
+    void PoseComparisonFixture::TearDown()
     {
         m_actorInstance->Destroy();
 
@@ -176,7 +176,7 @@ namespace EMotionFX
         SystemComponentFixture::TearDown();
     }
 
-    void INTEG_PoseComparisonFixture::LoadAssets()
+    void PoseComparisonFixture::LoadAssets()
     {
         const AZStd::string actorPath = ResolvePath(GetParam().m_actorFile);
         m_actor = EMotionFX::GetImporter().LoadActor(actorPath);
@@ -195,7 +195,7 @@ namespace EMotionFX
         m_actorInstance->SetAnimGraphInstance(AnimGraphInstance::Create(m_animGraph, m_actorInstance, m_motionSet));
     }
 
-    TEST_P(INTEG_PoseComparisonFixture, Integ_TestPoses)
+    TEST_P(PoseComparisonFixture, TestPoses)
     {
         const AZStd::string recordingPath = ResolvePath(GetParam().m_recordingFile);
         Recorder* recording = EMotionFX::Recorder::LoadFromFile(recordingPath.c_str());
@@ -231,7 +231,7 @@ namespace EMotionFX
         recording->Destroy();
     }
 
-    TEST_P(INTEG_TestPoseComparisonFixture, Integ_TestRecording)
+    TEST_P(TestPoseComparisonFixture, TestRecording)
     {
         // Make one recording, 10 seconds at 60 fps
         Recorder::RecordSettings settings;
@@ -294,9 +294,10 @@ namespace EMotionFX
         recording->Destroy();
     }
 
-    INSTANTIATE_TEST_CASE_P(Integ_TestPoses, INTEG_PoseComparisonFixture,
+    INSTANTIATE_TEST_CASE_P(DISABLED_TestPoses, PoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
+<<<<<<< HEAD
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
@@ -307,17 +308,36 @@ namespace EMotionFX
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.animgraph",
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.motionset",
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.emfxrecording"
+=======
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
+            ),
+            PoseComparisonFixtureParams (
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.actor",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.animgraph",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.motionset",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.emfxrecording"
+>>>>>>> development
             )
         )
     );
 
-    INSTANTIATE_TEST_CASE_P(Integ_TestPoseComparison, INTEG_TestPoseComparisonFixture,
+    INSTANTIATE_TEST_CASE_P(DISABLED_TestPoseComparison, TestPoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
+<<<<<<< HEAD
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
                 "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
+=======
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
+>>>>>>> development
             )
         )
     );

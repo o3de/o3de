@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/NetworkInput/NetworkInputChild.h>
+#include <Multiplayer/NetworkInput/NetworkInputChild.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 
@@ -23,6 +23,16 @@ namespace Multiplayer
         m_owner = rhs.m_owner;
         m_networkInput = rhs.m_networkInput;
         return *this;
+    }
+
+    bool NetworkInputChild::operator== (const NetworkInputChild& rhs) const
+    {
+        return m_owner == rhs.m_owner && m_networkInput.m_inputId == rhs.m_networkInput.m_inputId;
+    }
+
+    bool NetworkInputChild::operator!= (const NetworkInputChild& rhs) const
+    {
+        return !(m_owner == rhs.m_owner);
     }
 
     void NetworkInputChild::Attach(const ConstNetworkEntityHandle& entityHandle)

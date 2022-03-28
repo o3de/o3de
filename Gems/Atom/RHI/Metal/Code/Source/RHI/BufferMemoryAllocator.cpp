@@ -114,9 +114,20 @@ namespace AZ
             }
         }
 
+        float BufferMemoryAllocator::ComputeFragmentation() const
+        {
+            if (m_usePageAllocator)
+            {
+                return m_subAllocator.ComputeFragmentation();
+            }
+
+            return 0.f;
+        }
+
+
         BufferMemoryView BufferMemoryAllocator::AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             const size_t alignedSize = RHI::AlignUp(bufferDescriptor.m_byteCount, Alignment::Buffer);
             
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();

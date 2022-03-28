@@ -49,7 +49,11 @@ namespace AZ
             }
 
             // Extract exactly which texture asset we need to load from the given material and map type (diffuse, normal, etc).
+<<<<<<< HEAD
             static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(const AZ::RPI::MaterialAsset& materialAsset, const AZ::Name& propertyName)
+=======
+            static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(AZ::RPI::MaterialAsset& materialAsset, const AZ::Name& propertyName)
+>>>>>>> development
             {
                 if (!materialAsset.IsReady())
                 {
@@ -78,13 +82,13 @@ namespace AZ
                     AZ_Warning("DecalTextureArray", false, "Material property: %s does not have a valid asset Id", propertyName.GetCStr());
                     return {};
                 }
-                return { imageAsset.GetAs< AZ::RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                return Data::static_pointer_cast<AZ::RPI::StreamingImageAsset>(imageAsset);
             }
 
             static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(const AZ::Data::Asset<Data::AssetData> materialAssetData, const AZ::Name& propertyName)
             {
                 AZ_Assert(materialAssetData->IsReady(), "GetStreamingImageAsset() called with AssetData that is not ready.");
-                const AZ::RPI::MaterialAsset* materialAsset = materialAssetData.GetAs<AZ::RPI::MaterialAsset>();
+                AZ::RPI::MaterialAsset* materialAsset = materialAssetData.GetAs<AZ::RPI::MaterialAsset>();
                 return GetStreamingImageAsset(*materialAsset, propertyName);
             }
         }
@@ -141,7 +145,7 @@ namespace AZ
             return m_textureArrayPacked[mapType];
         }
 
-        bool DecalTextureArray::IsValidDecalMaterial(const AZ::RPI::MaterialAsset& materialAsset)
+        bool DecalTextureArray::IsValidDecalMaterial(AZ::RPI::MaterialAsset& materialAsset)
         {
             return GetStreamingImageAsset(materialAsset, GetMapName(DecalMapType_Diffuse)).IsReady();
         }
@@ -267,7 +271,11 @@ namespace AZ
             return AZ::RHI::GetImageSubresourceLayout(mipSize, descriptor.m_format);
         }
 
+<<<<<<< HEAD
         AZStd::array_view<uint8_t> DecalTextureArray::GetRawImageData(const AZ::Name& mapName, int arrayLevel, const int mip) const
+=======
+        AZStd::span<const uint8_t> DecalTextureArray::GetRawImageData(const AZ::Name& mapName, int arrayLevel, const int mip) const
+>>>>>>> development
         {
             // We always want to provide valid data to the AssetCreator for each texture.
             // If this spot in the array is empty, just provide some random image as filler.

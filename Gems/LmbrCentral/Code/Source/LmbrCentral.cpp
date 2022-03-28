@@ -38,9 +38,6 @@
 #include "Geometry/GeometrySystemComponent.h"
 #include <Asset/AssetSystemDebugComponent.h>
 
-// Unhandled asset types
-// Material
-#include "Unhandled/Material/MaterialAssetTypeInfo.h"
 // Other
 #include "Unhandled/Other/AudioAssetTypeInfo.h"
 #include "Unhandled/Other/CharacterPhysicsAssetTypeInfo.h"
@@ -61,10 +58,8 @@
 
 // Asset types
 #include <AzCore/Slice/SliceAsset.h>
-#include <AzCore/Script/ScriptAsset.h>
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
-#include <LmbrCentral/Rendering/MaterialHandle.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
@@ -81,11 +76,10 @@
 #include "Shape/CompoundShapeComponent.h"
 #include "Shape/SplineComponent.h"
 #include "Shape/PolygonPrismShapeComponent.h"
+#include "Shape/ReferenceShapeComponent.h"
 
 namespace LmbrCentral
 {
-    static const char* s_assetCatalogFilename = "assetcatalog.xml";
-
     using LmbrCentralAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
 
     // This component boots the required allocators for LmbrCentral everywhere but AssetBuilders
@@ -209,6 +203,7 @@ namespace LmbrCentral
             CapsuleShapeComponent::CreateDescriptor(),
             TubeShapeComponent::CreateDescriptor(),
             CompoundShapeComponent::CreateDescriptor(),
+            ReferenceShapeComponent::CreateDescriptor(),
             SplineComponent::CreateDescriptor(),
             PolygonPrismShapeComponent::CreateDescriptor(),
             NavigationSystemComponent::CreateDescriptor(),
@@ -224,9 +219,6 @@ namespace LmbrCentral
             PolygonPrismShapeDebugDisplayComponent::CreateDescriptor(),
             TubeShapeDebugDisplayComponent::CreateDescriptor(),
             AssetSystemDebugComponent::CreateDescriptor(),
-#if AZ_LOADSCREENCOMPONENT_ENABLED
-            LoadScreenComponent::CreateDescriptor(),
-#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
             });
 
         // This is an internal Amazon gem, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
@@ -253,9 +245,6 @@ namespace LmbrCentral
                    azrtti_typeid<AudioSystemComponent>(),
                    azrtti_typeid<BundlingSystemComponent>(),
                    azrtti_typeid<AssetSystemDebugComponent>(),
-#if AZ_LOADSCREENCOMPONENT_ENABLED
-                   azrtti_typeid<LoadScreenComponent>(),
-#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
         };
     }
 
@@ -354,12 +343,8 @@ namespace LmbrCentral
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Asset manager isn't ready!");
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
-        auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
-        if (assetCatalog)
+        if (auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler(); assetCatalog)
         {
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MaterialAsset>::Uuid());
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<DccMaterialAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MeshAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<CharacterDefinitionAsset>::Uuid());
 
@@ -369,26 +354,12 @@ namespace LmbrCentral
             assetCatalog->AddExtension("dds");
             assetCatalog->AddExtension("caf");
             assetCatalog->AddExtension("xml");
-            assetCatalog->AddExtension("mtl");
-            assetCatalog->AddExtension("dccmtl");
-            assetCatalog->AddExtension("lua");
             assetCatalog->AddExtension("sprite");
             assetCatalog->AddExtension("cax");
         }
 
-        CrySystemEventBus::Handler::BusConnect();
         AZ::Data::AssetManagerNotificationBus::Handler::BusConnect();
 
-
-        // Register unhandled asset type info
-        // Material
-        auto materialAssetTypeInfo = aznew MaterialAssetTypeInfo();
-        materialAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(materialAssetTypeInfo);
-        // DCC Material
-        auto dccMaterialAssetTypeInfo = aznew DccMaterialAssetTypeInfo();
-        dccMaterialAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(dccMaterialAssetTypeInfo);
         // Other
         auto audioAssetTypeInfo = aznew AudioAssetTypeInfo();
         audioAssetTypeInfo->Register();
@@ -448,7 +419,6 @@ namespace LmbrCentral
         m_unhandledAssetInfo.clear();
 
         AZ::Data::AssetManagerNotificationBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
 
         // AssetHandler's destructor calls Unregister()
         m_assetHandlers.clear();
@@ -459,6 +429,7 @@ namespace LmbrCentral
         }
         m_allocatorShutdowns.clear();
     }
+<<<<<<< HEAD
 
     void LmbrCentralSystemComponent::OnCrySystemPreInitialize([[maybe_unused]] ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)
     {
@@ -495,6 +466,8 @@ namespace LmbrCentral
         gEnv = nullptr;
 #endif
     }
+=======
+>>>>>>> development
 } // namespace LmbrCentral
 
 #if !defined(LMBR_CENTRAL_EDITOR)

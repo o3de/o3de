@@ -8,10 +8,10 @@
 
 #include <DefaultClientIdProvider.h>
 
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace AWSMetrics
 {
@@ -22,6 +22,7 @@ namespace AWSMetrics
 
     AZStd::string IdentityProvider::GetEngineVersion()
     {
+<<<<<<< HEAD
         static constexpr const char* EngineConfigFilePath = "@products@/engine.json";
         static constexpr const char* EngineVersionJsonKey = "O3DEVersion";
 
@@ -34,25 +35,25 @@ namespace AWSMetrics
 
         char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
         if (!fileIO->ResolvePath(EngineConfigFilePath, resolvedPath, AZ_MAX_PATH_LEN))
+=======
+        constexpr auto engineVersionKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey;
+        AZStd::string engineVersion;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr && settingsRegistry->Get(engineVersion, engineVersionKey))
+>>>>>>> development
         {
-            AZ_Error("AWSMetrics", false, "Failed to resolve the engine config file directory");
-            return "";
+            return engineVersion;
         }
 
-        auto readOutcome = AZ::JsonSerializationUtils::ReadJsonFile(resolvedPath);
-        if (!readOutcome.IsSuccess())
+        auto engineSettingsPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetEnginePath() } / "engine.json";
+        if (AZ::IO::SystemFile::Exists(engineSettingsPath.c_str()))
         {
-            AZ_Error("AWSMetrics", false, readOutcome.GetError().c_str());
-            return "";
+            AZ::SettingsRegistryImpl settingsRegistry;
+            if (settingsRegistry.MergeSettingsFile(
+                    engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey))
+            {
+                settingsRegistry.Get(engineVersion, engineVersionKey);
+            }
         }
-
-        rapidjson_ly::Document& jsonDoc = readOutcome.GetValue();
-        auto memberIt = jsonDoc.FindMember(EngineVersionJsonKey);
-        if (memberIt != jsonDoc.MemberEnd())
-        {
-            return memberIt->value.GetString();
-        }
-
-        return "";
+        return engineVersion;
     }
 }

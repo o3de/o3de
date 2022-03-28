@@ -17,14 +17,28 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
+<<<<<<< HEAD
+=======
+#include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
+>>>>>>> development
 
 // Hair specific
 #include <TressFX/TressFXConstantBuffers.h>
 
 #include <Passes/HairSkinningComputePass.h>
+<<<<<<< HEAD
 #include <Passes/HairPPLLRasterPass.h>
 #include <Passes/HairPPLLResolvePass.h>
 
+=======
+
+#include <Passes/HairPPLLRasterPass.h>
+#include <Passes/HairPPLLResolvePass.h>
+
+#include <Passes/HairShortCutGeometryDepthAlphaPass.h>
+#include <Passes/HairShortCutGeometryShadingPass.h>
+
+>>>>>>> development
 #include <Rendering/HairRenderObject.h>
 #include <Rendering/SharedBuffer.h>
 #include <Rendering/HairCommon.h>
@@ -73,9 +87,13 @@ namespace AZ
             {
                 Name HairParentPassName;
 
+<<<<<<< HEAD
                 Name HairPPLLRasterPassName;
                 Name HairPPLLResolvePassName;
 
+=======
+                // Compute passes
+>>>>>>> development
                 Name GlobalShapeConstraintsPassName;
                 Name CalculateStrandDataPassName;
                 Name VelocityShockPropagationPassName;
@@ -83,6 +101,19 @@ namespace AZ
                 Name LengthConstriantsWindAndCollisionPassName;
                 Name UpdateFollowHairPassName;
 
+<<<<<<< HEAD
+=======
+                // PPLL render passes
+                Name HairPPLLRasterPassName;
+                Name HairPPLLResolvePassName;
+
+                // ShortCut render passes
+                Name HairShortCutGeometryDepthAlphaPassName;
+                Name HairShortCutResolveDepthPassName;
+                Name HairShortCutGeometryShadingPassName;
+                Name HairShortCutResolveColorPassName;
+
+>>>>>>> development
             public:
                 AZ_RTTI(AZ::Render::Hair::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", RPI::FeatureProcessor);
 
@@ -100,6 +131,10 @@ namespace AZ
                 // FeatureProcessor overrides ...
                 void Activate() override;
                 void Deactivate() override;
+<<<<<<< HEAD
+=======
+                void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
+>>>>>>> development
                 void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
                 void Render(const FeatureProcessor::RenderPacket& packet) override;
 
@@ -117,6 +152,10 @@ namespace AZ
 
                 Data::Instance<HairSkinningComputePass> GetHairSkinningComputegPass();
                 Data::Instance<HairPPLLRasterPass> GetHairPPLLRasterPass();
+<<<<<<< HEAD
+=======
+                Data::Instance<RPI::Shader> GetGeometryRasterShader();
+>>>>>>> development
 
                 //! Update the hair objects materials array.
                 void FillHairMaterialsArray(std::vector<const AMD::TressFXRenderParams*>& renderSettings);
@@ -144,12 +183,23 @@ namespace AZ
 
                 bool InitPPLLFillPass();
                 bool InitPPLLResolvePass();
+<<<<<<< HEAD
+=======
+                bool InitShortCutRenderPasses();
+>>>>>>> development
                 bool InitComputePass(const Name& passName, bool allowIterations = false);
 
                 void BuildDispatchAndDrawItems(Data::Instance<HairRenderObject> renderObject);
 
                 void EnablePasses(bool enable);
 
+<<<<<<< HEAD
+=======
+                bool HasHairParentPass(RPI::RenderPipeline* renderPipeline);
+
+                bool AddHairParentPass(RPI::RenderPipeline* renderPipeline);
+
+>>>>>>> development
                 //! The following will serve to register the FP in the Thumbnail system
                 AZStd::vector<AZStd::string> m_hairFeatureProcessorRegistryName;
 
@@ -168,10 +218,24 @@ namespace AZ
                 //! Simulation Compute Passes
                 AZStd::unordered_map<Name, Data::Instance<HairSkinningComputePass> > m_computePasses;
 
+<<<<<<< HEAD
                 // Render Passes
                 Data::Instance<HairPPLLRasterPass> m_hairPPLLRasterPass = nullptr;
                 Data::Instance<HairPPLLResolvePass> m_hairPPLLResolvePass = nullptr;
 
+=======
+                // PPLL Render Passes
+                Data::Instance<HairPPLLRasterPass> m_hairPPLLRasterPass = nullptr;
+                Data::Instance<HairPPLLResolvePass> m_hairPPLLResolvePass = nullptr;
+
+                // ShortCut Render Passes - special case for the geometry render passes
+                Data::Instance<HairShortCutGeometryDepthAlphaPass> m_hairShortCutGeometryDepthAlphaPass = nullptr;
+                Data::Instance<HairShortCutGeometryShadingPass> m_hairShortCutGeometryShadingPass = nullptr;
+
+                // Cache the pass request data for creating a hair parent pass
+                AZ::Data::Asset<AZ::RPI::AnyAsset> m_hairPassRequestAsset;
+
+>>>>>>> development
                 //--------------------------------------------------------------
                 //                      Per Pass Resources 
                 //--------------------------------------------------------------
@@ -190,12 +254,19 @@ namespace AZ
                 float m_currentDeltaTime = 0.02f;
                 //! flag to disable/enable feature processor adding dispatch calls to compute passes.
                 bool m_addDispatchEnabled = true;
+<<<<<<< HEAD
                 bool m_sharedResourcesCreated = false;
+=======
+>>>>>>> development
                 //! reload / pipeline changes force build dispatches and render items
                 bool m_forceRebuildRenderData = false;      
                 bool m_forceClearRenderData = false;
                 bool m_initialized = false;
                 bool m_isEnabled = true;
+<<<<<<< HEAD
+=======
+                bool m_usePPLLRenderTechnique = false;
+>>>>>>> development
                 static uint32_t s_instanceCount;
 
                 HairGlobalSettings m_hairGlobalSettings;

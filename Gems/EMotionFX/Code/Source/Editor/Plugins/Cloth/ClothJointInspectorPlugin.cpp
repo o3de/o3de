@@ -18,6 +18,7 @@
 #include <Editor/SkeletonModel.h>
 #include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
 #include <Editor/Plugins/Cloth/ClothJointWidget.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
 
 
@@ -172,7 +173,7 @@ namespace EMotionFX
         ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::Cloth);
     }
 
-    void ClothJointInspectorPlugin::Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
+    void ClothJointInspectorPlugin::LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
     {
         EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
         if (!activeViewWidget)
@@ -188,7 +189,7 @@ namespace EMotionFX
 
         const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
 
-        ColliderContainerWidget::RenderColliders(PhysicsSetup::Cloth,
+        ColliderContainerWidget::LegacyRenderColliders(PhysicsSetup::Cloth,
             renderOptions->GetClothColliderColor(),
             renderOptions->GetSelectedClothColliderColor(),
             renderPlugin,

@@ -6,13 +6,11 @@
  *
  */
 
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <Asset/EditorAssetSystemComponent.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IOUtils.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <Editor/Framework/ScriptCanvasGraphUtilities.h>
@@ -27,7 +25,7 @@ namespace ScriptCanvasTestUtilitiesCPP
 {
     const char* k_defaultExtension = "scriptcanvas";
     const char* k_scriptEventExtension = "scriptevents";
-    const char* k_unitTestDirPathRelative = "@engroot@/Gems/ScriptCanvasTesting/Assets/ScriptCanvas/UnitTests";
+    const char* k_unitTestDirPathRelative = "@gemroot:ScriptCanvasTesting@/Assets/ScriptCanvas/UnitTests";
 }
 
 namespace ScriptCanvasTests

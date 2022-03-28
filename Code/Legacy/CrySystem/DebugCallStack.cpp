@@ -17,7 +17,6 @@
 #include "System.h"
 
 #include <AzCore/Debug/StackTracer.h>
-#include <AzCore/Debug/EventTraceDrillerBus.h>
 #include <AzCore/std/parallel/spin_mutex.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -47,8 +46,6 @@ extern HMODULE gDLLHandle;
 
 static HWND hwndException = 0;
 static bool g_bUserDialog = true;         // true=on crash show dialog box, false=supress user interaction
-
-static int  PrintException(EXCEPTION_POINTERS* pex);
 
 static bool IsFloatingPointException(EXCEPTION_POINTERS* pex);
 
@@ -158,8 +155,6 @@ AZStd::spin_mutex g_lockThreadDumpList;
 
 void MarkThisThreadForDebugging(const char* name)
 {
-    EBUS_EVENT(AZ::Debug::EventTraceDrillerSetupBus, SetThreadName, AZStd::this_thread::get_id(), name);
-
     AZStd::scoped_lock lock(g_lockThreadDumpList);
     DWORD id = GetCurrentThreadId();
     if (g_nDebugThreads == sizeof(g_idDebugThreads) / sizeof(g_idDebugThreads[0]))
@@ -222,6 +217,9 @@ void UpdateFPExceptionsMaskForThreads()
 //////////////////////////////////////////////////////////////////////////
 int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
 {
+    AZ_TracePrintf("Exit", "Exception with exit code: 0x%x", exception_pointer->ExceptionRecord->ExceptionCode);
+    AZ::Debug::Trace::PrintCallstack("Exit");
+
     if (gEnv == NULL)
     {
         return EXCEPTION_EXECUTE_HANDLER;
@@ -666,8 +664,6 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
 INT_PTR CALLBACK DebugCallStack::ExceptionDialogProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static EXCEPTION_POINTERS* pex;
-
-    static char errorString[32768] = "";
 
     switch (message)
     {

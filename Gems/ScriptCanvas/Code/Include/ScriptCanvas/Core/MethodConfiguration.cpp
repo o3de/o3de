@@ -13,6 +13,7 @@
 
 #include <ScriptCanvas/Core/Contracts/MethodOverloadContract.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
+#include "../../GraphCanvas/Code/Source/Translation/TranslationBus.h"
 
 namespace ScriptCanvas
 {
@@ -22,17 +23,38 @@ namespace ScriptCanvas
         {
             if (const AZ::BehaviorParameter * argument = method.GetArgument(argIndex))
             {
-                const AZStd::string argumentTypeName = replaceTypeName.empty()
-                    ? AZ::BehaviorContextHelper::IsStringParameter(*argument)
-                    ? Data::GetName(Data::Type::String())
-                    : Data::GetName(Data::FromAZType(argument->m_typeId))
-                    : AZStd::string(replaceTypeName);
-
                 const AZStd::string* argumentNamePtr = method.GetArgumentName(argIndex);
+                // Use name from behavior context metadata if available
+                if (argumentNamePtr && !argumentNamePtr->empty())
+                {
+                    return *argumentNamePtr;
+                }
+                else
+                {
+                    AZStd::string_view argumentTypeName = replaceTypeName;
+                    if (argumentTypeName.empty())
+                    {
+                        if (AZ::BehaviorContextHelper::IsStringParameter(*argument))
+                        {
+                            argumentTypeName = Data::GetName(Data::Type::String());
+                        }
+                        else
+                        {
+                            argumentTypeName = Data::GetName(Data::FromAZType(argument->m_typeId));
+                        }
+                    }
 
-                return argumentNamePtr && !argumentNamePtr->empty()
-                    ? *argumentNamePtr
-                    : (AZStd::string::format("%s:%2zu", argumentTypeName.data(), argIndex));
+                    size_t argumentNum = method.GetNumArguments();
+                    // Provide default argument name based on index if there is more than one argument
+                    if (argumentNum == 1)
+                    {
+                        return argumentTypeName;
+                    }
+                    else
+                    {
+                        return AZStd::string::format("%s:%2zu", argumentTypeName.data(), argIndex);
+                    }
+                }
             }
 
             return {};
@@ -55,13 +77,30 @@ namespace ScriptCanvas
             {
                 const Data::Type outputType = (unpackedTypes.size() == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result)) ? Data::Type::String() : Data::FromAZType(unpackedTypes[resultIndex]);
 
-                const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).data()));
+                AZStd::string resultSlotName(Data::GetName(outputType));
+
+                AZStd::string className = outputConfig.config.m_className ? *outputConfig.config.m_className : "";
+                if (className.empty())
+                {
+                    className = outputConfig.config.m_prettyClassName;
+                }
+
+                GraphCanvas::TranslationKey key;
+                key << "BehaviorClass" << className << "methods" << *outputConfig.config.m_lookupName << "results" << resultIndex << "details";
+
+                GraphCanvas::TranslationRequests::Details details;
+                GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+                if (!details.m_name.empty())
+                {
+                    resultSlotName = details.m_name;
+                }
+
                 SlotId addedSlotId;
 
                 if (outputConfig.isReturnValueOverloaded)
                 {
                     DynamicDataSlotConfiguration slotConfiguration;
-                    //slotConfiguration.m_name = outputConfig.outputNamePrefix + resultSlotName;
 
                     slotConfiguration.m_dynamicDataType = outputConfig.methodNode->GetOverloadedOutputType(resultIndex);
 

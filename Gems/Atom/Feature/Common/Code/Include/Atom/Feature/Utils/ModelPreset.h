@@ -28,9 +28,8 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ModelPreset, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            AZStd::string m_displayName;
+            static constexpr const char* Extension = "modelpreset.azasset";
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
-            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_previewImageAsset;
         };
 
         using ModelPresetPtr = AZStd::shared_ptr<ModelPreset>;

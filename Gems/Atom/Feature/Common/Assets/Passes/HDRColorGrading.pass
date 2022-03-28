@@ -73,7 +73,7 @@
                         },
                         {
                             "Name": "m_colorGradingPreSaturation",
-                            "Value": 1.0 // -100 ... 100
+                            "Value": 1.0 // 0 ... 2
                         },
                         {
                             "Name": "m_colorFilterIntensity",
@@ -101,7 +101,7 @@
                         },
                         {
                             "Name": "m_colorGradingPostSaturation",
-                            "Value": 1.0 // -100 ... 100
+                            "Value": 1.0 // 0 ... 2
                         },
                         {
                             "Name": "m_smhShadowsStart",

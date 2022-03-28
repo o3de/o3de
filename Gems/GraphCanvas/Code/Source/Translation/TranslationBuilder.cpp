@@ -30,20 +30,15 @@ namespace GraphCanvas
     void TranslationAssetWorker::Activate()
     {
         // Use AssetCatalog service to register ScriptCanvas asset type and extension
-        AZ::Data::AssetType assetType(azrtti_typeid<TranslationAsset>());
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddAssetType, assetType);
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, assetType);
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, TranslationAsset::GetFileFilter());
-
         m_assetHandler = AZStd::make_unique<TranslationAssetHandler>();
-        if (!AZ::Data::AssetManager::Instance().GetHandler(assetType))
-        {
-            AZ::Data::AssetManager::Instance().RegisterHandler(m_assetHandler.get(), assetType);
-        }
+
+        AssetBuilderSDK::AssetBuilderCommandBus::Handler::BusConnect(GetUUID());
     }
 
     void TranslationAssetWorker::Deactivate()
     {
+        AssetBuilderSDK::AssetBuilderCommandBus::Handler::BusDisconnect();
+
         if (AZ::Data::AssetManager::Instance().GetHandler(AZ::Data::AssetType{ azrtti_typeid<TranslationAsset>() }))
         {
             AZ::Data::AssetManager::Instance().UnregisterHandler(m_assetHandler.get());

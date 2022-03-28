@@ -37,7 +37,7 @@ namespace UnitTest
             appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
             appDesc.m_stackRecordLevels = 20;
 
-            m_systemEntity = m_application.Create(appDesc);
+            m_systemEntity = m_application->Create(appDesc);
             m_systemEntity->Init();
             m_systemEntity->Activate();
         }
@@ -54,7 +54,9 @@ namespace UnitTest
         {
             m_env.reset();
             gEnv = m_priorEnv;
-            m_application.Destroy();
+            m_application->Destroy();
+            delete m_application;
+            m_application = nullptr;
         }
 
         struct StubEnv
@@ -62,8 +64,8 @@ namespace UnitTest
             SSystemGlobalEnvironment m_stubEnv;
         };
 
-        AZ::ComponentApplication m_application;
-        AZ::Entity* m_systemEntity;
+        AZ::ComponentApplication* m_application = nullptr;
+        AZ::Entity* m_systemEntity = nullptr;
         AZStd::unique_ptr<StubEnv> m_env;
 
         SSystemGlobalEnvironment* m_priorEnv = nullptr;

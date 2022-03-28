@@ -141,11 +141,6 @@ typedef uint8                               byte;
 #endif
 
 
-#ifndef SAFE_RELEASE_FORCE
-#define SAFE_RELEASE_FORCE(p)       { if (p) { (p)->ReleaseForce();  (p) = NULL; } \
-}
-#endif
-
 #define MAKEWORD(a, b)      ((WORD)(((BYTE)((DWORD_PTR)(a) & 0xff)) | ((WORD)((BYTE)((DWORD_PTR)(b) & 0xff))) << 8))
 #define MAKELONG(a, b)      ((LONG)(((WORD)((DWORD_PTR)(a) & 0xffff)) | ((DWORD)((WORD)((DWORD_PTR)(b) & 0xffff))) << 16))
 #define LOWORD(l)           ((WORD)((DWORD_PTR)(l) & 0xffff))
@@ -471,22 +466,6 @@ inline int64 CryGetTicks()
     QueryPerformanceCounter(&counter);
     return counter.QuadPart;
 }
-
-inline int64 CryGetTicksPerSec()
-{
-    LARGE_INTEGER li;
-    QueryPerformanceFrequency(&li);
-    return li.QuadPart;
-}
-/*
- inline uint32 GetTickCount()
- {
- LARGE_INTEGER count, freq;
- QueryPerformanceCounter(&count);
- QueryPerformanceFrequency(&freq);
- return uint32(count.QuadPart * 1000 / freq.QuadPart);
- }
- */
 
 #ifdef _RELEASE
 #define __debugbreak()

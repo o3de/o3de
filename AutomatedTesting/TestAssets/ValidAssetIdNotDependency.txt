@@ -1,5 +1,7 @@
+File extensions are separated from file names, so the missing dependency scanner doesn't find when scanning, and only finds the asset IDs in this file.
+
  /textures /_dev_Purple . tif, the product ID is for one of the mips.
 {A2482826-053D-5634-A27B-084B1326AAE5}:[1002]
 _dev_Red . tif, another mip, different formatting.
-2ef92b8D044E5C278E2BB1AC0374A4E7:1003
+2ef92b8D044E5C278E2BB1AC0374A4E7:1000
 _dev_White.tif, {D83B36F1-61A6-5001-B191-4D0CE282E236}-1002 asset ID inline.

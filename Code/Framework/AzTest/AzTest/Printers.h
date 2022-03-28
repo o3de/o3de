@@ -37,4 +37,11 @@ namespace AZ::IO
     void PrintTo(const AZ::IO::FixedMaxPath& path, ::std::ostream* os);
 }
 
+namespace AZ
+{
+    class EntityId;
+
+    void PrintTo(AZ::EntityId entityId, ::std::ostream* os);
+}
+
 #include <AzTest/Printers.inl>

@@ -11,7 +11,6 @@
 #include <GridMate/Replica/RemoteProcedureCall.h>
 #include <GridMate/Replica/Replica.h>
 #include <GridMate/Replica/ReplicaChunkDescriptor.h>
-#include <GridMate/Replica/ReplicaDrillerEvents.h>
 #include <GridMate/Replica/ReplicaMgr.h>
 #include <GridMate/Replica/ReplicaUtils.h>
 
@@ -32,14 +31,12 @@ namespace GridMate
         m_replicaChunk->QueueRPCRequest(rpc);
     }
 
-    void RpcBase::OnRpcRequest(GridMate::Internal::RpcRequest* rpc) const
+    void RpcBase::OnRpcRequest(GridMate::Internal::RpcRequest*) const
     {
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnRequestRpc, m_replicaChunk, rpc);
     }
 
-    void RpcBase::OnRpcInvoke(GridMate::Internal::RpcRequest* rpc) const
+    void RpcBase::OnRpcInvoke(GridMate::Internal::RpcRequest*) const
     {
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnInvokeRpc, m_replicaChunk, rpc);
     }
 
     PeerId RpcBase::GetSourcePeerId()

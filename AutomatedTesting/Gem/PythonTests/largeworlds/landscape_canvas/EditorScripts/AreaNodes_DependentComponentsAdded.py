@@ -68,8 +68,7 @@ def AreaNodes_DependentComponentsAdded():
         newEntityId = parameters[0]
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')
@@ -96,7 +95,7 @@ def AreaNodes_DependentComponentsAdded():
         'SpawnerAreaNode': [
             'Vegetation Layer Spawner',
             'Vegetation Asset List',
-            'Vegetation Reference Shape'
+            'Shape Reference'
         ],
         'MeshBlockerAreaNode': [
             'Vegetation Layer Blocker (Mesh)',
@@ -104,7 +103,7 @@ def AreaNodes_DependentComponentsAdded():
         ],
         'BlockerAreaNode': [
             'Vegetation Layer Blocker',
-            'Vegetation Reference Shape'
+            'Shape Reference'
         ]
     }
 

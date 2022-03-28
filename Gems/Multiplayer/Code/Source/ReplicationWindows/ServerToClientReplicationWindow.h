@@ -20,6 +20,7 @@
 namespace Multiplayer
 {
     class NetSystemComponent;
+    class NetworkHierarchyRootComponent;
 
     class ServerToClientReplicationWindow
         : public IReplicationWindow
@@ -56,7 +57,7 @@ namespace Multiplayer
         void OnEntityActivated(AZ::Entity* entity);
         void OnEntityDeactivated(AZ::Entity* entity);
 
-        //void CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController);
+        void UpdateHierarchyReplicationSet(ReplicationSet& replicationSet, NetworkHierarchyRootComponent& hierarchyComponent);
 
         void EvaluateConnection();
         void AddEntityToReplicationSet(ConstNetworkEntityHandle& entityHandle, float priority, float distanceSquared);
@@ -75,8 +76,11 @@ namespace Multiplayer
         AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
         AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
+<<<<<<< HEAD
         //NetBindComponent* m_controlledNetBindComponent = nullptr;
 
+=======
+>>>>>>> development
         AzNetworking::IConnection* m_connection = nullptr;
 
         // Cached values to detect a poor network connection

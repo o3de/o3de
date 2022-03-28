@@ -10,6 +10,15 @@
 
 namespace AzToolsFramework
 {
+    AZ::Transform ApplySpace(const AZ::Transform& localTransform, const AZ::Transform& space, const AZ::Vector3& nonUniformScale)
+    {
+        AZ::Transform result;
+        result.SetRotation(space.GetRotation() * localTransform.GetRotation());
+        result.SetTranslation(space.TransformPoint(nonUniformScale * localTransform.GetTranslation()));
+        result.SetUniformScale(space.GetUniformScale() * localTransform.GetUniformScale());
+        return result;
+    }
+
     const AZ::Transform& ManipulatorSpace::GetSpace() const
     {
         return m_space;
@@ -32,11 +41,7 @@ namespace AzToolsFramework
 
     AZ::Transform ManipulatorSpace::ApplySpace(const AZ::Transform& localTransform) const
     {
-        AZ::Transform result;
-        result.SetRotation(m_space.GetRotation() * localTransform.GetRotation());
-        result.SetTranslation(m_space.TransformPoint(m_nonUniformScale * localTransform.GetTranslation()));
-        result.SetUniformScale(m_space.GetUniformScale() * localTransform.GetUniformScale());
-        return result;
+        return AzToolsFramework::ApplySpace(localTransform, m_space, m_nonUniformScale);
     }
 
     const AZ::Vector3& ManipulatorSpaceWithLocalPosition::GetLocalPosition() const

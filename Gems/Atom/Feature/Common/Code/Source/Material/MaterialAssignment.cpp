@@ -10,6 +10,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Material/MaterialAssignmentSerializer.h>
@@ -35,7 +36,20 @@ namespace AZ
                 serializeContext->Class<MaterialAssignment>()
                     ->Version(1)
                     ->Field("MaterialAsset", &MaterialAssignment::m_materialAsset)
-                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides);
+                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<MaterialAssignment>(
+                        "Material Assignment", "Material Assignment")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_materialAsset, "Material Asset", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_propertyOverrides, "Property Overrides", "")
+                        ;
+                }
             }
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -98,6 +112,14 @@ namespace AZ
             if (m_materialAsset.IsReady())
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
+<<<<<<< HEAD
+=======
+                AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+            }
+            else if (m_defaultMaterialAsset.IsReady())
+            {
+                m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
+>>>>>>> development
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
             }
             else if (m_defaultMaterialAsset.IsReady())
@@ -146,6 +168,80 @@ namespace AZ
                         {
                             m_materialInstance->SetPropertyValue(
                                 materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
+                        }
+                    }
+                }
+
+                return m_materialInstance->Compile();
+            }
+
+            return false;
+        }
+
+        void MaterialAssignment::Release()
+        {
+            if (!m_materialInstancePreCreated)
+            {
+                m_materialInstance = nullptr;
+            }
+            m_materialAsset.Release();
+            m_defaultMaterialAsset.Release();
+        }
+
+        bool MaterialAssignment::RequiresLoading() const
+        {
+            return
+                !m_materialInstancePreCreated &&
+                !m_materialAsset.IsReady() &&
+                !m_materialAsset.IsLoading() &&
+                !m_defaultMaterialAsset.IsReady() &&
+                !m_defaultMaterialAsset.IsLoading();
+        }
+
+        bool MaterialAssignment::ApplyProperties()
+        {
+            // if there is no instance or no properties there's nothing to apply
+            if (!m_materialInstance || m_propertyOverrides.empty())
+            {
+                return true;
+            }
+
+            if (m_materialInstance->CanCompile())
+            {
+                for (const auto& propertyPair : m_propertyOverrides)
+                {
+                    if (!propertyPair.second.empty())
+                    {
+                        bool wasRenamed = false;
+                        Name newName;
+                        RPI::MaterialPropertyIndex materialPropertyIndex =
+                            m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
+
+                        // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add
+                        // some extra info to help the user resolve it.
+                        AZ_Warning(
+                            "MaterialAssignment", !wasRenamed,
+                            "Consider running \"Apply Automatic Property Updates\" to use the latest property names.",
+                            propertyPair.first.GetCStr(), newName.GetCStr());
+
+                        if (wasRenamed && m_propertyOverrides.find(newName) != m_propertyOverrides.end())
+                        {
+                            materialPropertyIndex.Reset();
+
+                            AZ_Warning(
+                                "MaterialAssignment", false,
+                                "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with "
+                                "the old name will be ignored.",
+                                propertyPair.first.GetCStr(), newName.GetCStr());
+                        }
+
+                        if (!materialPropertyIndex.IsNull())
+                        {
+                            const auto propertyDescriptor =
+                                m_materialInstance->GetMaterialPropertiesLayout()->GetPropertyDescriptor(materialPropertyIndex);
+
+                            m_materialInstance->SetPropertyValue(
+                                materialPropertyIndex, ConvertMaterialPropertyValueFromScript(propertyDescriptor, propertyPair.second));
                         }
                     }
                 }
@@ -264,6 +360,59 @@ namespace AZ
             }
 
             return MaterialAssignmentId();
+        }
+
+        template<typename T>
+        AZ::RPI::MaterialPropertyValue ConvertMaterialPropertyValueNumericType(const AZStd::any& value)
+        {
+            if (value.is<int32_t>())
+            {
+                return aznumeric_cast<T>(AZStd::any_cast<int32_t>(value));
+            }
+            if (value.is<uint32_t>())
+            {
+                return aznumeric_cast<T>(AZStd::any_cast<uint32_t>(value));
+            }
+            if (value.is<float>())
+            {
+                return aznumeric_cast<T>(AZStd::any_cast<float>(value));
+            }
+            if (value.is<double>())
+            {
+                return aznumeric_cast<T>(AZStd::any_cast<double>(value));
+            }
+
+            return AZ::RPI::MaterialPropertyValue::FromAny(value);
+        }
+
+        AZ::RPI::MaterialPropertyValue ConvertMaterialPropertyValueFromScript(
+            const AZ::RPI::MaterialPropertyDescriptor* propertyDescriptor, const AZStd::any& value)
+        {
+            switch (propertyDescriptor->GetDataType())
+            {
+            case AZ::RPI::MaterialPropertyDataType::Enum:
+                if (value.is<AZ::Name>())
+                {
+                    return propertyDescriptor->GetEnumValue(AZStd::any_cast<AZ::Name>(value));
+                }
+                if (value.is<AZStd::string>())
+                {
+                    return propertyDescriptor->GetEnumValue(AZ::Name(AZStd::any_cast<AZStd::string>(value)));
+                }
+                return ConvertMaterialPropertyValueNumericType<uint32_t>(value);
+            case AZ::RPI::MaterialPropertyDataType::Int:
+                return ConvertMaterialPropertyValueNumericType<int32_t>(value);
+            case AZ::RPI::MaterialPropertyDataType::UInt:
+                return ConvertMaterialPropertyValueNumericType<uint32_t>(value);
+            case AZ::RPI::MaterialPropertyDataType::Float:
+                return ConvertMaterialPropertyValueNumericType<float>(value);
+            case AZ::RPI::MaterialPropertyDataType::Bool:
+                return ConvertMaterialPropertyValueNumericType<bool>(value);
+            default:
+                break;
+            }
+
+            return AZ::RPI::MaterialPropertyValue::FromAny(value);
         }
     } // namespace Render
 } // namespace AZ

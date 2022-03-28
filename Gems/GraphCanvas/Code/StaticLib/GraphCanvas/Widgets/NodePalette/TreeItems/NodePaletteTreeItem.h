@@ -9,16 +9,13 @@
 
 #include <AzCore/PlatformIncl.h>
 
-AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
-#include <QIcon>
-AZ_POP_DISABLE_WARNING
-
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 
 #include <GraphCanvas/Widgets/GraphCanvasTreeItem.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
+#include <AzCore/IO/Path/Path.h>
 
 namespace GraphCanvas
 {
@@ -86,6 +83,9 @@ namespace GraphCanvas
 
         void SetError(const AZStd::string& errorString);
 
+        virtual AZ::IO::Path GetTranslationDataPath() const { return AZ::IO::Path(); }
+        virtual void GenerateTranslationData() {}
+
     protected:
 
         void PreOnChildAdded(GraphCanvasTreeItem* item) override;
@@ -113,7 +113,6 @@ namespace GraphCanvas
     private:
 
         // Error Display
-        QIcon m_errorIcon;
         QString m_errorString;
 
         AZStd::string m_styleOverride;

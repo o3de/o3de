@@ -16,18 +16,11 @@
 #include <QScopedValueRollback>
 #include <QToolBar>
 #include <QLoggingCategory>
-#if defined(AZ_PLATFORM_WINDOWS)
-#include <QtGui/qpa/qplatformnativeinterface.h>
-#include <QtGui/private/qhighdpiscaling_p.h>
-#endif
+
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-// AzFramework
-#if defined(AZ_PLATFORM_WINDOWS)
-#   include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
-#endif // defined(AZ_PLATFORM_WINDOWS)
 
 // AzQtComponents
 #include <AzQtComponents/Components/GlobalEventFilter.h>
@@ -38,16 +31,6 @@
 // Editor
 #include "Settings.h"
 #include "CryEdit.h"
-
-
-enum
-{
-    // in milliseconds
-    GameModeIdleFrequency = 0,
-    EditorModeIdleFrequency = 1,
-    InactiveModeFrequency = 10,
-    UninitializedFrequency = 9999,
-};
 
 Q_LOGGING_CATEGORY(InputDebugging, "o3de.editor.input")
 
@@ -241,20 +224,13 @@ namespace Editor
 
     EditorQtApplication::EditorQtApplication(int& argc, char** argv)
         : AzQtApplication(argc, argv)
-        , m_inWinEventFilter(false)
         , m_stylesheet(new AzQtComponents::O3DEStylesheet(this))
-        , m_idleTimer(new QTimer(this))
     {
-        m_idleTimer->setInterval(UninitializedFrequency);
-
         setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"));
 
         // set the default key store for our preferences:
         setApplicationName("O3DE Editor");
 
-        connect(m_idleTimer, &QTimer::timeout, this, &EditorQtApplication::maybeProcessIdle);
-
-        connect(this, &QGuiApplication::applicationStateChanged, this, [this] { ResetIdleTimerInterval(PollState); });
         installEventFilter(this);
 
         // Disable our debugging input helpers by default
@@ -333,6 +309,10 @@ namespace Editor
                 winapp->OnIdle(0);
             }
         }
+        if (m_applicationActive)
+        {
+            QTimer::singleShot(1, this, &EditorQtApplication::maybeProcessIdle);
+        }
     }
 
     void EditorQtApplication::InstallQtLogHandler()
@@ -368,86 +348,10 @@ namespace Editor
         UninstallEditorTranslators();
     }
 
-#if defined(AZ_PLATFORM_WINDOWS)
-    bool EditorQtApplication::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, long* result)
+    EditorQtApplication* EditorQtApplication::instance()
     {
-        MSG* msg = (MSG*)message;
-
-        if (msg->message == WM_MOVING || msg->message == WM_SIZING)
-        {
-            m_isMovingOrResizing = true;
-        }
-        else if (msg->message == WM_EXITSIZEMOVE)
-        {
-            m_isMovingOrResizing = false;
-        }
-
-        // Prevent the user from being able to move the window in game mode.
-        // This is done during the hit test phase to bypass the native window move messages. If the window
-        // decoration wrapper title bar contains the cursor, set the result to HTCLIENT instead of
-        // HTCAPTION.
-        if (msg->message == WM_NCHITTEST && GetIEditor()->IsInGameMode())
-        {
-            const LRESULT defWinProcResult = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
-            if (defWinProcResult == 1)
-            {
-                if (QWidget* widget = QWidget::find((WId)msg->hwnd))
-                {
-                    if (auto wrapper = qobject_cast<const AzQtComponents::WindowDecorationWrapper *>(widget))
-                    {
-                        AzQtComponents::TitleBar* titleBar = wrapper->titleBar();
-                        const short global_x = static_cast<short>(LOWORD(msg->lParam));
-                        const short global_y = static_cast<short>(HIWORD(msg->lParam));
-
-                        const QPoint globalPos = QHighDpi::fromNativePixels(QPoint(global_x, global_y), widget->window()->windowHandle());
-                        const QPoint local = titleBar->mapFromGlobal(globalPos);
-                        if (titleBar->draggableRect().contains(local) && !titleBar->isTopResizeArea(globalPos))
-                        {
-                            *result = HTCLIENT;
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Ensure that the Windows WM_INPUT messages get passed through to the AzFramework input system.
-        // These events are only broadcast in game mode. In Editor mode, RenderViewportWidget creates synthetic
-        // keyboard and mouse events via Qt.
-        if (GetIEditor()->IsInGameMode())
-        {
-            if (msg->message == WM_INPUT)
-            {
-                UINT rawInputSize;
-                const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
-                GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, nullptr, &rawInputSize, rawInputHeaderSize);
-
-                AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
-                LPBYTE rawInputBytes = rawInputBytesArray.data();
-
-                [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
-                CRY_ASSERT(bytesCopied == rawInputSize);
-
-                RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
-                CRY_ASSERT(rawInput);
-
-                AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);
-
-                return false;
-            }
-            else if (msg->message == WM_DEVICECHANGE)
-            {
-                if (msg->wParam == 0x0007) // DBT_DEVNODES_CHANGED
-                {
-                    AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
-                }
-                return true;
-            }
-        }
-
-        return false;
+        return static_cast<EditorQtApplication*>(QApplication::instance());
     }
-#endif
 
     void EditorQtApplication::OnEditorNotifyEvent(EEditorNotifyEvent event)
     {
@@ -460,14 +364,6 @@ namespace Editor
 
             case eNotify_OnQuit:
                 GetIEditor()->UnregisterNotifyListener(this);
-            break;
-
-            case eNotify_OnBeginGameMode:
-                // GetIEditor()->IsInGameMode() Isn't reliable when called from within the notification handler
-                ResetIdleTimerInterval(GameMode);
-            break;
-            case eNotify_OnEndGameMode:
-                ResetIdleTimerInterval(EditorMode);
             break;
         }
     }
@@ -503,11 +399,6 @@ namespace Editor
     const QColor& EditorQtApplication::GetColorByName(const QString& name)
     {
         return m_stylesheet->GetColorByName(name);
-    }
-
-    EditorQtApplication* EditorQtApplication::instance()
-    {
-        return static_cast<EditorQtApplication*>(QApplication::instance());
     }
 
     bool EditorQtApplication::IsActive()
@@ -546,55 +437,16 @@ namespace Editor
 
     void EditorQtApplication::EnableOnIdle(bool enable)
     {
+        m_applicationActive = enable;
         if (enable)
         {
-            if (m_idleTimer->interval() == UninitializedFrequency)
-            {
-                ResetIdleTimerInterval();
-            }
-
-            m_idleTimer->start();
-        }
-        else
-        {
-            m_idleTimer->stop();
+            QTimer::singleShot(0, this, &EditorQtApplication::maybeProcessIdle);
         }
     }
 
     bool EditorQtApplication::OnIdleEnabled() const
     {
-        if (m_idleTimer->interval() == UninitializedFrequency)
-        {
-            return false;
-        }
-
-        return m_idleTimer->isActive();
-    }
-
-    void EditorQtApplication::ResetIdleTimerInterval(TimerResetFlag flag)
-    {
-        bool isInGameMode = flag == GameMode;
-        if (flag == PollState)
-        {
-            isInGameMode = GetIEditor() ? GetIEditor()->IsInGameMode() : false;
-        }
-
-        // Game mode takes precedence over anything else
-        if (isInGameMode)
-        {
-            m_idleTimer->setInterval(GameModeIdleFrequency);
-        }
-        else
-        {
-            if (applicationState() & Qt::ApplicationActive)
-            {
-                m_idleTimer->setInterval(EditorModeIdleFrequency);
-            }
-            else
-            {
-                m_idleTimer->setInterval(InactiveModeFrequency);
-            }
-        }
+        return m_applicationActive;
     }
 
     bool EditorQtApplication::eventFilter(QObject* object, QEvent* event)
@@ -613,42 +465,6 @@ namespace Editor
         case QEvent::KeyRelease:
             m_pressedKeys.remove(reinterpret_cast<QKeyEvent*>(event)->key());
             break;
-#ifdef AZ_PLATFORM_WINDOWS
-        case QEvent::Leave:
-        {
-            // if we receive a leave event for a toolbar on Windows
-            // check first whether we really left it. If we didn't: start checking
-            // for the tool bar under the mouse by timer to check when we really left.
-            // Synthesize a new leave event then. Workaround for LY-69788
-            auto toolBarAt = [](const QPoint& pos) -> QToolBar* {
-                QWidget* widget = qApp->widgetAt(pos);
-                while (widget != nullptr)
-                {
-                    if (QToolBar* tb = qobject_cast<QToolBar*>(widget))
-                    {
-                        return tb;
-                    }
-                    widget = widget->parentWidget();
-                }
-                return nullptr;
-            };
-            if (object == toolBarAt(QCursor::pos()))
-            {
-                QTimer* t = new QTimer(object);
-                t->start(100);
-                connect(t, &QTimer::timeout, object, [t, object, toolBarAt]() {
-                    if (object != toolBarAt(QCursor::pos()))
-                    {
-                        QEvent event(QEvent::Leave);
-                        qApp->sendEvent(object, &event);
-                        t->deleteLater();
-                    }
-                });
-                return true;
-            }
-            break;
-        }
-#endif
         default:
             break;
         }

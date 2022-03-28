@@ -1,7 +1,7 @@
 {
     "description": "A material for rendering terrain with a physically-based rendering (PBR) material shading model.",
+    "version": 1,
     "propertyLayout": {
-        "version": 1,
         "groups": [
             {
                 "id": "settings",
@@ -88,18 +88,33 @@
                     }
                 }
             ],
-            "settings": [
+            "baseColor": [
                 {
-                    "id": "heightmapImage",
-                    "displayName": "Heightmap Image",
-                    "description": "Heightmap of the terrain, controlled by the runtime.",
-                    "type": "Image",
+                    "name": "color",
+                    "displayName": "Color",
+                    "description": "Color is displayed as sRGB but the values are stored as linear color.",
+                    "type": "Color",
+                    "defaultValue": [ 1.0, 1.0, 1.0 ],
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_heightmapImage"
+                        "name": "m_baseColor"
+                    }
+                }
+            ],
+            "settings": [
+                {
+                    "id": "detailTextureMultiplier",
+                    "displayName": "Detail Texture UV Multiplier",
+                    "description": "How many times to repeat the detail texture per sector",
+                    "type": "Float",
+                    "defaultValue": 0.5,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailTextureMultiplier"
                     }
                 },
                 {
+<<<<<<< HEAD
                     "id": "detailTextureMultiplier",
                     "displayName": "Detail Texture UV Multiplier",
                     "description": "How many times to repeat the detail texture per sector",
@@ -111,11 +126,14 @@
                     }
                 },
                 {
+=======
+>>>>>>> development
                     "id": "detailFadeDistance",
                     "displayName": "Detail Fade Distance (meters)",
                     "description": "The distance in meters that the detail texture starts to fade",
                     "type": "Float",
                     "defaultValue": 100.0,
+<<<<<<< HEAD
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_detailFadeDistance"
@@ -201,12 +219,15 @@
                     "description": "Color is displayed as sRGB but the values are stored as linear color.",
                     "type": "Color",
                     "defaultValue": [ 1.0, 1.0, 1.0 ],
+=======
+>>>>>>> development
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_baseColor"
+                        "id": "m_detailFadeDistance"
                     }
                 },
                 {
+<<<<<<< HEAD
                     "id": "factor",
                     "displayName": "Factor",
                     "description": "Strength factor for scaling the base color values. Zero (0.0) is black, white (1.0) is full color.",
@@ -363,6 +384,16 @@
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_specularF0Factor"
+=======
+                    "id": "detailFadeLength",
+                    "displayName": "Detail Fade Length",
+                    "description": "How far beyond Detail Fade Distance where the detail texture no longer applies.",
+                    "type": "Float",
+                    "defaultValue": 50.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailFadeLength"
+>>>>>>> development
                     }
                 }
             ]

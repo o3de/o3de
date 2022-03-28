@@ -72,12 +72,6 @@ namespace AZ
         // [GFX TODO][ATOM-15172] Look into compacting struct DirectionalLightShadowData
         struct DirectionalLightShadowData
         {
-            AZStd::array<Matrix4x4, Shadow::MaxNumberOfCascades> m_depthBiasMatrices =
-            { {
-                    Matrix4x4::CreateIdentity(),
-                    Matrix4x4::CreateIdentity(),
-                    Matrix4x4::CreateIdentity(),
-                    Matrix4x4::CreateIdentity() } };
             AZStd::array<Matrix4x4, Shadow::MaxNumberOfCascades> m_lightViewToShadowmapMatrices =
             { {
                     Matrix4x4::CreateIdentity(),
@@ -97,12 +91,18 @@ namespace AZ
             float m_boundaryScale = 0.f;
             uint32_t m_shadowmapSize = 1; // width and height of shadowmap
             uint32_t m_cascadeCount = 1;
-            uint32_t m_predictionSampleCount = 0;
+            // Reduce acne by applying a small amount of bias to apply along shadow-space z.
+            float m_shadowBias = 0.0f;
+            // Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            float m_normalShadowBias;
             uint32_t m_filteringSampleCount = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
             float m_far_minus_near = 0;
+            float m_padding[3];
         };
+
+        static_assert(sizeof(DirectionalLightShadowData) % 16 == 0); // Structured buffers need alignment to be a multiple of 16 bytes.
 
         class DirectionalLightFeatureProcessor final
             : public DirectionalLightFeatureProcessorInterface
@@ -133,9 +133,6 @@ namespace AZ
 
                 // Default far depth of each cascade.
                 AZStd::array<float, Shadow::MaxNumberOfCascades> m_defaultFarDepths;
-
-                // Transforms of camera who offers view frustum for each camera view.
-                AZStd::unordered_map<const RPI::View*, Transform> m_cameraTransforms;
 
                 // Configuration offers shape of the camera view frustum for each camera view.
                 AZStd::unordered_map<const RPI::View*, CascadeShadowCameraConfiguration> m_cameraConfigurations;
@@ -179,6 +176,8 @@ namespace AZ
                 // If true, this will reduce the shadow acne introduced by large pcf kernels by estimating the angle of the triangle being shaded
                 // with the ddx/ddy functions. 
                 bool m_isReceiverPlaneBiasEnabled = true;
+
+                bool m_blendBetwenCascades = false;
             };
 
             static void Reflect(ReflectContext* context);
@@ -217,8 +216,10 @@ namespace AZ
             void SetDebugFlags(LightHandle handle, DebugDrawFlags flags) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
-            void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
+            void SetCascadeBlendingEnabled(LightHandle handle, bool enable) override;
+            void SetShadowBias(LightHandle handle, float bias) override;
+            void SetNormalShadowBias(LightHandle handle, float normalShadowBias) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount() const;
@@ -258,11 +259,6 @@ namespace AZ
             //! it returns one of the fallback render pipeline ID.
             const CascadeShadowCameraConfiguration& GetCameraConfiguration(LightHandle handle, const RPI::View* cameraView) const;
 
-            //! This returns the camera transform.
-            //! If it has not been registered for the given camera view.
-            //! it returns one of the fallback render pipeline ID.
-            const Transform& GetCameraTransform(LightHandle handle, const RPI::View* cameraView) const;
-
             //! This update view frustum of camera.
             void UpdateFrustums(LightHandle handle);
 
@@ -278,10 +274,8 @@ namespace AZ
 
             //! This updates the parameter of Gaussian filter used in ESM.
             void UpdateFilterParameters(LightHandle handle);
-            //! This updates standard deviations for each cascade.
-            void UpdateStandardDeviations(LightHandle handle, const RPI::View* cameraView);
-            //! This updates filter offset and size for each cascade.
-            void UpdateFilterOffsetsCounts(LightHandle handle, const RPI::View* cameraView);
+            //! This updates if the filter is enabled.
+            void UpdateFilterEnabled(LightHandle handle, const RPI::View* cameraView);
             //! This updates shadowmap position(origin and size) in the atlas for each cascade.
             void UpdateShadowmapPositionInAtlas(LightHandle handle, const RPI::View* cameraView);
             //! This set filter parameters to passes which execute filtering.
@@ -342,6 +336,9 @@ namespace AZ
             //! This draws bounding boxes of cascades.
             void DrawCascadeBoundingBoxes(LightHandle handle);
 
+            float GetShadowmapSizeFromCameraView(const LightHandle handle, const RPI::View* cameraView) const;
+            void SnapAabbToPixelIncrements(const float invShadowmapSize, Vector3& orthoMin, Vector3& orthoMax);
+
             IndexedDataVector<ShadowProperty> m_shadowProperties;
             // [GFX TODO][ATOM-2012] shadow for multiple directional lights
             LightHandle m_shadowingLightHandle;
@@ -373,6 +370,7 @@ namespace AZ
             Name m_lightTypeName = Name("directional");
             Name m_directionalShadowFilteringMethodName = Name("o_directional_shadow_filtering_method");
             Name m_directionalShadowReceiverPlaneBiasEnableName = Name("o_directional_shadow_receiver_plane_bias_enable");
+            Name m_BlendBetweenCascadesEnableName = Name("o_blend_between_cascades_enable");
             static constexpr const char* FeatureProcessorName = "DirectionalLightFeatureProcessor";
         };
     } // namespace Render

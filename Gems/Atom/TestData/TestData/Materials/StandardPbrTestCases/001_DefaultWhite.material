@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
     "propertyLayoutVersion": 3
+=======
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 3
+>>>>>>> development
 }

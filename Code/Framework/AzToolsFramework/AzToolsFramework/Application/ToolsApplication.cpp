@@ -30,6 +30,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
@@ -54,6 +55,7 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
@@ -69,6 +71,10 @@
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
+#include <Entity/EntityUtilityComponent.h>
+#include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
+#include <Prefab/ProceduralPrefabSystemComponent.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
@@ -174,7 +180,7 @@ namespace AzToolsFramework
             , public AZ::BehaviorEBusHandler
         {
             AZ_EBUS_BEHAVIOR_BINDER(ToolsApplicationNotificationBusHandler, "{7EB67956-FF86-461A-91E2-7B08279CFACF}", AZ::SystemAllocator,
-                EntityRegistered, EntityDeregistered);
+                EntityRegistered, EntityDeregistered, AfterEntitySelectionChanged);
 
             void EntityRegistered(AZ::EntityId entityId) override
             {
@@ -184,6 +190,11 @@ namespace AzToolsFramework
             void EntityDeregistered(AZ::EntityId entityId) override
             {
                 Call(FN_EntityDeregistered, entityId);
+            }
+
+            void AfterEntitySelectionChanged(const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override
+            {
+                Call(FN_AfterEntitySelectionChanged, newlySelectedEntities, newlyDeselectedEntities);
             }
         };
 
@@ -208,11 +219,16 @@ namespace AzToolsFramework
             , public AZ::BehaviorEBusHandler
         {
             AZ_EBUS_BEHAVIOR_BINDER(EditorEventsBusHandler, "{352F80BB-469A-40B6-B322-FE57AB51E4DA}", AZ::SystemAllocator,
-                NotifyRegisterViews);
+                NotifyRegisterViews, NotifyEditorInitialized);
 
             void NotifyRegisterViews() override
             {
                 Call(FN_NotifyRegisterViews);
+            }
+
+            void NotifyEditorInitialized() override
+            {
+                Call(FN_NotifyEditorInitialized);
             }
         };
 
@@ -227,12 +243,14 @@ namespace AzToolsFramework
         , m_isInIsolationMode(false)
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 
         m_undoCache.RegisterToUndoCacheInterface();
     }
 
     ToolsApplication::~ToolsApplication()
     {
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         ToolsApplicationRequests::Bus::Handler::BusDisconnect();
         Stop();
     }
@@ -253,9 +271,12 @@ namespace AzToolsFramework
                 azrtti_typeid<Components::EditorEntityUiSystemComponent>(),
                 azrtti_typeid<FocusModeSystemComponent>(),
                 azrtti_typeid<ContainerEntitySystemComponent>(),
+                azrtti_typeid<ReadOnlyEntitySystemComponent>(),
                 azrtti_typeid<SliceMetadataEntityContextComponent>(),
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
+                azrtti_typeid<Prefab::ProceduralPrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),
+                azrtti_typeid<AzToolsFramework::ViewBookmarkSystemComponent>(),
                 azrtti_typeid<Components::EditorComponentAPIComponent>(),
                 azrtti_typeid<Components::EditorLevelComponentAPIComponent>(),
                 azrtti_typeid<Components::EditorEntityActionComponent>(),
@@ -271,7 +292,9 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::EditorInteractionSystemComponent>(),
                 azrtti_typeid<Components::EditorEntitySearchComponent>(),
                 azrtti_typeid<Components::EditorIntersectorComponent>(),
-                azrtti_typeid<AzToolsFramework::SliceRequestComponent>()
+                azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
+                azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
+                azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
             });
 
         return components;
@@ -369,6 +392,7 @@ namespace AzToolsFramework
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
+        ViewportEditorModeNotifications::Reflect(context);
 
         Camera::EditorCameraRequests::Reflect(context);
         AzToolsFramework::EditorTransformComponentSelectionRequests::Reflect(context);
@@ -406,6 +430,7 @@ namespace AzToolsFramework
                 ->Handler<Internal::ToolsApplicationNotificationBusHandler>()
                 ->Event("EntityRegistered", &ToolsApplicationEvents::EntityRegistered)
                 ->Event("EntityDeregistered", &ToolsApplicationEvents::EntityDeregistered)
+                ->Event("AfterEntitySelectionChanged", &ToolsApplicationEvents::AfterEntitySelectionChanged)
                 ;
 
             behaviorContext->Class<ViewPaneOptions>()
@@ -416,6 +441,8 @@ namespace AzToolsFramework
                 ->Property("showInMenu", BehaviorValueProperty(&ViewPaneOptions::showInMenu))
                 ->Property("canHaveMultipleInstances", BehaviorValueProperty(&ViewPaneOptions::canHaveMultipleInstances))
                 ->Property("isPreview", BehaviorValueProperty(&ViewPaneOptions::isPreview))
+                ->Property("showOnToolsToolbar", BehaviorValueProperty(&ViewPaneOptions::showOnToolsToolbar))
+                ->Property("toolbarIcon", BehaviorValueProperty(&ViewPaneOptions::toolbarIcon))
                 ;
 
             behaviorContext->EBus<EditorRequestBus>("EditorRequestBus")
@@ -424,6 +451,7 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "editor")
                 ->Event("RegisterCustomViewPane", &EditorRequests::RegisterCustomViewPane)
                 ->Event("UnregisterViewPane", &EditorRequests::UnregisterViewPane)
+                ->Event("GetComponentTypeEditorIcon", &EditorRequests::GetComponentTypeEditorIcon)
                 ;
 
             behaviorContext->EBus<EditorEventsBus>("EditorEventBus")
@@ -432,6 +460,7 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "editor")
                 ->Handler<Internal::EditorEventsBusHandler>()
                 ->Event("NotifyRegisterViews", &EditorEvents::NotifyRegisterViews)
+                ->Event("NotifyEditorInitialized", &EditorEvents::NotifyEditorInitialized)
                 ;
 
             behaviorContext->EBus<ViewPaneCallbackBus>("ViewPaneCallbackBus")
@@ -547,6 +576,12 @@ namespace AzToolsFramework
     void ToolsApplication::MarkEntitySelected(AZ::EntityId entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
+
         AZ_Assert(entityId.IsValid(), "Invalid entity Id being marked as selected.");
 
         EntityIdList::iterator foundIter = AZStd::find(m_selectedEntities.begin(), m_selectedEntities.end(), entityId);
@@ -565,6 +600,11 @@ namespace AzToolsFramework
     void ToolsApplication::MarkEntitiesSelected(const EntityIdList& entitiesToSelect)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
 
         EntityIdList entitiesSelected;
         entitiesSelected.reserve(entitiesToSelect.size());
@@ -589,6 +629,12 @@ namespace AzToolsFramework
     void ToolsApplication::MarkEntityDeselected(AZ::EntityId entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
+
         auto foundIter = AZStd::find(m_selectedEntities.begin(), m_selectedEntities.end(), entityId);
         if (foundIter != m_selectedEntities.end())
         {
@@ -605,6 +651,11 @@ namespace AzToolsFramework
     void ToolsApplication::MarkEntitiesDeselected(const EntityIdList& entitiesToDeselect)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
 
         ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::BeforeEntitySelectionChanged);
 
@@ -659,6 +710,11 @@ namespace AzToolsFramework
     void ToolsApplication::SetSelectedEntities(const EntityIdList& selectedEntities)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
 
         // We're setting the selection set as a batch from an external caller.
         // * Filter out any unselectable entities
@@ -1179,14 +1235,25 @@ namespace AzToolsFramework
 
     AZ::EntityId ToolsApplication::GetCurrentLevelEntityId()
     {
-        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-        AZ::SliceComponent* rootSliceComponent = nullptr;
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSliceComponent, editorEntityContextId,
-            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
-        if (rootSliceComponent && rootSliceComponent->GetMetadataEntity())
+        if (IsPrefabSystemEnabled())
         {
-            return rootSliceComponent->GetMetadataEntity()->GetId();
+            if (auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get())
+            {
+                return prefabPublicInterface->GetLevelInstanceContainerEntityId();
+            }
+        }
+        else
+        {
+            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+            AZ::SliceComponent* rootSliceComponent = nullptr;
+            AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(
+                rootSliceComponent, editorEntityContextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
+            if (rootSliceComponent && rootSliceComponent->GetMetadataEntity())
+            {
+                return rootSliceComponent->GetMetadataEntity()->GetId();
+            }
         }
 
         return AZ::EntityId();
@@ -1537,6 +1604,16 @@ namespace AzToolsFramework
 #endif
             m_currentBatchUndo = nullptr;
         }
+    }
+
+    void ToolsApplication::OnPrefabInstancePropagationBegin()
+    {
+        m_freezeSelectionUpdates = true;
+    }
+
+    void ToolsApplication::OnPrefabInstancePropagationEnd()
+    {
+        m_freezeSelectionUpdates = false;
     }
 
     void ToolsApplication::CreateUndosForDirtyEntities()

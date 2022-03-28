@@ -183,11 +183,6 @@ namespace CommandSystem
                 for (size_t i = 0; i < numActors; ++i)
                 {
                     EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
-
-                    if (actor->GetIsOwnedByRuntime())
-                    {
-                        continue;
-                    }
                     
                     if (unselect == false)
                     {
@@ -208,11 +203,6 @@ namespace CommandSystem
                 if (actor == nullptr)
                 {
                     outResult = AZStd::string::format("Cannot select actor. Actor ID %i is not valid.", actorID);
-                    return false;
-                }
-
-                if (actor->GetIsOwnedByRuntime())
-                {
                     return false;
                 }
 
@@ -243,11 +233,6 @@ namespace CommandSystem
             for (size_t i = 0; i < numActors; ++i)
             {
                 EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
-
-                if (actor->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
 
                 if (AzFramework::StringFunc::Equal(valueString.c_str(), actor->GetName(), false /* no case */))
                 {

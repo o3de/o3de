@@ -49,6 +49,12 @@ int main(int argc, char* argv[])
     AZStd::unique_ptr<AzFramework::ProcessWatcher> shellProcess(AzFramework::ProcessWatcher::LaunchProcess(shellProcessLaunch, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
     shellProcess->WaitForProcessToExit(120);
     shellProcess.reset();
+
+    parameters = AZStd::string::format("-c \"%s/scripts/o3de.sh register --this-engine\"", enginePath.c_str());
+    shellProcessLaunch.m_commandlineParameters = parameters;
+    shellProcess.reset(AzFramework::ProcessWatcher::LaunchProcess(shellProcessLaunch, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
+    shellProcess->WaitForProcessToExit(120);
+    shellProcess.reset();
     
     AZ::IO::FixedMaxPath projectManagerPath = installedBinariesFolder/"o3de.app"/"Contents"/"MacOS"/"o3de";
     AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;

@@ -410,7 +410,7 @@ namespace AzToolsFramework
                     filter.append(ext);
                     if (i < n - 1)
                     {
-                        filter.append(", ");
+                        filter.append(" ");
                     }
                 }
                 filter.append(")");

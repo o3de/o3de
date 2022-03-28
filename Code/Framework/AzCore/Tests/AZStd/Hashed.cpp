@@ -18,11 +18,11 @@
 #include <benchmark/benchmark.h>
 #endif // HAVE_BENCHMARK
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+    
     AZ_HAS_MEMBER(HashValidate, validate, void, ());
 
     /**
@@ -1400,7 +1400,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorSet(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorSet;
@@ -1413,7 +1413,7 @@ namespace UnitTest
         >;
     TYPED_TEST_CASE(HashedSetDifferentAllocatorFixture, SetTemplateConfigs);
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TYPED_TEST(HashedSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
     {
         using ContainerType = typename TypeParam::ContainerType;
@@ -1435,7 +1435,7 @@ namespace UnitTest
                 }
             }, ".*");
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 
     template<typename ContainerType>
     class HashedMapContainers
@@ -1798,7 +1798,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorMap(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorMap;
@@ -1811,7 +1811,7 @@ namespace UnitTest
     >;
     TYPED_TEST_CASE(HashedMapDifferentAllocatorFixture, MapTemplateConfigs);
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TYPED_TEST(HashedMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
     {
         using ContainerType = typename TypeParam::ContainerType;
@@ -1833,7 +1833,7 @@ namespace UnitTest
             }
         } , ".*");
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 
     namespace HashedContainerTransparentTestInternal
     {

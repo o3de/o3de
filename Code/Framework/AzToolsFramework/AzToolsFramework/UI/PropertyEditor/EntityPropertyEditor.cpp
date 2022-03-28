@@ -39,12 +39,15 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/EBusFindAssetTypeByName.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
@@ -496,6 +499,14 @@ namespace AzToolsFramework
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
 
+        m_readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(m_readOnlyEntityPublicInterface != nullptr, "EntityPropertyEditor requires a ReadOnlyEntityPublicInterface instance on Initialize.");
+
+        m_focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
+        AZ_Assert(m_focusModeInterface != nullptr, "EntityPropertyEditor requires a FocusModeInterface instance on Initialize.");
+
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+
         setObjectName("EntityPropertyEditor");
         setAcceptDrops(true);
 
@@ -534,10 +545,6 @@ namespace AzToolsFramework
             model->setItem(row, 0, m_comboItems[row]);
         }
         m_gui->m_statusComboBox->setModel(model);
-        m_gui->m_statusComboBox->setStyleSheet("QComboBox {border: 0px; border-radius:3px; background-color:#555555; color:white}"
-            "QComboBox:on {background-color:#e9e9e9; color:black; border:0px}"
-            "QComboBox::down-arrow:on {image: url(:/stylesheet/img/dropdowns/black_down_arrow.png)}"
-            "QComboBox::drop-down {border-radius: 3p}");
         AzQtComponents::ComboBox::addCustomCheckStateStyle(m_gui->m_statusComboBox);
         EnableEditor(true);
         m_sceneIsNew = true;
@@ -564,6 +571,12 @@ namespace AzToolsFramework
         AZ::EntitySystemBus::Handler::BusConnect();
         EntityPropertyEditorRequestBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
+
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+        ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(editorEntityContextId);
+
         m_spacer = nullptr;
 
         m_emptyIcon = QIcon();
@@ -606,19 +619,22 @@ namespace AzToolsFramework
 
         AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             AzToolsFramework::GetEntityContextId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
     }
 
     EntityPropertyEditor::~EntityPropertyEditor()
     {
         qApp->removeEventFilter(this);
 
+        ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         EntityPropertyEditorRequestBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
-
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        
         for (auto& entityId : m_overrideSelectedEntityIds)
         {
             DisconnectFromEntityBuses(entityId);
@@ -787,7 +803,7 @@ namespace AzToolsFramework
     {
         if (IsEntitySelected(entityId))
         {
-            UpdateContents(); // immediately refresh
+            QueuePropertyRefresh();
         }
     }
 
@@ -892,25 +908,51 @@ namespace AzToolsFramework
     {
         if (!m_prefabsAreEnabled)
         {
-            return m_isLevelEntityEditor ? InspectorLayout::LEVEL : InspectorLayout::ENTITY;
+            return m_isLevelEntityEditor ? InspectorLayout::Level : InspectorLayout::Entity;
         }
 
+        // Prefabs layout logic
+
+        // If this is the container entity for the root instance, treat it like a level entity.
         AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
         if (AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), levelContainerEntityId) != m_selectedEntityIds.end())
         {
             if (m_selectedEntityIds.size() > 1)
             {
-                return InspectorLayout::INVALID;
+                return InspectorLayout::Invalid;
             }
             else
             {
-                return InspectorLayout::LEVEL;
+                return InspectorLayout::Level;
             }
         }
         else
         {
-            return InspectorLayout::ENTITY;
+            // If this is the container entity for the currently focused prefab, utilize a separate layout.
+            if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
+            {
+                AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+                EditorEntityContextRequestBus::BroadcastResult(
+                    editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+                AZ::EntityId focusedPrefabContainerEntityId =
+                    prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                if (AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), focusedPrefabContainerEntityId) !=
+                    m_selectedEntityIds.end())
+                {
+                    if (m_selectedEntityIds.size() > 1)
+                    {
+                        return InspectorLayout::Invalid;
+                    }
+                    else
+                    {
+                        return InspectorLayout::ContainerEntityOfFocusedPrefab;
+                    }
+                }
+            }
         }
+
+        return InspectorLayout::Entity;
     }
 
     void EntityPropertyEditor::UpdateEntityDisplay()
@@ -919,7 +961,7 @@ namespace AzToolsFramework
 
         InspectorLayout layout = GetCurrentInspectorLayout();
 
-        if (layout == InspectorLayout::LEVEL)
+        if (!m_prefabsAreEnabled && layout == InspectorLayout::Level)
         {
             AZStd::string levelName;
             AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequests::GetLevelName);
@@ -944,7 +986,7 @@ namespace AzToolsFramework
             m_gui->m_entityDetailsLabel->setVisible(false);
 
             // If we're in edit mode, make the name field editable.
-            m_gui->m_entityNameEditor->setReadOnly(!m_gui->m_componentListContents->isEnabled());
+            m_gui->m_entityNameEditor->setReadOnly(!m_gui->m_componentListContents->isEnabled() || m_selectionContainsReadOnlyEntity);
 
             // get the name of the entity.
             auto entity = GetSelectedEntityById(entityId);
@@ -961,14 +1003,19 @@ namespace AzToolsFramework
 
         InspectorLayout layout = GetCurrentInspectorLayout();
 
-        if (layout == InspectorLayout::LEVEL)
+        if (layout == InspectorLayout::Level)
         {
             // The Level Inspector should only have a list of selectable components after the
             // level entity itself is valid (i.e. "selected").
             return selection.empty() ? SelectionEntityTypeInfo::None : SelectionEntityTypeInfo::LevelEntity;
         }
 
-        if (layout == InspectorLayout::INVALID)
+        if (layout == InspectorLayout::ContainerEntityOfFocusedPrefab)
+        {
+            return selection.empty() ? SelectionEntityTypeInfo::None : SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab;
+        }
+
+        if (layout == InspectorLayout::Invalid)
         {
             return SelectionEntityTypeInfo::Mixed;
         }
@@ -1028,6 +1075,12 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::CanAddComponentsToSelection(const SelectionEntityTypeInfo& selectionEntityTypeInfo) const
     {
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            // Can't add components if there is a read only entity in the selection
+            return false;
+        }
+
         if (selectionEntityTypeInfo == SelectionEntityTypeInfo::Mixed ||
             selectionEntityTypeInfo == SelectionEntityTypeInfo::None)
         {
@@ -1092,6 +1145,17 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         GetSelectedEntities(m_selectedEntityIds);
 
+        // Check if any of the selected entities are marked as read only
+        m_selectionContainsReadOnlyEntity = false;
+        for (const auto& entityId : m_selectedEntityIds)
+        {
+            if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+            {
+                m_selectionContainsReadOnlyEntity = true;
+                break;
+            }
+        }
+
         SourceControlFileInfo scFileInfo;
         ToolsApplicationRequests::Bus::BroadcastResult(scFileInfo, &ToolsApplicationRequests::GetSceneSourceControlInfo);
 
@@ -1138,7 +1202,8 @@ namespace AzToolsFramework
             }
         }
 
-        bool isLevelLayout = GetCurrentInspectorLayout() == InspectorLayout::LEVEL;
+        bool isLevelLayout = GetCurrentInspectorLayout() == InspectorLayout::Level;
+        bool isContainerOfFocusedPrefabLayout = GetCurrentInspectorLayout() == InspectorLayout::ContainerEntityOfFocusedPrefab;
 
         m_gui->m_entityDetailsLabel->setText(entityDetailsLabelText);
         m_gui->m_entityDetailsLabel->setVisible(entityDetailsVisible);
@@ -1146,10 +1211,14 @@ namespace AzToolsFramework
         m_gui->m_entityNameLabel->setVisible(hasEntitiesDisplayed);
         m_gui->m_entityIcon->setVisible(hasEntitiesDisplayed);
         m_gui->m_pinButton->setVisible(m_overrideSelectedEntityIds.empty() && hasEntitiesDisplayed && !m_isSystemEntityEditor);
-        m_gui->m_statusLabel->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
-        m_gui->m_statusComboBox->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
-        m_gui->m_entityIdLabel->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
-        m_gui->m_entityIdText->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_statusLabel->setVisible(
+            hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_statusComboBox->setVisible(
+            hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_entityIdLabel->setVisible(
+            hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_entityIdText->setVisible(
+            hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
 
         bool displayComponentSearchBox = hasEntitiesDisplayed;
         if (hasEntitiesDisplayed)
@@ -1157,7 +1226,9 @@ namespace AzToolsFramework
             // Build up components to display
             SharedComponentArray sharedComponentArray;
             BuildSharedComponentArray(sharedComponentArray,
-                !(selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyStandardEntities || selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities));
+                !(selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyStandardEntities ||
+                  selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities) ||
+                  selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab);
 
             if (sharedComponentArray.size() == 0)
             {
@@ -1173,7 +1244,8 @@ namespace AzToolsFramework
             UpdateEntityDisplay();
         }
 
-        m_gui->m_darkBox->setVisible(displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_darkBox->setVisible(
+            displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout && !isContainerOfFocusedPrefabLayout);
         m_gui->m_entitySearchBox->setVisible(displayComponentSearchBox);
 
         bool displayAddComponentMenu = CanAddComponentsToSelection(selectionEntityTypeInfo);
@@ -1557,7 +1629,6 @@ namespace AzToolsFramework
         for (size_t entityIndex = 1; entityIndex < m_selectedEntityIds.size(); ++entityIndex)
         {
             entity = GetSelectedEntityById(m_selectedEntityIds[entityIndex]);
-            AZ_Assert(entity, "Entity id selected for display but no such entity exists");
             if (!entity)
             {
                 continue;
@@ -1639,6 +1710,12 @@ namespace AzToolsFramework
             componentEditor->AddNotifications();
             componentEditor->UpdateExpandability();
             componentEditor->InvalidateAll(!componentInFilter ? m_filterString.c_str() : nullptr);
+
+            // If we are in read only mode, then show the components as disabled
+            if (m_selectionContainsReadOnlyEntity)
+            {
+                componentEditor->mockDisabledState(true);
+            }
 
             if (!componentEditor->GetPropertyEditor()->HasFilteredOutNodes() || componentEditor->GetPropertyEditor()->HasVisibleNodes())
             {
@@ -3036,6 +3113,7 @@ namespace AzToolsFramework
             }
         }
 
+        m_gui->m_statusComboBox->setDisabled(m_selectionContainsReadOnlyEntity);
         m_gui->m_statusComboBox->setVisible(!m_isSystemEntityEditor && !m_isLevelEntityEditor);
         m_gui->m_statusComboBox->style()->unpolish(m_gui->m_statusComboBox);
         m_gui->m_statusComboBox->style()->polish(m_gui->m_statusComboBox);
@@ -3263,7 +3341,8 @@ namespace AzToolsFramework
         const auto& componentsToEdit = GetSelectedComponents();
 
         const bool hasComponents = !m_selectedEntityIds.empty() && !componentsToEdit.empty();
-        const bool allowRemove = hasComponents && AreComponentsRemovable(componentsToEdit);
+        // Don't allow components to be removed/cut/enabled/disabled if read only
+        const bool allowRemove = hasComponents && AreComponentsRemovable(componentsToEdit) && !m_selectionContainsReadOnlyEntity;
         const bool allowCopy = hasComponents && AreComponentsCopyable(componentsToEdit);
 
         m_actionToDeleteComponents->setEnabled(allowRemove);
@@ -3322,6 +3401,12 @@ namespace AzToolsFramework
     {
         if (m_selectedEntityIds.empty())
         {
+            return false;
+        }
+
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            // Can't paste components if there is a read only entity in the selection
             return false;
         }
 
@@ -4663,13 +4748,6 @@ namespace AzToolsFramework
     {
         if (mimeData->hasFormat(AssetBrowser::AssetBrowserEntry::GetMimeType()))
         {
-            // extra special case:  MTLs from FBX drags are ignored.  are we dragging a FBX file?
-            bool isDraggingFBXFile = false;
-            AssetBrowser::AssetBrowserEntry::ForEachEntryInMimeData<AssetBrowser::SourceAssetBrowserEntry>(mimeData, [&](const AssetBrowser::SourceAssetBrowserEntry* source)
-            {
-                isDraggingFBXFile = isDraggingFBXFile || AzFramework::StringFunc::Equal(source->GetExtension().c_str(), ".fbx", false);
-            });
-
             // the usual case - we only allow asset browser drops of assets that have actually been associated with a kind of component.
             AssetBrowser::AssetBrowserEntry::ForEachEntryInMimeData<AssetBrowser::ProductAssetBrowserEntry>(mimeData, [&](const AssetBrowser::ProductAssetBrowserEntry* product)
             {
@@ -4681,17 +4759,7 @@ namespace AzToolsFramework
 
                 if (canCreateComponent && !componentTypeId.IsNull())
                 {
-                    // we have a component type that handles this asset.
-                    // but we disallow it if its a MTL file from a FBX and the FBX itself is being dragged.  Its still allowed
-                    // to drag the actual MTL.
-                    EBusFindAssetTypeByName materialAssetTypeResult("Material");
-                    AZ::AssetTypeInfoBus::BroadcastResult(materialAssetTypeResult, &AZ::AssetTypeInfo::GetAssetType);
-                    AZ::Data::AssetType materialAssetType = materialAssetTypeResult.GetAssetType();
-
-                    if ((!isDraggingFBXFile) || (product->GetAssetType() != materialAssetType))
-                    {
-                        callbackFunction(product);
-                    }
+                    callbackFunction(product);
                 }
             });
         }
@@ -5604,13 +5672,38 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         AzToolsFramework::EditorInspectorComponentNotificationBus::MultiHandler::BusConnect(entityId);
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(entityId);
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+        AzToolsFramework::FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
     }
 
     void EntityPropertyEditor::DisconnectFromEntityBuses(const AZ::EntityId& entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AzToolsFramework::FocusModeNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorInspectorComponentNotificationBus::MultiHandler::BusDisconnect(entityId);
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(entityId);
+    }
+
+    void EntityPropertyEditor::OnEditorFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousFocusEntityId, [[maybe_unused]] AZ::EntityId newFocusEntityId)
+    {
+        // We need to wait for the Container Entity System to update before checking
+        QTimer::singleShot( 1, this, [this]()
+            {
+                bool enable = true;
+                for (AZ::EntityId entityId : m_overrideSelectedEntityIds)
+                {
+                    if (!m_focusModeInterface->IsInFocusSubTree(entityId) ||
+                        m_containerEntityInterface->IsUnderClosedContainerEntity(entityId))
+                    {
+                        enable = false;
+                        break;
+                    }
+                }
+                SetEditorUiEnabled(enable);
+            });
     }
 
     static void SetPropertyEditorState(Ui::EntityPropertyEditorUI* propertyEditorUi, const bool on)
@@ -5703,6 +5796,14 @@ namespace AzToolsFramework
         SaveComponentEditorState();
     }
 
+    void EntityPropertyEditor::OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, [[maybe_unused]] bool readOnly)
+    {
+        if (IsEntitySelected(entityId))
+        {
+            UpdateContents();
+        }
+    }
+
     void EntityPropertyEditor::OnEditorModeActivated(
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
@@ -5710,7 +5811,7 @@ namespace AzToolsFramework
         {
             DisableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, false);
-            const auto& componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
             
             if (!componentModeTypes.empty())
@@ -5735,7 +5836,7 @@ namespace AzToolsFramework
         {
             EnableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, true);
-            const auto& componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = false;
 
             for (auto componentEditor : m_componentEditors)

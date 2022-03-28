@@ -65,7 +65,7 @@ namespace AzNetworking
         : m_delta(delta)
         , m_dataSerializer(m_delta.GetBufferPtr(), m_delta.GetBufferCapacity())
     {
-        m_namePrefix.reserve(128);
+        ;
     }
 
     DeltaSerializerCreate::~DeltaSerializerCreate()
@@ -73,7 +73,7 @@ namespace AzNetworking
         // Delete any left over records that might be hanging around
         for (auto iter : m_records)
         {
-            delete iter.second;
+            delete iter;
         }
         m_records.clear();
     }
@@ -160,28 +160,13 @@ namespace AzNetworking
         return SerializeHelper(buffer, bufferCapacity, isString, outSize, name);
     }
 
-    AZStd::string DeltaSerializerCreate::GetNextObjectName(const char* name)
+    bool DeltaSerializerCreate::BeginObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
     {
-        AZStd::string objectName = name;
-        objectName += ".";
-        objectName += AZStd::to_string(m_objectCounter);
-        ++m_objectCounter;
-        return objectName;
-    }
-
-    bool DeltaSerializerCreate::BeginObject(const char* name, [[maybe_unused]] const char* typeName)
-    {
-        m_nameLengthStack.push_back(m_namePrefix.length());
-        m_namePrefix += GetNextObjectName(name);
-        m_namePrefix += ".";
         return true;
     }
 
     bool DeltaSerializerCreate::EndObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
     {
-        const size_t prevLen = m_nameLengthStack.back();
-        m_nameLengthStack.pop_back();
-        m_namePrefix.resize(prevLen);
         return true;
     }
 
@@ -205,25 +190,15 @@ namespace AzNetworking
     {
         typedef AbstractValue::ValueT<T> ValueType;
 
-        const size_t prevLen = m_namePrefix.length();
-        m_namePrefix += GetNextObjectName(name);
-
-        const AZ::HashValue32 nameHash = AZ::TypeHash32(m_namePrefix.c_str());
-
-        m_namePrefix.resize(prevLen);
-
-        AbstractValue::BaseValue*& baseValue = m_records[nameHash];
+        AbstractValue::BaseValue* baseValue = m_records.size() > m_objectCounter ? m_records[m_objectCounter] : nullptr;
+        ++m_objectCounter;
 
         // If we are in the gather records phase, just save off the value records
         if (m_gatheringRecords)
         {
-            if (baseValue != nullptr)
-            {
-                AZ_Assert(false, "Duplicate name encountered in delta serializer. This will cause data to be serialized incorrectly.");
-                return false;
-            }
-
+            AZ_Assert(baseValue == nullptr, "Expected to create a new record but found a pre-existing one at index %d", m_objectCounter - 1);
             baseValue = new ValueType(value);
+            m_records.push_back(baseValue);
         }
         else // If we are not gathering records, then we are comparing them
         {

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <Multiplayer/Session/ISessionHandlingRequests.h>
 
 #include <Request/AWSGameLiftJoinSessionRequest.h>
 
@@ -31,12 +31,11 @@ namespace AWSGameLift
             const AWSGameLiftJoinSessionRequest& joinSessionRequest);
 
         // Build session connection config by using CreatePlayerSessionOutcome
-        AzFramework::SessionConnectionConfig BuildSessionConnectionConfig(
+        Multiplayer::SessionConnectionConfig BuildSessionConnectionConfig(
             const Aws::GameLift::Model::CreatePlayerSessionOutcome& createPlayerSessionOutcome);
 
         // Create CreatePlayerSessionRequest and make a CreatePlayerSession call through GameLift client
         Aws::GameLift::Model::CreatePlayerSessionOutcome CreatePlayerSession(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftJoinSessionRequest& joinSessionRequest);
 
         // Request to setup networking connection for player
@@ -44,7 +43,7 @@ namespace AWSGameLift
             const Aws::GameLift::Model::CreatePlayerSessionOutcome& createPlayerSessionOutcome);
 
         // Validate JoinSessionRequest and check required request parameters
-        bool ValidateJoinSessionRequest(const AzFramework::JoinSessionRequest& joinSessionRequest);
+        bool ValidateJoinSessionRequest(const Multiplayer::JoinSessionRequest& joinSessionRequest);
 
     } // namespace JoinSessionActivity
 } // namespace AWSGameLift

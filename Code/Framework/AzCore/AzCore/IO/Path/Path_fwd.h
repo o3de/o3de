@@ -57,11 +57,6 @@ namespace AZ::IO
     // It depends on the path type
     template <typename PathType>
     class PathIterator;
-
-    struct PathReflection
-    {
-        static void Reflect(AZ::ReflectContext* context);
-    };
 }
 
 namespace AZStd

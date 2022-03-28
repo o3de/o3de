@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
     NAME Atom_Feature_Common.Static STATIC
@@ -18,7 +18,6 @@ ly_add_target(
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-        ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/atom_feature_common_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .
@@ -39,7 +38,7 @@ ly_add_target(
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common.Public
             Gem::ImGui.imguilib
-            #3rdParty::lux_core # AZ_TRAIT_LUXCORE_SUPPORTED is disabled in every platform, Issue #3915 will remove
+            3rdParty::TIFF
     RUNTIME_DEPENDENCIES
         Gem::ImGui.imguilib
 )
@@ -75,6 +74,7 @@ ly_add_target(
     FILES_CMAKE
         atom_feature_common_shared_files.cmake
         ../Assets/atom_feature_common_asset_files.cmake
+        ../Editor/atom_feature_common_editor_script_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/runtime_dependencies_clients.cmake
     INCLUDE_DIRECTORIES
@@ -89,10 +89,15 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_Feature_Common.Static
             Gem::Atom_Feature_Common.Public
-            #3rdParty::lux_core # AZ_TRAIT_LUXCORE_SUPPORTED is disabled in every platform, Issue #3915 will remove
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
+
+    set(runtime_dependencies_tools ${pal_source_dir}/runtime_dependencies_tools.cmake)
+    foreach(pal_tools_platform ${LY_PAL_TOOLS_ENABLED})
+        ly_get_list_relative_pal_filename(pal_runtime_dependencies_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${pal_tools_platform})
+        list(APPEND runtime_dependencies_tools ${pal_runtime_dependencies_source_dir}/runtime_dependencies_tools.cmake)
+    endforeach()
 
     ly_add_target(
         NAME Atom_Feature_Common.Editor GEM_MODULE
@@ -101,7 +106,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atom_feature_common_editor_files.cmake
         PLATFORM_INCLUDE_FILES
-            ${pal_source_dir}/runtime_dependencies_tools.cmake
+            ${runtime_dependencies_tools}
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -134,7 +139,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atom_feature_common_builders_files.cmake
         PLATFORM_INCLUDE_FILES
-            ${pal_source_dir}/runtime_dependencies_tools.cmake
+            ${runtime_dependencies_tools}
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source/Builders

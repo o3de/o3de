@@ -1,10 +1,5 @@
 {
-    "Source": "CheckerboardColorResolveCS",
-   
-    "CompilerHints":
-    {
-        "DisableOptimizations":false
-    },
+    "Source": "CheckerboardColorResolveCS.azsl",
     
     "ProgramSettings" :
     {

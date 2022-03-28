@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceAltitudeGradientComponent.h"
+#include <GradientSignal/Components/SurfaceAltitudeGradientComponent.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -166,6 +166,7 @@ namespace GradientSignal
         AZ::TickBus::Handler::BusConnect();
         GradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceAltitudeGradientRequestBus::Handler::BusConnect(GetEntityId());
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
         UpdateFromShape();
         m_dirty = false;
     }
@@ -173,6 +174,7 @@ namespace GradientSignal
     void SurfaceAltitudeGradientComponent::Deactivate()
     {
         m_dependencyMonitor.Reset();
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         GradientRequestBus::Handler::BusDisconnect();
@@ -202,19 +204,49 @@ namespace GradientSignal
 
     float SurfaceAltitudeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        float result = 0.0f;
+        GetValues(AZStd::span<const AZ::Vector3>(&sampleParams.m_position, 1), AZStd::span<float>(&result, 1));
+        return result;
+    }
 
-        SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-            sampleParams.m_position, m_configuration.m_surfaceTagsToSample, points);
-
-        if (points.empty())
+    void SurfaceAltitudeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
         {
-            return 0.0f;
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
         }
 
-        const AZ::Vector3& position = points.front().m_position;
-        return GetRatio(m_configuration.m_altitudeMin, m_configuration.m_altitudeMax, position.GetZ());
+        if (GradientRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with surface tag references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
+            return;
+        }
+
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
+        SurfaceData::SurfacePointList points;
+        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
+            points);
+
+        // For each position, turn the height into a 0-1 value based on our min/max altitudes.
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            if (!points.IsEmpty(index))
+            {
+                // Get the point with the highest Z value and use that for the altitude.
+                const float highestAltitude = points.GetHighestSurfacePoint(index).m_position.GetZ();
+
+                // Turn the absolute altitude value into a 0-1 value by returning the % of the given altitude range that it falls at.
+                outValues[index] = GetRatio(m_configuration.m_altitudeMin, m_configuration.m_altitudeMax, highestAltitude);
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
+        }
     }
 
     void SurfaceAltitudeGradientComponent::OnCompositionChanged()
@@ -234,11 +266,29 @@ namespace GradientSignal
 
             //notify observers if content has changed
             if (altitudeMinOld != m_configuration.m_altitudeMin ||
-                altitudeMaxOld != m_configuration.m_altitudeMax)
+                altitudeMaxOld != m_configuration.m_altitudeMax ||
+                m_surfaceDirty)
             {
                 LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
             }
             m_dirty = false;
+            m_surfaceDirty = false;
+        }
+    }
+
+    void SurfaceAltitudeGradientComponent::OnSurfaceChanged(
+        [[maybe_unused]] const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds)
+    {
+        // Create a box that's infinite in the XY direction, but contains our altitude range, so that we can compare against the dirty
+        // surface region.
+        const AZ::Aabb altitudeBox = AZ::Aabb::CreateFromMinMaxValues(
+            AZStd::numeric_limits<float>::lowest(), AZStd::numeric_limits<float>::lowest(), m_configuration.m_altitudeMin,
+            AZStd::numeric_limits<float>::max(), AZStd::numeric_limits<float>::max(), m_configuration.m_altitudeMax);
+
+        if (oldBounds.Overlaps(altitudeBox) || newBounds.Overlaps(altitudeBox))
+        {
+            m_dirty = true;
+            m_surfaceDirty = true;
         }
     }
 
@@ -246,7 +296,7 @@ namespace GradientSignal
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_configuration.m_shapeEntityId.IsValid())
         {

@@ -1,6 +1,16 @@
 {
     "description": "Material Type with properties used to define Standard PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 4,
+    "versionUpdates": [
+        {
+            "toVersion": 4,
+            "actions": [
+                {"op": "rename", "from": "opacity.doubleSided", "to": "general.doubleSided"}
+            ]
+        }
+    ],
     "propertyLayout": {
+<<<<<<< HEAD
         "version": 3,
         "groups": [
             {
@@ -1009,6 +1019,49 @@
                 }
             ]
         }
+=======
+        "propertyGroups": [
+            { 
+                "$import": "MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/MetallicPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/RoughnessPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/SpecularPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/NormalPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/OcclusionPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/EmissivePropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/ClearCoatPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/ParallaxPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/OpacityPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/UvPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/IrradiancePropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
+            }
+        ]
+>>>>>>> development
     },
     "shaders": [
         {
@@ -1058,131 +1111,6 @@
         }        
     ],
     "functors": [
-        {
-            // Maps 2D scale, offset, and rotate properties into a float3x3 transform matrix.
-            "type": "Transform2D",
-            "args": {
-                "transformOrder": [ "Rotate", "Translate", "Scale" ],
-                "centerProperty": "uv.center",
-                "scaleProperty": "uv.scale",
-                "scaleXProperty": "uv.tileU",
-                "scaleYProperty": "uv.tileV",
-                "translateXProperty": "uv.offsetU",
-                "translateYProperty": "uv.offsetV",
-                "rotateDegreesProperty": "uv.rotateDegrees",
-                "float3x3ShaderInput": "m_uvMatrix",
-                "float3x3InverseShaderInput": "m_uvMatrixInverse"
-            }
-        },
-        {
-            // Convert emissive unit.
-            "type": "ConvertEmissiveUnit",
-            "args": {
-                "intensityProperty": "emissive.intensity",
-                "lightUnitProperty": "emissive.unit",
-                "shaderInput": "m_emissiveIntensity",
-                "ev100Index": 0,
-                "nitIndex" : 1,
-                "ev100MinMax": [-10, 20],
-                "nitMinMax": [0.001, 100000.0]
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "baseColor.textureMap",
-                "useTextureProperty": "baseColor.useTexture",
-                "dependentProperties": ["baseColor.textureMapUv", "baseColor.textureBlendMode"],
-                "shaderOption": "o_baseColor_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "metallic.textureMap",
-                "useTextureProperty": "metallic.useTexture",
-                "dependentProperties": ["metallic.textureMapUv"],
-                "shaderOption": "o_metallic_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "specularF0.textureMap",
-                "useTextureProperty": "specularF0.useTexture",
-                "dependentProperties": ["specularF0.textureMapUv"],
-                "shaderOption": "o_specularF0_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "normal.textureMap",
-                "useTextureProperty": "normal.useTexture",
-                "dependentProperties": ["normal.textureMapUv", "normal.factor", "normal.flipX", "normal.flipY"],
-                "shaderOption": "o_normal_useTexture"    
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "occlusion.diffuseTextureMap",
-                "useTextureProperty": "occlusion.diffuseUseTexture",
-                "dependentProperties": ["occlusion.diffuseTextureMapUv", "occlusion.diffuseFactor"],
-                "shaderOption": "o_diffuseOcclusion_useTexture"    
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "occlusion.specularTextureMap",
-                "useTextureProperty": "occlusion.specularUseTexture",
-                "dependentProperties": ["occlusion.specularTextureMapUv", "occlusion.specularFactor"],
-                "shaderOption": "o_specularOcclusion_useTexture"    
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_ClearCoatState.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_ClearCoatEnableFeature.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_EmissiveState.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_ParallaxState.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_Roughness.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_HandleOpacityDoubleSided.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_HandleOpacityMode.lua"
-            }
-        },
         {
             "type": "Lua",
             "args": {

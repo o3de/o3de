@@ -152,7 +152,6 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     }
 
     QModelIndex rcJobIndex;
-    int rcJobJobIndex;
     QString rcJobCommand;
     QString rcJobState;
 
@@ -172,7 +171,6 @@ void RCcontrollerUnitTests::RunRCControllerTests()
             return;
         }
 
-        rcJobJobIndex = rcJobListModel->data(rcJobIndex, RCJobListModel::jobIndexRole).toInt();
         rcJobCommand = rcJobListModel->data(rcJobIndex, RCJobListModel::displayNameRole).toString();
         rcJobState = rcJobListModel->data(rcJobIndex, RCJobListModel::stateRole).toString();
     }

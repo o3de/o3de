@@ -19,7 +19,7 @@
 
 namespace AzToolsFramework::Prefab
 {
-    class PrefabFocusInterface;
+    class PrefabFocusPublicInterface;
 
     class PrefabViewportFocusPathHandler
         : public PrefabFocusNotificationBus::Handler
@@ -40,6 +40,6 @@ namespace AzToolsFramework::Prefab
 
         AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
-        PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+        PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
     };
 } // namespace AzToolsFramework::Prefab

@@ -197,6 +197,10 @@ float3 CalculateLighting(
     surface.position = vPositionWS;
     surface.tangent = vTangent;         // Redundant - will be calculated per light
     surface.normal = float3(0, 0, 0);   // Will fail lights that did not initialize properly. 
+<<<<<<< HEAD
+=======
+    surface.vertexNormal = float3(0,0,0); // [To Do] - vertex normals are not handled yet in the hair shader.
+>>>>>>> development
     surface.roughnessLinear = material.m_roughness;
     surface.cuticleTilt = material.m_cuticleTilt;
     surface.thickness = thickness;
@@ -229,7 +233,11 @@ float3 CalculateLighting(
     return lightingData.diffuseLighting + lightingData.specularLighting;
 }
 
+<<<<<<< HEAD
 float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, float thickness, int shaderParamIndex)
+=======
+float3 TressFXShading(float2 pixelCoord, float depth, float3 tangent, float3 baseColor, float thickness, int shaderParamIndex)
+>>>>>>> development
 {
     float3 vNDC;    // normalized device / screen coordinates: [-1..1, -1..1, 0..1]
     float3 vPositionWS = ScreenPosToWorldPos(PassSrg::m_linearDepth, pixelCoord, depth, vNDC);
@@ -240,9 +248,12 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
 
     float3 vViewDirWS = g_vEye - vPositionWS;
 
+<<<<<<< HEAD
     // Need to expand the tangent that was compressed to store in the buffer
     float3 vTangent = normalize(vTangentCoverage.xyz * 2.f - 1.f);
 
+=======
+>>>>>>> development
     //---- TressFX original lighting params setting ----
     HairShadeParams params;
     params.m_color = baseColor;
@@ -265,6 +276,7 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     if (o_hairLightingModel == HairLightingModel::Kajiya)
     {   // This option should be removed and the Kajiya-Kay model should be operated from within 
         // the Atom lighting loop.
+<<<<<<< HEAD
         accumulatedLight = SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
     }
     else
@@ -273,3 +285,21 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     }
     return accumulatedLight;
 }
+=======
+        accumulatedLight = SimplifiedHairLighting(tangent, vPositionWS, vViewDirWS, params, vNDC);    
+    }
+    else
+    {
+        accumulatedLight = CalculateLighting(screenCoords, vPositionWS, vViewDirWS, tangent, thickness, params);
+    }
+    return accumulatedLight;
+}
+
+float3 TressFXShadingFullScreen(float2 pixelCoord, float depth, float3 compressedTangent, float3 baseColor, float thickness, int shaderParamIndex)
+{
+    // The tangent that was compressed to store in the PPLL structure
+    float3 tangent = normalize(compressedTangent.xyz * 2.f - 1.f);
+
+    return TressFXShading(pixelCoord, depth, tangent, baseColor, thickness, shaderParamIndex);
+}
+>>>>>>> development

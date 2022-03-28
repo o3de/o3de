@@ -11,7 +11,6 @@
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/IO/SystemFile.h>
 
 namespace AZ

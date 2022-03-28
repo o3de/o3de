@@ -25,6 +25,7 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "DepthStencil"
                 },
+<<<<<<< HEAD
                 // Keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
                 // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
                 {
@@ -36,6 +37,13 @@
                     "SlotType": "Output"
                 },
 
+=======
+                // used to set the size of the Head PPLL image buffer.
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "InputOutput"
+                },
+>>>>>>> development
                 // Lights & Shadows resources
                 {
                     "Name": "DirectionalShadowmap",
@@ -62,6 +70,7 @@
                     "SlotType": "Input"
                 }
             ],
+<<<<<<< HEAD
             "Connections": [
                 {
                     "LocalSlot": "DepthLinear",
@@ -71,6 +80,8 @@
                     }
                 }
             ],
+=======
+>>>>>>> development
             "PassRequests": [
                 {
                     "Name": "HairGlobalShapeConstraintsComputePass",
@@ -166,7 +177,11 @@
                             "LocalSlot": "DepthLinear",
                             "AttachmentRef": {
                                 "Pass": "Parent",
+<<<<<<< HEAD
                                 "Attachment": "DepthLinearInput"
+=======
+                                "Attachment": "DepthLinear"
+>>>>>>> development
                             }
                         },
                         {
@@ -254,7 +269,11 @@
                             "LocalSlot": "DepthLinear",
                             "AttachmentRef": {
                                 "Pass": "Parent",
+<<<<<<< HEAD
                                 "Attachment": "DepthLinearInput"
+=======
+                                "Attachment": "DepthLinear"
+>>>>>>> development
                             }
                         },
 
@@ -328,7 +347,11 @@
                     // buffer pixels that were touched by HairPPLLResolvePass hence preventing depth update unless
                     // it is hair.
                     "Name": "DepthToDepthLinearPass",
+<<<<<<< HEAD
                     "TemplateName": "DepthToLinearTemplate",
+=======
+                    "TemplateName": "HairDepthToLinearTemplate",
+>>>>>>> development
                     "Enabled": true,
                     "Connections": [
                         {
@@ -337,6 +360,16 @@
                                 "Pass": "HairPPLLResolvePass",
                                 "Attachment": "Depth"
                             }
+<<<<<<< HEAD
+=======
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+>>>>>>> development
                         }
                     ]
                 }

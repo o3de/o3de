@@ -90,10 +90,10 @@ namespace GraphCanvas
         TryAndSetupSlot();
     }
 
-    void PropertySlotLayout::OnTooltipChanged(const TranslationKeyedString& tooltip)
+    void PropertySlotLayout::OnTooltipChanged(const AZStd::string& tooltip)
     {
-        m_slotText->setToolTip(Tools::qStringFromUtf8(tooltip.GetDisplayString()));
-        m_nodePropertyDisplay->setToolTip(Tools::qStringFromUtf8(tooltip.GetDisplayString()));
+        m_slotText->setToolTip(Tools::qStringFromUtf8(tooltip));
+        m_nodePropertyDisplay->setToolTip(Tools::qStringFromUtf8(tooltip));
     }
     
     void PropertySlotLayout::OnStyleChanged()

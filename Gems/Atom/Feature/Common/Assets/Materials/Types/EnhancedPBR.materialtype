@@ -1,6 +1,28 @@
 {
     "description": "Material Type with properties used to define Enhanced PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model, with advanced features like subsurface scattering, transmission, and anisotropy.",
+    "version": 5,
+    "versionUpdates": [
+        {
+            "toVersion": 4,
+            "actions": [
+                {"op": "rename", "from": "opacity.doubleSided", "to": "general.doubleSided"}
+            ]
+        },
+        {
+            "toVersion": 5,
+            "actions": [
+                {"op": "rename", "from": "detailUV.center", "to": "detailLayerGroup.detailUV.center"},
+                {"op": "rename", "from": "detailUV.tileU", "to": "detailLayerGroup.detailUV.tileU"},
+                {"op": "rename", "from": "detailUV.tileV", "to": "detailLayerGroup.detailUV.tileV"},
+                {"op": "rename", "from": "detailUV.offsetU", "to": "detailLayerGroup.detailUV.offsetU"},
+                {"op": "rename", "from": "detailUV.offsetV", "to": "detailLayerGroup.detailUV.offsetV"},
+                {"op": "rename", "from": "detailUV.rotateDegrees", "to": "detailLayerGroup.detailUV.rotateDegrees"},
+                {"op": "rename", "from": "detailUV.scale", "to": "detailLayerGroup.detailUV.scale"}
+            ]
+        }
+    ],
     "propertyLayout": {
+<<<<<<< HEAD
         "version": 3,
         "groups": [
             {
@@ -39,10 +61,80 @@
                 "description": "Properties for modifying detail layer UV."
             },
             {
+=======
+        "propertyGroups": [
+            { 
+                "$import": "MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/MetallicPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/RoughnessPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/SpecularPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/NormalPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/DetailMapsPropertyGroup.json"
+            },
+            {
+>>>>>>> development
                 "name": "anisotropy",
                 "displayName": "Anisotropic Material Response",
-                "description": "How much is this material response anisotropic."
+                "description": "How much is this material response anisotropic.",
+                "properties": [
+                    {
+                        "name": "enableAnisotropy",
+                        "displayName": "Enable Anisotropy",
+                        "description": "Enable anisotropic surface response for non uniform reflection along the axis",
+                        "type": "Bool",
+                        "defaultValue": false,
+                        "connection": {
+                            "type": "ShaderOption",
+                            "name": "o_enableAnisotropy"
+                        }
+                    },
+                    {
+                        "name": "factor",
+                        "displayName": "Anisotropy Factor",
+                        "description": "Strength factor for the anisotropy: negative = along v, positive = along u",
+                        "type": "Float",
+                        "defaultValue": 0.0,
+                        "min": -0.95,
+                        "max": 0.95,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_anisotropicFactor"
+                        }
+                    },
+                    {
+                        "name": "anisotropyAngle",
+                        "displayName": "Anisotropy Angle",
+                        "description": "Anisotropy direction of major reflection axis: 0 = 0 degrees, 1.0 = 180 degrees",
+                        "type": "Float",
+                        "defaultValue": 0.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_anisotropicAngle"
+                        }
+                    }
+                ],
+                "functors": [
+                    {
+                        "type": "Lua",
+                        "args": {
+                            "file": "EnhancedPBR_Anisotropy.lua"
+                        }
+                    }
+                ]
             },
+<<<<<<< HEAD
             {
                 "name": "occlusion",
                 "displayName": "Occlusion",
@@ -1452,6 +1544,36 @@
                 }
             ]
         }
+=======
+            { 
+                "$import": "MaterialInputs/OcclusionPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/EmissivePropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/SubsurfaceAndTransmissionPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/ClearCoatPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/ParallaxPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/OpacityPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/UvPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/IrradiancePropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
+            }
+        ]
+>>>>>>> development
     },
     "shaders": [
         {
@@ -1493,178 +1615,6 @@
         }        
     ],
     "functors": [
-        {
-            // Maps 2D scale, offset, and rotate properties into a float3x3 transform matrix.
-            "type": "Transform2D",
-            "args": {
-                "transformOrder": [ "Rotate", "Translate", "Scale" ],
-                "centerProperty": "uv.center",
-                "scaleProperty": "uv.scale",
-                "scaleXProperty": "uv.tileU",
-                "scaleYProperty": "uv.tileV",
-                "translateXProperty": "uv.offsetU",
-                "translateYProperty": "uv.offsetV",
-                "rotateDegreesProperty": "uv.rotateDegrees",
-                "float3x3ShaderInput": "m_uvMatrix",
-                "float3x3InverseShaderInput": "m_uvMatrixInverse"
-            }
-        },
-        {
-            // Maps 2D scale, offset, and rotate properties into a float3x3 transform matrix.
-            "type": "Transform2D",
-            "args": {
-                "transformOrder": [ "Rotate", "Translate", "Scale" ],
-                "centerProperty": "detailUV.center",
-                "scaleProperty": "detailUV.scale",
-                "scaleXProperty": "detailUV.tileU",
-                "scaleYProperty": "detailUV.tileV",
-                "translateXProperty": "detailUV.offsetU",
-                "translateYProperty": "detailUV.offsetV",
-                "rotateDegreesProperty": "detailUV.rotateDegrees",
-                "float3x3ShaderInput": "m_detailUvMatrix",
-                "float3x3InverseShaderInput": "m_detailUvMatrixInverse"
-            }
-        },
-        {
-            // Convert emissive unit.
-            "type": "ConvertEmissiveUnit",
-            "args": {
-                "intensityProperty": "emissive.intensity",
-                "lightUnitProperty": "emissive.unit",
-                "shaderInput": "m_emissiveIntensity",
-                "ev100Index": 0,
-                "nitIndex" : 1,
-                "ev100MinMax": [-10, 20],
-                "nitMinMax": [0.001, 100000.0]
-            }
-        },
-        {
-            // Preprocess & build parameter set for subsurface scattering and translucency
-            "type": "HandleSubsurfaceScatteringParameters",
-            "args": {
-                "mode": "subsurfaceScattering.transmissionMode",
-                "scale": "subsurfaceScattering.transmissionScale",
-                "power": "subsurfaceScattering.transmissionPower",
-                "distortion": "subsurfaceScattering.transmissionDistortion",
-                "attenuation": "subsurfaceScattering.transmissionAttenuation",
-                "tintColor": "subsurfaceScattering.transmissionTint",
-                "thickness": "subsurfaceScattering.thickness",
-                "enabled": "subsurfaceScattering.enableSubsurfaceScattering",
-                "scatterDistanceColor": "subsurfaceScattering.scatterColor",
-                "scatterDistanceIntensity": "subsurfaceScattering.scatterDistance",
-                "scatterDistanceShaderInput": "m_scatterDistance",
-                "parametersShaderInput": "m_transmissionParams",
-                "tintThickenssShaderInput": "m_transmissionTintThickness"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "baseColor.textureMap",
-                "useTextureProperty": "baseColor.useTexture",
-                "dependentProperties": ["baseColor.textureMapUv", "baseColor.textureBlendMode"],
-                "shaderOption": "o_baseColor_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "metallic.textureMap",
-                "useTextureProperty": "metallic.useTexture",
-                "dependentProperties": ["metallic.textureMapUv"],
-                "shaderOption": "o_metallic_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "specularF0.textureMap",
-                "useTextureProperty": "specularF0.useTexture",
-                "dependentProperties": ["specularF0.textureMapUv"],
-                "shaderOption": "o_specularF0_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "normal.textureMap",
-                "useTextureProperty": "normal.useTexture",
-                "dependentProperties": ["normal.textureMapUv", "normal.factor", "normal.flipX", "normal.flipY"],
-                "shaderOption": "o_normal_useTexture"    
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "occlusion.diffuseTextureMap",
-                "useTextureProperty": "occlusion.diffuseUseTexture",
-                "dependentProperties": ["occlusion.diffuseTextureMapUv", "occlusion.diffuseFactor"],
-                "shaderOption": "o_diffuseOcclusion_useTexture"    
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "occlusion.specularTextureMap",
-                "useTextureProperty": "occlusion.specularUseTexture",
-                "dependentProperties": ["occlusion.specularTextureMapUv", "occlusion.specularFactor"],
-                "shaderOption": "o_specularOcclusion_useTexture"    
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_ClearCoatState.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_ClearCoatEnableFeature.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_EmissiveState.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_ParallaxState.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_Roughness.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "EnhancedPBR_SubsurfaceState.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_HandleOpacityDoubleSided.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_HandleOpacityMode.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "MaterialInputs/DetailMapsCommonFunctor.lua"
-            }
-        },
         {
             "type": "Lua",
             "args": {

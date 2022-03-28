@@ -23,6 +23,8 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 //////////////////////////////////////////////////////////////////////////
 
+#include <xxhash/xxhash.h>
+
 namespace AssetBuilderSDK
 {
     const char* const ErrorWindow = "Error"; //Use this window name to log error messages.
@@ -649,7 +651,7 @@ namespace AssetBuilderSDK
         , m_productSubID(productSubID)
     {
         //////////////////////////////////////////////////////////////////////////
-        // Builders should output product asset types directly.  
+        // Builders should output product asset types directly.
         // This should only be used for exceptions, mostly legacy and generic data.
         if (m_productAssetType.IsNull())
         {
@@ -668,7 +670,7 @@ namespace AssetBuilderSDK
         , m_productSubID(productSubID)
     {
         //////////////////////////////////////////////////////////////////////////
-        // Builders should output product asset types directly.  
+        // Builders should output product asset types directly.
         // This should only be used for exceptions, mostly legacy.
         if (m_productAssetType.IsNull())
         {
@@ -690,7 +692,6 @@ namespace AssetBuilderSDK
     static const char* textureExtensions = ".dds";
     static const char* staticMeshExtensions = ".cgf";
     static const char* skinnedMeshExtensions = ".skin";
-    static const char* materialExtensions = ".mtl";
 
     // MIPS
     static const int c_MaxMipsCount = 11; // 11 is for 8k textures non-compressed. When not compressed it is using one file per mip.
@@ -699,7 +700,6 @@ namespace AssetBuilderSDK
 
     // XML files may contain generic data (avoid this in new builders - use a custom extension!)
     static const char* xmlExtensions = ".xml";
-    static const char* geomCacheExtensions = ".cax";
     static const char* skeletonExtensions = ".chr";
 
     static AZ::Data::AssetType unknownAssetType = AZ::Data::AssetType::CreateNull();
@@ -710,7 +710,6 @@ namespace AssetBuilderSDK
     static AZ::Data::AssetType textureMipsAssetType("{3918728C-D3CA-4D9E-813E-A5ED20C6821E}");
     static AZ::Data::AssetType skinnedMeshLodsAssetType("{58E5824F-C27B-46FD-AD48-865BA41B7A51}");
     static AZ::Data::AssetType staticMeshLodsAssetType("{9AAE4926-CB6A-4C60-9948-A1A22F51DB23}");
-    static AZ::Data::AssetType geomCacheAssetType("{EBC96071-E960-41B6-B3E3-328F515AE5DA}");
     static AZ::Data::AssetType skeletonAssetType("{60161B46-21F0-4396-A4F0-F2CCF0664CDE}");
     static AZ::Data::AssetType entityIconAssetType("{3436C30E-E2C5-4C3B-A7B9-66C94A28701B}");
 
@@ -807,11 +806,6 @@ namespace AssetBuilderSDK
             return textureAssetType;
         }
 
-        if (AzFramework::StringFunc::Find(materialExtensions, extension.c_str()) != AZStd::string::npos)
-        {
-            return materialAssetType;
-        }
-
         if (AzFramework::StringFunc::Find(staticMeshExtensions, extension.c_str()) != AZStd::string::npos)
         {
             return meshAssetType;
@@ -820,11 +814,6 @@ namespace AssetBuilderSDK
         if (AzFramework::StringFunc::Find(skinnedMeshExtensions, extension.c_str()) != AZStd::string::npos)
         {
             return skinnedMeshAssetType;
-        }
-
-        if (AzFramework::StringFunc::Find(geomCacheExtensions, extension.c_str()) != AZStd::string::npos)
-        {
-            return geomCacheAssetType;
         }
 
         if (AzFramework::StringFunc::Find(skeletonExtensions, extension.c_str()) != AZStd::string::npos)
@@ -1183,19 +1172,10 @@ namespace AssetBuilderSDK
         JobProduct::Reflect(context);
         AssetBuilderDesc::Reflect(context);
 
-        RegisterBuilderRequest::Reflect(context);
-        RegisterBuilderResponse::Reflect(context);
         CreateJobsRequest::Reflect(context);
         CreateJobsResponse::Reflect(context);
         ProcessJobRequest::Reflect(context);
         ProcessJobResponse::Reflect(context);
-
-        BuilderHelloRequest::Reflect(context);
-        BuilderHelloResponse::Reflect(context);
-        CreateJobsNetRequest::Reflect(context);
-        CreateJobsNetResponse::Reflect(context);
-        ProcessJobNetRequest::Reflect(context);
-        ProcessJobNetResponse::Reflect(context);
     }
 
     void InitializeSerializationContext()
@@ -1241,6 +1221,13 @@ namespace AssetBuilderSDK
         return m_cancelled;
     }
 
+    bool SourceFileDependency::operator==(const SourceFileDependency& other) const
+    {
+        return m_sourceDependencyType == other.m_sourceDependencyType
+            && m_sourceFileDependencyPath == other.m_sourceFileDependencyPath
+            && m_sourceFileDependencyUUID == other.m_sourceFileDependencyUUID;
+    }
+
     AZStd::string SourceFileDependency::ToString() const
     {
         return AZStd::string::format("SourceFileDependency UUID: %s NAME: %s", m_sourceFileDependencyUUID.ToString<AZStd::string>().c_str(), m_sourceFileDependencyPath.c_str());
@@ -1271,24 +1258,6 @@ namespace AssetBuilderSDK
                 ->Property("sourceDependencyType", BehaviorValueProperty(&SourceFileDependency::m_sourceDependencyType))
                 ->Enum<aznumeric_cast<int>(SourceFileDependency::SourceFileDependencyType::Absolute)>("Absolute")
                 ->Enum<aznumeric_cast<int>(SourceFileDependency::SourceFileDependencyType::Wildcards)>("Wildcards");
-        }
-    }
-
-    void RegisterBuilderRequest::Reflect(AZ::ReflectContext* context)
-    {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<RegisterBuilderRequest>()->
-                Version(1)->
-                Field("FilePath", &RegisterBuilderRequest::m_filePath);
-        }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<RegisterBuilderRequest>("RegisterBuilderRequest")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "asset.builder")
-                ->Property("filePath", BehaviorValueProperty(&RegisterBuilderRequest::m_filePath));
         }
     }
 
@@ -1324,25 +1293,6 @@ namespace AssetBuilderSDK
         }
     }
 
-    void RegisterBuilderResponse::Reflect(AZ::ReflectContext* context)
-    {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<RegisterBuilderResponse>()
-                ->Version(1)
-                ->Field("Asset Builder Desc List", &RegisterBuilderResponse::m_assetBuilderDescList);
-        }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<RegisterBuilderResponse>("RegisterBuilderResponse")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "asset.builder")
-                ->Constructor()
-                ->Property("assetBuilderDescList", BehaviorValueProperty(&RegisterBuilderResponse::m_assetBuilderDescList));
-        }
-    }
-
     bool CreateJobsResponse::Succeeded() const
     {
         return m_result == CreateJobsResultCode::Success;
@@ -1373,134 +1323,37 @@ namespace AssetBuilderSDK
         }
     }
 
-    void BuilderHelloRequest::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<BuilderHelloRequest>()
-                ->Version(1)
-                ->Field("UUID", &BuilderHelloRequest::m_uuid);
-        }
-    }
-
-    unsigned int BuilderHelloRequest::MessageType()
-    {
-        static unsigned int messageType = AZ_CRC("AssetBuilderSDK::BuilderHelloRequest", 0x213a7248);
-
-        return messageType;
-    }
-
-    unsigned int BuilderHelloRequest::GetMessageType() const
-    {
-        return MessageType();
-    }
-
-    void BuilderHelloResponse::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<BuilderHelloResponse>()
-                ->Version(1)
-                ->Field("Accepted", &BuilderHelloResponse::m_accepted)
-                ->Field("UUID", &BuilderHelloResponse::m_uuid);
-        }
-    }
-
-    unsigned int BuilderHelloResponse::GetMessageType() const
-    {
-        return BuilderHelloRequest::MessageType();
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    void CreateJobsNetRequest::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<CreateJobsNetRequest>()
-                ->Version(1)
-                ->Field("Request", &CreateJobsNetRequest::m_request);
-        }
-    }
-
-    unsigned int CreateJobsNetRequest::MessageType()
-    {
-        static unsigned int messageType = AZ_CRC("AssetBuilderSDK::CreateJobsNetRequest", 0xc48209c0);
-
-        return messageType;
-    }
-
-    unsigned int CreateJobsNetRequest::GetMessageType() const
-    {
-        return MessageType();
-    }
-
-    void CreateJobsNetResponse::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<CreateJobsNetResponse>()
-                ->Version(1)
-                ->Field("Response", &CreateJobsNetResponse::m_response);
-        }
-    }
-
-    unsigned int CreateJobsNetResponse::GetMessageType() const
-    {
-        return CreateJobsNetRequest::MessageType();
-    }
-
-
-
-    void ProcessJobNetRequest::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<ProcessJobNetRequest>()
-                ->Version(1)
-                ->Field("Request", &ProcessJobNetRequest::m_request);
-        }
-    }
-
-    unsigned int ProcessJobNetRequest::MessageType()
-    {
-        static unsigned int messageType = AZ_CRC("AssetBuilderSDK::ProcessJobNetRequest", 0x479f340f);
-
-        return messageType;
-    }
-
-    unsigned int ProcessJobNetRequest::GetMessageType() const
-    {
-        return MessageType();
-    }
-
-    void ProcessJobNetResponse::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<ProcessJobNetResponse>()
-                ->Version(1)
-                ->Field("Response", &ProcessJobNetResponse::m_response);
-        }
-    }
-
-    unsigned int ProcessJobNetResponse::GetMessageType() const
-    {
-        return ProcessJobNetRequest::MessageType();
-    }
-
     JobDependency::JobDependency(const AZStd::string& jobKey, const AZStd::string& platformIdentifier, const JobDependencyType& type, const SourceFileDependency& sourceFile)
         : m_jobKey(jobKey)
         , m_platformIdentifier(platformIdentifier)
         , m_type(type)
         , m_sourceFile(sourceFile)
     {
+    }
+
+    bool JobDependency::operator==(const JobDependency& other) const
+    {
+        return m_sourceFile == other.m_sourceFile
+            && m_jobKey == other.m_jobKey
+            && m_platformIdentifier == other.m_platformIdentifier
+            && m_type == other.m_type;
+    }
+
+    AZStd::string JobDependency::ConcatenateSubIds() const
+    {
+        AZStd::string subIdConcatenation = "";
+
+        for (AZ::u32 subId : m_productSubIds)
+        {
+            if (!subIdConcatenation.empty())
+            {
+                subIdConcatenation.append(",");
+            }
+
+            subIdConcatenation.append(AZStd::string::format("%d", subId));
+        }
+
+        return subIdConcatenation;
     }
 
     void JobDependency::Reflect(AZ::ReflectContext* context)
@@ -1512,7 +1365,8 @@ namespace AssetBuilderSDK
                 Field("Source File", &JobDependency::m_sourceFile)->
                 Field("Job Key", &JobDependency::m_jobKey)->
                 Field("Platform Identifier", &JobDependency::m_platformIdentifier)->
-                Field("Job Dependency Type", &JobDependency::m_type);
+                Field("Job Dependency Type", &JobDependency::m_type)->
+                Field("Product SubIds", &JobDependency::m_productSubIds);
 
             serializeContext->RegisterGenericType<AZStd::vector<JobDependency>>();
         }
@@ -1525,6 +1379,7 @@ namespace AssetBuilderSDK
                 ->Property("sourceFile", BehaviorValueProperty(&JobDependency::m_sourceFile))
                 ->Property("jobKey", BehaviorValueProperty(&JobDependency::m_jobKey))
                 ->Property("platformIdentifier", BehaviorValueProperty(&JobDependency::m_platformIdentifier))
+                ->Property("productSubIds", BehaviorValueProperty(&JobDependency::m_productSubIds))
                 ->Property("type", BehaviorValueProperty(&JobDependency::m_type))
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Fingerprint)>("Fingerprint")
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Order)>("Order")
@@ -1611,5 +1466,71 @@ namespace AssetBuilderSDK
     size_t AssertAndErrorAbsorber::GetErrorCount() const
     {
         return m_errorsOccurred;
+    }
+
+    AZ::u64 GetHashFromIOStream(AZ::IO::GenericStream& readStream, AZ::IO::SizeType* bytesReadOut, int hashMsDelay)
+    {
+        constexpr AZ::u64 HashBufferSize = 1024 * 64;
+        char buffer[HashBufferSize];
+
+        if(readStream.IsOpen() && readStream.CanRead())
+        {
+            AZ::IO::SizeType bytesRead;
+
+            auto* state = XXH64_createState();
+
+            if(state == nullptr)
+            {
+                AZ_Assert(false, "Failed to create hash state");
+                return 0;
+            }
+
+            if (XXH64_reset(state, 0) == XXH_ERROR)
+            {
+                AZ_Assert(false, "Failed to reset hash state");
+                return 0;
+            }
+
+            do
+            {
+                // In edge cases where another process is writing to this file while this hashing is occuring and that file wasn't locked,
+                // the following read check can fail because it performs an end of file check, and asserts and shuts down if the read size
+                // was smaller than the buffer and the read is not at the end of the file. The logic used to check end of file internal to read
+                // will be out of date in the edge cases where another process is actively writing to this file while this hash is running.
+                // The stream's length ends up more accurate in this case, preventing this assert and shut down.
+                // One area this occurs is the navigation mesh file (mnmnavmission0.bai) that's temporarily created when exporting a level,
+                // the navigation system can still be writing to this file when hashing begins, causing the EoF marker to change.
+                AZ::IO::SizeType remainingToRead = AZStd::min(readStream.GetLength() - readStream.GetCurPos(), aznumeric_cast<AZ::IO::SizeType>(AZ_ARRAY_SIZE(buffer)));
+                bytesRead = readStream.Read(remainingToRead, buffer);
+
+                if(bytesReadOut)
+                {
+                    *bytesReadOut += bytesRead;
+                }
+
+                XXH64_update(state, buffer, bytesRead);
+
+                // Used by unit tests to force the race condition mentioned above, to verify the crash fix.
+                if(hashMsDelay > 0)
+                {
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(hashMsDelay));
+                }
+
+            } while (bytesRead > 0);
+
+            auto hash = XXH64_digest(state);
+
+            XXH64_freeState(state);
+
+            return hash;
+        }
+        return 0;
+    }
+
+    AZ::u64 GetFileHash(const char* filePath, AZ::IO::SizeType* bytesReadOut, int hashMsDelay)
+    {
+        constexpr bool ErrorOnReadFailure = true;
+        AZ::IO::FileIOStream readStream(filePath, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, ErrorOnReadFailure);
+        return GetHashFromIOStream(readStream, bytesReadOut, hashMsDelay);
     }
 }

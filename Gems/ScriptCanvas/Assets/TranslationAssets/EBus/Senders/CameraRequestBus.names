@@ -1,0 +1,491 @@
+{
+    "entries": [
+        {
+            "base": "CameraRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Camera",
+                "category": "Camera"
+            },
+            "methods": [
+                {
+                    "base": "GetOrthographicHalfWidth",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Orthographic Half Width"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Orthographic Half Width is invoked"
+                    },
+                    "details": {
+                        "name": "Get Orthographic Half Width"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Half Width"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "WorldToScreen",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke World To Screen"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after World To Screen is invoked"
+                    },
+                    "details": {
+                        "name": "World To Screen"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "World Position"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Screen Position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "WorldToScreenNdc",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke World To Screen Ndc"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after World To Screen Ndc is invoked"
+                    },
+                    "details": {
+                        "name": "World To Screen NDC"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "World Position"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Screen NDC Position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFov",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Field of View"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Field of View is invoked"
+                    },
+                    "details": {
+                        "name": "Get Field of View"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "FOV"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ScreenToWorld",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Screen To World"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Screen To World is invoked"
+                    },
+                    "details": {
+                        "name": "Screen To World"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Screen Position"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Depth"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "World Position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ScreenNdcToWorld",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Screen Ndc To World"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Screen Ndc To World is invoked"
+                    },
+                    "details": {
+                        "name": "Screen NDC To World"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Screen NDC Position"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Depth"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "World Position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFovRadians",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Field of View (Radians)"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Field of View (Radians) is invoked"
+                    },
+                    "details": {
+                        "name": "Set Field of View (Radians)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "FOV (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNearClipDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Near Clip Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Near Clip Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Set Near Clip Distance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Near Clip Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsOrthographic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Orthographic"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Orthographic is invoked"
+                    },
+                    "details": {
+                        "name": "Is Orthographic"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Orthographic"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFovDegrees",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Field of View (Degrees)"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Field of View (Degrees) is invoked"
+                    },
+                    "details": {
+                        "name": "Set Field of View (Degrees)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Field of View (Degrees)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFovRadians",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Field of View (Radians)"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Field of View (Radians) is invoked"
+                    },
+                    "details": {
+                        "name": "Get Field of View (Radians)"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Field of View (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFov",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Field of View"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Field of View is invoked"
+                    },
+                    "details": {
+                        "name": "Set Field of View"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Field of View"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MakeActiveView",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Make Active View"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Make Active View is invoked"
+                    },
+                    "details": {
+                        "name": "Make Active View"
+                    }
+                },
+                {
+                    "base": "GetFarClipDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Far Clip Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Far Clip Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Far Clip Distance"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Far Clip Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFovDegrees",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Field of View (Degrees)"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Field of View (Degrees) is invoked"
+                    },
+                    "details": {
+                        "name": "Get Field of View (Degrees)"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Field of View (Degrees)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOrthographic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Orthographic"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Orthographic is invoked"
+                    },
+                    "details": {
+                        "name": "Set Orthographic"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Orthographic"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOrthographicHalfWidth",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Orthographic Half Width"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Orthographic Half Width is invoked"
+                    },
+                    "details": {
+                        "name": "Set Orthographic Half Width"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Half Width"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNearClipDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Near Clip Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Near Clip Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Near Clip Distance"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Near Clip Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFarClipDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Far Clip Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Far Clip Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Set Far Clip Distance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Far Clip Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsActiveView",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Active View"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Active View is invoked"
+                    },
+                    "details": {
+                        "name": "Is Active View"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Active View"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

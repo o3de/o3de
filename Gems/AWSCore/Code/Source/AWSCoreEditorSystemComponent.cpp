@@ -79,7 +79,7 @@ namespace AWSCore
         QMenuBar* menuBar = mainWindow->menuBar();
         QList<QAction*> actionList = menuBar->actions();
         QAction* insertPivot = nullptr;
-        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); itr++)
+        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); ++itr)
         {
             if (QString::compare((*itr)->text(), EDITOR_HELP_MENU_TEXT) == 0)
             {
@@ -88,7 +88,7 @@ namespace AWSCore
             }
         }
 
-        auto menu = m_awsCoreEditorManager->GetAWSCoreEditorMenu();
+        const auto menu = m_awsCoreEditorManager->GetAWSCoreEditorMenu();
         if (insertPivot)
         {
             menuBar->insertMenu(insertPivot, menu);

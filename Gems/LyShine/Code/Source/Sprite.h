@@ -56,7 +56,7 @@ public: // member functions
     void SetCellAlias(int cellIndex, const AZStd::string& cellAlias) override;
     int GetCellIndexFromAlias(const AZStd::string& cellAlias) const override;
     bool IsSpriteSheet() const override;
-
+    AZ::Data::Instance<AZ::RPI::Image> GetImage() override;
     // ~ISprite
 
     // TextureAtlasNotifications
@@ -65,8 +65,6 @@ public: // member functions
     void OnAtlasUnloaded(const TextureAtlasNamespace::TextureAtlas* atlas) override;
 
     // ~TextureAtlasNotifications
-
-    AZ::Data::Instance<AZ::RPI::Image> GetImage();
 
 public: // static member functions
 

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "EditorSimpleMotionComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "EditorSimpleMotionComponent"
+            }
+        }
+    ]
+}

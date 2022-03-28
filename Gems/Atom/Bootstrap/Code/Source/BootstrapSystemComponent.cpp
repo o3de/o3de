@@ -10,10 +10,12 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -115,7 +117,9 @@ namespace AZ
                 {
                     // GFX TODO - investigate window creation being part of the GameApplication.
 
-                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>("O3DELauncher", AzFramework::WindowGeometry(0, 0, 1920, 1080));
+                    auto projectTitle = AZ::Utils::GetProjectName();
+
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, 1920, 1080));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
 
                     m_nativeWindow->Activate();
@@ -129,7 +133,6 @@ namespace AZ
                     m_createDefaultScene = false;
                 }
 
-                AzFramework::AssetCatalogEventBus::Handler::BusConnect();
                 TickBus::Handler::BusConnect();
 
                 // Listen for window system requests (e.g. requests for default window handle)
@@ -140,6 +143,20 @@ namespace AZ
 
                 Render::Bootstrap::DefaultWindowBus::Handler::BusConnect();
                 Render::Bootstrap::RequestBus::Handler::BusConnect();
+
+                // If the settings registry isn't available, something earlier in startup will report that failure.
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    // Automatically register the event if it's not registered, because
+                    // this system is initialized before the settings registry has loaded the event list.
+                    AZ::ComponentApplicationLifecycle::RegisterHandler(
+                        *settingsRegistry, m_componentApplicationLifecycleHandler,
+                        [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                        {
+                            Initialize();
+                        },
+                        "CriticalAssetsCompiled");
+                }
             }
 
             void BootstrapSystemComponent::Deactivate()
@@ -150,7 +167,6 @@ namespace AZ
                 AzFramework::WindowSystemRequestBus::Handler::BusDisconnect();
                 AzFramework::WindowSystemNotificationBus::Handler::BusDisconnect();
                 TickBus::Handler::BusDisconnect();
-                AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
 
                 m_brdfTexture = nullptr;
                 RemoveRenderPipeline();
@@ -161,14 +177,14 @@ namespace AZ
                 m_windowHandle = nullptr;
             }
 
-            void BootstrapSystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
+            void BootstrapSystemComponent::Initialize()
             {
-                if (m_isAssetCatalogLoaded)
+                if (m_isInitialized)
                 {
                     return;
                 }
 
-                m_isAssetCatalogLoaded = true;
+                m_isInitialized = true;
 
                 if (!RPI::RPISystemInterface::Get()->IsInitialized())
                 {
@@ -213,7 +229,7 @@ namespace AZ
                 {
                     m_windowHandle = windowHandle;
 
-                    if (m_isAssetCatalogLoaded)
+                    if (m_isInitialized)
                     {
                         CreateWindowContext();
                         if (m_createDefaultScene)
@@ -256,6 +272,7 @@ namespace AZ
 
                 // Create and register a scene with all available feature processors
                 RPI::SceneDescriptor sceneDesc;
+                sceneDesc.m_nameId = AZ::Name("Main");
                 AZ::RPI::ScenePtr atomScene = RPI::Scene::CreateScene(sceneDesc);
                 atomScene->EnableAllFeatureProcessors();
                 atomScene->Activate();
@@ -301,10 +318,8 @@ namespace AZ
                 RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
                 renderPipelineDescriptor.m_name = AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
-                // Make sure non-msaa super variant is used for non-msaa pipeline
-                bool isNonMsaaPipeline = (renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_samples == 1);
-                const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
-                AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
+                // The default pipeline determines the initial MSAA state for the application
+                AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(renderPipelineDescriptor.m_renderSettings.m_multisampleState);
 
                 if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                 {
@@ -323,7 +338,7 @@ namespace AZ
                 // Save a reference to the generated BRDF texture so it doesn't get deleted if all the passes refering to it get deleted and it's ref count goes to zero
                 if (!m_brdfTexture)
                 {
-                    const AZStd::shared_ptr<RPI::PassTemplate> brdfTextureTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("BRDFTextureTemplate"));
+                    const AZStd::shared_ptr<const RPI::PassTemplate> brdfTextureTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("BRDFTextureTemplate"));
                     Data::Asset<RPI::AttachmentImageAsset> brdfImageAsset = RPI::AssetUtils::LoadAssetById<RPI::AttachmentImageAsset>(
                         brdfTextureTemplate->m_imageAttachments[0].m_assetRef.m_assetId, RPI::AssetUtils::TraceLevel::Error);
                     if (brdfImageAsset.IsReady())

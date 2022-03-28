@@ -13,7 +13,6 @@
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/sort.h>
 
 namespace AZ
@@ -97,6 +96,12 @@ namespace AZ
             m_barrierTracker = nullptr;
             m_cache.Clear();
             m_firstFitAllocator.Shutdown();
+        }
+
+        void AliasedHeap::ComputeFragmentation() const
+        {
+            float fragmentation = m_firstFitAllocator.ComputeFragmentation();
+            m_memoryUsage.GetHeapMemoryUsage(HeapMemoryLevel::Device).m_fragmentation = fragmentation;
         }
 
         ResultCode AliasedHeap::ActivateBuffer(

@@ -13,8 +13,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 
-#include <SurfaceData/SurfaceDataSystemRequestBus.h>
-
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
@@ -28,14 +26,47 @@ namespace Terrain
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
+<<<<<<< HEAD
             serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
                 ->Version(1)
                 ->Field("WorldSize", &TerrainWorldRendererConfig::m_worldSize)
+=======
+            serialize->Class<DetailMaterialConfiguration>()
+                ->Version(1)
+                ->Field("UseHeightBasedBlending", &DetailMaterialConfiguration::m_useHeightBasedBlending)
+                ->Field("RenderDistance", &DetailMaterialConfiguration::m_renderDistance)
+                ->Field("FadeDistance", &DetailMaterialConfiguration::m_fadeDistance)
+                ->Field("Scale", &DetailMaterialConfiguration::m_scale)
+                ;
+
+            serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
+                ->Version(2)
+                ->Field("WorldSize", &TerrainWorldRendererConfig::m_worldSize)
+                ->Field("DetailMaterialConfiguration", &TerrainWorldRendererConfig::m_detailMaterialConfig)
+>>>>>>> development
                 ;
 
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
+<<<<<<< HEAD
+=======
+                editContext->Class<DetailMaterialConfiguration>("Detail material", "Settings related to rendering detail surface materials.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DetailMaterialConfiguration::m_useHeightBasedBlending, "Height based texture blending", "When turned on, detail materials will use the height texture to aid with blending.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_renderDistance, "Detail material render distance", "The distance from the camera that the detail material will render.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_fadeDistance, "Detail material fade distance", "The distance over which the detail material will fade out into the macro material.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_scale, "Detail material scale", "The scale at which all detail materials are rendered at.")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.1f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+                    ;
+
+>>>>>>> development
                 editContext->Class<TerrainWorldRendererConfig>("Terrain World Renderer Component", "Enables terrain rendering")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
@@ -48,6 +79,12 @@ namespace Terrain
                         ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_4096Meters, "4 Kilometers")
                         ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_8192Meters, "8 Kilometers")
                         ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_16384Meters, "16 Kilometers")
+<<<<<<< HEAD
+=======
+                        ->Attribute(AZ::Edit::Attributes::Visibility, false) // Keeping invisible until it's hooked up under the hood
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_detailMaterialConfig, "Detail material configuration", "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+>>>>>>> development
                         ;
             }
         }
@@ -134,18 +171,37 @@ namespace Terrain
         if (AZ::RPI::Scene* scene = GetScene(); scene)
         {
             m_terrainFeatureProcessor = scene->EnableFeatureProcessor<Terrain::TerrainFeatureProcessor>();
+            
+            m_terrainFeatureProcessor->SetDetailMaterialConfiguration(m_configuration.m_detailMaterialConfig);
+            switch (m_configuration.m_worldSize)
+            {
+            case TerrainWorldRendererConfig::WorldSize::_512Meters:
+                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(512.0f, 512.0f));
+                break;
+            case TerrainWorldRendererConfig::WorldSize::_1024Meters:
+                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(1024.0f, 1024.0f));
+                break;
+            case TerrainWorldRendererConfig::WorldSize::_2048Meters:
+                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(2048.0f, 2048.0f));
+                break;
+            case TerrainWorldRendererConfig::WorldSize::_4096Meters:
+                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(4096.0f, 4096.0f));
+                break;
+            case TerrainWorldRendererConfig::WorldSize::_8192Meters:
+                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(8192.0f, 8192.0f));
+                break;
+            case TerrainWorldRendererConfig::WorldSize::_16384Meters:
+                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(16384.0f, 16384.0f));
+                break;
+            }
         }
-
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         m_terrainRendererActive = true;
     }
 
     void TerrainWorldRendererComponent::Deactivate()
     {
         // On component deactivation, unregister the feature processor and remove it from the default scene.
-
         m_terrainRendererActive = false;
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
 
         if (AZ::RPI::Scene* scene = GetScene(); scene)
         {
@@ -178,69 +234,4 @@ namespace Terrain
         }
         return false;
     }
-
-    void TerrainWorldRendererComponent::OnTerrainDataDestroyBegin()
-    {
-        // If the terrain is being destroyed, remove all existing terrain data from the feature processor.
-
-        if (m_terrainFeatureProcessor)
-        {
-            m_terrainFeatureProcessor->RemoveTerrainData();
-        }
-    }
-
-    void TerrainWorldRendererComponent::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
-    {
-        // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-        // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
-        // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
-        // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
-        // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
-        auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-        typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
-        AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
-
-        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            worldBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-
-
-        AZ::Transform transform = AZ::Transform::CreateTranslation(worldBounds.GetCenter());
-
-        uint32_t width = aznumeric_cast<uint32_t>(
-            (float)worldBounds.GetXExtent() / queryResolution.GetX());
-        uint32_t height = aznumeric_cast<uint32_t>(
-            (float)worldBounds.GetYExtent() / queryResolution.GetY());
-        AZStd::vector<float> pixels;
-        pixels.resize_no_construct(width * height);
-        const uint32_t pixelDataSize = width * height * sizeof(float);
-        memset(pixels.data(), 0, pixelDataSize);
-
-        for (uint32_t y = 0; y < height; y++)
-        {
-            for (uint32_t x = 0; x < width; x++)
-            {
-                bool terrainExists = true;
-                float terrainHeight = 0.0f;
-                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                    terrainHeight, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats,
-                    (x * queryResolution.GetX()) + worldBounds.GetMin().GetX(),
-                    (y * queryResolution.GetY()) + worldBounds.GetMin().GetY(),
-                    AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
-                    &terrainExists);
-
-                pixels[(y * width) + x] =
-                    (terrainHeight - worldBounds.GetMin().GetZ()) / worldBounds.GetExtents().GetZ();
-            }
-        }
-
-        if (m_terrainFeatureProcessor)
-        {
-            m_terrainFeatureProcessor->UpdateTerrainData(transform, worldBounds, queryResolution.GetX(), width, height, pixels);
-        }
-    }
-
 }

@@ -2,24 +2,24 @@ These tests are mostly done with files that have a different extension between s
 The source scan is done first, and will catch files in the source path.
 Product path searching is resolved using "endsWith" logic.
 textures/_dev_purple.tif.streamingimage
-Back slashes, and project name in the path
-pc/textures/_dev_stucco.tif.streamingimage
+Back slashes
+textures\_dev_stucco.tif.streamingimage
 Double back slashes
 textures\\_dev_tan.tif.streamingimage
 Casing doesn't match
 TEXTURES/_DEV_WHITE.tif.streamingimage
 Some files have multiple extensions, this verifies that won't trip up the scanner.
 textures/_dev_yellow_light.tif.1002.imagemipchain
-Path inline textures/milestone2/ama_grey_02.tif.streamingimage test
+Path inline textures/_dev_woodland.tif.1002.imagemipchain test
 Path after=textures/_dev_woodland.tif.streamingimage equal sign
 
 Multiple paths on one line
-Multiple materials/am_grass1.mtl paths materials/am_rockground.mtl on one line
-Path before a UUID
-Path materials/floor_tile.mtl before B92667DC-9F5B-5D72-A29D-99219DD9B691 a UUID
-Path before an asset ID
-Path ui/milestone2menu.uicanvas before an 2ef92b8D044E5C278E2BB1AC0374A4E7:1002 asset ID
-Path after a UUID
-Path after CEAA362B4E505BCEB827CB92EF40A50E a project.json UUID
-Path after an asset ID
-Path after {A2482826-053D-5634-A27B-084B1326AAE5}:[1002] an libs/particles/milestone2particles.xml asset ID
+Multiple textures/_dev_yellow_light.tif.streamingimage paths textures/_dev_yellow_med.tif.1002.imagemipchain on one line
+Path before a UUID for SelfReferenceUUID text file
+Path textures/lights/flare01.tif.streamingimage before 33BCEE02-F322-5688-ABEE-534F6058593F a UUID
+Path before an asset ID for _dev_red image
+Path textures/test_texture_sequence/test_texture_sequence000.png.streamingimage before an 2ef92b8D044E5C278E2BB1AC0374A4E7:1002 asset ID
+Path after a UUID for SelfReferenceAssetID text file
+Path after 785A05D2-483E-5B43-A2B9-92ACDAE6E938 a textures/test_texture_sequence/test_texture_sequence001.png.streamingimage UUID
+Path after an asset ID for _dev_purple image file
+Path after {A2482826-053D-5634-A27B-084B1326AAE5}:[1002] an textures/_dev_purple_glass.tif.1002.imagemipchain asset ID

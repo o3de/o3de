@@ -9,9 +9,11 @@
 set(FILES
     Tests/AzQtComponentTests.cpp
     Tests/ColorControllerTests.cpp
+    Tests/FileDialogTests.cpp
     Tests/FloatToStringConversionTests.cpp
     Tests/HexParsingTests.cpp
     Tests/StyleSheetCacheTests.cpp
+    Tests/WindowDecoratorWrapperTests.cpp
     Tests/qrc1.qrc
     Tests/qrc2.qrc
     Tests/qrc1/sheet1.qss

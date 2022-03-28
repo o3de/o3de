@@ -13,6 +13,7 @@
 #include <Application/ToolsApplication.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace UnitTest
 {

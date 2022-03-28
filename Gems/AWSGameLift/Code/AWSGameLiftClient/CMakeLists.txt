@@ -6,8 +6,6 @@
 #
 #
 
-set(awsgameliftclient_compile_definition $<IF:$<CONFIG:release>,AWSGAMELIFT_RELEASE,AWSGAMELIFT_DEV>)
-
 ly_add_target(
     NAME AWSGameLift.Client.Static STATIC
     NAMESPACE Gem
@@ -15,18 +13,19 @@ ly_add_target(
         awsgamelift_client_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
+            ../AWSGameLiftCommon/Include
             Include
         PRIVATE
-            Source
             ../AWSGameLiftCommon/Source
+            Source
     COMPILE_DEFINITIONS
         PRIVATE
             ${awsgameliftclient_compile_definition}
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            AZ::AzFramework
             Gem::AWSCore
+            Gem::Multiplayer.Static
             3rdParty::AWSNativeSDK::GameLiftClient
 )
 
@@ -78,19 +77,20 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awsgamelift_client_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                ../AWSGameLiftCommon/Include
+                ../AWSGameLiftCommon/Source
                 Include
                 Tests
                 Source
-                ../AWSGameLiftCommon/Source
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                AZ::AzFramework
                 AZ::AzTest
                 Gem::AWSCore
                 Gem::AWSGameLift.Client.Static
+                Gem::Multiplayer.Static
                 3rdParty::AWSNativeSDK::GameLiftClient
-                AZ::AWSNativeSDKInit
+                AZ::AWSNativeSDKTestLibs
     )
     # Add AWSGameLift.Client.Tests to googletest
     ly_add_googletest(

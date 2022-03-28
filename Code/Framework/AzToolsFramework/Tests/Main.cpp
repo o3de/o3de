@@ -6,17 +6,16 @@
  *
  */
 
-#include <AzTest/AzTest.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzTest/AzTest.h>
 
 #include <QApplication>
-
-using namespace AZ;
 
 // Handle asserts
 class ToolsFrameworkHook
@@ -25,12 +24,12 @@ class ToolsFrameworkHook
 public:
     void SetupEnvironment() override
     {
-        AllocatorInstance<SystemAllocator>::Create();
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     }
 
     void TeardownEnvironment() override
     {
-        AllocatorInstance<SystemAllocator>::Destroy();
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 };
 
@@ -38,12 +37,17 @@ AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
 {
     ::testing::InitGoogleMock(&argc, argv);
     QApplication app(argc, argv);
-    auto styleManager = AZStd::make_unique< AzQtComponents::StyleManager>(&app);
+    auto styleManager = AZStd::make_unique<AzQtComponents::StyleManager>(&app);
     AZ::IO::FixedMaxPath engineRootPath;
     {
         AZ::ComponentApplication componentApplication(argc, argv);
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+
+        AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SystemComponentsDeactivated");
+        AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "ConsoleUnavailable");
+        AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SettingsRegistryUnavailable");
+        AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SystemAllocatorPendingDestruction");
     }
     styleManager->initialize(&app, engineRootPath);
     AZ::Test::printUnusedParametersWarning(argc, argv);

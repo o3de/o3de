@@ -33,6 +33,8 @@
 
 namespace UnitTest
 {
+    static AZ::Name globalName = AZ::Name::FromStringLiteral("global");
+
     class NameDictionaryTester
     {
     public:
@@ -55,7 +57,23 @@ namespace UnitTest
         
         static size_t GetEntryCount()
         {
-            return GetDictionary().size();
+            // Subtract any static scope names hanging around
+            AZ::Name* head = AZ::NameDictionary::Instance().m_deferredHead;
+            size_t staticNameCount = 0;
+            AZ::Name* current = head;
+            while (current != nullptr)
+            {
+                if (current->m_data != nullptr)
+                {
+                    ++staticNameCount;
+                }
+                current = current->m_nextName;
+                if (current == head)
+                {
+                    break;
+                }
+            }
+            return GetDictionary().size() - staticNameCount;
         }
 
         //! Directly calculate the hash value for a string without collision resolution
@@ -500,7 +518,8 @@ namespace UnitTest
     {
         AZ::Internal::NameData* leakedNameData = nullptr;
         {
-            AZ::Name leakedName{ "hello" };
+            constexpr AZStd::string_view leakedNameContents{ "hello" };
+            AZ::Name leakedName{ leakedNameContents };
             AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::NameDictionary::Destroy();
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
@@ -635,6 +654,36 @@ namespace UnitTest
         RunConcurrencyTest<ThreadRepeatedlyCreatesAndReleasesOneName<100>>(100, 2);
     }
 
+    TEST_F(NameTest, NameRef)
+    {
+        AZ::NameRef fromRValue = AZ::Name("test");
+        EXPECT_EQ("test", fromRValue.GetStringView());
+
+        AZ::Name name("foo");
+        AZ::NameRef fromLValue = name;
+        EXPECT_EQ("foo", fromLValue.GetStringView());
+
+        AZ::Name fromRefLValue = fromLValue;
+        EXPECT_EQ("foo", fromRefLValue.GetStringView());
+
+        AZ::Name fromRefRValue = AZStd::move(fromRValue);
+        EXPECT_EQ("test", fromRefRValue.GetStringView());
+
+        EXPECT_TRUE(AZ::Name(fromLValue) == fromRefLValue);
+        EXPECT_TRUE(fromLValue == fromRefLValue);
+        EXPECT_TRUE(fromRefLValue == AZ::Name(fromLValue));
+        EXPECT_TRUE(fromLValue == AZ::Name("foo"));
+        EXPECT_TRUE(AZ::Name("foo") == fromLValue);
+    }
+
+    TEST_F(NameTest, NameLiteral)
+    {
+        static AZ::Name staticName = AZ::Name::FromStringLiteral("static");
+        EXPECT_EQ("literal", AZ_NAME_LITERAL("literal").GetStringView());
+        EXPECT_EQ("static", staticName.GetStringView());
+        EXPECT_EQ("global", globalName.GetStringView());
+    }
+
     TEST_F(NameTest, DISABLED_NameVsStringPerf_Creation)
     {
         constexpr int CreateCount = 1000;
@@ -642,7 +691,7 @@ namespace UnitTest
         char buffer[RandomStringBufferSize];
 
         AZStd::sys_time_t newNameTime;
-        AZStd::sys_time_t existingNameTime;
+        [[maybe_unused]] AZStd::sys_time_t existingNameTime;
         AZStd::sys_time_t stringTime;
 
         {

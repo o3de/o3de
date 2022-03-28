@@ -22,7 +22,9 @@ class SeedBuilderTests
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         m_app.Start(AZ::ComponentApplication::Descriptor());
@@ -34,6 +36,13 @@ class SeedBuilderTests
 
         const char* dir = m_app.GetExecutableFolder();
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", dir);
+<<<<<<< HEAD
+=======
+
+        // Set the @gemroot:<gem-name> alias for LmbrCentral gem
+        AZ::Test::AddActiveGem("LmbrCentral", *registry, AZ::IO::FileIOBase::GetInstance());
+
+>>>>>>> development
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
     }
 
@@ -49,7 +58,11 @@ TEST_F(SeedBuilderTests, SeedBuilder_SourceDependency_Valid)
 {
     DependencyBuilder::SeedBuilderWorker seedBuilderWorker;
     AssetBuilderSDK::CreateJobsRequest request;
+<<<<<<< HEAD
     constexpr char testSeedFolder[] = "@engroot@/Gems/LmbrCentral/Code/Tests/Seed";
+=======
+    constexpr char testSeedFolder[] = "@gemroot:LmbrCentral@/Code/Tests/Seed";
+>>>>>>> development
     char resolvedPath[AZ_MAX_PATH_LEN];
     AZ::IO::FileIOBase::GetInstance()->ResolvePath(testSeedFolder, resolvedPath, AZ_MAX_PATH_LEN);
     request.m_watchFolder = resolvedPath;
@@ -78,7 +91,11 @@ TEST_F(SeedBuilderTests, SeedBuilder_EmptySourceDependency_Valid)
 {
     DependencyBuilder::SeedBuilderWorker seedBuilderWorker;
     AssetBuilderSDK::CreateJobsRequest request;
+<<<<<<< HEAD
     constexpr char testSeedFolder[] = "@engroot@/Gems/LmbrCentral/Code/Tests/Seed";
+=======
+    constexpr char testSeedFolder[] = "@gemroot:LmbrCentral@/Code/Tests/Seed";
+>>>>>>> development
     char resolvedPath[AZ_MAX_PATH_LEN];
     AZ::IO::FileIOBase::GetInstance()->ResolvePath(testSeedFolder, resolvedPath, AZ_MAX_PATH_LEN);
     request.m_watchFolder = resolvedPath;

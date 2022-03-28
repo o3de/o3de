@@ -10,7 +10,14 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+<<<<<<< HEAD
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+=======
+#include <AzCore/std/parallel/shared_mutex.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <LmbrCentral/Dependency/DependencyNotificationBus.h>
+>>>>>>> development
 #include <SurfaceData/SurfaceDataTypes.h>
 
 #include <Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h>
@@ -23,6 +30,11 @@ namespace LmbrCentral
 
 namespace Terrain
 {
+<<<<<<< HEAD
+=======
+    class EditorSurfaceTagListProvider;
+
+>>>>>>> development
     class TerrainSurfaceGradientMapping final
     {
     public:
@@ -30,8 +42,26 @@ namespace Terrain
         AZ_RTTI(TerrainSurfaceGradientMapping, "{473AD2CE-F22A-45A9-803F-2192F3D9F2BF}");
         static void Reflect(AZ::ReflectContext* context);
 
+<<<<<<< HEAD
         AZ::EntityId m_gradientEntityId;
         SurfaceData::SurfaceTag m_surfaceTag;
+=======
+        TerrainSurfaceGradientMapping() = default;
+        TerrainSurfaceGradientMapping(const AZ::EntityId& entityId, const SurfaceData::SurfaceTag& surfaceTag)
+            : m_gradientEntityId(entityId)
+            , m_surfaceTag(surfaceTag)
+        {
+        }
+
+        AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> BuildSelectableTagList() const;
+        void SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider);
+
+        AZ::EntityId m_gradientEntityId;
+        SurfaceData::SurfaceTag m_surfaceTag;
+
+    private:
+        const EditorSurfaceTagListProvider* m_tagListProvider = nullptr;
+>>>>>>> development
     };
 
     class TerrainSurfaceGradientListConfig : public AZ::ComponentConfig
@@ -47,6 +77,10 @@ namespace Terrain
     class TerrainSurfaceGradientListComponent
         : public AZ::Component
         , public Terrain::TerrainAreaSurfaceRequestBus::Handler
+<<<<<<< HEAD
+=======
+        , private LmbrCentral::DependencyNotificationBus::Handler
+>>>>>>> development
     {
     public:
         template<typename, typename>
@@ -69,9 +103,28 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
         // TerrainAreaSurfaceRequestBus
+<<<<<<< HEAD
         void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const override;
 
     private:
         TerrainSurfaceGradientListConfig m_configuration;
+=======
+        void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights) const override;
+        void GetSurfaceWeightsFromList(
+            AZStd::span<const AZ::Vector3> inPositionList,
+            AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const override;
+
+    private:
+        //////////////////////////////////////////////////////////////////////////
+        // LmbrCentral::DependencyNotificationBus
+        void OnCompositionChanged() override;
+
+        TerrainSurfaceGradientListConfig m_configuration;
+        LmbrCentral::DependencyMonitor m_dependencyMonitor;
+
+        // The TerrainAreaSurfaceRequestBus has lockless dispatch, so make sure that queries don't happen at the same
+        // time as bus connects / disconnects.
+        mutable AZStd::shared_mutex m_queryMutex;
+>>>>>>> development
     };
 } // namespace Terrain

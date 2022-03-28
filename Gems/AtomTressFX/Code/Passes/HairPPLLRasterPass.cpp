@@ -34,6 +34,7 @@ namespace AZ
         namespace Hair
         {
 
+<<<<<<< HEAD
             // --- Creation & Initialization ---
             RPI::Ptr<HairPPLLRasterPass> HairPPLLRasterPass::Create(const RPI::PassDescriptor& descriptor)
             {
@@ -89,6 +90,27 @@ namespace AZ
             void HairPPLLRasterPass::BuildInternal()
             {
                 RasterPass::BuildInternal();
+=======
+            HairPPLLRasterPass::HairPPLLRasterPass(const RPI::PassDescriptor& descriptor)
+                : HairGeometryRasterPass(descriptor)
+            {
+                SetShaderPath("Shaders/hairrenderingfillppll.azshader");  
+            }
+
+            RPI::Ptr<HairPPLLRasterPass> HairPPLLRasterPass::Create(const RPI::PassDescriptor& descriptor)
+            {
+                RPI::Ptr<HairPPLLRasterPass> pass = aznew HairPPLLRasterPass(descriptor);
+                return pass;
+            }
+
+            //! This method is used for attaching the PPLL data buffer which is a transient buffer.
+            //! It is done this ways because Atom doesn't support transient structured buffers declaration
+            //! via Pass yet.
+            //! Once supported, this will be done via data driven code and the method can be removed.
+            void HairPPLLRasterPass::BuildInternal()
+            {
+                RasterPass::BuildInternal();    // change this to call parent if the method exists
+>>>>>>> development
 
                 if (!AcquireFeatureProcessor())
                 {
@@ -104,6 +126,7 @@ namespace AZ
                 AttachBufferToSlot(Name{ "PerPixelLinkedList" }, m_featureProcessor->GetPerPixelListBuffer());
             }
 
+<<<<<<< HEAD
             bool HairPPLLRasterPass::IsEnabled() const
             {
                 return (RPI::RasterPass::IsEnabled() && m_initialized) ? true : false;
@@ -315,6 +338,8 @@ namespace AZ
             {
                 BuildShaderAndRenderData();
             }
+=======
+>>>>>>> development
         } // namespace Hair
     }   // namespace Render
 }   // namespace AZ

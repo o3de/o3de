@@ -12,7 +12,6 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 
 #include <AzCore/Asset/AssetManager.h>
@@ -38,7 +37,6 @@
 
 #include "ShaderPlatformInterfaceRequest.h"
 #include "ShaderBuilder_Traits_Platform.h"
-#include "AtomShaderConfig.h"
 
 #include "SrgLayoutUtility.h"
 
@@ -70,11 +68,11 @@ namespace AZ
                 return AZ::Success(shaderSourceData);
             }
 
-            void GetAbsolutePathToAzslFile(const AZStd::string& shaderTemplatePathAndFile, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteAzslPath)
+            void GetAbsolutePathToAzslFile(const AZStd::string& shaderSourceFileFullPath, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteAzslPath)
             {
                 AZStd::string sourcePath;
 
-                AzFramework::StringFunc::Path::GetFullPath(shaderTemplatePathAndFile.data(), sourcePath);
+                AzFramework::StringFunc::Path::GetFullPath(shaderSourceFileFullPath.c_str(), sourcePath);
                 AzFramework::StringFunc::Path::Normalize(specifiedShaderPathAndName);
 
                 bool shaderNameHasPath = (specifiedShaderPathAndName.find(AZ_CORRECT_FILESYSTEM_SEPARATOR) != AZStd::string::npos);
@@ -82,15 +80,27 @@ namespace AZ
                 // Join will handle overlapping directory structures for us 
                 AzFramework::StringFunc::Path::Join(sourcePath.data(), specifiedShaderPathAndName.data(), absoluteAzslPath, shaderNameHasPath /* handle directory overlap? */, false /* be case insensitive? */);
 
-                AzFramework::StringFunc::Path::ReplaceExtension(absoluteAzslPath, "azsl");
+                // The builders used to automatically set the ".azsl" extension, but no more, because that would make the .shader file confusing to read.
+                // Here we just detect the issue and instruct the user what to change.
+                // (There's no need to return a failure code, the builder will eventually fail anyway when it can't find the file).
+                if (!IO::FileIOBase::GetInstance()->Exists(absoluteAzslPath.c_str()))
+                {
+                    AZStd::string absoluteAzslPathWithForcedExtension = absoluteAzslPath;
+                    AzFramework::StringFunc::Path::ReplaceExtension(absoluteAzslPathWithForcedExtension, "azsl");
+
+                    if (IO::FileIOBase::GetInstance()->Exists(absoluteAzslPathWithForcedExtension.c_str()))
+                    {
+                        AZ_Error(ShaderBuilderUtilityName, false, "When the .shader file references a .azsl file, it must include the \".azsl\" extension.");
+                    }
+                }
             }
 
             AZStd::shared_ptr<ShaderFiles> PrepareSourceInput(
                 [[maybe_unused]] const char* builderName,
-                const AZStd::string& shaderAssetSourcePath,
+                const AZStd::string& shaderSourceFileFullPath,
                 RPI::ShaderSourceData& sourceAsset)
             {
-                auto shaderAssetSourceFileParseOutput = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourcePath);
+                auto shaderAssetSourceFileParseOutput = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
                 if (!shaderAssetSourceFileParseOutput.IsSuccess())
                 {
                     AZ_Error(builderName, false, "Failed to load/parse Shader Descriptor JSON: %s", shaderAssetSourceFileParseOutput.GetError().c_str());
@@ -100,7 +110,7 @@ namespace AZ
 
                 AZStd::shared_ptr<ShaderFiles> files(new ShaderFiles);
                 const AZStd::string& specifiedAzslName = sourceAsset.m_source;
-                ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderAssetSourcePath, specifiedAzslName, files->m_azslSourceFullPath);
+                ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderSourceFileFullPath, specifiedAzslName, files->m_azslSourceFullPath);
 
                 // specifiedAzslName may have a relative path on it so need to strip it
                 AzFramework::StringFunc::Path::GetFileName(specifiedAzslName.c_str(), files->m_azslFileName);
@@ -183,7 +193,7 @@ namespace AZ
                 // access the root constants reflection
                 if (!azslc.ParseSrgPopulateRootConstantData(
                         outcomes[AzslSubProducts::srg].GetValue(),
-                        rootConstantData)) // consuming data from --srg ("InlineConstantBuffer" subjson section)
+                        rootConstantData)) // consuming data from --srg ("RootConstantBuffer" subjson section)
                 {
                     AZ_Error(builderName, false, "Failed to obtain root constant data reflection");
                     return AssetBuilderSDK::ProcessJobResult_Failed;
@@ -480,6 +490,14 @@ namespace AZ
                 {
                     platformId = AzFramework::PlatformId::IOS;
                 }
+                else if (platformIdentifier == "salem")
+                {
+                    platformId = AzFramework::PlatformId::SALEM;
+                }
+                else if (platformIdentifier == "jasper")
+                {
+                    platformId = AzFramework::PlatformId::JASPER;
+                }
                 else if (platformIdentifier == "server")
                 {
                     platformId = AzFramework::PlatformId::SERVER;
@@ -516,7 +534,7 @@ namespace AZ
 
             RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(
                 [[maybe_unused]] const char* builderName, const RPI::ShaderResourceGroupLayoutList& srgLayoutList, const MapOfStringToStageType& shaderEntryPoints,
-                const RHI::ShaderCompilerArguments& shaderCompilerArguments, const RootConstantData& rootConstantData,
+                const RHI::ShaderBuildArguments& shaderBuildArguments, const RootConstantData& rootConstantData,
                 RHI::ShaderPlatformInterface* shaderPlatformInterface, BindingDependencies& bindingDependencies /*inout*/)
             {
                 PruneNonEntryFunctions(bindingDependencies, shaderEntryPoints);
@@ -605,7 +623,7 @@ namespace AZ
 
                 // Build platform-specific PipelineLayoutDescriptor data, and finalize
                 if (!shaderPlatformInterface->BuildPipelineLayoutDescriptor(
-                        pipelineLayoutDescriptor, srgInfos, rootConstantInfo, shaderCompilerArguments))
+                        pipelineLayoutDescriptor, srgInfos, rootConstantInfo, shaderBuildArguments))
                 {
                     AZ_Error(builderName, false, "Failed to build pipeline layout descriptor");
                     return nullptr;
@@ -864,6 +882,19 @@ namespace AZ
 
                 auto listOfFilePaths = ParseStringAndGetIncludedFiles(hayStack);
                 return AZ::Success(AZStd::move(listOfFilePaths));
+            }
+
+            AZStd::string GetPlatformNameFromPlatformInfo(const AssetBuilderSDK::PlatformInfo& platformInfo)
+            {
+                auto platformId = AZ::PlatformDefaults::PlatformHelper::GetPlatformIdFromName(platformInfo.m_identifier);
+                switch (platformId)
+                {
+                case AZ::PlatformDefaults::PlatformId::PC :
+                case AZ::PlatformDefaults::PlatformId::SERVER : // Fallthrough. "pc" and "server" are both treated as "Windows".
+                    return { "Windows" };
+                default:
+                    return AZ::PlatformDefaults::PlatformIdToPalFolder(platformId);
+                }
             }
 
         }  // namespace ShaderBuilderUtility

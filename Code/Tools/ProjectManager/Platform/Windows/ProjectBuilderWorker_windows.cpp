@@ -19,10 +19,10 @@ namespace O3DE::ProjectManager
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
 
         return AZ::Success(QStringList{ ProjectCMakeCommand,
+                                        "-G", "Visual Studio 16 2019",
                                         "-B", targetBuildPath,
                                         "-S", m_projectInfo.m_path,
-                                        QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath),
-                                        "-DLY_UNITY_BUILD=ON" } );
+                                        QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath) } );
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const

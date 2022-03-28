@@ -1,0 +1,64 @@
+{
+    "entries": [
+        {
+            "base": "{3A668745-A312-5849-A2D3-AEF533F2CE3D}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Random Point In Arc",
+                "category": "Math/Random",
+                "tooltip": "returns a random point in the specified arc"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Origin_0",
+                    "details": {
+                        "name": "Origin"
+                    }
+                },
+                {
+                    "base": "DataInput_Direction_1",
+                    "details": {
+                        "name": "Direction"
+                    }
+                },
+                {
+                    "base": "DataInput_Normal_2",
+                    "details": {
+                        "name": "Normal"
+                    }
+                },
+                {
+                    "base": "DataInput_Radius_3",
+                    "details": {
+                        "name": "Radius"
+                    }
+                },
+                {
+                    "base": "DataInput_Angle_4",
+                    "details": {
+                        "name": "Angle"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

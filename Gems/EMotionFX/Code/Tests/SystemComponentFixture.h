@@ -61,7 +61,9 @@ namespace EMotionFX
             constexpr auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
             if(auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+                AZ::IO::FixedMaxPath enginePath;
+                settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+                settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             }
         }
@@ -115,6 +117,11 @@ namespace EMotionFX
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_createEditContext = true;
 
+            // Add EMotionFX as an active gem within the Settings Registry for unit test
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZ::Test::AddActiveGem("EMotionFX", *settingsRegistry);
+            }
             m_app.Start(AZ::ComponentApplication::Descriptor{}, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

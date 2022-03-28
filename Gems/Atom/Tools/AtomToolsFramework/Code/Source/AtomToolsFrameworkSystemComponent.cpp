@@ -7,30 +7,36 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
-#include <AtomToolsFrameworkSystemComponent.h>
+#include <AtomToolsFramework/Document/AtomToolsDocument.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystem.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
+#include <AtomToolsFramework/Inspector/InspectorWidget.h>
+#include <AtomToolsFrameworkSystemComponent.h>
 
 namespace AtomToolsFramework
 {
     void AtomToolsFrameworkSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AtomToolsFramework::DynamicProperty::Reflect(context);
-        AtomToolsFramework::DynamicPropertyGroup::Reflect(context);
+        DynamicProperty::Reflect(context);
+        DynamicPropertyGroup::Reflect(context);
+        AtomToolsDocument::Reflect(context);
+        AtomToolsDocumentSystem::Reflect(context);
+        InspectorWidget::Reflect(context);
 
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<AtomToolsFrameworkSystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
 
-            if (AZ::EditContext* ec = serialize->GetEditContext())
+            if (auto editContext = serialize->GetEditContext())
             {
-                ec->Class<AtomToolsFrameworkSystemComponent>("AtomToolsFrameworkSystemComponent", "")
+                editContext->Class<AtomToolsFrameworkSystemComponent>("AtomToolsFrameworkSystemComponent", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -39,12 +45,12 @@ namespace AtomToolsFramework
 
     void AtomToolsFrameworkSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AtomToolsFrameworkSystemService"));
+        provided.push_back(AZ_CRC_CE("AtomToolsFrameworkSystemService"));
     }
 
     void AtomToolsFrameworkSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AtomToolsFrameworkSystemService"));
+        incompatible.push_back(AZ_CRC_CE("AtomToolsFrameworkSystemService"));
     }
 
     void AtomToolsFrameworkSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

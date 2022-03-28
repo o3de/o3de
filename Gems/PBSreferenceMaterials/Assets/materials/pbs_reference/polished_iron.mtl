@@ -1,7 +1,0 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="C0000081" StringGenMask="%ALLOW_SILHOUETTE_POM%BUMP_MAP%SPEC_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_metal" MatTemplate="" Diffuse="0,0,0" Specular="1,1,1" Emissive="0,0,0" Shininess="255" Opacity="1" LayerAct="1">
- <Textures>
-  <Texture Map="Specular" File="materials/pbs_reference/iron_spec.tif"/>
-  <Texture Map="Bumpmap" File="materials/pbs_reference/gloss70_ddna.tif"/>
- </Textures>
- <PublicParams SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
-</Material>

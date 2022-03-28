@@ -13,7 +13,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
 
@@ -52,12 +52,19 @@ namespace AZ
 
             // Packs all the added materials into one texture array per DecalMapType.
             void Pack();
+<<<<<<< HEAD
+
+            // Note that we pack each type into a separate texture array. This is because formats are
+            // often different (BC5 for normals, BC7 for diffuse, etc)
+            const Data::Instance<RPI::StreamingImage>& GetPackedTexture(const DecalMapType mapType) const;
+=======
+>>>>>>> development
 
             // Note that we pack each type into a separate texture array. This is because formats are
             // often different (BC5 for normals, BC7 for diffuse, etc)
             const Data::Instance<RPI::StreamingImage>& GetPackedTexture(const DecalMapType mapType) const;
 
-            static bool IsValidDecalMaterial(const RPI::MaterialAsset& materialAsset);
+            static bool IsValidDecalMaterial(RPI::MaterialAsset& materialAsset);
 
         private:
 
@@ -81,7 +88,11 @@ namespace AZ
             RHI::Size GetImageDimensions(const DecalMapType mapType) const;
             RHI::Format GetFormat(const DecalMapType mapType) const;
             RHI::ImageSubresourceLayout GetLayout(const DecalMapType mapType, int mip) const;
+<<<<<<< HEAD
             AZStd::array_view<uint8_t> GetRawImageData(const AZ::Name& mapName, int arrayLevel, int mip) const;
+=======
+            AZStd::span<const uint8_t> GetRawImageData(const AZ::Name& mapName, int arrayLevel, int mip) const;
+>>>>>>> development
 
             bool AreAllAssetsReady() const;
             bool IsAssetReady(const MaterialData& materialData) const;

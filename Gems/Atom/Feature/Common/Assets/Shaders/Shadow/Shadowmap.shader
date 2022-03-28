@@ -1,5 +1,5 @@
 {
-    "Source" : "Shadowmap",
+    "Source" : "Shadowmap.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }
@@ -7,6 +7,8 @@
 
     "DrawList" : "shadow",
 
+    // Note that lights now expose their own bias controls.
+    // It may be worth increasing their default values in the future and reducing the depthBias values encoded here.
     "RasterState" :
     {
         "depthBias" : "10",

@@ -8,16 +8,16 @@
 
 #include "RenderViewWidget.h"
 #include "RenderPlugin.h"
-#include "../EMStudioCore.h"
 #include "../PreferencesWindow.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>
 #include <EMotionFX/CommandSystem/Source/ActorInstanceCommands.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <MysticQt/Source/KeyboardShortcutManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
 #include <QToolBar>
-
+#include <QToolButton>
 
 namespace EMStudio
 {
@@ -49,8 +49,6 @@ namespace EMStudio
         QWidget* renderWidget = nullptr;
         m_plugin->CreateRenderWidget(this, &m_renderWidget, &renderWidget);
         verticalLayout->addWidget(renderWidget);
-
-        new QActionGroup(this);
 
         QActionGroup* group = new QActionGroup(this);
         group->setExclusive(true);
@@ -155,12 +153,12 @@ namespace EMStudio
             cameraMenu->addAction("Reset Camera",      [this]() { this->OnResetCamera(); });
 
             QAction* showSelectedAction = cameraMenu->addAction("Show Selected", this, &RenderViewWidget::OnShowSelected);
-            showSelectedAction->setShortcut(Qt::Key_S);
+            showSelectedAction->setShortcut(QKeySequence(Qt::Key_S + Qt::SHIFT));
             GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(showSelectedAction, RenderPlugin::s_renderWindowShortcutGroupName, true);
             addAction(showSelectedAction);
 
             QAction* showEntireSceneAction = cameraMenu->addAction("Show Entire Scene", this, &RenderViewWidget::OnShowEntireScene);
-            showEntireSceneAction->setShortcut(Qt::Key_A);
+            showEntireSceneAction->setShortcut(QKeySequence(Qt::Key_A + Qt::SHIFT));
             GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(showEntireSceneAction, RenderPlugin::s_renderWindowShortcutGroupName, true);
             addAction(showEntireSceneAction);
 

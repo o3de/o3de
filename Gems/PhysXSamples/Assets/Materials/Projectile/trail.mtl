@@ -1,9 +1,0 @@
-<Material MtlFlags="526336" DccMaterialHash="0" Shader="Particles" GenMask="804" StringGenMask="" SurfaceType="mat_default" Diffuse="1,0.45078582,0,1" Specular="0,0,0,1" Emittance="1,0.40197781,0,110.31" Opacity="1" Shininess="255" vertModifType="2" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="example/textures/trail.dds" Filter="0" IsTileU="0" IsTileV="0" TexType="0"/>
- </Textures>
- <VertexDeform Type="2" DividerX="0" DividerY="0.0099999998" NoiseScale="1,1,1">
-  <WaveX Type="1" Amp="21.530001" Level="7.1799998" Phase="8.3299999" Freq="13.89"/>
- </VertexDeform>
- <PublicParams GlobalIlluminationAmount="0.0099999998" RefrBumpScale="0.1"/>
-</Material>

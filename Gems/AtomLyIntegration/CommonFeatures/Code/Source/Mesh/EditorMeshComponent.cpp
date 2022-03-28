@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 
+#include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace AZ
@@ -48,7 +49,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mesh.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/mesh/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
                         ->DataElement(AZ::Edit::UIHandlers::Button, &EditorMeshComponent::m_addMaterialComponentFlag, "Add Material Component", "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -72,12 +73,18 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_modelAsset, "Mesh Asset", "Mesh asset reference")
+                                ->Attribute(AZ_CRC_CE("EditButton"), "")
+                                ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Scene Settings")
+                                ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_sortKey, "Sort Key", "Transparent meshes are drawn by sort key then depth. Used this to force certain transparent meshes to draw before or after others.")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::IsAssetSet)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Mesh will not be visible in baked reflection probe cubemaps")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_useForwardPassIblSpecular, "Use Forward Pass IBL Specular",
                                 "Renders IBL specular reflections in the forward pass, using only the most influential probe (based on the position of the entity) and the global IBL cubemap.  Can reduce rendering costs, but only recommended for static objects that are affected by at most one reflection probe.")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isRayTracingEnabled, "Use ray tracing",
+                                "Includes this mesh in ray tracing calculations.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodType, "Lod Type", "Lod Method.")
                                 ->EnumAttribute(RPI::Cullable::LodType::Default, "Default")
@@ -198,6 +205,7 @@ namespace AZ
 
             debugDisplay.PushMatrix(worldTM);
 
+            debugDisplay.SetColor(AZ::Colors::White);
             debugDisplay.DrawWireBox(localAabb.GetMin(), localAabb.GetMax());
 
             debugDisplay.PopMatrix();
@@ -242,10 +250,18 @@ namespace AZ
                 m_stats.m_meshStatsForLod.emplace_back(AZStd::move(stats));
             }
 
+            // Register this component with the editor mode feedback system
+            if (auto* editorModeFeedbackInterface = AZ::Interface<EditorModeFeedbackInterface>::Get())
+            {
+                editorModeFeedbackInterface->RegisterOrUpdateDrawableComponent(
+                    EntityComponentIdPair{ GetEntityId(), GetId() }, m_controller.m_meshHandle);
+            }
+
             // Refresh the tree when the model loads to update UI based on the model.
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
                 AzToolsFramework::Refresh_EntireTree);
+
         }
 
         AZ::u32 EditorMeshComponent::OnConfigurationChanged()

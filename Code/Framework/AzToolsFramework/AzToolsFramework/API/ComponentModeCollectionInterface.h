@@ -23,6 +23,7 @@ namespace AzToolsFramework
         virtual ~ComponentModeCollectionInterface() = default;
 
         //! Retrieves the list of all Component types (usually one).
-        virtual const AZStd::vector<AZ::Uuid>& GetComponentTypes() const = 0;
+        //! @note If called outside of component mode, an empty vector will be returned.
+        virtual AZStd::vector<AZ::Uuid> GetComponentTypes() const = 0;
     };
 } // namespace AzToolsFramework

@@ -12,11 +12,18 @@ set(FILES
     allocator.h
     allocator_ref.h
     allocator_stack.h
+    allocator_stateless.cpp
+    allocator_stateless.h
     allocator_static.h
     allocator_traits.h
     any.h
     base.h
     config.h
+    concepts/concepts.h
+    concepts/concepts_assignable.h
+    concepts/concepts_constructible.h
+    concepts/concepts_copyable.h
+    concepts/concepts_movable.h
     createdestroy.h
     docs.h
     exceptions.h
@@ -25,11 +32,30 @@ set(FILES
     hash.cpp
     hash.h
     hash_table.h
+    iterator/iterator_primitives.h
     iterator.h
     limits.h
     numeric.h
     math.h
     optional.h
+    ranges/all_view.h
+    ranges/elements_view.h
+    ranges/empty_view.h
+    ranges/iter_move.h
+    ranges/iter_swap.h
+    ranges/join_view.h
+    ranges/owning_view.h
+    ranges/ranges.h
+    ranges/ranges_adaptor.h
+    ranges/ranges_algorithm.h
+    ranges/ranges_functional.h
+    ranges/ref_view.h
+    ranges/single_view.h
+    ranges/subrange.h
+    ranges/split_view.h
+    ranges/swap.h
+    ranges/zip_view.h
+    ranges/zip_view.inl
     ratio.h
     reference_wrapper.h
     sort.h
@@ -62,6 +88,8 @@ set(FILES
     containers/rbtree.h
     containers/ring_buffer.h
     containers/set.h
+    containers/span.h
+    containers/span.inl
     containers/stack.h
     containers/unordered_map.h
     containers/unordered_set.h
@@ -147,6 +175,7 @@ set(FILES
     typetraits/alignment_of.h
     typetraits/config.h
     typetraits/common_type.h
+    typetraits/common_reference.h
     typetraits/conjunction.h
     typetraits/disjunction.h
     typetraits/extent.h
@@ -213,4 +242,6 @@ set(FILES
     typetraits/void_t.h
     typetraits/internal/type_sequence_traits.h
     typetraits/internal/is_template_copy_constructible.h
+    utility/declval.h
+    utility/move.h
 )

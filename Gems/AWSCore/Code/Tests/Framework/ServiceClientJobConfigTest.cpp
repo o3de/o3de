@@ -6,8 +6,6 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <AWSCoreBus.h>
 #include <Framework/ServiceClientJobConfig.h>
 #include <ResourceMapping/AWSResourceMappingBus.h>
@@ -19,17 +17,21 @@ static constexpr const char TEST_EXPECTED_FEATURE_SERVICE_URL[] = "https://featu
 static constexpr const char TEST_EXPECTED_CUSTOM_SERVICE_URL[] = "https://custom.service.com";
 
 class ServiceClientJobConfigTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public AWSCoreFixture
     , AWSResourceMappingRequestBus::Handler
 {
     void SetUp() override
     {
+        AWSCoreFixture::SetUpFixture();
+
         AWSResourceMappingRequestBus::Handler::BusConnect();
     }
 
     void TearDown() override
     {
         AWSResourceMappingRequestBus::Handler::BusDisconnect();
+
+        AWSCoreFixture::TearDownFixture();
     }
 
     // AWSResourceMappingRequestBus interface implementation
@@ -84,7 +86,7 @@ class ServiceClientJobConfigTest
     void ReloadConfigFile(bool reloadConfigFileName = false) override
     {
         AZ_UNUSED(reloadConfigFileName);
-    };
+    }
 };
 
 TEST_F(ServiceClientJobConfigTest, GetServiceUrl_CreateServiceWithServiceNameOnly_GetExpectedFeatureServiceUrl)

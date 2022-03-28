@@ -17,6 +17,12 @@ namespace AZ
     {
         namespace DataTypes
         {
+            enum class ScriptProcessorFallbackLogic
+            {
+                FailBuild, // this will log error & fail the build
+                ContinueBuild // this will log the errors but continue the build logic
+            };
+
             class IScriptProcessorRule
                 : public IRule
             {
@@ -26,6 +32,8 @@ namespace AZ
                 virtual ~IScriptProcessorRule() override = default;
 
                 virtual const AZStd::string& GetScriptFilename() const = 0;
+
+                virtual ScriptProcessorFallbackLogic GetScriptProcessorFallbackLogic() const = 0;
             };
         }  // DataTypes
     }  // SceneAPI

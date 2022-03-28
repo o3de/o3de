@@ -4,13 +4,15 @@
     <Include File="AzNetworking/AutoGen/CorePackets.AutoPackets.h" />
     <Include File="Multiplayer/MultiplayerTypes.h" />
     <Include File="Multiplayer/NetworkTime/INetworkTime.h" />
-  
-    <Packet Name="EditorServerInit" Desc="A packet that initializes a local server launched from the editor">
+
+    <Packet Name="EditorServerReadyForLevelData" Desc="A packet the editor-server will send on startup once it's ready to receive all the current level data from the Editor."/>
+
+    <Packet Name="EditorServerLevelData" Desc="A packet that initializes the editor-server with level data from the editor. The packet includes data required for loading the current level on the server (entities and asset data).">
         <Member Type="bool" Name="lastUpdate" Init="false"/>
 
         <!--16379 is 16384 (max TCP packet size) - 1 byte (bool lastUpdate) - 4 bytes (serialization overhead for ByteBuffer) -->
         <Member Type="AzNetworking::ByteBuffer&lt;16379&gt;" Name="assetData"/> 
     </Packet>
 
-    <Packet Name="EditorServerReady" Desc="A response packet the local server should send when ready for traffic"/>
+    <Packet Name="EditorServerReady" Desc="A response packet the editor-server should send after getting the editor's level data when it's ready to begin the actual game-mode network simulation."/>
 </PacketGroup>

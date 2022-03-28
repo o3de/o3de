@@ -1,45 +1,47 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/roof_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
             "textureBlendMode": "Lerp",
-            "textureMap": "Textures/roof_1k_basecolor.png"
+            "textureMap": "../Textures/roof_1k_basecolor.png"
         },
         "general": {
             "applySpecularAA": true
         },
+        "irradiance": {
+            "color": [
+                0.29613184928894043,
+                0.3324483036994934,
+                0.45078203082084656,
+                1.0
+            ]
+        },
         "metallic": {
+            "textureMap": "../Textures/roof_1k_metallic.png",
             "useTexture": false
         },
         "normal": {
             "factor": 0.5,
             "flipY": true,
-            "textureMap": "Textures/roof_1k_normal.jpg"
+            "textureMap": "../Textures/roof_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/roof_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "parallax": {
             "algorithm": "ContactRefinement",
-            "factor": 0.019999999552965165,
+            "factor": 0.019999999552965164,
             "quality": "Medium",
-            "textureMap": "Textures/roof_1k_height.png",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/roof_1k_roughness.png"
+            "textureMap": "../Textures/roof_1k_roughness.png"
         }
     }
 }

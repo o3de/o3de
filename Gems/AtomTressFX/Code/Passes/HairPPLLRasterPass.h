@@ -7,6 +7,7 @@
  */
 #pragma once
 
+<<<<<<< HEAD
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI.Reflect/Size.h>
@@ -15,6 +16,9 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
+=======
+#include <Passes/HairGeometryRasterPass.h>
+>>>>>>> development
 
 namespace AZ
 {
@@ -27,11 +31,16 @@ namespace AZ
     {
         namespace Hair
         {
+<<<<<<< HEAD
             class HairRenderObject;
             class HairFeatureProcessor;
 
             //! A HairPPLLRasterPass is used for the hair fragments fill render after the data
             //!  went through the skinning and simulation passes.
+=======
+            //! A HairPPLLRasterPass is used for the hair fragments fill render after the data
+            //! went through the skinning and simulation passes.
+>>>>>>> development
             //! The output of this pass is the general list of fragment data that can now be
             //!  traversed for depth resolve and lighting.
             //! The Fill pass uses the following Srgs:
@@ -41,19 +50,29 @@ namespace AZ
             //!  - HairDynamicDataSrg (PerObjectSrg) - shared buffers views for this hair object only.
             //!  - PerViewSrg and PerSceneSrg - as per the data from Atom.
             class HairPPLLRasterPass
+<<<<<<< HEAD
                 : public RPI::RasterPass
                 , private RPI::ShaderReloadNotificationBus::Handler
+=======
+                : public HairGeometryRasterPass
+>>>>>>> development
             {
                 AZ_RPI_PASS(HairPPLLRasterPass);
 
             public:
+<<<<<<< HEAD
                 AZ_RTTI(HairPPLLRasterPass, "{6614D7DD-24EE-4A2B-B314-7C035E2FB3C4}", RasterPass);
                 AZ_CLASS_ALLOCATOR(HairPPLLRasterPass, SystemAllocator, 0);
                 virtual ~HairPPLLRasterPass();
+=======
+                AZ_RTTI(HairPPLLRasterPass, "{6614D7DD-24EE-4A2B-B314-7C035E2FB3C4}", HairGeometryRasterPass);
+                AZ_CLASS_ALLOCATOR(HairPPLLRasterPass, SystemAllocator, 0);
+>>>>>>> development
 
                 //! Creates a HairPPLLRasterPass
                 static RPI::Ptr<HairPPLLRasterPass> Create(const RPI::PassDescriptor& descriptor);
 
+<<<<<<< HEAD
                 bool AddDrawPackets(AZStd::list<Data::Instance<HairRenderObject>>& hairObjects);
 
                 //! The following will be called when an object was added or shader has been compiled
@@ -109,6 +128,13 @@ namespace AZ
                 AZStd::unordered_set<HairRenderObject*> m_newRenderObjects;
 
                 bool m_initialized = false;
+=======
+            protected:
+                explicit HairPPLLRasterPass(const RPI::PassDescriptor& descriptor);
+
+                // Pass behavior overrides
+                void BuildInternal() override;
+>>>>>>> development
             };
 
         } // namespace Hair

@@ -94,12 +94,12 @@ namespace MockGraphCanvasServices
         GraphCanvas::DataSlotRequestBus::Handler::BusDisconnect();
     }
 
-    bool MockDataSlotComponent::ConvertToReference()
+    bool MockDataSlotComponent::ConvertToReference([[maybe_unused]] bool isNewSlot)
     {
         return false;
     }
 
-    bool MockDataSlotComponent::CanConvertToReference() const
+    bool MockDataSlotComponent::CanConvertToReference([[maybe_unused]] bool isNewSlot) const
     {
         return false;
     }
@@ -307,11 +307,6 @@ namespace MockGraphCanvasServices
     void MockNodeComponent::SetTooltip(const AZStd::string& tooltip)
     {
         m_configuration.SetTooltip(tooltip);
-    }
-
-    void MockNodeComponent::SetTranslationKeyedTooltip(const GraphCanvas::TranslationKeyedString& tooltip)
-    {
-        m_configuration.SetTooltip(tooltip.GetDisplayString());
     }
 
     const AZStd::string MockNodeComponent::GetTooltip() const

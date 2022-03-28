@@ -8,10 +8,15 @@
 
 #include <GemRepo/GemRepoListView.h>
 #include <GemRepo/GemRepoItemDelegate.h>
+#include <AdjustableHeaderWidget.h>
+
+#include <QShortcut>
+#include <QHeaderView>
 
 namespace O3DE::ProjectManager
 {
-    GemRepoListView::GemRepoListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
+    GemRepoListView::GemRepoListView(
+        QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, QWidget* parent)
         : QListView(parent)
     {
         setObjectName("gemRepoListView");
@@ -19,6 +24,11 @@ namespace O3DE::ProjectManager
 
         setModel(model);
         setSelectionModel(selectionModel);
-        setItemDelegate(new GemRepoItemDelegate(model, this));
+
+        GemRepoItemDelegate* itemDelegate = new GemRepoItemDelegate(model, header, this);
+        connect(itemDelegate, &GemRepoItemDelegate::RemoveRepo, this, &GemRepoListView::RemoveRepo);
+        connect(itemDelegate, &GemRepoItemDelegate::RefreshRepo, this, &GemRepoListView::RefreshRepo);
+        connect(header, &AdjustableHeaderWidget::sectionsResized, [=] { update(); });
+        setItemDelegate(itemDelegate);
     }
 } // namespace O3DE::ProjectManager

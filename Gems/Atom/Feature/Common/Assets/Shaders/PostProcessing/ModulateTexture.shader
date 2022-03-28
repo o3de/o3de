@@ -1,5 +1,5 @@
 { 
-    "Source": "ModulateTexture",
+    "Source": "ModulateTexture.azsl",
 
     "ProgramSettings" :
     {

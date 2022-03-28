@@ -89,6 +89,7 @@ namespace PhysX
             const AzPhysics::CollisionLayer& layer = AzPhysics::CollisionLayer::Default);
 
         AzPhysics::SimulatedBodyHandle AddStaticTriangleMeshCubeToScene(AzPhysics::SceneHandle scene, float halfExtent);
+        AzPhysics::SimulatedBodyHandle AddKinematicTriangleMeshCubeToScene(AzPhysics::SceneHandle scene, float halfExtent, AzPhysics::MassComputeFlags massComputeFlags);
 
         // Collision Filtering
         void SetCollisionLayer(EntityPtr& entity, const AZStd::string& layerName, const AZStd::string& colliderTag = "");

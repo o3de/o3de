@@ -12,6 +12,7 @@
 #include <Source/BaseColliderComponent.h>
 #include <Source/MeshColliderComponent.h>
 #include <Source/BoxColliderComponent.h>
+#include <Source/HeightfieldColliderComponent.h>
 #include <Source/SphereColliderComponent.h>
 #include <Source/CapsuleColliderComponent.h>
 #include <Source/ShapeColliderComponent.h>
@@ -36,6 +37,7 @@ namespace PhysX
             BaseColliderComponent::CreateDescriptor(),
             MeshColliderComponent::CreateDescriptor(),
             BoxColliderComponent::CreateDescriptor(),
+            HeightfieldColliderComponent::CreateDescriptor(),
             SphereColliderComponent::CreateDescriptor(),
             CapsuleColliderComponent::CreateDescriptor(),
             ShapeColliderComponent::CreateDescriptor(),

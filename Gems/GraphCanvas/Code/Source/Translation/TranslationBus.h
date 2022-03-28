@@ -10,7 +10,9 @@
 
 #include "TranslationAsset.h"
 
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
+
 
 namespace GraphCanvas
 {
@@ -39,28 +41,35 @@ namespace GraphCanvas
             return *this;
         }
 
+        bool operator == (const char* keyStr) const
+        {
+            return m_key.compare(keyStr) == 0;
+        }
+
         bool operator == (const TranslationKey& rhs) const
         {
             return m_key.compare(rhs.m_key) == 0;
         }
 
         template <typename T>
-        auto operator << (T value) -> AZStd::enable_if_t<AZStd::is_same_v<std::void_t<decltype(AZStd::to_string(value))>, void>, TranslationKey&>
+        auto operator<< (T&& value) ->
+            AZStd::enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(AZStd::to_string(value))>>, TranslationKey&>
         {
-            if (!m_key.empty() && !AZStd::to_string(value).empty())
+            AZStd::string valueString = AZStd::to_string(AZStd::forward<T>(value));
+            if (!m_key.empty() && !valueString.empty())
             {
                 m_key.append(".");
             }
 
-            if (!AZStd::to_string(value).empty())
+            if (!valueString.empty())
             {
-                m_key.append(AZStd::to_string(value));
+                m_key.append(valueString);
             }
 
             return *this;
         }
 
-        TranslationKey& operator << (const AZStd::string& value)
+        TranslationKey& operator<< (const AZStd::string& value)
         {
             if (!m_key.empty() && !value.empty())
             {
@@ -68,7 +77,7 @@ namespace GraphCanvas
             }
             if (!value.empty())
             {
-                m_key.append(value.c_str());
+                m_key.append(value);
             }
 
             return *this;
@@ -88,10 +97,16 @@ namespace GraphCanvas
         static AZStd::string Sanitize(const AZStd::string& text)
         {
             AZStd::string result = text;
+            AZ::StringFunc::Replace(result, "*", "x");
+            AZ::StringFunc::Replace(result, "(", "_");
+            AZ::StringFunc::Replace(result, ")", "_");
+            AZ::StringFunc::Replace(result, "{", "_");
+            AZ::StringFunc::Replace(result, "}", "_");
             AZ::StringFunc::Replace(result, ":", "_");
             AZ::StringFunc::Replace(result, "<", "_");
             AZ::StringFunc::Replace(result, ",", "_");
             AZ::StringFunc::Replace(result, ">", " ");
+            AZ::StringFunc::Replace(result, "/", "");
             AZ::StringFunc::Strip(result, " ");
             AZ::StringFunc::Path::Normalize(result);
             return result;
@@ -117,32 +132,32 @@ namespace GraphCanvas
         virtual bool HasKey(const AZStd::string& /*key*/) { return false; }
 
         //! Returns the text value for a given key
-        virtual const char* Get(const AZStd::string& /*key*/) { return nullptr; }
+        virtual bool Get(const AZStd::string& /*key*/, AZStd::string& /*value*/) { return false; }
 
         struct Details
         {
-            AZStd::string Name;
-            AZStd::string Tooltip;
-            AZStd::string Category;
-            AZStd::string Subtitle;
+            AZStd::string m_name;
+            AZStd::string m_tooltip;
+            AZStd::string m_category;
+            AZStd::string m_subtitle;
 
-            bool Valid = false;
+            bool m_valid = false;
 
             Details() = default;
 
             Details(const Details& rhs)
             {
-                Name = rhs.Name;
-                Tooltip = rhs.Tooltip;
-                Subtitle = rhs.Subtitle;
-                Category = rhs.Category;
-                Valid = rhs.Valid;
+                m_name = rhs.m_name;
+                m_tooltip = rhs.m_tooltip;
+                m_category = rhs.m_category;
+                m_subtitle = rhs.m_subtitle;
+                m_valid = rhs.m_valid;
             }
 
             Details(const char* name, const char* tooltip, const char* subtitle, const char* category)
-                : Name(name), Tooltip(tooltip), Subtitle(subtitle), Category(category)
+                : m_name(name), m_tooltip(tooltip), m_subtitle(subtitle), m_category(category)
             {
-                Valid = !Name.empty();
+                m_valid = !m_name.empty();
             }
         };
 
@@ -150,7 +165,7 @@ namespace GraphCanvas
         virtual bool Add(const TranslationFormat& /*translationFormat*/) { return false;  }
 
         //! Get the details associated with a given key (assumes they are within a "details" object)
-        virtual Details GetDetails(const AZStd::string& /*key*/) { return Details(); }
+        virtual Details GetDetails(const AZStd::string& /*key*/, const Details& /*fallbackDetails*/) { return Details(); }
 
         //! Generates the source JSON assets for all reflected elements
         virtual void GenerateSourceAssets() {}

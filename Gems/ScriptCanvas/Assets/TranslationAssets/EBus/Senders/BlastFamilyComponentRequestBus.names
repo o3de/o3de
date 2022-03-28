@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "base": "BlastFamilyComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Blast Family"
+            },
+            "methods": [
+                {
+                    "base": "Get Actors Data",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Actors Data"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Actors Data is invoked"
+                    },
+                    "details": {
+                        "name": "Get Actors Data"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{9B2C5410-EFDC-5A61-8B89-0F515B41AB24}",
+                            "details": {
+                                "name": "Actors Data"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

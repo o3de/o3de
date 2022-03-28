@@ -10,10 +10,8 @@
 
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Driller/Driller.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -67,7 +65,6 @@ namespace ScriptCanvasTests
                 {
                     ScriptCanvasEditor::TraceSuppressionBus::Broadcast(&ScriptCanvasEditor::TraceSuppressionRequests::SuppressPrintf, true);
                     AZ::ComponentApplication::Descriptor descriptor;
-                    descriptor.m_enableDrilling = false;
                     descriptor.m_useExistingAllocator = true;
 
                     AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
@@ -91,15 +88,17 @@ namespace ScriptCanvasTests
             AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
             AZ_Assert(fileIO, "SC unit tests require filehandling");
 
-            if (!fileIO->GetAlias("@engroot@"))
-            {
-                const char* engineRoot = nullptr;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-                AZ_Assert(engineRoot, "null engine root");
-                fileIO->SetAlias("@engroot@", engineRoot);
-            }
-
             s_setupSucceeded = fileIO->GetAlias("@engroot@") != nullptr;
+            // Set the @gemroot:<gem-name> alias for active gems
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                AZ::Test::AddActiveGem("ScriptCanvasTesting", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("GraphCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptEvents", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ExpressionEvaluation", *settingsRegistry, fileIO);
+            }
             
             AZ::TickBus::AllowFunctionQueuing(true);
 

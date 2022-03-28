@@ -34,6 +34,9 @@ namespace AZ
                 const AZStd::string& GetSourceFilename() const;
                 const Uuid& GetSourceGuid() const;
 
+                void SetWatchFolder(const AZStd::string& watchFolder);
+                const AZStd::string& GetWatchFolder() const;
+
                 void SetManifestFilename(const AZStd::string& name);
                 void SetManifestFilename(AZStd::string&& name);
                 const AZStd::string& GetManifestFilename() const;
@@ -59,6 +62,7 @@ namespace AZ
                 AZStd::string m_name;
                 AZStd::string m_manifestFilename;
                 AZStd::string m_sourceFilename;
+                AZStd::string m_watchFolder;
                 Uuid m_sourceGuid;
                 SceneGraph m_graph;
                 SceneManifest m_manifest;

@@ -7,7 +7,6 @@
  */
 #include "Sprite.h"
 #include <CryPath.h>
-#include <IRenderer.h>
 #include <ISerialize.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -244,12 +243,10 @@ void CSprite::SetCellBorders(int cellIndex, Borders borders)
 AZ::Data::Instance<AZ::RPI::Image> CSprite::GetImage()
 {
     // Prioritize usage of an atlas
-#ifdef LYSHINE_ATOM_TODO // texture atlas conversion to use Atom
     if (m_atlas)
     {
         return m_atlas->GetTexture();
     }
-#endif
 
     return m_image;
 }
@@ -702,7 +699,7 @@ CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
     // create Sprite object
     CSprite* sprite = new CSprite;
 
-#ifdef LYSHINE_ATOM_TODO // render target converstion to use ATom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     // the render target texture may not exist yet in which case we will need to load it later
     sprite->m_texture = gEnv->pRenderer->EF_GetTextureByName(renderTargetName.c_str());
     if (sprite->m_texture)
@@ -855,7 +852,8 @@ bool CSprite::LoadImage(const AZStd::string& nameTex, AZ::Data::Instance<AZ::RPI
     image = AZ::RPI::StreamingImage::FindOrCreate(streamingImageAsset);
     if (!image)
     {
-        AZ_Error("CSprite", false, "Failed to find or create an image instance from image asset '%s'", streamingImageAsset.GetHint().c_str());
+        AZ_Error("CSprite", false, "Failed to find or create an image instance from image asset '%s', ID %s",
+            streamingImageAsset.GetHint().c_str(), streamingImageAsset.GetId().ToString<AZStd::string>().c_str());
         return false;
     }
 

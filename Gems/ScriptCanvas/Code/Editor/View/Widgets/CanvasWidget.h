@@ -21,6 +21,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <GraphCanvas/Components/ViewBus.h>
+#include <ScriptCanvas/Core/Core.h>
 #endif
 
 class QVBoxLayout;
@@ -46,13 +47,13 @@ namespace ScriptCanvasEditor
             Q_OBJECT
         public:
             AZ_CLASS_ALLOCATOR(CanvasWidget, AZ::SystemAllocator, 0);
-            CanvasWidget(const AZ::Data::AssetId& assetId, QWidget* parent = nullptr);
+            CanvasWidget(const ScriptCanvasEditor::SourceHandle& assetId, QWidget* parent = nullptr);
             ~CanvasWidget() override;
 
             void SetDefaultBorderColor(AZ::Color defaultBorderColor);
             void ShowScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
 
-            void SetAssetId(const AZ::Data::AssetId& assetId);
+            void SetAssetId(const ScriptCanvasEditor::SourceHandle& assetId);
 
             const GraphCanvas::ViewId& GetViewId() const;
 
@@ -69,7 +70,7 @@ namespace ScriptCanvasEditor
 
             void SetupGraphicsView();
             
-            AZ::Data::AssetId m_assetId;
+            ScriptCanvasEditor::SourceHandle m_assetId;
 
             AZStd::unique_ptr<Ui::CanvasWidget> ui;
 

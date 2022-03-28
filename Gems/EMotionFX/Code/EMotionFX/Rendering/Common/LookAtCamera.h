@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __MCOMMON_LOOKATCAMERA_H
-#define __MCOMMON_LOOKATCAMERA_H
+#pragma once
 
 // include required headers
 #include "Camera.h"
@@ -91,6 +90,3 @@ namespace MCommon
         AZ::Vector3 m_up;     /**< The up vector of the camera. */
     };
 } // namespace MCommon
-
-
-#endif

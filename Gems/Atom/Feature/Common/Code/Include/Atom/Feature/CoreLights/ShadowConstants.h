@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/TypeInfo.h>
 
 namespace AZ
 {
@@ -42,11 +43,10 @@ namespace AZ
             // [GFX TODO][ATOM-2408] Make the max number of cascade modifiable at runtime.
             static constexpr uint16_t MaxNumberOfCascades = 4;
             static constexpr uint16_t MaxPcfSamplingCount = 64;
-            static constexpr float MaxSofteningBoundaryWidth = 0.1f;
         } // namespace Shadow
 
     } // namespace Render
 
     AZ_TYPE_INFO_SPECIALIZE(Render::ShadowmapSize, "{3EC1CE83-483D-41FD-9909-D22B03E56F4E}");
-    
+
 } // namespace AZ

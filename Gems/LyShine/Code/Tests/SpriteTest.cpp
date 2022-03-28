@@ -8,7 +8,6 @@
 
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
-#include <Mocks/ITextureMock.h>
 #include <Sprite.h>
 
 namespace UnitTest
@@ -32,7 +31,8 @@ namespace UnitTest
                 modules.emplace_back(new LyShine::LyShineModule);
             };
 
-            m_systemEntity = m_application.Create(appDesc, appStartup);
+            m_application = aznew AZ::ComponentApplication();
+            m_systemEntity = m_application->Create(appDesc, appStartup);
             m_systemEntity->Init();
             m_systemEntity->Activate();
         }
@@ -50,7 +50,7 @@ namespace UnitTest
 
     };
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] - render target support using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     TEST_F(LyShineSpriteTest, Sprite_CanAcquireRenderTarget)
     {
         // initialize to create the static sprite cache

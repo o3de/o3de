@@ -46,6 +46,10 @@
                     "Name": "Output",
                     "SlotType": "Output"
                 },
+                {
+                    "Name": "DiffuseProbeGridVisualization",
+                    "SlotType": "Output"
+                },
                 // SwapChain here is only used to reference the frame height and format
                 {
                     "Name": "SwapChainOutput",
@@ -58,6 +62,13 @@
                     "AttachmentRef": {
                         "Pass": "DiffuseSpecularMergePass",
                         "Attachment": "Output"
+                    }
+                },
+                {
+                    "LocalSlot": "DiffuseProbeGridVisualization",
+                    "AttachmentRef": {
+                        "Pass": "DiffuseGlobalIlluminationPass",
+                        "Attachment":  "VisualizationOutput"
                     }
                 }
             ],
@@ -467,41 +478,13 @@
                     "TemplateName": "SsaoParentTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "LinearDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthLinear"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "ModulateWithSsao",
-                    "TemplateName": "ModulateTextureTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "Ssao",
-                                "Attachment": "Output"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputOutput",
+                            "LocalSlot": "Modulate",
                             "AttachmentRef": {
                                 "Pass": "SubsurfaceScatteringPass",
                                 "Attachment": "Output"
                             }
                         }
-                    ],
-                    "PassData": {
-                        "$type": "ComputePassData",
-                        "ShaderAsset": {
-                            "FilePath": "Shaders/PostProcessing/ModulateTexture.shader"
-                        },
-                        "Make Fullscreen Pass": true
-                    }
+                    ]
                 },
                 {
                     "Name": "DiffuseSpecularMergePass",
@@ -510,8 +493,8 @@
                         {
                             "LocalSlot": "InputDiffuse",
                             "AttachmentRef": {
-                                "Pass": "ModulateWithSsao",
-                                "Attachment": "InputOutput"
+                                "Pass": "Ssao",
+                                "Attachment": "Output"
                             }
                         },
                         {

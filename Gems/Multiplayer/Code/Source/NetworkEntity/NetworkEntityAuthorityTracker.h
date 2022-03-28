@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzNetworking/DataStructures/TimeoutQueue.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 
 namespace Multiplayer
 {
@@ -23,17 +24,16 @@ namespace Multiplayer
     public:
         NetworkEntityAuthorityTracker(INetworkEntityManager& networkEntityManager);
 
+        void SetTimeoutTimeMs(AZ::TimeMs timeoutTimeMs);
         bool DoesEntityHaveOwner(ConstNetworkEntityHandle entityHandle) const;
         bool AddEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& newOwner);
         void RemoveEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& previousOwner);
         HostId GetEntityAuthorityManager(ConstNetworkEntityHandle entityHandle) const;
 
     private:
-
-        HostId GetEntityAuthorityManagerInternal(ConstNetworkEntityHandle entityHandle) const;
-
         NetworkEntityAuthorityTracker& operator= (const NetworkEntityAuthorityTracker&) = delete;
 
+<<<<<<< HEAD
         struct TimeoutData final
         {
             TimeoutData() = default;
@@ -54,12 +54,14 @@ namespace Multiplayer
         };
 
         using TimeoutDataMap = AZStd::unordered_map<NetEntityId, TimeoutData>;
+=======
+>>>>>>> development
         using EntityAuthorityMap = AZStd::unordered_map<NetEntityId, AZStd::vector<HostId>>;
 
-        TimeoutDataMap m_timeoutDataMap;
+        NetEntityIdSet m_timedOutNetEntityIds;
         EntityAuthorityMap m_entityAuthorityMap;
         INetworkEntityManager& m_networkEntityManager;
-        AzNetworking::TimeoutQueue m_timeoutQueue;
+
+        AZ::TimeMs m_timeoutTimeMs = AZ::TimeMs{ 0 };
     };
 }
-

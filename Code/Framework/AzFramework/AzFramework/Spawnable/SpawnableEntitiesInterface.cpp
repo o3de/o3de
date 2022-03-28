@@ -152,7 +152,7 @@ namespace AzFramework
     // SpawnableIndexEntityPair
     //
 
-    SpawnableIndexEntityPair::SpawnableIndexEntityPair(AZ::Entity** entityIterator, size_t* indexIterator)
+    SpawnableIndexEntityPair::SpawnableIndexEntityPair(AZ::Entity** entityIterator, uint32_t* indexIterator)
         : m_entity(entityIterator)
         , m_index(indexIterator)
     {
@@ -168,7 +168,7 @@ namespace AzFramework
         return *m_entity;
     }
 
-    size_t SpawnableIndexEntityPair::GetIndex() const
+    uint32_t SpawnableIndexEntityPair::GetIndex() const
     {
         return *m_index;
     }
@@ -177,7 +177,7 @@ namespace AzFramework
     // SpawnableIndexEntityIterator
     //
 
-    SpawnableIndexEntityIterator::SpawnableIndexEntityIterator(AZ::Entity** entityIterator, size_t* indexIterator)
+    SpawnableIndexEntityIterator::SpawnableIndexEntityIterator(AZ::Entity** entityIterator, uint32_t* indexIterator)
         : m_value(entityIterator, indexIterator)
     {
     }
@@ -248,7 +248,7 @@ namespace AzFramework
     //
 
     SpawnableConstIndexEntityContainerView::SpawnableConstIndexEntityContainerView(
-        AZ::Entity** beginEntity, size_t* beginIndices, size_t length)
+        AZ::Entity** beginEntity, uint32_t* beginIndices, size_t length)
         : m_begin(beginEntity, beginIndices)
         , m_end(beginEntity + length, beginIndices + length)
     {
@@ -279,75 +279,98 @@ namespace AzFramework
     // EntitySpawnTicket
     //
 
+    EntitySpawnTicket::EntitySpawnTicket(const EntitySpawnTicket& rhs)
+        : m_payload(rhs.m_payload)
+        , m_interface(rhs.m_interface)
+    {
+        rhs.m_interface->IncrementTicketReference(rhs.m_payload);
+    }
+
     EntitySpawnTicket::EntitySpawnTicket(EntitySpawnTicket&& rhs)
         : m_payload(rhs.m_payload)
-        , m_id(rhs.m_id)
+        , m_interface(rhs.m_interface)
     {
-        auto manager = SpawnableEntitiesInterface::Get();
-        AZ_Assert(manager, "SpawnableEntitiesInterface has no implementation.");
         rhs.m_payload = nullptr;
-        rhs.m_id = 0;
-        AZStd::scoped_lock lock(manager->m_entitySpawnTicketMapMutex);
-        manager->m_entitySpawnTicketMap.insert_or_assign(rhs.m_id, this);
+        rhs.m_interface = nullptr;
     }
 
     EntitySpawnTicket::EntitySpawnTicket(AZ::Data::Asset<Spawnable> spawnable)
     {
         auto manager = SpawnableEntitiesInterface::Get();
         AZ_Assert(manager, "Attempting to create an entity spawn ticket while the SpawnableEntitiesInterface has no implementation.");
-        AZStd::pair<EntitySpawnTicket::Id, void*> result = manager->CreateTicket(AZStd::move(spawnable));
-        m_id = result.first;
-        m_payload = result.second;
-        AZStd::scoped_lock lock(manager->m_entitySpawnTicketMapMutex);
-        manager->m_entitySpawnTicketMap.insert_or_assign(m_id, this);
+        m_payload = manager->CreateTicket(AZStd::move(spawnable));
+        m_interface = manager;
     }
 
     EntitySpawnTicket::~EntitySpawnTicket()
     {
-        if (m_payload)
+        if (IsValid())
         {
-            auto manager = SpawnableEntitiesInterface::Get();
-            AZ_Assert(manager, "Attempting to destroy an entity spawn ticket while the SpawnableEntitiesInterface has no implementation.");
-            manager->DestroyTicket(m_payload);
+            m_interface->DecrementTicketReference(m_payload);
             m_payload = nullptr;
-            AZStd::scoped_lock lock(manager->m_entitySpawnTicketMapMutex);
-            manager->m_entitySpawnTicketMap.erase(m_id);
-            m_id = 0;
+            m_interface = nullptr;
         }
+    }
+
+    EntitySpawnTicket& EntitySpawnTicket::operator=(const EntitySpawnTicket& rhs)
+    {
+        if (this != &rhs)
+        {
+            if (IsValid())
+            {
+                m_interface->DecrementTicketReference(m_payload);
+            }
+
+            m_interface = rhs.m_interface;
+            m_payload = rhs.m_payload;
+
+            if (rhs.IsValid())
+            {
+                rhs.m_interface->IncrementTicketReference(rhs.m_payload);
+            }
+
+        }
+        return *this;
     }
 
     EntitySpawnTicket& EntitySpawnTicket::operator=(EntitySpawnTicket&& rhs)
     {
         if (this != &rhs)
         {
-            auto manager = SpawnableEntitiesInterface::Get();
-            AZ_Assert(manager, "Attempting to destroy an entity spawn ticket while the SpawnableEntitiesInterface has no implementation.");
-            if (m_payload)
+            if (IsValid())
             {
-                manager->DestroyTicket(m_payload);
+                m_interface->DecrementTicketReference(m_payload);
             }
 
-            Id previousId = m_id;
-            m_id = rhs.m_id;
-            rhs.m_id = 0;
+            m_interface = rhs.m_interface;
+            rhs.m_interface = nullptr;
 
             m_payload = rhs.m_payload;
             rhs.m_payload = nullptr;
-
-            AZStd::scoped_lock lock(manager->m_entitySpawnTicketMapMutex);
-            manager->m_entitySpawnTicketMap.erase(previousId);
-            manager->m_entitySpawnTicketMap.insert_or_assign(m_id, this);
         }
         return *this;
     }
 
     auto EntitySpawnTicket::GetId() const -> Id
     {
-        return m_id;
+        return IsValid() ? m_interface->GetTicketId(m_payload) : 0;
+    }
+
+    const AZ::Data::Asset<Spawnable>* EntitySpawnTicket::GetSpawnable() const
+    {
+        return IsValid() ? &(m_interface->GetSpawnableOnTicket(m_payload)) : nullptr;
     }
 
     bool EntitySpawnTicket::IsValid() const
     {
         return m_payload != nullptr;
+    }
+
+    EntitySpawnTicket SpawnableEntitiesDefinition::InternalToExternalTicket(void* internalTicket, SpawnableEntitiesDefinition* owner)
+    {
+        EntitySpawnTicket result;
+        result.m_interface = owner;
+        result.m_payload = internalTicket;
+        return result;
     }
 } // namespace AzFramework

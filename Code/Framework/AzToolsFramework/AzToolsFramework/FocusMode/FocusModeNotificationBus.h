@@ -28,8 +28,10 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         
         //! Triggered when the editor focus is changed to a different entity.
-        //! @param entityId The entity the focus has been moved to.
-        virtual void OnEditorFocusChanged(AZ::EntityId entityId) = 0;
+        //! @param previousFocusEntityId The entity the focus has been moved from.
+        //! @param newFocusEntityId The entity the focus has been moved to.
+        virtual void OnEditorFocusChanged(
+            [[maybe_unused]] AZ::EntityId previousFocusEntityId, [[maybe_unused]] AZ::EntityId newFocusEntityId) {}
 
     protected:
         ~FocusModeNotifications() = default;

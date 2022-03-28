@@ -23,10 +23,6 @@
         }
     },
 
-    "CompilerHints" : { 
-        "DxcDisableOptimizations" : false
-    },
-
     "ProgramSettings":
     {
       "EntryPoints":

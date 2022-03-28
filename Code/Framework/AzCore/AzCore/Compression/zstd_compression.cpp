@@ -16,7 +16,7 @@
 
 using namespace AZ;
 
-ZStd::ZStd(IAllocatorAllocate* workMemAllocator)
+ZStd::ZStd(IAllocator* workMemAllocator)
 {
     m_workMemoryAllocator = workMemAllocator;
     if (!m_workMemoryAllocator)
@@ -41,13 +41,13 @@ ZStd::~ZStd()
 
 void* ZStd::AllocateMem(void* userData, size_t size)
 {
-    IAllocatorAllocate* allocator = reinterpret_cast<IAllocatorAllocate*>(userData);
+    IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
     return allocator->Allocate(size, 4, 0, "ZStandard", __FILE__, __LINE__);
 }
 
 void ZStd::FreeMem(void* userData, void* address)
 {
-    IAllocatorAllocate* allocator = reinterpret_cast<IAllocatorAllocate*>(userData);
+    IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
     allocator->DeAllocate(address);
 }
 
@@ -57,6 +57,7 @@ void ZStd::StartCompressor(unsigned int compressionLevel)
     ZSTD_customMem customAlloc;
     customAlloc.customAlloc = reinterpret_cast<ZSTD_allocFunction>(&AllocateMem);
     customAlloc.customFree = &FreeMem;
+    customAlloc.opaque = nullptr;
 
     AZ_UNUSED(compressionLevel);
     m_streamCompression = (ZSTD_createCStream_advanced(customAlloc));

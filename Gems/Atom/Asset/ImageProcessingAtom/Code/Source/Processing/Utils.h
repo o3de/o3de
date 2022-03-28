@@ -26,5 +26,7 @@ namespace ImageProcessingAtom
         IImageObjectPtr LoadImageFromImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset);
 
         bool SaveImageToDdsFile(IImageObjectPtr image, AZStd::string_view filePath);
+
+        bool NeedAlphaChannel(EAlphaContent alphaContent);
     }
 }

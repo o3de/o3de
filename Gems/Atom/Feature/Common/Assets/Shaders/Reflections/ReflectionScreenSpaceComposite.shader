@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceComposite",
+    "Source" : "ReflectionScreenSpaceComposite.azsl",
 
     "RasterState" :
     {
@@ -37,8 +37,5 @@
                 "type": "Fragment"
             }
         ]
-    },
-
-    "ProgramVariants": [
-    ]
+    }
 }

@@ -16,9 +16,6 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputDeviceId InputDeviceTouch::Id("touch");
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceTouch::IsTouchDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());
@@ -59,8 +56,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceTouch::InputDeviceTouch()
-        : InputDevice(Id)
+    InputDeviceTouch::InputDeviceTouch(const InputDeviceId& inputDeviceId,
+                                       ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_touchChannelsById()
         , m_pimpl(nullptr)
@@ -75,8 +73,8 @@ namespace AzFramework
             m_touchChannelsById[channelId] = channel;
         }
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

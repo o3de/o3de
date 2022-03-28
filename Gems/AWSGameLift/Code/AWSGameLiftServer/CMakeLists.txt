@@ -17,6 +17,7 @@ ly_add_target(
         awsgamelift_server_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
+            ../AWSGameLiftCommon/Include
             Include
         PRIVATE
             ../AWSGameLiftCommon/Source
@@ -24,7 +25,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            AZ::AzFramework
+            Gem::Multiplayer.Static
             3rdParty::AWSGameLiftServerSDK
     )
 
@@ -54,13 +55,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awsgamelift_server_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                ../AWSGameLiftCommon/Include
+                ../AWSGameLiftCommon/Source
                 Tests
                 Source
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                AZ::AzFramework
                 AZ::AzTest
+                Gem::Multiplayer.Static
                 Gem::AWSGameLift.Server.Static
                 3rdParty::AWSGameLiftServerSDK
     )

@@ -107,6 +107,7 @@ namespace Physics
             PhysicsAssetShapeConfiguration::Reflect(context);
             NativeShapeConfiguration::Reflect(context);
             CookedMeshShapeConfiguration::Reflect(context);
+            HeightfieldShapeConfiguration::Reflect(context);
             AzPhysics::SystemInterface::Reflect(context);
             AzPhysics::Scene::Reflect(context);
             AzPhysics::CollisionLayer::Reflect(context);

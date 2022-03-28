@@ -101,6 +101,7 @@ namespace AZ
             RHI::FactoryManagerBus::Broadcast(&RHI::FactoryManagerRequest::UnregisterFactory, this);
 
             Instance::GetInstance().Shutdown();
+            Instance::Reset();
         }
 
         Name SystemComponent::GetName()

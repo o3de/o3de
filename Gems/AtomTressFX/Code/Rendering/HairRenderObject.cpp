@@ -5,8 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+<<<<<<< HEAD
 #include <AzCore/Debug/EventTrace.h>
 
+=======
+>>>>>>> development
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -215,6 +218,11 @@ namespace AZ
                 Data::Instance<RPI::Shader> rasterShader,
                 uint32_t vertexCount, uint32_t strandsCount )
             {
+<<<<<<< HEAD
+=======
+                m_initialized = false;
+
+>>>>>>> development
                 AZ_Assert(vertexCount <= std::numeric_limits<uint32_t>().max(), "Hair vertex count exceeds uint32_t size.");
 
                 // Create the dynamic shared buffers Srg.
@@ -610,8 +618,21 @@ namespace AZ
                 // First, Directly loading from the asset stored in the render settings.
                 if (pRenderSettings)
                 {
+<<<<<<< HEAD
                     m_baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
                     m_strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+=======
+                    if (pRenderSettings->m_baseAlbedoAsset)
+                    {
+                        pRenderSettings->m_baseAlbedoAsset.BlockUntilLoadComplete();
+                        m_baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
+                    }
+                    if (pRenderSettings->m_strandAlbedoAsset)
+                    {
+                        pRenderSettings->m_strandAlbedoAsset.BlockUntilLoadComplete();
+                        m_strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+                    }
+>>>>>>> development
                 }
 
                 // Fallback using the texture name stored in the render settings. 
@@ -878,6 +899,14 @@ namespace AZ
                 const AMD::TressFXRenderingSettings* parameters, const int nodePoolSize,
                 float distance, bool shadowUpdate /*= false*/)
             {
+<<<<<<< HEAD
+=======
+                if (!parameters)
+                {
+                    parameters = m_renderSettings;
+                }
+
+>>>>>>> development
                 // Update Render Parameters
                 // If you alter FiberRadius make sure to change it also in the material properties
                 // passed by the Feature Processor for the shading. 
@@ -888,7 +917,11 @@ namespace AZ
 
                 // original TressFX lighting parameters - two specular lobes approximating
                 // the Marschner R and and TRT lobes + diffuse component. 
+<<<<<<< HEAD
                 m_renderCB->MatKValue = {{{0.f, parameters->m_HairKDiffuse, parameters->m_HairKSpec1, parameters->m_HairSpecExp1}}};
+=======
+                m_renderCB->MatKValue = { {{0.f, parameters->m_HairKDiffuse, parameters->m_HairKSpec1, parameters->m_HairSpecExp1}} };
+>>>>>>> development
                 m_renderCB->HairKs2 = parameters->m_HairKSpec2;
                 m_renderCB->HairEx2 = parameters->m_HairSpecExp2;
 
@@ -903,11 +936,21 @@ namespace AZ
                 m_strandCB->TipPercentage = parameters->m_TipPercentage;
                 m_strandCB->StrandUVTilingFactor = parameters->m_StrandUVTilingFactor;
                 m_strandCB->FiberRatio = parameters->m_FiberRatio;
+<<<<<<< HEAD
 
                 // Reset LOD hair density for the frame
                 m_LODHairDensity = 1.f;
 
                 float FiberRadius = parameters->m_FiberRadius;
+=======
+                m_strandCB->EnableThinTip = parameters->m_EnableThinTip;
+                m_strandCB->EnableStrandUV = parameters->m_EnableStrandUV;
+
+                // Reset LOD hair density for the frame
+                m_LODHairDensity = 1.f;
+                float fiberRadius = parameters->m_FiberRadius;
+
+>>>>>>> development
                 if (parameters->m_EnableHairLOD)
                 {
                     float MinLODDist = shadowUpdate ?
@@ -922,14 +965,20 @@ namespace AZ
                         float DistanceRatio = AZStd::min((distance - MinLODDist) / AZStd::max(MaxLODDist - MinLODDist, 0.00001f), 1.f);
 
                         // Lerp: x + s(y-x)
+<<<<<<< HEAD
                         float MaxLODFiberRadius = FiberRadius * (shadowUpdate ? parameters->m_ShadowLODWidthMultiplier : parameters->m_LODWidthMultiplier);
                         FiberRadius = FiberRadius + (DistanceRatio * (MaxLODFiberRadius - FiberRadius));
+=======
+                        float MaxLODFiberRadius = fiberRadius * (shadowUpdate ? parameters->m_ShadowLODWidthMultiplier : parameters->m_LODWidthMultiplier);
+                        fiberRadius = fiberRadius + (DistanceRatio * (MaxLODFiberRadius - fiberRadius));
+>>>>>>> development
 
                         // Lerp: x + s(y-x)
                         m_LODHairDensity = 1.f + (DistanceRatio * ((shadowUpdate ? parameters->m_ShadowLODPercent : parameters->m_LODPercent) - 1.f));
                     }
                 }
 
+<<<<<<< HEAD
                 m_strandCB->FiberRadius = FiberRadius;
 
                 m_strandCB->NumVerticesPerStrand = m_NumVerticesPerStrand;  // Always constant
@@ -939,6 +988,12 @@ namespace AZ
 
                 m_strandCB->EnableStrandUV = parameters->m_EnableStrandUV;
                 m_strandCB->EnableStrandTangent = parameters->m_EnableStrandTangent;
+=======
+                m_strandCB->FiberRadius = fiberRadius;
+                m_strandCB->NumVerticesPerStrand = m_NumVerticesPerStrand;  // Constant through the run per object
+                m_strandCB->NodePoolSize = nodePoolSize;
+                m_strandCB->RenderParamsIndex = m_RenderIndex;      // Per Objects specific according to its index in the FP
+>>>>>>> development
             }
 
             //!=====================================================================================
@@ -956,7 +1011,11 @@ namespace AZ
                 const char* assetName, AMD::TressFXAsset* asset,
                 AMD::TressFXSimulationSettings* simSettings, AMD::TressFXRenderingSettings* renderSettings)
             {
+<<<<<<< HEAD
                 AZ_TRACE_METHOD();
+=======
+                AZ_PROFILE_FUNCTION(AzRender);
+>>>>>>> development
 
                 ++s_objectCounter;
 
@@ -977,8 +1036,15 @@ namespace AZ
                 UpdateSimulationParameters(simSettings, SIMULATION_TIME_STEP); 
 
                 // [To Do] Hair - change to be dynamically calculated
+<<<<<<< HEAD
                 const float distanceFromCamera = 1.0; 
                 const float updateShadows = false;
+=======
+                const float distanceFromCamera = 1.0f; 
+                const float updateShadows = false;
+                m_renderSettings = renderSettings;
+                m_simSettings = simSettings;
+>>>>>>> development
                 UpdateRenderingParameters(renderSettings, RESERVED_PIXELS_FOR_OIT, distanceFromCamera, updateShadows);
 
                 if (!GetShaders())
@@ -989,7 +1055,11 @@ namespace AZ
                 //-------------------------------------
                 // Dynamic buffers, data and Srg creation - shared between passes and changed on the GPU
                 if (!m_dynamicHairData.CreateDynamicGPUResources(
+<<<<<<< HEAD
                     m_skinningShader, m_PPLLFillShader,
+=======
+                    m_skinningShader, m_geometryRasterShader,
+>>>>>>> development
                     m_NumTotalVertices, m_NumTotalStrands))
                 {
                     AZ_Error("Hair Gem", false, "Hair - Error creating dynamic resources [%s]", assetName );
@@ -1024,7 +1094,11 @@ namespace AZ
 
                 // Rendering setup
                 bool renderResourcesSuccess;
+<<<<<<< HEAD
                 renderResourcesSuccess = CreateRenderingGPUResources(m_PPLLFillShader, *asset, assetName);
+=======
+                renderResourcesSuccess = CreateRenderingGPUResources(m_geometryRasterShader, *asset, assetName);
+>>>>>>> development
                 renderResourcesSuccess &= PopulateDrawStrandsBindSet(renderSettings);   
                 renderResourcesSuccess &= UploadRenderingGPUResources(*asset);
 
@@ -1053,6 +1127,7 @@ namespace AZ
                 }
 
                 {
+<<<<<<< HEAD
                     Data::Instance<HairPPLLRasterPass> rasterPass = m_featureProcessor->GetHairPPLLRasterPass();
                     if (!rasterPass.get())
                     {
@@ -1064,6 +1139,12 @@ namespace AZ
                     if (!m_PPLLFillShader)
                     {
                         AZ_Error("Hair Gem", false, "Failed to get hair raster fill shader from raster pass");
+=======
+                    m_geometryRasterShader = m_featureProcessor->GetGeometryRasterShader();
+                    if (!m_geometryRasterShader)
+                    {
+                        AZ_Error("Hair Gem", false, "Failed to get hair geometry raster shader");
+>>>>>>> development
                         return false;
                     }
                 }
@@ -1112,7 +1193,11 @@ namespace AZ
                 return updatedCB;
             }
 
+<<<<<<< HEAD
             bool HairRenderObject::BuildPPLLDrawPacket(RHI::DrawPacketBuilder::DrawRequest& drawRequest)
+=======
+            bool HairRenderObject::BuildDrawPacket(RPI::Shader* geometryShader, RHI::DrawPacketBuilder::DrawRequest& drawRequest)
+>>>>>>> development
             {
                 RHI::DrawPacketBuilder drawPacketBuilder;
                 RHI::DrawIndexed drawIndexed;
@@ -1147,7 +1232,11 @@ namespace AZ
 
                 if (!renderMaterialSrg || !simSrg)
                 {
+<<<<<<< HEAD
                     AZ_Error("Hair Gem", false, "Failed to get thre hair material Srg for the raster pass.");
+=======
+                    AZ_Error("Hair Gem", false, "Failed to get the hair material Srg for the raster pass.");
+>>>>>>> development
                     return false;
                 }
                 // No need to compile the simSrg since it was compiled already by the Compute pass this frame
@@ -1155,6 +1244,7 @@ namespace AZ
                 drawPacketBuilder.AddShaderResourceGroup(simSrg->GetRHIShaderResourceGroup());
                 drawPacketBuilder.AddDrawItem(drawRequest);
 
+<<<<<<< HEAD
                 if (m_fillDrawPacket)
                 {
                     delete m_fillDrawPacket;
@@ -1165,11 +1255,43 @@ namespace AZ
                 {
                     AZ_Error("Hair Gem", false, "Failed to build the hair DrawPacket.");
                     return false;
+=======
+                const RHI::DrawPacket* drawPacket = drawPacketBuilder.End();
+                if (!drawPacket)
+                {
+                    AZ_Error("Hair Gem", false, "Failed to build the hair DrawPacket.");
+                    return false;
+                }
+
+                // Insert the newly created draw packet to the map based on its shader
+                auto iter = m_geometryDrawPackets.find(geometryShader);
+                if (iter != m_geometryDrawPackets.end())
+                {
+                    delete iter->second;
+                    iter->second = drawPacket;
+                }
+                else
+                {
+                    m_geometryDrawPackets[geometryShader] = drawPacket;
+>>>>>>> development
                 }
 
                 return true;
             }
 
+<<<<<<< HEAD
+=======
+            const RHI::DrawPacket* HairRenderObject::GetGeometrylDrawPacket(RPI::Shader* geometryShader)
+            {
+                auto iter = m_geometryDrawPackets.find(geometryShader);
+                if (iter == m_geometryDrawPackets.end())
+                {
+                    return nullptr;
+                }
+                return iter->second;
+            }
+
+>>>>>>> development
             const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
             {
                 auto dispatchIter = m_dispatchItems.find(computeShader);
@@ -1206,4 +1328,7 @@ namespace AZ
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
+<<<<<<< HEAD
 
+=======
+>>>>>>> development

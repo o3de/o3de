@@ -15,6 +15,7 @@
 #include <Editor/SkeletonModel.h>
 #include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
 #include <Editor/Plugins/HitDetection/HitDetectionJointWidget.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
 #include <MCore/Source/AzCoreConversions.h>
 
@@ -157,7 +158,7 @@ namespace EMotionFX
         ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::HitDetection);
     }
 
-    void HitDetectionJointInspectorPlugin::Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
+    void HitDetectionJointInspectorPlugin::LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
     {
         EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
         if (!activeViewWidget)
@@ -173,7 +174,7 @@ namespace EMotionFX
 
         const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
 
-        ColliderContainerWidget::RenderColliders(PhysicsSetup::HitDetection,
+        ColliderContainerWidget::LegacyRenderColliders(PhysicsSetup::HitDetection,
             renderOptions->GetHitDetectionColliderColor(),
             renderOptions->GetSelectedHitDetectionColliderColor(),
             renderPlugin,

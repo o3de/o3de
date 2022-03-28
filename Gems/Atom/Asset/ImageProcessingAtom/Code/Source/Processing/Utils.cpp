@@ -102,32 +102,6 @@ namespace ImageProcessingAtom
             case AZ::RHI::Format::ASTC_12x12_UNORM:
                 return ePixelFormat_ASTC_12x12;
 
-            case AZ::RHI::Format::PVRTC2_UNORM_SRGB:
-                isSRGB = true;
-            case AZ::RHI::Format::PVRTC2_UNORM:
-                return ePixelFormat_PVRTC2;
-            case AZ::RHI::Format::PVRTC4_UNORM_SRGB:
-                isSRGB = true;
-            case AZ::RHI::Format::PVRTC4_UNORM:
-                return ePixelFormat_PVRTC4;
-
-            case AZ::RHI::Format::EAC_R11_UNORM:
-                return ePixelFormat_EAC_R11;
-            case AZ::RHI::Format::EAC_RG11_UNORM:
-                return ePixelFormat_EAC_RG11;
-            case AZ::RHI::Format::ETC2_UNORM_SRGB:
-                isSRGB = true;
-            case AZ::RHI::Format::ETC2_UNORM:
-                return ePixelFormat_ETC2;
-            case AZ::RHI::Format::ETC2A_UNORM_SRGB:
-                isSRGB = true;
-            case AZ::RHI::Format::ETC2A_UNORM:
-                return ePixelFormat_ETC2a;
-            case AZ::RHI::Format::ETC2A1_UNORM_SRGB:
-                isSRGB = true;
-            case AZ::RHI::Format::ETC2A1_UNORM:
-                return ePixelFormat_ETC2a1;
-
             case AZ::RHI::Format::BC1_UNORM_SRGB:
                 isSRGB = true;
             case AZ::RHI::Format::BC1_UNORM:
@@ -225,22 +199,6 @@ namespace ImageProcessingAtom
             case ePixelFormat_ASTC_12x12:
                 return isSrgb ? RHI::Format::ASTC_12x12_UNORM_SRGB : RHI::Format::ASTC_12x12_UNORM;
 
-            case ePixelFormat_PVRTC2:
-                return isSrgb ? RHI::Format::PVRTC2_UNORM_SRGB : RHI::Format::PVRTC2_UNORM;
-            case ePixelFormat_PVRTC4:
-                return isSrgb ? RHI::Format::PVRTC4_UNORM_SRGB : RHI::Format::PVRTC4_UNORM;
-
-            case ePixelFormat_EAC_R11:
-                return RHI::Format::EAC_R11_UNORM;
-            case ePixelFormat_EAC_RG11:
-                return RHI::Format::EAC_RG11_UNORM;
-            case ePixelFormat_ETC2:
-                return isSrgb ? RHI::Format::ETC2_UNORM_SRGB : RHI::Format::ETC2_UNORM;
-            case ePixelFormat_ETC2a:
-                return isSrgb ? RHI::Format::ETC2A_UNORM_SRGB : RHI::Format::ETC2A_UNORM;
-            case ePixelFormat_ETC2a1:
-                return isSrgb ? RHI::Format::ETC2A1_UNORM_SRGB : RHI::Format::ETC2A1_UNORM;
-
             case ePixelFormat_BC1:
             case ePixelFormat_BC1a:
                 return isSrgb ? RHI::Format::BC1_UNORM_SRGB : RHI::Format::BC1_UNORM;
@@ -328,7 +286,7 @@ namespace ImageProcessingAtom
 
                 for (u32 slice = 0; slice < arraySize; slice++)
                 {
-                    AZStd::array_view<uint8_t> imageData = imageAsset->GetSubImageData(mip, slice);
+                    AZStd::span<const uint8_t> imageData = imageAsset->GetSubImageData(mip, slice);
                     memcpy(imageBuf + slice * imageData.size(), imageData.data(), imageData.size());
                 }
             }
@@ -426,6 +384,13 @@ namespace ImageProcessingAtom
                 return false;
             }
             return true;
+        }
+
+        bool NeedAlphaChannel(EAlphaContent alphaContent)
+        {
+             return (alphaContent == EAlphaContent::eAlphaContent_OnlyBlack
+                        || alphaContent == EAlphaContent::eAlphaContent_OnlyBlackAndWhite
+                        || alphaContent == EAlphaContent::eAlphaContent_Greyscale);
         }
     }
 

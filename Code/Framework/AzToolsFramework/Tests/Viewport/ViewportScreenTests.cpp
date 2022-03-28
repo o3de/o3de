@@ -17,6 +17,7 @@
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <Tests/Utils/Printers.h>
 
 namespace UnitTest
 {
@@ -35,13 +36,14 @@ namespace UnitTest
         const auto worldResult = AzFramework::ScreenToWorld(screenPoint, cameraState);
         return AzFramework::WorldToScreen(worldResult, cameraState);
     }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // ScreenPoint tests
     TEST(ViewportScreen, WorldToScreenAndScreenToWorldReturnsTheSameValueIdentityCameraOffsetFromOrigin)
     {
         using AzFramework::ScreenPoint;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraPosition = AZ::Vector3::CreateAxisY(-10.0f);
 
         const auto cameraState = AzFramework::CreateIdentityDefaultCamera(cameraPosition, screenDimensions);
@@ -74,7 +76,7 @@ namespace UnitTest
     {
         using AzFramework::ScreenPoint;
 
-        const auto screenDimensions = AZ::Vector2(1024.0f, 768.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(1024, 768);
         const auto cameraTransform =
             AZ::Transform::CreateRotationX(AZ::DegToRad(45.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(90.0f));
 
@@ -91,7 +93,7 @@ namespace UnitTest
     {
         using AzFramework::ScreenPoint;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraTransform =
             AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 0.0f, 0.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(-90.0f));
 
@@ -102,12 +104,12 @@ namespace UnitTest
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // NDC tests
-    TEST(ViewportScreen, WorldToScreenNDCAndScreenNDCToWorldReturnsTheSameValueIdentityCameraOffsetFromOrigin)
+    // Ndc tests
+    TEST(ViewportScreen, WorldToScreenNdcAndScreenNdcToWorldReturnsTheSameValueIdentityCameraOffsetFromOrigin)
     {
         using NdcPoint = AZ::Vector2;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraPosition = AZ::Vector3::CreateAxisY(-10.0f);
 
         const auto cameraState = AzFramework::CreateIdentityDefaultCamera(cameraPosition, screenDimensions);
@@ -136,11 +138,11 @@ namespace UnitTest
         }
     }
 
-    TEST(ViewportScreen, WorldToScreenNDCAndScreenNDCToWorldReturnsTheSameValueOrientatedCamera)
+    TEST(ViewportScreen, WorldToScreenNdcAndScreenNdcToWorldReturnsTheSameValueOrientatedCamera)
     {
         using NdcPoint = AZ::Vector2;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraTransform =
             AZ::Transform::CreateRotationX(AZ::DegToRad(45.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(90.0f));
 
@@ -153,11 +155,11 @@ namespace UnitTest
 
     // note: nearClip is 0.1 - the world space value returned will be aligned to the near clip
     // plane of the camera so use that to confirm the mapping to/from is correct
-    TEST(ViewportScreen, ScreenNDCToWorldReturnsPositionOnNearClipPlaneInWorldSpace)
+    TEST(ViewportScreen, ScreenNdcToWorldReturnsPositionOnNearClipPlaneInWorldSpace)
     {
         using NdcPoint = AZ::Vector2;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraTransform =
             AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 0.0f, 0.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(-90.0f));
 
@@ -351,7 +353,7 @@ namespace UnitTest
     // Other tests
     TEST(ViewportScreen, CanGetCameraTransformFromCameraViewAndBack)
     {
-        const auto screenDimensions = AZ::Vector2(1024.0f, 768.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(1024, 768);
         const auto transform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(5.0f)) *
             AZ::Transform::CreateRotationX(AZ::DegToRad(45.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(90.0f));
 
@@ -371,7 +373,7 @@ namespace UnitTest
     {
         using ::testing::FloatNear;
 
-        auto cameraState = AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AZ::Vector2(800.0f, 600.0f));
+        auto cameraState = AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzFramework::ScreenSize(800, 600));
 
         {
             const float fovRadians = AZ::DegToRad(45.0f);

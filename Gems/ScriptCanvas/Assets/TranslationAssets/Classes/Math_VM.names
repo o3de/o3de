@@ -1,0 +1,134 @@
+{
+    "entries": [
+        {
+            "base": "Math_VM",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Math_VM"
+            },
+            "methods": [
+                {
+                    "base": "ThreeGeneric",
+                    "context": "Math_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ThreeGeneric"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ThreeGeneric is invoked"
+                    },
+                    "details": {
+                        "name": "Math_VM::ThreeGeneric",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "const bool&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5BAFAD11-D6AF-5946-B09B-6E0B72E1209C}",
+                            "details": {
+                                "name": "tuple<Vector3 AZStd::basic_string<char, AZStd::char_traits<char>, allocator> bool >"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MultiplyAndAdd",
+                    "context": "Math_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MultiplyAndAdd"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MultiplyAndAdd is invoked"
+                    },
+                    "details": {
+                        "name": "Math_VM::MultiplyAndAdd",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "StringToNumber",
+                    "context": "Math_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke StringToNumber"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after StringToNumber is invoked"
+                    },
+                    "details": {
+                        "name": "Math_VM::StringToNumber",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

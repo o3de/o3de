@@ -9,6 +9,14 @@
                 "Path": "Passes/HairParentPass.pass"
             },
             {
+<<<<<<< HEAD
+=======
+                "Name": "HairParentShortCutPassTemplate",
+                "Path": "Passes/HairParentShortCutPass.pass"
+            },
+
+            {
+>>>>>>> development
                 "Name": "HairGlobalShapeConstraintsComputePassTemplate",
                 "Path": "Passes/HairGlobalShapeConstraintsCompute.pass"
             },
@@ -32,6 +40,10 @@
                 "Name": "HairUpdateFollowHairComputePassTemplate",
                 "Path": "Passes/HairUpdateFollowHairCompute.pass"
             },
+<<<<<<< HEAD
+=======
+
+>>>>>>> development
             {
                 "Name": "HairPPLLRasterPassTemplate",
                 "Path": "Passes/HairFillPPLL.pass"
@@ -39,6 +51,30 @@
             {
                 "Name": "HairPPLLResolvePassTemplate",
                 "Path": "Passes/HairResolvePPLL.pass"
+<<<<<<< HEAD
+=======
+            },
+
+            {
+                "Name": "HairShortCutGeometryDepthAlphaPassTemplate",
+                "Path": "Passes/HairShortCutGeometryDepthAlpha.pass"
+            },
+            {
+                "Name": "HairShortCutResolveDepthPassTemplate",
+                "Path": "Passes/HairShortCutResolveDepth.pass"
+            },
+            {
+                "Name": "HairShortCutGeometryShadingPassTemplate",
+                "Path": "Passes/HairShortCutGeometryShading.pass"
+            },
+            {
+                "Name": "HairShortCutResolveColorPassTemplate",
+                "Path": "Passes/HairShortCutResolveColor.pass"
+            },
+            {
+                "Name": "HairDepthToLinearTemplate",
+                "Path": "Passes/HairDepthToLinear.pass"
+>>>>>>> development
             }
         ]
     }

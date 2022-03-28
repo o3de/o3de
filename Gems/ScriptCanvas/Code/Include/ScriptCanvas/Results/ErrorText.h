@@ -36,11 +36,14 @@ namespace ScriptCanvas
         constexpr const char* FailedToDeduceExpression = "Failed to deduce an expression on a node reported to be an expression";
         constexpr const char* FailedToParseIfBranch = "Failed parse a node that declared itself an if branch";
         constexpr const char* FailedToRemoveChild = "Failed to remove child expected in parent children list";
+        constexpr const char* FunctionNodeFailedToReturnInterface = "FunctionCallNode failed to return latest SubgraphInterface";
+        constexpr const char* FunctionNodeFailedToReturnUseableName = "FunctionCallNode failed to return a useable name";
         constexpr const char* FunctionDefinitionCannotStart = "Function definition graph has on graph start that can't get called";
         constexpr const char* FunctionDefinitionNodeDidNotReturnSlot = "Function definition node didn't return 1 and only execution in slot";
         constexpr const char* InactiveGraph = "This graph defines no functions, it is never activated, and will never execute. Add a Start node or connect an event handler or define functions.";
         constexpr const char* InfiniteLoopWritingToVariable = "infinite loop when writing to variable";
         constexpr const char* InfiniteSelfActivationLoop = "infinite loop when activating the entity that owns this graph";
+        constexpr const char* InvalidDataTypeInInput = "invalid data type in input slot";
         constexpr const char* MetaDataNeedsTupleTypeIdForEventCall = "Meta data needs an AzTypeId for Tuple if an EBus call returns multiple types to ScriptCanvas";
         constexpr const char* MetaDataRequiredForEventCall = "Meta data is required for ACM node that is an EBus call";
         constexpr const char* MissingFalseExecutionSlotOnIf = "A 'False' Execution output slot is required in an If branch node";

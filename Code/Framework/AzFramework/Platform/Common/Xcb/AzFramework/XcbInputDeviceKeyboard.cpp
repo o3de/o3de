@@ -20,6 +20,15 @@
 
 namespace AzFramework
 {
+    // xcb-xkb does not provide a generic event type, so we define our own.
+    // These fields are enough to get to the xkbType field, which can then be
+    // read to typecast the event to the right concrete type.
+    struct XcbXkbGenericEventT
+    {
+        uint8_t response_type;
+        uint8_t xkbType;
+    };
+
     XcbInputDeviceKeyboard::XcbInputDeviceKeyboard(InputDeviceKeyboard& inputDevice)
         : InputDeviceKeyboard::Implementation(inputDevice)
     {
@@ -39,17 +48,20 @@ namespace AzFramework
             return;
         }
 
-        XcbStdFreePtr<xcb_xkb_use_extension_reply_t> xkbUseExtensionReply{
-            xcb_xkb_use_extension_reply(connection, xcb_xkb_use_extension(connection, 1, 0), nullptr)
-        };
-        if (!xkbUseExtensionReply)
+        int initializeXkbExtensionSuccess = xkb_x11_setup_xkb_extension(
+            connection,
+            1,
+            0,
+            XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS,
+            nullptr,
+            nullptr,
+            &m_xkbEventCode,
+            nullptr
+        );
+
+        if (!initializeXkbExtensionSuccess)
         {
             AZ_Warning("ApplicationLinux", false, "Failed to initialize the xkb extension");
-            return;
-        }
-        if (!xkbUseExtensionReply->supported)
-        {
-            AZ_Warning("ApplicationLinux", false, "The X server does not support the xkb extension");
             return;
         }
 
@@ -58,6 +70,43 @@ namespace AzFramework
         m_xkbContext.reset(xkb_context_new(XKB_CONTEXT_NO_FLAGS));
         m_xkbKeymap.reset(xkb_x11_keymap_new_from_device(m_xkbContext.get(), connection, m_coreDeviceId, XKB_KEYMAP_COMPILE_NO_FLAGS));
         m_xkbState.reset(xkb_x11_state_new_from_device(m_xkbKeymap.get(), connection, m_coreDeviceId));
+
+        const uint16_t affectMap =
+            XCB_XKB_MAP_PART_KEY_TYPES
+            | XCB_XKB_MAP_PART_KEY_SYMS
+            | XCB_XKB_MAP_PART_MODIFIER_MAP
+            | XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS
+            | XCB_XKB_MAP_PART_KEY_ACTIONS
+            | XCB_XKB_MAP_PART_KEY_BEHAVIORS
+            | XCB_XKB_MAP_PART_VIRTUAL_MODS
+            | XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP
+            ;
+
+        const uint16_t selectedEvents =
+            XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY
+            | XCB_XKB_EVENT_TYPE_MAP_NOTIFY
+            | XCB_XKB_EVENT_TYPE_STATE_NOTIFY
+            ;
+
+        XcbStdFreePtr<xcb_generic_error_t> error{xcb_request_check(
+            connection,
+            xcb_xkb_select_events(
+                connection,
+                /* deviceSpec = */ XCB_XKB_ID_USE_CORE_KBD,
+                /* affectWhich = */ selectedEvents,
+                /* clear = */ 0,
+                /* selectAll = */ selectedEvents,
+                /* affectMap = */ affectMap,
+                /* map = */ affectMap,
+                /* details = */ nullptr
+            )
+        )};
+
+        if (error)
+        {
+            AZ_Warning("ApplicationLinux", false, "failed to select notify events from XKB");
+            return;
+        }
 
         m_initialized = true;
     }
@@ -70,15 +119,17 @@ namespace AzFramework
 
     bool XcbInputDeviceKeyboard::HasTextEntryStarted() const
     {
-        return false;
+        return m_hasTextEntryStarted;
     }
 
     void XcbInputDeviceKeyboard::TextEntryStart(const InputDeviceKeyboard::VirtualKeyboardOptions& options)
     {
+        m_hasTextEntryStarted = true;
     }
 
     void XcbInputDeviceKeyboard::TextEntryStop()
     {
+        m_hasTextEntryStarted = false;
     }
 
     void XcbInputDeviceKeyboard::TickInputDevice()
@@ -93,30 +144,45 @@ namespace AzFramework
             return;
         }
 
-        switch (event->response_type & ~0x80)
+        const auto responseType = event->response_type & ~0x80;
+        if (responseType == XCB_KEY_PRESS)
         {
-        case XCB_KEY_PRESS:
-        {
-            auto* keyPress = reinterpret_cast<xcb_key_press_event_t*>(event);
+            const auto* keyPress = reinterpret_cast<xcb_key_press_event_t*>(event);
+            {
+                auto text = TextFromKeycode(m_xkbState.get(), keyPress->detail);
+                if (!text.empty())
+                {
+                    QueueRawTextEvent(AZStd::move(text));
+                }
+            }
 
-            const InputChannelId* key = InputChannelFromKeyEvent(keyPress->detail);
-            if (key)
+            if (const InputChannelId* key = InputChannelFromKeyEvent(keyPress->detail))
             {
                 QueueRawKeyEvent(*key, true);
             }
-            break;
         }
-        case XCB_KEY_RELEASE:
+        else if (responseType == XCB_KEY_RELEASE)
         {
-            auto* keyRelease = reinterpret_cast<xcb_key_release_event_t*>(event);
+            const auto* keyRelease = reinterpret_cast<xcb_key_release_event_t*>(event);
 
             const InputChannelId* key = InputChannelFromKeyEvent(keyRelease->detail);
             if (key)
             {
                 QueueRawKeyEvent(*key, false);
             }
-            break;
         }
+        else if (responseType == m_xkbEventCode)
+        {
+            const auto* xkbEvent = reinterpret_cast<XcbXkbGenericEventT*>(event);
+            switch (xkbEvent->xkbType)
+            {
+            case XCB_XKB_STATE_NOTIFY:
+            {
+                const auto* stateNotifyEvent = reinterpret_cast<xcb_xkb_state_notify_event_t*>(event);
+                UpdateState(stateNotifyEvent);
+                break;
+            }
+            }
         }
     }
 
@@ -266,6 +332,36 @@ namespace AzFramework
             case XKB_KEY_Print: return &InputDeviceKeyboard::Key::WindowsSystemPrint;
             case XKB_KEY_Scroll_Lock: return &InputDeviceKeyboard::Key::WindowsSystemScrollLock;
             default: return nullptr;
+        }
+    }
+
+    AZStd::string XcbInputDeviceKeyboard::TextFromKeycode(xkb_state* state, xkb_keycode_t code)
+    {
+        // Find out how much of a buffer we need
+        const size_t size = xkb_state_key_get_utf8(state, code, nullptr, 0);
+        if (!size)
+        {
+            return {};
+        }
+        // xkb_state_key_get_utf8 will null-terminate the resulting string, and
+        // will truncate the result to `size - 1` if there is not enough space
+        // for the null byte. The first call returns the size of the resulting
+        // string without including the null byte. AZStd::string internally
+        // includes space for the null byte, but that is not included in its
+        // `size()`. xkb_state_key_get_utf8 will always set `buf[size - 1] =
+        // 0`, so add 1 to `chars.size()` to include that internal null byte in
+        // the string.
+        AZStd::string chars;
+        chars.resize_no_construct(size);
+        xkb_state_key_get_utf8(state, code, chars.data(), chars.size() + 1);
+        return chars;
+    }
+
+    void XcbInputDeviceKeyboard::UpdateState(const xcb_xkb_state_notify_event_t* state)
+    {
+        if (m_initialized)
+        {
+            xkb_state_update_mask(m_xkbState.get(), state->baseMods, state->latchedMods, state->lockedMods, state->baseGroup, state->latchedGroup, state->lockedGroup);
         }
     }
 } // namespace AzFramework

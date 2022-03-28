@@ -2,8 +2,9 @@
     "description": "",
     "materialType": "PbrTerrain.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 1,
+    "materialTypeVersion": 1,
     "properties": {
+<<<<<<< HEAD
         "macroColor": {
             "useTexture": false
         },
@@ -25,6 +26,10 @@
         "specularF0":
         {
             "useTexture": false
+=======
+        "baseColor": {
+            "color": [ 0.18, 0.18, 0.18 ] 
+>>>>>>> development
         }
     }
 }

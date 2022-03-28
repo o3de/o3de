@@ -241,6 +241,7 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 #include <AzCore/EBus/Event.h>
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
+#include <Multiplayer/IMultiplayerDebug.h>
 #include <Multiplayer/MultiplayerTypes.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
 #include <Multiplayer/Components/MultiplayerController.h>
@@ -354,6 +355,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {%      endif%}
         Multiplayer::NetComponentId GetNetComponentId() const override;
         bool Serialize(AzNetworking::ISerializer& serializer) override;
+        Multiplayer::MultiplayerAuditingElement GetInputDeltaLog() const override;
         Multiplayer::IMultiplayerComponentInput& operator =(const Multiplayer::IMultiplayerComponentInput& rhs) override;
 
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
@@ -443,35 +445,31 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
-        {{ DeclareRpcInvocations(Component, 'Client', 'Authority', false)|indent(8) -}}
-        {{ DeclareRpcInvocations(Component, 'Client', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Authority', 'Autonomous', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Authority', 'Client', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Authority', 'Client', true)|indent(8) -}}
+
+        //! RPC Handlers: Override handlers in order to implement what happens after receiving an RPC
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Server', 'Authority', false)|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Client', 'Authority', false)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Server', 'Authority')|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Client', 'Authority')|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Autonomous', 'Authority')|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Authority', 'Autonomous')|indent(8) -}}
+
+        //! RPC Event Getters: Subscribe to these events and get notified when an RPC is received
         {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Server', 'Authority')|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Client', 'Authority')|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Autonomous', 'Authority')|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Autonomous')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Autonomous')|indent(8) -}}
+
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if (Service.attrib['HasController']|booleanTrue) and (Service.attrib['Constraint'] != 'Incompatible') %}
         {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}Controller* Get{{ Service.attrib['Name'] }}Controller();
 {%      endif %}
 {% endfor %}
-        
+
     protected:
         {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Server', 'Authority')|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Client', 'Authority')|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Autonomous', 'Authority')|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Authority', 'Autonomous')|indent(8) }}
     };
@@ -517,6 +515,8 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
+
+        //! RPC Event Getters: Subscribe to these events and get notified when this component receives an RPC
         {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Client')|indent(8) -}}
 
         //! MultiplayerComponent interface
@@ -541,9 +541,13 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
+
+        //! RPC Handlers: Override handlers in order to implement what happens after receiving an RPC
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Client', false)|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Authority', 'Client')|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Authority', 'Client')|indent(8) }}
+
+        //! RPC Events: Subscribe to these events and get notified when an RPC is received
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Authority', 'Client')|indent(8) -}}
+
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if Service.attrib['Constraint'] != 'Incompatible' %}
         const {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}* Get{{ Service.attrib['Name'] }}() const;

@@ -16,28 +16,14 @@
 
 namespace ImageProcessingAtom
 {
-    IImageObjectPtr ImageConvertOutput::GetOutputImage(OutputImageType type) const
+    IImageObjectPtr ImageConvertOutput::GetOutputImage() const
     {
-        if (type < OutputImageType::Count)
-        {
-            return m_outputImage[static_cast<int>(type)];
-        }
-        else
-        {
-            return IImageObjectPtr();
-        }
+        return m_outputImage;
     }
 
-    void ImageConvertOutput::SetOutputImage(IImageObjectPtr image, OutputImageType type)
+    void ImageConvertOutput::SetOutputImage(IImageObjectPtr image)
     {
-        if (type < OutputImageType::Count)
-        {
-            m_outputImage[static_cast<int>(type)] = image;
-        }
-        else
-        {
-            AZ_Error("ImageProcess", false, "Cannot set output image to %d", type);
-        }
+        m_outputImage = image;
     }
 
     void ImageConvertOutput::SetReady(bool ready)
@@ -62,10 +48,7 @@ namespace ImageProcessingAtom
 
     void ImageConvertOutput::Reset()
     {
-        for (int i = 0; i < static_cast<int>(OutputImageType::Count); i++)
-        {
-            m_outputImage[i] = nullptr;
-        }
+        m_outputImage = nullptr;
         m_outputReady = false;
         m_progress = 0.0f;
     }
@@ -108,17 +91,13 @@ namespace ImageProcessingAtom
         }
 
         IImageObjectPtr outputImage = m_process->GetOutputImage();
-        IImageObjectPtr outputImageAlpha = m_process->GetOutputAlphaImage();
-
-        m_output->SetOutputImage(outputImage, ImageConvertOutput::Base);
-        m_output->SetOutputImage(outputImageAlpha, ImageConvertOutput::Alpha);
 
         if (!IsJobCancelled())
         {
-            // For preview, combine image output with alpha if any
+            // convert the output image to RGBA format for preview
             m_output->SetProgress(1.0f / static_cast<float>(m_previewProcessStep));
-            IImageObjectPtr combinedImage = MergeOutputImageForPreview(outputImage, outputImageAlpha);
-            m_output->SetOutputImage(combinedImage, ImageConvertOutput::Preview);
+            IImageObjectPtr uncompressedImage = ConvertImageForPreview(outputImage);
+            m_output->SetOutputImage(uncompressedImage);
         }
 
         m_output->SetReady(true);

@@ -20,7 +20,7 @@ namespace ScriptCanvas
     {
         using namespace Data;
         using namespace MathNodeUtilities;
-        static const char* k_categoryName = "Math/Transform";
+        static constexpr const char* k_categoryName = "Math/Transform";
 
         AZ_INLINE std::tuple<NumberType, TransformType> ExtractUniformScale(TransformType source)
         {

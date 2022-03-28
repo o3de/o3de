@@ -108,6 +108,7 @@ namespace AzFramework
         float GetLocalZ() override;
 
         // Rotation modifiers
+        void SetWorldRotation(const AZ::Vector3& eulerAnglesRadian) override;
         void SetWorldRotationQuaternion(const AZ::Quaternion& quaternion) override;
 
         AZ::Vector3 GetWorldRotation() override;

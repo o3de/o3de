@@ -1,0 +1,84 @@
+<ObjectStream version="3">
+	<Class name="InputEventBindingsAsset" type="{25971C7A-26E2-4D08-A146-2EFCC1C36B0C}">
+		<Class name="InputEventBindings" field="Bindings" version="1" type="{14FFD4A8-AE46-4E23-B45B-6A7C4F787A91}">
+			<Class name="AZStd::vector" field="Input Event Groups" type="{E7A38039-E414-5322-B384-210475DA7732}">
+				<Class name="InputEventGroup" field="element" version="1" type="{25143B7E-2FEC-4CC5-92FE-270B67E79734}">
+					<Class name="AZStd::string" field="Event Name" value="MoveX" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::vector" field="Event Generators" type="{7B0B6F41-794A-5CFF-8275-91A3137E747D}">
+						<Class name="ThumbstickInputEventMap" field="element" version="1" type="{4881FA7C-0667-476C-8C77-4DBB6C69F646}">
+							<Class name="InputEventMap" field="BaseClass1" version="2" type="{A14EA0A3-F053-469D-840E-A70002F51384}">
+								<Class name="AZStd::string" field="Input Device Type" value="gamepad" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Input Name" value="gamepad_thumbstick_l" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="float" field="Event Value Multiplier" value="6.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="float" field="Dead Zone" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							</Class>
+							<Class name="float" field="Inner Dead Zone Radius" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Outer Dead Zone Radius" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Axis Dead Zone Value" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Sensitivity Exponent" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="int" field="Output Axis" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+						</Class>
+					</Class>
+					<Class name="bool" field="Exclude From Release" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				</Class>
+				<Class name="InputEventGroup" field="element" version="1" type="{25143B7E-2FEC-4CC5-92FE-270B67E79734}">
+					<Class name="AZStd::string" field="Event Name" value="MoveY" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::vector" field="Event Generators" type="{7B0B6F41-794A-5CFF-8275-91A3137E747D}">
+						<Class name="ThumbstickInputEventMap" field="element" version="1" type="{4881FA7C-0667-476C-8C77-4DBB6C69F646}">
+							<Class name="InputEventMap" field="BaseClass1" version="2" type="{A14EA0A3-F053-469D-840E-A70002F51384}">
+								<Class name="AZStd::string" field="Input Device Type" value="gamepad" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Input Name" value="gamepad_thumbstick_l" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="float" field="Event Value Multiplier" value="6.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="float" field="Dead Zone" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							</Class>
+							<Class name="float" field="Inner Dead Zone Radius" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Outer Dead Zone Radius" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Axis Dead Zone Value" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Sensitivity Exponent" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="int" field="Output Axis" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+						</Class>
+					</Class>
+					<Class name="bool" field="Exclude From Release" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				</Class>
+				<Class name="InputEventGroup" field="element" version="1" type="{25143B7E-2FEC-4CC5-92FE-270B67E79734}">
+					<Class name="AZStd::string" field="Event Name" value="RotateCamZ" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::vector" field="Event Generators" type="{7B0B6F41-794A-5CFF-8275-91A3137E747D}">
+						<Class name="ThumbstickInputEventMap" field="element" version="1" type="{4881FA7C-0667-476C-8C77-4DBB6C69F646}">
+							<Class name="InputEventMap" field="BaseClass1" version="2" type="{A14EA0A3-F053-469D-840E-A70002F51384}">
+								<Class name="AZStd::string" field="Input Device Type" value="gamepad" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Input Name" value="gamepad_thumbstick_r" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="float" field="Event Value Multiplier" value="3.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								<Class name="float" field="Dead Zone" value="0.1000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							</Class>
+							<Class name="float" field="Inner Dead Zone Radius" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Outer Dead Zone Radius" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Axis Dead Zone Value" value="0.1000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Sensitivity Exponent" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="int" field="Output Axis" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+						</Class>
+						<Class name="InputEventMap" field="element" version="2" type="{A14EA0A3-F053-469D-840E-A70002F51384}">
+							<Class name="AZStd::string" field="Input Device Type" value="mouse" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="Input Name" value="mouse_delta_x" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="float" field="Event Value Multiplier" value="0.2000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Dead Zone" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+						</Class>
+					</Class>
+					<Class name="bool" field="Exclude From Release" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				</Class>
+				<Class name="InputEventGroup" field="element" version="1" type="{25143B7E-2FEC-4CC5-92FE-270B67E79734}">
+					<Class name="AZStd::string" field="Event Name" value="UseFacingDir" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::vector" field="Event Generators" type="{7B0B6F41-794A-5CFF-8275-91A3137E747D}">
+						<Class name="InputEventMap" field="element" version="2" type="{A14EA0A3-F053-469D-840E-A70002F51384}">
+							<Class name="AZStd::string" field="Input Device Type" value="gamepad" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="Input Name" value="gamepad_trigger_r2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="float" field="Event Value Multiplier" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Dead Zone" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+						</Class>
+					</Class>
+					<Class name="bool" field="Exclude From Release" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

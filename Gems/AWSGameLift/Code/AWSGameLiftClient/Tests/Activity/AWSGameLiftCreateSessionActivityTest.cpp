@@ -9,6 +9,8 @@
 #include <Activity/AWSGameLiftCreateSessionActivity.h>
 #include <AWSGameLiftClientFixture.h>
 
+#include <aws/gamelift/model/CreateGameSessionRequest.h>
+
 using namespace AWSGameLift;
 
 using AWSGameLiftCreateSessionActivityTest = AWSGameLiftClientFixture;
@@ -37,7 +39,7 @@ TEST_F(AWSGameLiftCreateSessionActivityTest, BuildAWSGameLiftCreateGameSessionRe
 
 TEST_F(AWSGameLiftCreateSessionActivityTest, ValidateCreateSessionRequest_CallWithBaseType_GetFalseResult)
 {
-    auto result = CreateSessionActivity::ValidateCreateSessionRequest(AzFramework::CreateSessionRequest());
+    auto result = CreateSessionActivity::ValidateCreateSessionRequest(Multiplayer::CreateSessionRequest());
     EXPECT_FALSE(result);   
 }
 

@@ -1,5 +1,5 @@
 {
-    "Source" : "DiffuseProbeGridDownsample",
+    "Source" : "DiffuseProbeGridDownsample.azsl",
 
     "RasterState" :
     {
@@ -36,8 +36,9 @@
     [
         {
             "Name": "NoMSAA",
-            "PlusArguments": "--no-ms",
-            "MinusArguments": ""
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            }
         }
     ]
 }

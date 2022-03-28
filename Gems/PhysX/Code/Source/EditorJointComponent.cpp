@@ -37,11 +37,11 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorJointComponent>(
-                    "PhysX Joint", "The joint constrains the position and orientation of a body to another.")
+                    "PhysX Joint", "A dynamic joint that constrains the position and orientation of one rigid body to another.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorJointComponent::m_config, "Standard Joint Parameters", "Joint parameters shared by all joint types")
+                    ->DataElement(0, &EditorJointComponent::m_config, "Standard Joint Parameters", "Joint parameters shared by all joint types.")
                     ;
             }
         }

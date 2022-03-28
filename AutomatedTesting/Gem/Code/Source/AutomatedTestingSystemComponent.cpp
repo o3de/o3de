@@ -9,8 +9,13 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <Source/AutoGen/AutoComponentTypes.h>
+#include <Source/Spawners/RoundRobinSpawner.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <AzCore/Console/ILogger.h>
 
 #include <AutomatedTestingSystemComponent.h>
+#include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
 
 namespace AutomatedTesting
 {
@@ -45,7 +50,7 @@ namespace AutomatedTesting
 
     void AutomatedTestingSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        AZ_UNUSED(required);
+        required.push_back(AZ_CRC_CE("MultiplayerService"));
     }
 
     void AutomatedTestingSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -60,10 +65,51 @@ namespace AutomatedTesting
     void AutomatedTestingSystemComponent::Activate()
     {
         AutomatedTestingRequestBus::Handler::BusConnect();
+        RegisterMultiplayerComponents(); //< Register AutomatedTesting's multiplayer components to assign NetComponentIds
+
+        AZ::Interface<Multiplayer::IMultiplayerSpawner>::Register(this);
+        m_playerSpawner = AZStd::make_unique<RoundRobinSpawner>();
+        AZ::Interface<AutomatedTesting::IPlayerSpawner>::Register(m_playerSpawner.get());
     }
 
     void AutomatedTestingSystemComponent::Deactivate()
     {
+        AZ::Interface<AutomatedTesting::IPlayerSpawner>::Unregister(m_playerSpawner.get());
+        AZ::Interface<Multiplayer::IMultiplayerSpawner>::Unregister(this);
         AutomatedTestingRequestBus::Handler::BusDisconnect();
+    }
+
+    Multiplayer::NetworkEntityHandle AutomatedTestingSystemComponent::OnPlayerJoin([[maybe_unused]] uint64_t userId, [[maybe_unused]] const Multiplayer::MultiplayerAgentDatum& agentDatum)
+    {
+        AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> entityParams = AZ::Interface<IPlayerSpawner>::Get()->GetNextPlayerSpawn();
+
+        Multiplayer::INetworkEntityManager::EntityList entityList =
+            AZ::Interface<Multiplayer::IMultiplayer>::Get()->GetNetworkEntityManager()->CreateEntitiesImmediate(
+            entityParams.first, Multiplayer::NetEntityRole::Authority, entityParams.second, Multiplayer::AutoActivate::DoNotActivate);
+
+        for (Multiplayer::NetworkEntityHandle subEntity : entityList)
+        {
+            subEntity.Activate();
+        }
+
+        Multiplayer::NetworkEntityHandle controlledEntity;
+        if (!entityList.empty())
+        {
+            controlledEntity = entityList[0];
+        }
+        else
+        {
+            AZLOG_WARN("Attempt to spawn prefab %s failed. Check that prefab is network enabled.",
+                entityParams.first.m_prefabName.GetCStr());
+        }
+
+        return controlledEntity;
+    }
+
+    void AutomatedTestingSystemComponent::OnPlayerLeave(Multiplayer::ConstNetworkEntityHandle entityHandle,
+        [[maybe_unused]] const Multiplayer::ReplicationSet& replicationSet,
+        [[maybe_unused]] AzNetworking::DisconnectReason reason)
+    {
+        AZ::Interface<Multiplayer::IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(entityHandle);
     }
 }

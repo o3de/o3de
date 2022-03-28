@@ -21,7 +21,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetEntryChangeset.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
@@ -71,9 +70,9 @@ namespace AzToolsFramework
             AssetBrowserInteractionNotificationBus::Handler::BusConnect();
 
             using namespace Thumbnailer;
-            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(FolderThumbnailCache), ThumbnailContext::DefaultContext);
-            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SourceThumbnailCache), ThumbnailContext::DefaultContext);
-            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(ProductThumbnailCache), ThumbnailContext::DefaultContext);
+            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(FolderThumbnailCache));
+            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SourceThumbnailCache));
+            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(ProductThumbnailCache));
 
             AzFramework::SocketConnection* socketConn = AzFramework::SocketConnection::GetInstance();
             AZ_Assert(socketConn, "AzToolsFramework::AssetBrowser::AssetBrowserComponent requires a valid socket conection!");
@@ -102,7 +101,7 @@ namespace AzToolsFramework
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             AssetSystemBus::Handler::BusDisconnect();
-            m_assetBrowserModel.release();
+            m_assetBrowserModel.reset();
             EntryCache::DestroyInstance();
         }
 
@@ -232,11 +231,6 @@ namespace AzToolsFramework
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".lua"))
                 {
                     return SourceFileDetails("Icons/AssetBrowser/Lua_16.svg");
-                }
-
-                if (AzFramework::StringFunc::Equal(extension.c_str(), ".mtl"))
-                {
-                    return SourceFileDetails("Icons/AssetBrowser/Material_16.svg");
                 }
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str()))

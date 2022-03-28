@@ -106,17 +106,4 @@ namespace UnitTest
         PythonBuilderNotificationBus::Event(builderId, &PythonBuilderNotificationBus::Events::OnCancel);
         EXPECT_EQ(1, mockJobHandler.m_onCancelCount);
     }
-
-    TEST_F(PythonBuilderProcessJobTest, PythonBuilderRequestBus_Behavior_Exists)
-    {
-        using namespace PythonAssetBuilder;
-        using namespace AssetBuilderSDK;
-
-        RegisterAssetBuilder(m_app.get(), m_systemEntity);
-
-        auto entry = m_app->GetBehaviorContext()->m_ebuses.find("PythonBuilderRequestBus");
-        ASSERT_NE(m_app->GetBehaviorContext()->m_ebuses.end(), entry);
-        EXPECT_NE(entry->second->m_events.end(), entry->second->m_events.find("WriteSliceFile"));
-        EXPECT_NE(entry->second->m_events.end(), entry->second->m_events.find("CreateEditorEntity"));
-    }
 }

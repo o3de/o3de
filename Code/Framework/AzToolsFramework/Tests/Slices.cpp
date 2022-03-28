@@ -430,7 +430,7 @@ namespace UnitTest
                     size_t nextIndex = 1;
                     size_t slices = 0;
                     size_t liveAllocs = 0;
-                    size_t totalAllocs = 0;
+                    [[maybe_unused]] size_t totalAllocs = 0;
 
                     auto cb = [&liveAllocs](void*, const AZ::Debug::AllocationInfo&, unsigned char)
                         {
@@ -1059,7 +1059,9 @@ namespace UnitTest
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             m_app.Start(AzFramework::Application::Descriptor());

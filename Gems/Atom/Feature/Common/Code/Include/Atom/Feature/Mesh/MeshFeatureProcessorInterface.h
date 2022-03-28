@@ -15,12 +15,13 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/StableDynamicArray.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
 namespace AZ
 {
     namespace Render
     {
-        class MeshDataInstance;
+        class ModelDataInstance;
 
         //! Settings to apply to a mesh handle when acquiring it for the first time
         struct MeshHandleDescriptor
@@ -40,8 +41,11 @@ namespace AZ
         public:
             AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", FeatureProcessor);
 
-            using MeshHandle = StableDynamicArrayHandle<MeshDataInstance>;
+            using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
+
+            //! Returns the object id for a mesh handle.
+            virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
 
             //! Acquires a model with an optional collection of material assignments.
             //! @param requiresCloneCallback The callback indicates whether cloning is required for a given model asset.
@@ -61,12 +65,15 @@ namespace AZ
             virtual Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const = 0;
             //! Gets the underlying RPI::ModelAsset for a meshHandle.
             virtual Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const = 0;
-            //! Gets the ObjectSrg for a meshHandle.
-            //! Updating the ObjectSrg should be followed by a call to QueueObjectSrgForCompile,
-            //! instead of compiling the srg directly. This way, if the srg has already been queued for compile,
-            //! it will not be queued twice in the same frame. The ObjectSrg should not be updated during
+
+            //! Gets the ObjectSrgs for a meshHandle.
+            //! Updating the ObjectSrgs should be followed by a call to QueueObjectSrgForCompile,
+            //! instead of compiling the srgs directly. This way, if the srgs have already been queued for compile,
+            //! they will not be queued twice in the same frame. The ObjectSrgs should not be updated during
             //! Simulate, or it will create a race between updating the data and the call to Compile
-            virtual Data::Instance<RPI::ShaderResourceGroup> GetObjectSrg(const MeshHandle& meshHandle) const = 0;
+            //! Cases where there may be multiple ObjectSrgs: if a model has multiple submeshes and those submeshes use different
+            //! materials with different object SRGs.
+            virtual const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const = 0;
             //! Queues the object srg for compile.
             virtual void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const = 0;
             //! Sets the MaterialAssignmentMap for a meshHandle, using just a single material for the DefaultMaterialAssignmentId.
@@ -102,6 +109,8 @@ namespace AZ
             virtual void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) = 0;
             //! Sets the option to exclude this mesh from raytracing
             virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) = 0;
+            //! Gets whether this mesh is excluded from raytracing
+            virtual bool GetRayTracingEnabled(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.
             virtual void SetVisible(const MeshHandle& meshHandle, bool visible) = 0;
             //! Sets the mesh to render IBL specular in the forward pass.

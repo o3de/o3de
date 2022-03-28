@@ -24,7 +24,10 @@
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
 
+<<<<<<< HEAD
 #include <AzCore/Debug/EventTrace.h>
+=======
+>>>>>>> development
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
@@ -35,6 +38,9 @@ namespace AZ
 {
     namespace RHI
     {
+        static constexpr const char* frameTimeMetricName = "Frame to Frame Time";
+        static constexpr AZ::Crc32 frameTimeMetricId = AZ_CRC_CE(frameTimeMetricName);
+
         ResultCode FrameScheduler::Init(Device& device, const FrameSchedulerDescriptor& descriptor)
         {
             ResultCode resultCode = ResultCode::Success;
@@ -81,6 +87,17 @@ namespace AZ
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
 
+<<<<<<< HEAD
+=======
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                statsProfiler->ActivateProfiler(rhiMetricsId, true);
+
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+                rhiMetrics.GetStatsManager().AddStatistic(frameTimeMetricId, frameTimeMetricName, /*units=*/"clocks", /*failIfExist=*/false);
+            }
+
+>>>>>>> development
             m_lastFrameEndTime = AZStd::GetTimeNowTicks();
 
             return ResultCode::Success;
@@ -141,8 +158,6 @@ namespace AZ
 
         ResultCode FrameScheduler::ImportScopeProducer(ScopeProducer& scopeProducer)
         {
-            AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ImportScopeProducer");
-
             if (!ValidateIsProcessing())
             {
                 return RHI::ResultCode::InvalidOperation;
@@ -224,9 +239,10 @@ namespace AZ
 
             for (ScopeProducer* scopeProducer : m_scopeProducers)
             {
+                AZ_PROFILE_SCOPE(RHI, "FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
                 m_frameGraph->BeginScope(*scopeProducer->GetScope());
                 scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);
-
+                
                 // All scopes depend on the root scope.
                 if (scopeProducer->GetScopeId() != m_rootScopeId)
                 {
@@ -255,7 +271,6 @@ namespace AZ
 
             // Execute all queued resource invalidations, which will mark SRG's for compilation.
             {
-                AZ_PROFILE_SCOPE(RHI, "Invalidate Resources");
                 ResourceInvalidateBus::ExecuteQueuedEvents();
             }
 
@@ -273,12 +288,20 @@ namespace AZ
                     {
                         srgPool->CompileGroupsBegin();
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
+<<<<<<< HEAD
                         const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+=======
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
+>>>>>>> development
                         AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
                         AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
 
                         auto srgCompileEndTask = taskGraph.AddTask(
+<<<<<<< HEAD
                             srgCompileEndDesc, 
+=======
+                            srgCompileEndDesc,
+>>>>>>> development
                             [srgPool]()
                             {
                                 srgPool->CompileGroupsEnd();
@@ -324,6 +347,7 @@ namespace AZ
                     const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](ShaderResourceGroupPool* srgPool)
                     {
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
+<<<<<<< HEAD
                         const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
 
                         for (uint32_t i = 0; i < jobCount; ++i)
@@ -346,6 +370,30 @@ namespace AZ
 
                     resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
 
+=======
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
+
+                        for (uint32_t i = 0; i < jobCount; ++i)
+                        {
+                            Interval interval;
+                            interval.m_min = i * compilesPerJob;
+                            interval.m_max = AZStd::min(interval.m_min + compilesPerJob, compilesInPool);
+
+                            const auto compileGroupsForIntervalLambda = [srgPool, interval]()
+                            {
+                                AZ_PROFILE_SCOPE(RHI, "FrameScheduler : compileGroupsForIntervalLambda");
+                                srgPool->CompileGroupsForInterval(interval);
+                            };
+
+                            AZ::Job* executeGroupJob = AZ::CreateJobFunction(AZStd::move(compileGroupsForIntervalLambda), true, nullptr);
+                            executeGroupJob->SetDependent(&jobCompletion);
+                            executeGroupJob->Start();
+                        }
+                    };
+
+                    resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
+
+>>>>>>> development
                     jobCompletion.StartAndWaitForCompletion();
 
                     const auto compileGroupsEndFunction = [](ShaderResourceGroupPool* srgPool)
@@ -447,9 +495,15 @@ namespace AZ
             if (CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherMemoryStatistics))
             {
                 m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Detail);
+                m_memoryStatistics.m_detailedCapture = true;
+            }
+            else
+            {
+                m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Basic);
+                m_memoryStatistics.m_detailedCapture = false;
             }
 
-            m_device->UpdateCpuTimingStatistics(m_cpuTimingStatistics);
+            m_device->UpdateCpuTimingStatistics();
 
             m_scopeProducers.clear();
             m_scopeProducerLookup.clear();
@@ -460,7 +514,10 @@ namespace AZ
             }
 
             const AZStd::sys_time_t timeNowTicks = AZStd::GetTimeNowTicks();
-            m_cpuTimingStatistics.m_frameToFrameTime = timeNowTicks - m_lastFrameEndTime;
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                statsProfiler->PushSample(rhiMetricsId, frameTimeMetricId, static_cast<double>(timeNowTicks - m_lastFrameEndTime));
+            }
             m_lastFrameEndTime = timeNowTicks;
 
             return ResultCode::Success;
@@ -516,7 +573,10 @@ namespace AZ
                     parentJob->StartAsChild(AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr));
                 }
 
-                parentJob->WaitForChildren();
+                {
+                    AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ExecuteGroupInternal: WaitForChildren");
+                    parentJob->WaitForChildren();
+                }
             }
 
             m_frameGraphExecuter->EndGroup(groupIndex);
@@ -574,10 +634,7 @@ namespace AZ
 
         const MemoryStatistics* FrameScheduler::GetMemoryStatistics() const
         {
-            return
-                CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherMemoryStatistics)
-                ? &m_memoryStatistics
-                : nullptr;
+            return &m_memoryStatistics;
         }
 
         const TransientAttachmentStatistics* FrameScheduler::GetTransientAttachmentStatistics() const
@@ -588,12 +645,15 @@ namespace AZ
                 : nullptr;
         }
 
-        const CpuTimingStatistics* FrameScheduler::GetCpuTimingStatistics() const
+        double FrameScheduler::GetCpuFrameTime() const
         {
-            return
-                CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics)
-                ? &m_cpuTimingStatistics
-                : nullptr;
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+                const auto* frameTimeStat = rhiMetrics.GetStatistic(frameTimeMetricId);
+                return (frameTimeStat->GetMostRecentSample() * 1000) / aznumeric_cast<double>(AZStd::GetTimeTicksPerSecond());
+            }
+            return 0;
         }
 
         ScopeId FrameScheduler::GetRootScopeId() const

@@ -14,7 +14,6 @@
 //! Standart objects types.
 enum ObjectType
 {
-    OBJTYPE_DUMMY           = 1 << 20,
     OBJTYPE_AZENTITY        = 1 << 21,
 };
 

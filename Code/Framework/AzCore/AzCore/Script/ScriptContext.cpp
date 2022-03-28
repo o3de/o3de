@@ -25,6 +25,11 @@ extern "C" {
 #   include <Lua/lualib.h>
 #   include <Lua/lauxlib.h>
 #   include <Lua/lobject.h>
+
+    // versions of LUA before 5.3.x used to define a union that contained a double, a pointer, and a long
+    // as L_Umaxalign.  Newer versions define those inner types in the macro LUAI_MAXALIGN instead but
+    // no longer actually declare a union around it.  For backward compatibility we define the same one here
+    union L_Umaxalign { LUAI_MAXALIGN; };
 }
 
 #include <limits>
@@ -1424,7 +1429,8 @@ namespace AZ
     }
 }
 
-using namespace AZ;
+namespace AZ
+{
 
 #ifndef AZ_USE_CUSTOM_SCRIPT_BIND
 
@@ -1456,7 +1462,7 @@ using namespace AZ;
 static void* LuaMemoryHook(void* userData, void* ptr, size_t osize, size_t nsize)
 {
     (void)osize;
-    IAllocatorAllocate* allocator = reinterpret_cast<IAllocatorAllocate*>(userData);
+    IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
     if (nsize == 0)
     {
         if (ptr)
@@ -1685,6 +1691,11 @@ LUA_API const Node* lua_getDummyNode()
     // ScriptDataContext
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
+
+    const char* ScriptDataContext::GetInterpreterVersion()
+    {
+        return LUA_VERSION;
+    }
 
     //////////////////////////////////////////////////////////////////////////
     ScriptContext*
@@ -2254,6 +2265,7 @@ LUA_API const Node* lua_getDummyNode()
     }
 
 #endif // AZ_USE_CUSTOM_SCRIPT_BIND
+} // namespace AZ
 
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
@@ -3408,7 +3420,14 @@ LUA_API const Node* lua_getDummyNode()
                     const BehaviorParameter* arg = method->GetArgument(iArg);
                     BehaviorClass* argClass = nullptr;
                     LuaLoadFromStack fromStack = FromLuaStack(context, arg, argClass);
-                    AZ_Assert(fromStack, "Argument %s for Method %s doesn't have support to be converted to Lua!", arg->m_name, method->m_name.c_str());
+                    AZ_Assert(fromStack,
+                        "The argument type: %s for method: %s is not serialized and/or reflected for scripting.\n"
+                        "Make sure %s is added to the SerializeContext and reflected to the BehaviorContext\n"
+                        "For example, verify these two exist and are being called in a Reflect function:\n"
+                        "serializeContext->Class<%s>();\n"
+                        "behaviorContext->Class<%s>();\n"
+                        "%s will not be available for scripting unless these requirements are met."
+                        , arg->m_name, method->m_name.c_str(), arg->m_name, arg->m_name, arg->m_name, method->m_name.c_str());
 
                     m_fromLua.push_back(AZStd::make_pair(fromStack, argClass));
                 }
@@ -4267,7 +4286,7 @@ LUA_API const Node* lua_getDummyNode()
             AZ_CLASS_ALLOCATOR(ScriptContextImpl, AZ::SystemAllocator, 0);
 
             //////////////////////////////////////////////////////////////////////////
-            ScriptContextImpl(ScriptContext* owner, IAllocatorAllocate* allocator, lua_State* nativeContext)
+            ScriptContextImpl(ScriptContext* owner, IAllocator* allocator, lua_State* nativeContext)
                 : m_owner(owner)
                 , m_context(nullptr)
                 , m_debug(nullptr)
@@ -4358,7 +4377,7 @@ LUA_API const Node* lua_getDummyNode()
                     lua_pushlightuserdata(m_lua, m_owner);
                     int tableRef = luaL_ref(m_lua, LUA_REGISTRYINDEX);
                     (void)tableRef;
-                    AZ_Assert(tableRef == AZ_LUA_SCRIPT_CONTEXT_REF, "Table referece should match %d !", AZ_LUA_SCRIPT_CONTEXT_REF);
+                    AZ_Assert(tableRef == AZ_LUA_SCRIPT_CONTEXT_REF, "Table reference should match %d but is instead %d!", AZ_LUA_SCRIPT_CONTEXT_REF, tableRef);
 
                     // create a AZGlobals table, we can use internal unodered_map if it's faster (TODO: test which is faster, or if there is a benefit keeping in la)
                     lua_createtable(m_lua, 0, 1024); // pre allocate some values in the hash
@@ -5066,13 +5085,26 @@ LUA_API const Node* lua_getDummyNode()
                     // Check all constructors if they have use ScriptDataContext and if so choose this one 
                     if (!customConstructorMethod)
                     {
+                        int overrideIndex = -1;
+                        AZ::AttributeReader(nullptr, FindAttribute
+                            ( Script::Attributes::DefaultConstructorOverrideIndex, behaviorClass->m_attributes)).Read<int>(overrideIndex);
+
+                        int methodIndex = 0;
                         for (BehaviorMethod* method : behaviorClass->m_constructors)
                         {
+                            if (methodIndex == overrideIndex)
+                            {
+                                customConstructorMethod = method;
+                                break;
+                            }
+
                             if (method->GetNumArguments() && method->GetArgument(method->GetNumArguments() - 1)->m_typeId == AZ::AzTypeInfo<ScriptDataContext>::Uuid())
                             {
                                 customConstructorMethod = method;
                                 break;
                             }
+
+                            ++methodIndex;
                         }
                     }
 
@@ -5805,9 +5837,8 @@ LUA_API const Node* lua_getDummyNode()
             AllocatorWrapper<Internal::LuaSystemAllocator> m_luaAllocator;
             AZStd::thread::id m_ownerThreadId; // Check if Lua methods (including EBus handlers) are called from background threads.
         };
-    } // namespace AZ
 
-    ScriptContext::ScriptContext(ScriptContextId id, IAllocatorAllocate* allocator, lua_State* nativeContext)
+    ScriptContext::ScriptContext(ScriptContextId id, IAllocator* allocator, lua_State* nativeContext)
     {
         m_id = id;
         m_impl = aznew ScriptContextImpl(this, allocator, nativeContext);
@@ -6096,5 +6127,6 @@ LUA_API const Node* lua_getDummyNode()
     {
         return m_impl->ConstructScriptProperty(sdc, valueIndex, name, restrictToPropertyArrays);
     }
+} // namespace AZ
 
 #undef AZ_DBG_NAME_FIXER

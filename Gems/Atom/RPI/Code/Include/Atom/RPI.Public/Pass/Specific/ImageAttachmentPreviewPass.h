@@ -10,6 +10,7 @@
 #include <AtomCore/Instance/Instance.h>
 
 #include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -78,7 +79,7 @@ namespace AZ
             ~ImageAttachmentPreviewPass();
             
             //! Preview the PassAttachment of a pass' PassAttachmentBinding
-            void PreviewImageAttachmentForPass(RenderPass* pass, const PassAttachment* passAttachment);
+            void PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment);
 
             //! Set the output color attachment for this pass
             void SetOutputColorAttachment(RHI::Ptr<PassAttachment> outputImageAttachment);
@@ -103,6 +104,7 @@ namespace AZ
             void LoadShader();
 
             // Pass overrides
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // RHI::ScopeProducer overrides...

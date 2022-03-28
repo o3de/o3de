@@ -9,13 +9,14 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/EBus/Results.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/SimdMath.h>
-#include <AzCore/Math/ToString.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -25,8 +26,10 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include <PhysX/ColliderShapeBus.h>
+#include <PhysX/EditorColliderComponentRequestBus.h>
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/Utils.h>
@@ -64,12 +67,163 @@ namespace PhysX
             }
         }
 
+        AZStd::pair<uint8_t, uint8_t> GetPhysXMaterialIndicesFromHeightfieldSamples(
+            const AZStd::vector<Physics::HeightMaterialPoint>& samples,
+            const int32_t row, const int32_t col,
+            const int32_t numRows, const int32_t numCols)
+        {
+            uint8_t materialIndex0 = 0;
+            uint8_t materialIndex1 = 0;
+
+            const bool lastRowIndex = (row == (numRows - 1));
+            const bool lastColumnIndex = (col == (numCols - 1));
+
+            // In PhysX, the material indices refer to the quad down and to the right of the sample.
+            // If we're in the last row or last column, there aren't any quads down or to the right,
+            // so just clear these out.
+            if (lastRowIndex || lastColumnIndex)
+            {
+                return { materialIndex0, materialIndex1 };
+            }
+            
+            auto GetIndex = [numCols](int32_t row, int32_t col)
+            {
+                return (row * numCols) + col;
+            };
+
+            // Our source data is providing one material index per vertex, but PhysX wants one material index
+            // per triangle.  The heuristic that we'll go with for selecting the material index is to choose
+            // the material for the vertex that's not on the diagonal of each triangle.
+            // Ex:  A *---* B
+            //        | / |      For this, we'll use A for index0 and D for index1.
+            //      C *---* D
+            //
+            // Ex:  A *---* B
+            //        | \ |      For this, we'll use C for index0 and B for index1.
+            //      C *---* D
+            //
+            // This is a pretty arbitrary choice, so the heuristic might need to be revisited over time if this
+            // causes incorrect or unpredictable physics material mappings.
+
+            const Physics::HeightMaterialPoint& currentSample = samples[GetIndex(row, col)];
+
+            switch (currentSample.m_quadMeshType)
+            {
+            case Physics::QuadMeshType::SubdivideUpperLeftToBottomRight:
+                materialIndex0 = samples[GetIndex(row + 1, col)].m_materialIndex;
+                materialIndex1 = samples[GetIndex(row, col + 1)].m_materialIndex;
+                break;
+            case Physics::QuadMeshType::SubdivideBottomLeftToUpperRight:
+                materialIndex0 = currentSample.m_materialIndex;
+                materialIndex1 = samples[GetIndex(row + 1, col + 1)].m_materialIndex;
+                break;
+            case Physics::QuadMeshType::Hole:
+                materialIndex0 = physx::PxHeightFieldMaterial::eHOLE;
+                materialIndex1 = physx::PxHeightFieldMaterial::eHOLE;
+                break;
+            default:
+                AZ_Assert(false, "Unhandled case in GetPhysXMaterialIndicesFromHeightfieldSamples");
+                break;
+            }
+            
+            return { materialIndex0, materialIndex1 };
+        }
+
+        void CreatePxGeometryFromHeightfield(
+            Physics::HeightfieldShapeConfiguration& heightfieldConfig, physx::PxGeometryHolder& pxGeometry)
+        {
+            physx::PxHeightField* heightfield = nullptr;
+
+            const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
+
+            const int32_t numCols = heightfieldConfig.GetNumColumns();
+            const int32_t numRows = heightfieldConfig.GetNumRows();
+
+            const float rowScale = gridSpacing.GetX();
+            const float colScale = gridSpacing.GetY();
+
+            const float minHeightBounds = heightfieldConfig.GetMinHeightBounds();
+            const float maxHeightBounds = heightfieldConfig.GetMaxHeightBounds();
+            const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
+
+            // We're making the assumption right now that the min/max bounds are centered around 0.
+            // If we ever want to allow off-center bounds, we'll need to fix up the float-to-int16 height math below
+            // to account for it.
+            AZ_Assert(
+                AZ::IsClose(-halfBounds, minHeightBounds) && AZ::IsClose(halfBounds, maxHeightBounds),
+                "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.");
+
+            AZ_Assert(
+                maxHeightBounds >= minHeightBounds,
+                "Max height bounds is less than min height bounds, the height conversions below will be incorrect.");
+
+            // To convert our floating-point heights to fixed-point representation inside of an int16, we need a scale factor
+            // for the conversion.  The scale factor is used to map the most important bits of our floating-point height to the
+            // full 16-bit range.
+            // Note that the scaleFactor choice here affects overall precision.  For each bit that the integer part of our max
+            // height uses, that's one less bit for the fractional part.
+            const float scaleFactor = (maxHeightBounds <= minHeightBounds) ? 1.0f : AZStd::numeric_limits<int16_t>::max() / halfBounds;
+            const float heightScale{ 1.0f / scaleFactor };
+
+            [[maybe_unused]] constexpr uint8_t physxMaximumMaterialIndex = 0x7f;
+
+            // Delete the cached heightfield object if it is there, and create a new one and save in the shape configuration
+            heightfieldConfig.SetCachedNativeHeightfield(nullptr);
+
+            const AZStd::vector<Physics::HeightMaterialPoint>& samples = heightfieldConfig.GetSamples();
+            AZ_Assert(samples.size() == numRows * numCols, "GetHeightsAndMaterials returned wrong sized heightfield");
+
+            if (!samples.empty())
+            {
+                AZStd::vector<physx::PxHeightFieldSample> physxSamples(samples.size());
+
+                for (int32_t row = 0; row < numRows; row++)
+                {
+                    for (int32_t col = 0; col < numCols; col++)
+                    {
+                        auto GetIndex = [numCols](int32_t row, int32_t col)
+                        {
+                            return (row * numCols) + col;
+                        };
+
+                        const int32_t sampleIndex = GetIndex(row, col);
+
+                        const Physics::HeightMaterialPoint& currentSample = samples[sampleIndex];
+                        physx::PxHeightFieldSample& currentPhysxSample = physxSamples[sampleIndex];
+                        AZ_Assert(currentSample.m_materialIndex < physxMaximumMaterialIndex, "MaterialIndex must be less than 128");
+                        currentPhysxSample.height = azlossy_cast<physx::PxI16>(
+                            AZ::GetClamp(currentSample.m_height, minHeightBounds, maxHeightBounds) * scaleFactor);
+
+                        auto [materialIndex0, materialIndex1] = GetPhysXMaterialIndicesFromHeightfieldSamples(samples, row, col, numRows, numCols);
+                        currentPhysxSample.materialIndex0 = materialIndex0;
+                        currentPhysxSample.materialIndex1 = materialIndex1;
+
+                        if (currentSample.m_quadMeshType == Physics::QuadMeshType::SubdivideUpperLeftToBottomRight)
+                        {
+                            // Set the tesselation flag to say that we need to go from UL to BR
+                            currentPhysxSample.setTessFlag();
+                        }
+                    }
+                }
+
+                SystemRequestsBus::BroadcastResult(heightfield, &SystemRequests::CreateHeightField, physxSamples.data(), numRows, numCols);
+            }
+            if (heightfield)
+            {
+                heightfieldConfig.SetCachedNativeHeightfield(heightfield);
+
+                physx::PxHeightFieldGeometry hfGeom(heightfield, physx::PxMeshGeometryFlags(), heightScale, rowScale, colScale);
+
+                pxGeometry.storeAny(hfGeom);
+            }
+        }
+
         bool CreatePxGeometryFromConfig(const Physics::ShapeConfiguration& shapeConfiguration, physx::PxGeometryHolder& pxGeometry)
         {
             if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
             {
                 AZ_Error("PhysX Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
-                    ToString(shapeConfiguration.m_scale).c_str());
+                    AZStd::to_string(shapeConfiguration.m_scale).c_str());
                 return false;
             }
 
@@ -94,7 +248,7 @@ namespace PhysX
                 if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
                 {
                     AZ_Error("PhysX Utils", false, "Negative or zero values are invalid for box dimensions %s",
-                        ToString(boxConfig.m_dimensions).c_str());
+                        AZStd::to_string(boxConfig.m_dimensions).c_str());
                     return false;
                 }
                 pxGeometry.storeAny(physx::PxBoxGeometry(PxMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale)));
@@ -132,8 +286,13 @@ namespace PhysX
             }
             case Physics::ShapeType::CookedMesh:
             {
-                const Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
+                const Physics::CookedMeshShapeConfiguration& constCookedMeshShapeConfig =
                     static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
+
+                // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                // native mesh pointer that gets stored in the configuration.
+                Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
+                    const_cast<Physics::CookedMeshShapeConfiguration&>(constCookedMeshShapeConfig);
 
                 physx::PxBase* nativeMeshObject = nullptr;
 
@@ -169,6 +328,19 @@ namespace PhysX
                     "CreatePxGeometryFromConfig: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
                     "Please iterate over m_colliderShapes in the asset and call this function for each of them.");
                 return false;
+            }
+            case Physics::ShapeType::Heightfield:
+            {
+                const Physics::HeightfieldShapeConfiguration& constHeightfieldConfig =
+                    static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+
+                // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                // native heightfield pointer that gets stored in the configuration.
+                Physics::HeightfieldShapeConfiguration& heightfieldConfig =
+                    const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
+
+                CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
+                break;
             }
             default:
                 AZ_Warning("PhysX Rigid Body", false, "Shape not supported in PhysX. Shape Type: %d", shapeType);
@@ -218,6 +390,26 @@ namespace PhysX
                         // PhysX capsules are oriented around x by default.
                         physx::PxQuat pxQuat(AZ::Constants::HalfPi, physx::PxVec3(0.0f, 1.0f, 0.0f));
                         shape->setLocalPose(physx::PxTransform(pxQuat));
+                    }
+                    else if (pxGeomHolder.getType() == physx::PxGeometryType::eHEIGHTFIELD)
+                    {
+                        const Physics::HeightfieldShapeConfiguration& heightfieldConfig =
+                            static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+
+                        // PhysX heightfields have the origin at the corner, not the center, so add an offset to the passed-in transform
+                        // to account for this difference.
+                        const AZ::Vector2 gridSpacing = heightfieldConfig.GetGridResolution();
+                        AZ::Vector3 offset(
+                            -(gridSpacing.GetX() * heightfieldConfig.GetNumColumns() / 2.0f),
+                            -(gridSpacing.GetY() * heightfieldConfig.GetNumRows() / 2.0f),
+                            0.0f);
+
+                        // PhysX heightfields are always defined to have the height in the Y direction, not the Z direction, so we need
+                        // to provide additional rotations to make it Z-up.
+                        physx::PxQuat pxQuat = PxMathConvert(
+                            AZ::Quaternion::CreateFromEulerAnglesRadians(AZ::Vector3(AZ::Constants::HalfPi, AZ::Constants::HalfPi, 0.0f)));
+                        physx::PxTransform pxHeightfieldTransform = physx::PxTransform(PxMathConvert(offset), pxQuat);
+                        shape->setLocalPose(pxHeightfieldTransform);
                     }
 
                     // Handle a possible misconfiguration when a shape is set to be both simulated & trigger. This is illegal in PhysX.
@@ -639,6 +831,17 @@ namespace PhysX
             const AZ::Quaternion& colliderRelativeRotation)
         {
             return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRelativeRotation, colliderRelativePosition);
+        }
+
+        AZ::Transform GetColliderLocalTransform(const AZ::EntityComponentIdPair& idPair)
+        {
+            AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
+            PhysX::EditorColliderComponentRequestBus::EventResult(colliderRotation, idPair, &PhysX::EditorColliderComponentRequests::GetColliderRotation);
+
+            AZ::Vector3 colliderOffset = AZ::Vector3::CreateZero();
+            PhysX::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
+
+            return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRotation, colliderOffset);
         }
 
         AZ::Transform GetColliderWorldTransform(const AZ::Transform& worldTransform,
@@ -1356,6 +1559,62 @@ namespace PhysX
             entityWorldTransformWithoutScale.ExtractUniformScale();
 
             return entityWorldTransformWithoutScale * jointLocalTransformWithoutScale;
+        }
+        
+        Physics::HeightfieldShapeConfiguration CreateBaseHeightfieldShapeConfiguration(AZ::EntityId entityId)
+        {
+            Physics::HeightfieldShapeConfiguration configuration;
+
+            AZ::Vector2 gridSpacing(1.0f);
+            Physics::HeightfieldProviderRequestsBus::EventResult(
+                gridSpacing, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSpacing);
+
+            configuration.SetGridResolution(gridSpacing);
+
+            int32_t numRows = 0;
+            int32_t numColumns = 0;
+            Physics::HeightfieldProviderRequestsBus::Event(
+                entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
+
+            configuration.SetNumRows(numRows);
+            configuration.SetNumColumns(numColumns);
+
+            float minHeightBounds = 0.0f;
+            float maxHeightBounds = 0.0f;
+            Physics::HeightfieldProviderRequestsBus::Event(
+                entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds, minHeightBounds, maxHeightBounds);
+
+            configuration.SetMinHeightBounds(minHeightBounds);
+            configuration.SetMaxHeightBounds(maxHeightBounds);
+
+            return configuration;
+        }
+
+        Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId)
+        {
+            Physics::HeightfieldShapeConfiguration configuration = CreateBaseHeightfieldShapeConfiguration(entityId);
+
+            AZStd::vector<Physics::HeightMaterialPoint> samples;
+            Physics::HeightfieldProviderRequestsBus::EventResult(
+                samples, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
+
+            configuration.SetSamples(samples);
+
+            return configuration;
+        }
+
+        void SetMaterialsFromHeightfieldProvider(const AZ::EntityId& heightfieldProviderId, Physics::MaterialSelection& materialSelection)
+        {
+            AZStd::vector<Physics::MaterialId> materialList;
+            Physics::HeightfieldProviderRequestsBus::EventResult(
+                materialList, heightfieldProviderId, &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
+
+            materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray(materialList.size(), ""));
+
+            for (int i = 0; i < materialList.size(); ++i)
+            {
+                materialSelection.SetMaterialId(materialList[i], i);
+            }
         }
     } // namespace Utils
 

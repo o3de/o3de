@@ -32,7 +32,11 @@ namespace Multiplayer
     using EntityStopEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using EntityDirtiedEvent = AZ::Event<>;
     using EntitySyncRewindEvent = AZ::Event<>;
+<<<<<<< HEAD
     using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&, AzNetworking::ConnectionId>;
+=======
+    using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
+>>>>>>> development
     using EntityPreRenderEvent = AZ::Event<float>;
     using EntityCorrectionEvent = AZ::Event<>;
 
@@ -113,7 +117,11 @@ namespace Multiplayer
         void MarkDirty();
         void NotifyLocalChanges();
         void NotifySyncRewindState();
+<<<<<<< HEAD
         void NotifyServerMigration(const HostId& hostId, AzNetworking::ConnectionId connectionId);
+=======
+        void NotifyServerMigration(const HostId& remoteHostId);
+>>>>>>> development
         void NotifyPreRender(float deltaTime);
         void NotifyCorrection();
 

@@ -10,6 +10,7 @@
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Asset/AssetDataStream.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <extensions/PxDefaultStreams.h>
 
 namespace PhysX
@@ -17,7 +18,7 @@ namespace PhysX
     /// Wraps an AZ stream by provided the physx interface.
     /// This is used to prevent copying of data when going from
     /// physx streams to az streams.
-    class StreamWrapper 
+    class StreamWrapper
         : public physx::PxInputStream
         , public physx::PxOutputStream
 

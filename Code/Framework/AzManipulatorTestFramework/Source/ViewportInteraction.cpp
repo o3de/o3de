@@ -10,22 +10,19 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 
 namespace AzManipulatorTestFramework
 {
-    // Null debug display for dummy draw calls
-    class NullDebugDisplayRequests : public AzFramework::DebugDisplayRequests
-    {
-    public:
-        virtual ~NullDebugDisplayRequests() = default;
-    };
-
-    ViewportInteraction::ViewportInteraction()
-        : m_nullDebugDisplayRequests(AZStd::make_unique<NullDebugDisplayRequests>())
+    ViewportInteraction::ViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests)
+        : m_debugDisplayRequests(AZStd::move(debugDisplayRequests))
     {
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(m_viewportId);
         AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
+
+        m_cameraState =
+            AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzManipulatorTestFramework::DefaultViewportSize);
     }
 
     ViewportInteraction::~ViewportInteraction()
@@ -38,46 +35,6 @@ namespace AzManipulatorTestFramework
     AzFramework::CameraState ViewportInteraction::GetCameraState()
     {
         return m_cameraState;
-    }
-
-    bool ViewportInteraction::GridSnappingEnabled() const
-    {
-        return m_gridSnapping;
-    }
-
-    float ViewportInteraction::GridSize() const
-    {
-        return m_gridSize;
-    }
-
-    bool ViewportInteraction::ShowGrid() const
-    {
-        return false;
-    }
-
-    bool ViewportInteraction::AngleSnappingEnabled() const
-    {
-        return m_angularSnapping;
-    }
-
-    float ViewportInteraction::AngleStep() const
-    {
-        return m_angularStep;
-    }
-
-    float ViewportInteraction::ManipulatorLineBoundWidth() const
-    {
-        return 0.1f;
-    }
-
-    float ViewportInteraction::ManipulatorCircleBoundWidth() const
-    {
-        return 0.1f;
-    }
-
-    bool ViewportInteraction::StickySelectEnabled() const
-    {
-        return m_stickySelect;
     }
 
     void ViewportInteraction::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
@@ -102,7 +59,7 @@ namespace AzManipulatorTestFramework
 
     AzFramework::DebugDisplayRequests& ViewportInteraction::GetDebugDisplay()
     {
-        return *m_nullDebugDisplayRequests;
+        return *m_debugDisplayRequests;
     }
 
     void ViewportInteraction::SetGridSnapping(const bool enabled)
@@ -120,6 +77,16 @@ namespace AzManipulatorTestFramework
         m_stickySelect = enabled;
     }
 
+    void ViewportInteraction::SetIconsVisible(const bool visible)
+    {
+        m_iconsVisible = visible;
+    }
+
+    void ViewportInteraction::SetHelpersVisible(const bool visible)
+    {
+        m_helpersVisible = visible;
+    }
+
     void ViewportInteraction::SetGridSize(float size)
     {
         m_gridSize = size;
@@ -130,21 +97,20 @@ namespace AzManipulatorTestFramework
         m_angularStep = step;
     }
 
-    int ViewportInteraction::GetViewportId() const
+    AzFramework::ViewportId ViewportInteraction::GetViewportId() const
     {
         return m_viewportId;
     }
 
-    AZStd::optional<AZ::Vector3> ViewportInteraction::ViewportScreenToWorld(
-        [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition, [[maybe_unused]] float depth)
+    AZ::Vector3 ViewportInteraction::ViewportScreenToWorld([[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
     {
-        return {};
+        return AzFramework::ScreenToWorld(screenPosition, m_cameraState);
     }
 
-    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportInteraction::ViewportScreenToWorldRay(
+    AzToolsFramework::ViewportInteraction::ProjectedViewportRay ViewportInteraction::ViewportScreenToWorldRay(
         [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
     {
-        return {};
+        return AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_cameraState, screenPosition);
     }
 
     float ViewportInteraction::DeviceScalingFactor()

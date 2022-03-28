@@ -9,16 +9,25 @@
 
 #pragma once
 
-#include <AzFramework/Archive/ArchiveVars_Platform.h>
-
 namespace AZ::IO
 {
-    enum class ArchiveLocationPriority
+    enum class FileSearchPriority
     {
-        ePakPriorityFileFirst = 0,
-        ePakPriorityPakFirst = 1,
-        ePakPriorityPakOnly = 2
+        FileFirst,
+        PakFirst,
+        PakOnly
     };
+
+
+    //file location enum used in isFileExist to control where the archive system looks for the file.
+    enum class FileSearchLocation
+    {
+        Any,
+        OnDisk,
+        InPak
+    };
+
+    FileSearchPriority GetDefaultFileSearchPriority();
 
     // variables that control behavior of the Archive subsystem
     struct ArchiveVars
@@ -28,29 +37,10 @@ namespace AZ::IO
 #else
         inline static constexpr bool IsReleaseConfig{};
 #endif
-
-    public:
-        int nReadSlice{};
-        int nSaveTotalResourceList{};
-        int nSaveFastloadResourceList{};
-        int nSaveMenuCommonResourceList{};
         int nSaveLevelResourceList{};
-        int nValidateFileHashes{ IsReleaseConfig ? 0 : 1 };
-        int nUncachedStreamReads{ 1 };
-        int nInMemoryPerPakSizeLimit{ 6 }; // Limits in MB
-        int nTotalInMemoryPakSizeLimit{ 30 };
-        int nLoadCache{};
-        int nLoadModePaks{};
-        int nStreamCache{ STREAM_CACHE_DEFAULT };
-        ArchiveLocationPriority nPriority{ IsReleaseConfig
-            ? ArchiveLocationPriority::ePakPriorityPakOnly
-            : ArchiveLocationPriority::ePakPriorityFileFirst }; // Which file location to favor (loose vs. pak files)
+        FileSearchPriority m_fileSearchPriority{ GetDefaultFileSearchPriority()};
         int nMessageInvalidFileAccess{};
         int nLogInvalidFileAccess{ IsReleaseConfig ? 0 : 1 };
-        int nDisableNonLevelRelatedPaks{ 1 };
-        int nWarnOnPakAccessFails{ 1 }; // Whether to treat failed pak access as a warning or log message
-        int nSetLogLevel{ 3 };
-        int nLogAllFileAccess{};
 
     };
 }

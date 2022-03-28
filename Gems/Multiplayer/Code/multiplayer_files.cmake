@@ -9,10 +9,14 @@
 set(FILES
     Include/Multiplayer/IMultiplayer.h
     Include/Multiplayer/IMultiplayerDebug.h
+    Include/Multiplayer/IMultiplayerSpawner.h
     Include/Multiplayer/IMultiplayerTools.h
     Include/Multiplayer/MultiplayerConstants.h
+    Include/Multiplayer/MultiplayerDebug.h
+    Include/Multiplayer/MultiplayerDebug.inl
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
+    Include/Multiplayer/MultiplayerEditorServerBus.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h
@@ -45,6 +49,10 @@ set(FILES
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
     Include/Multiplayer/NetworkInput/NetworkInput.h
+    Include/Multiplayer/NetworkInput/NetworkInputArray.h
+    Include/Multiplayer/NetworkInput/NetworkInputChild.h
+    Include/Multiplayer/NetworkInput/NetworkInputHistory.h
+    Include/Multiplayer/NetworkInput/NetworkInputMigrationVector.h
     Include/Multiplayer/NetworkTime/INetworkTime.h
     Include/Multiplayer/NetworkTime/RewindableArray.h
     Include/Multiplayer/NetworkTime/RewindableArray.inl
@@ -52,8 +60,15 @@ set(FILES
     Include/Multiplayer/NetworkTime/RewindableFixedVector.inl
     Include/Multiplayer/NetworkTime/RewindableObject.h
     Include/Multiplayer/NetworkTime/RewindableObject.inl
-    Include/Multiplayer/Physics/PhysicsUtils.h
     Include/Multiplayer/ReplicationWindows/IReplicationWindow.h
+    Include/Multiplayer/Session/IMatchmakingRequests.h
+    Include/Multiplayer/Session/ISessionHandlingRequests.h
+    Include/Multiplayer/Session/ISessionRequests.h
+    Include/Multiplayer/Session/MatchmakingRequests.h
+    Include/Multiplayer/Session/MatchmakingNotifications.h
+    Include/Multiplayer/Session/SessionRequests.h
+    Include/Multiplayer/Session/SessionConfig.h
+    Include/Multiplayer/Session/SessionNotifications.h
     Include/Multiplayer/AutoGen/AutoComponentTypes_Header.jinja
     Include/Multiplayer/AutoGen/AutoComponentTypes_Source.jinja
     Include/Multiplayer/AutoGen/AutoComponent_Common.jinja
@@ -90,6 +105,8 @@ set(FILES
     Source/Editor/MultiplayerEditorConnection.h
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
+    Source/EntityDomains/NullEntityDomain.cpp
+    Source/EntityDomains/NullEntityDomain.h
     Source/MultiplayerStats.cpp
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
@@ -114,13 +131,9 @@ set(FILES
     Source/NetworkEntity/NetworkSpawnableLibrary.h
     Source/NetworkInput/NetworkInput.cpp
     Source/NetworkInput/NetworkInputArray.cpp
-    Source/NetworkInput/NetworkInputArray.h
     Source/NetworkInput/NetworkInputChild.cpp
-    Source/NetworkInput/NetworkInputChild.h
     Source/NetworkInput/NetworkInputHistory.cpp
-    Source/NetworkInput/NetworkInputHistory.h
     Source/NetworkInput/NetworkInputMigrationVector.cpp
-    Source/NetworkInput/NetworkInputMigrationVector.h
     Source/NetworkTime/NetworkTime.cpp
     Source/NetworkTime/NetworkTime.h
     Source/Pipeline/NetworkSpawnableHolderComponent.cpp
@@ -129,4 +142,7 @@ set(FILES
     Source/ReplicationWindows/NullReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
     Source/ReplicationWindows/ServerToClientReplicationWindow.h
+    Source/Session/MatchmakingRequests.cpp
+    Source/Session/SessionRequests.cpp
+    Source/Session/SessionConfig.cpp
 )

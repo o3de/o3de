@@ -112,10 +112,6 @@ namespace EMStudio
             for (size_t i = 0; i < actorCount; ++i)
             {
                 EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
-                if (actor->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
 
                 if (AzFramework::StringFunc::Equal(filename, actor->GetFileName()))
                 {

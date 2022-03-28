@@ -329,7 +329,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
             hc.b2DViewport = view->GetType() != ET_ViewportCamera;
             hc.point2d = point;
             view->ViewToWorldRay(point, hc.raySrc, hc.rayDir);
-            bool bHit = false;
             if (HitTest(hc))
             {
                 switch (hc.manipulatorMode)
@@ -344,7 +343,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
                     view->SetCurrentCursor(STD_CURSOR_SCALE);
                     break;
                 }
-                bHit = true;
             }
         }
     }

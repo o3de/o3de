@@ -8,28 +8,15 @@
 
 #include <GemCatalog/GemListView.h>
 #include <GemCatalog/GemItemDelegate.h>
-#include <QStandardItemModel>
-#include <QProxyStyle>
+#include <AdjustableHeaderWidget.h>
+
+#include <QMovie>
+#include <QHeaderView>
 
 namespace O3DE::ProjectManager
 {
-    class GemListViewProxyStyle : public QProxyStyle
-    {
-    public:
-        using QProxyStyle::QProxyStyle;
-        int styleHint(StyleHint hint, const QStyleOption* option = nullptr, const QWidget* widget = nullptr, QStyleHintReturn* returnData = nullptr) const override
-        {
-            if (hint == QStyle::SH_ToolTip_WakeUpDelay || hint == QStyle::SH_ToolTip_FallAsleepDelay)
-            {
-                // no delay
-                return 0;
-            }
-
-            return QProxyStyle::styleHint(hint, option, widget, returnData);
-        }
-    };
-
-    GemListView::GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
+    GemListView::GemListView(
+        QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, QWidget* parent)
         : QListView(parent)
     {
         setObjectName("GemCatalogListView");
@@ -37,9 +24,19 @@ namespace O3DE::ProjectManager
 
         setModel(model);
         setSelectionModel(selectionModel);
-        setItemDelegate(new GemItemDelegate(model, this));
+        GemItemDelegate* itemDelegate = new GemItemDelegate(model, header, this);
+        
+        connect(itemDelegate, &GemItemDelegate::MovieStartedPlaying, [=](const QMovie* playingMovie)
+            {
+                // Force redraw when movie is playing so animation is smooth
+                connect(playingMovie, &QMovie::frameChanged, this, [=]
+                    {
+                        this->viewport()->repaint();
+                    });
+            });
+        
+        connect(header, &AdjustableHeaderWidget::sectionsResized, [=] { update(); });
 
-        // use a custom proxy style so we get immediate tooltips for gem radio buttons
-        setStyle(new GemListViewProxyStyle(this->style()));
+        setItemDelegate(itemDelegate);
     }
 } // namespace O3DE::ProjectManager

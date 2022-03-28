@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
@@ -22,7 +23,6 @@ namespace Terrain
 {
     /**
     * A bus to signal the life times of terrain areas
-    * Note: all the API are meant to be queued events
     */
     class TerrainSystemServiceRequests
         : public AZ::EBusTraits
@@ -44,7 +44,7 @@ namespace Terrain
         // register an area to override terrain
         virtual void RegisterArea(AZ::EntityId areaId) = 0;
         virtual void UnregisterArea(AZ::EntityId areaId) = 0;
-        virtual void RefreshArea(AZ::EntityId areaId) = 0;
+        virtual void RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) = 0;
     };
 
     using TerrainSystemServiceRequestBus = AZ::EBus<TerrainSystemServiceRequests>;
@@ -52,7 +52,6 @@ namespace Terrain
 
     /**
     * A bus to signal the life times of terrain areas
-    * Note: all the API are meant to be queued events
     */
     class TerrainAreaHeightRequests
         : public AZ::ComponentBus
@@ -61,12 +60,25 @@ namespace Terrain
         ////////////////////////////////////////////////////////////////////////
         // EBusTraits
         using MutexType = AZStd::recursive_mutex;
+
+        // This bus will not lock during an EBus call. This lets us run multiple queries in parallel, but it also means
+        // that anything that implements this EBus will need to ensure that queries can't be in the middle of running at the
+        // same time as bus connects / disconnects.
+        static const bool LocklessDispatch = true;
         ////////////////////////////////////////////////////////////////////////
 
         virtual ~TerrainAreaHeightRequests() = default;
 
-        // Synchronous single input location.  The Vector3 input position versions are defined to ignore the input Z value.
+        /// Synchronous single input location.
+        /// @inPosition is the input position to query.
+        /// @outPosition will have the same XY as inPosition, but with the Z adjusted to the proper height.
+        /// @terrainExists is true if the output position is valid terrain.
         virtual void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists) = 0;
+
+        /// Synchronous multiple input locations.
+        /// @inOutPositionList takes a list of Vector3s as input and returns the Vector3s with Z filled out.
+        /// @terrainExistsList outputs flags for whether or not each output position is valid terrain.
+        virtual void GetHeights(AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList) = 0;
     };
 
     using TerrainAreaHeightRequestBus = AZ::EBus<TerrainAreaHeightRequests>;

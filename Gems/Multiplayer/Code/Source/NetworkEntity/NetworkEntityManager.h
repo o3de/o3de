@@ -43,7 +43,13 @@ namespace Multiplayer
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
         NetEntityId GetNetEntityIdById(const AZ::EntityId& entityId) const override;
 
-        EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, AutoActivate autoActivate);
+        EntityList CreateEntitiesImmediate
+        (
+            const AzFramework::Spawnable& spawnable,
+            NetEntityRole netEntityRole,
+            const AZ::Transform& transform,
+            AutoActivate autoActivate
+        );
         EntityList CreateEntitiesImmediate
         (
             const PrefabEntityId& prefabEntryId,
@@ -79,12 +85,25 @@ namespace Multiplayer
         void NotifyControllersActivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void NotifyControllersDeactivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) override;
+<<<<<<< HEAD
+=======
+        void HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain) override;
+        void ForceAssumeAuthority(const ConstNetworkEntityHandle& entityHandle) override;
+        void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) override;
+        void MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) override;
+        const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override;
+        const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override;
+        void SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs) override;
+>>>>>>> development
         void DebugDraw() const override;
         //! @}
 
         void DispatchLocalDeferredRpcMessages();
+<<<<<<< HEAD
         void UpdateEntityDomain();
         void OnEntityExitDomain(NetEntityId entityId);
+=======
+>>>>>>> development
 
         //! RootSpawnableNotificationBus
         //! @{
@@ -98,17 +117,24 @@ namespace Multiplayer
     private:
         void RemoveEntities();
         NetEntityId NextId();
+        bool IsHierarchySafeToExit(NetworkEntityHandle& entityHandle, const NetEntityIdSet& entitiesNotInDomain);
 
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
         MultiplayerComponentRegistry m_multiplayerComponentRegistry;
 
+        AZStd::unordered_set<ConstNetworkEntityHandle> m_alwaysRelevantToClients;
+        AZStd::unordered_set<ConstNetworkEntityHandle> m_alwaysRelevantToServers;
+
         AZ::ScheduledEvent m_removeEntitiesEvent;
         AZStd::vector<NetEntityId> m_removeList;
         AZStd::unique_ptr<IEntityDomain> m_entityDomain;
+<<<<<<< HEAD
         AZ::ScheduledEvent m_updateEntityDomainEvent;
 
         OwnedEntitySet m_ownedEntities;
+=======
+>>>>>>> development
 
         EntityExitDomainEvent m_entityExitDomainEvent;
         AZ::Event<> m_onEntityMarkedDirty;

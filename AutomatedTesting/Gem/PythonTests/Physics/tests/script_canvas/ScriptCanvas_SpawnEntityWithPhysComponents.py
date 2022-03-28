@@ -29,17 +29,16 @@ def ScriptCanvas_SpawnEntityWithPhysComponents():
         by a scriptcanvas.
 
     Level Description:
-    Ball_0 - Existing only for user reference, a dynamic slice is taken from Ball_0 and used by the Spawn_point entity.
-        Is set with velocity in the negative -z direction; has sphere shaped Collider, Rigid Body, Sphere shape, and
-        Script Canvas (can be placed anywhere on the level). Velocity set to zero and script canvas added after dynamic
-        slice taken.
-    Spawn_Point - Activated by the associated Script canvas to spawn the associated dynamic slice; has spawner
+    Ball_0 - Existing only for user reference, a prefab is taken from Ball_0 and used by the Spawn_point entity.
+        Is set with velocity in the negative -z direction; has sphere shaped Collider, Rigid Body, Sphere shape.
+    Spawn_Point - Serves as the world location to pass into an attached Script Canvas that will spawn Ball_0 at its
+        location using the Prefab > Spawning nodes.
     Terrain - Surface for spawned ball to bounce against; has terrain
 
     Script Canvas - The script canvas after a delay of 0.5 seconds tells the Spawn_Point entity to spawn.
 
     Expected Behavior:
-    After a set amount of time dictated by the script canvas a ball will spawn and collide with the terrain component.
+    Script canvas will spawn a ball and collide with the terrain component.
 
     Test Steps:
     1) Open Level
@@ -106,7 +105,7 @@ def ScriptCanvas_SpawnEntityWithPhysComponents():
     # Main Script
     helper.init_idle()
     # 1) Open Level
-    helper.open_level("physics", "ScriptCanvas_SpawnEntityWithPhysComponents")
+    helper.open_level("Physics", "ScriptCanvas_SpawnEntityWithPhysComponents")
 
     # 2) Enter Game Mode
     helper.enter_game_mode(Tests.enter_game_mode)

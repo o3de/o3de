@@ -65,6 +65,10 @@
                 "Path": "Passes/CascadedShadowmaps.pass"
             },
             {
+                "Name": "SlowClearPassTemplate",
+                "Path": "Passes/SlowClear.pass"
+            },
+            {
                 "Name": "FullscreenCopyTemplate",
                 "Path": "Passes/FullscreenCopy.pass"
             },
@@ -185,6 +189,34 @@
                 "Path": "Passes/DepthOfFieldWriteFocusDepthFromGpu.pass"
             },
             {
+                "Name": "NewDepthOfFieldTemplate",
+                "Path": "Passes/NewDepthOfField.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldDownsampleTemplate",
+                "Path": "Passes/NewDepthOfFieldDownsample.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldTileReduceTemplate",
+                "Path": "Passes/NewDepthOfFieldTileReduce.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldTile3x3Template",
+                "Path": "Passes/NewDepthOfFieldTile3x3.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldFilterLargeTemplate",
+                "Path": "Passes/NewDepthOfFieldFilterLarge.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldFilterSmallTemplate",
+                "Path": "Passes/NewDepthOfFieldFilterSmall.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldCompositeTemplate",
+                "Path": "Passes/NewDepthOfFieldComposite.pass"
+            },
+			{
                 "Name": "EsmShadowmapsTemplate",
                 "Path": "Passes/EsmShadowmaps.pass"
             },
@@ -223,6 +255,10 @@
             {
                 "Name": "EnvironmentCubeMapForwardMSAAPassTemplate",
                 "Path": "Passes/EnvironmentCubeMapForwardMSAA.pass"
+            },
+            {
+                "Name": "EnvironmentCubeMapForwardSubsurfaceMSAAPassTemplate",
+                "Path": "Passes/EnvironmentCubeMapForwardSubsurfaceMSAA.pass"
             },
             {
                 "Name": "EnvironmentCubeMapDepthMSAAPassTemplate",
@@ -425,6 +461,10 @@
                 "Path": "Passes/DiffuseProbeGridClassification.pass"
             },
             {
+                "Name": "DiffuseProbeGridPreparePassTemplate",
+                "Path": "Passes/DiffuseProbeGridPrepare.pass"
+            },
+            {
                 "Name": "DiffuseGlobalIlluminationPassTemplate",
                 "Path": "Passes/DiffuseGlobalIllumination.pass"
             },
@@ -439,6 +479,26 @@
             {
                 "Name": "DiffuseCompositePassTemplate",
                 "Path": "Passes/DiffuseComposite.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationPreparePassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationPrepare.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationAccelerationStructurePassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationAccelerationStructure.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationRayTracingPassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationRayTracing.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridQueryPassTemplate",
+                "Path": "Passes/DiffuseProbeGridQuery.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationCompositePassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationComposite.pass"
             },
             {
                 "Name": "DiffuseGlobalFullscreenPassTemplate",
@@ -469,12 +529,21 @@
                 "Path": "Passes/OpaqueParent.pass"
             },
             {
+<<<<<<< HEAD
                 "Name": "ThumbnailPipeline",
                 "Path": "Passes/ThumbnailPipeline.pass"
             },
             {
                 "Name": "ThumbnailPipelineRenderToTexture",
                 "Path": "Passes/ThumbnailPipelineRenderToTexture.pass"
+=======
+                "Name": "ToolsPipeline",
+                "Path": "Passes/ToolsPipeline.pass"
+            },
+            {
+                "Name": "ToolsPipelineRenderToTexture",
+                "Path": "Passes/ToolsPipelineRenderToTexture.pass"
+>>>>>>> development
             },
             {
                 "Name": "TransparentParentTemplate",
@@ -511,7 +580,39 @@
             {
                 "Name": "HDRColorGradingTemplate",
                 "Path": "Passes/HDRColorGrading.pass"
-            }            
+            },
+            {
+                "Name": "EditorModeFeedbackParentTemplate",
+                "Path": "Passes/EditorModeFeedbackParent.pass"
+            },
+            {
+                "Name": "EditorModeMaskTemplate",
+                "Path": "Passes/EditorModeMask.pass"
+            },
+            {
+                "Name": "EditorModeDesaturationTemplate",
+                "Path": "Passes/EditorModeDesaturation.pass"
+            },
+            {
+                "Name": "EditorModeTintTemplate",
+                "Path": "Passes/EditorModeTint.pass"
+            },
+            {
+                "Name": "EditorModeBlurParentTemplate",
+                "Path": "Passes/EditorModeBlurParent.pass"
+            },
+            {
+                "Name": "EditorModeBlurTemplate",
+                "Path": "Passes/EditorModeBlur.pass"
+            },
+            {
+                "Name": "EditorModeOutlineTemplate",
+                "Path": "Passes/EditorModeOutline.pass"
+            },
+            {
+                "Name": "LutGenerationTemplate",
+                "Path": "Passes/LutGeneration.pass"
+            }
         ]
     }
 }

@@ -58,7 +58,11 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     // in the OIT process.
     // It can also be used to avoid the HW blend done at the end of the pixel 
     // shader stage but HW blend might be cheaper than additional PS blend.
+<<<<<<< HEAD
     Texture2D<float4>               m_frameBuffer;  // The merged MSAA output
+=======
+    Texture2D<float4>               m_frameBuffer;  // The merged non-MSAA input
+>>>>>>> development
 
     // Linear depth is used for getting the screen to world transform
     Texture2D<float>                m_linearDepth;
@@ -93,6 +97,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 #define HairParams          PassSrg::m_hairParams
 //==============================================================================
 
+<<<<<<< HEAD
 #include <HairLighting.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
@@ -113,6 +118,13 @@ VSOutput FullScreenVS(VSInput input)
 //////////////////////////////////////////////////////////////
 // Bind data for PPLLResolvePS
 
+=======
+#include <HairFullScreenUtils.azsli>    // provides the Vertex Shader
+#include <HairLighting.azsli>
+
+//////////////////////////////////////////////////////////////
+// Bind data for PPLLResolvePS
+>>>>>>> development
 #define NODE_DATA(x) LinkedListNodes[x].data
 #define NODE_NEXT(x) LinkedListNodes[x].uNext
 #define NODE_DEPTH(x) LinkedListNodes[x].depth
@@ -298,7 +310,11 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
         uint shadeParamIndex;	// So we know what settings to shade with
 
         float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+<<<<<<< HEAD
         float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, fcolor.w, shadeParamIndex);
+=======
+        float3 fragmentColor = TressFXShadingFullScreen(vfScreenAddress, fDepth, vTangent, vColor, fcolor.w, shadeParamIndex);
+>>>>>>> development
 
         // Blend in the fragment color
         fcolor.xyz = fcolor.xyz * (1.f - alpha) + fragmentColor * alpha;
@@ -355,7 +371,11 @@ float4 GetClosestFragment(float2 vfScreenAddress, float2 screenUV, inout float c
     float alpha = 1.0;
     uint shadeParamIndex;	// the material index
     float3 vColor = UnpackUintIntoFloat3Byte(curColor, shadeParamIndex);
+<<<<<<< HEAD
     float3 fragmentColor = TressFXShading(vfScreenAddress, curDepth, vTangent, vColor, fcolor.w, shadeParamIndex);
+=======
+    float3 fragmentColor = TressFXShadingFullScreen(vfScreenAddress, curDepth, vTangent, vColor, fcolor.w, shadeParamIndex);
+>>>>>>> development
 
     // Blend in the fragment color
     fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha);

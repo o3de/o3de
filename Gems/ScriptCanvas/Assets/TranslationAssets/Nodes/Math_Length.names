@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{AEE15BEA-CD51-4C1A-B06D-C09FB9EAA005}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Length",
+                "category": "Math",
+                "tooltip": "Given a vector this returns the magnitude (length) of the vector. For a quaternion, magnitude is the cosine of half the angle of rotation."
+            },
+            "slots": [
+                {
+                    "base": "DataOutput_Length_0",
+                    "details": {
+                        "name": "Length"
+                    }
+                },
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                }
+            ]
+        }
+    ]
+}

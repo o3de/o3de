@@ -10,6 +10,7 @@ set(FILES
     Include/InAppPurchases/InAppPurchasesBus.h
     Include/InAppPurchases/InAppPurchasesInterface.h
     Include/InAppPurchases/InAppPurchasesResponseBus.h
+    Source/InAppPurchasesSystemComponent.h
     Source/InAppPurchasesSystemComponent.cpp
     Source/InAppPurchasesInterface.cpp
 )

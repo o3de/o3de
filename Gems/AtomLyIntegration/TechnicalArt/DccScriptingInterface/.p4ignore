@@ -19,3 +19,4 @@ __WIP__/*
 !.gitignore
 .secrets.*
 settings.local.json
+.env

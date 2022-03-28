@@ -5,17 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Source/JointComponent.h>
 
+#include <Source/Utils.h>
+#include <PhysX/MathConversion.h>
+#include <PhysX/NativeTypeIdentifiers.h>
+#include <PhysX/PhysXLocks.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
-#include <PhysX/NativeTypeIdentifiers.h>
-#include <PhysX/PhysXLocks.h>
-#include <Source/JointComponent.h>
-#include <Source/Utils.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
-#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {
@@ -58,7 +59,7 @@ namespace PhysX
     }
 
     JointComponent::JointComponent(
-        const JointComponentConfiguration& configuration, 
+        const JointComponentConfiguration& configuration,
         const JointGenericProperties& genericProperties)
         : m_configuration(configuration)
         , m_genericProperties(genericProperties)
@@ -66,7 +67,7 @@ namespace PhysX
     }
 
     JointComponent::JointComponent(
-        const JointComponentConfiguration& configuration, 
+        const JointComponentConfiguration& configuration,
         const JointGenericProperties& genericProperties,
         const JointLimitProperties& limitProperties)
         : m_configuration(configuration)
@@ -81,8 +82,8 @@ namespace PhysX
         {
             if (m_configuration.m_followerEntity == m_configuration.m_leadEntity)
             {
-                AZ_Error("JointComponent::Activate()", 
-                    false, 
+                AZ_Error("JointComponent::Activate()",
+                    false,
                     "Joint's lead entity cannot be the same as the entity in which the joint resides. Joint failed to initialize.");
                 return;
             }

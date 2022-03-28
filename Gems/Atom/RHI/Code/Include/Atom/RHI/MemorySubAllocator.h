@@ -7,12 +7,13 @@
  */
 #pragma once
 
+#include <AzCore/Debug/Profiler.h>
 #include <Atom/RHI/FreeListAllocator.h>
 #include <Atom/RHI/PoolAllocator.h>
 #include <Atom/RHI/MemoryAllocation.h>
 #include <Atom/RHI.Reflect/MemoryEnums.h>
 
-#include <AzCore/Debug/EventTrace.h>
+AZ_DECLARE_BUDGET(RHI);
 
 namespace AZ
 {
@@ -68,6 +69,10 @@ namespace AZ
 
             void Shutdown();
 
+            // The fragmentation of the memory sub allocator is defined by the *minimum* fragmentation measured
+            // across the owned pages
+            float ComputeFragmentation() const;
+
         private:
             page_allocator_pointer m_pageAllocator = nullptr;
             Descriptor m_descriptor;
@@ -90,13 +95,15 @@ namespace AZ
             m_pageAllocator = &pageAllocator;
             m_descriptor = descriptor;
             m_descriptor.m_addressBase = 0;
-            m_descriptor.m_capacityInBytes = m_pageAllocator->GetPageSize();
+            if (m_descriptor.m_capacityInBytes == 0)
+            {
+                m_descriptor.m_capacityInBytes = m_pageAllocator->GetPageSize();
+            }
         }
 
         template <class Traits>
         typename MemorySubAllocator<Traits>::memory_allocation MemorySubAllocator<Traits>::Allocate(size_t sizeInBytes, size_t alignmentInBytes)
         {
-            AZ_TRACE_METHOD();
             if (RHI::AlignUp(sizeInBytes, alignmentInBytes) > m_descriptor.m_capacityInBytes)
             {
                 return memory_allocation();
@@ -196,6 +203,26 @@ namespace AZ
 
             m_pageAllocator->DeAllocate(m_pages.data(), m_pages.size());
             m_pages.clear();
+        }
+
+        template <class Traits>
+        float MemorySubAllocator<Traits>::ComputeFragmentation() const
+        {
+            if (m_pageContexts.empty())
+            {
+                return 0.f;
+            }
+
+            float fragmentation = 1.f;
+            for (const PageContext& pageContext : m_pageContexts)
+            {
+                float pageFragmentation = pageContext.m_allocator.ComputeFragmentation();
+                if (pageFragmentation < fragmentation)
+                {
+                    fragmentation = pageFragmentation;
+                }
+            }
+            return fragmentation;
         }
     }
 }

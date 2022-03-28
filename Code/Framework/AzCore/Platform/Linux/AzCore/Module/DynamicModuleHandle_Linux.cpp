@@ -10,28 +10,25 @@
 #include <AzCore/Utils/Utils.h>
 #include <dlfcn.h>
 
-namespace AZ
+namespace AZ::Platform
 {
-    namespace Platform
+    AZ::IO::FixedMaxPath GetModulePath()
     {
-        AZ::IO::FixedMaxPath GetModulePath()
-        {
-            return AZ::Utils::GetExecutableDirectory();
-        }
-
-        void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen)
-        {
-            void* handle = dlopen(fileName.c_str(), RTLD_NOLOAD);
-            alreadyOpen = (handle != nullptr);
-            if (!alreadyOpen)
-            {
-                handle = dlopen(fileName.c_str(), RTLD_NOW);
-            }
-            return handle;
-        }
-
-        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
-        {
-        }
+        return AZ::Utils::GetExecutableDirectory();
     }
-}
+
+    void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen)
+    {
+        void* handle = dlopen(fileName.c_str(), RTLD_NOLOAD);
+        alreadyOpen = (handle != nullptr);
+        if (!alreadyOpen)
+        {
+            handle = dlopen(fileName.c_str(), RTLD_NOW);
+        }
+        return handle;
+    }
+
+    void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
+    {
+    }
+} // namespace AZ::Platform

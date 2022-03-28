@@ -16,6 +16,7 @@
 
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <ImageLoader/ImageLoaders.h>
+#include <Editor/EditorCommon.h>
 
 
 namespace ImageProcessingAtom
@@ -23,7 +24,7 @@ namespace ImageProcessingAtom
     const char* TextureSettings::ExtensionName = ".assetinfo";
 
     TextureSettings::TextureSettings()
-        : m_preset(0)
+        : m_presetId(0)
         , m_sizeReduceLevel(0)
         , m_suppressEngineReduce(false)
         , m_enableMipmap(true)
@@ -45,15 +46,16 @@ namespace ImageProcessingAtom
         if (serialize)
         {
             serialize->Class<TextureSettings>()
-                ->Version(1)
-                ->Field("PresetID", &TextureSettings::m_preset)
+                ->Version(2)
+                ->Field("PresetID", &TextureSettings::m_presetId)
+                ->Field("Preset", &TextureSettings::m_preset)
                 ->Field("SizeReduceLevel", &TextureSettings::m_sizeReduceLevel)
                 ->Field("EngineReduce", &TextureSettings::m_suppressEngineReduce)
                 ->Field("EnableMipmap", &TextureSettings::m_enableMipmap)
-                ->Field("MaintainAlphaCoverage", &TextureSettings::m_maintainAlphaCoverage)
-                ->Field("MipMapAlphaAdjustments", &TextureSettings::m_mipAlphaAdjust)
                 ->Field("MipMapGenEval", &TextureSettings::m_mipGenEval)
                 ->Field("MipMapGenType", &TextureSettings::m_mipGenType)
+                ->Field("MaintainAlphaCoverage", &TextureSettings::m_maintainAlphaCoverage)
+                ->Field("MipMapAlphaAdjustments", &TextureSettings::m_mipAlphaAdjust)
                 ->Field("PlatformSpecificOverrides", &TextureSettings::m_platfromOverrides)
                 ->Field("OverridingPlatform", &TextureSettings::m_overridingPlatform);
 
@@ -64,15 +66,16 @@ namespace ImageProcessingAtom
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TextureSettings::m_mipAlphaAdjust, "Alpha Test Bias", "Multiplies the mipmap's alpha with a scale value that is based on alpha coverage. \
-                                            Set the mip 0 to mip 5 values to offset the alpha test values and ensure the mipmap's alpha coverage matches the original image. Specify a value from 0 to 100.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TextureSettings::m_mipAlphaAdjust, "Alpha Test Bias", "Multiplies the mipmap's alpha channel by a scale value that is based on alpha coverage. \
+                                            Specify a value from 0 to 100 for each mipmap to offset the alpha test values and ensure the mipmap's alpha coverage matches the original image.")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ::Edit::UIHandlers::Slider)
                         ->ElementAttribute(AZ::Edit::Attributes::Min, 0)
                         ->ElementAttribute(AZ::Edit::Attributes::Max, 100)
                         ->ElementAttribute(AZ::Edit::Attributes::Step, 1)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenType, "Filter Method", "")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenType, "Filter Type", "Filter Types specify sample sizes and algorithms \
+                                            for determining the color of each pixel as the texture resolution is reduced for each mipmap.")
                         ->EnumAttribute(MipGenType::point, "Point")
                         ->EnumAttribute(MipGenType::box, "Average")
                         ->EnumAttribute(MipGenType::triangle, "Linear")
@@ -80,11 +83,11 @@ namespace ImageProcessingAtom
                         ->EnumAttribute(MipGenType::gaussian, "Gaussian")
                         ->EnumAttribute(MipGenType::blackmanHarris, "BlackmanHarris")
                         ->EnumAttribute(MipGenType::kaiserSinc, "KaiserSinc")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenEval, "Pixel Sampling Type", "")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenEval, "Pixel Sampler", "The Pixel Sampler specifies how the final pixel value is calculated when mipmaps are generated.")
                         ->EnumAttribute(MipGenEvalType::max, "Max")
                         ->EnumAttribute(MipGenEvalType::min, "Min")
                         ->EnumAttribute(MipGenEvalType::sum, "Sum")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextureSettings::m_maintainAlphaCoverage, "Maintain Alpha Coverage", "Select this option to manually adjust Alpha channel mipmaps.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextureSettings::m_maintainAlphaCoverage, "Adjust Alpha", "Enable to manually adjust the alpha channel of the mipmaps with the Alpha Test Bias values.")
                 ;
             }
         }
@@ -169,9 +172,9 @@ namespace ImageProcessingAtom
         return 0.5f - fVal / 100.0f;
     }
 
-    void TextureSettings::ApplyPreset(AZ::Uuid presetId)
+    void TextureSettings::ApplyPreset(PresetName presetName)
     {
-        const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(presetId);
+        const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(presetName);
         if (presetSetting != nullptr)
         {
             m_sizeReduceLevel = presetSetting->m_sizeReduceLevel;
@@ -181,11 +184,11 @@ namespace ImageProcessingAtom
                 m_mipGenType = presetSetting->m_mipmapSetting->m_type;
             }
 
-            m_preset = presetId;
+            m_preset = presetName;
         }
         else
         {
-            AZ_Error("Image Processing", false, "Cannot set an invalid preset %s!", presetId.ToString<AZStd::string>().c_str());
+            AZ_Error("Image Processing", false, "Cannot set an invalid preset %s!", presetName.GetCStr());
         }
     }
 
@@ -199,6 +202,14 @@ namespace ImageProcessingAtom
         }
 
         textureSettingPtrOut = *loadedTextureSettingPtr;
+
+        // In old format, the preset name doesn't exist. Using preset id to get preset name
+        // We can remove this when we fully deprecate the preset uuid
+        if (textureSettingPtrOut.m_preset.IsEmpty())
+        {
+            textureSettingPtrOut.m_preset = BuilderSettingManager::Instance()->GetPresetNameFromId(textureSettingPtrOut.m_presetId);
+        }
+
         return AZ::Success(AZStd::string());
     }
 
@@ -216,7 +227,15 @@ namespace ImageProcessingAtom
     {
         MultiplatformTextureSettings settings;
         PlatformNameList platformsList = BuilderSettingManager::Instance()->GetPlatformList();
-        AZ::Uuid suggestedPreset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilepath);
+        PresetName suggestedPreset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilepath);
+
+        // If the suggested preset doesn't exist (or was failed to be loaded), return empty texture settings
+        if (BuilderSettingManager::Instance()->GetPreset(suggestedPreset) == nullptr)
+        {            
+            AZ_Error("Image Processing", false, "Failed to find suggested preset [%s]", suggestedPreset.GetCStr());
+            return settings;
+        }
+
         for (PlatformName& platform : platformsList)
         {
             TextureSettings textureSettings;
@@ -234,7 +253,7 @@ namespace ImageProcessingAtom
         if (overrideIter == baseTextureSettings.m_platfromOverrides.end())
         {
             return STRING_OUTCOME_ERROR(AZStd::string::format("TextureSettings preset [%s] does not have override for platform [%s]",
-                baseTextureSettings.m_preset.ToString<AZStd::string>().c_str(), platformName.c_str()));
+                baseTextureSettings.m_preset.GetCStr(), platformName.c_str()));
         }
         AZ::DataPatch& platformOverride = const_cast<AZ::DataPatch&>(overrideIter->second);
 

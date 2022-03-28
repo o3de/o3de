@@ -11,6 +11,7 @@
 #include <Processing/ImageConvert.h>
 #include <Processing/ImageAssetProducer.h>
 #include <Processing/ImageFlags.h>
+#include <Processing/Utils.h>
 #include <Converters/FIR-Weights.h>
 #include <Converters/Cubemap.h>
 #include <Converters/PixelOperation.h>
@@ -20,6 +21,8 @@
 #include <BuilderSettings/PresetSettings.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
+
+#include <Atom/RHI.Reflect/Format.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
@@ -46,7 +49,6 @@ namespace ImageProcessingAtom
     enum ConvertStep
     {
         StepValidateInput = 0,
-        StepGenerateColorChart,
         StepConvertToLinear,
         StepSwizzle,
         StepCubemapLayout,
@@ -55,9 +57,7 @@ namespace ImageProcessingAtom
         StepMipmap,
         StepGlossFromNormal,
         StepPostNormalize,
-        StepCreateHighPass,
         StepConvertOutputColorSpace,
-        StepAlphaImage,
         StepConvertPixelFormat,
         StepSaveToFile,
         StepAll
@@ -66,7 +66,6 @@ namespace ImageProcessingAtom
     [[maybe_unused]] const char ProcessStepNames[StepAll][64] =
     {
         "ValidateInput",
-        "GenerateColorChart",
         "ConvertToLinear",
         "Swizzle",
         "CubemapLayout",
@@ -75,9 +74,7 @@ namespace ImageProcessingAtom
         "Mipmap",
         "GlossFromNormal",
         "PostNormalize",
-        "CreateHighPass",
         "ConvertOutputColorSpace",
-        "AlphaImage",
         "ConvertPixelFormat",
         "SaveToFile",
     };
@@ -92,11 +89,6 @@ namespace ImageProcessingAtom
             return m_image->Get();
         }
         return nullptr;
-    }
-
-    IImageObjectPtr ImageConvertProcess::GetOutputAlphaImage()
-    {
-        return m_alphaImage;
     }
 
     IImageObjectPtr ImageConvertProcess::GetOutputIBLSpecularCubemap()
@@ -181,58 +173,37 @@ namespace ImageProcessingAtom
             }
 
             break;
-        case StepGenerateIBL:
-            if (IsConvertToCubemap())
-            {
-                // check and generate IBL specular and diffuse, if necessary
-                AZStd::unique_ptr<CubemapSettings>& cubemapSettings = m_input->m_presetSetting.m_cubemapSetting;
-                if (cubemapSettings->m_generateIBLSpecular && !cubemapSettings->m_iblSpecularPreset.IsNull())
-                {
-                    CreateIBLCubemap(cubemapSettings->m_iblSpecularPreset, SpecularCubemapSuffix, m_iblSpecularCubemapImage);
-                }
-
-                if (cubemapSettings->m_generateIBLDiffuse && !cubemapSettings->m_iblDiffusePreset.IsNull())
-                {
-                    CreateIBLCubemap(cubemapSettings->m_iblDiffusePreset, DiffuseCubemapSuffix, m_iblDiffuseCubemapImage);
-                }
-            }
-
-            if (m_input->m_presetSetting.m_generateIBLOnly)
-            {
-                // this preset doesn't output an image of its own, just the IBL cubemaps
-                m_isSucceed = true;
-                m_isFinished = true;
-            }
-            break;
-        case StepGenerateColorChart:
-            // GenerateColorChart.
-            if (m_input->m_presetSetting.m_isColorChart)
-            {
-                // Convert to uncompressed format if it's compressed format. For example, loaded from DDS file.
-                if (!CPixelFormats::GetInstance().IsPixelFormatUncompressed(m_image->Get()->GetPixelFormat()))
-                {
-                    m_image->ConvertFormat(ePixelFormat_R32G32B32A32F);
-                }
-
-                m_image->CreateColorChart();
-            }
-            break;
         case StepConvertToLinear:
             // convert to linear space and the output image pixel format should be rgba32f
             ConvertToLinear();
             break;
         case StepSwizzle:
-            // convert texture format.
-            if (m_input->m_presetSetting.m_swizzle.size() >= 4)
             {
-                m_image->Get()->Swizzle(m_input->m_presetSetting.m_swizzle.substr(0, 4).c_str());
-                m_alphaContent = m_image->Get()->GetAlphaContent();
-            }
+                // swizzle if swizzle was set or decard alpha
+                bool swizzleWasSet = m_input->m_presetSetting.m_swizzle.size() >= 4;
+                if (swizzleWasSet || m_input->m_presetSetting.m_discardAlpha)
+                {
+                    AZStd::string swizzle = "rgba";
+                    if (swizzleWasSet)
+                    {
+                        swizzle = m_input->m_presetSetting.m_swizzle.substr(0, 4);
+                    }
 
-            // convert gloss map (alhpa channel) from legacy distribution to new one
-            if (m_input->m_presetSetting.m_isLegacyGloss)
-            {
-                m_image->Get()->ConvertLegacyGloss();
+                    if (m_input->m_presetSetting.m_discardAlpha)
+                    {
+                        swizzle[3] = '1';
+                    }
+
+                    m_image->Get()->Swizzle(swizzle.c_str());
+                    if (m_input->m_presetSetting.m_discardAlpha)
+                    {
+                        m_alphaContent = EAlphaContent::eAlphaContent_Absent;
+                    }
+                    else
+                    {
+                        m_alphaContent = m_image->Get()->GetAlphaContent();
+                    }
+                }
             }
             break;
         case StepCubemapLayout:
@@ -254,13 +225,53 @@ namespace ImageProcessingAtom
                 m_image->Get()->NormalizeVectors(0, 1);
             }
             break;
+        case StepGenerateIBL:
+            if (IsConvertToCubemap())
+            {
+                // check and generate IBL specular and diffuse, if necessary
+                AZStd::unique_ptr<CubemapSettings>& cubemapSettings = m_input->m_presetSetting.m_cubemapSetting;
+                if (cubemapSettings->m_generateIBLSpecular && !cubemapSettings->m_iblSpecularPreset.IsEmpty())
+                {
+                    bool success = CreateIBLCubemap(cubemapSettings->m_iblSpecularPreset, SpecularCubemapSuffix, m_iblSpecularCubemapImage);
+                    if (!success)
+                    {
+                        m_isSucceed = false;
+                        m_isFinished = true;
+                        break;
+                    }
+                }
+
+                if (cubemapSettings->m_generateIBLDiffuse && !cubemapSettings->m_iblDiffusePreset.IsEmpty())
+                {
+                    bool success = CreateIBLCubemap(cubemapSettings->m_iblDiffusePreset, DiffuseCubemapSuffix, m_iblDiffuseCubemapImage);
+                    if (!success)
+                    {
+                        m_isSucceed = false;
+                        m_isFinished = true;
+                        break;
+                    }
+                }
+            }
+
+            if (m_input->m_presetSetting.m_generateIBLOnly)
+            {
+                // this preset doesn't output an image of its own, just the IBL cubemaps
+                m_isSucceed = true;
+                m_isFinished = true;
+            }
+            break;
         case StepMipmap:
             // generate mipmaps
             if (IsConvertToCubemap())
             {
                 if (m_input->m_presetSetting.m_cubemapSetting->m_requiresConvolve)
                 {
-                    FillCubemapMipmaps();
+                    bool success = FillCubemapMipmaps();
+                    if (!success)
+                    {
+                        m_isSucceed = false;
+                         m_isFinished = true;
+                    }
                 }
             }
             else
@@ -277,9 +288,7 @@ namespace ImageProcessingAtom
             // get gloss from normal for all mipmaps and save to alpha channel
             if (m_input->m_presetSetting.m_glossFromNormals)
             {
-                bool hasAlpha = (m_alphaContent == EAlphaContent::eAlphaContent_OnlyBlack
-                    || m_alphaContent == EAlphaContent::eAlphaContent_OnlyBlackAndWhite
-                    || m_alphaContent == EAlphaContent::eAlphaContent_Greyscale);
+                bool hasAlpha = Utils::NeedAlphaChannel(m_alphaContent);
 
                 m_image->Get()->GlossFromNormals(hasAlpha);
                 // set alpha content so it won't be ignored later.
@@ -304,19 +313,9 @@ namespace ImageProcessingAtom
                 m_image->Get()->AddImageFlags(EIF_RenormalizedTexture);
             }
             break;
-        case StepCreateHighPass:
-            if (m_input->m_presetSetting.m_highPassMip > 0)
-            {
-                m_image->CreateHighPass(m_input->m_presetSetting.m_highPassMip);
-            }
-            break;
         case StepConvertOutputColorSpace:
             // convert image from linear space to desired output color space
             ConvertToOuputColorSpace();
-            break;
-        case StepAlphaImage:
-            // save alpha channel to separate image if it's needed
-            CreateAlphaImage();
             break;
         case StepConvertPixelFormat:
             // convert pixel format
@@ -355,7 +354,8 @@ namespace ImageProcessingAtom
         // output conversion log
         if (m_isSucceed && m_isFinished)
         {
-            [[maybe_unused]] const uint32 sizeTotal = m_image->Get()->GetTextureMemory();
+            [[maybe_unused]] IImageObjectPtr imageObj = m_image->Get();
+            [[maybe_unused]] const uint32 sizeTotal = imageObj->GetTextureMemory();
             if (m_input->m_isPreview)
             {
                 AZ_TracePrintf("Image Processing", "Image (%d bytes) converted in %f seconds\n", sizeTotal, m_processTime);
@@ -366,8 +366,11 @@ namespace ImageProcessingAtom
             }
             else
             {
-                AZ_TracePrintf("Image Processing", "Image converted with preset [%s] [%s] and saved to [%s] (%d bytes) taking %f seconds\n",
-                    m_input->m_presetSetting.m_name.c_str(),
+                [[maybe_unused]] const PixelFormatInfo* formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(imageObj->GetPixelFormat());
+                [[maybe_unused]] const AZ::RHI::Format rhiFormat = Utils::PixelFormatToRHIFormat(imageObj->GetPixelFormat(), imageObj->HasImageFlags(EIF_SRGBRead));
+                AZ_TracePrintf("Image Processing", "Image [%dx%d] [%s] converted with preset [%s] [%s] and saved to [%s] (%d bytes) taking %f seconds\n",
+                    imageObj->GetWidth(0), imageObj->GetHeight(0), AZ::RHI::ToString(rhiFormat),
+                    m_input->m_presetSetting.m_name.GetCStr(),
                     m_input->m_filePath.c_str(),
                     m_input->m_outputFolder.c_str(), sizeTotal, m_processTime);
             }
@@ -411,12 +414,6 @@ namespace ImageProcessingAtom
             return;
         }
 
-        // don't do any reduce for color chart
-        if (presetSettings->m_isColorChart)
-        {
-            return;
-        }
-
         // get suitable size for dest pixel format
         CPixelFormats::GetInstance().GetSuitableImageSize(presetSettings->m_pixelFormat, inputWidth, inputHeight,
             outWidth, outHeight);
@@ -445,6 +442,17 @@ namespace ImageProcessingAtom
             outWidth >>= 1;
             outHeight >>= 1;
             outReduce++;
+        }
+
+        // resize to min texture size if it's smaller
+        if (outWidth < presetSettings->m_minTextureSize)
+        {
+            outWidth = presetSettings->m_minTextureSize;
+        }
+
+        if (outHeight < presetSettings->m_minTextureSize)
+        {
+            outHeight = presetSettings->m_minTextureSize;
         }
     }
 
@@ -510,52 +518,6 @@ namespace ImageProcessingAtom
         return true;
     }
 
-    void ImageConvertProcess::CreateAlphaImage()
-    {
-        // if alpha content doesn't have alpha or we need to discard alpha, skip
-        // we won't create alpha image for cubemap too
-        if (m_alphaContent == EAlphaContent::eAlphaContent_Absent
-            || m_alphaContent == EAlphaContent::eAlphaContent_OnlyWhite
-            || m_input->m_presetSetting.m_discardAlpha || IsConvertToCubemap())
-        {
-            return;
-        }
-
-        // if dest format could save alpha, skip too
-        if (!CPixelFormats::GetInstance().IsPixelFormatWithoutAlpha(m_input->m_presetSetting.m_pixelFormat))
-        {
-            return;
-        }
-
-        // now create alpha image
-        ImageToProcess alphaImage(m_image->Get());
-        alphaImage.ConvertFormat(ePixelFormat_A8);
-
-        // validate pixelformatalpha
-        if (CPixelFormats::GetInstance().IsFormatSingleChannel(m_input->m_presetSetting.m_pixelFormatAlpha))
-        {
-            alphaImage.ConvertFormat(m_input->m_presetSetting.m_pixelFormatAlpha);
-        }
-        else
-        {
-            //For ASTC compression we need to clear out the alpha to get accurate rgb compression.
-            if (IsASTCFormat(m_input->m_presetSetting.m_pixelFormat))
-            {
-                alphaImage.ConvertFormat(ePixelFormat_R8G8B8X8);
-                alphaImage.ConvertFormat(m_input->m_presetSetting.m_pixelFormatAlpha);
-            }
-            else
-            {
-                AZ_Assert(false, "PixelFormatAlpha only supports single channel pixel formats or ASTC formats");
-            }
-        }
-
-        // get final result and save it to member variable for later use
-        m_alphaImage = alphaImage.Get();
-
-        m_image->Get()->AddImageFlags(EIF_AttachedAlpha);
-    }
-
     // pixel format conversion
     bool ImageConvertProcess::ConvertPixelformat()
     {
@@ -575,13 +537,21 @@ namespace ImageProcessingAtom
         m_image->GetCompressOption().rgbWeight = m_input->m_presetSetting.GetColorWeight();
         m_image->GetCompressOption().discardAlpha = m_input->m_presetSetting.m_discardAlpha;
 
-        //For ASTC compression we need to clear out the alpha to get accurate rgb compression.
-        if(m_alphaImage && IsASTCFormat(m_input->m_presetSetting.m_pixelFormat))
+        // Convert to a pixel format based on the desired handling
+        // The default behavior will choose the output format specified by the preset
+        EPixelFormat outputFormat;
+        switch (m_input->m_presetSetting.m_outputTypeHandling)
         {
-            m_image->GetCompressOption().discardAlpha = true;
+        case PresetSettings::OutputTypeHandling::UseInputFormat:
+            outputFormat = m_input->m_inputImage->GetPixelFormat();
+            break;
+        case PresetSettings::OutputTypeHandling::UseSpecifiedOutputType:
+        default:
+            outputFormat = m_input->m_presetSetting.m_pixelFormat;
+            break;
         }
 
-        m_image->ConvertFormat(m_input->m_presetSetting.m_pixelFormat);
+        m_image->ConvertFormat(outputFormat);
 
         return true;
     }
@@ -724,7 +694,7 @@ namespace ImageProcessingAtom
         }
         else if (!CPixelFormats::GetInstance().IsImageSizeValid(dstFmt, dwWidth, dwHeight, false))
         {
-            AZ_Warning("Image Processing", false, "Image size will be scaled for pixel format %s", CPixelFormats::GetInstance().GetPixelFormatInfo(dstFmt)->szName);
+            AZ_TracePrintf("Image processing", "Image size will be scaled for pixel format %s\n", CPixelFormats::GetInstance().GetPixelFormatInfo(dstFmt)->szName);
         }
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
@@ -762,7 +732,6 @@ namespace ImageProcessingAtom
     if (ImageProcess##PrivateName::DoesSupport(m_input->m_platform))                                                                                                                              \
     {                                                                                                                                                                                             \
         ImageProcess##PrivateName::PrepareImageForExport(m_image->Get());                                                                                                                         \
-        ImageProcess##PrivateName::PrepareImageForExport(m_alphaImage);                                                                                                                           \
     }
         AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
 #undef AZ_RESTRICTED_PLATFORM_EXPANSION
@@ -834,9 +803,9 @@ namespace ImageProcessingAtom
 
         // if get textureSetting failed, use the default texture setting, and find suitable preset for this file
         // in very rare user case, an old texture setting file may not have a preset. We fix it over here too. 
-        if (textureSettings.m_preset.IsNull())
+        if (textureSettings.m_preset.IsEmpty())
         {
-            textureSettings.m_preset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilePath, srcImage);
+            textureSettings.m_preset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilePath);
         }
 
         // Get preset
@@ -845,9 +814,7 @@ namespace ImageProcessingAtom
 
         if (preset == nullptr)
         {
-            AZStd::string uuidStr;
-            textureSettings.m_preset.ToString(uuidStr);
-            AZ_Assert(false, "%s cannot find image preset with ID %s.", imageFilePath.c_str(), uuidStr.c_str());
+            AZ_Assert(false, "%s cannot find image preset %s.", imageFilePath.c_str(), textureSettings.m_preset.GetCStr());
             return nullptr;
         }
 
@@ -875,15 +842,15 @@ namespace ImageProcessingAtom
         return process;
     }
 
-    void ImageConvertProcess::CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr& cubemapImage)
+    bool ImageConvertProcess::CreateIBLCubemap(PresetName preset, const char* fileNameSuffix, IImageObjectPtr& cubemapImage)
     {
         const AZStd::string& platformId = m_input->m_platform;
         AZStd::string_view filePath;
-        const PresetSettings* presetSettings = BuilderSettingManager::Instance()->GetPreset(presetUUID, platformId, &filePath);
+        const PresetSettings* presetSettings = BuilderSettingManager::Instance()->GetPreset(preset, platformId, &filePath);
         if (presetSettings == nullptr)
         {
             AZ_Error("Image Processing", false, "Couldn't find preset for IBL cubemap generation");
-            return;
+            return false;
         }
 
         // generate export file name
@@ -900,7 +867,7 @@ namespace ImageProcessingAtom
 
         // the diffuse irradiance cubemap is generated with a separate ImageConvertProcess
         TextureSettings textureSettings = m_input->m_textureSetting;
-        textureSettings.m_preset = presetUUID;
+        textureSettings.m_preset = preset;
 
         AZStd::unique_ptr<ImageConvertProcessDescriptor> desc = AZStd::make_unique<ImageConvertProcessDescriptor>();
         desc->m_presetSetting = *presetSettings;
@@ -918,14 +885,14 @@ namespace ImageProcessingAtom
         if (!imageConvertProcess)
         {
             AZ_Error("Image Processing", false, "Failed to create image convert process for the IBL cubemap");
-            return;
+            return false;
         }
 
         imageConvertProcess->ProcessAll();
         if (!imageConvertProcess->IsSucceed())
         {
             AZ_Error("Image Processing", false, "Image convert process for the IBL cubemap failed");
-            return;
+            return false;
         }
 
         // append the output products to the job's product list
@@ -933,6 +900,7 @@ namespace ImageProcessingAtom
 
         // store the output cubemap so it can be accessed by unit tests
         cubemapImage = imageConvertProcess->m_image->Get();
+        return true;
     }
 
     bool ConvertImageFile(const AZStd::string& imageFilePath, const AZStd::string& exportDir,
@@ -951,68 +919,6 @@ namespace ImageProcessingAtom
             delete process;
         }
         return result;
-    }
-
-    IImageObjectPtr MergeOutputImageForPreview(IImageObjectPtr image, IImageObjectPtr alphaImage)
-    {
-        if (!image)
-        {
-            return IImageObjectPtr();
-        }
-
-        ImageToProcess imageToProcess(image);
-        imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
-        IImageObjectPtr previewImage = imageToProcess.Get();
-
-        // If there is separate Alpha image, combine it with output
-        if (alphaImage)
-        {
-            // Create pixel operation function for rgb and alpha images
-            IPixelOperationPtr imageOp = CreatePixelOperation(ePixelFormat_R8G8B8A8);
-            IPixelOperationPtr alphaOp = CreatePixelOperation(ePixelFormat_A8);
-
-            // Convert the alpha image to A8 first
-            ImageToProcess imageToProcess2(alphaImage);
-            imageToProcess2.ConvertFormat(ePixelFormat_A8);
-            IImageObjectPtr previewImageAlpha = imageToProcess2.Get();
-
-            const uint32 imageMips = previewImage->GetMipCount();
-            [[maybe_unused]] const uint32 alphaMips = previewImageAlpha->GetMipCount();
-
-            // Get count of bytes per pixel for both rgb and alpha images
-            uint32 imagePixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(ePixelFormat_R8G8B8A8)->bitsPerBlock / 8;
-            uint32 alphaPixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(ePixelFormat_A8)->bitsPerBlock / 8;
-
-            AZ_Assert(imageMips <= alphaMips, "Mip level of alpha image is less than origin image!");
-
-            // For each mip level, set the alpha value to the image
-            for (uint32 mipLevel = 0; mipLevel < imageMips; ++mipLevel)
-            {
-                const uint32 pixelCount = previewImage->GetPixelCount(mipLevel);
-                [[maybe_unused]] const uint32 alphaPixelCount = previewImageAlpha->GetPixelCount(mipLevel);
-
-                AZ_Assert(pixelCount == alphaPixelCount, "Pixel count for image and alpha image at mip level %d is not equal!", mipLevel);
-
-                uint8* imageBuf;
-                uint32 pitch;
-                previewImage->GetImagePointer(mipLevel, imageBuf, pitch);
-
-                uint8* alphaBuf;
-                uint32 alphaPitch;
-                previewImageAlpha->GetImagePointer(mipLevel, alphaBuf, alphaPitch);
-
-                float rAlpha, gAlpha, bAlpha, aAlpha, rImage, gImage, bImage, aImage;
-
-                for (uint32 i = 0; i < pixelCount; ++i, imageBuf += imagePixelBytes, alphaBuf += alphaPixelBytes)
-                {
-                    alphaOp->GetRGBA(alphaBuf, rAlpha, gAlpha, bAlpha, aAlpha);
-                    imageOp->GetRGBA(imageBuf, rImage, gImage, bImage, aImage);
-                    imageOp->SetRGBA(imageBuf, rImage, gImage, bImage, aAlpha);
-                }
-            }
-        }
-
-        return previewImage;
     }
 
     IImageObjectPtr ConvertImageForPreview(IImageObjectPtr image)

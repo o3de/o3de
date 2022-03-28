@@ -42,28 +42,6 @@ namespace AZ
             return m_lightTypeName;
         }
 
-        void EsmShadowmapsPass::SetFilterParameters(const AZStd::array_view<float>& standardDeviations)
-        {
-            // Set descriptor for Gaussian filters for given set of standard deviations.
-            MathFilterDescriptor descriptor;
-            descriptor.m_kind = MathFilterKind::Gaussian;
-            descriptor.m_gaussians.reserve(standardDeviations.size());
-            for (const float standardDeviation : standardDeviations)
-            {
-                descriptor.m_gaussians.emplace_back(GaussianFilterDescriptor{ standardDeviation });
-            }
-
-            // Set filter paramter buffer along with element counts for each filter.
-            MathFilter::BufferWithElementCounts bufferCounts = MathFilter::FindOrCreateFilterBuffer(descriptor);
-            m_filterTableBuffer = bufferCounts.first;
-            m_filterCounts = AZStd::move(bufferCounts.second);
-        }
-
-        AZStd::array_view<uint32_t> EsmShadowmapsPass::GetFilterCounts() const
-        {
-            return m_filterCounts;
-        }
-
         void EsmShadowmapsPass::SetShadowmapIndexTableBuffer(const Data::Instance<RPI::Buffer>& tableBuffer)
         {
             m_shadowmapIndexTableBuffer = tableBuffer;
@@ -123,11 +101,18 @@ namespace AZ
         void EsmShadowmapsPass::UpdateChildren()
         {
             const RPI::PassAttachmentBinding& inputBinding = GetInputBinding(0);
-            AZ_Assert(inputBinding.m_attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[EsmShadowmapsPass %s] input attachment requires an image attachment", GetPathName().GetCStr());
-            m_shadowmapImageSize = inputBinding.m_attachment->m_descriptor.m_image.m_size;
-            m_shadowmapArraySize = inputBinding.m_attachment->m_descriptor.m_image.m_arraySize;
 
-            const AZStd::array_view<RPI::Ptr<RPI::Pass>>& children = GetChildren();
+            if (!inputBinding.GetAttachment())
+            {
+                AZ_Assert(false, "[EsmShadowmapsPass %s] requires an input attachment", GetPathName().GetCStr());
+                return;
+            }
+
+            AZ_Assert(inputBinding.GetAttachment()->m_descriptor.m_type == RHI::AttachmentType::Image, "[EsmShadowmapsPass %s] input attachment requires an image attachment", GetPathName().GetCStr());
+            m_shadowmapImageSize = inputBinding.GetAttachment()->m_descriptor.m_image.m_size;
+            m_shadowmapArraySize = inputBinding.GetAttachment()->m_descriptor.m_image.m_arraySize;
+
+            const AZStd::span<const RPI::Ptr<RPI::Pass>>& children = GetChildren();
             AZ_Assert(children.size() == EsmChildPassKindCount, "[EsmShadowmapsPass '%s'] The count of children is wrong.", GetPathName().GetCStr());
 
             for (uint32_t childPassIndex = 0; childPassIndex < EsmChildPassKindCount; ++childPassIndex)

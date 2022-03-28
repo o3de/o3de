@@ -6,12 +6,18 @@
 #
 #
 
-add_subdirectory(Asset)
-add_subdirectory(Bootstrap)
-add_subdirectory(Component)
-add_subdirectory(Feature)
-add_subdirectory(RHI)
-add_subdirectory(RPI)
+set(gem_path ${CMAKE_CURRENT_LIST_DIR})
+set(gem_json ${gem_path}/gem.json)
+o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
+
 add_subdirectory(Tools)
 add_subdirectory(Utils)
 
+# The "Atom" Gem will alias the real Atom_AtomBridge target variants
+# allows the enabling and disabling the "Atom" Gem to build the pre-requisite dependencies
+ly_create_alias(NAME Atom.Clients NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Clients)
+ly_create_alias(NAME Atom.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Servers)
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME Atom.Builders NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Builders)
+    ly_create_alias(NAME Atom.Tools    NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Tools)
+endif()

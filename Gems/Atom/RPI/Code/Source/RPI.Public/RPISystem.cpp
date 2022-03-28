@@ -31,8 +31,8 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Time/ITime.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -107,6 +107,10 @@ namespace AZ
             Debug::TraceMessageBus::Handler::BusConnect();
 #endif
             m_descriptor = rpiSystemDescriptor;
+
+            // set the default multisample state to MSAA 4x
+            // the default render pipeline may override this when it is loaded
+            m_multisampleState.m_samples = 4;
         }
 
         void RPISystem::Shutdown()
@@ -159,6 +163,11 @@ namespace AZ
                     AZ_Assert(false, "Scene was already registered");
                     return;
                 }
+                else if (!scene->GetName().IsEmpty() && scene->GetName() == sceneItem->GetName())
+                {
+                    // only report a warning if there is a scene with duplicated name
+                    AZ_Warning("RPISystem", false, "There is a registered scene with same name [%s]", scene->GetName().GetCStr());
+                }
             }
 
             m_scenes.push_back(scene);
@@ -177,27 +186,41 @@ namespace AZ
             AZ_Assert(false, "Can't unregister scene which wasn't registered");
         }
 
-        ScenePtr RPISystem::GetScene(const SceneId& sceneId) const
+        Scene* RPISystem::GetScene(const SceneId& sceneId) const
         {
             for (const auto& scene : m_scenes)
             {
                 if (scene->GetId() == sceneId)
+                {
+                    return scene.get();
+                }
+            }
+            return nullptr;
+        }
+
+        Scene* RPISystem::GetSceneByName(const AZ::Name& name) const
+        {
+            for (const auto& scene : m_scenes)
+            {
+                if (scene->GetName() == name)
+                {
+                    return scene.get();
+                }
+            }
+            return nullptr;
+        }
+        
+        ScenePtr RPISystem::GetDefaultScene() const
+        {
+            for (const auto& scene : m_scenes)
+            {
+                if (scene->GetName() == AZ::Name("Main"))
                 {
                     return scene;
                 }
             }
             return nullptr;
         }
-
-        ScenePtr RPISystem::GetDefaultScene() const
-        {
-            if (m_scenes.size() > 0)
-            {
-                return m_scenes[0];
-            }
-            return nullptr;
-        }
-
 
         RenderPipelinePtr RPISystem::GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
         {
@@ -249,21 +272,18 @@ namespace AZ
 
             AssetInitBus::Broadcast(&AssetInitBus::Events::PostLoadInit);
 
-            // Update tick time info
-            FillTickTimeInfo();
+            m_currentSimulationTime = GetCurrentTime();
 
             for (auto& scene : m_scenes)
             {
-                scene->Simulate(m_tickTime, m_simulationJobPolicy);
+                scene->Simulate(m_simulationJobPolicy, m_currentSimulationTime);
             }
         }
 
-        void RPISystem::FillTickTimeInfo()
+        float RPISystem::GetCurrentTime() const
         {
-            AZ::TickRequestBus::BroadcastResult(m_tickTime.m_gameDeltaTime, &AZ::TickRequestBus::Events::GetTickDeltaTime);
-            ScriptTimePoint currentTime;
-            AZ::TickRequestBus::BroadcastResult(currentTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
-            m_tickTime.m_currentGameTime = static_cast<float>(currentTime.GetMilliseconds());
+            const AZ::TimeUs currentSimulationTimeUs = AZ::GetRealElapsedTimeUs();
+            return AZ::TimeUsToSeconds(currentSimulationTimeUs);
         }
 
         void RPISystem::RenderTick()
@@ -282,7 +302,7 @@ namespace AZ
             // [GFX TODO] We may parallel scenes' prepare render.
             for (auto& scenePtr : m_scenes)
             {
-                scenePtr->PrepareRender(m_tickTime, m_prepareRenderJobPolicy);
+                scenePtr->PrepareRender(m_prepareRenderJobPolicy, m_currentSimulationTime);
             }
 
             m_rhiSystem.FrameUpdate(
@@ -354,6 +374,7 @@ namespace AZ
             m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());
             if (!m_commonShaderAssetForSrgs.IsReady())
             {
+                AZ_Error("RPI system", false, "Failed to load RPI system asset %s", m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
             m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
@@ -379,6 +400,7 @@ namespace AZ
             m_passSystem.InitPassTemplates();
 
             m_systemAssetsInitialized = true;
+            AZ_TracePrintf("RPI system", "System assets initialized\n");
         }
 
         bool RPISystem::IsInitialized() const
@@ -416,6 +438,30 @@ namespace AZ
         uint64_t RPISystem::GetCurrentTick() const
         {
             return m_renderTick;
+        }
+
+        void RPISystem::SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState)
+        {
+            m_multisampleState = multisampleState;
+
+            bool isNonMsaaPipeline = (m_multisampleState.m_samples == 1);
+            const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
+            AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
+
+            // reinitialize pipelines for all scenes
+            for (auto& scene : m_scenes)
+            {
+                for (auto& renderPipeline : scene->GetRenderPipelines())
+                {
+                    renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;
+                    renderPipeline->SetPassNeedsRecreate();
+                }
+            }
+        }
+
+        const RHI::MultisampleState& RPISystem::GetApplicationMultisampleState() const
+        {
+            return m_multisampleState;
         }
 
     } //namespace RPI

@@ -12,8 +12,8 @@
 #include <AzCore/Serialization/Utils.h>
 #include <Core/SlotConfigurationDefaults.h> 
 #include <Core/SlotExecutionMap.h>
-#include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace MethodCPP
 {
@@ -389,6 +389,9 @@ namespace ScriptCanvas
                     MethodConfiguration config(*method, MethodType::Free);
                     config.m_namespaces = &m_namespaces;
                     config.m_lookupName = &methodName;
+                    config.m_prettyClassName = methodName;
+                    AZ::StringFunc::Replace(config.m_prettyClassName, "::Getter", "");
+                    AZ::StringFunc::Replace(config.m_prettyClassName, "::Setter", "");
                     InitializeMethod(config);
                 }
             }

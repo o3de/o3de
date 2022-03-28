@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 
@@ -32,7 +33,7 @@ namespace AzToolsFramework
         }
     }
 
-    QIcon LevelRootUiHandler::GenerateItemIcon(AZ::EntityId /*entityId*/) const
+    QIcon LevelRootUiHandler::GenerateItemIcon([[maybe_unused]] AZ::EntityId entityId) const
     {
         return QIcon(m_levelRootIconPath);
     }
@@ -61,17 +62,18 @@ namespace AzToolsFramework
         return infoString;
     }
 
-    bool LevelRootUiHandler::CanToggleLockVisibility(AZ::EntityId /*entityId*/) const
+    bool LevelRootUiHandler::CanToggleLockVisibility([[maybe_unused]] AZ::EntityId entityId) const
     {
         return false;
     }
 
-    bool LevelRootUiHandler::CanRename(AZ::EntityId /*entityId*/) const
+    bool LevelRootUiHandler::CanRename([[maybe_unused]] AZ::EntityId entityId) const
     {
         return false;
     }
 
-    void LevelRootUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+    void LevelRootUiHandler::PaintItemBackground(
+        QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
     {
         if (!painter)
         {
@@ -91,5 +93,19 @@ namespace AzToolsFramework
         // Draw border at the bottom
         painter->drawLine(rect.bottomLeft(), rect.bottomRight());
         painter->restore();
+    }
+
+    bool LevelRootUiHandler::OnOutlinerItemDoubleClick(const QModelIndex& index) const
+    {
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+
+        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+            !prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+        }
+
+        // Don't propagate event.
+        return true;
     }
 }

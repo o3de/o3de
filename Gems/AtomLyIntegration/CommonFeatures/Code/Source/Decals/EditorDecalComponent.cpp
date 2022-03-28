@@ -62,6 +62,10 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f)
 
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_normalMapOpacity, "Normal Map Opacity", "The opacity of the decal's normal map.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.f)
+
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_sortKey, "Sort Key", "Decals with a larger sort key appear over top of smaller sort keys.")
                         ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<uint8_t>::min())
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<uint8_t>::max())

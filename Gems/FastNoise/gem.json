@@ -2,7 +2,9 @@
     "gem_name": "FastNoise",
     "display_name": "Fast Noise",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "The FastNoise Gradient Gem uses the third-party, open source FastNoise library to provide a variety of high-performance noise generation algorithms.",
     "canonical_tags": [

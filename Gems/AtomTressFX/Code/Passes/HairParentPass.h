@@ -8,7 +8,11 @@
 #pragma once
 
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+<<<<<<< HEAD
 #include <AtomCore/std/containers/array_view.h>
+=======
+#include <AzCore/std/containers/span.h>
+>>>>>>> development
 #include <AzCore/std/containers/fixed_vector.h>
 
 namespace AZ

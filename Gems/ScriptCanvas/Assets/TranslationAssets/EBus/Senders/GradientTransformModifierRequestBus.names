@@ -1,0 +1,632 @@
+{
+    "entries": [
+        {
+            "base": "GradientTransformModifierRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Gradient TransformModifier"
+            },
+            "methods": [
+                {
+                    "base": "SetOverrideTranslate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOverrideTranslate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOverrideTranslate is invoked"
+                    },
+                    "details": {
+                        "name": "SetOverrideTranslate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRotate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetRotate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetRotate is invoked"
+                    },
+                    "details": {
+                        "name": "GetRotate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBounds",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetBounds"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetBounds is invoked"
+                    },
+                    "details": {
+                        "name": "GetBounds"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTransformType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTransformType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTransformType is invoked"
+                    },
+                    "details": {
+                        "name": "SetTransformType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOverrideTranslate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOverrideTranslate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOverrideTranslate is invoked"
+                    },
+                    "details": {
+                        "name": "GetOverrideTranslate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOverrideBounds",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOverrideBounds"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOverrideBounds is invoked"
+                    },
+                    "details": {
+                        "name": "GetOverrideBounds"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRotate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRotate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRotate is invoked"
+                    },
+                    "details": {
+                        "name": "SetRotate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOverrideScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOverrideScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOverrideScale is invoked"
+                    },
+                    "details": {
+                        "name": "SetOverrideScale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetScale is invoked"
+                    },
+                    "details": {
+                        "name": "GetScale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetScale is invoked"
+                    },
+                    "details": {
+                        "name": "SetScale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetIs3D",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetIs3D"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetIs3D is invoked"
+                    },
+                    "details": {
+                        "name": "GetIs3D"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetShapeReference",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetShapeReference"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetShapeReference is invoked"
+                    },
+                    "details": {
+                        "name": "SetShapeReference"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetBounds",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBounds"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBounds is invoked"
+                    },
+                    "details": {
+                        "name": "SetBounds"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFrequencyZoom",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFrequencyZoom"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFrequencyZoom is invoked"
+                    },
+                    "details": {
+                        "name": "SetFrequencyZoom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetWrappingType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetWrappingType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetWrappingType is invoked"
+                    },
+                    "details": {
+                        "name": "SetWrappingType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetShapeReference",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShapeReference"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShapeReference is invoked"
+                    },
+                    "details": {
+                        "name": "GetShapeReference"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOverrideBounds",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOverrideBounds"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOverrideBounds is invoked"
+                    },
+                    "details": {
+                        "name": "SetOverrideBounds"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTransformType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTransformType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTransformType is invoked"
+                    },
+                    "details": {
+                        "name": "GetTransformType"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOverrideScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOverrideScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOverrideScale is invoked"
+                    },
+                    "details": {
+                        "name": "GetOverrideScale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIs3D",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetIs3D"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetIs3D is invoked"
+                    },
+                    "details": {
+                        "name": "SetIs3D"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAllowReference",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAllowReference"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAllowReference is invoked"
+                    },
+                    "details": {
+                        "name": "SetAllowReference"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTranslate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTranslate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTranslate is invoked"
+                    },
+                    "details": {
+                        "name": "SetTranslate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOverrideRotate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOverrideRotate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOverrideRotate is invoked"
+                    },
+                    "details": {
+                        "name": "SetOverrideRotate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAllowReference",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAllowReference"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAllowReference is invoked"
+                    },
+                    "details": {
+                        "name": "GetAllowReference"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTranslate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTranslate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTranslate is invoked"
+                    },
+                    "details": {
+                        "name": "GetTranslate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOverrideRotate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOverrideRotate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOverrideRotate is invoked"
+                    },
+                    "details": {
+                        "name": "GetOverrideRotate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFrequencyZoom",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFrequencyZoom"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFrequencyZoom is invoked"
+                    },
+                    "details": {
+                        "name": "GetFrequencyZoom"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetWrappingType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetWrappingType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetWrappingType is invoked"
+                    },
+                    "details": {
+                        "name": "GetWrappingType"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

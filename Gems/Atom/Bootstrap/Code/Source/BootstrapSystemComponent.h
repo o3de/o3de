@@ -8,10 +8,10 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
-#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Windowing/NativeWindow.h>
@@ -29,7 +29,6 @@
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
 
-
 namespace AZ
 {
     namespace Render
@@ -40,7 +39,6 @@ namespace AZ
                 : public Component
                 , public TickBus::Handler
                 , public AzFramework::WindowNotificationBus::Handler
-                , public AzFramework::AssetCatalogEventBus::Handler
                 , public AzFramework::WindowSystemNotificationBus::Handler
                 , public AzFramework::WindowSystemRequestBus::Handler
                 , public Render::Bootstrap::DefaultWindowBus::Handler
@@ -82,13 +80,12 @@ namespace AZ
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
                 int GetTickOrder() override;
 
-                // AzFramework::AssetCatalogEventBus::Handler overrides ...
-                void OnCatalogLoaded(const char* catalogFile) override;
-
                 // AzFramework::WindowSystemNotificationBus::Handler overrides ...
                 void OnWindowCreated(AzFramework::NativeWindowHandle windowHandle) override;
 
             private:
+                void Initialize();
+
                 void CreateDefaultRenderPipeline();
                 void CreateDefaultScene();
                 void DestroyDefaultScene();
@@ -105,7 +102,7 @@ namespace AZ
                 RPI::ScenePtr m_defaultScene = nullptr;
                 AZStd::shared_ptr<AzFramework::Scene> m_defaultFrameworkScene = nullptr;
 
-                bool m_isAssetCatalogLoaded = false;
+                bool m_isInitialized = false;
 
                 // The id of the render pipeline created by this component
                 RPI::RenderPipelineId m_renderPipelineId;
@@ -119,6 +116,8 @@ namespace AZ
 
                 // Maps AZ scenes to RPI scene weak pointers to allow looking up a ScenePtr instead of a raw Scene*
                 AZStd::unordered_map<AzFramework::Scene*, AZStd::weak_ptr<AZ::RPI::Scene>> m_azSceneToAtomSceneMap;
+
+                AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
             };
         } // namespace Bootstrap
     } // namespace Render

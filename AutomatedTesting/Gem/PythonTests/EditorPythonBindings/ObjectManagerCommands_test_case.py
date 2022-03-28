@@ -20,12 +20,10 @@ def fetch_vector3_parts(vec3):
 
 general.idle_enable(True)
 
-# Try to open the WaterSample level. If not, fail the test.
-# We need to rely on an existing level since the API does not provide
-# a way to create entities, but only lets us manipulate them.
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'WaterSample')
+# It needs a new test level in prefab format to make it testable again.
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'Base')
 
-if (editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'GetCurrentLevelName') == 'WaterSample'):
+if (editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'GetCurrentLevelName') == 'Base'):
     
     objs_list = general.get_all_objects()
     
@@ -66,30 +64,6 @@ if (editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'GetCurrentLevelName'
     
     if(general.get_num_selected() == 0):
         print("clear_selection works")
-    
-    general.hide_all_objects()
-    
-    if(general.is_object_hidden(objs_list[1])):
-        print("hide_all_objects works")
-    
-    general.unhide_object(objs_list[1])
-    
-    if not(general.is_object_hidden(objs_list[1])):
-        print("unhide_object works")
-    
-    general.hide_object(objs_list[1])
-    
-    if(general.is_object_hidden(objs_list[1])):
-        print("hide_object works")
-    
-    general.unhide_all_objects()
-    
-    general.freeze_object(objs_list[1])
-    
-    if(general.is_object_frozen(objs_list[1])):
-        print("freeze_object works")
-    
-    general.unfreeze_object(objs_list[1])
     
     position = general.get_position(objs_list[1])
     px1, py1, pz1 = fetch_vector3_parts(position)

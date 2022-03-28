@@ -443,7 +443,7 @@ namespace AZ
              * @return A pointer to the newly created slice instance. Returns nullptr on error or if the SliceComponent is not instantiated.
             */
             SliceInstance* CreateInstanceFromExistingEntities(AZStd::vector<AZ::Entity*>& entities,
-                const EntityIdToEntityIdMap assetToLiveIdMap,
+                const EntityIdToEntityIdMap& assetToLiveIdMap,
                 SliceInstanceId sliceInstanceId = SliceInstanceId::CreateRandom());
 
             /** 

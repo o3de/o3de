@@ -12,10 +12,6 @@
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-#include "LuxCore/LuxCoreRenderer.h"
-#endif
-
 namespace AZ
 {
     namespace Render
@@ -50,11 +46,14 @@ namespace AZ
             RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
 
             AZStd::unique_ptr<ModelReloaderSystem> m_modelReloaderSystem;
+<<<<<<< HEAD
 
 #if AZ_TRAIT_LUXCORE_SUPPORTED
             // LuxCore
             LuxCoreRenderer m_luxCore;
 #endif
+=======
+>>>>>>> development
         };
     } // namespace Render
 } // namespace AZ

@@ -51,13 +51,14 @@ namespace AZ
             void SetConeAngles(LightHandle handle, float innerDegrees, float outerDegrees) override;
             void SetShadowsEnabled(LightHandle handle, bool enabled) override;
             void SetShadowBias(LightHandle handle, float bias) override;
+            void SetNormalShadowBias(LightHandle handle, float bias) override;
             void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
-            void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetEsmExponent(LightHandle handle, float esmExponent) override;
 
             void SetDiskData(LightHandle handle, const DiskLightData& data) override;
+            const DiskLightData& GetDiskData(LightHandle handle) const override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer()const;
             uint32_t GetLightCount()const;

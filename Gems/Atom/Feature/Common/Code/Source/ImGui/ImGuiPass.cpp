@@ -27,9 +27,8 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 
+#include <Atom_Feature_Traits_Platform.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
-
-#include <AzCore/Debug/EventTrace.h>
 
 namespace AZ
 {
@@ -68,6 +67,8 @@ namespace AZ
             : Base(descriptor)
             , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
             , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
+            , m_tickHandlerFrameStart(*this)
+            , m_tickHandlerFrameEnd(*this)
         {
 
             const ImGuiPassData* imguiPassData = RPI::PassUtils::GetPassData<ImGuiPassData>(descriptor);
@@ -102,7 +103,6 @@ namespace AZ
             Init();
             ImGui::NewFrame();
 
-            TickBus::Handler::BusConnect();
             AzFramework::InputChannelEventListener::Connect();
             AzFramework::InputTextEventListener::Connect();
         }
@@ -127,7 +127,6 @@ namespace AZ
 
             AzFramework::InputTextEventListener::BusDisconnect();
             AzFramework::InputChannelEventListener::BusDisconnect();
-            TickBus::Handler::BusDisconnect();
         }
 
         ImGuiContext* ImGuiPass::GetContext()
@@ -140,12 +139,59 @@ namespace AZ
             m_drawData.push_back(drawData);
         }
 
-        void ImGuiPass::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+        ImGuiPass::TickHandlerFrameStart::TickHandlerFrameStart(ImGuiPass& imGuiPass)
+            : m_imGuiPass(imGuiPass)
         {
-            auto imguiContextScope = ImguiContextScope(m_imguiContext);
+            TickBus::Handler::BusConnect();
+        }
+
+        int ImGuiPass::TickHandlerFrameStart::GetTickOrder()
+        {
+            return AZ::ComponentTickBus::TICK_PRE_RENDER;
+        }
+
+        void ImGuiPass::TickHandlerFrameStart::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+        {
+            auto imguiContextScope = ImguiContextScope(m_imGuiPass.m_imguiContext);
+            ImGui::NewFrame();
 
             auto& io = ImGui::GetIO();
             io.DeltaTime = deltaTime;
+        }
+
+        ImGuiPass::TickHandlerFrameEnd::TickHandlerFrameEnd(ImGuiPass& imGuiPass)
+            : m_imGuiPass(imGuiPass)
+        {
+            TickBus::Handler::BusConnect();
+        }
+
+        int ImGuiPass::TickHandlerFrameEnd::GetTickOrder()
+        {
+            // ImGui::NewFrame() must be called (see ImGuiPass::TickHandlerFrameStart::OnTick) after populating
+            // ImGui::GetIO().NavInputs (see ImGuiPass::OnInputChannelEventFiltered), and paired with a call to
+            // ImGui::EndFrame() (see ImGuiPass::TickHandlerFrameEnd::OnTick); if this is not called explicitly
+            // then it will be called from inside ImGui::Render() (see ImGuiPass::SetupFrameGraphDependencies).
+            //
+            // ImGui::Render() gets called (indirectly) from OnSystemTick, so we cannot rely on it being paired
+            // with a matching call to ImGui::NewFrame() that gets called from OnTick, because OnSystemTick and
+            // OnTick can be called at different frequencies under some circumstances (namely from the editor).
+            //
+            // To account for this we must explicitly call ImGui::EndFrame() once a frame from OnTick to ensure
+            // that every call to ImGui::NewFrame() has been matched with a call to ImGui::EndFrame(), but only
+            // after ImGui::Render() has had the chance first (if so calling ImGui::EndFrame() again is benign).
+            //
+            // Because ImGui::Render() gets called (indirectly) from OnSystemTick, which usually happens at the
+            // start of every frame, we give TickHandlerFrameEnd::OnTick() the order of TICK_FIRST such that it
+            // will be called first on the regular tick bus, which is invoked immediately after the system tick.
+            //
+            // So while returning TICK_FIRST is incredibly counter-intuitive, hopefully that all explains why.
+            return AZ::ComponentTickBus::TICK_FIRST;
+        }
+
+        void ImGuiPass::TickHandlerFrameEnd::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+        {
+            auto imguiContextScope = ImguiContextScope(m_imGuiPass.m_imguiContext);
+            ImGui::EndFrame();
         }
 
         bool ImGuiPass::OnInputTextEventFiltered(const AZStd::string& textUTF8)
@@ -413,7 +459,11 @@ namespace AZ
 
         void ImGuiPass::Init()
         {
+            auto imguiContextScope = ImguiContextScope(m_imguiContext);
             auto& io = ImGui::GetIO();
+        #if defined(AZ_TRAIT_IMGUI_INI_FILENAME)
+            io.IniFilename = AZ_TRAIT_IMGUI_INI_FILENAME;
+        #endif
 
             // ImGui IO Setup
             {
@@ -421,7 +471,6 @@ namespace AZ
                 {
                     io.KeyMap[static_cast<ImGuiKey_>(i)] = static_cast<int>(i);
                 }
-                io.NavActive = true;
 
                 // Touch input
                 const AzFramework::InputDevice* inputDevice = nullptr;
@@ -432,6 +481,17 @@ namespace AZ
                 if (inputDevice && inputDevice->IsSupported())
                 {
                     io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
+                }
+
+                // Gamepad input
+                inputDevice = nullptr;
+                AzFramework::InputDeviceRequestBus::EventResult(inputDevice,
+                    AzFramework::InputDeviceGamepad::IdForIndex0,
+                    &AzFramework::InputDeviceRequests::GetInputDevice);
+                if (inputDevice && inputDevice->IsSupported())
+                {
+                    io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+                    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
                 }
 
                 // Set initial display size to something reasonable (this will be updated in FramePrepare)
@@ -450,20 +510,22 @@ namespace AZ
                     ->Channel("POSITION", RHI::Format::R32G32_FLOAT)
                     ->Channel("UV", RHI::Format::R32G32_FLOAT)
                     ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
+                layoutBuilder.AddBuffer(RHI::StreamStepFunction::PerInstance)
+                    ->Channel("INSTANCE_DATA", RHI::Format::R8_UINT);
                 m_pipelineState->InputStreamLayout() = layoutBuilder.End();
 
             }
 
             // Get shader resource group
             {
-                auto perObjectSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
-                if (!perObjectSrgLayout)
+                auto perPassSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
+                if (!perPassSrgLayout)
                 {
                     AZ_Error(PassName, false, "Failed to get shader resource group layout");
                     return;
                 }
 
-                m_resourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), perObjectSrgLayout->GetName());
+                m_resourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), perPassSrgLayout->GetName());
                 if (!m_resourceGroup)
                 {
                     AZ_Error(PassName, false, "Failed to create shader resource group");
@@ -500,8 +562,21 @@ namespace AZ
                 io.Fonts->AddFontDefault();
                 io.Fonts->Build();
             }
-            m_resourceGroup->SetImage(m_fontImageIndex, m_fontAtlas);
+
+            const uint32_t fontTextureIndex = 0;
+            m_resourceGroup->SetImage(m_texturesIndex, m_fontAtlas, fontTextureIndex);
             io.Fonts->TexID = reinterpret_cast<ImTextureID>(m_fontAtlas.get());
+
+            // ImGuiPass will support binding 16 textures at most per frame. 
+            const uint8_t instanceData[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+            RPI::CommonBufferDescriptor desc;
+            desc.m_poolType = RPI::CommonBufferPoolType::StaticInputAssembly;
+            desc.m_bufferName = "InstanceBuffer";
+            desc.m_elementSize = 1;
+            desc.m_byteCount = 16;
+            desc.m_bufferData = instanceData;
+            m_instanceBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+            m_instanceBufferView = RHI::StreamBufferView(*m_instanceBuffer->GetRHIBuffer(), 0, 16, 1);
         }
 
         void ImGuiPass::InitializeInternal()
@@ -527,12 +602,11 @@ namespace AZ
 
         void ImGuiPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
-            m_resourceGroup->Compile();
-
             // Create all the DrawIndexeds so they can be submitted in parallel on BuildCommandListInternal()
             uint32_t vertexOffset = 0;
             uint32_t indexOffset = 0;
 
+            m_userTextures.clear();
             for (ImDrawData& drawData : m_drawData)
             {
                 for (int32_t cmdListIdx = 0; cmdListIdx < drawData.CmdListsCount; cmdListIdx++)
@@ -548,10 +622,28 @@ namespace AZ
                         //otherwise it is possible to have a frame where scissor bounds can be bigger than window's bounds if we resize the window
                         scissorMaxX = AZStd::min(scissorMaxX, m_viewportWidth);
                         scissorMaxY = AZStd::min(scissorMaxY, m_viewportHeight);
-                        
+
+                        // check if texture id needs to be bound to the srg
+                        uint32_t index = 0;
+                        if (drawCmd.TextureId != ImGui::GetIO().Fonts->TexID)
+                        {
+                            if (m_userTextures.size() < MaxUserTextures)
+                            {
+                                Data::Instance<RPI::StreamingImage> img = reinterpret_cast<RPI::StreamingImage*>(drawCmd.TextureId);
+                                // Texture index 0 is reserved for the font atlas, so we start from 1 to 15 for user textures.
+                                index = aznumeric_cast<uint32_t>(m_userTextures.size() + 1);
+                                m_userTextures[img.get()] = index;
+                            }
+                            else
+                            {
+                                AZ_Warning("ImGuiPass", false, "The maximum number of textures ImGui can render per frame is %d", MaxUserTextures);
+                            }
+                        }
+
                         m_draws.push_back(
                             {
-                                RHI::DrawIndexed(1, 0, vertexOffset, drawCmd.ElemCount, indexOffset),
+                                // Instance offset is used to index to the correct texture in the shader
+                                RHI::DrawIndexed(1, index, vertexOffset, drawCmd.ElemCount, indexOffset),
                                 RHI::Scissor(
                                     static_cast<int32_t>(drawCmd.ClipRect.x),
                                     static_cast<int32_t>(drawCmd.ClipRect.y),
@@ -571,7 +663,12 @@ namespace AZ
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             ImGui::GetIO().MouseWheel = m_lastFrameMouseWheel;
             m_lastFrameMouseWheel = 0.0;
-            ImGui::NewFrame();
+
+            for (auto& [streamingImage, index] : m_userTextures)
+            {
+                m_resourceGroup->SetImage(m_texturesIndex, streamingImage, index);
+            }
+            m_resourceGroup->Compile();
         }
 
         void ImGuiPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
@@ -579,8 +676,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: BuildCommandListInternal");
 
             context.GetCommandList()->SetViewport(m_viewportState);
-
-            const RHI::ShaderResourceGroup* shaderResourceGroups[] = { m_resourceGroup->GetRHIShaderResourceGroup() };
+            context.GetCommandList()->SetShaderResourceGroupForDraw(*m_resourceGroup->GetRHIShaderResourceGroup());
 
             uint32_t numDraws = aznumeric_cast<uint32_t>(m_draws.size());
             uint32_t firstIndex = (context.GetCommandListIndex() * numDraws) / context.GetCommandListCount();
@@ -592,9 +688,7 @@ namespace AZ
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
                 drawItem.m_indexBufferView = &m_indexBufferView;
-                drawItem.m_shaderResourceGroupCount = 1;
-                drawItem.m_shaderResourceGroups = shaderResourceGroups;
-                drawItem.m_streamBufferViewCount = 1;
+                drawItem.m_streamBufferViewCount = 2;
                 drawItem.m_streamBufferViews = m_vertexBufferView.data();
                 drawItem.m_scissorsCount = 1;
                 drawItem.m_scissors = &m_draws.at(i).m_scissor;
@@ -666,6 +760,7 @@ namespace AZ
             static_assert(indexSize == 2, "Expected index size from ImGui to be 2 to match RHI::IndexFormat::Uint16");
             m_indexBufferView = indexBuffer->GetIndexBufferView(RHI::IndexFormat::Uint16);
             m_vertexBufferView[0] = vertexBuffer->GetStreamBufferView(vertexSize);
+            m_vertexBufferView[1] = m_instanceBufferView;
 
             RHI::ValidateStreamBufferViews(m_pipelineState->ConstDescriptor().m_inputStreamLayout, m_vertexBufferView);
 

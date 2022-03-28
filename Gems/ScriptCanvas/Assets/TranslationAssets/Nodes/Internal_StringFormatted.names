@@ -1,0 +1,35 @@
+{
+    "entries": [
+        {
+            "base": "{0B1577E0-339D-4573-93D1-6C311AD12A13}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "String Formatted",
+                "category": "Internal",
+                "tooltip": "Base class for any nodes that use string formatting capabilities."
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "DataInput_Value_0",
+                    "details": {
+                        "name": "Value"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -35,6 +35,7 @@ namespace AzToolsFramework
 
             // EditorComponentAPIBus ...
             AZStd::vector<AZ::Uuid> FindComponentTypeIdsByEntityType(const AZStd::vector<AZStd::string>& componentTypeNames, EditorComponentAPIRequests::EntityType entityType) override;
+            AZStd::vector<AZ::Uuid> FindComponentTypeIdsByService(const AZStd::vector<AZ::ComponentServiceType>& serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter) override;
             AZStd::vector<AZStd::string> FindComponentTypeNames(const AZ::ComponentTypeList& componentTypeIds) override;
             AZStd::vector<AZStd::string> BuildComponentTypeNameListByEntityType(EditorComponentAPIRequests::EntityType entityType) override;
 

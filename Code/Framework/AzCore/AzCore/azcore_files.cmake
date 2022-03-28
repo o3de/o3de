@@ -9,6 +9,7 @@
 set(FILES
     base.h
     Docs.h
+    variadic.h
     Platform.cpp
     Platform.h
     PlatformDef.h
@@ -41,6 +42,8 @@ set(FILES
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.h
+    Component/ComponentApplicationLifecycle.cpp
+    Component/ComponentApplicationLifecycle.h
     Component/ComponentBus.cpp
     Component/ComponentBus.h
     Component/ComponentExport.h
@@ -90,10 +93,6 @@ set(FILES
     Compression/Compression.h
     Compression/zstd_compression.cpp
     Compression/zstd_compression.h
-    Debug/AssetTracking.cpp
-    Debug/AssetTracking.h
-    Debug/AssetTrackingTypesImpl.h
-    Debug/AssetTrackingTypes.h
     Debug/Budget.h
     Debug/Budget.cpp
     Debug/BudgetTracker.h
@@ -106,29 +105,36 @@ set(FILES
     Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
+    Debug/ProfilerReflection.cpp
+    Debug/ProfilerReflection.h
     Debug/StackTracer.h
-    Debug/EventTrace.h
-    Debug/EventTrace.cpp
-    Debug/EventTraceDriller.h
-    Debug/EventTraceDriller.cpp
-    Debug/EventTraceDrillerBus.h
     Debug/Timer.h
     Debug/Trace.cpp
     Debug/Trace.h
     Debug/TraceMessageBus.h
-    Debug/TraceMessagesDriller.cpp
-    Debug/TraceMessagesDriller.h
-    Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
-    Driller/DefaultStringPool.h
-    Driller/Driller.cpp
-    Driller/Driller.h
-    Driller/DrillerBus.cpp
-    Driller/DrillerBus.h
-    Driller/DrillerRootHandler.h
-    Driller/Stream.cpp
-    Driller/Stream.h
+    DOM/DomBackend.cpp
+    DOM/DomBackend.h
+    DOM/DomPatch.cpp
+    DOM/DomPatch.h
+    DOM/DomPath.cpp
+    DOM/DomPath.h
+    DOM/DomUtils.cpp
+    DOM/DomUtils.h
+    DOM/DomValue.cpp
+    DOM/DomValue.h
+    DOM/DomValueWriter.cpp
+    DOM/DomValueWriter.h
+    DOM/DomVisitor.cpp
+    DOM/DomVisitor.h
+    DOM/DomComparison.cpp
+    DOM/DomComparison.h
+    DOM/DomPrefixTree.h
+    DOM/DomPrefixTree.inl
+    DOM/Backends/JSON/JsonBackend.h
+    DOM/Backends/JSON/JsonSerializationUtils.cpp
+    DOM/Backends/JSON/JsonSerializationUtils.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
@@ -165,7 +171,6 @@ set(FILES
     IO/CompressorZStd.h
     IO/FileIO.cpp
     IO/FileIO.h
-    IO/FileIOEventBus.h
     IO/FileReader.cpp
     IO/FileReader.h
     IO/IOUtils.h
@@ -181,6 +186,8 @@ set(FILES
     IO/Path/Path.inl
     IO/Path/PathIterable.inl
     IO/Path/PathParser.inl
+    IO/Path/PathReflect.cpp
+    IO/Path/PathReflect.h
     IO/Path/Path_fwd.h
     IO/SystemFile.cpp
     IO/SystemFile.h
@@ -239,7 +246,6 @@ set(FILES
     Jobs/JobManagerComponent.cpp
     Jobs/JobManagerComponent.h
     Jobs/JobManagerDesc.h
-    Jobs/LegacyJobExecutor.h
     Jobs/MultipleDependentJob.h
     Jobs/task_group.h
     Math/Aabb.cpp
@@ -282,6 +288,7 @@ set(FILES
     Math/Internal/VertexContainer.inl
     Math/InterpolationSample.h
     Math/IntersectPoint.h
+    Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
     Math/MathIntrinsics.h
@@ -293,6 +300,8 @@ set(FILES
     Math/MathUtils.h
     Math/MathMatrixSerializer.h
     Math/MathMatrixSerializer.cpp
+    Math/MathStringConversions.h
+    Math/MathStringConversions.cpp
     Math/MathVectorSerializer.h
     Math/MathVectorSerializer.cpp
     Math/Matrix3x3.cpp
@@ -359,16 +368,12 @@ set(FILES
     Math/Color.cpp
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
-    Math/ToString.h
-    Math/ToString.cpp
     Memory/AllocationRecords.cpp
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
     Memory/AllocatorBase.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
-    Memory/AllocatorOverrideShim.cpp
-    Memory/AllocatorOverrideShim.h
     Memory/AllocatorWrapper.h
     Memory/AllocatorScope.h
     Memory/BestFitExternalMapAllocator.cpp
@@ -388,16 +393,12 @@ set(FILES
     Memory/Memory.h
     Memory/MemoryComponent.cpp
     Memory/MemoryComponent.h
-    Memory/MemoryDriller.cpp
-    Memory/MemoryDriller.h
-    Memory/MemoryDrillerBus.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h
     Memory/OverrunDetectionAllocator.cpp
     Memory/OverrunDetectionAllocator.h
-    Memory/PlatformMemoryInstrumentation.h
     Memory/PoolAllocator.h
     Memory/PoolSchema.cpp
     Memory/PoolSchema.h
@@ -451,6 +452,7 @@ set(FILES
     RTTI/BehaviorContext.h
     RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
+    RTTI/BehaviorInterfaceProxy.h
     RTTI/BehaviorObjectSignals.h
     RTTI/TypeSafeIntegral.h
     Script/ScriptAsset.cpp
@@ -521,6 +523,8 @@ set(FILES
     Serialization/Json/IntSerializer.cpp
     Serialization/Json/JsonDeserializer.h
     Serialization/Json/JsonDeserializer.cpp
+    Serialization/Json/JsonImporter.cpp
+    Serialization/Json/JsonImporter.h
     Serialization/Json/JsonMerger.h
     Serialization/Json/JsonMerger.cpp
     Serialization/Json/JsonSerialization.h
@@ -539,6 +543,8 @@ set(FILES
     Serialization/Json/JsonUtils.cpp
     Serialization/Json/MapSerializer.h
     Serialization/Json/MapSerializer.cpp
+    Serialization/Json/PathSerializer.h
+    Serialization/Json/PathSerializer.cpp
     Serialization/Json/RegistrationContext.h
     Serialization/Json/RegistrationContext.cpp
     Serialization/Json/SmartPointerSerializer.h
@@ -556,6 +562,9 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/ConfigurableStack.cpp
+    Settings/ConfigurableStack.inl
+    Settings/ConfigurableStack.h
     Settings/SettingsRegistry.cpp
     Settings/SettingsRegistry.h
     Settings/SettingsRegistryConsoleUtils.cpp
@@ -566,6 +575,8 @@ set(FILES
     Settings/SettingsRegistryMergeUtils.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
+    Settings/SettingsRegistryVisitorUtils.cpp
+    Settings/SettingsRegistryVisitorUtils.h
     State/HSM.cpp
     State/HSM.h
     Statistics/NamedRunningStatistic.h
@@ -639,9 +650,11 @@ set(FILES
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h
     Threading/ThreadSafeObject.inl
+    Threading/ThreadUtils.h
+    Threading/ThreadUtils.cpp
     Time/ITime.h
-    Time/TimeSystemComponent.cpp
-    Time/TimeSystemComponent.h
+    Time/TimeSystem.cpp
+    Time/TimeSystem.h
 )
 
 # Prevent the following files from being grouped in UNITY builds

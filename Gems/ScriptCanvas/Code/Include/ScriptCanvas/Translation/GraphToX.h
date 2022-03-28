@@ -51,12 +51,13 @@ namespace ScriptCanvas
             AZStd::string_view GetGraphName() const;
             AZStd::string_view GetFullPath() const;
             AZStd::sys_time_t GetTranslationDuration() const;
-            AZStd::string ResolveScope(const AZStd::vector<AZStd::string>& namespaces);
-            void SingleLineComment(Writer& writer);
+            AZStd::vector<ValidationConstPtr>&& MoveErrors();
             void OpenBlockComment(Writer& writer);
             void OpenFunctionBlock(Writer& writer);
             void OpenNamespace(Writer& writer, AZStd::string_view ns);
             void OpenScope(Writer& writer);
+            AZStd::string ResolveScope(const AZStd::vector<AZStd::string>& namespaces);
+            void SingleLineComment(Writer& writer);
             void WriteCopyright(Writer& writer);
             void WriteDoNotModify(Writer& writer);
             void WriteLastWritten(Writer& writer);

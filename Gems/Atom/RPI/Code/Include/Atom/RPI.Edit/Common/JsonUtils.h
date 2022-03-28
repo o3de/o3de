@@ -11,7 +11,6 @@
 #include <AzCore/JSON/document.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 
 namespace AZ
@@ -29,7 +28,7 @@ namespace AZ
             //! Loads serialized object data from a json file at the specified path
             //! Errors will be reported using AZ trace
             template<typename ObjectType>
-            bool LoadObjectFromFile(const AZStd::string& path, ObjectType& objectData);
+            bool LoadObjectFromFile(const AZStd::string& path, ObjectType& objectData, size_t maxFileSize = DefaultMaxFileSize);
 
             //! Saves serialized object data to a json file at the specified path
             //! Errors will be reported using AZ trace
@@ -39,11 +38,11 @@ namespace AZ
             // Definitions...
 
             template<typename ObjectType>
-            bool LoadObjectFromFile(const AZStd::string& path, ObjectType& objectData)
+            bool LoadObjectFromFile(const AZStd::string& path, ObjectType& objectData, size_t maxFileSize)
             {
                 objectData = ObjectType();
 
-                auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(path, DefaultMaxFileSize);
+                auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(path, maxFileSize);
                 if (!loadOutcome.IsSuccess())
                 {
                     AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());
@@ -52,13 +51,9 @@ namespace AZ
 
                 rapidjson::Document& document = loadOutcome.GetValue();
 
-                AZ::RPI::JsonFileLoadContext fileLoadContext;
-                fileLoadContext.PushFilePath(path);
-
                 AZ::JsonDeserializerSettings jsonSettings;
                 AZ::RPI::JsonReportingHelper reportingHelper;
                 reportingHelper.Attach(jsonSettings);
-                jsonSettings.m_metadata.Add(AZStd::move(fileLoadContext));
 
                 AZ::JsonSerialization::Load(objectData, document, jsonSettings);
                 if (reportingHelper.ErrorsReported())

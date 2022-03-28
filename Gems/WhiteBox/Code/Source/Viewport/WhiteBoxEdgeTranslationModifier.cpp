@@ -14,7 +14,8 @@
 #include "Viewport/WhiteBoxViewportConstants.h"
 #include "WhiteBoxEdgeTranslationModifier.h"
 #include "WhiteBoxManipulatorViews.h"
-
+#include <AzCore/std/sort.h>
+#include <AzCore/std/numeric.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
@@ -65,19 +66,17 @@ namespace WhiteBox
     // (ensure to remove duplicates as vertices will be shared across edges)
     static Api::VertexHandles VertexHandlesForEdges(const WhiteBoxMesh& whiteBox, const Api::EdgeHandles& edgeHandles)
     {
-        auto vertexHandles = std::reduce(
+        Api::VertexHandles vertexHandles = AZStd::accumulate(
             edgeHandles.cbegin(), edgeHandles.cend(), Api::VertexHandles{},
-            [&whiteBox](Api::VertexHandles vertexHandles, const Api::EdgeHandle edgeHandle)
+            [&whiteBox](Api::VertexHandles vertexHandles, const Api::EdgeHandle edgeHandle) 
             {
                 const auto edgeVertexHandles = Api::EdgeVertexHandles(whiteBox, edgeHandle);
-                vertexHandles.push_back(edgeVertexHandles[0]);
-                vertexHandles.push_back(edgeVertexHandles[1]);
+                vertexHandles.insert(vertexHandles.end(), edgeVertexHandles.begin(), edgeVertexHandles.end());
                 return vertexHandles;
             });
-
-        std::sort(vertexHandles.begin(), vertexHandles.end());
-        vertexHandles.erase(std::unique(vertexHandles.begin(), vertexHandles.end()), vertexHandles.end());
-
+            
+        AZStd::sort(vertexHandles.begin(), vertexHandles.end());
+        vertexHandles.erase(AZStd::unique(vertexHandles.begin(), vertexHandles.end()), vertexHandles.end());
         return vertexHandles;
     }
 
@@ -208,7 +207,7 @@ namespace WhiteBox
                     const AZ::Vector3 displacement = position - sharedState->m_prevPosition;
 
                     // have to make sure we don't move verts more than once
-                    for (const auto vertexHandle : VertexHandlesForEdges(*whiteBox, m_edgeHandles))
+                    for (const auto& vertexHandle : VertexHandlesForEdges(*whiteBox, m_edgeHandles))
                     {
                         SetVertexPosition(
                             *whiteBox, vertexHandle, VertexPosition(*whiteBox, vertexHandle) + displacement);

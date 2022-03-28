@@ -13,7 +13,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
 #include <PxPhysicsAPI.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace PhysX
 {
@@ -108,8 +108,7 @@ namespace PhysX
                     AzFramework::StringFunc::Append(filename, m_config.m_pvdConfigurationData.m_fileName.c_str());
                     AzFramework::StringFunc::Append(filename, ".pxd2");
 
-                    AZStd::string rootDirectory;
-                    AZ::ComponentApplicationBus::BroadcastResult(rootDirectory, &AZ::ComponentApplicationRequests::GetAppRoot);
+                    AZStd::string rootDirectory{ AZStd::string_view(AZ::Utils::GetEnginePath()) };
 
                     // Create the full filepath.
                     AZStd::string safeFilePath;

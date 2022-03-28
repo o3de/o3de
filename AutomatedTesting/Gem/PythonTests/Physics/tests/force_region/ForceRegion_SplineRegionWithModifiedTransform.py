@@ -82,7 +82,7 @@ def ForceRegion_SplineRegionWithModifiedTransform():
     import azlmbr.bus as bus
 
     # region Constants
-    TIMEOUT = 5.0
+    TIMEOUT = 10.0
     MIN_TRIGGER_DISTANCE = 2.0
     # endregion
 

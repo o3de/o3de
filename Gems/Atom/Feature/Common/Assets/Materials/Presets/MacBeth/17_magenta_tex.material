@@ -1,8 +1,8 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "Materials\\Presets\\MacBeth\\17_magenta.material",
-    "propertyLayoutVersion": 3,
+    "parentMaterial": "17_magenta.material",
+    "materialType": "../../Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
             "color": [
@@ -11,6 +11,8 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "17_magenta_sRGB.tif",
             "useTexture": true
         }
     }

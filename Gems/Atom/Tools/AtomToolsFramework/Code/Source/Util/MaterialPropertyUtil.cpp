@@ -6,19 +6,18 @@
  *
  */
 
-#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
-
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
-#include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 
 namespace AtomToolsFramework
 {
@@ -31,11 +30,13 @@ namespace AtomToolsFramework
     {
         if (value.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
         {
-            const AZ::Data::Asset<AZ::RPI::ImageAsset>& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(
-                imageAsset.GetId(),
-                azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
-                imageAsset.GetHint()));
+            const auto& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
+            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(imageAsset.GetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), imageAsset.GetHint()));
+        }
+        else if (value.Is<AZ::Data::Instance<AZ::RPI::Image>>())
+        {
+            const auto& image = value.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
+            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(image->GetAssetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>()));
         }
 
         return AZ::RPI::MaterialPropertyValue::ToAny(value);
@@ -74,7 +75,11 @@ namespace AtomToolsFramework
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)
     {
         propertyConfig.m_dataType = ConvertToEditableType(propertyDefinition.m_dataType);
+<<<<<<< HEAD
         propertyConfig.m_name = propertyDefinition.m_name;
+=======
+        propertyConfig.m_name = propertyDefinition.GetName();
+>>>>>>> development
         propertyConfig.m_displayName = propertyDefinition.m_displayName;
         propertyConfig.m_description = propertyDefinition.m_description;
         propertyConfig.m_defaultValue = ConvertToEditableType(propertyDefinition.m_value);
@@ -163,22 +168,60 @@ namespace AtomToolsFramework
         return false;
     }
 
-    const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode)
+    bool ConvertToExportFormat(
+        const AZStd::string& exportPath,
+        [[maybe_unused]] const AZ::Name& propertyId,
+        const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
+        AZ::RPI::MaterialPropertyValue& propertyValue)
     {
-        // Traverse up the hierarchy from the input node to search for an instance corresponding to material inspector property
-        for (const AzToolsFramework::InstanceDataNode* currentNode = pNode; currentNode; currentNode = currentNode->GetParent())
+        if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())
         {
-            const AZ::SerializeContext* context = currentNode->GetSerializeContext();
-            const AZ::SerializeContext::ClassData* classData = currentNode->GetClassMetadata();
-            if (context && classData)
+            const uint32_t index = propertyValue.GetValue<uint32_t>();
+            if (index >= propertyDefinition.m_enumValues.size())
             {
-                if (context->CanDowncast(classData->m_typeId, azrtti_typeid<AtomToolsFramework::DynamicProperty>(), classData->m_azRtti, nullptr))
+                AZ_Error("AtomToolsFramework", false, "Invalid value for material enum property: '%s'.", propertyId.GetCStr());
+                return false;
+            }
+
+            propertyValue = propertyDefinition.m_enumValues[index];
+            return true;
+        }
+
+        // Image asset references must be converted from asset IDs to a relative source file path
+        if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image)
+        {
+            AZStd::string imagePath;
+            AZ::Data::AssetId imageAssetId;
+
+            if (propertyValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
+            {
+                const auto& imageAsset = propertyValue.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
+                imageAssetId = imageAsset.GetId();
+            }
+
+            if (propertyValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
+            {
+                const auto& image = propertyValue.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
+                if (image)
                 {
-                    return static_cast<const AtomToolsFramework::DynamicProperty*>(currentNode->FirstInstance());
+                    imageAssetId = image->GetAssetId();
                 }
+            }
+            
+            imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(imageAssetId);
+
+            if (imageAssetId.IsValid() && imagePath.empty())
+            {
+                AZ_Error("AtomToolsFramework", false, "Image asset could not be found for property: '%s'.", propertyId.GetCStr());
+                return false;
+            }
+            else
+            {
+                propertyValue = GetExteralReferencePath(exportPath, imagePath);
+                return true;
             }
         }
 
-        return nullptr;
+        return true;
     }
 } // namespace AtomToolsFramework

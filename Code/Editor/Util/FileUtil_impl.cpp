@@ -20,29 +20,14 @@ void CFileUtil_impl::ShowInExplorer(const QString& path)
     CFileUtil::ShowInExplorer(path);
 }
 
-bool CFileUtil_impl::CompileLuaFile(const char* luaFilename)
-{
-    return CFileUtil::CompileLuaFile(luaFilename);
-}
-
 bool CFileUtil_impl::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const char* pDestinationFilename)
 {
     return CFileUtil::ExtractFile(file, bMsgBoxAskForExtraction, pDestinationFilename);
 }
 
-void CFileUtil_impl::EditTextFile(const char* txtFile, int line, ETextFileType fileType)
-{
-    CFileUtil::EditTextFile(txtFile, line, fileType);
-}
-
 void CFileUtil_impl::EditTextureFile(const char* txtureFile, bool bUseGameFolder)
 {
     CFileUtil::EditTextureFile(txtureFile, bUseGameFolder);
-}
-
-bool CFileUtil_impl::CalculateDccFilename(const QString& assetFilename, QString& dccFilename)
-{
-    return CFileUtil::CalculateDccFilename(assetFilename, dccFilename);
 }
 
 void CFileUtil_impl::FormatFilterString(QString& filter)

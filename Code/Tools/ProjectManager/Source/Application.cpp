@@ -16,10 +16,13 @@
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <ProjectManager_Traits_Platform.h>
 
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
+#include <QInputDialog>
+#include <QIcon>
 
 namespace O3DE::ProjectManager
 {
@@ -67,8 +70,10 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
 
+        // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
+        QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
+
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
-        AZ_Assert(m_pythonBindings, "Failed to create PythonBindings");
         if (!m_pythonBindings->PythonStarted())
         {
             if (!interactive)
@@ -108,6 +113,13 @@ namespace O3DE::ProjectManager
             {
                 return false;
             }
+        }
+
+        m_settings = AZStd::make_unique<Settings>();
+
+        if (!RegisterEngine(interactive))
+        {
+           return false;
         }
 
         const AZ::CommandLine* commandLine = GetCommandLine();
@@ -164,6 +176,85 @@ namespace O3DE::ProjectManager
         return m_entity != nullptr;
     }
 
+    bool Application::RegisterEngine(bool interactive)
+    {
+        // get this engine's info
+        auto engineInfoOutcome = m_pythonBindings->GetEngineInfo();
+        if (!engineInfoOutcome)
+        {
+            if (interactive)
+            {
+                QMessageBox::critical(nullptr,
+                    QObject::tr("Failed to get engine info"),
+                    QObject::tr("A valid engine.json could not be found or loaded. "
+                                "Please verify a valid engine.json file exists in %1")
+                    .arg(GetEngineRoot()));
+            }
+
+            AZ_Error("Project Manager", false, "Failed to get engine info");
+            return false;
+        }
+
+        EngineInfo engineInfo = engineInfoOutcome.GetValue();
+        if (engineInfo.m_registered)
+        {
+            return true;
+        }
+
+        // check if an engine with this name is already registered and has a valid engine.json
+        auto existingEngineResult = m_pythonBindings->GetEngineInfo(engineInfo.m_name);
+        if (existingEngineResult)
+        {
+            if (!interactive)
+            {
+                AZ_Error("Project Manager", false, "An engine with the name %s is already registered with the path %s",
+                    engineInfo.m_name.toUtf8().constData(), engineInfo.m_path.toUtf8().constData());
+                return false;
+            }
+
+            // get the updated engine name unless the user wants to cancel
+            bool okPressed = false;
+            const EngineInfo& otherEngineInfo = existingEngineResult.GetValue();
+
+            engineInfo.m_name = QInputDialog::getText(nullptr,
+                QObject::tr("Engine '%1' already registered").arg(engineInfo.m_name),
+                QObject::tr("An engine named '%1' is already registered.<br /><br />"
+                            "<b>Current path</b><br />%2<br/><br />"
+                            "<b>New path</b><br />%3<br /><br />"
+                            "Press 'OK' to force registration, or provide a new engine name below.<br />"
+                            "Alternatively, press `Cancel` to close the Project Manager and resolve the issue manually.")
+                            .arg(engineInfo.m_name, otherEngineInfo.m_path, engineInfo.m_path),
+                QLineEdit::Normal,
+                engineInfo.m_name,
+                &okPressed);
+
+            if (!okPressed)
+            {
+                // user elected not to change the name or force registration
+                return false;
+            }
+        }
+
+        // always force register in case there is an engine registered in o3de_manifest.json, but
+        // the engine.json is missing or corrupt in which case GetEngineInfo() fails
+        constexpr bool forceRegistration = true;
+        auto registerOutcome = m_pythonBindings->SetEngineInfo(engineInfo, forceRegistration);
+        if (!registerOutcome)
+        {
+            if (interactive)
+            {
+                ProjectUtils::DisplayDetailedError(QObject::tr("Failed to register engine"), registerOutcome);
+            }
+            
+            AZ_Error("Project Manager", false, "Failed to register engine %s : %s",
+                engineInfo.m_path.toUtf8().constData(), registerOutcome.GetError().first.c_str());
+
+            return false;
+        }
+
+        return true;
+    }
+
     void Application::TearDown()
     {
         if (m_entity)
@@ -194,8 +285,12 @@ namespace O3DE::ProjectManager
         // set stylesheet after creating the main window or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(m_mainWindow.data(), QStringLiteral("style:ProjectManager.qss"));
 
-        // the decoration wrapper is intended to remember window positioning and sizing 
+        // the decoration wrapper is intended to remember window positioning and sizing
+#if AZ_TRAIT_PROJECT_MANAGER_CUSTOM_TITLEBAR
         auto wrapper = new AzQtComponents::WindowDecorationWrapper();
+#else
+        auto wrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionDisabled);
+#endif
         wrapper->setGuest(m_mainWindow.data());
 
         // show the main window here to apply the stylesheet before restoring geometry or we

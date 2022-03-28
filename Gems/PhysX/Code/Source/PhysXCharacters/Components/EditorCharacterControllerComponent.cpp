@@ -36,18 +36,18 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorCharacterControllerProxyShapeConfig>(
-                    "EditorCharacterControllerProxyShapeConfig", "PhysX character controller shape")
+                    "EditorCharacterControllerProxyShapeConfig", "PhysX character controller shape.")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorCharacterControllerProxyShapeConfig::m_shapeType, "Shape",
-                        "The shape associated with the character controller")
+                        "The shape of the character controller.")
                     ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
                     ->EnumAttribute(Physics::ShapeType::Box, "Box")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerProxyShapeConfig::m_box, "Box",
-                        "Configuration of box shape")
+                        "Configuration of box shape.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorCharacterControllerProxyShapeConfig::IsBoxConfig)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerProxyShapeConfig::m_capsule, "Capsule",
-                        "Configuration of capsule shape")
+                        "Configuration of capsule shape.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorCharacterControllerProxyShapeConfig::IsCapsuleConfig)
                     ;
             }
@@ -93,7 +93,8 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorCharacterControllerComponent>(
-                    "PhysX Character Controller", "PhysX Character Controller")
+                    "PhysX Character Controller",
+                    "Provides basic character interactions with the physical world, such as preventing movement through other PhysX bodies.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCharacter.svg")
@@ -101,12 +102,12 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/character-controller/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerComponent::m_configuration,
-                        "Configuration", "Configuration for the character controller")
+                        "Configuration", "Configuration for the character controller.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCharacterControllerComponent::OnControllerConfigChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerComponent::m_proxyShapeConfiguration,
-                        "Shape Configuration", "The configuration for the shape associated with the character controller")
+                        "Shape Configuration", "The configuration for the shape associated with the character controller.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCharacterControllerComponent::OnShapeConfigChanged)

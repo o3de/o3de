@@ -9,7 +9,11 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+<<<<<<< HEAD
 
+=======
+#include <AzCore/std/containers/span.h>
+>>>>>>> development
 #include <SurfaceData/SurfaceDataTypes.h>
 
 namespace Terrain
@@ -23,12 +27,30 @@ namespace Terrain
         ////////////////////////////////////////////////////////////////////////
         // EBusTraits
         using MutexType = AZStd::recursive_mutex;
+<<<<<<< HEAD
+=======
+
+        // This bus will not lock during an EBus call. This lets us run multiple queries in parallel, but it also means
+        // that anything that implements this EBus will need to ensure that queries can't be in the middle of running at the
+        // same time as bus connects / disconnects.
+        static const bool LocklessDispatch = true;
+>>>>>>> development
         ////////////////////////////////////////////////////////////////////////
 
         virtual ~TerrainAreaSurfaceRequests() = default;
 
+<<<<<<< HEAD
         //! Get the surfaces and weights from a gradient at a given position sorted into descending order of weight.
         virtual void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const = 0;
+=======
+        //! Get the surfaces and weights from a gradient at a given position.
+        virtual void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights) const = 0;
+
+        //! Get the surfaces and weights from a gradient at a given list of positions.
+        virtual void GetSurfaceWeightsFromList(
+            AZStd::span<const AZ::Vector3> inPositionList,
+            AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const = 0;
+>>>>>>> development
     };
 
     using TerrainAreaSurfaceRequestBus = AZ::EBus<TerrainAreaSurfaceRequests>;

@@ -1,7 +1,7 @@
 {
     "description": "Base material for the reflection probe visualization model.",
+    "version": 1,
     "propertyLayout": {
-        "version": 1,
         "properties": {
             "general": [
                 {

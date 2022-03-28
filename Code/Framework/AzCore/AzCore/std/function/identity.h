@@ -20,7 +20,7 @@ namespace AZStd
         using is_transparent = void;
 
         template <typename T>
-        T&& operator()(T&& t) const
+        constexpr T&& operator()(T&& t) const
         {
             return AZStd::forward<T>(t);
         }

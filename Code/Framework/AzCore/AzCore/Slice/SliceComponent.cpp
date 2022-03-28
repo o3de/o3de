@@ -840,7 +840,7 @@ namespace AZ
     }
 
     SliceComponent::SliceInstance* SliceComponent::SliceReference::CreateInstanceFromExistingEntities(AZStd::vector<AZ::Entity*>& entities,
-        const EntityIdToEntityIdMap assetToLiveIdMap,
+        const EntityIdToEntityIdMap& assetToLiveIdMap,
         SliceInstanceId sliceInstanceId)
     {
         AZ_PROFILE_FUNCTION(AzCore);

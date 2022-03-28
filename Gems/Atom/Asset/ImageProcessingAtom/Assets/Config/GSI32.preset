@@ -1,0 +1,71 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
+            "Name": "GSI32",
+            "PixelFormat": "R32F",
+            "DiscardAlpha": true,
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
+                "Name": "GSI32",
+                "PixelFormat": "R32F",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
+                "Name": "GSI32",
+                "PixelFormat": "R32F",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "mac": {
+                "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
+                "Name": "GSI32",
+                "PixelFormat": "R32F",
+                "DiscardAlpha": true,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
+                "Name": "GSI32",
+                "PixelFormat": "R32F",
+                "DiscardAlpha": true,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

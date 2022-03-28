@@ -110,8 +110,19 @@ namespace AZ
                     PrepareSrgDescriptors(m_dynamicBuffersDescriptors, vertexCount, strandsCount);
                 }
  
+<<<<<<< HEAD
                 Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForCompute() { return m_simSrgForCompute; }
                 Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForRaster() { return m_simSrgForRaster; }
+=======
+                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForCompute()
+                {
+                    return m_initialized ? m_simSrgForCompute : nullptr;
+                }
+
+                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForRaster()
+                {
+                    return m_initialized ? m_simSrgForRaster : nullptr; }
+>>>>>>> development
 
                 bool IsInitialized() { return m_initialized;  }
 
@@ -179,6 +190,7 @@ namespace AZ
                     AMD::TressFXSimulationSettings* simSettings, AMD::TressFXRenderingSettings* renderSettings
                 );
 
+<<<<<<< HEAD
                 //! Creates and fill the draw item associated with the PPLL render of the
                 //!  current hair object
                 const RHI::DrawPacket* GetFillDrawPacket()
@@ -187,6 +199,11 @@ namespace AZ
                 }
 
                 bool BuildPPLLDrawPacket(RHI::DrawPacketBuilder::DrawRequest& drawRequest);
+=======
+                bool BuildDrawPacket(RPI::Shader* geometryShader, RHI::DrawPacketBuilder::DrawRequest& drawRequest);
+
+                const RHI::DrawPacket* GetGeometrylDrawPacket(RPI::Shader* geometryShader);
+>>>>>>> development
 
                 //! Creates and fill the dispatch item associated with the compute shader
                 bool BuildDispatchItem(RPI::Shader* computeShader, DispatchLevel dispatchLevel);
@@ -269,6 +286,10 @@ namespace AZ
                 void UpdateSimulationParameters(const AMD::TressFXSimulationSettings* settings, float timeStep);
 
                 void SetWind(const Vector3& windDir, float windMag, int frame);
+<<<<<<< HEAD
+=======
+                void SetRenderIndex(uint32_t renderIndex) { m_RenderIndex = renderIndex; }
+>>>>>>> development
 
                 void ResetPositions() { m_simCB->g_ResetPositions = 1.0f; }
                 void IncreaseSimulationFrame()
@@ -301,6 +322,7 @@ namespace AZ
                 //!   responsible for the various stages and passes' updates
                 HairFeatureProcessor* m_featureProcessor = nullptr;
 
+<<<<<<< HEAD
                 //! The dispatch item used for the skinning
                 HairDispatchItem m_skinningDispatchItem;    
 
@@ -315,6 +337,29 @@ namespace AZ
 
                 float m_frameDeltaTime = 0.02;
 
+=======
+                //! Skinning compute shader used for creation of the compute Srgs and dispatch item
+                Data::Instance<RPI::Shader> m_skinningShader = nullptr;
+
+                //! Compute dispatch items map per the existing passes
+                AZStd::unordered_map<RPI::Shader*, Data::Instance<HairDispatchItem>> m_dispatchItems;
+
+                //! Geometry raster shader used for creation of the raster Srgs.
+                //! Since the Srgs for geometry raster are the same across the shaders we keep
+                //! only a single shader - if this to change in the future, several shaders and sets
+                //! of dynamic Srgs should be created. 
+                Data::Instance<RPI::Shader> m_geometryRasterShader = nullptr;
+
+                //! DrawPacket for the multi object geometry raster pass.
+                AZStd::unordered_map<RPI::Shader*, const RHI::DrawPacket*>  m_geometryDrawPackets;
+
+                float m_frameDeltaTime = 0.02;
+
+                //! The following are the configuration settings that might be required during the update.
+                AMD::TressFXSimulationSettings* m_simSettings = nullptr;
+                AMD::TressFXRenderingSettings* m_renderSettings = nullptr;
+
+>>>>>>> development
                 //! Hair asset information
                 uint32_t m_TotalIndices = 0;
                 uint32_t m_NumTotalVertices = 0;
@@ -331,7 +376,11 @@ namespace AZ
 
                 //! Controls reset / copy base hair state
                 uint32_t m_SimulationFrame = 0;
+<<<<<<< HEAD
                 // [To Do] - verify if still required
+=======
+                //! The index used as a look up into the material array during the resolve pass
+>>>>>>> development
                 uint32_t m_RenderIndex = 0;
 
                 //!-----------------------------------------------------------------
@@ -373,9 +422,12 @@ namespace AZ
                 //! Index buffer for the render pass via draw calls - naming was kept
                 Data::Instance<RHI::Buffer> m_indexBuffer;
                 RHI::IndexBufferView m_indexBufferView;
+<<<<<<< HEAD
 
                 //! DrawPacket for the multi object raster fill pass.
                 const RHI::DrawPacket* m_fillDrawPacket = nullptr;
+=======
+>>>>>>> development
                 //-------------------------------------------------------------------
 
                 AZStd::mutex m_mutex;

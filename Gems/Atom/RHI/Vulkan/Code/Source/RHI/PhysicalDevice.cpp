@@ -111,9 +111,19 @@ namespace AZ
             return m_accelerationStructureProperties;
         }
 
+        const VkPhysicalDeviceAccelerationStructureFeaturesKHR& PhysicalDevice::GetPhysicalDeviceAccelerationStructureFeatures() const
+        {
+            return m_accelerationStructureFeatures;
+        }
+
         const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& PhysicalDevice::GetPhysicalDeviceRayTracingPipelineProperties() const
         {
             return m_rayTracingPipelineProperties;
+        }
+
+        const VkPhysicalDeviceRayTracingPipelineFeaturesKHR& PhysicalDevice::GetPhysicalDeviceRayTracingPipelineFeatures() const
+        {
+            return m_rayTracingPipelineFeatures;
         }
 
         const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& PhysicalDevice::GetPhysicalDeviceFloat16Int8Features() const
@@ -348,6 +358,16 @@ namespace AZ
                 vulkan12Features = {};
                 vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
                 separateDepthStencilFeatures.pNext = &vulkan12Features;
+
+                VkPhysicalDeviceAccelerationStructureFeaturesKHR& accelerationStructureFeatures = m_accelerationStructureFeatures;
+                accelerationStructureFeatures = {};
+                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+                vulkan12Features.pNext = &accelerationStructureFeatures;
+
+                VkPhysicalDeviceRayTracingPipelineFeaturesKHR& rayTracingPipelineFeatures = m_rayTracingPipelineFeatures;
+                rayTracingPipelineFeatures = {};
+                rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+                accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
 
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;

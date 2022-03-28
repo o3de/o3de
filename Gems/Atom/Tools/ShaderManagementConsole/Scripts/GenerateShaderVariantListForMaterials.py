@@ -38,28 +38,16 @@ def main():
     if extension != "shader":
         print("The input argument for the script is not a valid .shader file")
         return
-    
-    # Get info such as relative path of the file and asset id
-    shaderAssetInfo = azlmbr.shadermanagementconsole.ShaderManagementConsoleRequestBus(
-        azlmbr.bus.Broadcast, 
-        'GetSourceAssetInfo', 
-        filename
-    )
-    
-    # retrieves a list of all material source files that use the shader. Note that materials inherit from materialtype files, which are actual files that refer to shader files.
-    materialAssetIds = azlmbr.shadermanagementconsole.ShaderManagementConsoleRequestBus(
-        azlmbr.bus.Broadcast, 
-        'FindMaterialAssetsUsingShader', 
-        shaderAssetInfo.relativePath
-    )
-    
+
+    # prompt the user to save the file in the project folder or same folder as the shader 
     msgBox = QtWidgets.QMessageBox(
         QtWidgets.QMessageBox.Question,
         "Choose Save Location for .shadervariantlist File",
         "Save .shadervariantlist file in Project folder or in the same folder as shader file?"
     )
+
     projectButton = msgBox.addButton("Project Folder", QtWidgets.QMessageBox.AcceptRole)
-    msgBox.addButton("Same Folder as Shader", QtWidgets.QMessageBox.AcceptRole)
+    shaderButton = msgBox.addButton("Same Folder as Shader", QtWidgets.QMessageBox.AcceptRole)
     cancelButton = msgBox.addButton("Cancel", QtWidgets.QMessageBox.RejectRole)
     msgBox.exec()
     
@@ -68,6 +56,7 @@ def main():
         is_save_in_project_folder = True
     elif msgBox.clickedButton() == cancelButton:
         return
+<<<<<<< HEAD
     
     # This loop collects all uniquely-identified shader items used by the materials based on its shader variant id. 
     shader_file = os.path.basename(filename)
@@ -137,29 +126,56 @@ def main():
     pre, ext = os.path.splitext(shaderAssetInfo.relativePath)
     projectShaderVariantListFilePath = os.path.join(azlmbr.paths.projectroot, PROJECT_SHADER_VARIANTS_FOLDER, f'{pre}.shadervariantlist')
     
+=======
+
+    # open the shader file as a document which will generate all of the shader variant list data 
+    documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        azlmbr.bus.Broadcast,
+        'OpenDocument',
+        filename
+    )
+
+    if documentId.IsNull():
+        print("The shader source data file could not be opened")
+        return
+
+    # get the shader variant list data object which is only needed for the shader file path
+    shaderVariantList = azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
+        azlmbr.bus.Event,
+        'GetShaderVariantListSourceData',
+        documentId
+    )
+
+    # generate the default save file path by replacing the extension of the open shader file
+>>>>>>> development
     pre, ext = os.path.splitext(filename)
     defaultShaderVariantListFilePath = f'{pre}.shadervariantlist'
+    
+    # clean previously generated shader variant list file so they don't clash.
+    pre, ext = os.path.splitext(shaderVariantList.shaderFilePath)
+    projectShaderVariantListFilePath = os.path.join(azlmbr.paths.projectroot, PROJECT_SHADER_VARIANTS_FOLDER, f'{pre}.shadervariantlist')
     
     clean_existing_shadervariantlist_files([
         projectShaderVariantListFilePath
     ])
+
     # Save the shader variant list file
     if is_save_in_project_folder:
         shaderVariantListFilePath = projectShaderVariantListFilePath
     else:
         shaderVariantListFilePath = defaultShaderVariantListFilePath
-    
+
     shaderVariantListFilePath = shaderVariantListFilePath.replace("\\", "/")
-    azlmbr.shader.SaveShaderVariantListSourceData(shaderVariantListFilePath, shaderVariantList)
-    
-    # Open the document in shader management console
-    result = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+
+    # Save the document in shader management console
+    saveResult = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
         azlmbr.bus.Broadcast,
-        'OpenDocument',
+        'SaveDocumentAsChild',
+        documentId,
         shaderVariantListFilePath
     )
-    
-    if not result.IsNull():
+
+    if saveResult:
         msgBox = QtWidgets.QMessageBox(
             QtWidgets.QMessageBox.Information,
             "Shader Variant List File Successfully Generated",
@@ -167,7 +183,7 @@ def main():
             QtWidgets.QMessageBox.Ok
         )
         msgBox.exec()
-    
+
     print("==== End shader variant script ============================================================")
 
 if __name__ == "__main__":

@@ -1,0 +1,19 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{A13B2FCE-2F6A-4634-B112-5A0A912B50CE}",
+            "Name": "IBLGlobal",
+            "Description": "The input cubemap generates IBL specular and diffuse cubemaps.",
+            "GenerateIBLOnly": true,
+            "CubemapSettings": {
+                "GenerateIBLSpecular": true,
+                "IBLSpecularPreset": "IBLSpecular",
+                "GenerateIBLDiffuse": true,
+                "IBLDiffusePreset": "IBLDiffuse"
+            }
+        }
+    }
+}

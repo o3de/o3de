@@ -91,9 +91,6 @@ namespace EMotionFX
         m_simulatedObjectSetup      = AZStd::make_shared<SimulatedObjectSetup>(this);
 
         m_optimizeSkeleton          = false;
-#if defined(EMFX_DEVELOPMENT_BUILD)
-        m_isOwnedByRuntime           = false;
-#endif // EMFX_DEVELOPMENT_BUILD
 
         // make sure we have at least allocated the first LOD of materials and facial setups
         m_materials.reserve(4);  // reserve space for 4 lods
@@ -436,6 +433,17 @@ namespace EMotionFX
         {
             m_morphSetups.resize(numLODs);
             AZStd::fill(begin(m_morphSetups), AZStd::next(begin(m_morphSetups), numLODs), nullptr);
+        }
+        else
+        {
+            if (m_morphSetups.size() < numLODs)
+            {
+                AZ::u32 num = m_morphSetups.empty() ? 0 : (AZ::u32)m_morphSetups.size();
+                for (AZ::u32 i = num; i < numLODs; ++i)
+                {
+                    m_morphSetups.push_back(nullptr);
+                }
+            }
         }
     }
 
@@ -2074,25 +2082,6 @@ namespace EMotionFX
         return m_usedForVisualization;
     }
 
-    void Actor::SetIsOwnedByRuntime(bool isOwnedByRuntime)
-    {
-#if defined(EMFX_DEVELOPMENT_BUILD)
-        m_isOwnedByRuntime = isOwnedByRuntime;
-#else
-        AZ_UNUSED(isOwnedByRuntime);
-#endif
-    }
-
-
-    bool Actor::GetIsOwnedByRuntime() const
-    {
-#if defined(EMFX_DEVELOPMENT_BUILD)
-        return m_isOwnedByRuntime;
-#else
-        return true;
-#endif
-    }
-
     const AZ::Aabb& Actor::GetStaticAabb() const
     {
         return m_staticAabb;
@@ -2562,7 +2551,7 @@ namespace EMotionFX
 
     Node* Actor::FindMeshJoint(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodModelAsset) const
     {
-        const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodModelAsset->GetMeshes();
+        const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodModelAsset->GetMeshes();
 
         // Use the first joint that we can find for any of the Atom sub meshes and use it as owner of our mesh.
         for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceMeshes)
@@ -2585,7 +2574,7 @@ namespace EMotionFX
         AZ_Assert(m_meshAsset.IsReady(), "Mesh asset should be fully loaded and ready.");
 
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
-        const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
+        const AZStd::span<const AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
         const size_t numLODLevels = lodAssets.size();
 
         lodLevels.clear();
@@ -2711,7 +2700,7 @@ namespace EMotionFX
         AZ_Assert(m_meshAsset.IsReady() && m_morphTargetMetaAsset.IsReady(),
             "Mesh as well as morph target meta asset asset should be fully loaded and ready.");
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
-        const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
+        const AZStd::span<const AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
         const size_t numLODLevels = lodAssets.size();
 
         AZ_Assert(m_morphSetups.size() == numLODLevels, "There needs to be a morph setup for every single LOD level.");
@@ -2719,7 +2708,7 @@ namespace EMotionFX
         for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
         {
             const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset = lodAssets[lodLevel];
-            const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodAsset->GetMeshes();
+            const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodAsset->GetMeshes();
 
             MorphSetup* morphSetup = m_morphSetups[static_cast<uint32>(lodLevel)];
             if (!morphSetup)
@@ -2755,7 +2744,7 @@ namespace EMotionFX
 
             // The lod has shared buffers that combine the data from each submesh. In case any of the submeshes has a
             // morph target buffer view we can access the entire morph target buffer via the buffer asset.
-            AZStd::array_view<uint8_t> morphTargetDeltaView;
+            AZStd::span<const uint8_t> morphTargetDeltaView;
             for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceMeshes)
             {
                 if (const auto* bufferAssetView = sourceMesh.GetSemanticBufferAssetView(AZ::Name("MORPHTARGET_VERTEXDELTAS")))
