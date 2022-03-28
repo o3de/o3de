@@ -1747,15 +1747,7 @@ namespace AzToolsFramework
 
     bool PropertyRowWidget::CanBeReordered() const
     {
-        if (!m_parentRow)
-        {
-            return false;
-        }
-        if (m_parentRow->m_reorderAllow)
-        {
-            return m_parentRow->CanChildrenBeReordered();
-        }
-        return false;
+        return m_parentRow && m_parentRow->m_reorderAllow && m_parentRow->CanChildrenBeReordered();
     }
 
     int PropertyRowWidget::GetIndexInParent() const
