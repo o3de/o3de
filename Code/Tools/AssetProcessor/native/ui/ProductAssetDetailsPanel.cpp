@@ -198,9 +198,6 @@ namespace AssetProcessor
         const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData,
         const AZStd::string& platform)
     {
-        // Clear & ClearContents leave the table dimensions the same, so set rowCount to zero to reset it.
-        m_ui->outgoingProductDependenciesTable->setRowCount(0);
-
         m_ui->outgoingUnmetPathProductDependenciesList->clear();
         int productDependencyCount = 0;
         int productPathDependencyCount = 0;
@@ -230,18 +227,6 @@ namespace AssetProcessor
 
                     if (platformMatches)
                     {
-                        m_ui->outgoingProductDependenciesTable->insertRow(productDependencyCount);
-
-                        // Qt handles cleanup automatically, setting this as the parent means
-                        // when this panel is torn down, these widgets will be destroyed.
-                        GoToButton* rowGoToButton = new GoToButton(this);
-                        connect(rowGoToButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
-                            GoToProduct(product.m_productName);
-                        });
-                        m_ui->outgoingProductDependenciesTable->setCellWidget(productDependencyCount, 0, rowGoToButton);
-
-                        QTableWidgetItem* rowName = new QTableWidgetItem(product.m_productName.c_str());
-                        m_ui->outgoingProductDependenciesTable->setItem(productDependencyCount, 1, rowName);
                         ++productDependencyCount;
                     }
                     return true;
@@ -262,14 +247,6 @@ namespace AssetProcessor
         m_ui->outgoingProductDependenciesValueLabel->setText(QString::number(productDependencyCount));
         m_ui->outgoingUnmetPathProductDependenciesValueLabel->setText(QString::number(productPathDependencyCount));
 
-        if (productDependencyCount == 0)
-        {
-            m_ui->outgoingProductDependenciesTable->insertRow(productDependencyCount);
-            QTableWidgetItem* rowName = new QTableWidgetItem(tr("No product dependencies"));
-            m_ui->outgoingProductDependenciesTable->setItem(productDependencyCount, 1, rowName);
-            ++productDependencyCount;
-        }
-
         if (productPathDependencyCount == 0)
         {
             QListWidgetItem* listWidgetItem = new QListWidgetItem();
@@ -277,9 +254,6 @@ namespace AssetProcessor
             m_ui->outgoingUnmetPathProductDependenciesList->addItem(listWidgetItem);
             ++productPathDependencyCount;
         }
-
-        m_ui->outgoingProductDependenciesTable->setMinimumHeight(m_ui->outgoingProductDependenciesTable->rowHeight(0) * productDependencyCount + 2 * m_ui->outgoingProductDependenciesTable->frameWidth());
-        m_ui->outgoingProductDependenciesTable->adjustSize();
 
         m_ui->outgoingUnmetPathProductDependenciesList->setMinimumHeight(m_ui->outgoingUnmetPathProductDependenciesList->sizeHintForRow(0) * productPathDependencyCount + 2 * m_ui->outgoingUnmetPathProductDependenciesList->frameWidth());
         m_ui->outgoingUnmetPathProductDependenciesList->adjustSize();
@@ -290,9 +264,6 @@ namespace AssetProcessor
         const AZ::Data::AssetId& assetId,
         const AZStd::string& platform)
     {
-        // Clear & ClearContents leave the table dimensions the same, so set rowCount to zero to reset it.
-        m_ui->incomingProductDependenciesTable->setRowCount(0);
-
         int incomingProductDependencyCount = 0;
         m_assetDatabaseConnection->QueryDirectReverseProductDependenciesBySourceGuidSubId(
             assetId.m_guid,
@@ -313,33 +284,12 @@ namespace AssetProcessor
             });
             if (platformMatches)
             {
-                m_ui->incomingProductDependenciesTable->insertRow(incomingProductDependencyCount);
-
-                GoToButton* rowGoToButton = new GoToButton(this);
-                connect(rowGoToButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
-                    GoToProduct(incomingDependency.m_productName);
-                });
-                m_ui->incomingProductDependenciesTable->setCellWidget(incomingProductDependencyCount, 0, rowGoToButton);
-
-                QTableWidgetItem* rowName = new QTableWidgetItem(incomingDependency.m_productName.c_str());
-                m_ui->incomingProductDependenciesTable->setItem(incomingProductDependencyCount, 1, rowName);
-
                 ++incomingProductDependencyCount;
             }
             return true;
         });
 
         m_ui->incomingProductDependenciesValueLabel->setText(QString::number(incomingProductDependencyCount));
-
-        if (incomingProductDependencyCount == 0)
-        {
-            m_ui->incomingProductDependenciesTable->insertRow(incomingProductDependencyCount);
-            QTableWidgetItem* rowName = new QTableWidgetItem(tr("No incoming product dependencies"));
-            m_ui->incomingProductDependenciesTable->setItem(incomingProductDependencyCount, 1, rowName);
-            ++incomingProductDependencyCount;
-        }
-        m_ui->incomingProductDependenciesTable->setMinimumHeight(m_ui->incomingProductDependenciesTable->rowHeight(0) * incomingProductDependencyCount + 2 * m_ui->incomingProductDependenciesTable->frameWidth());
-        m_ui->incomingProductDependenciesTable->adjustSize();
     }
 
     struct MissingDependencyTableInfo
@@ -466,7 +416,6 @@ namespace AssetProcessor
 
         m_ui->outgoingProductDependenciesTitleLabel->setVisible(visible);
         m_ui->outgoingProductDependenciesValueLabel->setVisible(visible);
-        m_ui->outgoingProductDependenciesTable->setVisible(visible);
 
         m_ui->outgoingUnmetPathProductDependenciesTitleLabel->setVisible(visible);
         m_ui->outgoingUnmetPathProductDependenciesValueLabel->setVisible(visible);
@@ -474,7 +423,6 @@ namespace AssetProcessor
 
         m_ui->incomingProductDependenciesTitleLabel->setVisible(visible);
         m_ui->incomingProductDependenciesValueLabel->setVisible(visible);
-        m_ui->incomingProductDependenciesTable->setVisible(visible);
 
         m_ui->MissingProductDependenciesTitleLabel->setVisible(visible);
         m_ui->MissingProductDependenciesValueLabel->setVisible(visible);
@@ -485,8 +433,6 @@ namespace AssetProcessor
 
         m_ui->DependencySeparatorLine->setVisible(visible);
 
-        m_ui->OutgoingDescription->setVisible(visible);
-        m_ui->IncomingDescription->setVisible(visible);
         m_ui->IncomingProductDependenciesTreeView->setVisible(visible);
         m_ui->OutgoingProductDependenciesTreeView->setVisible(visible);
 
