@@ -74,6 +74,7 @@ namespace O3DE::ProjectManager
         QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
 
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
+
         if (!m_pythonBindings->PythonStarted())
         {
             if (!interactive)

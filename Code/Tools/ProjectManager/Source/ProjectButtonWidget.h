@@ -118,8 +118,6 @@ namespace O3DE::ProjectManager
     private:
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
-        void ShowWarning(bool show, const QString& warning);
-        void ShowDefaultBuildButton();
 
         void ShowReadyState();
         void ShowLaunchingState();

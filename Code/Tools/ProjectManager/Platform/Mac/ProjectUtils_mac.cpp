@@ -107,6 +107,7 @@ namespace O3DE::ProjectManager
 
             return AZ::Success();
         }
+
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& engineRoot)
         {
             return ExecuteCommandResultModalDialog(
