@@ -18,16 +18,24 @@ namespace AzFramework
 {
     //! A wrapper around Spawnable asset that can be used by Script Canvas and Lua
     struct SpawnableAssetRef final
+        : private AZ::Data::AssetBus::Handler
     {
         AZ_RTTI(SpawnableAssetRef, "{A96A5037-AD0D-43B6-9948-ED63438C4A52}");
         static void Reflect(AZ::ReflectContext* context);
 
-        SpawnableAssetRef() = default;
+        SpawnableAssetRef();
+        ~SpawnableAssetRef();
         SpawnableAssetRef(const SpawnableAssetRef& rhs);
         SpawnableAssetRef& operator=(const SpawnableAssetRef& rhs);
 
         void OnSpawnAssetChanged();
 
         AZ::Data::Asset<Spawnable> m_asset;
+
+    private:
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType) override;
+
     };
 }

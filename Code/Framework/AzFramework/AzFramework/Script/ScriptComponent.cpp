@@ -564,6 +564,11 @@ namespace AzFramework
         // if we have valid asset listen for script asset events, like reload
         if (m_script.GetId().IsValid())
         {
+            AZ::Data::AssetLoadParameters loadParams;
+            m_script = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(
+                    m_script.GetId(),
+                    m_script.GetAutoLoadBehavior(),
+                    loadParams);
             AZ::Data::AssetBus::Handler::BusConnect(m_script.GetId());
             m_script.QueueLoad();
         }

@@ -9,38 +9,10 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzFramework/Spawnable/SpawnableAssetRef.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace AzFramework
 {
-    // Allows EBus calls to Spawnable API
-    class SpawnableRequests
-        : public AZ::EBusTraits
-    {
-    public:
-        // Only a single handler is allowed
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-
-        //! Creates EntitySpawnTicket using provided prefab asset
-        virtual EntitySpawnTicket CreateSpawnTicket(const SpawnableAssetRef& spawnableAsset) = 0;
-
-        //! Spawns a prefab and places it relative to provided parent,
-        //! if no parentId is specified then places it in world coordinates
-        virtual bool Spawn(
-            EntitySpawnTicket spawnTicket,
-            AZ::EntityId parentId,
-            AZ::Vector3 translation,
-            AZ::Vector3 rotation,
-            float scale) = 0;
-
-        //! Despawns a prefab
-        virtual bool Despawn(EntitySpawnTicket spawnTicket) = 0;
-    };
-
-    using SpawnableRequestsBus = AZ::EBus<SpawnableRequests>;
-
     // Provides spawn notifications from Spawnable API
     class SpawnableNotifications
         : public AZ::EBusTraits

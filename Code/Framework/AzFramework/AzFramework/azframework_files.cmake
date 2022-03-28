@@ -299,6 +299,8 @@ set(FILES
     Spawnable/SpawnableEntitiesInterface.cpp
     Spawnable/SpawnableEntitiesManager.h
     Spawnable/SpawnableEntitiesManager.cpp
+    Spawnable/SpawnableMediator.cpp
+    Spawnable/SpawnableMediator.h
     Spawnable/SpawnableMetaData.cpp
     Spawnable/SpawnableMetaData.h
     Spawnable/SpawnableMonitor.h

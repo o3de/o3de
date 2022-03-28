@@ -52,6 +52,14 @@ namespace AzFramework
         }
     }
 
+    SpawnableAssetRef::SpawnableAssetRef()
+    {
+    }
+
+    SpawnableAssetRef::~SpawnableAssetRef()
+    {
+    }
+
     SpawnableAssetRef::SpawnableAssetRef(const SpawnableAssetRef& rhs)
         : m_asset(rhs.m_asset)
     {
@@ -86,6 +94,24 @@ namespace AzFramework
             {
                 m_asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::Default);
             }
+
+            AZ::Data::AssetBus::Handler::BusDisconnect();
+            AZ::Data::AssetBus::Handler::BusConnect(m_asset.GetId());
         }
+    }
+
+    void SpawnableAssetRef::OnAssetReady([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+    }
+
+    void SpawnableAssetRef::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        m_asset = asset;
+    }
+
+    void SpawnableAssetRef::OnAssetUnloaded(
+        [[maybe_unused]] const AZ::Data::AssetId assetId,
+        [[maybe_unused]] const AZ::Data::AssetType assetType)
+    {
     }
 }

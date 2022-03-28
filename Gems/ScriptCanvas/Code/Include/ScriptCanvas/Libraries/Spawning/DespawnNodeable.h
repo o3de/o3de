@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Spawnable/SpawnableBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Spawnable/SpawnableMediator.h>
 #include <Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.generated.h>
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -34,5 +34,8 @@ namespace ScriptCanvas::Nodeables::Spawning
 
         // AzFramework::SpawnableNotificationsBus::Handler overrides ...
         void OnDespawn(AzFramework::EntitySpawnTicket spawnTicket) override;
+
+    private:
+        AzFramework::SpawnableMediator m_spawnableMediator;
     };
 }

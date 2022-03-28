@@ -27,7 +27,6 @@ namespace AzFramework
         , public AZ::SystemTickBus::Handler
         , public RootSpawnableInterface::Registrar
         , public RootSpawnableNotificationBus::Handler
-        , public SpawnableRequestsBus::Handler
     {
     public:
         AZ_COMPONENT(SpawnableSystemComponent, "{12D0DA52-BB86-4AC3-8862-9493E0D0E207}");
@@ -79,19 +78,6 @@ namespace AzFramework
         void OnRootSpawnableReady(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
 
-        //
-        // SpawnableRequestsBus
-        //
-
-        EntitySpawnTicket CreateSpawnTicket(const SpawnableAssetRef& spawnableAsset) override;
-        bool Spawn(
-            EntitySpawnTicket spawnTicket,
-            AZ::EntityId parentId,
-            AZ::Vector3 translation,
-            AZ::Vector3 rotation,
-            float scale) override;
-        bool Despawn(EntitySpawnTicket spawnTicket) override;
-
     protected:
         void Activate() override;
         void Deactivate() override;
@@ -105,19 +91,5 @@ namespace AzFramework
 
         AZ::Data::AssetId m_rootSpawnableId;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
-
-    private:
-        struct SpawnableResult
-        {
-            AZStd::vector<AZ::EntityId> m_entityList;
-            EntitySpawnTicket m_spawnTicket;
-        };
-
-        void ProcessSpawnedResults();
-        void ProcessDespawnedResults();
-
-        AZStd::vector<SpawnableResult> m_spawnedResults;
-        AZStd::vector<AzFramework::EntitySpawnTicket> m_despawnedResults;
-        AZStd::recursive_mutex m_mutex;
     };
 } // namespace AzFramework

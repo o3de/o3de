@@ -6,17 +6,26 @@
  *
  */
 
-#include <AzFramework/Spawnable/SpawnableBus.h>
+#include <AzFramework/Spawnable/SpawnableMediator.h>
 #include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
-    AzFramework::EntitySpawnTicket CreateSpawnTicketNodeable::CreateTicket(const AzFramework::SpawnableAssetRef& Prefab)
+    CreateSpawnTicketNodeable::CreateSpawnTicketNodeable([[maybe_unused]] const CreateSpawnTicketNodeable& rhs)
+    {
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_spawnableMediator
+    }
+
+    CreateSpawnTicketNodeable& CreateSpawnTicketNodeable::operator=([[maybe_unused]] const CreateSpawnTicketNodeable& rhs)
+    {
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_spawnableMediator
+        return *this;
+    }
+
+    AzFramework::EntitySpawnTicket CreateSpawnTicketNodeable::CreateTicket(const AzFramework::SpawnableAssetRef& prefab)
     {
         using namespace AzFramework;
-
-        EntitySpawnTicket spawnTicket;
-        SpawnableRequestsBus::BroadcastResult(spawnTicket, &SpawnableRequests::CreateSpawnTicket, Prefab);
-        return spawnTicket;
+        
+        return m_spawnableMediator.CreateSpawnTicket(prefab);
     }
 }

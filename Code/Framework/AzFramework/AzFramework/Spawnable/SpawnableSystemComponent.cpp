@@ -6,6 +6,8 @@
  *
  */
 
+#include "SpawnableMediator.h"
+
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
@@ -25,29 +27,12 @@ namespace AzFramework
         Spawnable::Reflect(context);
         SpawnableMetaData::Reflect(context);
         EntitySpawnTicket::Reflect(context);
-        SpawnableAssetRef::Reflect(context);
+        SpawnableMediator::Reflect(context);
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
             serializeContext->Class<SpawnableSystemComponent, AZ::Component>();
             serializeContext->RegisterGenericType<AZ::Data::Asset<Spawnable>>();
-        }
-
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<SpawnableRequestsBus>("SpawnableRequestsBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
-                ->Attribute(AZ::Script::Attributes::Module, "prefabs")
-                ->Event("CreateSpawnTicket", &SpawnableRequests::CreateSpawnTicket)
-                ->Event("Spawn", &SpawnableRequests::Spawn)
-                ->Event("Despawn", &SpawnableRequests::Despawn);
-
-            behaviorContext->EBus<SpawnableNotificationsBus>("SpawnableNotificationsBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
-                ->Attribute(AZ::Script::Attributes::Module, "prefabs")
-                ->Handler<SpawnableNotificationsHandler>();
         }
     }
 
@@ -71,9 +56,6 @@ namespace AzFramework
     {
         ProcessSpawnableQueue();
         RootSpawnableNotificationBus::ExecuteQueuedEvents();
-
-        ProcessDespawnedResults();
-        ProcessSpawnedResults();
     }
 
     int SpawnableSystemComponent::GetTickOrder()
@@ -169,93 +151,7 @@ namespace AzFramework
     {
         AZ_TracePrintf("Spawnables", "Generation %i of the root spawnable has been released.\n", generation);
     }
-
-    EntitySpawnTicket SpawnableSystemComponent::CreateSpawnTicket(const SpawnableAssetRef& spawnableAsset)
-    {
-        return EntitySpawnTicket(spawnableAsset.m_asset);
-    }
-
-    bool SpawnableSystemComponent::Spawn(
-        EntitySpawnTicket spawnTicket,
-        AZ::EntityId parentId,
-        AZ::Vector3 translation,
-        AZ::Vector3 rotation,
-        float scale)
-    {
-        if (!spawnTicket.IsValid())
-        {
-            AZ_Error("Spawnables", false, "EntitySpawnTicket used for spawning is invalid.");
-            return false;
-        }
-
-        auto preSpawnCB = [this, parentId, translation, rotation, scale](
-                              [[maybe_unused]] EntitySpawnTicket::Id ticketId,
-            SpawnableEntityContainerView view)
-        {
-            AZStd::lock_guard lock(m_mutex);
-
-            AZ::Entity* rootEntity = *view.begin();
-            TransformComponent* entityTransform = rootEntity->FindComponent<TransformComponent>();
-
-            if (entityTransform)
-            {
-                AZ::Vector3 rotationCopy = rotation;
-                AZ::Quaternion rotationQuat = AZ::Quaternion::CreateFromEulerAnglesDegrees(rotationCopy);
-
-                TransformComponentConfiguration transformConfig;
-                transformConfig.m_parentId = parentId;
-                transformConfig.m_localTransform = AZ::Transform(translation, rotationQuat, scale);
-                entityTransform->SetConfiguration(transformConfig);
-            }
-        };
-
-        auto spawnCompleteCB =
-            [this,
-             spawnTicket]([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableConstEntityContainerView view)
-        {
-            AZStd::lock_guard lock(m_mutex);
-
-            SpawnableResult spawnableResult;
-            // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
-            // and to provide easier access to it in OnSpawnCompleted callback
-            spawnableResult.m_spawnTicket = spawnTicket;
-            spawnableResult.m_entityList.reserve(view.size());
-            for (const AZ::Entity* entity : view)
-            {
-                spawnableResult.m_entityList.emplace_back(entity->GetId());
-            }
-            m_spawnedResults.push_back(spawnableResult);
-        };
-
-        SpawnAllEntitiesOptionalArgs optionalArgs;
-        optionalArgs.m_preInsertionCallback = AZStd::move(preSpawnCB);
-        optionalArgs.m_completionCallback = AZStd::move(spawnCompleteCB);
-        SpawnableEntitiesInterface::Get()->SpawnAllEntities(spawnTicket, AZStd::move(optionalArgs));
-        return true;
-    }
-
-    bool SpawnableSystemComponent::Despawn(EntitySpawnTicket spawnTicket)
-    {
-        if (!spawnTicket.IsValid())
-        {
-            AZ_Error("Spawnables", false, "EntitySpawnTicket used for despawning is invalid.");
-            return false;
-        }
-
-        auto despawnCompleteCB = [this, spawnTicket]([[maybe_unused]] EntitySpawnTicket::Id ticketId)
-        {
-            AZStd::lock_guard lock(m_mutex);
-            // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
-            // and to provide easier access to it in OnDespawn callback
-            m_despawnedResults.push_back(spawnTicket);
-        };
-
-        DespawnAllEntitiesOptionalArgs optionalArgs;
-        optionalArgs.m_completionCallback = AZStd::move(despawnCompleteCB);
-        SpawnableEntitiesInterface::Get()->DespawnAllEntities(spawnTicket, AZStd::move(optionalArgs));
-        return true;
-    }
-
+    
     void SpawnableSystemComponent::Activate()
     {
         // Register with AssetDatabase
@@ -282,7 +178,6 @@ namespace AzFramework
 
         RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
-        SpawnableRequestsBus::Handler::BusConnect();
 
         m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
             {
@@ -295,19 +190,12 @@ namespace AzFramework
 
     void SpawnableSystemComponent::Deactivate()
     {
-        m_spawnedResults.clear(); // clears any cached SpawnTickets that may remain so everything despawns
-        m_spawnedResults.shrink_to_fit();
-
-        m_despawnedResults.clear(); // clears any cached SpawnTickets that may remain so everything despawns
-        m_despawnedResults.shrink_to_fit();
-
         ProcessSpawnableQueue();
 
         m_registryChangeHandler.Disconnect();
 
         AZ::TickBus::Handler::BusDisconnect();
         RootSpawnableNotificationBus::Handler::BusDisconnect();
-        SpawnableRequestsBus::Handler::BusDisconnect();
 
         // Unregister Lifecycle event handler
         m_criticalAssetsHandler = {};
@@ -389,42 +277,6 @@ namespace AzFramework
                 "No root spawnable assigned. The root spawnable can be assigned in the Settings Registry under the key '%s'.\n",
                 RootSpawnableRegistryKey);*/
             ReleaseRootSpawnable();
-        }
-    }
-
-    void SpawnableSystemComponent::ProcessSpawnedResults()
-    {
-        AZStd::vector<SpawnableResult> swappedSpawnedResults;
-        {
-            AZStd::lock_guard lock(m_mutex);
-            swappedSpawnedResults.swap(m_spawnedResults);
-        }
-
-        for (const auto& spawnResult : swappedSpawnedResults)
-        {
-            if (spawnResult.m_entityList.empty())
-            {
-                continue;
-            }
-            SpawnableNotificationsBus::Event(
-                spawnResult.m_spawnTicket.GetId(),
-                &SpawnableNotifications::OnSpawn,
-                spawnResult.m_spawnTicket,
-                move(spawnResult.m_entityList));
-        }
-    }
-
-    void SpawnableSystemComponent::ProcessDespawnedResults()
-    {
-        AZStd::vector<EntitySpawnTicket> swappedDespawnedResults;
-        {
-            AZStd::lock_guard lock(m_mutex);
-            swappedDespawnedResults.swap(m_despawnedResults);
-        }
-
-        for (const auto& spawnTicket : swappedDespawnedResults)
-        {
-            SpawnableNotificationsBus::Event(spawnTicket.GetId(), &SpawnableNotifications::OnDespawn, spawnTicket);
         }
     }
 } // namespace AzFramework

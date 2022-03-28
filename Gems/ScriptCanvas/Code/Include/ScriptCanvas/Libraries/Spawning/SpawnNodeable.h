@@ -11,6 +11,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Spawnable/SpawnableBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Spawnable/SpawnableMediator.h>
 #include <Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.generated.h>
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -34,5 +35,8 @@ namespace ScriptCanvas::Nodeables::Spawning
 
         // AzFramework::SpawnableNotificationsBus::Handler overrides ...
         void OnSpawn(AzFramework::EntitySpawnTicket spawnTicket, AZStd::vector<AZ::EntityId> entityList) override;
+
+    private:
+        AzFramework::SpawnableMediator m_spawnableMediator;
     };
 }
