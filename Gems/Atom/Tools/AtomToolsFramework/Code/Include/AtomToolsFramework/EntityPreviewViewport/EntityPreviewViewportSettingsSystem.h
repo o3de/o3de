@@ -11,30 +11,30 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
-#include <Viewport/MaterialViewportSettingsRequestBus.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    //! MaterialViewportSettingsSystem manages storing and retrieving different viewport settings, loading and saving lighting and model
-    //! presets
-    class MaterialViewportSettingsSystem final
-        : public MaterialViewportSettingsRequestBus::Handler
+    //! EntityPreviewViewportSettingsSystem manages storing and retrieving different viewport settings, loading and saving lighting and
+    //! model presets
+    class EntityPreviewViewportSettingsSystem final
+        : public EntityPreviewViewportSettingsRequestBus::Handler
         , public AZ::TickBus::Handler
         , public AzFramework::AssetCatalogEventBus::Handler
     {
     public:
-        AZ_RTTI(MaterialViewportSettingsSystem, "{3CA1A2F4-AD6E-478A-B1E8-565E66BD5B69}");
-        AZ_CLASS_ALLOCATOR(MaterialViewportSettingsSystem, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY_MOVE(MaterialViewportSettingsSystem);
+        AZ_RTTI(EntityPreviewViewportSettingsSystem, "{3CA1A2F4-AD6E-478A-B1E8-565E66BD5B69}");
+        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettingsSystem, AZ::SystemAllocator, 0);
+        AZ_DISABLE_COPY_MOVE(EntityPreviewViewportSettingsSystem);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        MaterialViewportSettingsSystem() = default;
-        MaterialViewportSettingsSystem(const AZ::Crc32& toolId);
-        ~MaterialViewportSettingsSystem();
+        EntityPreviewViewportSettingsSystem() = default;
+        EntityPreviewViewportSettingsSystem(const AZ::Crc32& toolId);
+        ~EntityPreviewViewportSettingsSystem();
 
     private:
         void ClearContent();
@@ -42,7 +42,7 @@ namespace MaterialEditor
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // MaterialViewportSettingsRequestBus::Handler overrides ...
+        // EntityPreviewViewportSettingsRequestBus::Handler overrides ...
         void SetLightingPreset(const AZ::Render::LightingPreset& preset) override;
         const AZ::Render::LightingPreset& GetLightingPreset() const override;
         bool SaveLightingPreset(const AZStd::string& path) const override;
@@ -87,4 +87,4 @@ namespace MaterialEditor
 
         bool m_settingsNotificationPending = {};
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

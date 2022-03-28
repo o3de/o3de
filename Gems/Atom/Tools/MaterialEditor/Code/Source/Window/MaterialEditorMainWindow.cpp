@@ -6,12 +6,9 @@
  *
  */
 
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AtomToolsFramework/Util/Util.h>
-#include <Viewport/MaterialViewportWidget.h>
-#include <Window/MaterialEditorWindow.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
+#include <Window/MaterialEditorMainWindow.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
-#include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
 #include <QApplication>
 #include <QMessageBox>
@@ -19,38 +16,37 @@
 
 namespace MaterialEditor
 {
-    MaterialEditorWindow::MaterialEditorWindow(const AZ::Crc32& toolId, QWidget* parent)
-        : Base(toolId, "MaterialEditorWindow",  parent)
+    MaterialEditorMainWindow::MaterialEditorMainWindow(const AZ::Crc32& toolId, QWidget* parent)
+        : Base(toolId, "MaterialEditorMainWindow", parent)
     {
-        m_toolBar = new MaterialEditorToolBar(m_toolId, this);
-        m_toolBar->setObjectName("ToolBar");
-        addToolBar(m_toolBar);
-
-        m_materialViewport = new MaterialViewportWidget(m_toolId, centralWidget());
-        m_materialViewport->setObjectName("Viewport");
-        m_materialViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        centralWidget()->layout()->addWidget(m_materialViewport);
-
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
 
+        m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
+        m_toolBar->setObjectName("ToolBar");
+        addToolBar(m_toolBar);
+
         m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/MaterialInspector");
-
         AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea);
-        AddDockWidget("Viewport Settings", new ViewportSettingsInspector(m_toolId, this), Qt::LeftDockWidgetArea);
+
+        m_materialViewport = new MaterialEditorViewportWidget(m_toolId, "MaterialEditorViewportWidget", "passes/MainRenderPipeline.azasset", this);
+        m_materialViewport->Init();
+        centralWidget()->layout()->addWidget(m_materialViewport);
+
+        AddDockWidget("Viewport Settings", new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this), Qt::LeftDockWidgetArea);
         SetDockWidgetVisible("Viewport Settings", false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
-    void MaterialEditorWindow::OnDocumentOpened(const AZ::Uuid& documentId)
+    void MaterialEditorMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         Base::OnDocumentOpened(documentId);
         m_materialInspector->SetDocumentId(documentId);
     }
 
-    void MaterialEditorWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
+    void MaterialEditorMainWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
     {
         QSize requestedViewportSize = QSize(width, height) / devicePixelRatioF();
         QSize currentViewportSize = m_materialViewport->size();
@@ -71,23 +67,23 @@ namespace MaterialEditor
             newDeviceSize.width(), newDeviceSize.height());
     }
 
-    void MaterialEditorWindow::LockViewportRenderTargetSize(uint32_t width, uint32_t height)
+    void MaterialEditorMainWindow::LockViewportRenderTargetSize(uint32_t width, uint32_t height)
     {
         m_materialViewport->LockRenderTargetSize(width, height);
     }
 
-    void MaterialEditorWindow::UnlockViewportRenderTargetSize()
+    void MaterialEditorMainWindow::UnlockViewportRenderTargetSize()
     {
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    void MaterialEditorWindow::OpenSettings()
+    void MaterialEditorMainWindow::OpenSettings()
     {
         SettingsDialog dialog(this);
         dialog.exec();
     }
 
-    void MaterialEditorWindow::OpenHelp()
+    void MaterialEditorMainWindow::OpenHelp()
     {
         QMessageBox::information(
             this, windowTitle(),
@@ -103,4 +99,4 @@ namespace MaterialEditor
     }
 } // namespace MaterialEditor
 
-#include <Window/moc_MaterialEditorWindow.cpp>
+#include <Window/moc_MaterialEditorMainWindow.cpp>

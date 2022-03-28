@@ -11,20 +11,16 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentInspector.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h>
-
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <GraphCanvas/Styling/StyleManager.h>
-
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
 #include <GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
-
-#include <Viewport/MaterialCanvasViewportWidget.h>
-#include <Window/ToolBar/MaterialCanvasToolBar.h>
-
 #include <QTranslator>
+#include <Window/MaterialCanvasViewportWidget.h>
 #endif
 
 namespace MaterialCanvas
@@ -58,12 +54,12 @@ namespace MaterialCanvas
     private:
         GraphCanvas::GraphCanvasTreeItem* GetNodePaletteRootTreeItem() const;
 
-        QTranslator m_translator;
-        GraphCanvas::StyleManager m_styleManager;
-        GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
-        GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
         AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
+        AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
+        GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
+        GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
+        GraphCanvas::StyleManager m_styleManager;
         MaterialCanvasViewportWidget* m_materialViewport = {};
-        MaterialCanvasToolBar* m_toolBar = {};
+        QTranslator m_translator;
     };
 } // namespace MaterialCanvas

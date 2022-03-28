@@ -12,12 +12,12 @@
 
 namespace AtomToolsFramework
 {
-    //! Rotates target model in viewport
-    class RotateModelBehavior final : public ViewportInputBehavior
+    //! Rotates object in viewport
+    class RotateObjectBehavior final : public ViewportInputBehavior
     {
     public:
-        RotateModelBehavior(ViewportInputBehaviorControllerInterface* controller);
-        virtual ~RotateModelBehavior() = default;
+        RotateObjectBehavior(ViewportInputBehaviorControllerInterface* controller);
+        virtual ~RotateObjectBehavior() = default;
 
         void Start() override;
 
@@ -30,7 +30,8 @@ namespace AtomToolsFramework
         static constexpr float SensitivityX = 0.01f;
         static constexpr float SensitivityY = 0.01f;
 
-        AZ::EntityId m_targetEntityId;
+        AZ::EntityId m_objectEntityId;
         AZ::Vector3 m_cameraRight = AZ::Vector3::CreateAxisX();
+        AZ::Vector3 m_cameraUp = AZ::Vector3::CreateAxisZ();
     };
 } // namespace AtomToolsFramework

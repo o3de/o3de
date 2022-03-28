@@ -6,14 +6,12 @@
  *
  */
 
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
 #include <AzCore/IO/FileIO.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
-
-#include <Document/MaterialCanvasDocumentRequestBus.h>
-#include <Viewport/MaterialCanvasViewportWidget.h>
 #include <Window/MaterialCanvasMainWindow.h>
-#include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
 #include <QMessageBox>
 
@@ -23,22 +21,22 @@ namespace MaterialCanvas
         : Base(toolId, "MaterialCanvasMainWindow",  parent)
         , m_styleManager(toolId, "MaterialCanvas/StyleSheet/graphcanvas_style.json")
     {
-        m_toolBar = new MaterialCanvasToolBar(m_toolId, this);
-        m_toolBar->setObjectName("ToolBar");
-        addToolBar(m_toolBar);
-
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
+
+        m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
+        m_toolBar->setObjectName("ToolBar");
+        addToolBar(m_toolBar);
 
         m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/MaterialInspector");
         AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea);
 
-        m_materialViewport = new MaterialCanvasViewportWidget(m_toolId, this);
-        m_materialViewport->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        m_materialViewport = new MaterialCanvasViewportWidget(m_toolId, "MaterialCanvasViewportWidget", "passes/MainRenderPipeline.azasset", this);
+        m_materialViewport->Init();
         AddDockWidget("Viewport", m_materialViewport, Qt::RightDockWidgetArea);
 
-        AddDockWidget("Viewport Settings", new ViewportSettingsInspector(m_toolId, this), Qt::LeftDockWidgetArea);
+        AddDockWidget("Viewport Settings", new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this), Qt::LeftDockWidgetArea);
         SetDockWidgetVisible("Viewport Settings", false);
 
         AddDockWidget("MiniMap", aznew GraphCanvas::MiniMapDockWidget(m_toolId, this), Qt::RightDockWidgetArea);

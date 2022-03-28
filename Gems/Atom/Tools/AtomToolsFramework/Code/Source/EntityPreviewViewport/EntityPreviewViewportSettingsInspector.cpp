@@ -11,12 +11,12 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomToolsFramework/AssetSelection/AssetSelectionGrid.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Application/Application.h>
-#include <Viewport/MaterialViewportSettingsRequestBus.h>
-#include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
 #include <QAction>
 #include <QApplication>
@@ -25,25 +25,25 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    ViewportSettingsInspector::ViewportSettingsInspector(const AZ::Crc32& toolId, QWidget* parent)
-        : AtomToolsFramework::InspectorWidget(parent)
+    EntityPreviewViewportSettingsInspector::EntityPreviewViewportSettingsInspector(const AZ::Crc32& toolId, QWidget* parent)
+        : InspectorWidget(parent)
         , m_toolId(toolId)
     {
-        SetGroupSettingsPrefix("/O3DE/Atom/MaterialEditor/ViewportSettingsInspector");
+        SetGroupSettingsPrefix("/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector");
         Populate();
-        MaterialViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
+        EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
 
-    ViewportSettingsInspector::~ViewportSettingsInspector()
+    EntityPreviewViewportSettingsInspector::~EntityPreviewViewportSettingsInspector()
     {
         m_lightingPreset = {};
         m_modelPreset = {};
-        MaterialViewportSettingsNotificationBus::Handler::BusDisconnect();
+        EntityPreviewViewportSettingsNotificationBus::Handler::BusDisconnect();
     }
 
-    void ViewportSettingsInspector::Populate()
+    void EntityPreviewViewportSettingsInspector::Populate()
     {
         AddGroupsBegin();
         AddGeneralGroup();
@@ -52,7 +52,7 @@ namespace MaterialEditor
         AddGroupsEnd();
     }
 
-    void ViewportSettingsInspector::AddGeneralGroup()
+    void EntityPreviewViewportSettingsInspector::AddGeneralGroup()
     {
         const AZStd::string groupName = "generalSettings";
         const AZStd::string groupDisplayName = "General Settings";
@@ -60,11 +60,11 @@ namespace MaterialEditor
 
         AddGroup(
             groupName, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(
+            new InspectorPropertyGroupWidget(
                 &m_viewportSettings, &m_viewportSettings, m_viewportSettings.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName)));
     }
 
-    void ViewportSettingsInspector::AddModelGroup()
+    void EntityPreviewViewportSettingsInspector::AddModelGroup()
     {
         const AZStd::string groupName = "modelSettings";
         const AZStd::string groupDisplayName = "Model Settings";
@@ -88,7 +88,7 @@ namespace MaterialEditor
         QObject::connect(selectButtonWidget, &QPushButton::clicked, this, [this]() { SelectModelPreset(); });
         QObject::connect(saveButtonWidget, &QPushButton::clicked, this, [this]() { SaveModelPreset(); });
 
-        auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+        auto inspectorWidget = new InspectorPropertyGroupWidget(
             &m_modelPreset, &m_modelPreset, m_modelPreset.TYPEINFO_Uuid(), this, groupWidget, GetGroupSaveStateKey(groupName));
 
         groupWidget->layout()->addWidget(inspectorWidget);
@@ -96,15 +96,15 @@ namespace MaterialEditor
         AddGroup(groupName, groupDisplayName, groupDescription, groupWidget);
     }
 
-    void ViewportSettingsInspector::CreateModelPreset()
+    void EntityPreviewViewportSettingsInspector::CreateModelPreset()
     {
-        const AZStd::string defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
-        const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
+        const AZStd::string defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
+        const AZStd::string savePath = GetSaveFilePath(defaultPath);
         if (!savePath.empty())
         {
-            MaterialViewportSettingsRequestBus::Event(
+            EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId,
-                [&savePath](MaterialViewportSettingsRequestBus::Events* viewportRequests)
+                [&savePath](EntityPreviewViewportSettingsRequestBus::Events* viewportRequests)
                 {
                     viewportRequests->SetModelPreset(AZ::Render::ModelPreset());
                     viewportRequests->SaveModelPreset(savePath);
@@ -112,29 +112,29 @@ namespace MaterialEditor
         }
     }
 
-    void ViewportSettingsInspector::SelectModelPreset()
+    void EntityPreviewViewportSettingsInspector::SelectModelPreset()
     {
-        const int itemSize = aznumeric_cast<int>(AtomToolsFramework::GetSettingsValue<AZ::u64>(
-            "/O3DE/Atom/MaterialEditor/ViewportSettingsInspector/AssetSelectionGrid/ModelItemSize", 128));
+        const int itemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
+            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/ModelItemSize", 128));
 
-        AtomToolsFramework::AssetSelectionGrid dialog("Model Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
+        AssetSelectionGrid dialog("Model Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
             return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
                 AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension);
-        }, QSize(itemSize, itemSize), AtomToolsFramework::GetToolMainWindow());
+        }, QSize(itemSize, itemSize), GetToolMainWindow());
 
         AZ::Data::AssetId assetId;
-        MaterialViewportSettingsRequestBus::EventResult(
-            assetId, m_toolId, &MaterialViewportSettingsRequestBus::Events::GetLastModelPresetAssetId);
+        EntityPreviewViewportSettingsRequestBus::EventResult(
+            assetId, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetAssetId);
         dialog.SelectAsset(assetId);
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
-            MaterialViewportSettingsRequestBus::Event(
-                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
+        connect(&dialog, &AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
         });
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
-            MaterialViewportSettingsRequestBus::Event(
-                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
+        connect(&dialog, &AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
         });
 
         dialog.setFixedSize(800, 400);
@@ -146,26 +146,26 @@ namespace MaterialEditor
         dialog.exec();
     }
 
-    void ViewportSettingsInspector::SaveModelPreset()
+    void EntityPreviewViewportSettingsInspector::SaveModelPreset()
     {
         AZStd::string defaultPath;
-        MaterialViewportSettingsRequestBus::EventResult(
-            defaultPath, m_toolId, &MaterialViewportSettingsRequestBus::Events::GetLastModelPresetPath);
+        EntityPreviewViewportSettingsRequestBus::EventResult(
+            defaultPath, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetPath);
 
         if (defaultPath.empty())
         {
-            defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
+            defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
         }
 
-        const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
+        const AZStd::string savePath = GetSaveFilePath(defaultPath);
         if (!savePath.empty())
         {
-            MaterialViewportSettingsRequestBus::Event(m_toolId, &MaterialViewportSettingsRequestBus::Events::SetModelPreset, m_modelPreset);
-            MaterialViewportSettingsRequestBus::Event(m_toolId, &MaterialViewportSettingsRequestBus::Events::SaveModelPreset, savePath);
+            EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetModelPreset, m_modelPreset);
+            EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveModelPreset, savePath);
         }
     }
 
-    void ViewportSettingsInspector::AddLightingGroup()
+    void EntityPreviewViewportSettingsInspector::AddLightingGroup()
     {
         const AZStd::string groupName = "lightingSettings";
         const AZStd::string groupDisplayName = "Lighting Settings";
@@ -189,7 +189,7 @@ namespace MaterialEditor
         QObject::connect(selectButtonWidget, &QPushButton::clicked, this, [this]() { SelectLightingPreset(); });
         QObject::connect(saveButtonWidget, &QPushButton::clicked, this, [this]() { SaveLightingPreset(); });
 
-        auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+        auto inspectorWidget = new InspectorPropertyGroupWidget(
             &m_lightingPreset, &m_lightingPreset, m_lightingPreset.TYPEINFO_Uuid(), this, groupWidget, GetGroupSaveStateKey(groupName));
 
         groupWidget->layout()->addWidget(inspectorWidget);
@@ -197,15 +197,15 @@ namespace MaterialEditor
         AddGroup(groupName, groupDisplayName, groupDescription, groupWidget);
     }
 
-    void ViewportSettingsInspector::CreateLightingPreset()
+    void EntityPreviewViewportSettingsInspector::CreateLightingPreset()
     {
-        const AZStd::string defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
-        const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
+        const AZStd::string defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
+        const AZStd::string savePath = GetSaveFilePath(defaultPath);
         if (!savePath.empty())
         {
-            MaterialViewportSettingsRequestBus::Event(
+            EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId,
-                [&savePath](MaterialViewportSettingsRequestBus::Events* viewportRequests)
+                [&savePath](EntityPreviewViewportSettingsRequestBus::Events* viewportRequests)
                 {
                     viewportRequests->SetLightingPreset(AZ::Render::LightingPreset());
                     viewportRequests->SaveLightingPreset(savePath);
@@ -213,29 +213,29 @@ namespace MaterialEditor
         }
     }
 
-    void ViewportSettingsInspector::SelectLightingPreset()
+    void EntityPreviewViewportSettingsInspector::SelectLightingPreset()
     {
-        const int itemSize = aznumeric_cast<int>(AtomToolsFramework::GetSettingsValue<AZ::u64>(
-            "/O3DE/Atom/MaterialEditor/ViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 128));
+        const int itemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
+            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 128));
 
-        AtomToolsFramework::AssetSelectionGrid dialog("Lighting Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
+        AssetSelectionGrid dialog("Lighting Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
             return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
                 AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension);
-        }, QSize(itemSize, itemSize), AtomToolsFramework::GetToolMainWindow());
+        }, QSize(itemSize, itemSize), GetToolMainWindow());
 
         AZ::Data::AssetId assetId;
-        MaterialViewportSettingsRequestBus::EventResult(
-            assetId, m_toolId, &MaterialViewportSettingsRequestBus::Events::GetLastLightingPresetAssetId);
+        EntityPreviewViewportSettingsRequestBus::EventResult(
+            assetId, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetAssetId);
         dialog.SelectAsset(assetId);
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
-            MaterialViewportSettingsRequestBus::Event(
-                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+        connect(&dialog, &AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
         });
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
-            MaterialViewportSettingsRequestBus::Event(
-                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+        connect(&dialog, &AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
         });
 
         dialog.setFixedSize(800, 400);
@@ -247,30 +247,30 @@ namespace MaterialEditor
         dialog.exec();
     }
 
-    void ViewportSettingsInspector::SaveLightingPreset()
+    void EntityPreviewViewportSettingsInspector::SaveLightingPreset()
     {
         AZStd::string defaultPath;
-        MaterialViewportSettingsRequestBus::EventResult(
-            defaultPath, m_toolId, &MaterialViewportSettingsRequestBus::Events::GetLastLightingPresetPath);
+        EntityPreviewViewportSettingsRequestBus::EventResult(
+            defaultPath, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetPath);
 
         if (defaultPath.empty())
         {
-            defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
+            defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
         }
 
-        const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
+        const AZStd::string savePath = GetSaveFilePath(defaultPath);
         if (!savePath.empty())
         {
-            MaterialViewportSettingsRequestBus::Event(m_toolId, &MaterialViewportSettingsRequestBus::Events::SetLightingPreset, m_lightingPreset);
-            MaterialViewportSettingsRequestBus::Event(m_toolId, &MaterialViewportSettingsRequestBus::Events::SaveLightingPreset, savePath);
+            EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetLightingPreset, m_lightingPreset);
+            EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveLightingPreset, savePath);
         }
     }
 
-    void ViewportSettingsInspector::SaveSettings()
+    void EntityPreviewViewportSettingsInspector::SaveSettings()
     {
-        MaterialViewportSettingsRequestBus::Event(
+        EntityPreviewViewportSettingsRequestBus::Event(
             m_toolId,
-            [this](MaterialViewportSettingsRequestBus::Events* viewportRequests)
+            [this](EntityPreviewViewportSettingsRequestBus::Events* viewportRequests)
             {
                 viewportRequests->SetModelPreset(m_modelPreset);
                 viewportRequests->SetLightingPreset(m_lightingPreset);
@@ -282,11 +282,11 @@ namespace MaterialEditor
             });
     }
 
-    void ViewportSettingsInspector::LoadSettings()
+    void EntityPreviewViewportSettingsInspector::LoadSettings()
     {
-        MaterialViewportSettingsRequestBus::Event(
+        EntityPreviewViewportSettingsRequestBus::Event(
             m_toolId,
-            [this](MaterialViewportSettingsRequestBus::Events* viewportRequests)
+            [this](EntityPreviewViewportSettingsRequestBus::Events* viewportRequests)
             {
                 m_modelPreset = viewportRequests->GetModelPreset();
                 m_lightingPreset = viewportRequests->GetLightingPreset();
@@ -298,32 +298,32 @@ namespace MaterialEditor
             });
     }
 
-    void ViewportSettingsInspector::Reset()
+    void EntityPreviewViewportSettingsInspector::Reset()
     {
         LoadSettings();
-        AtomToolsFramework::InspectorWidget::Reset();
+        InspectorWidget::Reset();
     }
 
-    void ViewportSettingsInspector::OnViewportSettingsChanged()
+    void EntityPreviewViewportSettingsInspector::OnViewportSettingsChanged()
     {
         LoadSettings();
         RefreshAll();
     }
 
-    void ViewportSettingsInspector::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
+    void EntityPreviewViewportSettingsInspector::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
     {
         SaveSettings();
     }
 
-    void ViewportSettingsInspector::SetPropertyEditingComplete([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
+    void EntityPreviewViewportSettingsInspector::SetPropertyEditingComplete([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
     {
         SaveSettings();
     }
 
-    AZ::Crc32 ViewportSettingsInspector::GetGroupSaveStateKey(const AZStd::string& groupName) const
+    AZ::Crc32 EntityPreviewViewportSettingsInspector::GetGroupSaveStateKey(const AZStd::string& groupName) const
     {
-        return AZ::Crc32(AZStd::string::format("/O3DE/Atom/MaterialEditor/ViewportSettingsInspector/PropertyGroup/%s", groupName.c_str()));
+        return AZ::Crc32(AZStd::string::format("/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/PropertyGroup/%s", groupName.c_str()));
     }
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework
 
-#include <Window/ViewportSettingsInspector/moc_ViewportSettingsInspector.cpp>
+#include <AtomToolsFramework/EntityPreviewViewport/moc_EntityPreviewViewportSettingsInspector.cpp>

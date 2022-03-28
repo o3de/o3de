@@ -15,12 +15,12 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #endif
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    struct MaterialViewportSettings final
+    struct EntityPreviewViewportSettings final
     {
-        AZ_RTTI(MaterialViewportSettings, "{16150503-A314-4765-82A3-172670C9EA90}");
-        AZ_CLASS_ALLOCATOR(MaterialViewportSettings, AZ::SystemAllocator, 0);
+        AZ_RTTI(EntityPreviewViewportSettings, "{16150503-A314-4765-82A3-172670C9EA90}");
+        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettings, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -30,4 +30,4 @@ namespace MaterialEditor
         float m_fieldOfView = 90.0f;
         AZ::Render::DisplayMapperOperationType m_displayMapperOperationType = AZ::Render::DisplayMapperOperationType::Aces;
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

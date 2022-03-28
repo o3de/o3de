@@ -12,9 +12,9 @@
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    class MaterialViewportNotifications
+    class EntityPreviewViewportNotifications
         : public AZ::EBusTraits
     {
     public:
@@ -26,5 +26,5 @@ namespace MaterialEditor
         virtual void OnViewportSettingsChanged() {}
     };
 
-    using MaterialViewportSettingsNotificationBus = AZ::EBus<MaterialViewportNotifications>;
-} // namespace MaterialEditor
+    using EntityPreviewViewportSettingsNotificationBus = AZ::EBus<EntityPreviewViewportNotifications>;
+} // namespace AtomToolsFramework

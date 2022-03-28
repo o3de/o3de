@@ -13,9 +13,9 @@
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    class MaterialViewportRequests
+    class EntityPreviewViewportRequests
         : public AZ::EBusTraits
     {
     public:
@@ -106,5 +106,5 @@ namespace MaterialEditor
         virtual AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const = 0;
     };
 
-    using MaterialViewportSettingsRequestBus = AZ::EBus<MaterialViewportRequests>;
-} // namespace MaterialEditor
+    using EntityPreviewViewportSettingsRequestBus = AZ::EBus<EntityPreviewViewportRequests>;
+} // namespace AtomToolsFramework

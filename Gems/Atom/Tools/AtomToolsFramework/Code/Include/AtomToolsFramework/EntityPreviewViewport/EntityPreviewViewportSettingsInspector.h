@@ -12,26 +12,26 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettings.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
-#include <Viewport/MaterialCanvasViewportSettings.h>
-#include <Viewport/MaterialCanvasViewportSettingsNotificationBus.h>
 #endif
 
-namespace MaterialCanvas
+namespace AtomToolsFramework
 {
     //! Provides controls for viewing and editing lighting and model preset settings.
-    class ViewportSettingsInspector
-        : public AtomToolsFramework::InspectorWidget
+    class EntityPreviewViewportSettingsInspector
+        : public InspectorWidget
         , private AzToolsFramework::IPropertyEditorNotify
-        , private MaterialCanvasViewportSettingsNotificationBus::Handler
+        , private EntityPreviewViewportSettingsNotificationBus::Handler
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ViewportSettingsInspector, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettingsInspector, AZ::SystemAllocator, 0);
 
-        ViewportSettingsInspector(const AZ::Crc32& toolId, QWidget* parent = nullptr);
-        ~ViewportSettingsInspector() override;
+        EntityPreviewViewportSettingsInspector(const AZ::Crc32& toolId, QWidget* parent = nullptr);
+        ~EntityPreviewViewportSettingsInspector() override;
 
     private:
         void Populate();
@@ -50,10 +50,10 @@ namespace MaterialCanvas
         void SaveSettings();
         void LoadSettings();
 
-        // AtomToolsFramework::InspectorRequestBus::Handler overrides...
+        // InspectorRequestBus::Handler overrides...
         void Reset() override;
 
-        // MaterialCanvasViewportSettingsNotificationBus::Handler overrides...
+        // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
@@ -70,6 +70,6 @@ namespace MaterialCanvas
         const AZ::Crc32 m_toolId = {};
         AZ::Render::ModelPreset m_modelPreset;
         AZ::Render::LightingPreset m_lightingPreset;
-        MaterialCanvasViewportSettings m_viewportSettings;
+        EntityPreviewViewportSettings m_viewportSettings;
     };
-} // namespace MaterialCanvas
+} // namespace AtomToolsFramework

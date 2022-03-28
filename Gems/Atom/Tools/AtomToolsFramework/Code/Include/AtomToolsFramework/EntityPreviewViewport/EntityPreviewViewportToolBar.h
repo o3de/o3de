@@ -10,29 +10,29 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/AssetSelection/AssetSelectionComboBox.h>
-#include <Viewport/MaterialCanvasViewportSettingsNotificationBus.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h>
 
 #include <QAction>
 #include <QToolBar>
 #endif
 
-namespace MaterialCanvas
+namespace AtomToolsFramework
 {
-    class MaterialCanvasToolBar
+    class EntityPreviewViewportToolBar
         : public QToolBar
-        , public MaterialCanvasViewportSettingsNotificationBus::Handler
+        , public EntityPreviewViewportSettingsNotificationBus::Handler
     {
         Q_OBJECT
     public:
-        MaterialCanvasToolBar(const AZ::Crc32& toolId, QWidget* parent = 0);
-        ~MaterialCanvasToolBar();
+        EntityPreviewViewportToolBar(const AZ::Crc32& toolId, QWidget* parent = 0);
+        ~EntityPreviewViewportToolBar();
 
     private:
         void OnViewportSettingsChanged() override;
 
         const AZ::Crc32 m_toolId = {};
-        AtomToolsFramework::AssetSelectionComboBox* m_lightingPresetComboBox = {};
-        AtomToolsFramework::AssetSelectionComboBox* m_modelPresetComboBox = {};
+        AssetSelectionComboBox* m_lightingPresetComboBox = {};
+        AssetSelectionComboBox* m_modelPresetComboBox = {};
         QAction* m_toggleGrid = {};
         QAction* m_toggleShadowCatcher = {};
         QAction* m_toggleAlternateSkybox = {};
@@ -40,4 +40,4 @@ namespace MaterialCanvas
         AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QString> m_operationNames;
         AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QAction*> m_operationActions;
     };
-} // namespace MaterialCanvas
+} // namespace AtomToolsFramework

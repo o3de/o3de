@@ -8,22 +8,21 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/std/containers/vector.h>
-#include <Viewport/MaterialViewportSettingsNotificationBus.h>
-#include <Viewport/MaterialViewportSettingsRequestBus.h>
-#include <Window/ToolBar/MaterialEditorToolBar.h>
-
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
+
 #include <QAbstractItemView>
 #include <QAction>
 #include <QIcon>
 #include <QMenu>
 #include <QToolButton>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    MaterialEditorToolBar::MaterialEditorToolBar(const AZ::Crc32& toolId, QWidget* parent)
+    EntityPreviewViewportToolBar::EntityPreviewViewportToolBar(const AZ::Crc32& toolId, QWidget* parent)
         : QToolBar(parent)
         , m_toolId(toolId)
     {
@@ -33,24 +32,24 @@ namespace MaterialEditor
         m_toggleGrid = addAction(QIcon(":/Icons/grid.svg"), "Toggle Grid");
         m_toggleGrid->setCheckable(true);
         connect(m_toggleGrid, &QAction::triggered, [this]() {
-            MaterialViewportSettingsRequestBus::Event(
-                m_toolId, &MaterialViewportSettingsRequestBus::Events::SetGridEnabled, m_toggleGrid->isChecked());
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetGridEnabled, m_toggleGrid->isChecked());
         });
 
         // Add toggle shadow catcher button
         m_toggleShadowCatcher = addAction(QIcon(":/Icons/shadow.svg"), "Toggle Shadow Catcher");
         m_toggleShadowCatcher->setCheckable(true);
         connect(m_toggleShadowCatcher, &QAction::triggered, [this]() {
-            MaterialViewportSettingsRequestBus::Event(
-                m_toolId, &MaterialViewportSettingsRequestBus::Events::SetShadowCatcherEnabled, m_toggleShadowCatcher->isChecked());
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetShadowCatcherEnabled, m_toggleShadowCatcher->isChecked());
         });
 
         // Add toggle alternate skybox button
         m_toggleAlternateSkybox = addAction(QIcon(":/Icons/skybox.svg"), "Toggle Alternate Skybox");
         m_toggleAlternateSkybox->setCheckable(true);
         connect(m_toggleAlternateSkybox, &QAction::triggered, [this]() {
-            MaterialViewportSettingsRequestBus::Event(
-                m_toolId, &MaterialViewportSettingsRequestBus::Events::SetAlternateSkyboxEnabled, m_toggleAlternateSkybox->isChecked());
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetAlternateSkyboxEnabled, m_toggleAlternateSkybox->isChecked());
         });
 
         // Add mapping selection button
@@ -67,8 +66,8 @@ namespace MaterialEditor
         for (auto operationNamePair : m_operationNames)
         {
             m_operationActions[operationNamePair.first] = toneMappingMenu->addAction(operationNamePair.second, [this, operationNamePair]() {
-                MaterialViewportSettingsRequestBus::Event(
-                    m_toolId, &MaterialViewportSettingsRequestBus::Events::SetDisplayMapperOperationType, operationNamePair.first);
+                EntityPreviewViewportSettingsRequestBus::Event(
+                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetDisplayMapperOperationType, operationNamePair.first);
             });
             m_operationActions[operationNamePair.first]->setCheckable(true);
         }
@@ -81,42 +80,42 @@ namespace MaterialEditor
         addWidget(toneMappingButton);
 
         // Add lighting preset combo box
-        m_lightingPresetComboBox = new AtomToolsFramework::AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
+        m_lightingPresetComboBox = new AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
             return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
                 AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension);
         }, this);
-        connect(m_lightingPresetComboBox, &AtomToolsFramework::AssetSelectionComboBox::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
-            MaterialViewportSettingsRequestBus::Event(
-                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+        connect(m_lightingPresetComboBox, &AssetSelectionComboBox::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
         });
         addWidget(m_lightingPresetComboBox);
 
         // Add model preset combo box
-        m_modelPresetComboBox = new AtomToolsFramework::AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
+        m_modelPresetComboBox = new AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
             return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
                 AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension);
         }, this);
-        connect(m_modelPresetComboBox, &AtomToolsFramework::AssetSelectionComboBox::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
-            MaterialViewportSettingsRequestBus::Event(
-                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
+        connect(m_modelPresetComboBox, &AssetSelectionComboBox::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
         });
         addWidget(m_modelPresetComboBox);
 
         OnViewportSettingsChanged();
 
-        MaterialViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
+        EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
 
-    MaterialEditorToolBar::~MaterialEditorToolBar()
+    EntityPreviewViewportToolBar::~EntityPreviewViewportToolBar()
     {
-        MaterialViewportSettingsNotificationBus::Handler::BusDisconnect();
+        EntityPreviewViewportSettingsNotificationBus::Handler::BusDisconnect();
     }
 
-    void MaterialEditorToolBar::OnViewportSettingsChanged()
+    void EntityPreviewViewportToolBar::OnViewportSettingsChanged()
     {
-        MaterialViewportSettingsRequestBus::Event(
+        EntityPreviewViewportSettingsRequestBus::Event(
             m_toolId,
-            [this](MaterialViewportRequests* viewportRequests)
+            [this](EntityPreviewViewportRequests* viewportRequests)
             {
                 m_toggleGrid->setChecked(viewportRequests->GetGridEnabled());
                 m_toggleShadowCatcher->setChecked(viewportRequests->GetShadowCatcherEnabled());
@@ -130,6 +129,6 @@ namespace MaterialEditor
                 }
             });
     }
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework
 
-#include <Window/ToolBar/moc_MaterialEditorToolBar.cpp>
+#include <AtomToolsFramework/EntityPreviewViewport/moc_EntityPreviewViewportToolBar.cpp>
