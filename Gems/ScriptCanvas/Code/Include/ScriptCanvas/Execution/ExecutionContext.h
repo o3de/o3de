@@ -57,5 +57,20 @@ namespace ScriptCanvas
             static void IntializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
         };
 
+        struct Reference
+        {
+            AZ_TYPE_INFO(Reference, "{608FD64B-EA34-45EB-9ADB-265B8A69AE00}");
+            void* address;
+            const AZ::TypeId type;
+                           
+            Reference(void* address, const AZ::TypeId& type);
+
+            template<typename T>
+            T* As() const
+            {
+                AZ_Assert(azrtti_typeid<T>() == type, "Request to cast type other than that orginally set");
+                return reinterpret_cast<T*>(address);
+            }
+        };
     }
 }

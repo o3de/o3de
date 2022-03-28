@@ -22,6 +22,19 @@ namespace ScriptCanvas
 {
     using VariableIdMap = AZStd::unordered_map<VariableId, VariableId>;
 
+    class RuntimeComponent;
+
+    struct RuntimeComponentUserData
+    {
+        AZ_TYPE_INFO(RuntimeComponentUserData, "{584AC6C4-0A75-49DE-93A1-1B81E58F878E}");
+        AZ_CLASS_ALLOCATOR(RuntimeComponentUserData, AZ::SystemAllocator, 0);
+
+        RuntimeComponent& component;
+        const AZ::EntityId entity;
+
+        RuntimeComponentUserData(RuntimeComponent& component, const AZ::EntityId& entity);
+    };
+
     //! Runtime Component responsible for loading an executing the compiled ScriptCanvas graph from a runtime
     //! asset.
     //! It contains none of the Graph functionality of Validating Connections, as well as adding

@@ -17,7 +17,7 @@
 
 namespace ScriptCanvas
 {
-    ExecutionStateInterpretedPerActivation::ExecutionStateInterpretedPerActivation(const ExecutionStateConfig& config)
+    ExecutionStateInterpretedPerActivation::ExecutionStateInterpretedPerActivation(ExecutionStateConfig& config)
         : ExecutionStateInterpreted(config)
     {}
 
@@ -101,7 +101,7 @@ namespace ScriptCanvas
         }
     }
 
-    ExecutionStateInterpretedPerActivationOnGraphStart::ExecutionStateInterpretedPerActivationOnGraphStart(const ExecutionStateConfig& config)
+    ExecutionStateInterpretedPerActivationOnGraphStart::ExecutionStateInterpretedPerActivationOnGraphStart(ExecutionStateConfig& config)
         : ExecutionStateInterpretedPerActivation(config)
     {}
 

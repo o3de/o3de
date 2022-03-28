@@ -19,17 +19,22 @@
 
 namespace ScriptCanvas
 {
-    ExecutionStateConfig::ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> runtimeAsset, RuntimeComponent& component)
-        : asset(runtimeAsset)
-        , component(component)
-        , runtimeData(runtimeAsset.Get()->m_runtimeData)
+    ExecutionStateConfig::ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset)
+        : runtimeData(asset.Get()->m_runtimeData)
+        , asset(asset)
     {}
 
-    ExecutionState::ExecutionState(const ExecutionStateConfig& config)
-        : m_component(&config.component)
+    ExecutionStateConfig::ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset, AZStd::any&& userData)
+        : runtimeData(asset.Get()->m_runtimeData)
+        , asset(asset)
+        , userData(userData)
+    {}
+    
+    ExecutionState::ExecutionState(ExecutionStateConfig& config)
+        : m_userData(AZStd::move(config.userData))
     {}
 
-    ExecutionStatePtr ExecutionState::Create(const ExecutionStateConfig& config)
+    ExecutionStatePtr ExecutionState::Create(ExecutionStateConfig& config)
     {
         Grammar::ExecutionStateSelection selection = config.runtimeData.m_input.m_executionSelection;
 
@@ -53,6 +58,7 @@ namespace ScriptCanvas
         }
     }
 
+    // chopping block - begin
     AZ::Data::AssetId ExecutionState::GetAssetId() const
     {
         return m_component->GetRuntimeDataOverrides().m_runtimeAsset.GetId();
@@ -87,6 +93,7 @@ namespace ScriptCanvas
     {
         return m_component->GetRuntimeDataOverrides();
     }
+    // chopping block - end
 
     void ExecutionState::Reflect(AZ::ReflectContext* reflectContext)
     {
@@ -98,7 +105,7 @@ namespace ScriptCanvas
                 ->Method("GetEntityId", &ExecutionState::GetEntityId)
                 ->Method("GetScriptCanvasId", &ExecutionState::GetScriptCanvasId)
                 ->Method("ToString", &ExecutionState::ToString)
-                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
+                    ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                 ;
         }
 

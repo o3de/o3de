@@ -191,6 +191,11 @@ namespace ScriptCanvas
             Execution::InterpretedUnloadData(runtimeData);
         }
 
+        Reference::Reference(void* address, const AZ::TypeId& type)
+            : address(address)
+            , type(type)
+        {
+            AZ_Assert(address, "Null address is not allowed in type erased Reference object");
+        }
     }
-
 }

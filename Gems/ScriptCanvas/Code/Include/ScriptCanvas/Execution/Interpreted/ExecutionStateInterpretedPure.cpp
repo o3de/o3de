@@ -16,7 +16,7 @@
 
 namespace ScriptCanvas
 {
-    ExecutionStateInterpretedPure::ExecutionStateInterpretedPure(const ExecutionStateConfig& config)
+    ExecutionStateInterpretedPure::ExecutionStateInterpretedPure(ExecutionStateConfig& config)
         : ExecutionStateInterpreted(config)
     {}
 
@@ -38,7 +38,7 @@ namespace ScriptCanvas
         }
     }
 
-    ExecutionStateInterpretedPureOnGraphStart::ExecutionStateInterpretedPureOnGraphStart(const ExecutionStateConfig& config)
+    ExecutionStateInterpretedPureOnGraphStart::ExecutionStateInterpretedPureOnGraphStart(ExecutionStateConfig& config)
         : ExecutionStateInterpretedPure(config)
     {}
 

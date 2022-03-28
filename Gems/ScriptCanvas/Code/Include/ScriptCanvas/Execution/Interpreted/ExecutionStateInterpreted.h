@@ -27,10 +27,11 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
-        ExecutionStateInterpreted(const ExecutionStateConfig& config);
+        ExecutionStateInterpreted(ExecutionStateConfig& config);
 
         void ClearLuaRegistryIndex();
 
+        // debug symbol code needs to be moved up to the base class
         const Grammar::DebugExecution* GetDebugSymbolIn(size_t index) const;
 
         const Grammar::DebugExecution* GetDebugSymbolIn(size_t index, const AZ::Data::AssetId& id) const;
@@ -46,6 +47,7 @@ namespace ScriptCanvas
         const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index) const;
 
         const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index, const AZ::Data::AssetId& id) const;
+        // debug symbol code needs to be moved up to the base class
 
         ExecutionMode GetExecutionMode() const override;
 

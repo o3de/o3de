@@ -21,7 +21,7 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
-        ExecutionStateInterpretedPure(const ExecutionStateConfig& config);
+        ExecutionStateInterpretedPure(ExecutionStateConfig& config);
 
         void Execute() override;
 
@@ -39,7 +39,7 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
-        ExecutionStateInterpretedPureOnGraphStart(const ExecutionStateConfig& config);
+        ExecutionStateInterpretedPureOnGraphStart(ExecutionStateConfig& config);
 
         void Execute() override;
     };

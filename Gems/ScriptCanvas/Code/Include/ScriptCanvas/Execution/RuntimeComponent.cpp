@@ -45,10 +45,10 @@ namespace ScriptCanvas
         return GraphInfo(scriptCanvasId, graphIdentifier);
     }
 
-    DatumValue CreateDatumValue([[maybe_unused]] ScriptCanvasId scriptCanvasId, const GraphVariable& variable)
-    {
-        return DatumValue::Create(GraphVariable((*variable.GetDatum()), variable.GetVariableId()));
-    }
+    RuntimeComponentUserData::RuntimeComponentUserData(RuntimeComponent& component, const AZ::EntityId& entity)
+        : component(component)
+        , entity(entity)
+    {}
 
     void RuntimeComponent::Activate()
     {
@@ -122,8 +122,10 @@ namespace ScriptCanvas
 
         AZ_PROFILE_SCOPE(ScriptCanvas, "RuntimeComponent::InitializeExecution (%s)", m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(m_scriptCanvasId, m_runtimeOverrides.m_runtimeAsset.GetId());
-        m_executionState = ExecutionState::Create(ExecutionStateConfig(m_runtimeOverrides.m_runtimeAsset, *this));
 
+        ExecutionStateConfig config(m_runtimeOverrides.m_runtimeAsset, AZStd::any(Execution::Reference(this, azrtti_typeid<RuntimeComponent>())));
+        m_executionState = ExecutionState::Create(config);
+                
 #if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
         if (!m_executionState)
         {

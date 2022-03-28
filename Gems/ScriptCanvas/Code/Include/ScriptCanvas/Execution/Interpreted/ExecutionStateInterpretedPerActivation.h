@@ -21,7 +21,7 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* reflectContext);
         
-        ExecutionStateInterpretedPerActivation(const ExecutionStateConfig& config);
+        ExecutionStateInterpretedPerActivation(ExecutionStateConfig& config);
             
         ~ExecutionStateInterpretedPerActivation() override;
 
@@ -44,7 +44,7 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
-        ExecutionStateInterpretedPerActivationOnGraphStart(const ExecutionStateConfig& config);
+        ExecutionStateInterpretedPerActivationOnGraphStart(ExecutionStateConfig& config);
 
         void Execute() override;
 

@@ -26,8 +26,6 @@
 namespace AZ
 {
     class ReflectContext;
-
-    struct BehaviorValueParameter;
 }
 
 namespace ScriptCanvas
@@ -36,39 +34,24 @@ namespace ScriptCanvas
 
     struct ExecutionStateConfig
     {
-        AZ::Data::Asset<RuntimeAsset> asset;
-        RuntimeComponent& component;
         const RuntimeData& runtimeData;
+        AZ::Data::Asset<RuntimeAsset> asset;
+        AZStd::any userData;
 
-        ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset, RuntimeComponent& component);
+        ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset);
+        ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset, AZStd::any&& userData);
     };
 
     class ExecutionState
         : public AZStd::enable_shared_from_this<ExecutionState>
     {
     public:
-        AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}", AZStd::enable_shared_from_this<ExecutionState>);
-        AZ_CLASS_ALLOCATOR(ExecutionState, AZ::SystemAllocator, 0);
-
-        static ExecutionStatePtr Create(const ExecutionStateConfig& config);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
+        // chopping block - begin
         const RuntimeComponent* m_component = nullptr;
-
-        ExecutionState(const ExecutionStateConfig& config);
-
-        virtual ~ExecutionState() = default;
-
-        virtual void Execute() = 0;
-
-        AZ::Data::AssetId GetAssetId() const;
 
         AZ::ComponentId GetComponentId() const;
 
         AZ::EntityId GetEntityId() const;
-
-        virtual ExecutionMode GetExecutionMode() const = 0;
 
         GraphIdentifier GetGraphIdentifier() const;
 
@@ -77,6 +60,26 @@ namespace ScriptCanvas
         AZ::EntityId GetScriptCanvasId() const;
 
         const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
+        // chopping block - end
+
+        AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}", AZStd::enable_shared_from_this<ExecutionState>);
+        AZ_CLASS_ALLOCATOR(ExecutionState, AZ::SystemAllocator, 0);
+
+        static ExecutionStatePtr Create(ExecutionStateConfig& config);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        AZStd::any m_userData;
+
+        ExecutionState(ExecutionStateConfig& config);
+
+        virtual ~ExecutionState() = default;
+
+        virtual void Execute() = 0;
+
+        AZ::Data::AssetId GetAssetId() const;
+
+        virtual ExecutionMode GetExecutionMode() const = 0;
 
         virtual void Initialize() = 0;
 

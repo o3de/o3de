@@ -29,7 +29,7 @@ namespace ExecutionStateInterpretedCpp
 
 namespace ScriptCanvas
 {
-    ExecutionStateInterpreted::ExecutionStateInterpreted(const ExecutionStateConfig& config)
+    ExecutionStateInterpreted::ExecutionStateInterpreted(ExecutionStateConfig& config)
         : ExecutionState(config)
         , m_interpretedAsset(config.runtimeData.m_script)
     {
