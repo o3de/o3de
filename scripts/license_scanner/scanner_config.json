@@ -8,5 +8,8 @@
     "license_patterns": [
         "LICENSE*",
         "COPYING*"
+    ],
+    "package_patterns": [
+        "PackageInfo.json"
     ]
 }

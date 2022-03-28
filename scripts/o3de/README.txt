@@ -23,7 +23,7 @@ INSTALL
 It is recommended to set up these these tools with O3DE's CMake build commands.
 Assuming CMake is already setup on your operating system, below are some sample build commands:
     cd /path/to/od3e/
-    cmake -B windows_vs2019 -S . -G"Visual Studio 16" -DLY_3RDPARTY_PATH="%LY_3RDPARTY_PATH%"
+    cmake -B windows -S . -G"Visual Studio 16"
 
 To manually install the project in development mode using your own installed Python interpreter:
     cd /path/to/od3e/o3de
