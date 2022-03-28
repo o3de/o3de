@@ -2496,10 +2496,6 @@ namespace AZ
         template <typename T>
         typename SerializeGenericTypeInfo<T>::ClassInfoType* CreateGenericClassInfo();
 
-        /// Returns GenericClassInfo registered with the current module.
-        template <typename T>
-        AZ::GenericClassInfo* FindGenericClassInfo() const;
-        AZ::GenericClassInfo* FindGenericClassInfo(const AZ::TypeId& genericTypeId) const;
     private:
         void Cleanup();
 
@@ -2516,7 +2512,7 @@ namespace AZ
         using GenericClassInfoType = typename SerializeGenericTypeInfo<T>::ClassInfoType;
         static_assert(AZStd::is_base_of<AZ::GenericClassInfo, GenericClassInfoType>::value, "GenericClassInfoType must be be derived from AZ::GenericClassInfo");
 
-        const AZ::TypeId& canonicalTypeId = AzTypeInfo<T>::Uuid();
+        const AZ::TypeId& canonicalTypeId = GenericClassInfoType().GetSpecializedTypeId();
         auto findIt = m_moduleLocalGenericClassInfos.find(canonicalTypeId);
         if (findIt != m_moduleLocalGenericClassInfos.end())
         {
@@ -2531,12 +2527,6 @@ namespace AZ
             AddGenericClassInfo(genericClassInfo);
         }
         return genericClassInfo;
-    }
-
-    template<typename T>
-    AZ::GenericClassInfo* SerializeContext::PerModuleGenericClassInfo::FindGenericClassInfo() const
-    {
-        return FindGenericClassInfo(azrtti_typeid<T>());
     }
 
     /// Creates AZ::Attribute that is allocated using the the SerializeContext PerModule allocator

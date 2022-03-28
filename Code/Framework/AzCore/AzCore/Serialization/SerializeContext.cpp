@@ -3239,12 +3239,6 @@ namespace AZ
         }
     }
 
-    AZ::GenericClassInfo* SerializeContext::PerModuleGenericClassInfo::FindGenericClassInfo(const AZ::TypeId& genericTypeId) const
-    {
-        auto genericClassInfoFoundIt = m_moduleLocalGenericClassInfos.find(genericTypeId);
-        return genericClassInfoFoundIt != m_moduleLocalGenericClassInfos.end() ? genericClassInfoFoundIt->second : nullptr;
-    }
-
     AZ::IAllocator& SerializeContext::PerModuleGenericClassInfo::GetAllocator()
     {
         return m_moduleOSAllocator;
