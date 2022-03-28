@@ -131,9 +131,6 @@ function(install_project_asset_artifacts project_real_path)
     #    ../...build/bin/Release/Registry/cmake_dependencies.*.setreg -> Not correct
     #    project.json -> Correct
 
-    # Get project name
-    o3de_read_json_key(project_name ${full_directory_path}/project.json "project_name")
-
     # Generate pak for project in release installs
     cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE install_base_runtime_output_directory)
     set(install_engine_pak_template [=[
