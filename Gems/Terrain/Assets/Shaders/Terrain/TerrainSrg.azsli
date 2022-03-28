@@ -38,6 +38,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float m_heightOffset;
 
         float m_heightBlendFactor;
+        float m_heightWeightClampFactor;
 
         // Flags
         uint m_flags; // see DetailTextureFlags
@@ -50,7 +51,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         uint m_heightImageIndex; // only first 16 bits used
 
         // 16 byte aligned
-        uint2 m_padding;
+        uint m_padding;
     };
 
     struct MacroMaterialData

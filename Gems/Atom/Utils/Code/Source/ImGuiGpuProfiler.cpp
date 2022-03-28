@@ -15,6 +15,11 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 
+#include <Profiler/ImGuiTreemap.h>
+#include <imgui/imgui_internal.h>
+
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/std/sort.h>
 
 #include <inttypes.h>
@@ -1065,6 +1070,29 @@ namespace AZ
 
         // --- ImGuiGpuMemoryView ---
 
+        ImGuiGpuMemoryView::ImGuiGpuMemoryView()
+        {
+            AZ::IO::Path path = AZ::Utils::GetO3deLogsDirectory().c_str();
+
+            path /= "MemoryCaptures";
+
+            AZ::IO::SystemFile::CreateDir(path.c_str());
+
+            m_memoryCapturePath = path.c_str();
+        }
+
+        ImGuiGpuMemoryView::~ImGuiGpuMemoryView()
+        {
+            if (m_hostTreemap)
+            {
+                if (auto treemapFactory = Profiler::ImGuiTreemapFactory::Interface::Get())
+                {
+                    treemapFactory->Destroy(m_hostTreemap);
+                    treemapFactory->Destroy(m_deviceTreemap);
+                }
+            }
+        }
+
         void ImGuiGpuMemoryView::SortPoolTable(ImGuiTableSortSpecs* sortSpecs)
         {
             const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
@@ -1335,6 +1363,23 @@ namespace AZ
             ImGui::EndChild();
         }
 
+        void ImGuiGpuMemoryView::PerformCapture()
+        {
+            // Collect and save new GPU memory usage data
+            auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+            const auto* memoryStatistics = rhiSystem->GetMemoryStatistics();
+            if (memoryStatistics)
+            {
+                m_savedPools = memoryStatistics->m_pools;
+                m_savedHeaps = memoryStatistics->m_heaps;
+
+                // Collect the data into TableRows, ignoring depending on flags
+                UpdateTableRows();
+
+                UpdateTreemaps();
+            }
+        }
+
         void ImGuiGpuMemoryView::DrawGpuMemoryWindow(bool& draw)
         {
             // Enable GPU memory instrumentation while the window is open. Called every draw frame, but just a bitwise operation so overhead should be low.
@@ -1352,15 +1397,147 @@ namespace AZ
             {
                 if (ImGui::Button("Capture"))
                 {
-                    // Collect and save new GPU memory usage data
-                    const auto* memoryStatistics = rhiSystem->GetMemoryStatistics();
-                    if (memoryStatistics) 
-                    {
-                        m_savedPools = memoryStatistics->m_pools;
-                        m_savedHeaps = memoryStatistics->m_heaps;
+                    m_captureMessage.clear();
+                    m_loadedCapturePath.clear();
+                    PerformCapture();
+                }
 
-                        // Collect the data into TableRows, ignoring depending on flags 
-                        UpdateTableRows();
+                ImGui::SameLine();
+
+                if (ImGui::Button("Save to CSV"))
+                {
+                    if (m_savedPools.empty())
+                    {
+                        m_captureMessage.clear();
+                        PerformCapture();
+                    }
+
+                    SaveToCSV();
+                }
+                ImGui::SameLine();
+                constexpr static const char* LoadMemoryCaptureTitle = "Select or input memory capture csv file";
+                if (ImGui::Button("Load from CSV"))
+                {
+                    m_captureInput[0] = '\0';
+                    m_captureSelection = 0;
+                    ImGui::OpenPopup(LoadMemoryCaptureTitle);
+                }
+
+                // Always center this window when appearing
+                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+                if (ImGui::BeginPopupModal(LoadMemoryCaptureTitle, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    AZStd::vector<AZ::IO::Path> captures;
+
+                    // Enumerate files in the capture folder
+                    auto* base = AZ::IO::FileIOBase::GetInstance();
+                    base->FindFiles(
+                        m_memoryCapturePath.c_str(), "*.csv",
+                        [&captures](const char* path)
+                        {
+                            captures.emplace_back(path);
+                            return true;
+                        });
+
+                    if (captures.empty())
+                    {
+                        ImGui::Text("No captures found in %s", m_memoryCapturePath.c_str());
+                    }
+                    else
+                    {
+                        ImGui::Text("Displaying %zu captures found in %s", captures.size(), m_memoryCapturePath.c_str());
+
+                        // Sort captures in reverse-chronological order
+                        AZStd::sort(
+                            captures.begin(), captures.end(),
+                            [base](const AZ::IO::Path& lhs, const AZ::IO::Path& rhs)
+                            {
+                                return base->ModificationTime(rhs.c_str()) < base->ModificationTime(lhs.c_str());
+                            });
+
+                        // Display 10 entries in a scrolling list box
+                        if (ImGui::BeginListBox(
+                                "Memory Captures",
+                                ImVec2{ ImGui::GetMainViewport()->Size.x * 0.8f, 10 * ImGui::GetTextLineHeightWithSpacing() }))
+                        {
+                            for (size_t i = 0; i != captures.size(); ++i)
+                            {
+                                bool selected = i == m_captureSelection;
+                                if (ImGui::Selectable(captures[i].c_str(), selected))
+                                {
+                                    m_captureSelection = i;
+                                }
+
+                                if (selected)
+                                {
+                                    ImGui::SetItemDefaultFocus();
+                                }
+                            }
+                            ImGui::EndListBox();
+                        }
+
+                        if (ImGui::Button("Open"))
+                        {
+                            LoadFromCSV(captures[m_captureSelection].c_str());
+                            ImGui::CloseCurrentPopup();
+                        }
+                    }
+
+                    // In addition to the directory selection above, provide a means to input a path directly
+                    ImGui::InputText("File Path", m_captureInput, AZ::IO::MaxPathLength);
+                    AZStd::string manualInput{ m_captureInput };
+                    if (manualInput.empty())
+                    {
+                        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.6f);
+                        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                    }
+
+                    if (ImGui::Button("Open File"))
+                    {
+                        LoadFromCSV(manualInput);
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    if (manualInput.empty())
+                    {
+                        ImGui::PopItemFlag();
+                        ImGui::PopStyleVar();
+                    }
+
+                    if (ImGui::Button("Cancel"))
+                    {
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                if (!m_loadedCapturePath.empty())
+                {
+                    ImGui::Text("Viewing data loaded from %s", m_loadedCapturePath.c_str());
+                }
+
+                if (!m_captureMessage.empty())
+                {
+                    ImGui::Text("%s", m_captureMessage.c_str());
+                }
+
+                if (m_hostTreemap)
+                {
+                    ImGui::Checkbox("Show host memory treemap", &m_showHostTreemap);
+                    ImGui::SameLine();
+                    ImGui::Checkbox("Show device memory treemap", &m_showDeviceTreemap);
+
+                    if (m_showHostTreemap)
+                    {
+                        m_hostTreemap->Render(20, 40, 800, 600);
+                    }
+
+                    if (m_showDeviceTreemap)
+                    {
+                        m_deviceTreemap->Render(40, 80, 800, 600);
                     }
                 }
 
@@ -1406,6 +1583,350 @@ namespace AZ
                 DrawTables();
             }
             ImGui::End();
+        }
+
+        void ImGuiGpuMemoryView::UpdateTreemaps()
+        {
+            if (!m_hostTreemap)
+            {
+                if (auto treemapFactory = Profiler::ImGuiTreemapFactory::Interface::Get())
+                {
+                    m_hostTreemap = &treemapFactory->Create(AZ::Name{ "Atom Host Memory Treemap" }, "MiB");
+                    m_hostTreemap->AddMask("Hide Unused", 0);
+                    m_deviceTreemap = &treemapFactory->Create(AZ::Name{ "Atom Device Memory Treemap" }, "MiB");
+                    m_deviceTreemap->AddMask("Hide Unused", 0);
+                }
+            }
+
+            if (m_hostTreemap)
+            {
+                using Profiler::TreemapNode;
+                AZStd::vector<TreemapNode> hostNodes;
+                AZStd::vector<TreemapNode> deviceNodes;
+
+                for (auto& pool : m_savedPools)
+                {
+                    size_t hostBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_reservedInBytes;
+                    size_t hostResidentBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_residentInBytes;
+                    size_t deviceBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_reservedInBytes;
+                    size_t deviceResidentBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes;
+
+                    TreemapNode* poolNode = nullptr;
+
+                    // Resource pools are each associated with either a device-local heap, or a host heap. Identify the association and
+                    // add constiuent buffers and textures as sub-nodes in the corresponding treemap.
+                    if (hostBytes > 0)
+                    {
+                        hostNodes.push_back();
+                        poolNode = &hostNodes.back();
+                        poolNode->m_name = pool.m_name;
+                    }
+                    else if (deviceBytes > 0)
+                    {
+                        deviceNodes.push_back();
+                        poolNode = &deviceNodes.back();
+                        poolNode->m_name = pool.m_name;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    const AZ::Name unusedGroup{ "Unused" };
+                    poolNode->m_children.push_back();
+                    TreemapNode& unusedNode = poolNode->m_children.back();
+                    unusedNode.m_name = "Unused";
+                    unusedNode.m_group = unusedGroup;
+                    if (hostBytes > 0)
+                    {
+                        unusedNode.m_weight = static_cast<float>(hostBytes - hostResidentBytes) / GpuProfilerImGuiHelper::MB;
+                    }
+                    else
+                    {
+                        unusedNode.m_weight = static_cast<float>(deviceBytes - deviceResidentBytes) / GpuProfilerImGuiHelper::MB;
+                    }
+                    unusedNode.m_tag = 1;
+
+                    if (pool.m_buffers.empty() && pool.m_images.empty())
+                    {
+                        continue;
+                    }
+
+                    const AZ::Name bufferGroup{ "Buffer" };
+                    const AZ::Name textureGroup{ "Texture" };
+
+                    for (auto& buffer : pool.m_buffers)
+                    {
+                        poolNode->m_children.push_back();
+                        TreemapNode& child = poolNode->m_children.back();
+                        child.m_name = buffer.m_name;
+                        child.m_weight = static_cast<float>(buffer.m_sizeInBytes) / GpuProfilerImGuiHelper::MB;
+                        child.m_group = bufferGroup;
+                    }
+
+                    for (auto& image : pool.m_images)
+                    {
+                        poolNode->m_children.push_back();
+                        TreemapNode& child = poolNode->m_children.back();
+                        child.m_name = image.m_name;
+                        child.m_weight = static_cast<float>(image.m_sizeInBytes) / GpuProfilerImGuiHelper::MB;
+                        child.m_group = textureGroup;
+                    }
+                }
+
+                m_hostTreemap->SetRoots(AZStd::move(hostNodes));
+                m_deviceTreemap->SetRoots(AZStd::move(deviceNodes));
+            }
+        }
+
+        static constexpr const char* MemoryCSVHeader =
+            "Pool Name, Memory Type (0 == Host : 1 == Device), Allocation Name, Allocation Type (0 == Buffer : "
+            "1 == Texture), Byte Size, Flags\n";
+        static constexpr const char* MemoryCSVRowFormat = "%s, %i, %s, %i, %zu, %" PRIu32 "\n";
+        static constexpr size_t MemoryCSVFieldCount = 6;
+
+        void ImGuiGpuMemoryView::SaveToCSV()
+        {
+            time_t ltime;
+            time(&ltime);
+            tm today;
+#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
+            localtime_s(&today, &ltime);
+#else
+            today = *localtime(&ltime);
+#endif
+            char sTemp[128];
+            strftime(sTemp, sizeof(sTemp), "%Y%m%d.%H%M%S", &today);
+
+            AZStd::string filename = AZStd::string::format("%s/AtomMemory_%s.csv", m_memoryCapturePath.c_str(), sTemp);
+
+            AZ::IO::SystemFile fileOut;
+            if (!fileOut.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+            {
+                m_captureMessage = AZStd::string::format("Failed to open file %s for writing", filename.c_str());
+                AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
+                return;
+            }
+
+            AZStd::string line = MemoryCSVHeader;
+
+            fileOut.Write(line.data(), line.size());
+
+            // Iterate through each resource pool and save individual allocations as separate rows in the CSV file
+            for (const auto& pool : m_savedPools)
+            {
+                int memoryType = 0;
+                if (pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_residentInBytes > 0)
+                {
+                    memoryType = 0;
+                }
+                else if (pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes > 0)
+                {
+                    memoryType = 1;
+                }
+                else
+                {
+                    continue;
+                }
+
+                for (const auto& buffer : pool.m_buffers)
+                {
+                    line = AZStd::string::format(
+                        MemoryCSVRowFormat, pool.m_name.GetCStr(), memoryType, buffer.m_name.GetCStr(), 0, buffer.m_sizeInBytes,
+                        static_cast<uint32_t>(buffer.m_bindFlags));
+                    fileOut.Write(line.data(), line.size());
+                }
+
+                for (const auto& image : pool.m_images)
+                {
+                    line = AZStd::string::format(
+                        MemoryCSVRowFormat, pool.m_name.GetCStr(), memoryType, image.m_name.GetCStr(), 1, image.m_sizeInBytes,
+                        static_cast<uint32_t>(image.m_bindFlags));
+                    fileOut.Write(line.data(), line.size());
+                }
+            }
+
+            m_captureMessage = AZStd::string::format("Wrote memory capture to %s", filename.c_str());
+        }
+
+
+        // C4702: Unreachable code
+        // MSVC 2022 believes that `return true;` below is unreacahable, which is not true.
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4702)
+#endif
+        template <typename T>
+        bool parseCSVField(const AZStd::string& field, T& out)
+        {
+            if constexpr (AZStd::is_same_v<T, int>)
+            {
+                if (azsscanf(field.c_str(), "%i", &out) != 1)
+                {
+                    return false;
+                }
+            }
+            else if constexpr (AZStd::is_same_v<T, uint32_t>)
+            {
+                if (azsscanf(field.c_str(), "%" PRIu32, &out) != 1)
+                {
+                    return false;
+                }
+            }
+            else if constexpr (AZStd::is_same_v<T, uint64_t>)
+            {
+                if (azsscanf(field.c_str(), "%" PRIu64, &out) != 1)
+                {
+                    return false;
+                }
+            }
+            else if constexpr (AZStd::is_same_v<T, AZ::Name>)
+            {
+                out = AZ::Name{ field.c_str() };
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+        void ImGuiGpuMemoryView::LoadFromCSV(const AZStd::string& fileName)
+        {
+            m_loadedCapturePath.clear();
+            AZ::IO::SystemFile fileIn;
+
+            if (!fileIn.Open(fileName.c_str(), AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
+            {
+                return;
+            }
+
+            AZStd::string data;
+            data.resize_no_construct(fileIn.Length());
+
+            fileIn.Read(fileIn.Length(), data.data());
+
+            AZStd::vector<AZStd::string> lines;
+            AZ::StringFunc::Tokenize(data, lines, "\n");
+
+            if (lines.empty())
+            {
+                m_captureMessage = AZStd::string::format("Attempted to load memory data from %s but file was empty", fileName.c_str());
+                AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
+                return;
+            }
+
+            if (lines[0] + '\n' != MemoryCSVHeader)
+            {
+                m_captureMessage = AZStd::string::format(
+                    "Attempted to load memory data from %s but the CSV header (%s) did not match", fileName.c_str(), MemoryCSVHeader);
+                AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
+                return;
+            }
+
+            m_loadedCapturePath = fileName;
+            m_savedHeaps.clear();
+            m_savedHeaps.resize(2);
+            m_savedHeaps[0].m_name = AZ::Name{ "Host Heap" };
+            m_savedHeaps[0].m_heapMemoryType = RHI::HeapMemoryLevel::Host;
+            m_savedHeaps[1].m_name = AZ::Name{ "Device Heap" };
+            m_savedHeaps[1].m_heapMemoryType = RHI::HeapMemoryLevel::Device;
+
+            m_savedPools.clear();
+            AZStd::unordered_map<AZ::Name, AZ::RHI::MemoryStatistics::Pool> pools;
+
+            AZStd::vector<AZStd::string> fields;
+            fields.reserve(MemoryCSVFieldCount);
+
+            for (size_t i = 1; i != lines.size(); ++i)
+            {
+                fields.clear();
+                const AZStd::string& line = lines[i];
+                AZ::Name poolName;
+                int memoryType;
+                AZ::Name resourceName;
+                int resourceType;
+                uint64_t byteSize;
+                uint32_t bindFlags;
+
+                AZ::StringFunc::Tokenize(line, fields, ",\n", true, true);
+
+                if (fields.size() == MemoryCSVFieldCount && parseCSVField(fields[0], poolName) && parseCSVField(fields[1], memoryType) &&
+                    parseCSVField(fields[2], resourceName) && parseCSVField(fields[3], resourceType) &&
+                    parseCSVField(fields[4], byteSize) && parseCSVField(fields[5], bindFlags))
+                {
+                    RHI::MemoryStatistics::Pool* pool;
+
+                    auto it = pools.find(poolName);
+                    if (it == pools.end())
+                    {
+                        pool = &pools.try_emplace(poolName).first->second;
+                        pool->m_name = AZStd::move(poolName);
+                    }
+                    else
+                    {
+                        pool = &it->second;
+                    }
+
+                    if (memoryType != 0 && memoryType != 1)
+                    {
+                        // Unknown memory type
+                        m_captureMessage = AZStd::string::format(
+                            "Attempted to load memory data from %s but an unknown memory type was detected (indicating invalid file "
+                            "format)",
+                            fileName.c_str());
+                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
+                        return;
+                    }
+
+                    if (resourceType == 0 /* buffer */)
+                    {
+                        RHI::MemoryStatistics::Buffer buffer;
+                        buffer.m_name = AZStd::move(resourceName);
+                        buffer.m_bindFlags = static_cast<RHI::BufferBindFlags>(bindFlags);
+                        buffer.m_sizeInBytes = byteSize;
+                        pool->m_buffers.push_back(AZStd::move(buffer));
+                    }
+                    else if (resourceType == 1 /* image */)
+                    {
+                        RHI::MemoryStatistics::Image image;
+                        image.m_name = AZStd::move(resourceName);
+                        image.m_bindFlags = static_cast<RHI::ImageBindFlags>(bindFlags);
+                        image.m_sizeInBytes = byteSize;
+                        pool->m_images.push_back(AZStd::move(image));
+                    }
+
+                    pool->m_memoryUsage.m_memoryUsagePerLevel[memoryType].m_residentInBytes += byteSize;
+                    pool->m_memoryUsage.m_memoryUsagePerLevel[memoryType].m_reservedInBytes += byteSize;
+
+                    // NOTE: This information isn't strictly accurate because we're reconstructing data from a list of
+                    // allocations.
+                    m_savedHeaps[memoryType].m_memoryUsage.m_reservedInBytes += byteSize;
+                    m_savedHeaps[memoryType].m_memoryUsage.m_residentInBytes += byteSize;
+                }
+                else
+                {
+                    m_captureMessage = AZStd::string::format(
+                        "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
+                        "format)",
+                        fileName.c_str());
+                    AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
+                    return;
+                }
+            }
+
+            for (auto& pool : pools)
+            {
+                m_savedPools.push_back(AZStd::move(pool.second));
+            }
+
+            UpdateTableRows();
+            UpdateTreemaps();
         }
 
         // --- ImGuiGpuProfiler ---

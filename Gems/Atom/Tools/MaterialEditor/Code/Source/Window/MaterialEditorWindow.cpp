@@ -7,7 +7,6 @@
  */
 
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/MaterialEditorWindow.h>
@@ -21,10 +20,8 @@
 namespace MaterialEditor
 {
     MaterialEditorWindow::MaterialEditorWindow(const AZ::Crc32& toolId, QWidget* parent)
-        : Base(toolId, parent)
+        : Base(toolId, "MaterialEditorWindow",  parent)
     {
-        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
-
         m_toolBar = new MaterialEditorToolBar(m_toolId, this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
@@ -39,19 +36,9 @@ namespace MaterialEditor
 
         m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/MaterialInspector");
-        m_materialInspector->SetIndicatorFunction(
-            [](const AzToolsFramework::InstanceDataNode* node)
-            {
-                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
-                if (property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue))
-                {
-                    return ":/Icons/changed_property.svg";
-                }
-                return ":/Icons/blank.png";
-            });
 
-        AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
-        AddDockWidget("Viewport Settings", new ViewportSettingsInspector(m_toolId), Qt::LeftDockWidgetArea, Qt::Vertical);
+        AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea);
+        AddDockWidget("Viewport Settings", new ViewportSettingsInspector(m_toolId, this), Qt::LeftDockWidgetArea);
         SetDockWidgetVisible("Viewport Settings", false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());

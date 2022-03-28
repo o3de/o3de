@@ -24,18 +24,21 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 
 class QImage;
+class QWidget;
 
 namespace AtomToolsFramework
 {
     using LoadImageAsyncCallback = AZStd::function<void(const QImage&)>;
     void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback);
 
+    QWidget* GetToolMainWindow();
     AZStd::string GetDisplayNameFromPath(const AZStd::string& path);
     AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title = "Document");
     AZStd::vector<AZStd::string> GetOpenFilePaths(const QRegExp& filter, const AZStd::string& title = "Document");
     AZStd::string GetUniqueFilePath(const AZStd::string& initialPath);
-    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& baseName);
+    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& extension);
     AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath);
+    bool ValidateDocumentPath(AZStd::string& path);
     bool LaunchTool(const QString& baseName, const QStringList& arguments);
 
     //! Generate a file path that is relative to either the source asset root or the export path

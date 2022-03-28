@@ -47,10 +47,6 @@ namespace AZ::DocumentPropertyEditor
         //! Retrieves the contents of this adapter. This must be an Adapter DOM node.
         //! \see AdapterBuilder for building out this DOM structure.
         virtual Dom::Value GetContents() const = 0;
-        //! Called when the view would like to change the current contents - for example, by changing the value of
-        //! a property within a Property Editor. If this patch is accepted and triggers a mutation to the contents of this
-        //! adapter, NotifyContentsChanged should be called to trigger a change event with the accepted patches.
-        virtual Dom::PatchOutcome RequestContentChange(const Dom::Patch& patch) = 0;
 
         //! Connects a listener for the reset event, fired when the contents of this adapter have completely changed.
         //! Any views listening to this adapter will need to call GetContents to retrieve the new contents of the adapter.

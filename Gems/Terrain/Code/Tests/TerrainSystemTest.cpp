@@ -21,6 +21,7 @@
 #include <Terrain/MockTerrainAreaSurfaceRequestBus.h>
 #include <Terrain/MockTerrain.h>
 #include <MockAxisAlignedBoxShapeComponent.h>
+#include <TerrainTestFixtures.h>
 
 using ::testing::AtLeast;
 using ::testing::FloatNear;
@@ -33,7 +34,9 @@ using ::testing::SetArgReferee;
 
 namespace UnitTest
 {
-    class TerrainSystemTest : public ::testing::Test
+    class TerrainSystemTest
+        : public TerrainBaseFixture
+        , public ::testing::Test
     {
     protected:
         // Defines a structure for defining both an XY position and the expected height for that position.
@@ -65,9 +68,6 @@ namespace UnitTest
             AZ::Vector2 m_testLocation = AZ::Vector2::CreateZero();
         };
 
-        AZ::ComponentApplication m_app;
-        AZStd::unique_ptr<AZ::Entity> m_jobManagerEntity = nullptr;
-
         AZStd::unique_ptr<NiceMock<UnitTest::MockBoxShapeComponentRequests>> m_boxShapeRequests;
         AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> m_shapeRequests;
         AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> m_terrainAreaHeightRequests;
@@ -75,20 +75,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
-            AZ::ComponentApplication::Descriptor appDesc;
-            appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
-            appDesc.m_stackRecordLevels = 20;
-
-            m_app.Create(appDesc);
-
-            // Create the global job manager.
-            m_jobManagerEntity = CreateEntity();
-            CreateComponent<AZ::JobManagerComponent>(m_jobManagerEntity.get());
-            ActivateEntity(m_jobManagerEntity.get());
+            SetupCoreSystems();
         }
 
         void TearDown() override
@@ -98,57 +85,7 @@ namespace UnitTest
             m_terrainAreaHeightRequests.reset();
             m_terrainAreaSurfaceRequests.reset();
 
-            // Destroy the global job manager.
-            m_jobManagerEntity->Deactivate();
-            m_jobManagerEntity.reset();
-
-            m_app.Destroy();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        }
-
-        AZStd::unique_ptr<AZ::Entity> CreateEntity()
-        {
-            return AZStd::make_unique<AZ::Entity>();
-        }
-
-        void ActivateEntity(AZ::Entity* entity)
-        {
-            entity->Init();
-            EXPECT_EQ(AZ::Entity::State::Init, entity->GetState());
-
-            entity->Activate();
-            EXPECT_EQ(AZ::Entity::State::Active, entity->GetState());
-        }
-
-        template<typename Component, typename Configuration>
-        AZ::Component* CreateComponent(AZ::Entity* entity, const Configuration& config)
-        {
-            m_app.RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>(config);
-        }
-
-        template<typename Component>
-        AZ::Component* CreateComponent(AZ::Entity* entity)
-        {
-            m_app.RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>();
-        }
-
-        // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
-        // on a test-by-test basis.
-        AZStd::unique_ptr<Terrain::TerrainSystem> CreateAndActivateTerrainSystem(
-            float queryResolution = 1.0f,
-            AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-128.0f), AZ::Vector3(128.0f)))
-        {
-            // Create the terrain system and give it one tick to fully initialize itself.
-            auto terrainSystem = AZStd::make_unique<Terrain::TerrainSystem>();
-            terrainSystem->SetTerrainAabb(worldBounds);
-            terrainSystem->SetTerrainHeightQueryResolution(queryResolution);
-            terrainSystem->Activate();
-            AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.f, AZ::ScriptTimePoint{});
-            return terrainSystem;
+            TearDownCoreSystems();
         }
 
         AZStd::unique_ptr<AZ::Entity> CreateAndActivateMockTerrainLayerSpawner(
@@ -156,8 +93,8 @@ namespace UnitTest
         {
             // Create the base entity with a mock box shape, Terrain Layer Spawner, and height provider.
             auto entity = CreateEntity();
-            CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>(entity.get());
-            CreateComponent<Terrain::TerrainLayerSpawnerComponent>(entity.get());
+            entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
+            entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>();
 
             m_boxShapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockBoxShapeComponentRequests>>(entity->GetId());
             m_shapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockShapeComponentRequests>>(entity->GetId());
@@ -1105,8 +1042,8 @@ namespace UnitTest
 
         // Setup the per position callback so that we can cancel the entire request when it is first invoked.
         AZStd::atomic_bool asyncRequestCancelled = false;
-        AZStd::semaphore asyncRequestStartedEvent;
-        AZStd::semaphore asyncRequestCancelledEvent;
+        AZStd::binary_semaphore asyncRequestStartedEvent;
+        AZStd::binary_semaphore asyncRequestCancelledEvent;
         auto perPositionCallback = [&asyncRequestCancelled, &asyncRequestStartedEvent, &asyncRequestCancelledEvent]([[maybe_unused]] const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             if (!asyncRequestCancelled)
@@ -1131,6 +1068,9 @@ namespace UnitTest
         // Invoke the async request.
         AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
             = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+        // Only use one job. We're using a lot of handshaking logic to ensure we process the main thread test logic and the callback logic
+        // in the exact order we want for the test, and this logic assumes only one job is running.
+        asyncParams->m_desiredNumberOfJobs = 1;
         asyncParams->m_completionCallback = completionCallback;
         AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> terrainJobContext
             = terrainSystem->ProcessHeightsFromListAsync(inPositions, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, asyncParams);

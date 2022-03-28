@@ -15,5 +15,4 @@ set(FILES
     Tests/GradientSignalSurfaceTests.cpp
     Tests/GradientSignalTransformTests.cpp
     Tests/GradientSignalTest.cpp
-    Tests/ImageAssetTests.cpp
 )

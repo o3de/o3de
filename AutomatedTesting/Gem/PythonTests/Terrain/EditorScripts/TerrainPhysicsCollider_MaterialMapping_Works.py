@@ -10,6 +10,14 @@ class Tests:
         "Entered Game Mode",
         "Failed to enter Game Mode"
     )
+    glass_cube_moves = (
+        "Glass cube started moving",
+        "Glass cube has unexpectedly remained stationary"
+    )
+    cubes_are_stationary = (
+        "Cubes have both come to a rest",
+        "One or both cubes are unexpectedly still moving"
+    )
     exit_game_mode = (
         "Exited Game Mode",
         "Failed to exit Game Mode"
@@ -32,6 +40,13 @@ def TerrainPhysicsCollider_MaterialMapping_Works():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
+    def vector_is_close_to_zero(vector):
+        return abs(vector.x) <= 0.001 and abs(vector.y) <= 0.001 and abs(vector.z) <= 0.001
+
+    def is_stationary(entity):
+        velocity = azlmbr.physics.RigidBodyRequestBus(bus.Event, "GetLinearVelocity", entity)
+        return vector_is_close_to_zero(velocity)
+
     # Open a level with preconfigured terrain with surfaces mapped to Physics Materials
     helper.init_idle()
     helper.open_level("Terrain", "TerrainPhysicsCollider_MaterialMapping_Works")
@@ -47,19 +62,28 @@ def TerrainPhysicsCollider_MaterialMapping_Works():
     glass_start = components.TransformBus(bus.Event, "GetWorldTranslation", physics_cube_glass)
     rubber_start = components.TransformBus(bus.Event, "GetWorldTranslation", physics_cube_rubber)
 
-    # Wait a few seconds, re-check positions, and calculate distance traveled
-    general.idle_wait(3.0)
+    # Wait for cube on glass to start moving, then wait for both cubes to become stationary, re-check positions, and
+    # calculate distance traveled
+    glass_is_moving = helper.wait_for_condition(lambda: not is_stationary(physics_cube_glass), 3.0)
+    Report.result(Tests.glass_cube_moves, glass_is_moving)
+    glass_is_stationary = helper.wait_for_condition(lambda: is_stationary(physics_cube_glass), 30.0)
+    rubber_is_stationary = helper.wait_for_condition(lambda: is_stationary(physics_cube_rubber), 10.0)
+    Report.result(Tests.cubes_are_stationary, glass_is_stationary and rubber_is_stationary)
     glass_finish = components.TransformBus(bus.Event, "GetWorldTranslation", physics_cube_glass)
     rubber_finish = components.TransformBus(bus.Event, "GetWorldTranslation", physics_cube_rubber)
     glass_distance = glass_finish.GetDistance(glass_start)
     rubber_distance = rubber_finish.GetDistance(rubber_start)
 
     # Report results on distance traveled and validate that the Cube on the glass surface travels further
+    expected_glass_distance = 10.0
+    expected_rubber_distance = 1.0
     material_interaction = (
-        f"PhysicsCube_Glass traveled {glass_distance:.3f}m, to PhysicsCube_Rubber's {rubber_distance:.3f}m",
-        f"PhysicsCube_Rubber traveled {rubber_distance:.3f}m, greater than PhysicsCube_Glass's {glass_distance:.3f}m"
+        f"PhysicsCube_Glass moved {glass_distance:.3f}m, to PhysicsCube_Rubber's {rubber_distance:.3f}m",
+        f"PhysicsCube_Rubber: Moved {rubber_distance:.3f}m, expected < {expected_rubber_distance}m. "
+        f"PhysicsCube_Glass: Moved {glass_distance:.3f}m, expected > {expected_glass_distance}m"
     )
-    Report.result(material_interaction, glass_distance > 8.0 and rubber_distance < 2.0)
+    Report.result(material_interaction, glass_distance > expected_glass_distance and
+                  rubber_distance < expected_rubber_distance)
 
     # Exit Game Mode
     helper.exit_game_mode(Tests.exit_game_mode)
