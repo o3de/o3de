@@ -14,6 +14,7 @@ import os
 import socket
 import time
 from datetime import datetime
+from warnings import warn
 
 import pytest
 
@@ -55,14 +56,6 @@ def pytest_configure(config):
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
 
-
-def pytest_pycollect_makeitem(collector, name, obj):
-    import inspect
-    if inspect.isclass(obj):
-        for base in obj.__bases__:
-            if hasattr(base, "pytest_custom_makeitem"):
-                return base.pytest_custom_makeitem(collector, name, obj)
-
 def _get_build_directory(config):
     """
     Fetch and verify the cmake build directory CLI arg, without creating an error when unset
@@ -74,6 +67,8 @@ def _get_build_directory(config):
         logger.debug(f'Custom build directory set via cli arg to: {custom_build_directory}')
         if not os.path.exists(custom_build_directory):
             raise ValueError(f'Pytest argument "--build-directory" does not exist at: {custom_build_directory}')
+        if custom_build_directory.endswith('debug'):
+            pytest.exit("Python debug modules are not available. LyTestTools test skipped.", 0)
     else:
         # only warn when unset, allowing non-LyTT tests to still use pytest
         logger.warning(f'Pytest argument "--build-directory" was not provided, tests using LyTestTools will fail')
@@ -242,10 +237,10 @@ def _launcher(request, workspace, launcher_platform, level=""):
     """Separate implementation to call directly during unit tests"""
 
     if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_game_launcher(
             workspace, launcher_platform)
     else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_game_launcher(
             workspace, launcher_platform, ['+map', level])
 
     def teardown():
@@ -259,6 +254,9 @@ def _launcher(request, workspace, launcher_platform, level=""):
 @pytest.fixture(scope="function")
 def dedicated_launcher(request, workspace, crash_log_watchdog):
     # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
+
+    warn("This method is deprecated and will be removed on 3/31/22. Please use create_game_launcher instead.",
+         DeprecationWarning, stacklevel=2)
     return _dedicated_launcher(
         request=request,
         workspace=workspace,
@@ -269,11 +267,13 @@ def dedicated_launcher(request, workspace, crash_log_watchdog):
 def _dedicated_launcher(request, workspace, launcher_platform, level=""):
     """Separate implementation to call directly during unit tests"""
 
+    warn("This method is deprecated and will be removed on 3/31/22. Please use create_game_launcher instead.",
+         DeprecationWarning, stacklevel=2)
     if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
             workspace, launcher_platform)
     else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
             workspace, launcher_platform, ['+map', level])
 
     def teardown():
@@ -421,7 +421,7 @@ def crash_log_watchdog(request, workspace):
 
 def _crash_log_watchdog(request, workspace, raise_on_crash):
     """Separate implementation to call directly during unit tests"""
-    error_log = os.path.join(workspace.paths.project_log(), 'error.log')
+    error_log = workspace.paths.crash_log()
     crash_log_watchdog = ly_test_tools.environment.watchdog.CrashLogWatchdog(
         error_log, raise_on_condition=raise_on_crash)
 

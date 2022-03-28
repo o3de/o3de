@@ -45,9 +45,12 @@ def _find_engine_root(initial_path):
 
 
 def _find_project_json(engine_root, project):
-    # type (None) -> str
+    # type (str, str) -> str
     """
     Find the project.json file for this project.
+
+    :param engine_root: The root of the O3DE directory where engine.json exists
+    :param project: The name of the O3DE project
     :return: Full path to the project.json file
     """
     project_json = None
@@ -73,15 +76,16 @@ def _find_project_json(engine_root, project):
             except KeyError as err:
                 logger.warning(f"Project key could not be found due to error: {err}")
 
-    # Check relative to defined build directory, for external projects which configure through SDK settings
-    if not project_json:
-        project_json = find_ancestor_file(target_file_name='project.json',
-                                          start_path=ly_test_tools._internal.pytest_plugin.build_directory)
     # Check internally for a project bundled with the engine
     if not project_json:
         check_project_json = os.path.join(engine_root, project, 'project.json')
         if os.path.isfile(check_project_json):
             project_json = check_project_json
+
+    # Check relative to defined build directory, for external projects which configure through SDK settings
+    if not project_json:
+        project_json = find_ancestor_file(target_file_name='project.json',
+                                          start_path=ly_test_tools._internal.pytest_plugin.build_directory)
 
     if not project_json:
         raise OSError(f"Unable to find the project directory for project: ${project}")
@@ -175,12 +179,19 @@ class AbstractResourceLocator(object):
         return os.path.join(self.build_directory(), 'AssetProcessor')
 
     def asset_processor_batch(self):
-        """"
+        """
         Return path for the AssetProcessorBatch compatible with this build platform and configuration
         ex. engine_root/dev/mac/bin/profile/AssetProcessorBatch
         :return: path to AssetProcessorBatch
         """
         return os.path.join(self.build_directory(), 'AssetProcessorBatch')
+
+    def ap_job_logs(self):
+        """
+        Return path to the Asset Processor JobLogs directory.
+        :return: path to <project>/user/log/JobLogs
+        """
+        return os.path.join(self.project_log(), 'JobLogs')
 
     def editor(self):
         """
@@ -265,7 +276,7 @@ class AbstractResourceLocator(object):
         Return path to AssetProcessor's log file using the project bin dir
         :return: path to 'AP_Gui.log' file in <ap_log_dir> folder
         """
-        return os.path.join(self.ap_log_dir(), 'AP_Gui.log')
+        return os.path.join(self.ap_log_dir(), 'AP_GUI.log')
 
     def project_cache(self):
         """
@@ -277,7 +288,7 @@ class AbstractResourceLocator(object):
     def get_shader_compiler_path(self):
         """
         Return path to shader compiler executable
-        ex. engine_root/dev/windows_vs2019/bin/profile/CrySCompileServer
+        ex. engine_root/dev/windows/bin/profile/CrySCompileServer
         :return: path to CrySCompileServer executable
         """
         return os.path.join(self.build_directory(), 'CrySCompileServer')
@@ -313,7 +324,7 @@ class AbstractResourceLocator(object):
     def shader_compiler_config_file(self):
         """
         Return path to the Shader Compiler config file
-        ex. engine_root/dev/windows_vs2019/bin/profile/config.ini
+        ex. engine_root/dev/windows/bin/profile/config.ini
         :return: path to the Shader Compiler config file
         """
         return os.path.join(self.build_directory(), 'config.ini')
@@ -321,7 +332,7 @@ class AbstractResourceLocator(object):
     def shader_cache(self):
         """
         Return path to the shader cache for the current build
-        ex. engine_root/dev/windows_vs2019/bin/profile/Cache
+        ex. engine_root/dev/windows/bin/profile/Cache
         :return: path to the shader cache for the current build
         """
         return os.path.join(self.build_directory(), 'Cache')
@@ -378,9 +389,20 @@ class AbstractResourceLocator(object):
     def editor_log(self):
         """
         Return path to the project's editor log dir using the builds project and platform
-        :return: path to editor.log
+        :return: path to Editor.log
         """
         raise NotImplementedError(
             "editor_log() is not implemented on the base AbstractResourceLocator() class. "
             "It must be defined by the inheriting class - "
             "i.e. _WindowsResourceLocator(AbstractResourceLocator).editor_log()")
+
+    @abstractmethod
+    def crash_log(self):
+        """
+        Return path to the project's crash log dir using the builds project and platform
+        :return: path to error.log/crash.log
+        """
+        raise NotImplementedError(
+            "crash_log() is not implemented on the base AbstractResourceLocator() class. "
+            "It must be defined by the inheriting class - "
+            "i.e. _WindowsResourceLocator(AbstractResourceLocator).crash_log()")
