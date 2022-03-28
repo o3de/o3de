@@ -411,11 +411,6 @@ namespace AZ
             return GetPool(descriptorHeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE).AllocateTable(descriptorCount);
         }
 
-        DescriptorTable DescriptorContext::GetBindlessDescriptorTable() const
-        {
-            return m_staticTable;
-        }
-
         D3D12_GPU_DESCRIPTOR_HANDLE DescriptorContext::GetBindlessGpuPlatformHandle() const
         {
             return m_staticPool.GetGpuPlatformHandleForTable(m_staticTable);

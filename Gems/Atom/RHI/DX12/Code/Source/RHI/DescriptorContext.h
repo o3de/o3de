@@ -94,8 +94,7 @@ namespace AZ
             DescriptorTable CreateDescriptorTable(
                 D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType, uint32_t descriptorCount, ShaderResourceGroup* srg);
 
-            //! Retrieve a descriptor table mapping the static region of the shader-visible CBV_SRV_UAV heap
-            DescriptorTable GetBindlessDescriptorTable() const;
+            //! Retrieve a descriptor handle to the start of the static region of the shader-visible CBV_SRV_UAV heap
             D3D12_GPU_DESCRIPTOR_HANDLE GetBindlessGpuPlatformHandle() const;
 
             //! Releases a GPU-visible descriptor table.
