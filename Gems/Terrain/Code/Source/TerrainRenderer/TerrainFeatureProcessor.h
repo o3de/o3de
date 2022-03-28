@@ -53,7 +53,7 @@ namespace Terrain
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet) override;
 
         void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config);
-        void SetWorldSize(AZ::Vector2 sizeInMeters);
+        void SetMeshConfiguration(const MeshConfiguration& config);
 
         const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
         const AZ::Aabb& GetTerrainBounds() const;

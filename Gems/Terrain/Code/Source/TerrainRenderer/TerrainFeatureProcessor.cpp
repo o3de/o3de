@@ -390,7 +390,7 @@ namespace Terrain
             if (m_meshManager.IsInitialized())
             {
                 bool surfacesRebuilt = false;
-                surfacesRebuilt = m_meshManager.CheckRebuildSurfaces(m_materialInstance, *GetParentScene());
+                surfacesRebuilt = m_meshManager.CheckRebuildSurfaces(cameraPosition, m_materialInstance, *GetParentScene());
                 if (m_forceRebuildDrawPackets && !surfacesRebuilt)
                 {   
                     m_meshManager.RebuildDrawPackets(*GetParentScene());
@@ -466,10 +466,9 @@ namespace Terrain
         m_detailMaterialManager.SetDetailMaterialConfiguration(config);
     }
     
-    void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)
+    void TerrainFeatureProcessor::SetMeshConfiguration(const MeshConfiguration& config)
     {
-        // This will control the max rendering size. Actual terrain size can be much
-        // larger but this will limit how much is rendered.
+        m_meshManager.SetConfiguration(config);
     }
     
     void TerrainFeatureProcessor::CacheForwardPass()
