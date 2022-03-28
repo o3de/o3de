@@ -150,7 +150,6 @@ namespace AZ
             bool m_hasImageGroup = false;
             bool m_hasSamplerGroup = false;
             bool m_isCompiling = false;
-            bool m_hasCompiled = false;
 
             mutable AZStd::shared_mutex m_groupsToCompileMutex;
             AZStd::vector<ShaderResourceGroup*> m_groupsToCompile;

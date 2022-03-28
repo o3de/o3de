@@ -8,8 +8,6 @@
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/IConsole.h>
 
 namespace AZ
@@ -349,11 +347,8 @@ namespace AZ
             ResetUpdateMaskForModifiedViews(shaderResourceGroup, shaderResourceGroupData);   
             
             // Check if any part of the Srg was updated before trying to compile it
-            // Also, force an initial compilation even if no resources were updated to set bindless descriptors
-            if (!m_hasCompiled || shaderResourceGroup.IsAnyResourceTypeUpdated())
+            if (shaderResourceGroup.IsAnyResourceTypeUpdated())
             {
-                m_hasCompiled = true;
-
                 ResultCode resultCode = CompileGroupInternal(shaderResourceGroup, shaderResourceGroupData);
                 
                 //Reset update mask if the latency check has been fulfilled
