@@ -9,12 +9,7 @@
 
 set -o errexit # exit on the first failure encountered
 
-if ! command -v cmake &> /dev/null; then
-    echo "[ci_build] CMake not found"
-    exit 1
-fi
+BASEDIR=$(dirname "$0")
+source $BASEDIR/build_linux.sh
 
-if [[ -n "${COMMAND_CWD}" ]]; then
-    echo $(eval echo [ci_build] Changing CWD to $COMMAND_CWD)
-    cd $(eval echo ${COMMAND_CWD})
-fi
+source $BASEDIR/installer_linux.sh
