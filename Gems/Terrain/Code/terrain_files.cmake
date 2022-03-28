@@ -8,12 +8,9 @@
 
 set(FILES
     Include/Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h
-<<<<<<< HEAD
-=======
     Include/Terrain/TerrainDataConstants.h
     Include/Terrain/Passes/TerrainDetailTextureComputePass.h
     Include/Terrain/Passes/TerrainMacroTextureClipmapComputePass.h
->>>>>>> development
     Source/Components/TerrainHeightGradientListComponent.cpp
     Source/Components/TerrainHeightGradientListComponent.h
     Source/Components/TerrainLayerSpawnerComponent.cpp

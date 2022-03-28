@@ -11,11 +11,7 @@ add_subdirectory(NumericalMethods)
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
-<<<<<<< HEAD
-set(PHYSX_ENABLE_RUNNING_BENCHMARKS OFF CACHE BOOL "Adds a target to allow running of the physx benchmarks.")
-=======
 set(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS OFF CACHE BOOL "Adds a target to allow running of the physx benchmarks.")
->>>>>>> development
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
     set(physx_dependency 3rdParty::PhysX)
@@ -158,8 +154,6 @@ endif()
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-<<<<<<< HEAD
-=======
     ly_add_target(
         NAME PhysX.Mocks HEADERONLY
         NAMESPACE Gem
@@ -171,7 +165,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Mocks
     )
 
->>>>>>> development
     ly_add_target(
         NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
@@ -198,11 +191,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the PhysX.Tests project.
     # Currently jenkins has a 1500sec(25min) timeout, our benchmarks can sometimes take over 1500sec and cause a build failure for timeout.
     # Jenkins currently doesn't upload the results of the benchmarks, so this is ok.
-<<<<<<< HEAD
-    if(PHYSX_ENABLE_RUNNING_BENCHMARKS)
-=======
     if(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS)
->>>>>>> development
         ly_add_googlebenchmark(
             NAME Gem::PhysX.Benchmarks
             TARGET Gem::PhysX.Tests

@@ -475,13 +475,8 @@ namespace Multiplayer
             AZLOG
             (
                 NET_RepDeletes,
-<<<<<<< HEAD
-                "Sending delete replicator id %u migrated %d to remote host %s",
-                aznumeric_cast<uint32_t>(GetEntityHandle().GetNetEntityId()),
-=======
                 "Sending delete replicator id %llu migrated %d to remote host %s",
                 aznumeric_cast<AZ::u64>(GetEntityHandle().GetNetEntityId()),
->>>>>>> development
                 WasMigrated() ? 1 : 0,
                 m_replicationManager.GetRemoteHostId().GetString().c_str()
             );
@@ -489,10 +484,10 @@ namespace Multiplayer
         }
 
         NetBindComponent* netBindComponent = GetNetBindComponent();
-        //const bool sendSliceName = !m_propertyPublisher->IsRemoteReplicatorEstablished();
+        const bool sendSliceName = !m_propertyPublisher->IsRemoteReplicatorEstablished();
 
         NetworkEntityUpdateMessage updateMessage(GetRemoteNetworkRole(), GetEntityHandle().GetNetEntityId());
-        //if (sendSliceName)
+        if (sendSliceName)
         {
             updateMessage.SetPrefabEntityId(netBindComponent->GetPrefabEntityId());
         }

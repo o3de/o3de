@@ -2827,7 +2827,6 @@ namespace EMStudio
         {
             return;
         }
-<<<<<<< HEAD
 
         const size_t numPlugins = pluginManager->GetNumActivePlugins();
         for (size_t i = 0; i < numPlugins; ++i)
@@ -2851,31 +2850,6 @@ namespace EMStudio
     {
         AZ_UNUSED(timePoint);
 
-=======
-
-        const size_t numPlugins = pluginManager->GetNumActivePlugins();
-        for (size_t i = 0; i < numPlugins; ++i)
-        {
-            EMStudio::EMStudioPlugin* plugin = pluginManager->GetActivePlugin(i);
-            plugin->ProcessFrame(timeDelta);
-        }
-    }
-
-    void MainWindow::EnableUpdatingPlugins()
-    {
-        AZ::TickBus::Handler::BusConnect();
-    }
-
-    void MainWindow::DisableUpdatingPlugins()
-    {
-        AZ::TickBus::Handler::BusDisconnect();
-    }
-
-    void MainWindow::OnTick(float delta, AZ::ScriptTimePoint timePoint)
-    {
-        AZ_UNUSED(timePoint);
-
->>>>>>> development
         // Check if we are in game mode.
         IEditor* editor = nullptr;
         AzToolsFramework::EditorRequestBus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);

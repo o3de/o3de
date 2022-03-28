@@ -559,11 +559,7 @@ namespace EMotionFX
 
         QString GetTestMotionFileName() const
         {
-<<<<<<< HEAD
-            AZStd::string resolvedAssetPath = this->ResolvePath("@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
-=======
             AZStd::string resolvedAssetPath = this->ResolvePath("@gemroot:EMotionFX@/Code/Tests/TestAssets/Rin/rin_idle.motion");
->>>>>>> development
             return QString::fromUtf8(resolvedAssetPath.data(), aznumeric_cast<int>(resolvedAssetPath.size()));
         }
 

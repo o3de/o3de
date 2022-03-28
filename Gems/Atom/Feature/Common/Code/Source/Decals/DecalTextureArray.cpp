@@ -49,11 +49,7 @@ namespace AZ
             }
 
             // Extract exactly which texture asset we need to load from the given material and map type (diffuse, normal, etc).
-<<<<<<< HEAD
-            static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(const AZ::RPI::MaterialAsset& materialAsset, const AZ::Name& propertyName)
-=======
             static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(AZ::RPI::MaterialAsset& materialAsset, const AZ::Name& propertyName)
->>>>>>> development
             {
                 if (!materialAsset.IsReady())
                 {
@@ -271,11 +267,7 @@ namespace AZ
             return AZ::RHI::GetImageSubresourceLayout(mipSize, descriptor.m_format);
         }
 
-<<<<<<< HEAD
-        AZStd::array_view<uint8_t> DecalTextureArray::GetRawImageData(const AZ::Name& mapName, int arrayLevel, const int mip) const
-=======
         AZStd::span<const uint8_t> DecalTextureArray::GetRawImageData(const AZ::Name& mapName, int arrayLevel, const int mip) const
->>>>>>> development
         {
             // We always want to provide valid data to the AssetCreator for each texture.
             // If this spot in the array is empty, just provide some random image as filler.

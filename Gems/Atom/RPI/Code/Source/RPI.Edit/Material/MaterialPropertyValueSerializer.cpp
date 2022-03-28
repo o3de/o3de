@@ -55,34 +55,11 @@ namespace AZ
             MaterialPropertyValue* property = reinterpret_cast<MaterialPropertyValue*>(outputValue);
             AZ_Assert(property, "Output value for JsonMaterialPropertyValueSerializer can't be null.");
 
-<<<<<<< HEAD
-            const MaterialTypeSourceData* materialType = context.GetMetadata().Find<MaterialTypeSourceData>();
-            if (!materialType)
-            {
-                AZ_Assert(false, "Material type reference not found");
-                return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Catastrophic, "Material type reference not found.");
-            }
-
-            // Construct the full property name (groupName.propertyName) by parsing it from the JSON path string.
-            size_t startPropertyName = context.GetPath().Get().rfind('/');
-            size_t startGroupName = context.GetPath().Get().rfind('/', startPropertyName-1);
-            AZStd::string_view groupName = context.GetPath().Get().substr(startGroupName + 1, startPropertyName - startGroupName - 1);
-            AZStd::string_view propertyName = context.GetPath().Get().substr(startPropertyName + 1);
-
-            JSR::ResultCode result(JSR::Tasks::ReadField);
-
-            auto propertyDefinition = materialType->FindProperty(groupName, propertyName);
-            if (!propertyDefinition)
-            {
-                AZStd::string message = AZStd::string::format("Property '%.*s.%.*s' not found in material type.", AZ_STRING_ARG(groupName), AZ_STRING_ARG(propertyName));
-                return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Unsupported, message);
-=======
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
             if (inputValue.IsBool())
             {
                 result.Combine(LoadVariant<bool>(*property, false, inputValue, context));
->>>>>>> development
             }
             else if (inputValue.IsInt() || inputValue.IsInt64())
             {

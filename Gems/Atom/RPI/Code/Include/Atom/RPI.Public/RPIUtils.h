@@ -61,9 +61,6 @@ namespace AZ
 
         //! Same as above. Provided as a convenience when all arguments of the 'numthreads' attributes should be assigned to RHI::DispatchDirect::m_threadsPerGroup* variables.
         AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(const Data::Asset<ShaderAsset>& shaderAsset, RHI::DispatchDirect& dispatchDirect);
-<<<<<<< HEAD
-        
-=======
 
         //! Returns true/false if the specified format is supported by the image data pixel retrieval APIs
         //!     GetImageDataPixelValue, GetSubImagePixelValue, and GetSubImagePixelValues
@@ -96,7 +93,6 @@ namespace AZ
         //! @returns An optional with a render pipeline descriptor if there was not errors.
         AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix = "");
 
->>>>>>> development
     }   // namespace RPI
 }   // namespace AZ
 

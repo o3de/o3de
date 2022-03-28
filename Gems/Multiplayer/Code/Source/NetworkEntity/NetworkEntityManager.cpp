@@ -63,11 +63,6 @@ namespace Multiplayer
         }
 
         m_entityDomain = AZStd::move(entityDomain);
-<<<<<<< HEAD
-        m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
-        m_entityDomain->ActivateTracking(m_ownedEntities);
-=======
->>>>>>> development
     }
 
     bool NetworkEntityManager::IsInitialized() const
@@ -236,34 +231,7 @@ namespace Multiplayer
         m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
     }
 
-<<<<<<< HEAD
-    void NetworkEntityManager::DebugDraw() const
-    {
-        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
-        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
-        AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-
-        for (NetworkEntityTracker::const_iterator it = m_networkEntityTracker.begin(); it != m_networkEntityTracker.end(); ++it)
-        {
-            AZ::Entity* entity = it->second;
-            NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
-            if (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
-            {
-                const AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
-                debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
-            }
-        }
-
-        if (m_entityDomain != nullptr)
-        {
-            m_entityDomain->DebugDraw();
-        }
-    }
-
-    void NetworkEntityManager::DispatchLocalDeferredRpcMessages()
-=======
     void NetworkEntityManager::HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain)
->>>>>>> development
     {
         for (NetEntityId exitingId : entitiesNotInDomain)
         {
@@ -274,11 +242,6 @@ namespace Multiplayer
             // Validate that we aren't already planning to remove this entity
             if (safeToExit)
             {
-<<<<<<< HEAD
-                NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
-                AZ_Assert(netBindComponent != nullptr, "Attempting to send an RPC to an entity with no NetBindComponent");
-                netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Server, rpcMessage);
-=======
                 for (auto remoteEntityId : m_removeList)
                 {
                     if (remoteEntityId == remoteEntityId)
@@ -292,7 +255,6 @@ namespace Multiplayer
             {
                 // Tell all the attached replicators for this entity that it's exited the domain
                 m_entityExitDomainEvent.Signal(entityHandle);
->>>>>>> development
             }
         }
     }
@@ -306,14 +268,9 @@ namespace Multiplayer
         }
     }
 
-<<<<<<< HEAD
-        const IEntityDomain::EntitiesNotInDomain& entitiesNotInDomain = m_entityDomain->RetrieveEntitiesNotInDomain();
-        for (NetEntityId exitingId : entitiesNotInDomain)
-=======
     void NetworkEntityManager::MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant)
     {
         if (alwaysRelevant)
->>>>>>> development
         {
             m_alwaysRelevantToClients.emplace(entityHandle);
         }
@@ -325,20 +282,6 @@ namespace Multiplayer
 
     void NetworkEntityManager::MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant)
     {
-<<<<<<< HEAD
-        bool safeToExit = true;
-        NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(entityId);
-
-        // We also need special handling for the EntityHierarchyComponent as well, since related entities need to be migrated together
-        //auto* hierarchyController = FindController<EntityHierarchyComponent::Authority>(nonConstExitingEntityPtr);
-        //if (hierarchyController)
-        //{
-        //    if (hierarchyController->GetParentRelatedEntity())
-        //    {
-        //        safeToExit = false;
-        //    }
-        //}
-=======
         if (alwaysRelevant)
         {
             m_alwaysRelevantToServers.emplace(entityHandle);
@@ -358,7 +301,6 @@ namespace Multiplayer
     {
         return m_alwaysRelevantToServers;
     }
->>>>>>> development
 
     void NetworkEntityManager::SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs)
     {
@@ -402,8 +344,6 @@ namespace Multiplayer
         }
     }
 
-<<<<<<< HEAD
-=======
     void NetworkEntityManager::DispatchLocalDeferredRpcMessages()
     {
         for (NetworkEntityRpcMessage& rpcMessage : m_localDeferredRpcMessages)
@@ -419,17 +359,11 @@ namespace Multiplayer
         m_localDeferredRpcMessages.clear();
     }
 
->>>>>>> development
     void NetworkEntityManager::Reset()
     {
         m_multiplayerComponentRegistry.Reset();
         m_removeList.clear();
         m_entityDomain = nullptr;
-<<<<<<< HEAD
-        m_updateEntityDomainEvent.RemoveFromQueue();
-        m_ownedEntities.clear();
-=======
->>>>>>> development
         m_entityExitDomainEvent.DisconnectAllHandlers();
         m_onEntityMarkedDirty.DisconnectAllHandlers();
         m_onEntityNotifyChanges.DisconnectAllHandlers();

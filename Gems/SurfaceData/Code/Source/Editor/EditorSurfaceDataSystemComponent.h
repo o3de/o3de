@@ -47,10 +47,6 @@ namespace SurfaceData
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
     private:
-<<<<<<< HEAD
-
-=======
->>>>>>> development
         void LoadAsset(const AZ::Data::AssetId& assetId);
         void AddAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset);
 

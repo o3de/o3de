@@ -32,19 +32,10 @@ namespace Multiplayer
         //! @return false if this entity should not belong to the entity manger, true if it could be owned by the entity manager
         virtual bool IsInDomain(const ConstNetworkEntityHandle& entityHandle) const = 0;
 
-<<<<<<< HEAD
-        //! Enable Entity Domain Exit Tracking for entities on the host.
-        //! @param ownedEntitySet the set of entities to activate tracking for
-        virtual void ActivateTracking(const INetworkEntityManager::OwnedEntitySet& ownedEntitySet) = 0;
-
-        //! Return the set of netbound entities not included in this domain.
-        virtual const EntitiesNotInDomain& RetrieveEntitiesNotInDomain() const = 0;
-=======
         //! This method will be invoked whenever we unexpectedly lose the authoritative entity replicator for an entity.
         //! This gives our entity domain a chance to determine whether or not it should assume authority in this instance.
         //! @param entityHandle the network entity handle of the entity that has lost its authoritative replicator
         virtual void HandleLossOfAuthoritativeReplicator(const ConstNetworkEntityHandle& entityHandle) = 0;
->>>>>>> development
 
         //! Debug draw to visualize host entity domains.
         virtual void DebugDraw() const = 0;

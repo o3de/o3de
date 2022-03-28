@@ -221,9 +221,6 @@ namespace AZ
 
         MeshComponentController::MeshComponentController(const MeshComponentConfig& config)
             : m_configuration(config)
-<<<<<<< HEAD
-        {
-=======
         {
         }
 
@@ -233,7 +230,6 @@ namespace AZ
             AzFramework::EntityIdContextQueryBus::EventResult(
                 contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
             return contextId;
->>>>>>> development
         }
 
         void MeshComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)

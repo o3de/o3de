@@ -403,11 +403,7 @@ namespace Multiplayer
         m_syncRewindEvent.Signal();
     }
 
-<<<<<<< HEAD
-    void NetBindComponent::NotifyServerMigration(const HostId& hostId, AzNetworking::ConnectionId connectionId)
-=======
     void NetBindComponent::NotifyServerMigration(const HostId& remoteHostId)
->>>>>>> development
     {
         m_entityServerMigrationEvent.Signal(m_netEntityHandle, remoteHostId);
     }

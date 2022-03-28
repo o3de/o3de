@@ -44,14 +44,9 @@ namespace Multiplayer
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
         ParentEntityIdAddEvent(m_parentChangedEventHandler);
-<<<<<<< HEAD
-
-        if (!HasController())
-=======
         ResetCountAddEvent(m_resetCountChangedEventHandler);
 
         if (!GetNetBindComponent()->IsNetEntityRoleAuthority())
->>>>>>> development
         {
             OnParentChanged(GetParentEntityId());
         }
@@ -98,7 +93,6 @@ namespace Multiplayer
 
             AzFramework::TransformComponent* transformComponent = GetTransformComponent();
             if (GetParentEntityId() == InvalidNetEntityId)
-<<<<<<< HEAD
             {
                 if (!transformComponent->GetWorldTM().IsClose(blendTransform))
                 {
@@ -107,16 +101,6 @@ namespace Multiplayer
             }
             else
             {
-=======
-            {
-                if (!transformComponent->GetWorldTM().IsClose(blendTransform))
-                {
-                    transformComponent->SetWorldTM(blendTransform);
-                }
-            }
-            else
-            {
->>>>>>> development
                 if (!transformComponent->GetLocalTM().IsClose(blendTransform))
                 {
                     transformComponent->SetLocalTM(blendTransform);

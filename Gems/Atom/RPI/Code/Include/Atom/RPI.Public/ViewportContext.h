@@ -97,10 +97,6 @@ namespace AZ
             //! Alternatively, connect to ViewportContextNotificationsBus and listen to ViewportContextNotifications::OnViewportDpiScalingChanged.
             void ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler);
 
-<<<<<<< HEAD
-            using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
-=======
->>>>>>> development
             //! Notifies consumers when the view matrix has changed.
             void ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
             //! Notifies consumers when the projection matrix has changed.

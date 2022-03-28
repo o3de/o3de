@@ -122,26 +122,7 @@ namespace Multiplayer
                 {
                     AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
                     NetworkEntityHandle entityHandle(entity, networkEntityTracker);
-<<<<<<< HEAD
-                    if (entityHandle.GetNetBindComponent() == nullptr)
-                    {
-                        // Not a net-bound entity, terminate processing of this entity
-                        return;
-                    }
-
-                    const AZ::Aabb currentBounds = entityBoundsUnion->GetEntityWorldBoundsUnion(entity->GetId());
-                    const AZ::Vector3 currentCenter = currentBounds.GetCenter();
-                    NetworkTransformComponent* networkTransform = entity->template FindComponent<NetworkTransformComponent>();
-                    if (debugDisplay)
-                    {
-                        debugDisplay->SetColor(AZ::Colors::White);
-                        debugDisplay->DrawWireBox(currentBounds.GetMin(), currentBounds.GetMax());
-                    }
-
-                    if (networkTransform != nullptr)
-=======
                     if (entityHandle.GetNetBindComponent() != nullptr)
->>>>>>> development
                     {
                         const AZ::Aabb currentBounds = entityBoundsUnion->GetEntityWorldBoundsUnion(entity->GetId());
                         const AZ::Vector3 currentCenter = currentBounds.GetCenter();
@@ -151,22 +132,9 @@ namespace Multiplayer
                             debugDisplay->SetColor(AZ::Colors::White);
                             debugDisplay->DrawWireBox(currentBounds.GetMin(), currentBounds.GetMax());
                         }
-<<<<<<< HEAD
-                        const AZ::Vector3 rewindOffset = rewindCenter - currentCenter; // Compute offset between rewound and current positions
-                        const AZ::Aabb rewoundAabb = currentBounds.GetTranslated(rewindOffset); // Apply offset to the entity aabb
-                        if (debugDisplay)
-                        {
-                            debugDisplay->SetColor(AZ::Colors::Grey);
-                            debugDisplay->DrawWireBox(rewoundAabb.GetMin(), rewoundAabb.GetMax());
-                        }
-=======
->>>>>>> development
 
                         if (networkTransform != nullptr)
                         {
-<<<<<<< HEAD
-                            m_rewoundEntities.push_back(entityHandle);
-=======
                             // Get the rewound position for target host frame ID plus the one preceding it for potential lerp
                             AZ::Vector3 rewindCenter = networkTransform->GetTranslation();
                             const AZ::Vector3 rewindCenterPrevious = networkTransform->GetTranslationPrevious();
@@ -189,7 +157,6 @@ namespace Multiplayer
                                 m_rewoundEntities.push_back(entityHandle);
                                 entityHandle.GetNetBindComponent()->NotifySyncRewindState();
                             }
->>>>>>> development
                         }
                     }
                 }

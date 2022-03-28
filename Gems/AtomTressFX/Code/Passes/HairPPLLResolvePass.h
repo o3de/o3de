@@ -58,11 +58,6 @@ namespace AZ
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             private:
-<<<<<<< HEAD
-                HairPPLLResolvePass(const RPI::PassDescriptor& descriptor);
-
-            private:
-=======
                 AZ::Name o_enableShadows;
                 AZ::Name o_enableDirectionalLights;
                 AZ::Name o_enablePunctualLights;
@@ -77,7 +72,6 @@ namespace AZ
 
                 HairPPLLResolvePass(const RPI::PassDescriptor& descriptor);
 
->>>>>>> development
                 void UpdateGlobalShaderOptions();
 
                 HairGlobalSettings m_hairGlobalSettings;

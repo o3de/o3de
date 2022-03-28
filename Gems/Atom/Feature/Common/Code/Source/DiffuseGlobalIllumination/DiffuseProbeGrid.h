@@ -222,12 +222,9 @@ namespace AZ
             // extents of the probe grid
             AZ::Vector3 m_extents = AZ::Vector3(0.0f, 0.0f, 0.0f);
 
-<<<<<<< HEAD
-=======
             // expanded extents for rendering the volume
             AZ::Vector3 m_renderExtents = AZ::Vector3(0.0f, 0.0f, 0.0f);
 
->>>>>>> development
             // probe grid OBB (world space), built from transform and extents
             AZ::Obb m_obbWs;
 

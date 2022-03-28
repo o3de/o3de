@@ -156,17 +156,6 @@ namespace UnitTest
             return materialTypeSourceData.CreateMaterialTypeAsset(assetId).TakeValue();
         }
     };
-<<<<<<< HEAD
-    
-    void AddPropertyGroup(MaterialSourceData& material, AZStd::string_view groupName)
-    {
-        material.m_properties.insert(groupName);
-    }
-    
-    void AddProperty(MaterialSourceData& material, AZStd::string_view groupName, AZStd::string_view propertyName, const MaterialPropertyValue& anyValue)
-    {
-        material.m_properties[groupName][propertyName].m_value = anyValue;
-=======
 
     void AddPropertyGroup(MaterialSourceData&, AZStd::string_view)
     {
@@ -177,7 +166,6 @@ namespace UnitTest
     {
         MaterialPropertyId id{groupName, propertyName};
         material.SetPropertyValue(id, value);
->>>>>>> development
     }
 
     TEST_F(MaterialSourceDataTests, CreateMaterialAsset_BasicProperties)
@@ -493,45 +481,7 @@ namespace UnitTest
 
     TEST_F(MaterialSourceDataTests, TestJsonRoundTrip)
     {
-<<<<<<< HEAD
-        const char* materialTypeJson =
-            "{                                                                   \n"
-            "    \"propertyLayout\": {                                           \n"
-            "        \"version\": 1,                                             \n"
-            "        \"groups\": [                                               \n"
-            "            { \"name\": \"groupA\" },                               \n"
-            "            { \"name\": \"groupB\" },                               \n"
-            "            { \"name\": \"groupC\" }                                \n"
-            "        ],                                                          \n"
-            "        \"properties\": {                                           \n"
-            "            \"groupA\": [                                           \n"
-            "                {\"name\": \"MyBool\", \"type\": \"bool\"},         \n"
-            "                {\"name\": \"MyInt\", \"type\": \"int\"},           \n"
-            "                {\"name\": \"MyUInt\", \"type\": \"uint\"}          \n"
-            "            ],                                                      \n"
-            "            \"groupB\": [                                           \n"
-            "                {\"name\": \"MyFloat\", \"type\": \"float\"},       \n"
-            "                {\"name\": \"MyFloat2\", \"type\": \"vector2\"},    \n"
-            "                {\"name\": \"MyFloat3\", \"type\": \"vector3\"}     \n"
-            "            ],                                                      \n"
-            "            \"groupC\": [                                           \n"
-            "                {\"name\": \"MyFloat4\", \"type\": \"vector4\"},    \n"
-            "                {\"name\": \"MyColor\", \"type\": \"color\"},       \n"
-            "                {\"name\": \"MyImage\", \"type\": \"image\"}        \n"
-            "            ]                                                       \n"
-            "        }                                                           \n"
-            "    }                                                               \n"
-            "}                                                                   \n";
-
-        const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/roundTripTest.materialtype";
-        
-        AZ::IO::FileIOStream file;
-        EXPECT_TRUE(file.Open(materialTypeFilePath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath));
-        file.Write(strlen(materialTypeJson), materialTypeJson);
-        file.Close();
-=======
         const char* materialTypeFilePath = "@exefolder@/Temp/roundTripTest.materialtype";
->>>>>>> development
 
         MaterialSourceData sourceDataOriginal;
         sourceDataOriginal.m_materialType = materialTypeFilePath;
@@ -650,10 +600,6 @@ namespace UnitTest
                     "propertyGroups":
                     [
                         {
-<<<<<<< HEAD
-                            "name": "testColor",
-                            "type": "color"
-=======
                             "name": "general",
                             "properties": [
                                 {
@@ -661,7 +607,6 @@ namespace UnitTest
                                     "type": "Float"
                                 }
                             ]
->>>>>>> development
                         }
                     ]
                 }
@@ -742,52 +687,7 @@ namespace UnitTest
         MaterialSourceData material;
         JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
 
-<<<<<<< HEAD
-        EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
-        EXPECT_EQ(AZ::JsonSerializationResult::Processing::Halted, loadResult.m_jsonResultCode.GetProcessing());
-        EXPECT_EQ(AZ::JsonSerializationResult::Outcomes::Catastrophic, loadResult.m_jsonResultCode.GetOutcome());
-
-        EXPECT_TRUE(loadResult.ContainsMessage("/materialType", "Failed to load material-type file"));
-    }
-
-    TEST_F(MaterialSourceDataTests, Load_MaterialTypeMessagesAreReported)
-    {
-        const AZStd::string simpleMaterialTypeJson = R"(
-        {
-            "propertyLayout": {
-                "properties": {
-                    "general": [
-                        {
-                            "name": "testColor",
-                            "type": "color"
-                        }
-                    ]
-                }
-            }
-        } 
-        )";
-
-        const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype";
-
-        AZ::IO::FileIOStream file;
-        EXPECT_TRUE(file.Open(materialTypeFilePath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath));
-        file.Write(simpleMaterialTypeJson.size(), simpleMaterialTypeJson.data());
-        file.Close();
-
-        const AZStd::string inputJson = R"(
-        {
-            "materialType": "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype",
-            "propertyLayoutVersion": 1,
-            "properties": {
-                "general": {
-                    "testColor": [1.0,1.0,1.0]
-                }
-            }
-        }
-        )";
-=======
         const bool elevateWarnings = false;
->>>>>>> development
 
         ErrorMessageFinder errorMessageFinder;
 
@@ -812,43 +712,6 @@ namespace UnitTest
     
     TEST_F(MaterialSourceDataTests, CreateMaterialAsset_MaterialPropertyNotFound)
     {
-<<<<<<< HEAD
-        const AZStd::string simpleMaterialTypeJson = R"(
-        {
-            "propertyLayout": {
-                "properties": {
-                    "general": [
-                        {
-                            "name": "testColor",
-                            "type": "color"
-                        }
-                    ]
-                }
-            }
-        } 
-        )";
-
-        const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype";
-
-        AZ::IO::FileIOStream file;
-        EXPECT_TRUE(file.Open(materialTypeFilePath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath));
-        file.Write(simpleMaterialTypeJson.size(), simpleMaterialTypeJson.data());
-        file.Close();
-
-        const AZStd::string inputJson = R"(
-        {
-            "materialType": "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype",
-            "propertyLayoutVersion": 1,
-            "properties": {
-                "general": {
-                    "doesNotExist": [1.0,1.0,1.0]
-                }
-            }
-        }
-        )";
-
-=======
->>>>>>> development
         MaterialSourceData material;
         material.m_materialType = "@exefolder@/Temp/test.materialtype";
         AddPropertyGroup(material, "general");

@@ -43,31 +43,6 @@ namespace AZ
 
         void DiffuseProbeGridBlendIrradiancePass::LoadShader()
         {
-<<<<<<< HEAD
-            // load shader
-            // Note: the shader may not be available on all platforms
-            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiance.azshader";
-            m_shader = RPI::LoadCriticalShader(shaderFilePath);
-            if (m_shader == nullptr)
-            {
-                return;
-            }
-
-            // load pipeline state
-            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            const auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-            m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-
-            // load Pass Srg asset
-            m_srgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
-
-            // retrieve the number of threads per thread group from the shader
-            const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), m_dispatchArgs);
-            if (!outcome.IsSuccess())
-            {
-                AZ_Error("PassSystem", false, "[DiffuseProbeBlendIrradiancePass '%s']: Shader '%s' contains invalid numthreads arguments:\n%s", GetPathName().GetCStr(), shaderFilePath.c_str(), outcome.GetError().c_str());
-=======
             // load shaders, each supervariant handles a different number of rays per probe
             // Note: the raytracing shaders may not be available on all platforms
             m_shaders.reserve(DiffuseProbeGridNumRaysPerProbeArraySize);
@@ -97,7 +72,6 @@ namespace AZ
                 }
 
                 m_shaders.push_back({ shader, pipelineState, srgLayout, dispatchArgs });
->>>>>>> development
             }
         }
 

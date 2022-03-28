@@ -124,11 +124,7 @@ namespace EMotionFX
     {
         using testing::_;
 
-<<<<<<< HEAD
-        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
-=======
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
->>>>>>> development
 
         MockAssetSystemRequests assetSystem;
         EXPECT_CALL(assetSystem, CompileAssetSync(_))

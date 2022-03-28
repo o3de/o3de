@@ -16,26 +16,9 @@
 #include <TerrainRenderer/TerrainMeshManager.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
-<<<<<<< HEAD
-#include <Atom/RPI.Public/Material/Material.h>
-#include <Atom/RPI.Public/Shader/Shader.h>
-
-#include <Atom/RPI.Public/Image/StreamingImage.h>
-#include <Atom/RPI.Public/MeshDrawPacket.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/DrawPacket.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/PipelineState.h>
-#include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
-=======
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
->>>>>>> development
 
 namespace AZ::RPI
 {
@@ -52,10 +35,7 @@ namespace Terrain
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
         , private AZ::RPI::MaterialReloadNotificationBus::Handler
-<<<<<<< HEAD
-=======
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
->>>>>>> development
     {
     public:
         AZ_RTTI(TerrainFeatureProcessor, "{D7DAC1F9-4A9F-4D3C-80AE-99579BF8AB1C}", AZ::RPI::FeatureProcessor);
@@ -67,34 +47,13 @@ namespace Terrain
         TerrainFeatureProcessor() = default;
         ~TerrainFeatureProcessor() = default;
 
-<<<<<<< HEAD
-        // AZ::Component overrides...
-=======
         // AZ::RPI::FeatureProcessor overrides...
->>>>>>> development
         void Activate() override;
         void Deactivate() override;
-
-        // AZ::RPI::FeatureProcessor overrides...
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet) override;
 
-<<<<<<< HEAD
-        // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
-        void OnMaterialReinitialized(const AZ::Data::Instance<AZ::RPI::Material>& material) override;
-
-        void SetWorldSize(AZ::Vector2 sizeInMeters);
-
-        void UpdateTerrainData(const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
-                               uint32_t width, uint32_t height, const AZStd::vector<float>& heightData);
-
-        void RemoveTerrainData()
-        {
-            m_areaData = {};
-        }
-=======
         void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config);
         void SetWorldSize(AZ::Vector2 sizeInMeters);
->>>>>>> development
 
         const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
         const AZ::Aabb& GetTerrainBounds() const;

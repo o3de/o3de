@@ -53,11 +53,6 @@ namespace AZ
 
             //! Load a material type from a json file or document.
             //! Otherwise, it will use the passed in document first if not null, or load the json document from the path.
-<<<<<<< HEAD
-            //! @param filePath a relative path if document is provided, an absolute path if document is not provided.
-            //! @param document the loaded json document.
-            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, const rapidjson::Value* document = nullptr);
-=======
             //! @param filePath path to the JSON file to load, unless the @document is already provided. In either case, this path will be used to resolve any relative file references.
             //! @param document an optional already loaded json document.
             //! @param importedFiles receives the list of files that were imported by the JSON serializer
@@ -65,7 +60,6 @@ namespace AZ
 
             //! Load a material from a json file.
             AZ::Outcome<MaterialSourceData> LoadMaterialSourceData(const AZStd::string& filePath, const rapidjson::Value* document = nullptr, bool warningsAsErrors = false);
->>>>>>> development
 
             //! Utility function for custom JSON serializers to report results as "Skipped" when encountering keys that aren't recognized
             //! as part of the custom format.
@@ -77,14 +71,11 @@ namespace AZ
             void CheckForUnrecognizedJsonFields(
                 const AZStd::string_view* acceptedFieldNames, uint32_t acceptedFieldNameCount,
                 const rapidjson::Value& object, JsonDeserializerContext& context, JsonSerializationResult::ResultCode& result);
-<<<<<<< HEAD
-=======
 
             //! Materials assets can either be finalized during asset-processing time or when materials are loaded at runtime.
             //! Finalizing during asset processing reduces load times and obfuscates the material data.
             //! Waiting to finalize at load time reduces dependencies on the material type data, resulting in fewer asset rebuilds and less time spent processing assets.
             bool BuildersShouldFinalizeMaterialAssets();
->>>>>>> development
         }
     }
 }

@@ -21,10 +21,7 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-<<<<<<< HEAD
-=======
 #include <AtomToolsFramework/Viewport/ViewportInteractionImpl.h>
->>>>>>> development
 
 namespace AtomToolsFramework
 {
@@ -135,18 +132,11 @@ namespace AtomToolsFramework
         bool event(QEvent* event) override;
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
-<<<<<<< HEAD
-        void mouseMoveEvent(QMouseEvent* event) override;
-
-    private:
-        void SendWindowResizeEvent();
-=======
         void mouseMoveEvent(QMouseEvent* mouseEvent) override;
 
     private:
         void SendWindowResizeEvent();
         void SendWindowCloseEvent();
->>>>>>> development
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;
@@ -165,10 +155,7 @@ namespace AtomToolsFramework
         AZ::ScriptTimePoint m_time;
         // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
-<<<<<<< HEAD
-=======
         // Implementation of ViewportInteractionRequests (handles viewport picking operations).
         AZStd::unique_ptr<ViewportInteractionImpl> m_viewportInteractionImpl;
->>>>>>> development
     };
 } //namespace AtomToolsFramework

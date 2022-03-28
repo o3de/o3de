@@ -66,14 +66,6 @@ float3 GetSharedTangent(int tangentIndex)
     );
 }
 
-<<<<<<< HEAD
-struct TressFXVertex
-{
-    float4 Position;
-    float4 Tangent;
-    float4 p0p1;
-    float4 StrandColor;
-=======
 //! Hair vertex geometry output - input structure for the Pixel shaders
 struct TressFXVertex
 {
@@ -90,7 +82,6 @@ struct PS_INPUT_HAIR
     float4 Tangent     : Tangent;
     float4 p0p1        : TEXCOORD0;
     float4 StrandColor : TEXCOORD1;
->>>>>>> development
 };
 
 float3 GetStrandColor(int index, float fractionOfStrand)
@@ -197,10 +188,6 @@ TressFXVertex GetExpandedTressFXShadowVert(uint vertexId, float3 eye, float2 win
     return Output;
 }
 
-<<<<<<< HEAD
-// EndHLSL
-
-=======
 //!=============================================================================
 //!             Hair Render VS - Used by all geometry hair shaders 
 //!=============================================================================
@@ -224,4 +211,3 @@ PS_INPUT_HAIR RenderHairVS(uint vertexId : SV_VertexID)
 
     return vsOutput;
 }
->>>>>>> development

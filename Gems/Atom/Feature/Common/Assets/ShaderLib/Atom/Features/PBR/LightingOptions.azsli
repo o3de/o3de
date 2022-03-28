@@ -8,8 +8,6 @@
 
 #pragma once
 
-<<<<<<< HEAD
-=======
 // --- Note: About this file ---
 // This file uses #defines to completely strip out certain lighting features from shaders
 // This enables us to avoid code duplication and write an uber-esque shader code and then
@@ -62,7 +60,6 @@
 
 // --- Shader Options ---
 
->>>>>>> development
 option bool o_specularF0_enableMultiScatterCompensation = true;
 option bool o_enableShadows = true;
 option bool o_enableDirectionalLights = true;
@@ -70,11 +67,6 @@ option bool o_enablePunctualLights = true;
 option bool o_enableAreaLights = true;
 option bool o_enableIBL = true;
 option bool o_enableSubsurfaceScattering = false;
-<<<<<<< HEAD
-option bool o_clearCoat_feature_enabled = false;
-option enum class TransmissionMode {None, ThickObject, ThinObject} o_transmission_mode;
-=======
->>>>>>> development
 option bool o_meshUseForwardPassIBLSpecular = false;
 option bool o_materialUseForwardPassIBLSpecular = false;
 option bool o_area_light_validation = false;

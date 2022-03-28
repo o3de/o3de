@@ -234,13 +234,10 @@ namespace EMotionFX
                     const float updateRateInSeconds = animGraphSampleRate > 0.0f ? 1.0f / animGraphSampleRate : 0.0f;
                     actorInstance->SetMotionSamplingRate(updateRateInSeconds);
                 }
-<<<<<<< HEAD
-=======
                 else if (actorInstance->GetMotionSamplingRate() != 0)
                 {
                     actorInstance->SetMotionSamplingRate(0);
                 }
->>>>>>> development
 
                 // Disable the automatic mesh LOD level adjustment based on screen space in case a simple LOD component is present.
                 // The simple LOD component overrides the mesh LOD level and syncs the skeleton with the mesh LOD level.

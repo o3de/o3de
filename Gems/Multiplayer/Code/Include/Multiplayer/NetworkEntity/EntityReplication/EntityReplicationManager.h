@@ -57,10 +57,6 @@ namespace Multiplayer
         EntityReplicationManager(AzNetworking::IConnection& connection, AzNetworking::IConnectionListener& connectionListener, Mode mode);
         ~EntityReplicationManager() = default;
 
-<<<<<<< HEAD:Gems/Multiplayer/Code/Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h
-        void SetRemoteHostId(const HostId& hostId);
-=======
->>>>>>> development:Gems/Multiplayer/Code/Source/NetworkEntity/EntityReplication/EntityReplicationManager.h
         const HostId& GetRemoteHostId() const;
 
         void ActivatePendingEntities();

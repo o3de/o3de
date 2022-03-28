@@ -159,12 +159,8 @@ namespace AZ
         void DiffuseProbeGrid::SetTransform(const AZ::Transform& transform)
         {
             m_transform = transform;
-<<<<<<< HEAD
-            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_extents / 2.0f);
-=======
 
             m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_renderExtents / 2.0f);
->>>>>>> development
 
             // probes need to be relocated since the grid position changed
             m_remainingRelocationIterations = DefaultNumRelocationIterations;
@@ -180,10 +176,6 @@ namespace AZ
         void DiffuseProbeGrid::SetExtents(const AZ::Vector3& extents)
         {
             m_extents = extents;
-<<<<<<< HEAD
-            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_extents / 2.0f);
-=======
->>>>>>> development
 
             // recompute the number of probes since the extents changed
             UpdateProbeCount();
@@ -469,16 +461,8 @@ namespace AZ
             RHI::ShaderInputBufferIndex bufferIndex;
             RHI::ShaderInputConstantIndex constantIndex;
 
-<<<<<<< HEAD
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.origin"));
-            srg->SetConstant(constantIndex, m_transform.GetTranslation());
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.rotation"));
-            srg->SetConstant(constantIndex, m_transform.GetRotation());
-=======
             bufferIndex = layout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
             m_prepareSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
->>>>>>> development
 
             constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_gridDataInitialized"));
             m_prepareSrg->SetConstant(constantIndex, m_gridDataInitialized);
@@ -811,19 +795,11 @@ namespace AZ
             m_renderObjectSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorld"));
-<<<<<<< HEAD
-            AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromTransform(m_transform) * AZ::Matrix3x4::CreateScale(m_extents);
-            m_renderObjectSrg->SetConstant(constantIndex, modelToWorld);
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorldInverse"));
-            AZ::Matrix3x4 modelToWorldInverse = AZ::Matrix3x4::CreateFromTransform(m_transform).GetInverseFull();
-=======
             AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromTransform(m_transform) * AZ::Matrix3x4::CreateScale(m_renderExtents);
             m_renderObjectSrg->SetConstant(constantIndex, modelToWorld);
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorldInverse"));
             AZ::Matrix3x4 modelToWorldInverse = modelToWorld.GetInverseFull();
->>>>>>> development
             m_renderObjectSrg->SetConstant(constantIndex, modelToWorldInverse);
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_obbHalfLengths"));

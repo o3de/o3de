@@ -34,11 +34,7 @@ namespace UnitTest
             m_application.reset();
         }
 
-<<<<<<< HEAD
-        static constexpr const char TestDataFolder[] = "@engroot@/Gems/Atom/RHI/Code/Tests/UtilsTestsData/";
-=======
         static constexpr const char TestDataFolder[] = "@gemroot:Atom_RHI@/Code/Tests/UtilsTestsData/";
->>>>>>> development
 
         AZStd::unique_ptr<AzFramework::Application> m_application;
     };

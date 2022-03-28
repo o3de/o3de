@@ -31,11 +31,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Code
                 External
                 External/Code/src
-<<<<<<< HEAD
-            PUBLIC
-                Code/Include
-=======
->>>>>>> development
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
@@ -59,11 +54,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Code
                 External
                 External/Code/src
-<<<<<<< HEAD
-            PUBLIC
-                Code/Include
-=======
->>>>>>> development
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
@@ -85,11 +75,6 @@ else()
                 Code
                 External
                 External/Code/src
-<<<<<<< HEAD
-            PUBLIC
-                Code/Include
-=======
->>>>>>> development
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
@@ -112,11 +97,6 @@ else()
                 Code
                 External
                 External/Code/src
-<<<<<<< HEAD
-            PUBLIC
-                Code/Include
-=======
->>>>>>> development
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
@@ -142,11 +122,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Code
                 External
                 External/Code/src
-<<<<<<< HEAD
-            PUBLIC
-                Code/Include
-=======
->>>>>>> development
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AssetBuilderSDK
@@ -163,11 +138,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Code
                 External
                 External/Code/src
-<<<<<<< HEAD
-            PUBLIC
-                Code/Include
-=======
->>>>>>> development
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::AtomTressFX.Builders.Static

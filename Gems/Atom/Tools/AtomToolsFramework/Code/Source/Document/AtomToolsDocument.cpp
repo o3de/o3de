@@ -106,20 +106,6 @@ namespace AtomToolsFramework
         return true;
     }
 
-<<<<<<< HEAD
-    const AZStd::any& AtomToolsDocument::GetPropertyValue([[maybe_unused]] const AZ::Name& propertyId) const
-    {
-        AZ_UNUSED(propertyId);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return m_invalidValue;
-    }
-
-    const AtomToolsFramework::DynamicProperty& AtomToolsDocument::GetProperty([[maybe_unused]] const AZ::Name& propertyId) const
-    {
-        AZ_UNUSED(propertyId);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return m_invalidProperty;
-=======
     bool AtomToolsDocument::Reopen()
     {
         if (!ReopenRecordState())
@@ -173,7 +159,6 @@ namespace AtomToolsFramework
         }
 
         return true;
->>>>>>> development
     }
 
     bool AtomToolsDocument::SaveAsCopy(const AZStd::string& savePath)
@@ -206,13 +191,6 @@ namespace AtomToolsFramework
         return true;
     }
 
-<<<<<<< HEAD
-    void AtomToolsDocument::SetPropertyValue([[maybe_unused]] const AZ::Name& propertyId, [[maybe_unused]] const AZStd::any& value)
-    {
-        AZ_UNUSED(propertyId);
-        AZ_UNUSED(value);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-=======
     bool AtomToolsDocument::SaveAsChild(const AZStd::string& savePath)
     {
         if (!IsOpen())
@@ -241,7 +219,6 @@ namespace AtomToolsFramework
         }
 
         return true;
->>>>>>> development
     }
 
     bool AtomToolsDocument::Close()

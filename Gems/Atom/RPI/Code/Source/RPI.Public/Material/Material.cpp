@@ -385,11 +385,6 @@ namespace AZ
             return m_currentChangeId;
         }
 
-<<<<<<< HEAD
-        MaterialPropertyIndex Material::FindPropertyIndex(const Name& propertyId) const
-        {
-            return m_layout->FindPropertyIndex(propertyId);
-=======
         MaterialPropertyIndex Material::FindPropertyIndex(const Name& propertyId, bool* wasRenamed, Name* newName) const
         {
             if (wasRenamed)
@@ -423,7 +418,6 @@ namespace AZ
                 }
             }
             return index;
->>>>>>> development
         }
 
         template<typename Type>

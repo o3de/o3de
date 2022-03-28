@@ -49,16 +49,9 @@ namespace MaterialEditor
         m_toggleAlternateSkybox = addAction(QIcon(":/Icons/skybox.svg"), "Toggle Alternate Skybox");
         m_toggleAlternateSkybox->setCheckable(true);
         connect(m_toggleAlternateSkybox, &QAction::triggered, [this]() {
-<<<<<<< HEAD
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::SetAlternateSkyboxEnabled, m_toggleAlternateSkybox->isChecked());
-        });
-        m_toggleAlternateSkybox->setChecked(viewportSettings->m_enableAlternateSkybox);
-=======
             MaterialViewportSettingsRequestBus::Event(
                 m_toolId, &MaterialViewportSettingsRequestBus::Events::SetAlternateSkyboxEnabled, m_toggleAlternateSkybox->isChecked());
         });
->>>>>>> development
 
         // Add mapping selection button
         QToolButton* toneMappingButton = new QToolButton(this);
@@ -114,16 +107,7 @@ namespace MaterialEditor
         MaterialViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
 
-<<<<<<< HEAD
-    void MaterialEditorToolBar::OnAlternateSkyboxEnabledChanged(bool enable)
-    {
-        m_toggleAlternateSkybox->setChecked(enable);
-    }
-
-    void MaterialEditorToolBar::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
-=======
     MaterialEditorToolBar::~MaterialEditorToolBar()
->>>>>>> development
     {
         MaterialViewportSettingsNotificationBus::Handler::BusDisconnect();
     }

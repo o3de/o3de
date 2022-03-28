@@ -51,21 +51,8 @@ public:
 
         m_awsCoreConfiguration = AZStd::make_unique<AWSCore::AWSCoreConfiguration>();
 
-<<<<<<< HEAD
-        m_normalizedSourceProjectFolder = AZStd::string::format("%s/%s%s/", AZ::Test::GetCurrentExecutablePath().c_str(),
-            "AWSResourceMappingManager", AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false).c_str());
-        AzFramework::StringFunc::Path::Normalize(m_normalizedSourceProjectFolder);
-        m_normalizedSetRegFolderPath = AZStd::string::format("%s/%s/",
-            m_normalizedSourceProjectFolder.c_str(), AZ::SettingsRegistryInterface::RegistryFolder);
-        AzFramework::StringFunc::Path::Normalize(m_normalizedSetRegFolderPath);
-
-        m_localFileIO->SetAlias("@projectroot@", m_normalizedSourceProjectFolder.c_str());
-
-        CreateTestSetRegFile(TEST_VALID_RESOURCE_MAPPING_SETREG);
-=======
         CreateFile(m_setRegFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_SETREG);
         m_localFileIO->SetAlias("@projectroot@", GetTestTempDirectoryPath().Native().c_str());
->>>>>>> development
     }
 
     void TearDown() override
@@ -83,11 +70,7 @@ public:
 
 TEST_F(AWSCoreConfigurationTest, InitConfig_NoSourceProjectFolderFound_ReturnEmptyConfigFilePath)
 {
-<<<<<<< HEAD
-    m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
-=======
     m_settingsRegistry->MergeSettingsFile(m_setRegFilePath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
->>>>>>> development
     m_localFileIO->ClearAlias("@projectroot@");
 
     AZ_TEST_START_TRACE_SUPPRESSION;
@@ -119,11 +102,7 @@ TEST_F(AWSCoreConfigurationTest, InitConfig_LoadValidSettingsRegistry_ReturnNonE
 
 TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_NoSourceProjectFolderFound_ReturnEmptyConfigFilePath)
 {
-<<<<<<< HEAD
-    m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
-=======
     m_settingsRegistry->MergeSettingsFile(m_setRegFilePath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
->>>>>>> development
     m_localFileIO->ClearAlias("@projectroot@");
     m_awsCoreConfiguration->ReloadConfiguration();
 

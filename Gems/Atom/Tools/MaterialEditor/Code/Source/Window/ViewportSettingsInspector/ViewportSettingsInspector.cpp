@@ -61,11 +61,7 @@ namespace MaterialEditor
         AddGroup(
             groupName, groupDisplayName, groupDescription,
             new AtomToolsFramework::InspectorPropertyGroupWidget(
-<<<<<<< HEAD
-                m_viewportSettings.get(), nullptr, m_viewportSettings->TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName)));
-=======
                 &m_viewportSettings, &m_viewportSettings, m_viewportSettings.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName)));
->>>>>>> development
     }
 
     void ViewportSettingsInspector::AddModelGroup()
@@ -92,15 +88,8 @@ namespace MaterialEditor
         QObject::connect(selectButtonWidget, &QPushButton::clicked, this, [this]() { SelectModelPreset(); });
         QObject::connect(saveButtonWidget, &QPushButton::clicked, this, [this]() { SaveModelPreset(); });
 
-<<<<<<< HEAD
-        if (m_modelPreset)
-        {
-            auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this, groupWidget, GetGroupSaveStateKey(groupName));
-=======
         auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
             &m_modelPreset, &m_modelPreset, m_modelPreset.TYPEINFO_Uuid(), this, groupWidget, GetGroupSaveStateKey(groupName));
->>>>>>> development
 
         groupWidget->layout()->addWidget(inspectorWidget);
 
@@ -200,16 +189,8 @@ namespace MaterialEditor
         QObject::connect(selectButtonWidget, &QPushButton::clicked, this, [this]() { SelectLightingPreset(); });
         QObject::connect(saveButtonWidget, &QPushButton::clicked, this, [this]() { SaveLightingPreset(); });
 
-<<<<<<< HEAD
-        if (m_lightingPreset)
-        {
-            auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), this, groupWidget,
-                GetGroupSaveStateKey(groupName));
-=======
         auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
             &m_lightingPreset, &m_lightingPreset, m_lightingPreset.TYPEINFO_Uuid(), this, groupWidget, GetGroupSaveStateKey(groupName));
->>>>>>> development
 
         groupWidget->layout()->addWidget(inspectorWidget);
 
@@ -319,36 +300,6 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::Reset()
     {
-<<<<<<< HEAD
-        AZStd::string savePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
-        savePath += AZ_CORRECT_FILESYSTEM_SEPARATOR;
-        savePath += "Materials";
-        savePath += AZ_CORRECT_FILESYSTEM_SEPARATOR;
-        savePath += baseName;
-        savePath = AtomToolsFramework::GetUniqueFileInfo(savePath.c_str()).absoluteFilePath().toUtf8().constData();
-        return savePath;
-    }
-
-    AZ::Crc32 ViewportSettingsInspector::GetGroupSaveStateKey(const AZStd::string& groupName) const
-    {
-        return AZ::Crc32(AZStd::string::format("ViewportSettingsInspector::PropertyGroup::%s", groupName.c_str()));
-    }
-
-    bool ViewportSettingsInspector::ShouldGroupAutoExpanded(const AZStd::string& groupName) const
-    {
-        auto stateItr = m_windowSettings->m_inspectorCollapsedGroups.find(GetGroupSaveStateKey(groupName));
-        return stateItr == m_windowSettings->m_inspectorCollapsedGroups.end();
-    }
-
-    void ViewportSettingsInspector::OnGroupExpanded(const AZStd::string& groupName)
-    {
-        m_windowSettings->m_inspectorCollapsedGroups.erase(GetGroupSaveStateKey(groupName));
-    }
-
-    void ViewportSettingsInspector::OnGroupCollapsed(const AZStd::string& groupName)
-    {
-        m_windowSettings->m_inspectorCollapsedGroups.insert(GetGroupSaveStateKey(groupName));
-=======
         LoadSettings();
         AtomToolsFramework::InspectorWidget::Reset();
     }
@@ -372,7 +323,6 @@ namespace MaterialEditor
     AZ::Crc32 ViewportSettingsInspector::GetGroupSaveStateKey(const AZStd::string& groupName) const
     {
         return AZ::Crc32(AZStd::string::format("/O3DE/Atom/MaterialEditor/ViewportSettingsInspector/PropertyGroup/%s", groupName.c_str()));
->>>>>>> development
     }
 } // namespace MaterialEditor
 

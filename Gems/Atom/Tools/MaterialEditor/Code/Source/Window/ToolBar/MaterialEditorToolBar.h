@@ -28,15 +28,7 @@ namespace MaterialEditor
         ~MaterialEditorToolBar();
 
     private:
-<<<<<<< HEAD
-        // MaterialViewportNotificationBus::Handler overrides...
-        void OnShadowCatcherEnabledChanged([[maybe_unused]] bool enable) override;
-        void OnGridEnabledChanged([[maybe_unused]] bool enable) override;
-        void OnAlternateSkyboxEnabledChanged([[maybe_unused]] bool enable) override;
-        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
-=======
         void OnViewportSettingsChanged() override;
->>>>>>> development
 
         const AZ::Crc32 m_toolId = {};
         AtomToolsFramework::AssetSelectionComboBox* m_lightingPresetComboBox = {};

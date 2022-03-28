@@ -603,19 +603,6 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
-        void SystemComponent::OnTick(float delta, AZ::ScriptTimePoint timePoint)
-        {
-            AZ_UNUSED(timePoint);
-
-#if defined (EMOTIONFXANIMATION_EDITOR)
-            AZ_UNUSED(delta);
-            delta = m_updateTimer.StampAndGetDeltaTimeInSeconds();
-#endif
-
-            // Flush events prior to updating EMotion FX.
-            ActorNotificationBus::ExecuteQueuedEvents();
-=======
         void SystemComponent::OnTick(float delta, [[maybe_unused]]AZ::ScriptTimePoint timePoint)
         {
             // Flush events prior to updating EMotion FX.
@@ -675,7 +662,6 @@ namespace EMotionFX
             // Check if we have any physics character controllers.
             bool hasCustomMotionExtractionController = false;
             bool hasPhysicsController = false;
->>>>>>> development
 
             Physics::CharacterRequestBus::EventResult(hasPhysicsController, entityId, &Physics::CharacterRequests::IsPresent);
             if (!hasPhysicsController)
@@ -683,14 +669,8 @@ namespace EMotionFX
                 hasCustomMotionExtractionController = MotionExtractionRequestBus::FindFirstHandler(entityId) != nullptr;
             }
 
-<<<<<<< HEAD
-            const ActorManager* actorManager = GetEMotionFX().GetActorManager();
-            const size_t numActorInstances = actorManager->GetNumActorInstances();
-            for (size_t i = 0; i < numActorInstances; ++i)
-=======
             // If we have a physics controller.
             if (hasCustomMotionExtractionController || hasPhysicsController)
->>>>>>> development
             {
                 const float deltaTimeInv = (timeDelta > 0.0f) ? (1.0f / timeDelta) : 0.0f;
 
@@ -711,46 +691,6 @@ namespace EMotionFX
                     AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
                 }
 
-<<<<<<< HEAD
-                        // If we have a physics controller.
-                        if (hasCustomMotionExtractionController || hasPhysicsController)
-                        {
-                            const float deltaTimeInv = (delta > 0.0f) ? (1.0f / delta) : 0.0f;
-
-                            AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
-                            AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
-
-                            const AZ::Vector3 actorInstancePosition = actorInstance->GetWorldSpaceTransform().m_position;
-                            const AZ::Vector3 positionDelta = actorInstancePosition - currentTransform.GetTranslation();
-
-                            if (hasPhysicsController)
-                            {
-                                Physics::CharacterRequestBus::Event(
-                                    entityId, &Physics::CharacterRequests::AddVelocity, positionDelta * deltaTimeInv);
-                            }
-                            else if (hasCustomMotionExtractionController)
-                            {
-                                MotionExtractionRequestBus::Event(entityId, &MotionExtractionRequestBus::Events::ExtractMotion, positionDelta, delta);
-                                AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
-                            }
-
-                            // Update the entity rotation.
-                            const AZ::Quaternion actorInstanceRotation = actorInstance->GetWorldSpaceTransform().m_rotation;
-                            const AZ::Quaternion currentRotation = currentTransform.GetRotation();
-                            if (!currentRotation.IsClose(actorInstanceRotation, AZ::Constants::FloatEpsilon))
-                            {
-                                AZ::Transform newTransform = currentTransform;
-                                newTransform.SetRotation(actorInstanceRotation);
-                                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTM, newTransform);
-                            }
-                        }
-                        else // There is no physics controller, just use EMotion FX's actor instance transform directly.
-                        {
-                            const AZ::Transform newTransform = actorInstance->GetWorldSpaceTransform().ToAZTransform();
-                            AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTM, newTransform);
-                        }
-                    }
-=======
                 // Update the entity rotation.
                 const AZ::Quaternion actorInstanceRotation = actorInstance->GetWorldSpaceTransform().m_rotation;
                 const AZ::Quaternion currentRotation = currentTransform.GetRotation();
@@ -759,7 +699,6 @@ namespace EMotionFX
                     AZ::Transform newTransform = currentTransform;
                     newTransform.SetRotation(actorInstanceRotation);
                     AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTM, newTransform);
->>>>>>> development
                 }
             }
             else // There is no physics controller, just use EMotion FX's actor instance transform directly.

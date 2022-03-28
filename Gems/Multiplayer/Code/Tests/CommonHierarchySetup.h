@@ -32,10 +32,7 @@
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <NetworkEntity/NetworkEntityTracker.h>
-<<<<<<< HEAD
-=======
 #include <Tests/TestMultiplayerComponent.h>
->>>>>>> development
 
 namespace Multiplayer
 {
@@ -326,29 +323,6 @@ namespace Multiplayer
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
             ISerializer& serializer = inSerializer;
             serializer.Serialize(netParentId, "parentEntityId"); // Derived from NetworkTransformComponent.AutoComponent.xml
-
-            NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
-
-            ReplicationRecord notifyRecord = currentRecord;
-            entity->FindComponent<NetworkTransformComponent>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
-            entity->FindComponent<NetworkTransformComponent>()->NotifyStateDeltaChanges(notifyRecord);
-        }
-
-        void SetTranslationOnNetworkTransform(const AZStd::unique_ptr<AZ::Entity>& entity, AZ::Vector3 translation)
-        {
-            /* Derived from NetworkTransformComponent.AutoComponent.xml */
-            constexpr int totalBits = 6 /*NetworkTransformComponentInternal::AuthorityToClientDirtyEnum::Count*/;
-            constexpr int translationBit = 1 /*NetworkTransformComponentInternal::AuthorityToClientDirtyEnum::translation_DirtyFlag*/;
-
-            ReplicationRecord currentRecord;
-            currentRecord.m_authorityToClient.AddBits(totalBits);
-            currentRecord.m_authorityToClient.SetBit(translationBit, true);
-
-            constexpr uint32_t bufferSize = 100;
-            AZStd::array<uint8_t, bufferSize> buffer = {};
-            NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            static_cast<ISerializer*>(&inSerializer)->Serialize(translation,
-                "translation" /* Derived from NetworkTransformComponent.AutoComponent.xml */);
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 

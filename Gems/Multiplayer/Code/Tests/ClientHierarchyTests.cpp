@@ -16,11 +16,8 @@
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
-<<<<<<< HEAD
-=======
 #include <Multiplayer/NetworkInput/NetworkInputArray.h>
 #include <Source/NetworkEntity/NetworkEntityManager.h>
->>>>>>> development
 
 namespace Multiplayer
 {

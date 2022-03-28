@@ -297,18 +297,6 @@ namespace EMotionFX
     INSTANTIATE_TEST_CASE_P(DISABLED_TestPoses, PoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
-<<<<<<< HEAD
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
-            ),
-            PoseComparisonFixtureParams (
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.actor",
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.animgraph",
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.motionset",
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.emfxrecording"
-=======
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
@@ -319,7 +307,6 @@ namespace EMotionFX
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.animgraph",
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.motionset",
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.emfxrecording"
->>>>>>> development
             )
         )
     );
@@ -327,17 +314,10 @@ namespace EMotionFX
     INSTANTIATE_TEST_CASE_P(DISABLED_TestPoseComparison, TestPoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
-<<<<<<< HEAD
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
-                "@products@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
-=======
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
->>>>>>> development
             )
         )
     );

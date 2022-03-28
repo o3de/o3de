@@ -98,23 +98,16 @@ protected:
 
         const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
 
-<<<<<<< HEAD
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());
-=======
         auto fileIo = AZ::IO::FileIOBase::GetInstance();
         fileIo->SetAlias("@engroot@", engineRoot.c_str());
->>>>>>> development
 
         AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
         assetRoot /= "Cache";
 
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
-<<<<<<< HEAD
-=======
 
         // Set the @gemroot:<gem-name> alias for active gems
         AZ::Test::AddActiveGem("LyShine", *registry, fileIo);
->>>>>>> development
 
         AZ::SerializeContext* context = nullptr;
         ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);

@@ -36,14 +36,10 @@ namespace HttpRequestor
         desc.m_cpuId = AFFINITY_MASK_USERTHREADS;
         m_runThread = true;
         AWSNativeSDKInit::InitializationManager::InitAwsApi();
-<<<<<<< HEAD
-        auto function = AZStd::bind(&Manager::ThreadFunction, this);
-=======
         auto function = [this]
         {
             ThreadFunction();
         };
->>>>>>> development
         m_thread = AZStd::thread(desc, function);
     }
 

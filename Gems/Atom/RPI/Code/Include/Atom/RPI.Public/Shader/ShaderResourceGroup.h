@@ -130,17 +130,10 @@ namespace AZ
             const Data::Instance<Buffer>& GetBuffer(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const Data::Instance<Buffer>& GetBuffer(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;
 
-<<<<<<< HEAD
-            /// Returns an array of RPI buffers associated with the buffer shader input index.
-            AZStd::array_view<Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputNameIndex& inputIndex) const;
-            AZStd::array_view<Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputBufferIndex inputIndex) const;
-            
-=======
             /// Returns a span of RPI buffers associated with the buffer shader input index.
             AZStd::span<const Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputBufferIndex inputIndex) const;
 
->>>>>>> development
             //! Reset image and buffer views so that it won't hold references for any RHI resources
             void ResetViews();
 

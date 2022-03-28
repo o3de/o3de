@@ -215,14 +215,6 @@ namespace AtomToolsFramework
     {
         m_time = time;
         m_controllerList->UpdateViewport({GetId(), AzFramework::FloatSeconds(deltaTime), m_time});
-<<<<<<< HEAD
-    }
-
-    void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)
-    {
-        SendWindowResizeEvent();
-=======
->>>>>>> development
     }
 
     bool RenderViewportWidget::event(QEvent* event)
@@ -252,8 +244,6 @@ namespace AtomToolsFramework
     }
 
 
-<<<<<<< HEAD
-=======
     void RenderViewportWidget::enterEvent(QEvent* event)
     {
         if (const auto eventType = event->type();
@@ -274,7 +264,6 @@ namespace AtomToolsFramework
         m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
     }
 
->>>>>>> development
     void RenderViewportWidget::SendWindowResizeEvent()
     {
         // Scale the size by the DPI of the platform to
@@ -284,9 +273,6 @@ namespace AtomToolsFramework
         const QSize windowSize = uiWindowSize * pixelRatio;
 
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-<<<<<<< HEAD
-        AzFramework::WindowNotificationBus::Event(windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
-=======
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
     }
@@ -296,7 +282,6 @@ namespace AtomToolsFramework
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowClosed);
->>>>>>> development
     }
 
     AZ::Name RenderViewportWidget::GetCurrentContextName() const
@@ -346,93 +331,23 @@ namespace AtomToolsFramework
 
     AzFramework::CameraState RenderViewportWidget::GetCameraState()
     {
-<<<<<<< HEAD
-        AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
-        if (currentView == nullptr)
-        {
-            return {};
-        }
-
-        // Build camera state from Atom camera transforms
-        AzFramework::CameraState cameraState = AzFramework::CreateCameraFromWorldFromViewMatrix(
-            currentView->GetViewToWorldMatrix(),
-            AZ::Vector2{aznumeric_cast<float>(width()), aznumeric_cast<float>(height())}
-        );
-        AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
-
-        // Convert from Z-up
-        AZStd::swap(cameraState.m_forward, cameraState.m_up);
-        cameraState.m_forward = -cameraState.m_forward;
-
-        return cameraState;
-=======
         return m_viewportInteractionImpl->GetCameraState();
->>>>>>> development
     }
 
     AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
     {
-<<<<<<< HEAD
-        if (AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
-            currentView == nullptr)
-        {
-            return AzFramework::ScreenPoint(0, 0);
-        }
-
-        return AzFramework::WorldToScreen(worldPosition, GetCameraState());
-=======
         return m_viewportInteractionImpl->ViewportWorldToScreen(worldPosition);
->>>>>>> development
     }
 
     AZ::Vector3 RenderViewportWidget::ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition)
     {
-<<<<<<< HEAD
-        const auto& cameraProjection = m_viewportContext->GetCameraProjectionMatrix();
-        const auto& cameraView = m_viewportContext->GetCameraViewMatrix();
-
-        const AZ::Vector4 normalizedScreenPosition {
-            screenPosition.m_x * 2.f / width() - 1.0f,
-            (height() - screenPosition.m_y) * 2.f / height() - 1.0f,
-            1.f - depth, // [GFX TODO] [ATOM-1501] Currently we always assume reverse depth
-            1.f
-        };
-
-        AZ::Matrix4x4 worldFromScreen = cameraProjection * cameraView;
-        worldFromScreen.InvertFull();
-
-        const AZ::Vector4 projectedPosition = worldFromScreen * normalizedScreenPosition;
-        if (projectedPosition.GetW() == 0.0f)
-        {
-            return {};
-        }
-
-        return projectedPosition.GetAsVector3() / projectedPosition.GetW();
-=======
         return m_viewportInteractionImpl->ViewportScreenToWorld(screenPosition);
->>>>>>> development
     }
 
     AzToolsFramework::ViewportInteraction::ProjectedViewportRay RenderViewportWidget::ViewportScreenToWorldRay(
         const AzFramework::ScreenPoint& screenPosition)
     {
-<<<<<<< HEAD
-        auto pos0 = ViewportScreenToWorld(screenPosition, 0.f);
-        auto pos1 = ViewportScreenToWorld(screenPosition, 1.f);
-        if (!pos0.has_value() || !pos1.has_value())
-        {
-            return {};
-        }
-
-        pos0 = m_viewportContext->GetDefaultView()->GetViewToWorldMatrix().GetTranslation();
-        AZ::Vector3 rayOrigin = pos0.value();
-        AZ::Vector3 rayDirection = pos1.value() - pos0.value();
-        rayDirection.Normalize();
-
-        return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
-=======
         return m_viewportInteractionImpl->ViewportScreenToWorldRay(screenPosition);
->>>>>>> development
     }
 
     float RenderViewportWidget::DeviceScalingFactor()
@@ -526,9 +441,6 @@ namespace AtomToolsFramework
     uint32_t RenderViewportWidget::GetSyncInterval() const
     {
         return 1;
-<<<<<<< HEAD
-    }
-=======
     }
 
     // Editor ignores requests to change the sync interval
@@ -537,5 +449,4 @@ namespace AtomToolsFramework
         return false;
     }
 
->>>>>>> development
 } //namespace AtomToolsFramework

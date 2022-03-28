@@ -117,12 +117,9 @@ namespace UnitTest
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
-<<<<<<< HEAD
-=======
 
             // Set the @gemroot:<gem-name> alias for LmbrCentral gem
             AZ::Test::AddActiveGem("LmbrCentral", *registry, AZ::IO::FileIOBase::GetInstance());
->>>>>>> development
 
             auto* serializeContext = m_app.GetSerializeContext();
 
@@ -150,11 +147,7 @@ namespace UnitTest
 
         AZStd::string GetTestFileAliasedPath(AZStd::string_view fileName)
         {
-<<<<<<< HEAD
-            constexpr char testFileFolder[] = "@engroot@/Gems/LmbrCentral/Code/Tests/Levels/";
-=======
             constexpr char testFileFolder[] = "@gemroot:LmbrCentral@/Code/Tests/Levels/";
->>>>>>> development
             return AZStd::string::format("%s%.*s", testFileFolder, aznumeric_cast<int>(fileName.size()), fileName.data());
         }
 

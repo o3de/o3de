@@ -48,12 +48,6 @@ namespace AWSMetrics
             m_localFileIO->SetAlias("@engroot@", engineRoot.c_str());
             m_localFileIO->SetAlias("@products@", productAssetPath.c_str());
             m_localFileIO->SetAlias("@user@", userPath.c_str());
-<<<<<<< HEAD
-            // Copy engine.json to the cache
-            EXPECT_TRUE(m_localFileIO->Copy((engineRoot / "engine.json").c_str(), "engine.json"));
-
-=======
->>>>>>> development
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_registrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();

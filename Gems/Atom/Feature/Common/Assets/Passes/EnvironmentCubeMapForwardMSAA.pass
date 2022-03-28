@@ -131,8 +131,6 @@
                         },
                         "LoadAction": "Clear"
                     }
-<<<<<<< HEAD
-=======
                 },
                 {
                     "Name": "NormalOutput",
@@ -149,7 +147,6 @@
                         },
                         "LoadAction": "Clear"
                     }
->>>>>>> development
                 }
             ],
             "ImageAttachments": [

@@ -95,10 +95,7 @@ namespace AZ
 
             m_rpiSystem.Initialize(m_rpiDescriptor);
             AZ::SystemTickBus::Handler::BusConnect();
-<<<<<<< HEAD
-=======
             AZ::RHI::RHISystemNotificationBus::Handler::BusConnect();
->>>>>>> development
         }
 
         void RPISystemComponent::Deactivate()
@@ -113,8 +110,6 @@ namespace AZ
             m_rpiSystem.SimulationTick();
             m_rpiSystem.RenderTick();
         }
-<<<<<<< HEAD
-=======
         
         void RPISystemComponent::OnDeviceRemoved([[maybe_unused]] RHI::Device* device)
         {
@@ -131,7 +126,6 @@ namespace AZ
             // Stop execution since we can't recover from device removal error
             Debug::Trace::Crash();
         }
->>>>>>> development
 
     } // namespace RPI
 } // namespace AZ

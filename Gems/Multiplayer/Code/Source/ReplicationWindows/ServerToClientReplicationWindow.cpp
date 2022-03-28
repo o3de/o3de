@@ -145,25 +145,16 @@ namespace Multiplayer
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
             NetworkEntityHandle entityHandle(entity, networkEntityTracker);
             if (entityHandle.GetNetBindComponent() == nullptr)
-<<<<<<< HEAD
-=======
             {
                 // Entity does not have netbinding, skip this entity
                 continue;
             }
 
             if (filterEntityManager && filterEntityManager->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
->>>>>>> development
             {
-                // Entity does not have netbinding, skip this entity
                 continue;
             }
 
-<<<<<<< HEAD
-            if (filterEntityManager && filterEntityManager->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
-            {
-                continue;
-=======
             // We want to find the closest extent to the player and prioritize using that distance
             const AZ::Vector3 supportNormal = controlledEntityPosition - visEntry->m_boundingVolume.GetCenter();
             const AZ::Vector3 closestPosition = visEntry->m_boundingVolume.GetSupport(supportNormal);
@@ -179,16 +170,7 @@ namespace Multiplayer
             if (entityHandle.Exists())
             {
                 m_replicationSet[entityHandle] = { NetEntityRole::Client, 1.0f };  // Always replicate entities with forced relevancy
->>>>>>> development
             }
-
-            // We want to find the closest extent to the player and prioritize using that distance
-            const AZ::Vector3 supportNormal = controlledEntityPosition - visEntry->m_boundingVolume.GetCenter();
-            const AZ::Vector3 closestPosition = visEntry->m_boundingVolume.GetSupport(supportNormal);
-            const float gatherDistanceSquared = controlledEntityPosition.GetDistanceSq(closestPosition);
-            const float priority = (gatherDistanceSquared > 0.0f) ? 1.0f / gatherDistanceSquared : 0.0f;
-                
-            AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
         }
 
         // Add in Autonomous Entities
@@ -199,29 +181,6 @@ namespace Multiplayer
         if (hierarchyComponent != nullptr)
         {
             UpdateHierarchyReplicationSet(m_replicationSet, *hierarchyComponent);
-        }
-    }
-
-    AzNetworking::PacketId ServerToClientReplicationWindow::SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector)
-    {
-        MultiplayerPackets::EntityUpdates entityUpdatePacket;
-        entityUpdatePacket.SetHostTimeMs(GetNetworkTime()->GetHostTimeMs());
-        entityUpdatePacket.SetHostFrameId(GetNetworkTime()->GetHostFrameId());
-        entityUpdatePacket.SetEntityMessages(entityUpdateVector);
-        return m_connection->SendUnreliablePacket(entityUpdatePacket);
-    }
-
-    void ServerToClientReplicationWindow::SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable)
-    {
-        MultiplayerPackets::EntityRpcs entityRpcsPacket;
-        entityRpcsPacket.SetEntityRpcs(entityRpcVector);
-        if (reliable)
-        {
-            m_connection->SendReliablePacket(entityRpcsPacket);
-        }
-        else
-        {
-            m_connection->SendUnreliablePacket(entityRpcsPacket);
         }
     }
 

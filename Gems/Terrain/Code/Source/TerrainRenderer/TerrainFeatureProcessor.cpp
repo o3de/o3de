@@ -72,8 +72,6 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Initialize()
     {
-<<<<<<< HEAD
-=======
         m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
@@ -84,7 +82,6 @@ namespace Terrain
         m_worldDataIndex = sceneSrgLayout->FindShaderInputConstantIndex(AZ::Name(SceneSrgInputs::TerrainWorldData));
         AZ_Error(TerrainFPName, m_worldDataIndex.IsValid(), "Failed to find scene srg input constant %s.", SceneSrgInputs::TerrainWorldData);
 
->>>>>>> development
         // Load the terrain material asynchronously
         const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
         m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
@@ -97,40 +94,22 @@ namespace Terrain
                     m_materialInstance = AZ::RPI::Material::FindOrCreate(assetData);
                     AZ::RPI::MaterialReloadNotificationBus::Handler::BusConnect(materialAsset->GetId());
                     if (!materialAsset->GetObjectSrgLayout())
-<<<<<<< HEAD
-                    {
-                        AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
-=======
                     {
                         AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
                     }
                     else
                     {
                         PrepareMaterialData();
->>>>>>> development
                     }
                 }
             }
         );
-<<<<<<< HEAD
-        if (!InitializePatchModel())
-        {
-            AZ_Error(TerrainFPName, false, "Failed to create Terrain render buffers!");
-            return;
-        }
-=======
         OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
 
->>>>>>> development
     }
 
     void TerrainFeatureProcessor::Deactivate()
     {
-<<<<<<< HEAD
-        m_patchModel = {};
-        m_areaData = {};
-        AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
-=======
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
         
@@ -143,7 +122,6 @@ namespace Terrain
         m_meshManager.Reset();
         m_macroMaterialManager.Reset();
         m_detailMaterialManager.Reset();
->>>>>>> development
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -404,18 +382,8 @@ namespace Terrain
             {
                 if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
                 {
-<<<<<<< HEAD
-                    AZ::Vector3 cameraPosition = view->GetCameraTransform().GetTranslation();
-                    AZ::Vector2 cameraPositionXY = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
-                    AZ::Vector2 sectorCenterXY = AZ::Vector2(sectorData.m_aabb.GetCenter().GetX(), sectorData.m_aabb.GetCenter().GetY());
-
-                    float sectorDistance = sectorCenterXY.GetDistance(cameraPositionXY);
-                    float lodForCamera = floorf(AZ::GetMax(0.0f, log2f(sectorDistance / (GridMeters * 4.0f))));
-                    lodChoice = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(lodForCamera));
-=======
                     cameraPosition = view->GetCameraTransform().GetTranslation();
                     break;
->>>>>>> development
                 }
             }
 
@@ -430,24 +398,12 @@ namespace Terrain
                 m_forceRebuildDrawPackets = false;
             }
 
-<<<<<<< HEAD
-    void TerrainFeatureProcessor::InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata)
-    {
-        patchdata.m_positions.clear();
-        patchdata.m_uvs.clear();
-        patchdata.m_indices.clear();
-
-        uint16_t gridVertices = gridSize + 1; // For m_gridSize quads, (m_gridSize + 1) vertices are needed.
-        size_t size = gridVertices * gridVertices;
-        size *= size;
-=======
             if (m_terrainSrg)
             {
                 if (m_macroMaterialManager.IsInitialized())
                 {
                     m_macroMaterialManager.Update(m_terrainSrg);
                 }
->>>>>>> development
 
                 if (m_detailMaterialManager.IsInitialized())
                 {
@@ -550,22 +506,5 @@ namespace Terrain
     const AZ::Data::Instance<AZ::RPI::Material> TerrainFeatureProcessor::GetMaterial() const
     {
         return m_materialInstance;
-    }
-    
-    void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const AZ::Data::Instance<AZ::RPI::Material>& material)
-    {
-        for (auto& sectorData : m_sectorData)
-        {
-            for (auto& drawPacket : sectorData.m_drawPackets)
-            {
-                drawPacket.Update(*GetParentScene());
-            }
-        }
-    }
-
-    void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)
-    {
-        // This will control the max rendering size. Actual terrain size can be much
-        // larger but this will limit how much is rendered.
     }
 }

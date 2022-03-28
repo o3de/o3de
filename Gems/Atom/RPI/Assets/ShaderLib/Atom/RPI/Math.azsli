@@ -31,11 +31,8 @@ void swap(inout float a, inout float b)
     b = c;
 }
 
-<<<<<<< HEAD
-=======
 // ---------- Power -----------
 
->>>>>>> development
 float Pow2(float x)
 {
     return x * x;
@@ -53,8 +50,6 @@ float Pow5(float x)
 {
     return x * Pow4(x);
 }
-<<<<<<< HEAD
-=======
 
 // ---------- Min & Max -----------
 
@@ -93,7 +88,6 @@ float max4(float4 abcd)
 }
 
 
->>>>>>> development
 // ---------- Intersection -----------
 
 // a simple ray sphere intersection function, didn't take limited precision 

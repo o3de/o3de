@@ -258,9 +258,6 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "View: FinalizeDrawLists");
             m_drawListContext.FinalizeLists();
-<<<<<<< HEAD
-            SortFinalizedDrawLists();
-=======
             SortFinalizedDrawListsTG(finalizeDrawListsTGEvent);
         }
         void View::FinalizeDrawListsJob(AZ::Job* parentJob)
@@ -293,7 +290,6 @@ namespace AZ
                 drawListSortTG.Detach();
                 drawListSortTG.Submit(&finalizeDrawListsTGEvent);
             }
->>>>>>> development
         }
 
         void View::SortFinalizedDrawListsJob(AZ::Job* parentJob)

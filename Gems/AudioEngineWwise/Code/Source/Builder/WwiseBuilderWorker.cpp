@@ -55,20 +55,6 @@ namespace WwiseBuilder
                 fileNames.push_back(dependenciesArray[dependencyIndex].GetString());
             }
 
-<<<<<<< HEAD
-            // The dependency array is empty, which likely means it was modified by hand. However, every bank is dependent
-            //  on init.bnk (other than itself), so just force add it as a dependency here. and emit a warning.
-            if (fileNames.size() == 0)
-            {
-                AZStd::string addingDefaultDependencyWarning = AZStd::string::format(
-                    "Dependencies array is empty. The file was likely manually edited. Registering a default "
-                    "dependency on %s. Please regenerate the metadata for this bank.",
-                    Audio::Wwise::InitBank);
-                return AZ::Success(addingDefaultDependencyWarning);
-            }
-            // Make sure init.bnk is in the dependency list. Force add it if it's not
-            else if (AZStd::find(fileNames.begin(), fileNames.end(), Audio::Wwise::InitBank) == fileNames.end())
-=======
             // Make sure init.bnk is a dependency. Force-add it if it's not.
             // Look for init.bnk in the dependencies file list...
             auto iter = AZStd::find_if(
@@ -80,7 +66,6 @@ namespace WwiseBuilder
                     return fileName == Audio::Wwise::InitBank;
                 });
             if (iter == fileNames.end())
->>>>>>> development
             {
                 // Init bank wasn't found, which likely means it was modified by hand. However, every bank is dependent
                 // on init.bnk (other than itself), so force-add it as a dependency here and return a warning message.

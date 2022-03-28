@@ -178,14 +178,10 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
-<<<<<<< HEAD
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@products@/assetcatalog.xml");
-=======
         // Disabling source control integration by default to disable messages and menus if no supported source control system is active
         const bool enableSourceControl = GetSettingsValue("/O3DE/AtomToolsFramework/Application/EnableSourceControl", false);
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
             &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
->>>>>>> development
 
         if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
         {

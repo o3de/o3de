@@ -492,10 +492,7 @@ namespace AZ
             auto& materialAssignment = m_configuration.m_materials[materialAssignmentId];
             const bool wasEmpty = materialAssignment.m_propertyOverrides.empty();
             materialAssignment.m_propertyOverrides[AZ::Name(propertyName)] = value;
-<<<<<<< HEAD
-=======
             ConvertAssetsForSerialization();
->>>>>>> development
 
             if (materialAssignment.RequiresLoading())
             {
@@ -601,12 +598,6 @@ namespace AZ
                 return;
             }
 
-            if (materialAssignment.RequiresLoading())
-            {
-                LoadMaterials();
-                return;
-            }
-
             if (wasEmpty != materialAssignment.m_propertyOverrides.empty())
             {
                 materialAssignment.RebuildInstance();
@@ -630,15 +621,6 @@ namespace AZ
             materialAssignment.m_matModUvOverrides = modelUvOverrides;
 
             if (materialAssignment.RequiresLoading())
-<<<<<<< HEAD
-            {
-                LoadMaterials();
-                return;
-            }
-
-            if (wasEmpty != materialAssignment.m_matModUvOverrides.empty())
-=======
->>>>>>> development
             {
                 LoadMaterials();
                 return;

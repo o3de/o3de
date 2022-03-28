@@ -270,8 +270,6 @@ namespace AZ::Render
             m_fpsHistory.pop_front();
         }
         m_fpsHistory.push_back(currentTime);
-<<<<<<< HEAD
-=======
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawMemoryInfo()
@@ -342,7 +340,6 @@ namespace AZ::Render
             AZStd::string::format("RPI AssetStreamingImagePool: %.2f / %.2f MiB", imagePoolReservedMB, imagePoolBudgetMB),
             (imagePoolReservedMB > 0.99f * imagePoolBudgetMB) ? AZ::Colors::Red : AZ::Colors::White
         );
->>>>>>> development
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
@@ -382,19 +379,11 @@ namespace AZ::Render
 
         DrawLine(
             AZStd::string::format(
-<<<<<<< HEAD
-                "FPS %.1f [%.0f..%.0f], %.1fms/frame, avg over %.1fs",
-                averageFPS,
-                minFPS,
-                maxFPS,
-                averageFrameMs,
-=======
                 "FPS %s [%s..%s], %sms/frame, avg over %.1fs",
                 ClampedFloatDisplay(averageFPS, "%.1f").c_str(),
                 ClampedFloatDisplay(minFPS, "%.0f").c_str(),
                 ClampedFloatDisplay(maxFPS, "%.0f").c_str(),
                 ClampedFloatDisplay(averageFrameMs, "%.1f").c_str(),
->>>>>>> development
                 frameIntervalSeconds),
             AZ::Colors::Yellow);
     }

@@ -14,12 +14,6 @@ namespace Terrain
 {
     void EditorTerrainSurfaceGradientListComponent::Reflect(AZ::ReflectContext* context)
     {
-<<<<<<< HEAD
-        BaseClassType::ReflectSubClass<EditorTerrainSurfaceGradientListComponent, BaseClassType>(context, 1,
-            &LmbrCentral::EditorWrappedComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType,
-            typename BaseClassType::WrappedConfigType, 1>
-        );
-=======
         BaseClassType::ReflectSubClass<EditorTerrainSurfaceGradientListComponent, BaseClassType>(
             context, 1,
             &LmbrCentral::EditorWrappedComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType,
@@ -102,6 +96,5 @@ namespace Terrain
     void TerrainSurfaceGradientMapping::SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider)
     {
         m_tagListProvider = tagListProvider;
->>>>>>> development
     }
 }

@@ -39,10 +39,6 @@
           "type": "Fragment"
         }
       ]
-<<<<<<< HEAD
-    }
-=======
     },
     "DisabledRHIBackends": ["metal"]
->>>>>>> development
 }

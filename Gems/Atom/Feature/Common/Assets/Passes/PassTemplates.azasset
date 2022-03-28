@@ -529,21 +529,12 @@
                 "Path": "Passes/OpaqueParent.pass"
             },
             {
-<<<<<<< HEAD
-                "Name": "ThumbnailPipeline",
-                "Path": "Passes/ThumbnailPipeline.pass"
-            },
-            {
-                "Name": "ThumbnailPipelineRenderToTexture",
-                "Path": "Passes/ThumbnailPipelineRenderToTexture.pass"
-=======
                 "Name": "ToolsPipeline",
                 "Path": "Passes/ToolsPipeline.pass"
             },
             {
                 "Name": "ToolsPipelineRenderToTexture",
                 "Path": "Passes/ToolsPipelineRenderToTexture.pass"
->>>>>>> development
             },
             {
                 "Name": "TransparentParentTemplate",

@@ -7,12 +7,9 @@
  */
 
 #include "ColliderComponentMode.h"
-<<<<<<< HEAD
-=======
 #include "ColliderAssetScaleMode.h"
 #include "ColliderBoxMode.h"
 #include "ColliderCapsuleMode.h"
->>>>>>> development
 #include "ColliderOffsetMode.h"
 #include "ColliderRotationMode.h"
 #include "ColliderSphereMode.h"

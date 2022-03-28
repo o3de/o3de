@@ -368,11 +368,7 @@ namespace AZ
             m_bufferViewsUnboundedArray.assign(m_bufferViewsUnboundedArray.size(), nullptr);
         }
 
-<<<<<<< HEAD
-        AZStd::array_view<uint8_t> ShaderResourceGroupData::GetConstantData() const
-=======
         AZStd::span<const uint8_t> ShaderResourceGroupData::GetConstantData() const
->>>>>>> development
         {
             return m_constantsData.GetConstantData();
         }

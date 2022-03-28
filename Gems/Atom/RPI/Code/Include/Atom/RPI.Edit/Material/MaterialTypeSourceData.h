@@ -87,11 +87,7 @@ namespace AZ
                 {
                 }
 
-<<<<<<< HEAD
-                AZStd::string m_name; //!< The name of the property within the property group. The full property ID will be groupName.propertyName.
-=======
                 const AZStd::string& GetName() const { return m_name; }
->>>>>>> development
 
                 MaterialPropertyVisibility m_visibility = MaterialPropertyVisibility::Default;
 
@@ -232,11 +228,7 @@ namespace AZ
                 AZStd::map<AZStd::string /*group name*/, AZStd::vector<PropertyDefinition>> m_propertiesOld;
                 
                 //! Collection of all available user-facing properties
-<<<<<<< HEAD
-                AZStd::map<AZStd::string /*group name*/, PropertyList> m_properties;
-=======
                 AZStd::vector<AZStd::unique_ptr<PropertyGroup>> m_propertyGroups;
->>>>>>> development
             };
             
             AZStd::string m_description;
@@ -260,17 +252,6 @@ namespace AZ
             //! Copy over UV custom names to the properties enum values.
             void ResolveUvEnums();
 
-<<<<<<< HEAD
-            const GroupDefinition* FindGroup(AZStd::string_view groupName) const;
-
-            const PropertyDefinition* FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName) const;
-
-            //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data
-            //! Groups with the same name will be consolidated into a single entry
-            AZStd::vector<GroupDefinition> GetGroupDefinitionsInDisplayOrder() const;
-
-            //! Call back function type used with the numeration functions
-=======
             //! Add a new PropertyGroup for containing properties or other PropertyGroups.
             //! @param propertyGroupId The ID of the new property group. To add as a nested PropertyGroup, use a full path ID like "levelA.levelB.levelC"; in this case a property group "levelA.levelB" must already exist.
             //! @return a pointer to the new PropertyGroup or null if there was a problem (an AZ_Error will be reported).
@@ -316,7 +297,6 @@ namespace AZ
 
             //! Call back function type used with the numeration functions.
             //! Return false to terminate the traversal.
->>>>>>> development
             using EnumeratePropertiesCallback = AZStd::function<bool(
                 const PropertyDefinition*, // the property definition object 
                 const MaterialNameContext& // The name context that the property is in, used to scope properties and shader connections (i.e. "levelA.levelB.")

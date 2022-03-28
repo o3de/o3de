@@ -242,10 +242,6 @@ namespace ImageProcessingAtom
             m_defaultConfigFolder = *defaultConfigFolder;
         }
 
-<<<<<<< HEAD
-        AZ::IO::FixedMaxPath projectConfigFolder;
-=======
->>>>>>> development
         if (auto sourceGameRoot = fileIoBase->ResolvePath("@projectroot@"); sourceGameRoot.has_value())
         {
             m_projectConfigFolder = *sourceGameRoot;

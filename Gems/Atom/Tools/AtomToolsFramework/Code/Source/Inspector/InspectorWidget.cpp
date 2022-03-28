@@ -246,12 +246,6 @@ namespace AtomToolsFramework
         }
     }
 
-<<<<<<< HEAD
-    bool InspectorWidget::ShouldGroupAutoExpanded(const AZStd::string& groupName) const
-    {
-        AZ_UNUSED(groupName);
-        return true;
-=======
     void InspectorWidget::SetGroupSettingsPrefix(const AZStd::string& prefix)
     {
         if (!m_collapsedGroupSettingName.empty())
@@ -267,25 +261,16 @@ namespace AtomToolsFramework
     {
         auto stateItr = m_collapsedGroups.find(AZ::Crc32(groupName));
         return stateItr == m_collapsedGroups.end();
->>>>>>> development
     }
 
     void InspectorWidget::OnGroupExpanded(const AZStd::string& groupName)
     {
-<<<<<<< HEAD
-        AZ_UNUSED(groupName);
-=======
         m_collapsedGroups.erase(AZ::Crc32(groupName));
->>>>>>> development
     }
 
     void InspectorWidget::OnGroupCollapsed(const AZStd::string& groupName)
     {
-<<<<<<< HEAD
-        AZ_UNUSED(groupName);
-=======
         m_collapsedGroups.insert(AZ::Crc32(groupName));
->>>>>>> development
     }
 
     void InspectorWidget::OnHeaderClicked(const AZStd::string& groupName, QMouseEvent* event)

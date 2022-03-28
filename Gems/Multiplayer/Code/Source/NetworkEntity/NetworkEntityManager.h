@@ -85,8 +85,6 @@ namespace Multiplayer
         void NotifyControllersActivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void NotifyControllersDeactivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) override;
-<<<<<<< HEAD
-=======
         void HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain) override;
         void ForceAssumeAuthority(const ConstNetworkEntityHandle& entityHandle) override;
         void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) override;
@@ -94,16 +92,10 @@ namespace Multiplayer
         const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override;
         const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override;
         void SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs) override;
->>>>>>> development
         void DebugDraw() const override;
         //! @}
 
         void DispatchLocalDeferredRpcMessages();
-<<<<<<< HEAD
-        void UpdateEntityDomain();
-        void OnEntityExitDomain(NetEntityId entityId);
-=======
->>>>>>> development
 
         //! RootSpawnableNotificationBus
         //! @{
@@ -129,12 +121,6 @@ namespace Multiplayer
         AZ::ScheduledEvent m_removeEntitiesEvent;
         AZStd::vector<NetEntityId> m_removeList;
         AZStd::unique_ptr<IEntityDomain> m_entityDomain;
-<<<<<<< HEAD
-        AZ::ScheduledEvent m_updateEntityDomainEvent;
-
-        OwnedEntitySet m_ownedEntities;
-=======
->>>>>>> development
 
         EntityExitDomainEvent m_entityExitDomainEvent;
         AZ::Event<> m_onEntityMarkedDirty;

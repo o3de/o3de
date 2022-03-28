@@ -80,10 +80,6 @@ namespace AZ
 
                 // Load the AtomTressFX pass classes
                 passSystem->AddPassCreator(Name("HairSkinningComputePass"), &HairSkinningComputePass::Create);
-<<<<<<< HEAD
-                passSystem->AddPassCreator(Name("HairPPLLRasterPass"), &HairPPLLRasterPass::Create);
-                passSystem->AddPassCreator(Name("HairPPLLResolvePass"), &HairPPLLResolvePass::Create);
-=======
 
                 // Load the PPLL render method passes
                 passSystem->AddPassCreator(Name("HairPPLLRasterPass"), &HairPPLLRasterPass::Create);
@@ -92,7 +88,6 @@ namespace AZ
                 // Load the ShortCut render method passes
                 passSystem->AddPassCreator(Name("HairShortCutGeometryDepthAlphaPass"), &HairShortCutGeometryDepthAlphaPass::Create);
                 passSystem->AddPassCreator(Name("HairShortCutGeometryShadingPass"), &HairShortCutGeometryShadingPass::Create);
->>>>>>> development
             }
 
             void HairSystemComponent::Deactivate()

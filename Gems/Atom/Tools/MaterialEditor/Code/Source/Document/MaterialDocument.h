@@ -39,22 +39,10 @@ namespace MaterialEditor
         MaterialDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo);
         virtual ~MaterialDocument();
 
-<<<<<<< HEAD
-        ////////////////////////////////////////////////////////////////////////
-        // AtomToolsFramework::AtomToolsDocument
-        ////////////////////////////////////////////////////////////////////////
-        const AZStd::any& GetPropertyValue(const AZ::Name& propertyId) const override;
-        const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyId) const override;
-        bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const override;
-        void SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value) override;
-        bool Open(AZStd::string_view loadPath) override;
-        bool Reopen() override;
-=======
         // AtomToolsFramework::AtomToolsDocument overrides...
         static AtomToolsFramework::DocumentTypeInfo BuildDocumentTypeInfo();
         AtomToolsFramework::DocumentObjectInfoVector GetObjectInfo() const override;
         bool Open(const AZStd::string& loadPath) override;
->>>>>>> development
         bool Save() override;
         bool SaveAsCopy(const AZStd::string& savePath) override;
         bool SaveAsChild(const AZStd::string& savePath) override;

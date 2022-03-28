@@ -142,14 +142,6 @@ namespace AZ
 
             void MaterialPropertyInspector::CreateHeading()
             {
-<<<<<<< HEAD
-                const AZStd::string& groupName = "Details";
-                const AZStd::string& groupDisplayName = "Details";
-                const AZStd::string& groupDescription = "";
-
-                auto propertyGroupContainer = new QWidget(this);
-                propertyGroupContainer->setLayout(new QHBoxLayout());
-=======
                 // Create the menu button
                 QToolButton* menuButton = new QToolButton(this);
                 menuButton->setAutoRaise(true);
@@ -157,7 +149,6 @@ namespace AZ
                 menuButton->setVisible(true);
                 QObject::connect(menuButton, &QToolButton::clicked, this, [this]() { OpenMenu(); });
                 AddHeading(menuButton);
->>>>>>> development
 
                 m_overviewImage = new QLabel(this);
                 m_overviewImage->setFixedSize(QSize(120, 120));
@@ -234,9 +225,6 @@ namespace AZ
                 m_overviewText->setText(materialInfo);
                 m_overviewText->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
 
-<<<<<<< HEAD
-                AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupContainer);
-=======
                 QPixmap pixmap;
                 EditorMaterialSystemComponentRequestBus::BroadcastResult(
                     pixmap, &EditorMaterialSystemComponentRequestBus::Events::GetRenderedMaterialPreview, m_entityId,
@@ -244,7 +232,6 @@ namespace AZ
                 m_overviewImage->setPixmap(pixmap);
                 m_overviewImage->setVisible(true);
                 m_updatePreview |= pixmap.isNull();
->>>>>>> development
             }
 
             void MaterialPropertyInspector::AddUvNamesGroup()
@@ -299,22 +286,6 @@ namespace AZ
                         
                         AddEditorMaterialFunctors(propertyGroupDefinition->GetFunctors(), groupNameContext);
 
-<<<<<<< HEAD
-                // Copy all of the properties from the material asset to the source data that will be exported
-                for (const auto& groupDefinition : m_editData.m_materialTypeSourceData.GetGroupDefinitionsInDisplayOrder())
-                {
-                    const AZStd::string& groupName = groupDefinition.m_name;
-                    const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupName;
-                    const AZStd::string& groupDescription = !groupDefinition.m_description.empty() ? groupDefinition.m_description : groupDisplayName;
-                    auto& group = m_groups[groupName];
-
-                    const auto& propertyLayout = m_editData.m_materialTypeSourceData.m_propertyLayout;
-                    const auto& propertyListItr = propertyLayout.m_properties.find(groupName);
-                    if (propertyListItr != propertyLayout.m_properties.end())
-                    {
-                        group.m_properties.reserve(propertyListItr->second.size());
-                        for (const auto& propertyDefinition : propertyListItr->second)
-=======
                         AZStd::vector<AZStd::string> groupNameVector;
                         AZStd::vector<AZStd::string> groupDisplayNameVector;
                         
@@ -322,7 +293,6 @@ namespace AZ
                         groupDisplayNameVector.reserve(propertyGroupStack.size());
 
                         for (auto& nextGroup : propertyGroupStack)
->>>>>>> development
                         {
                             groupNameVector.push_back(nextGroup->GetName());
                             groupDisplayNameVector.push_back(!nextGroup->GetDisplayName().empty() ? nextGroup->GetDisplayName() : nextGroup->GetName());
@@ -342,14 +312,10 @@ namespace AZ
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
                             
                             // Assign id before conversion so it can be used in dynamic description
-<<<<<<< HEAD
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name).GetFullName();
-=======
                             propertyConfig.m_id = propertyDefinition->GetName();
                             groupNameContext.ContextualizeProperty(propertyConfig.m_id);
                             
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition);
->>>>>>> development
 
                             const auto& propertyIndex = 
                                 m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
@@ -377,18 +343,9 @@ namespace AZ
                             [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
                         AddGroup(group.m_name, group.m_displayName, group.m_description, propertyGroupWidget);
 
-<<<<<<< HEAD
-                    // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                        &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
-                        [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
-                    AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
-                }
-=======
                         return true;
                     });
             }
->>>>>>> development
 
             void MaterialPropertyInspector::Populate()
             {
@@ -628,23 +585,6 @@ namespace AZ
                 return AZ::Crc32(AZStd::string::format(
                     "MaterialPropertyInspector::PropertyGroup::%s::%s", m_editData.m_materialAssetId.ToString<AZStd::string>().c_str(),
                     groupName.c_str()));
-<<<<<<< HEAD
-            }
-
-            bool MaterialPropertyInspector::IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const
-            {
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(node);
-                return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
-            }
-
-            const char* MaterialPropertyInspector::GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const
-            {
-                if (IsInstanceNodePropertyModifed(node))
-                {
-                    return ":/PropertyEditor/Resources/changed_data_item.png";
-                }
-                return ":/PropertyEditor/Resources/blank.png";
-=======
             }
 
             bool MaterialPropertyInspector::IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const
@@ -660,21 +600,12 @@ namespace AZ
                     return ":/Icons/changed_property.svg";
                 }
                 return ":/Icons/blank.png";
->>>>>>> development
             }
 
             bool MaterialPropertyInspector::SaveMaterial() const
             {
-<<<<<<< HEAD
-                const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
-                    AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
-=======
                 const auto& defaultPath = AtomToolsFramework::GetUniqueFilePath(AZStd::string::format(
                     "%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(), AZ::RPI::MaterialSourceData::Extension));
->>>>>>> development
 
                 const auto& saveFilePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
                 if (saveFilePath.empty())

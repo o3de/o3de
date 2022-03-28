@@ -19,11 +19,8 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
-<<<<<<< HEAD
-=======
 #include <AzCore/Serialization/Json/JsonImporter.h>
 #include <AzCore/Settings/SettingsRegistry.h>
->>>>>>> development
 
 #include <AzCore/std/string/string.h>
 
@@ -131,8 +128,6 @@ namespace AZ
                     return AZ::Success(AZStd::move(materialType));
                 }
             }
-<<<<<<< HEAD
-=======
             
             AZ::Outcome<MaterialSourceData> LoadMaterialSourceData(const AZStd::string& filePath, const rapidjson::Value* document, bool warningsAsErrors)
             {
@@ -173,7 +168,6 @@ namespace AZ
                     return AZ::Success(AZStd::move(material));
                 }
             }
->>>>>>> development
 
             void CheckForUnrecognizedJsonFields(const AZStd::string_view* acceptedFieldNames, uint32_t acceptedFieldNameCount, const rapidjson::Value& object, JsonDeserializerContext& context, JsonSerializationResult::ResultCode &result)
             {
@@ -197,8 +191,6 @@ namespace AZ
                     }
                 }
             }
-<<<<<<< HEAD
-=======
             
             bool BuildersShouldFinalizeMaterialAssets()
             {
@@ -213,7 +205,6 @@ namespace AZ
 
                 return shouldFinalize;
             }
->>>>>>> development
         }
     }
 }

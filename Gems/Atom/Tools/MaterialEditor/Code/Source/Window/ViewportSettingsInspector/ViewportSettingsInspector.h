@@ -67,21 +67,9 @@ namespace MaterialEditor
 
         AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
 
-<<<<<<< HEAD
-        AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
-        bool ShouldGroupAutoExpanded(const AZStd::string& groupName) const override;
-        void OnGroupExpanded(const AZStd::string& groupName) override;
-        void OnGroupCollapsed(const AZStd::string& groupName) override;
-
-        AZ::Render::ModelPresetPtr m_modelPreset;
-        AZ::Render::LightingPresetPtr m_lightingPreset;
-        AZStd::intrusive_ptr<MaterialViewportSettings> m_viewportSettings;
-        AZStd::intrusive_ptr<MaterialEditorWindowSettings> m_windowSettings;
-=======
         const AZ::Crc32 m_toolId = {};
         AZ::Render::ModelPreset m_modelPreset;
         AZ::Render::LightingPreset m_lightingPreset;
         MaterialViewportSettings m_viewportSettings;
->>>>>>> development
     };
 } // namespace MaterialEditor

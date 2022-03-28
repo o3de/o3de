@@ -127,16 +127,6 @@ namespace MessagePopup
             switch (_buttons)
             {
             case EPopupButtons::EPopupButtons_NoButtons:
-<<<<<<< HEAD
-                canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/defaultmessagepopup.uicanvas");
-                break;
-            case EPopupButtons::EPopupButtons_Confirm:
-                canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/defaultmessagepopup_confirm.uicanvas");
-                isNavigationSupported = true;
-                break;
-            case EPopupButtons::EPopupButtons_YesNo:
-                canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/defaultmessagepopup_yesno.uicanvas");
-=======
                 canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas("@products@/ui/canvases/defaultmessagepopup.uicanvas");
                 break;
             case EPopupButtons::EPopupButtons_Confirm:
@@ -145,18 +135,13 @@ namespace MessagePopup
                 break;
             case EPopupButtons::EPopupButtons_YesNo:
                 canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas("@products@/ui/canvases/defaultmessagepopup_yesno.uicanvas");
->>>>>>> development
                 isNavigationSupported = true;
                 break;
             }
         }
         else if (_kind == EPopupKind_Toaster)
         {
-<<<<<<< HEAD
-            canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/toaster.uicanvas");
-=======
             canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas("@products@/ui/canvases/toaster.uicanvas");
->>>>>>> development
         }
 
         if (canvasEntityId.IsValid())

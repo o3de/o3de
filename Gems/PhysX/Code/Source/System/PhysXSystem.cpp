@@ -528,11 +528,7 @@ namespace PhysX
 
         AZ_Warning("PhysX", loadedSuccessfully,
             "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> development
         return loadedSuccessfully;
     }
 

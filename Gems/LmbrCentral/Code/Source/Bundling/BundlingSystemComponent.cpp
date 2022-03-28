@@ -22,8 +22,6 @@
 namespace LmbrCentral
 {
     const char bundleRoot[] = "@products@";
-<<<<<<< HEAD
-=======
 
     // Calls the LoadBundles method
     static void ConsoleCommandLoadBundles(const AZ::ConsoleCommandContainer& commandArgs);
@@ -32,7 +30,6 @@ namespace LmbrCentral
 
     AZ_CONSOLEFREEFUNC("loadbundles", ConsoleCommandLoadBundles, AZ::ConsoleFunctorFlags::Null, "Load Asset Bundles");
     AZ_CONSOLEFREEFUNC("unloadbundles", ConsoleCommandUnloadBundles, AZ::ConsoleFunctorFlags::Null, "Unload Asset Bundles");
->>>>>>> development
 
     void BundlingSystemComponent::Activate()
     {

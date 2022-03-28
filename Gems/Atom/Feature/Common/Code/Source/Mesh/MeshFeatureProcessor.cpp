@@ -11,10 +11,6 @@
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
-<<<<<<< HEAD
-#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
-=======
->>>>>>> development
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
@@ -595,56 +591,9 @@ namespace AZ
         }
 
         
-<<<<<<< HEAD
-        void MeshDataInstance::MeshLoader::OnModelReloaded(Data::Asset<Data::AssetData> asset)
-        {
-            OnAssetReady(asset);
-        }
-
-        void MeshDataInstance::MeshLoader::OnAssetError(Data::Asset<Data::AssetData> asset)
-        {
-            // Note: m_modelAsset and asset represents same asset, but only m_modelAsset contains the file path in its hint from serialization
-            AZ_Error(
-                "MeshDataInstance::MeshLoader", false, "Failed to load asset %s. It may be missing, or not be finished processing",
-                m_modelAsset.GetHint().c_str());
-
-            AzFramework::AssetSystemRequestBus::Broadcast(
-                &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_modelAsset.GetId().m_guid);
-        }
-        
-        void MeshDataInstance::MeshLoader::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
-        {
-            if (assetId == m_modelAsset.GetId())
-            {
-                Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
-
-                // If the asset was modified, reload it
-                AZ::SystemTickBus::QueueFunction(
-                    [=]() mutable
-                    {
-                        ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
-                    });
-            }
-        }
-
-        void MeshDataInstance::MeshLoader::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
-        {
-            if (assetId == m_modelAsset.GetId())
-            {
-                Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
-                
-                // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
-                AZ::SystemTickBus::QueueFunction(
-                    [=]() mutable
-                    {
-                        ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
-                    });
-            }
-=======
         void ModelDataInstance::MeshLoader::OnModelReloaded(Data::Asset<Data::AssetData> asset)
         {
             OnAssetReady(asset);
->>>>>>> development
         }
 
         void ModelDataInstance::MeshLoader::OnAssetError(Data::Asset<Data::AssetData> asset)
@@ -664,8 +613,6 @@ namespace AZ
             {
                 Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
 
-<<<<<<< HEAD
-=======
                 // If the asset was modified, reload it
                 AZ::SystemTickBus::QueueFunction(
                     [=]() mutable
@@ -696,7 +643,6 @@ namespace AZ
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
->>>>>>> development
             RemoveRayTracingData();
 
             m_drawPacketListsByLod.clear();
@@ -1090,11 +1036,7 @@ namespace AZ
             rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
         }
 
-<<<<<<< HEAD
-        void MeshDataInstance::RemoveRayTracingData()
-=======
         void ModelDataInstance::RemoveRayTracingData()
->>>>>>> development
         {
             // remove from ray tracing
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
@@ -1104,11 +1046,7 @@ namespace AZ
             }
         }
 
-<<<<<<< HEAD
-        void MeshDataInstance::SetSortKey(RHI::DrawItemSortKey sortKey)
-=======
         void ModelDataInstance::SetSortKey(RHI::DrawItemSortKey sortKey)
->>>>>>> development
         {
             m_sortKey = sortKey;
             for (auto& drawPacketList : m_drawPacketListsByLod)

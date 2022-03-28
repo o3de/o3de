@@ -629,24 +629,6 @@ namespace ScriptCanvasEditor
 
         void OpenNextFile();
 
-<<<<<<< HEAD
-        template <typename GraphAssetType, typename AssetHandler>
-        void MakeNewFile()
-        {
-            static int scriptCanvasEditorDefaultNewNameCount = 0;
-
-            AZStd::string newAssetName = AZStd::string::format(ScriptCanvas::AssetDescription::GetAssetNamePattern<GraphAssetType>(), ++scriptCanvasEditorDefaultNewNameCount);
-
-            AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
-            if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(ScriptCanvas::AssetDescription::GetSuggestedSavePath<GraphAssetType>(), assetRootArray.data(), assetRootArray.size()))
-            {
-                AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @projectroot@ path");
-            }
-
-            AZStd::string assetPath;
-            AzFramework::StringFunc::Path::Join(assetRootArray.data(), (newAssetName + ScriptCanvas::AssetDescription::GetExtension<GraphAssetType>()).data(), assetPath);
-=======
->>>>>>> development
 
         void DisableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId);
         void EnableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId);

@@ -135,8 +135,6 @@ namespace AZ
             }
         };
 
-<<<<<<< HEAD
-=======
         AZStd::vector<char> EditorMaterialComponentSlot::GetPreviewPixmapData() const
         {
             if (!GetActiveAssetId().IsValid())
@@ -164,7 +162,6 @@ namespace AZ
             return AZStd::vector<char>(pixmapBytes.begin(), pixmapBytes.end());
         }
 
->>>>>>> development
         AZ::Data::AssetId EditorMaterialComponentSlot::GetActiveAssetId() const
         {
             return m_materialAsset.GetId().IsValid() ? m_materialAsset.GetId() : GetDefaultAssetId();

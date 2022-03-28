@@ -8,10 +8,7 @@
 
 #pragma once
 
-<<<<<<< HEAD
-=======
 #include <Atom/Features/Debug.azsli>
->>>>>>> development
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/Lights/CapsuleLight.azsli>
 #include <Atom/Features/PBR/Lights/DirectionalLight.azsli>

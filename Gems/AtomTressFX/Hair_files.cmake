@@ -61,12 +61,6 @@ set(FILES
 #)
 #
 #set(atom_hair_passes
-<<<<<<< HEAD
-    Code/Passes/HairSkinningComputePass.h
-    Code/Passes/HairSkinningComputePass.cpp
-    Code/Passes/HairPPLLRasterPass.h
-    Code/Passes/HairPPLLRasterPass.cpp
-=======
     # The simulation pass class shared by all simulation / skinning compute passes
     Code/Passes/HairSkinningComputePass.h
     Code/Passes/HairSkinningComputePass.cpp
@@ -84,7 +78,6 @@ set(FILES
     Code/Passes/HairPPLLRasterPass.h
     Code/Passes/HairPPLLRasterPass.cpp
     # PP full screen resolve pass 
->>>>>>> development
     Code/Passes/HairPPLLResolvePass.h
     Code/Passes/HairPPLLResolvePass.cpp
 #)
@@ -98,40 +91,16 @@ set(FILES
     Code/Assets/HairAsset.cpp
 #)
 #set(shaders_sources
-<<<<<<< HEAD
-    # Srgs and Utility files
-    Assets/Shaders/HairSrgs.azsli
-    Assets/Shaders/HairSimulationSrgs.azsli
-    Assets/Shaders/HairRenderingSrgs.azsli
-    Assets/Shaders/HairSimulationCommon.azsli
-    Assets/Shaders/HairStrands.azsli
-    Assets/Shaders/HairUtilities.azsli
-=======
     # Geometry and Full Screen azsl utility files
     Assets/Shaders/HairRenderingSrgs.azsli
     Assets/Shaders/HairStrands.azsli
     Assets/Shaders/HairUtilities.azsli
     Assets/Shaders/HairFullScreenUtils.azsli
->>>>>>> development
     Assets/Shaders/HairLighting.azsli    
     Assets/Shaders/HairLightingEquations.azsli    
     Assets/Shaders/HairLightTypes.azsli
     Assets/Shaders/HairSurface.azsli
 
-<<<<<<< HEAD
-    # Simulation Compute shaders
-    Assets/Shaders/HairSimulationCompute.azsl   
-    
-    # Collision shaders - to be included soon
-#    Assets/Shaders/HairCollisionPrepareSDF.azsl
-#    Assets/Shaders/HairCollisionWithSDF.azsl
-
-    # Rendering shaders
-    Assets/Shaders/HairRenderingFillPPLL.azsl
-    Assets/Shaders/HairRenderingResolvePPLL.azsl  
-
-    # Simulation .shader files
-=======
     # ShortCut technique shaders (using multiple RTs instead of PPLL for GPU memory reduction) 
     Assets/Shaders/HairShortCutGeometryDepthAlpha.azsl
     Assets/Shaders/HairShortCutResolveDepth.azsl
@@ -153,7 +122,6 @@ set(FILES
 #    Assets/Shaders/HairCollisionWithSDF.azsl
 
     # Simulation Compute .shader files
->>>>>>> development
     Assets/Shaders/HairGlobalShapeConstraintsCompute.shader  
     Assets/Shaders/HairCalculateStrandLevelDataCompute.shader
     Assets/Shaders/HairVelocityShockPropagationCompute.shader
@@ -161,11 +129,6 @@ set(FILES
     Assets/Shaders/HairLengthConstraintsWindAndCollisionCompute.shader  
     Assets/Shaders/HairUpdateFollowHairCompute.shader
     
-<<<<<<< HEAD
-    # Rendering .shader file
-    Assets/Shaders/HairRenderingFillPPLL.shader
-    Assets/Shaders/HairRenderingResolvePPLL.shader
-=======
     # PPLL Render .shader file
     Assets/Shaders/HairRenderingFillPPLL.shader
     Assets/Shaders/HairRenderingResolvePPLL.shader
@@ -175,7 +138,6 @@ set(FILES
     Assets/Shaders/HairShortCutResolveDepth.shader
     Assets/Shaders/HairShortCutGeometryShading.shader
     Assets/Shaders/HairShortCutResolveColor.shader
->>>>>>> development
     
     # Colisions .shader files - to be included soon
 #    Assets/Shaders/HairCollisionInitializeSDF.shader 
@@ -185,23 +147,15 @@ set(FILES
 #)
 #
 #set(atom_hair_passes
-<<<<<<< HEAD
-    Assets/Passes/HairParentPass.pass
-=======
     # Compute simulation and skinning passes
     Assets/Passes/HairParentPass.pass
     Assets/Passes/HairParentShortCutPass.pass
->>>>>>> development
     Assets/Passes/HairGlobalShapeConstraintsCompute.pass
     Assets/Passes/HairCalculateStrandLevelDataCompute.pass
     Assets/Passes/HairVelocityShockPropagationCompute.pass
     Assets/Passes/HairLocalShapeConstraintsCompute.pass
     Assets/Passes/HairLengthConstraintsWindAndCollisionCompute.pass
     Assets/Passes/HairUpdateFollowHairCompute.pass
-<<<<<<< HEAD
-    Assets/Passes/HairFillPPLL.pass
-    Assets/Passes/HairResolvePPLL.pass
-=======
 
     # PPLL render passes
     Assets/Passes/HairFillPPLL.pass
@@ -212,7 +166,6 @@ set(FILES
     Assets/Passes/HairShortCutResolveDepth.pass
     Assets/Passes/HairShortCutGeometryShading.pass
     Assets/Passes/HairShortCutResolveColor.pass
->>>>>>> development
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

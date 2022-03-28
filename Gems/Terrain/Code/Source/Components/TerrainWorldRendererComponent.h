@@ -24,11 +24,6 @@ namespace AZ::RPI
 
 namespace Terrain
 {
-<<<<<<< HEAD
-    class TerrainFeatureProcessor;
-
-=======
->>>>>>> development
     struct TerrainWorldRendererConfig final
         : public AZ::ComponentConfig
     {
@@ -50,12 +45,8 @@ namespace Terrain
             WorldSizeCount,
         };
 
-<<<<<<< HEAD
-        WorldSize m_worldSize;
-=======
         DetailMaterialConfiguration m_detailMaterialConfig;
         WorldSize m_worldSize = WorldSize::_1024Meters;
->>>>>>> development
     };
 
 

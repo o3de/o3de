@@ -228,13 +228,8 @@ namespace AZ
             }  // for all request.m_enabledPlatforms
 
             AZ_TracePrintf(
-<<<<<<< HEAD
-                ShaderAssetBuilderName, "CreateJobs for %s took %llu microseconds", fullPath.c_str(),
-                AZStd::GetTimeNowMicroSecond() - shaderAssetBuildTimestamp);
-=======
                 ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),
                 AZStd::GetTimeUTCMilliSecond() - shaderAssetBuildTimestamp);
->>>>>>> development
 
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }

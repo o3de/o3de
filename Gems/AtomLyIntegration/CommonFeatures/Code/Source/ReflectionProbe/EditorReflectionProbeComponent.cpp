@@ -312,47 +312,7 @@ namespace AZ
 
         AZ::u32 EditorReflectionProbeComponent::BakeReflectionProbe()
         {
-<<<<<<< HEAD
-            if (!m_useBakedCubemap)
-            {
-                AZ_Assert(false, "BakeReflectionProbe() called on a Reflection Probe set to use an authored cubemap");
-                return AZ::Edit::PropertyRefreshLevels::None;
-            }
-
-            if (m_bakeInProgress)
-            {
-                return AZ::Edit::PropertyRefreshLevels::None;
-            }
-
-            // retrieve entity visibility
-            bool isHidden = false;
-            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
-                isHidden,
-                GetEntityId(),
-                &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsHidden);
-
-            // the entity must be visible in order to bake
-            if (isHidden)
-            {
-                QMessageBox::information(
-                    QApplication::activeWindow(),
-                    "Reflection Probe",
-                    "This Reflection Probe entity is hidden, it must be visible in order to bake the cubemap.",
-                    QMessageBox::Ok);
-
-                return AZ::Edit::PropertyRefreshLevels::None;
-            }
-
-            char projectPath[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectPath, AZ_MAX_PATH_LEN);
-
-            // retrieve the source cubemap path from the configuration
-            // we need to make sure to use the same source cubemap for each bake
-            AZStd::string cubeMapRelativePath = m_controller.m_configuration.m_bakedCubeMapRelativePath;
-            AZStd::string cubeMapFullPath;
-=======
             ReflectionProbeComponentConfig& configuration = m_controller.m_configuration;
->>>>>>> development
 
             // if the quality level changed we need to generate a new filename
             if (configuration.m_bakedCubeMapQualityLevel != m_bakedCubeMapQualityLevel)

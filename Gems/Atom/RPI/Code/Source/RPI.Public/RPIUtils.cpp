@@ -475,8 +475,6 @@ namespace AZ
         {
             return GetComputeShaderNumThreads(shaderAsset, &dispatchDirect.m_threadsPerGroupX, &dispatchDirect.m_threadsPerGroupY, &dispatchDirect.m_threadsPerGroupZ);
         }
-<<<<<<< HEAD
-=======
 
         bool IsImageDataPixelAPISupported(AZ::RHI::Format format)
         {
@@ -706,6 +704,5 @@ namespace AZ
 
             return { AZStd::move(pipelineDesc) };
         }
->>>>>>> development
     }
 }

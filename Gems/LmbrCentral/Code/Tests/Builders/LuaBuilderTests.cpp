@@ -48,12 +48,9 @@ namespace UnitTest
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
-<<<<<<< HEAD
-=======
 
             // Set the @gemroot:<gem-name> alias for LmbrCentral gem
             AZ::Test::AddActiveGem("LmbrCentral", *registry, AZ::IO::FileIOBase::GetInstance());
->>>>>>> development
         }
 
         void TearDown() override

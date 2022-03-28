@@ -34,26 +34,12 @@ namespace AtomToolsFramework
         AtomToolsDocument(const AZ::Crc32& toolId, const DocumentTypeInfo& documentTypeInfo);
         virtual ~AtomToolsDocument();
 
-<<<<<<< HEAD
-        const AZ::Uuid& GetId() const;
-
-        ////////////////////////////////////////////////////////////////////////
-        // AtomToolsDocumentRequestBus::Handler implementation
-        AZStd::string_view GetAbsolutePath() const override;
-        AZStd::string_view GetRelativePath() const override;
-        const AZStd::any& GetPropertyValue(const AZ::Name& propertyId) const override;
-        const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyId) const override;
-        bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const override;
-        void SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value) override;
-        bool Open(AZStd::string_view loadPath) override;
-=======
         // AtomToolsDocumentRequestBus::Handler overrides...
         const DocumentTypeInfo& GetDocumentTypeInfo() const override;
         DocumentObjectInfoVector GetObjectInfo() const override;
         const AZ::Uuid& GetId() const override;
         const AZStd::string& GetAbsolutePath() const override;
         bool Open(const AZStd::string& loadPath) override;
->>>>>>> development
         bool Reopen() override;
         bool Save() override;
         bool SaveAsCopy(const AZStd::string& savePath) override;

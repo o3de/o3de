@@ -27,35 +27,6 @@ namespace MaterialEditor
         AddGroupsEnd();
     }
 
-<<<<<<< HEAD
-    void SettingsWidget::AddDocumentSettingsGroup()
-    {
-        const AZStd::string groupName = "documentSettings";
-        const AZStd::string groupDisplayName = "Document Settings";
-        const AZStd::string groupDescription = "Document Settings";
-
-        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSettingsGroup"));
-        AddGroup(
-            groupName, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_documentSettings.get(), nullptr, m_documentSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
-    }
-
-    void SettingsWidget::AddDocumentSystemSettingsGroup()
-    {
-        const AZStd::string groupName = "documentSystemSettings";
-        const AZStd::string groupDisplayName = "Document System Settings";
-        const AZStd::string groupDescription = "Document System Settings";
-
-        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSystemSettingsGroup"));
-        AddGroup(
-            groupName, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_documentSystemSettings.get(), nullptr, m_documentSystemSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
-    }
-
-=======
->>>>>>> development
     void SettingsWidget::Reset()
     {
         AtomToolsFramework::InspectorWidget::Reset();

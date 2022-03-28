@@ -112,14 +112,6 @@ namespace AZ
             if (m_materialAsset.IsReady())
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
-<<<<<<< HEAD
-=======
-                AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
-            }
-            else if (m_defaultMaterialAsset.IsReady())
-            {
-                m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
->>>>>>> development
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
             }
             else if (m_defaultMaterialAsset.IsReady())
@@ -127,55 +119,6 @@ namespace AZ
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
             }
-        }
-
-        void MaterialAssignment::Release()
-        {
-            if (!m_materialInstancePreCreated)
-            {
-                m_materialInstance = nullptr;
-            }
-            m_materialAsset.Release();
-            m_defaultMaterialAsset.Release();
-        }
-
-        bool MaterialAssignment::RequiresLoading() const
-        {
-            return
-                !m_materialInstancePreCreated &&
-                !m_materialAsset.IsReady() &&
-                !m_materialAsset.IsLoading() &&
-                !m_defaultMaterialAsset.IsReady() &&
-                !m_defaultMaterialAsset.IsLoading();
-        }
-
-        bool MaterialAssignment::ApplyProperties()
-        {
-            // if there is no instance or no properties there's nothing to apply
-            if (!m_materialInstance || m_propertyOverrides.empty())
-            {
-                return true;
-            }
-
-            if (m_materialInstance->CanCompile())
-            {
-                for (const auto& propertyPair : m_propertyOverrides)
-                {
-                    if (!propertyPair.second.empty())
-                    {
-                        const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first);
-                        if (!materialPropertyIndex.IsNull())
-                        {
-                            m_materialInstance->SetPropertyValue(
-                                materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
-                        }
-                    }
-                }
-
-                return m_materialInstance->Compile();
-            }
-
-            return false;
         }
 
         void MaterialAssignment::Release()

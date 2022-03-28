@@ -27,10 +27,7 @@ namespace Terrain
             {
                 Terrain::EditorTerrainHeightGradientListComponent::CreateDescriptor(),
                 Terrain::EditorTerrainLayerSpawnerComponent::CreateDescriptor(),
-<<<<<<< HEAD
-=======
                 Terrain::EditorTerrainMacroMaterialComponent::CreateDescriptor(),
->>>>>>> development
                 Terrain::EditorTerrainSurfaceGradientListComponent::CreateDescriptor(),
                 Terrain::EditorTerrainSystemComponent::CreateDescriptor(),
                 Terrain::EditorTerrainSurfaceMaterialsListComponent::CreateDescriptor(),

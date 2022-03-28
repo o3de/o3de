@@ -162,19 +162,11 @@ namespace AZ
 
             //! Returns a {Buffer, Image, Sampler} shader resource group. Each resource type has its own separate group.
             //!  - The size of this group matches the size provided by ShaderResourceGroupLayout::GetGroupSizeFor{Buffer, Image, Sampler}.
-<<<<<<< HEAD
-            //!  - Use ShaderResourceGroupLayout::GetGroupInterval to retrieve a [min, max) interval into the array.
-            AZStd::array_view<ConstPtr<ImageView>> GetImageGroup() const;
-            AZStd::array_view<ConstPtr<BufferView>> GetBufferGroup() const;
-            AZStd::array_view<SamplerState> GetSamplerGroup() const;
-            
-=======
             //!  - Use ShaderResourceGroupLayout::GetGroupInterval to retrieve a [min, max) interval into the span.
             AZStd::span<const ConstPtr<ImageView>> GetImageGroup() const;
             AZStd::span<const ConstPtr<BufferView>> GetBufferGroup() const;
             AZStd::span<const SamplerState> GetSamplerGroup() const;
 
->>>>>>> development
             //! Reset image and buffer views setup for this ShaderResourceGroupData
             //! So it won't hold references for any RHI resources
             void ResetViews();

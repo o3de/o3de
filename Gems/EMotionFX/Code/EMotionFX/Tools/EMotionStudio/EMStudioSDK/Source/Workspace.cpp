@@ -432,9 +432,6 @@ namespace EMStudio
                 continue;
             }
 
-<<<<<<< HEAD
-            AzFramework::StringFunc::Replace(commands[i], "@products@/", assetCacheFolder.c_str(), true /* case sensitive */);
-=======
             // Temp solution after we refactor / remove the actor manager.
             // We only need to create the actor instance by ourselves when openGLRenderPlugin is present.
             // Atom render viewport will create actor instance along with the actor component.
@@ -454,7 +451,6 @@ namespace EMStudio
             AzFramework::StringFunc::Replace(commands[i], "//", AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
             AzFramework::StringFunc::Replace(commands[i], "\\\\", AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
             AzFramework::StringFunc::Replace(commands[i], "/\\", AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
->>>>>>> development
 
             // add the command to the command group
             commandGroup->AddCommandString(commands[i]);

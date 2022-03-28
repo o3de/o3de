@@ -35,10 +35,7 @@ namespace Terrain
                 TerrainWorldRendererComponent::CreateDescriptor(),
                 TerrainHeightGradientListComponent::CreateDescriptor(),
                 TerrainLayerSpawnerComponent::CreateDescriptor(),
-<<<<<<< HEAD
-=======
                 TerrainMacroMaterialComponent::CreateDescriptor(),
->>>>>>> development
                 TerrainSurfaceGradientListComponent::CreateDescriptor(),
                 TerrainSurfaceDataSystemComponent::CreateDescriptor(),
                 TerrainPhysicsColliderComponent::CreateDescriptor()

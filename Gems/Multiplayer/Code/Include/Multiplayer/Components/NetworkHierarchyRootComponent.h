@@ -89,9 +89,6 @@ namespace Multiplayer
         //! Set to false when deactivating or otherwise not to be included in hierarchy considerations.
         bool m_isHierarchyEnabled = true;
 
-<<<<<<< HEAD
-        friend class HierarchyBenchmarkBase;
-=======
         AzNetworking::ConnectionId m_previousOwningConnectionId = AzNetworking::InvalidConnectionId;
         void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) override;
 
@@ -116,6 +113,5 @@ namespace Multiplayer
         Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override;
         void CreateInput(Multiplayer::NetworkInput& input, float deltaTime) override;
         void ProcessInput(Multiplayer::NetworkInput& input, float deltaTime) override;
->>>>>>> development
     };
 }

@@ -39,10 +39,7 @@ set(FILES
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
-<<<<<<< HEAD
-=======
     Include/AtomToolsFramework/Viewport/ViewportInteractionImpl.h
->>>>>>> development
     Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h

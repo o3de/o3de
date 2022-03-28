@@ -4,32 +4,8 @@
     "parentMaterial": "",
     "materialTypeVersion": 1,
     "properties": {
-<<<<<<< HEAD
-        "macroColor": {
-            "useTexture": false
-        },
-        "macroNormal": {
-            "useTexture": false
-        },
-        "baseColor": {
-            "color": [ 0.18, 0.18, 0.18 ],
-            "useTexture": false
-        },
-        "normal":
-        {
-            "useTexture": false
-        },
-        "roughness":
-        {   
-            "useTexture": false
-        },
-        "specularF0":
-        {
-            "useTexture": false
-=======
         "baseColor": {
             "color": [ 0.18, 0.18, 0.18 ] 
->>>>>>> development
         }
     }
 }

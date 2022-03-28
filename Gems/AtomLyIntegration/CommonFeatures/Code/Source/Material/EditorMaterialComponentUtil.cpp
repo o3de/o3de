@@ -114,41 +114,8 @@ namespace AZ
                 exportData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialParentSourcePath);
 
                 // Copy all of the properties from the material asset to the source data that will be exported
-<<<<<<< HEAD
-                result = true;
-                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& groupName, const AZStd::string& propertyName, const auto& propertyDefinition) {
-                    const AZ::RPI::MaterialPropertyId propertyId(groupName, propertyName);
-                    const AZ::RPI::MaterialPropertyIndex propertyIndex =
-                        editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId.GetFullName());
-
-                    AZ::RPI::MaterialPropertyValue propertyValue = editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()];
-
-                    AZ::RPI::MaterialPropertyValue propertyValueDefault = propertyDefinition.m_value;
-                    if (editData.m_materialParentAsset.IsReady())
-                    {
-                        propertyValueDefault = editData.m_materialParentAsset->GetPropertyValues()[propertyIndex.GetIndex()];
-                    }
-
-                    // Check for and apply any property overrides before saving property values
-                    auto propertyOverrideItr = editData.m_materialPropertyOverrideMap.find(propertyId.GetFullName());
-                    if(propertyOverrideItr != editData.m_materialPropertyOverrideMap.end())
-                    {
-                        propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);
-                    }
-
-                    if (!editData.m_materialTypeSourceData.ConvertPropertyValueToSourceDataFormat(propertyDefinition, propertyValue))
-                    {
-                        AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to export: %s", path.c_str());
-                        result = false;
-                        return false;
-                    }
-
-                    // Don't export values if they are the same as the material type or parent
-                    if (propertyValueDefault == propertyValue)
-=======
                 bool result = true;
                 editData.m_materialTypeSourceData.EnumerateProperties([&](const AZ::RPI::MaterialTypeSourceData::PropertyDefinition* propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext)
->>>>>>> development
                     {
                         AZ::Name propertyId{propertyDefinition->GetName()};
                         nameContext.ContextualizeProperty(propertyId);
@@ -187,15 +154,7 @@ namespace AZ
 
                         exportData.SetPropertyValue(propertyId, propertyValue);
                         return true;
-<<<<<<< HEAD
-                    }
-
-                    exportData.m_properties[groupName][propertyDefinition.m_name].m_value = propertyValue;
-                    return true;
-                });
-=======
                     });
->>>>>>> development
 
                 return result && AZ::RPI::JsonUtils::SaveObjectToFile(path, exportData);
             }

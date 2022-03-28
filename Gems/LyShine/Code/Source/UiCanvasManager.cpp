@@ -1177,12 +1177,9 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
     const AZ::Vector3 green(0.3f,1,0.3f);
     const AZ::Vector3 yellow(0.7f,0.7f,0.2f);
 
-<<<<<<< HEAD
-=======
     const float fontSize = 8.0f;
     const float lineSpacing = 20.0f * dpiScale;
 
->>>>>>> development
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {

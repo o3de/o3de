@@ -243,17 +243,6 @@ namespace ScriptCanvasBuilder
                 overrideValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
                 overrideValue.SetAllowSignalOnChange(false);
             }
-<<<<<<< HEAD
-        }
-    }
-
-    EditorAssetTree* EditorAssetTree::ModRoot()
-    {
-        if (!m_parent)
-        {
-            return this;
-=======
->>>>>>> development
         }
     }
 

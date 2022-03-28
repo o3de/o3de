@@ -55,11 +55,7 @@ namespace EMotionFX
         // By using this mock catalog, we can pretend to load the specific referenced assets without actually loading anything.
         UnitTest::MockLoadAssetCatalogAndHandler testAssetCatalog({ referencedAnimGraph, referencedMotionSet });
 
-<<<<<<< HEAD
-        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExample.animgraph";
-=======
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExample.animgraph";
->>>>>>> development
         AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
         EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
 
@@ -72,11 +68,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestAnimGraphAsset_NoDependency_OutputNoProductDependencies)
     {
-<<<<<<< HEAD
-        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExampleNoDependency.animgraph";
-=======
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExampleNoDependency.animgraph";
->>>>>>> development
         AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
         EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
 
@@ -86,11 +78,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestAnimGraphAsset_InvalidFilePath_OutputNoProductDependencies)
     {
-<<<<<<< HEAD
-        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/InvalidPathExample.animgraph";
-=======
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/InvalidPathExample.animgraph";
->>>>>>> development
         AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
         EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
 
@@ -100,11 +88,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestAnimGraphAsset_EmptyFile_OutputNoProductDependencies)
     {
-<<<<<<< HEAD
-        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyAnimGraphExample.animgraph";
-=======
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyAnimGraphExample.animgraph";
->>>>>>> development
         AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
         EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
 
@@ -116,11 +100,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_HasReferenceNode_OutputProductDependencies)
     {
-<<<<<<< HEAD
-        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
-=======
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
->>>>>>> development
         ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
@@ -132,11 +112,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_NoDependency_OutputNoProductDependencies)
     {
-<<<<<<< HEAD
-        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExampleNoDependency.motionset";
-=======
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExampleNoDependency.motionset";
->>>>>>> development
         ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
@@ -146,11 +122,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_InvalidFilePath_OutputNoProductDependencies)
     {
-<<<<<<< HEAD
-        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/InvalidPathExample.motionset";
-=======
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/InvalidPathExample.motionset";
->>>>>>> development
         ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
@@ -160,11 +132,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_EmptyFile_OutputNoProductDependencies)
     {
-<<<<<<< HEAD
-        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyMotionSetExample.motionset";
-=======
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyMotionSetExample.motionset";
->>>>>>> development
         ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 

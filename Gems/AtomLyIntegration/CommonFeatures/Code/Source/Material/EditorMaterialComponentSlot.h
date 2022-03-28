@@ -32,14 +32,10 @@ namespace AZ
             //! If a cached image isn't avalible then a request will be made to render one
             AZStd::vector<char> GetPreviewPixmapData() const;
 
-<<<<<<< HEAD
-            AZ::Data::AssetId GetActiveAssetId() const;
-=======
             //! Returns the overridden asset id if it's valid, otherwise gets the default asseet id
             AZ::Data::AssetId GetActiveAssetId() const;
 
             //! Returns the default asseet id of the material provded by the model
->>>>>>> development
             AZ::Data::AssetId GetDefaultAssetId() const;
 
             //! Returns the display name of the material slot

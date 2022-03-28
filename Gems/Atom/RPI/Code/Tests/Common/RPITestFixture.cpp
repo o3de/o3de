@@ -68,8 +68,6 @@ namespace UnitTest
         AZ::IO::Path assetPath = AZStd::string_view{ AZ::Utils::GetProjectPath() };
         assetPath /= "Cache";
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetPath.c_str());
-<<<<<<< HEAD
-=======
 
         // Remark, AZ::Utils::GetProjectPath() is not used when defining "user" folder,
         // instead We use AZ::Test::GetEngineRootPath();.
@@ -83,7 +81,6 @@ namespace UnitTest
         AZ::IO::Path userPath = AZ::Test::GetEngineRootPath();
         userPath /= "user";
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@user@", userPath.c_str());
->>>>>>> development
 
         m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
         m_jsonSystemComponent = AZStd::make_unique<AZ::JsonSystemComponent>();

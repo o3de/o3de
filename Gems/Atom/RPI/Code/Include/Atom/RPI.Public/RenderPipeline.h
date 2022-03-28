@@ -198,8 +198,6 @@ namespace AZ
             //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
 
-<<<<<<< HEAD
-=======
             //! Get the RenderPipelineDescriptor which was used to create this RenderPipeline
             const RenderPipelineDescriptor& GetDescriptor() const;
 
@@ -217,7 +215,6 @@ namespace AZ
             //! use RPI::PassSystemInterface::Get()->ForEachPass() function instead.
             Ptr<Pass> FindFirstPass(const AZ::Name& passName);
 
->>>>>>> development
         private:
             RenderPipeline() = default;
 
@@ -250,11 +247,7 @@ namespace AZ
             void OnRemovedFromScene(Scene* scene);
 
             // Called when this pipeline is about to be rendered
-<<<<<<< HEAD
-            void OnStartFrame(const TickTimeInfo& tick);
-=======
             void OnStartFrame(float time);
->>>>>>> development
 
             // Called when the rendering of current frame is finished.
             void OnFrameEnd();
@@ -276,19 +269,11 @@ namespace AZ
 
             // Pass tree which contains all the passes in this render pipeline.
             Ptr<ParentPass> m_rootPass;
-<<<<<<< HEAD
-            
-            PipelineViewMap m_pipelineViewsByTag;
-            
-            /// The system time when the last time this pipeline render was started
-            float m_lastRenderStartTime = 0;
-=======
 
             // Attachment bindings/connections that can be referenced from any pass in the pipeline in a global manner
             AZStd::vector<PipelineGlobalBinding> m_pipelineGlobalConnections;
 
             PipelineViewMap m_pipelineViewsByTag;
->>>>>>> development
             
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
             RenderPipelineId m_nameId;
@@ -315,14 +300,10 @@ namespace AZ
             RHI::DrawFilterTag m_drawFilterTag;
             // A mask to filter draw items submitted by passes of this render pipeline.
             // This mask is created from the value of m_drawFilterTag.
-<<<<<<< HEAD
-            RHI::DrawFilterMask m_drawFilterMask = 0; 
-=======
             RHI::DrawFilterMask m_drawFilterMask = 0;
 
             // The descriptor used to created this render pipeline
             RenderPipelineDescriptor m_descriptor;
->>>>>>> development
         };
 
     } // namespace RPI

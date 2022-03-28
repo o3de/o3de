@@ -113,12 +113,8 @@ namespace AZ
         {
             if (m_taskGraphActive)
             {
-<<<<<<< HEAD
-                WaitTGEvent(m_simulationFinishedTGEvent, &m_simulationFinishedWorkActive);
-=======
                 WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
                 m_simulationFinishedTGEvent.reset();
->>>>>>> development
             }
             else
             {
@@ -421,14 +417,6 @@ namespace AZ
                     simulationTGDesc,
                     [this, featureProcessor]()
                     {
-<<<<<<< HEAD
-                        featureProcessor->Simulate(m_simulatePacket);
-                    });
-            }
-            simulationTG.Detach();
-            m_simulationFinishedWorkActive = true;
-            simulationTG.Submit(&m_simulationFinishedTGEvent);
-=======
                         FeatureProcessor::SimulatePacket jobPacket = m_simulatePacket;
                         jobPacket.m_parentJob = nullptr;
                         featureProcessor->Simulate(jobPacket);
@@ -437,7 +425,6 @@ namespace AZ
             simulationTG.Detach();
             m_simulationFinishedTGEvent = AZStd::make_unique<TaskGraphEvent>();
             simulationTG.Submit(m_simulationFinishedTGEvent.get());
->>>>>>> development
         }
 
         void Scene::SimulateJobs()
@@ -448,18 +435,11 @@ namespace AZ
             for (FeatureProcessorPtr& fp : m_featureProcessors)
             {
                 FeatureProcessor* featureProcessor = fp.get();
-<<<<<<< HEAD
-                const auto jobLambda = [this, featureProcessor]()
-                {
-
-                    featureProcessor->Simulate(m_simulatePacket);
-=======
                 const auto jobLambda = [this, featureProcessor](AZ::Job& owner)
                 {
                     FeatureProcessor::SimulatePacket jobPacket = m_simulatePacket;
                     jobPacket.m_parentJob = &owner;
                     featureProcessor->Simulate(jobPacket);
->>>>>>> development
                 };
 
                 AZ::Job* simulationJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr);  //auto-deletes
@@ -469,11 +449,7 @@ namespace AZ
             //[GFX TODO]: the completion job should start here
         }
 
-<<<<<<< HEAD
-        void Scene::Simulate([[maybe_unused]] const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
-=======
         void Scene::Simulate(RHI::JobPolicy jobPolicy, float simulationTime)
->>>>>>> development
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
 
@@ -482,12 +458,8 @@ namespace AZ
             // If previous simulation job wasn't done, wait for it to finish.
             if (m_taskGraphActive)
             {
-<<<<<<< HEAD
-                WaitTGEvent(m_simulationFinishedTGEvent, &m_simulationFinishedWorkActive);
-=======
                 WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
                 m_simulationFinishedTGEvent.reset();
->>>>>>> development
             }
             else
             {
@@ -514,22 +486,6 @@ namespace AZ
                 {
                     SimulateJobs();
                 }
-<<<<<<< HEAD
-            }
-        }
-
-        void Scene::WaitTGEvent(AZ::TaskGraphEvent& completionTGEvent, AZStd::atomic_bool* workToWaitOn )
-        {
-            AZ_PROFILE_SCOPE(RPI, "Scene: WaitAndCleanCompletionJob");
-            if (!workToWaitOn || workToWaitOn->load())
-            {
-                completionTGEvent.Wait();
-            }
-            if (workToWaitOn)
-            {
-                workToWaitOn->store(false);
-=======
->>>>>>> development
             }
         }
 
@@ -578,50 +534,6 @@ namespace AZ
 
         void Scene::CollectDrawPacketsTaskGraph()
         {
-<<<<<<< HEAD
-                AZ_PROFILE_SCOPE(RPI, "CollectDrawPackets");
-                AZ::TaskGraphEvent collectDrawPacketsTGEvent;
-                static const AZ::TaskDescriptor collectDrawPacketsTGDesc{"RPI_Scene_PrepareRender_CollectDrawPackets", "Graphics"};
-
-                AZ::TaskGraph collectDrawPacketsTG;
-                // Launch FeatureProcessor::Render() jobs
-                for (auto& fp : m_featureProcessors)
-                {
-                    collectDrawPacketsTG.AddTask( 
-                        collectDrawPacketsTGDesc,
-                        [this, &fp]()
-                        {
-                            fp->Render(m_renderPacket);
-                        });
-
-                }
-                collectDrawPacketsTG.Submit(&collectDrawPacketsTGEvent);
-
-                // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs if m_parallelOctreeTraversal)
-                bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
-                m_cullingScene->BeginCulling(m_renderPacket.m_views);
-                AZ::JobCompletion processCullablesCompletion;
-                for (ViewPtr& viewPtr : m_renderPacket.m_views)
-                {
-                    AZ::Job* processCullablesJob = AZ::CreateJobFunction([this, &viewPtr](AZ::Job& thisJob)
-                        {
-                            m_cullingScene->ProcessCullables(*this, *viewPtr, thisJob); // can't call directly because ProcessCullables needs a parent job
-                        },
-                        true, nullptr); //auto-deletes
-                    if (parallelOctreeTraversal)
-                    {
-                        processCullablesJob->SetDependent(&processCullablesCompletion);
-                        processCullablesJob->Start();
-                    }
-                    else
-                    {
-                        processCullablesJob->StartAndWaitForCompletion();
-                    }
-                }
-
-                WaitTGEvent(collectDrawPacketsTGEvent);
-                processCullablesCompletion.StartAndWaitForCompletion();
-=======
             AZ_PROFILE_SCOPE(RPI, "CollectDrawPacketsTaskGraph");
             AZ::TaskGraphEvent collectDrawPacketsTGEvent;
             static const AZ::TaskDescriptor collectDrawPacketsTGDesc{"RPI_Scene_PrepareRender_CollectDrawPackets", "Graphics"};
@@ -680,16 +592,11 @@ namespace AZ
             {
                 processCullablesTGEvent.Wait();
             }
->>>>>>> development
         }
 
         void Scene::CollectDrawPacketsJobs()
         {
-<<<<<<< HEAD
-            AZ_PROFILE_SCOPE(RPI, "CollectDrawPackets");
-=======
             AZ_PROFILE_SCOPE(RPI, "CollectDrawPacketsJobs");
->>>>>>> development
             AZ::JobCompletion* collectDrawPacketsCompletion = aznew AZ::JobCompletion();
 
             // Launch FeatureProcessor::Render() jobs
@@ -706,26 +613,16 @@ namespace AZ
             }
 
             // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs)
-<<<<<<< HEAD
-=======
             const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
->>>>>>> development
             m_cullingScene->BeginCulling(m_renderPacket.m_views);
             for (ViewPtr& viewPtr : m_renderPacket.m_views)
             {
                 AZ::Job* processCullablesJob = AZ::CreateJobFunction([this, &viewPtr](AZ::Job& thisJob)
                     {
-<<<<<<< HEAD
-                        m_cullingScene->ProcessCullables(*this, *viewPtr, thisJob); // can't call directly because ProcessCullables needs a parent job
-                    },
-                    true, nullptr); //auto-deletes
-                if (m_cullingScene->GetDebugContext().m_parallelOctreeTraversal)
-=======
                         m_cullingScene->ProcessCullablesJobs(*this, *viewPtr, thisJob); // can't call directly because ProcessCullables needs a parent job
                     },
                     true, nullptr); //auto-deletes
                 if (parallelOctreeTraversal)
->>>>>>> development
                 {
                     processCullablesJob->SetDependent(collectDrawPacketsCompletion);
                     processCullablesJob->Start();
@@ -749,15 +646,6 @@ namespace AZ
             {
                 finalizeDrawListsTG.AddTask(
                     finalizeDrawListsTGDesc,
-<<<<<<< HEAD
-                    [view]()
-                    {
-                        view->FinalizeDrawLists();
-                    });
-            }
-            finalizeDrawListsTG.Submit(&finalizeDrawListsTGEvent);
-            WaitTGEvent(finalizeDrawListsTGEvent);
-=======
                     [view, &finalizeDrawListsTGEvent]()
                     {
                         view->FinalizeDrawListsTG(finalizeDrawListsTGEvent);
@@ -765,7 +653,6 @@ namespace AZ
             }
             finalizeDrawListsTG.Submit(&finalizeDrawListsTGEvent);
             finalizeDrawListsTGEvent.Wait();
->>>>>>> development
         }
 
         void Scene::FinalizeDrawListsJobs()
@@ -773,15 +660,9 @@ namespace AZ
             AZ::JobCompletion* finalizeDrawListsCompletion = aznew AZ::JobCompletion();
             for (auto& view : m_renderPacket.m_views)
             {
-<<<<<<< HEAD
-                const auto finalizeDrawListsLambda = [view]()
-                {
-                    view->FinalizeDrawLists();
-=======
                 const auto finalizeDrawListsLambda = [view](AZ::Job& job)
                 {
                     view->FinalizeDrawListsJob(&job);
->>>>>>> development
                 };
 
                 AZ::Job* finalizeDrawListsJob = AZ::CreateJobFunction(AZStd::move(finalizeDrawListsLambda), true, nullptr);     //auto-deletes
@@ -791,22 +672,14 @@ namespace AZ
             WaitAndCleanCompletionJob(finalizeDrawListsCompletion);
         }
 
-<<<<<<< HEAD
-        void Scene::PrepareRender(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
-=======
         void Scene::PrepareRender(RHI::JobPolicy jobPolicy, float simulationTime)
->>>>>>> development
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: PrepareRender");
 
             if (m_taskGraphActive)
             {
-<<<<<<< HEAD
-                WaitTGEvent(m_simulationFinishedTGEvent, &m_simulationFinishedWorkActive);
-=======
                 WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
                 m_simulationFinishedTGEvent.reset();
->>>>>>> development
             }
             else
             {
@@ -824,11 +697,7 @@ namespace AZ
                     if (pipeline->NeedsRender())
                     {
                         activePipelines.push_back(pipeline);
-<<<<<<< HEAD
-                        pipeline->OnStartFrame(tickInfo);
-=======
                         pipeline->OnStartFrame(simulationTime);
->>>>>>> development
                     }
                 }
             }
@@ -925,10 +794,6 @@ namespace AZ
                     {
                         FinalizeDrawListsJobs();
                     }
-<<<<<<< HEAD
-                    AZ_PROFILE_END(RPI);
-=======
->>>>>>> development
                 }
             }
 

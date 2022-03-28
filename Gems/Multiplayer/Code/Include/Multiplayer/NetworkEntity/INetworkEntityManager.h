@@ -40,15 +40,6 @@ namespace Multiplayer
 
         virtual ~INetworkEntityManager() = default;
 
-<<<<<<< HEAD
-        //! Configures the NetworkEntityManager to operate as an authoritative host.
-        //! @param hostId       the hostId of this NetworkEntityManager
-        //! @param entityDomain the entity domain used to determine which entities this manager has authority over
-        virtual void Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) = 0;
-
-        //! Returns whether or not the network entity manager has been initialized to host.
-        //! @return boolean true if this network entity manager has been intialized to host
-=======
         //! Configures the NetworkEntityManager.
         //! @param hostId       the hostId of this NetworkEntityManager (invalid for clients)
         //! @param entityDomain the entity domain used to determine which entities this manager has authority over
@@ -56,7 +47,6 @@ namespace Multiplayer
 
         //! Returns whether or not the network entity manager has been initialized.
         //! @return boolean true if this network entity manager has been intialized
->>>>>>> development
         virtual bool IsInitialized() const = 0;
 
         //! Returns the entity domain associated with this network entity manager, this will be nullptr on clients.
@@ -192,8 +182,6 @@ namespace Multiplayer
         //! @param entityRpcMessage the local rpc message to handle
         virtual void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) = 0;
 
-<<<<<<< HEAD
-=======
         //! Handles a set of entities transitioning between entity domains.
         //! @param entitiesNotInDomain the set of entities that are no longer contained within our entity domain
         virtual void HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain) = 0;
@@ -227,7 +215,6 @@ namespace Multiplayer
         //! @param timeoutTimeMs the timeout time to use in milliseconds
         virtual void SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs) = 0;
 
->>>>>>> development
         //! Visualization of network entity manager state.
         virtual void DebugDraw() const = 0;
     };

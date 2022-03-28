@@ -24,49 +24,6 @@ namespace PhysX
 
     namespace SubModeData
     {
-<<<<<<< HEAD
-        const AZ::Crc32 SwitchToTranslationSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtotranslationsubmode");
-        static const char* TranslationTitle = "Switch to Position Mode";
-        static const char* TranslationToolTip = "Position Mode - Change the position of the joint.";
-
-        const AZ::Crc32 SwitchToRotationSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtorotationsubmode");
-        static const char* RotationTitle = "Switch to Rotation Mode";
-        static const char* RotationToolTip = "Rotation Mode- Change the rotation of the joint.";
-
-        const AZ::Crc32 SwitchToMaxForceSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtomaxforce");
-        static const char* MaxForceTitle = "Switch to Max Force Mode";
-        static const char* MaxForceToolTip = "Max Force Mode - Change the maximum force allowed before the joint breaks.";
-
-        const AZ::Crc32 SwitchToMaxTorqueSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtomaxtorque");
-        static const char* MaxTorqueTitle = "Switch to Max Torque Mode";
-        static const char* MaxTorqueToolTip = "Max Torque Mode - Change the maximum torque allowed before the joint breaks.";
-
-        const AZ::Crc32 SwitchToDampingSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtodamping");
-        static const char* DampingTitle = "Switch to Damping Mode";
-        static const char* DampingToolTip = "Damping Mode - Change the damping strength of the joint when beyond the limit.";
-
-        const AZ::Crc32 SwitchToStiffnessSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtostiffness");
-        static const char* StiffnessTitle = "Switch to Stiffness Mode";
-        static const char* StiffnessToolTip = "Stiffness Mode - Change the stiffness strength of the joint when beyond the limit.";
-
-        const AZ::Crc32 SwitchToTwistLimitsSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtotwistlimits");
-        static const char* TwistLimitsTitle = "Switch to Twist Limits Mode";
-        static const char* TwistLimitsToolTip = "Twist Limits Mode - Change the limits of the joint.";
-
-        const AZ::Crc32 SwitchToSwingLimitsSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtoswinglimits");
-        static const char* SwingLimitsTitle = "Switch to Swing Limits Mode";
-        static const char* SwingLimitsToolTip = "Swing Limits Mode - Change the limits of the joint.";
-
-        const AZ::Crc32 SwitchToSnapPositionSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtosnapposition");
-        static const char* SnapPositionTitle = "Switch to Snap Position Mode";
-        static const char* SnapPositionToolTip = "Snap Position Mode - Snap the position of the joint to another Entity.";
-
-        const AZ::Crc32 SwitchToSnapRotationSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtosnaprotation");
-        static const char* SnapRotationTitle = "Switch to Snap Rotation Mode";
-        static const char* SnapRotationToolTip = "Snap Rotation Mode - Snap the rotation of the joint toward another Entity.";
-
-        const AZ::Crc32 ResetSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.resetsubmode");
-=======
         const AZ::Crc32 SwitchToTranslationSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtotranslationsubmode");
         static const char* TranslationTitle = "Switch to Position Mode";
         static const char* TranslationToolTip = "Position Mode - Change the position of the joint.";
@@ -108,7 +65,6 @@ namespace PhysX
         static const char* SnapRotationToolTip = "Snap Rotation Mode - Snap the rotation of the joint toward another Entity.";
 
         const AZ::Crc32 ResetSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.resetsubmode");
->>>>>>> development
         static const char* ResetTitle = "Reset Current Mode";
         static const char* ResetToolTip = "Reset changes made during this mode edit.";
 
@@ -351,9 +307,6 @@ namespace PhysX
 
     AZStd::vector<AzToolsFramework::ViewportUi::ClusterId> JointsComponentMode::PopulateViewportUiImpl()
     {
-<<<<<<< HEAD
-        return AZStd::vector<AzToolsFramework::ViewportUi::ClusterId>(m_modeSelectionClusterIds.begin(), m_modeSelectionClusterIds.end());
-=======
         AZStd::vector<AzToolsFramework::ViewportUi::ClusterId> ids;
         ids.reserve(m_modeSelectionClusterIds.size());
         for (auto clusterid : m_modeSelectionClusterIds)
@@ -364,7 +317,6 @@ namespace PhysX
             }
         }
         return ids;
->>>>>>> development
     }
 
     void JointsComponentMode::SetCurrentMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode, ButtonData& buttonData)
@@ -410,36 +362,10 @@ namespace PhysX
 
     void JointsComponentMode::SetupSubModes(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-<<<<<<< HEAD
-        //create the 3 cluster groups
-        for (auto& clusterId : m_modeSelectionClusterIds)
-        {
-            AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-                clusterId, AzToolsFramework::ViewportUi::DefaultViewportId,
-                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
-                AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        }
-
-=======
->>>>>>> development
         //retrieve the enabled sub components from the entity
         AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModesState;
         EditorJointRequestBus::EventResult(subModesState, entityComponentIdPair, &EditorJointRequests::GetSubComponentModesState);
 
-<<<<<<< HEAD
-        const AzToolsFramework::ViewportUi::ClusterId group1ClusterId = GetClusterId(ClusterGroups::Group1);
-        const AzToolsFramework::ViewportUi::ClusterId group2ClusterId = GetClusterId(ClusterGroups::Group2);
-        //hide cluster 2, if something is added to it. it will make is visible
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible,
-            group2ClusterId, false);
-
-        const AzToolsFramework::ViewportUi::ClusterId group3ClusterId = GetClusterId(ClusterGroups::Group3);
-        // hide cluster 3, if something is added to it. it will make is visible
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible,
-            group3ClusterId, false);
-=======
         //group 1 is always available so create it
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             m_modeSelectionClusterIds[static_cast<int>(ClusterGroups::Group1)], AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -494,7 +420,6 @@ namespace PhysX
         const AzToolsFramework::ViewportUi::ClusterId group1ClusterId = GetClusterId(ClusterGroups::Group1);
         const AzToolsFramework::ViewportUi::ClusterId group2ClusterId = GetClusterId(ClusterGroups::Group2);
         const AzToolsFramework::ViewportUi::ClusterId group3ClusterId = GetClusterId(ClusterGroups::Group3);
->>>>>>> development
 
         //translation and rotation are enabled for all joints in group 1
         m_subModes[JointsComponentModeCommon::SubComponentModes::ModeType::Translation] =
@@ -525,13 +450,6 @@ namespace PhysX
                         Internal::RegisterClusterButton(group3ClusterId, "joints/MaxForce", SubModeData::MaxForceToolTip);
                     m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce] =
                         ButtonData{ group3ClusterId, buttonId };
-<<<<<<< HEAD
-
-                    AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                        AzToolsFramework::ViewportUi::DefaultViewportId,
-                        &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, group3ClusterId, true);
-=======
->>>>>>> development
                 }
                 break;
             case JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque:
@@ -544,13 +462,6 @@ namespace PhysX
                         Internal::RegisterClusterButton(group3ClusterId, "joints/MaxTorque", SubModeData::MaxTorqueToolTip);
                     m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque] =
                         ButtonData{ group3ClusterId, buttonId };
-<<<<<<< HEAD
-                        
-                    AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                        AzToolsFramework::ViewportUi::DefaultViewportId,
-                        &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, group3ClusterId, true);
-=======
->>>>>>> development
                 }
                 break;
             case JointsComponentModeCommon::SubComponentModes::ModeType::Damping:
@@ -562,13 +473,6 @@ namespace PhysX
                     const AzToolsFramework::ViewportUi::ButtonId buttonId =
                         Internal::RegisterClusterButton(group2ClusterId, "joints/Damping", SubModeData::DampingToolTip);
                     m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Damping] = ButtonData{ group2ClusterId, buttonId };
-<<<<<<< HEAD
-                        
-                    AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                        AzToolsFramework::ViewportUi::DefaultViewportId,
-                        &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, group2ClusterId, true);
-=======
->>>>>>> development
                 }
                 break;
             case JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness:
@@ -581,13 +485,6 @@ namespace PhysX
                         Internal::RegisterClusterButton(group2ClusterId, "joints/Stiffness", SubModeData::StiffnessToolTip);
                     m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness] =
                         ButtonData{ group2ClusterId, buttonId };
-<<<<<<< HEAD
-
-                    AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                        AzToolsFramework::ViewportUi::DefaultViewportId,
-                        &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, group2ClusterId, true);
-=======
->>>>>>> development
                 }
                 break;
             case JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits:
@@ -602,13 +499,6 @@ namespace PhysX
                         Internal::RegisterClusterButton(group2ClusterId, "joints/TwistLimits", SubModeData::TwistLimitsToolTip);
                     m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits] =
                         ButtonData{ group2ClusterId, buttonId };
-<<<<<<< HEAD
-
-                    AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                        AzToolsFramework::ViewportUi::DefaultViewportId,
-                        &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, group2ClusterId, true);
-=======
->>>>>>> development
                 }
                 break;
             case JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits:
@@ -621,13 +511,6 @@ namespace PhysX
                         Internal::RegisterClusterButton(group2ClusterId, "joints/SwingLimits", SubModeData::SwingLimitsToolTip);
                     m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits] =
                         ButtonData{ group2ClusterId, buttonId };
-<<<<<<< HEAD
-
-                    AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                        AzToolsFramework::ViewportUi::DefaultViewportId,
-                        &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, group2ClusterId, true);
-=======
->>>>>>> development
                 }
                 break;
             case JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition:
@@ -652,12 +535,9 @@ namespace PhysX
                         ButtonData{ group1ClusterId, buttonId };
                 }
                 break;
-<<<<<<< HEAD
-=======
             default:
                 AZ_Error("Joints", false, "Joints component mode cluster button setup found unknown sub mode.");
                 break;
->>>>>>> development
             }
         }
 
@@ -701,12 +581,6 @@ namespace PhysX
 
         for (int i = 0; i < static_cast<int>(ClusterGroups::GroupCount); i++)
         {
-<<<<<<< HEAD
-            AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                AzToolsFramework::ViewportUi::DefaultViewportId,
-                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_modeSelectionClusterIds[i],
-                m_modeSelectionHandlers[i]);
-=======
             if (m_modeSelectionClusterIds[i] != AzToolsFramework::ViewportUi::InvalidClusterId)
             {
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
@@ -714,7 +588,6 @@ namespace PhysX
                     &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
                     m_modeSelectionClusterIds[i], m_modeSelectionHandlers[i]);
             }
->>>>>>> development
         }
         
         // set the translate as enabled by default.
@@ -739,12 +612,6 @@ namespace PhysX
     {
         for (auto clusterid : m_modeSelectionClusterIds)
         {
-<<<<<<< HEAD
-            AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
-                clusterid);
-        }
-=======
             if (clusterid != AzToolsFramework::ViewportUi::InvalidClusterId)
             {
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
@@ -753,7 +620,6 @@ namespace PhysX
             }
         }
         m_modeSelectionClusterIds.assign(static_cast<int>(ClusterGroups::GroupCount), AzToolsFramework::ViewportUi::InvalidClusterId);
->>>>>>> development
     }
 
     AzToolsFramework::ViewportUi::ClusterId JointsComponentMode::GetClusterId(ClusterGroups group)

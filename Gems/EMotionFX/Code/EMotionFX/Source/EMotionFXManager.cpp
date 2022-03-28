@@ -172,13 +172,10 @@ namespace EMotionFX
         delete m_debugDraw;
         m_debugDraw = nullptr;
 
-<<<<<<< HEAD
-=======
         delete m_poseDataFactory;
         m_poseDataFactory = nullptr;
 
         m_renderActorSettings.reset();
->>>>>>> development
 
         m_eventManager->Destroy();
         m_eventManager = nullptr;

@@ -322,7 +322,6 @@ namespace AZ
             }
 
             const auto decalIndex = handle.GetIndex();
-<<<<<<< HEAD
 
             const bool isValidMaterialBeingUsedCurrently = m_decalData.GetData(decalIndex).m_textureArrayIndex != DecalData::UnusedIndex;
             if (isValidMaterialBeingUsedCurrently)
@@ -344,29 +343,6 @@ namespace AZ
                 return;
             }
 
-=======
-
-            const bool isValidMaterialBeingUsedCurrently = m_decalData.GetData(decalIndex).m_textureArrayIndex != DecalData::UnusedIndex;
-            if (isValidMaterialBeingUsedCurrently)
-            {
-                RemoveMaterialFromDecal(decalIndex);
-            }
-
-            if (!material.IsValid())
-            {
-                return;
-            }
-
-            const auto iter = m_materialToTextureArrayLookupTable.find(material);
-            if (iter != m_materialToTextureArrayLookupTable.end())
-            {
-                // This material is already loaded and registered with this feature processor
-                iter->second.m_useCount++;
-                SetDecalTextureLocation(handle, iter->second.m_location);
-                return;
-            }
-
->>>>>>> development
             // Material not loaded so queue it up for loading.
             QueueMaterialLoadForDecal(material, handle);
         }
@@ -382,17 +358,10 @@ namespace AZ
 
             decalData.m_textureArrayIndex = DecalData::UnusedIndex;
             decalData.m_textureIndex = DecalData::UnusedIndex;
-<<<<<<< HEAD
 
             m_deviceBufferNeedsUpdate = true;
         }
 
-=======
-
-            m_deviceBufferNeedsUpdate = true;
-        }
-
->>>>>>> development
         void DecalTextureArrayFeatureProcessor::CacheShaderIndices()
         {
             // The azsl shader should define several texture arrays such as:
@@ -403,11 +372,7 @@ namespace AZ
             // Texture2DArray<float2> m_decalTextureArrayNormalMaps0;
             // Texture2DArray<float2> m_decalTextureArrayNormalMaps1;
             // Texture2DArray<float2> m_decalTextureArrayNormalMaps2;
-<<<<<<< HEAD
-            static const AZStd::array<AZStd::string, DecalMapType_Num> ShaderNames = { "m_decalTextureArrayDiffuse",
-=======
             static constexpr AZStd::array<AZStd::string_view, DecalMapType_Num> ShaderNames = { "m_decalTextureArrayDiffuse",
->>>>>>> development
                                                                                        "m_decalTextureArrayNormalMaps" };
 
             for (int mapType = 0; mapType < DecalMapType_Num; ++mapType)
@@ -415,11 +380,7 @@ namespace AZ
                 for (int texArrayIdx = 0; texArrayIdx < NumTextureArrays; ++texArrayIdx)
                 {
                     const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
-<<<<<<< HEAD
-                    const AZStd::string baseName = ShaderNames[mapType] + AZStd::to_string(texArrayIdx);
-=======
                     const AZStd::string baseName = AZStd::string(ShaderNames[mapType]) + AZStd::to_string(texArrayIdx);
->>>>>>> development
 
                     m_decalTextureArrayIndices[texArrayIdx][mapType] = viewSrgLayout->FindShaderInputImageIndex(Name(baseName.c_str()));
                     AZ_Warning(

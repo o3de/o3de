@@ -199,8 +199,6 @@ set(FILES
     Passes/LutGeneration.pass
     Passes/MainPipeline.pass
     Passes/MainPipelineRenderToTexture.pass
-    Passes/ThumbnailPipeline.pass
-    Passes/ThumbnailPipelineRenderToTexture.pass
     Passes/MeshMotionVector.pass
     Passes/ModulateTexture.pass
     Passes/MorphTarget.pass

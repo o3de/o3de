@@ -35,17 +35,9 @@ namespace EMotionFX
         ASSERT_EQ(GetActorManager().GetNumActors(), 0);
 
         // Load an Actor
-<<<<<<< HEAD
-        const char* actorCmd{ "ImportActor -filename @engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor" };
-        {
-            AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(actorCmd, result)) << result.c_str();
-        }
-=======
         AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
         AZ::Data::Asset<Integration::ActorAsset> actorAsset =
             TestActorAssets::CreateActorAssetAndRegister<JackNoMeshesActor>(actorAssetId, "Jack");
->>>>>>> development
 
         // Ensure the Actor is correct
         ASSERT_TRUE(GetActorManager().FindActorByName("Jack"));

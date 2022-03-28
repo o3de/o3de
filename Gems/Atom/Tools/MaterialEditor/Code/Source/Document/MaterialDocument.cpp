@@ -77,11 +77,7 @@ namespace MaterialEditor
         return &m_materialTypeSourceData;
     }
 
-<<<<<<< HEAD
-    const AZStd::any& MaterialDocument::GetPropertyValue(const AZ::Name& propertyId) const
-=======
     void MaterialDocument::SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value)
->>>>>>> development
     {
         if (!IsOpen())
         {
@@ -89,14 +85,6 @@ namespace MaterialEditor
             return;
         }
 
-<<<<<<< HEAD
-        const auto it = m_properties.find(propertyId);
-        if (it == m_properties.end())
-        {
-            AZ_Error("MaterialDocument", false, "Material document property could not be found: '%s'.", propertyId.GetCStr());
-            return m_invalidValue;
-        }
-=======
         AtomToolsFramework::DynamicProperty* foundProperty = {};
         TraverseGroups(m_groups, [&, this](auto& group) {
             for (auto& property : group->m_properties)
@@ -104,27 +92,10 @@ namespace MaterialEditor
                 if (property.GetId() == propertyId)
                 {
                     foundProperty = &property;
->>>>>>> development
 
                     // This first converts to an acceptable runtime type in case the value came from script
                     const AZ::RPI::MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(value);
 
-<<<<<<< HEAD
-    const AtomToolsFramework::DynamicProperty& MaterialDocument::GetProperty(const AZ::Name& propertyId) const
-    {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Material document is not open.");
-            return m_invalidProperty;
-        }
-
-        const auto it = m_properties.find(propertyId);
-        if (it == m_properties.end())
-        {
-            AZ_Error("MaterialDocument", false, "Material document property could not be found: '%s'.", propertyId.GetCStr());
-            return m_invalidProperty;
-        }
-=======
                     property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
 
                     const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyId);
@@ -133,7 +104,6 @@ namespace MaterialEditor
                         if (m_materialInstance->SetPropertyValue(propertyIndex, propertyValue))
                         {
                             AZ::RPI::MaterialPropertyFlags dirtyFlags = m_materialInstance->GetPropertyDirtyFlags();
->>>>>>> development
 
                             Recompile();
                             RunEditorMaterialFunctors(dirtyFlags);
@@ -158,43 +128,16 @@ namespace MaterialEditor
         }
     }
 
-<<<<<<< HEAD
-    void MaterialDocument::SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value)
-=======
     const AZStd::any& MaterialDocument::GetPropertyValue(const AZ::Name& propertyId) const
->>>>>>> development
     {
         if (!IsOpen())
         {
-<<<<<<< HEAD
-            AZ_Error("MaterialDocument", false, "Material document is not open.");
-            return;
-        }
-
-        const auto it = m_properties.find(propertyId);
-        if (it == m_properties.end())
-        {
-            AZ_Error("MaterialDocument", false, "Material document property could not be found: '%s'.", propertyId.GetCStr());
-            return;
-        }
-
-        // This first converts to an acceptable runtime type in case the value came from script
-        const AZ::RPI::MaterialPropertyValue propertyValue =
-            AtomToolsFramework::ConvertToRuntimeType(value);
-
-        AtomToolsFramework::DynamicProperty& property = it->second;
-        property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
-
-        const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyId);
-        if (!propertyIndex.IsNull())
-=======
             AZ_Error("MaterialDocument", false, "Document is not open.");
             return m_invalidValue;
         }
 
         auto property = FindProperty(propertyId);
         if (!property)
->>>>>>> development
         {
             AZ_Error("MaterialDocument", false, "Document property could not be found: '%s'.", propertyId.GetCStr());
             return m_invalidValue;
@@ -429,16 +372,10 @@ namespace MaterialEditor
         bool addPropertiesResult = true;
 
         // populate sourceData with properties that meet the filter
-<<<<<<< HEAD
-        m_materialTypeSourceData.EnumerateProperties([this, &sourceData, &propertyFilter, &result](const AZStd::string& groupName, const AZStd::string& propertyName, const auto& propertyDefinition) {
-
-            const MaterialPropertyId propertyId(groupName, propertyName);
-=======
         m_materialTypeSourceData.EnumerateProperties([&](const auto& propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext) {
 
             AZ::Name propertyId{propertyDefinition->GetName()};
             nameContext.ContextualizeProperty(propertyId);
->>>>>>> development
 
             const auto property = FindProperty(propertyId);
             if (property && propertyFilter(*property))
@@ -452,13 +389,8 @@ namespace MaterialEditor
                         addPropertiesResult = false;
                         return false;
                     }
-<<<<<<< HEAD
-
-                    sourceData.m_properties[groupName][propertyName].m_value = propertyValue;
-=======
                     
                     sourceData.SetPropertyValue(propertyId, propertyValue);
->>>>>>> development
                 }
             }
             return true;
@@ -582,46 +514,6 @@ namespace MaterialEditor
         // where such changes are supported at runtime.
         m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
 
-<<<<<<< HEAD
-        // Populate the property map from a combination of source data and assets
-        // Assets must still be used for now because they contain the final accumulated value after all other materials
-        // in the hierarchy are applied
-        m_materialTypeSourceData.EnumerateProperties([this, &parentPropertyValues](const AZStd::string& groupName, const AZStd::string& propertyName, const auto& propertyDefinition) {
-            AtomToolsFramework::DynamicPropertyConfig propertyConfig;
-
-            // Assign id before conversion so it can be used in dynamic description
-            propertyConfig.m_id = MaterialPropertyId(groupName, propertyName).GetCStr();
-
-            const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
-            const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
-            AZ_Warning("MaterialDocument", propertyIndexInBounds, "Failed to add material property '%s' to document '%s'.", propertyConfig.m_id.GetCStr(), m_absolutePath.c_str());
-
-            if (propertyIndexInBounds)
-            {
-                AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
-                propertyConfig.m_showThumbnail = true;
-                propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
-                propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
-                auto groupDefinition = m_materialTypeSourceData.FindGroup(groupName);
-                propertyConfig.m_groupName = groupDefinition ? groupDefinition->m_displayName : groupName;
-                m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
-            }
-            return true;
-        });
-
-        // Populate the property group visibility map
-        for (MaterialTypeSourceData::GroupDefinition& group : m_materialTypeSourceData.GetGroupDefinitionsInDisplayOrder())
-        {
-            m_propertyGroupVisibility[AZ::Name{group.m_name}] = true;
-        }
-
-        // Adding properties for material type and parent as part of making dynamic
-        // properties and the inspector more general purpose.
-        // This allows the read only properties to appear in the inspector like any
-        // other property.
-        // This may change or be removed once support for changing the material parent
-        // is implemented.
-=======
         // Adding properties for material type and parent as part of making dynamic properties and the inspector more general purpose. This
         // allows the read only properties to appear in the inspector like any other property. This may change or be removed once support
         // for changing the material parent is implemented.
@@ -630,7 +522,6 @@ namespace MaterialEditor
         m_groups.back()->m_displayName = "Overview";
         m_groups.back()->m_description = m_materialSourceData.m_description;
 
->>>>>>> development
         AtomToolsFramework::DynamicPropertyConfig propertyConfig;
         propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
         propertyConfig.m_id = "overview.materialType";
@@ -679,11 +570,7 @@ namespace MaterialEditor
 
             propertyConfig = {};
             propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
-<<<<<<< HEAD
-            propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput).GetCStr();
-=======
             propertyConfig.m_id = AZ::RPI::MaterialPropertyId(UvGroupName, shaderInput);
->>>>>>> development
             propertyConfig.m_name = shaderInput;
             propertyConfig.m_displayName = shaderInput;
             propertyConfig.m_groupName = UvGroupName;

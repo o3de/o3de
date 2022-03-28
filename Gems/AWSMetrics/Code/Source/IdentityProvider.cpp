@@ -22,24 +22,9 @@ namespace AWSMetrics
 
     AZStd::string IdentityProvider::GetEngineVersion()
     {
-<<<<<<< HEAD
-        static constexpr const char* EngineConfigFilePath = "@products@/engine.json";
-        static constexpr const char* EngineVersionJsonKey = "O3DEVersion";
-
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
-        if (!fileIO)
-        {
-            AZ_Error("AWSMetrics", false, "No FileIoBase Instance");
-            return "";
-        }
-
-        char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-        if (!fileIO->ResolvePath(EngineConfigFilePath, resolvedPath, AZ_MAX_PATH_LEN))
-=======
         constexpr auto engineVersionKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey;
         AZStd::string engineVersion;
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr && settingsRegistry->Get(engineVersion, engineVersionKey))
->>>>>>> development
         {
             return engineVersion;
         }

@@ -130,11 +130,7 @@ namespace WhiteBox
 
         AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
             &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
-<<<<<<< HEAD
-            "@engroot@/Gems/WhiteBox/Editor/Scripts/default_shapes.py", scriptArgs);
-=======
             "@gemroot:WhiteBox@/Editor/Scripts/default_shapes.py", scriptArgs);
->>>>>>> development
 
         EditorWhiteBoxComponentNotificationBus::Event(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()),

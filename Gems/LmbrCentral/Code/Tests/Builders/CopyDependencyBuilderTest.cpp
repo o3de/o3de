@@ -70,15 +70,12 @@ namespace UnitTest
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
-<<<<<<< HEAD
-=======
 
             // Set the @gemroot:<gem-name> alias for active gems
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
                 AZ::Test::AddActiveGem("LmbrCentral", *settingsRegistry, fileIo);
             }
->>>>>>> development
 
             SerializeContext* serializeContext;
             ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationRequests::GetSerializeContext);
@@ -903,11 +900,7 @@ namespace UnitTest
         AssetBuilderSDK::CreateJobsResponse response;
 
         request.m_sourceFile = "Tests/Xmls/XmlExampleWithoutVersion.xml";
-<<<<<<< HEAD
-        request.m_watchFolder = "@engroot@/Gems/LmbrCentral/Code/";
-=======
         request.m_watchFolder = "@gemroot:LmbrCentral@/Code/";
->>>>>>> development
 
         XmlBuilderWorker builderWorker;
         builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/FullFeatured"));

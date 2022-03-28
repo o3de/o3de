@@ -7,18 +7,11 @@
 
 #pragma once
 
-<<<<<<< HEAD
-#include <../Materials/Types/MaterialInputs/BaseColorInput.azsli>
-=======
->>>>>>> development
 #include <../Materials/Types/MaterialInputs/RoughnessInput.azsli>
 #include <../Materials/Types/MaterialInputs/MetallicInput.azsli>
 #include <../Materials/Types/MaterialInputs/SpecularInput.azsli>
 #include <../Materials/Types/MaterialInputs/NormalInput.azsli>
-<<<<<<< HEAD
-=======
 #include <TerrainMaterialSrg.azsli>
->>>>>>> development
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
@@ -77,89 +70,16 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     }
 }
 
-<<<<<<< HEAD
-ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
-{
-    Texture2D m_heightmapImage;
-    float m_detailTextureMultiplier;
-    float m_detailFadeDistance;
-    float m_detailFadeLength;
-
-    Sampler HeightmapSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    Sampler m_sampler
-    {
-        AddressU = Wrap;
-        AddressV = Wrap;
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        MaxAnisotropy = 16;
-    };
-
-    // Macro Color
-    Texture2D m_macroColorMap;
-
-    // Macro normal
-    Texture2D m_macroNormalMap;
-    bool m_flipMacroNormalX;
-    bool m_flipMacroNormalY;
-
-    // Base Color
-    float3 m_baseColor;
-    float m_baseColorFactor;
-    Texture2D m_baseColorMap;
-
-    // Normal
-    Texture2D m_normalMap;
-    bool m_flipNormalX;
-    bool m_flipNormalY;
-    float m_normalFactor;
-
-    // Roughness
-    Texture2D m_roughnessMap;
-    float m_roughnessFactor;
-
-    // Specular
-    Texture2D m_specularF0Map;
-    float m_specularF0Factor;
-}
-
-=======
->>>>>>> development
 option bool o_useTerrainSmoothing = false;
-option bool o_macroColor_useTexture = true;
-option bool o_macroNormal_useTexture = true;
-option bool o_baseColor_useTexture = true;
-option bool o_specularF0_useTexture = true;
-option bool o_normal_useTexture = true;
-option bool o_roughness_useTexture = true;
-option TextureBlendMode o_baseColorTextureBlendMode = TextureBlendMode::Multiply;
 
 struct VertexInput
 {
     float2 m_position : POSITION;
 };
 
-<<<<<<< HEAD
-// Sample a texture with a 5 tap B-Spline. Consider ripping this out and putting in a more general location.
-// This function samples a 4x4 neighborhood around the uv. Normally this would take 16 samples, but by taking
-// advantage of bilinear filtering this can be done with 9 taps on the edges between pixels. The cost is further
-// reduced by dropping the diagonals.
-float SampleBSpline5Tap(Texture2D texture, SamplerState textureSampler, float2 uv, float2 textureSize, float2 rcpTextureSize)
-=======
 // This class is used to calculate heights and normals for terrain. Using a class for this was the easiest way to
 // de-duplicate code between the forward and depth shaders.
 class HeightContext
->>>>>>> development
 {
     float3 m_worldMin;
     float3 m_worldMax;

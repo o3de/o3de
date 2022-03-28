@@ -15,11 +15,8 @@
 // box-filtered from the MSAA sub-pixels of the reflection texture.
 
 #include <scenesrg.srgi>
-<<<<<<< HEAD
-=======
 
 #include <Atom/Features/Debug.azsli>
->>>>>>> development
 
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>

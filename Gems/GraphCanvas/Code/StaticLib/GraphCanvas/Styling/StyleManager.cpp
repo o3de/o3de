@@ -323,11 +323,8 @@ namespace GraphCanvas
 
     void StyleManager::LoadStyleSheet()
     {
-<<<<<<< HEAD
-=======
         GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "LoadStyleSheet");
 
->>>>>>> development
         AZStd::string file = AZStd::string::format("@products@/%s", m_assetPath.c_str());
 
         AZ::IO::FileIOBase* fileBase = AZ::IO::FileIOBase::GetInstance();
