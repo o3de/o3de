@@ -1,13 +1,12 @@
 {
     "engine_name": "o3de",
-    "restricted_name": "o3de",
+    "restricted": "o3de",
     "FileVersion": 1,
     "O3DEVersion": "0.0.0.0",
     "O3DECopyrightYear": 2021,
     "O3DEBuildNumber": 0,
     "external_subdirectories": [
         "Gems/Achievements",
-        "Gems/AssetMemoryAnalyzer",
         "Gems/AssetValidation",
         "Gems/Atom",
         "Gems/AtomContent",
@@ -50,16 +49,16 @@
         "Gems/MessagePopup",
         "Gems/Metastream",
         "Gems/Microphone",
+        "Gems/MotionMatching",
         "Gems/Multiplayer",
         "Gems/MultiplayerCompression",
         "Gems/NvCloth",
-        "Gems/PBSreferenceMaterials",
         "Gems/PhysX",
         "Gems/PhysXDebug",
-        "Gems/PhysXSamples",
-        "Gems/Prefab",
+        "Gems/Prefab/PrefabBuilder",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
+        "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
         "Gems/SaveData",
@@ -91,9 +90,12 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/GemRepo",
         "Templates/AssetGem",
         "Templates/DefaultGem",
         "Templates/DefaultProject",
-        "Templates/MinimalProject"
+        "Templates/CppToolGem",
+        "Templates/MinimalProject",
+        "Templates/PythonToolGem"
     ]
 }
