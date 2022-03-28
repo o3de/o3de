@@ -55,7 +55,7 @@ namespace AZ
             //!
             //! If initialization fails. The device is left in an uninitialized state (as if Init had never
             //! been called), and an error code is returned.
-            ResultCode Init(PhysicalDevice& physicalDevice);
+            ResultCode Init(int index, PhysicalDevice& physicalDevice);
 
             //! Begins execution of a frame. The device internally manages a set of command queues. This
             //! method will synchronize the CPU with the GPU according to the number of in-light frames
@@ -95,6 +95,9 @@ namespace AZ
 
             //! Returns the physical device associated with this device.
             const PhysicalDevice& GetPhysicalDevice() const;
+
+            //! Returns the device index.
+            int GetIndex() const;
 
             //! Returns the descriptor associated with the device.
             const DeviceDescriptor& GetDescriptor() const;
@@ -208,6 +211,8 @@ namespace AZ
 
             // The physical device backing this logical device instance.
             Ptr<PhysicalDevice> m_physicalDevice;
+
+            int m_index = 0;
 
             // Tracks whether the device is in the BeginFrame / EndFrame scope.
             bool m_isInFrame = false;

@@ -46,13 +46,13 @@ namespace AZ
             // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
             AZ_DISABLE_COPY_MOVE(RHISystemInterface);
 
-            virtual RHI::Device* GetDevice() = 0;
+            virtual RHI::Device* GetDevice(size_t index = 0) = 0;
+
+            virtual int GetDeviceCount() = 0;
 
             virtual RHI::DrawListTagRegistry* GetDrawListTagRegistry() = 0;
 
             virtual RHI::PipelineStateCache* GetPipelineStateCache() = 0;
-
-            virtual const RHI::FrameSchedulerCompileRequest& GetFrameSchedulerCompileRequest() const = 0;
 
             virtual void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) = 0;
 
@@ -67,8 +67,6 @@ namespace AZ
             virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const = 0;
 
             virtual void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable) = 0;
-
-            virtual const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() = 0;
 
             virtual XRRenderingInterface* GetXRSystem() const = 0;
         };

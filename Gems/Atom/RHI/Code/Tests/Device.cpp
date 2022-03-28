@@ -33,7 +33,7 @@ namespace UnitTest
         EXPECT_EQ(physicalDevices.size(), 1);
 
         RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
-        device->Init(*physicalDevices[0]);
+        device->Init(0, *physicalDevices[0]);
 
         return device;
     }

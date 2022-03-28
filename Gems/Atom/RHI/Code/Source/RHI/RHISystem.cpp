@@ -14,11 +14,12 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/CommandLine/CommandLine.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 AZ_DEFINE_BUDGET(RHI);
 
@@ -34,60 +35,74 @@ namespace AZ
         void RHISystem::InitDevice()
         {
             Interface<RHISystemInterface>::Register(this);
-            m_device = InitInternalDevice();
+            InitInternalDevice();
         }
     
         void RHISystem::Init()
         {
-            Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor = m_device->GetDescriptor().m_platformLimitsDescriptor;
-
-            RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
-
             m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
-            m_pipelineStateCache = RHI::PipelineStateCache::Create(*m_device);
 
-            frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
-            frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_imageBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
-            frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_bufferBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_bufferBudgetInBytes;
-
-            switch (platformLimitsDescriptor->m_heapAllocationStrategy)
+            for (auto& perDeviceObjects : m_perDeviceObjects)
             {
+                Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor =
+                    perDeviceObjects.m_device->GetDescriptor().m_platformLimitsDescriptor;
+
+                RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
+
+                perDeviceObjects.m_pipelineStateCache = RHI::PipelineStateCache::Create(*perDeviceObjects.m_device);
+
+                frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes =
+                    platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
+                frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_imageBudgetInBytes =
+                    platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
+                frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_bufferBudgetInBytes =
+                    platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_bufferBudgetInBytes;
+
+                switch (platformLimitsDescriptor->m_heapAllocationStrategy)
+                {
                 case HeapAllocationStrategy::Fixed:
-                {
-                    frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters = RHI::HeapAllocationParameters();
-                    break;
-                }
-                case  HeapAllocationStrategy::Paging:
-                {
-                    RHI::HeapPagingParameters heapAllocationParameters;
-                    heapAllocationParameters.m_collectLatency = platformLimitsDescriptor->m_pagingParameters.m_collectLatency;
-                    heapAllocationParameters.m_initialAllocationPercentage = platformLimitsDescriptor->m_pagingParameters.m_initialAllocationPercentage;
-                    heapAllocationParameters.m_pageSizeInBytes = platformLimitsDescriptor->m_pagingParameters.m_pageSizeInBytes;
-                    frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters = RHI::HeapAllocationParameters(heapAllocationParameters);
-                    break;
-                }
+                    {
+                        frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters = RHI::HeapAllocationParameters();
+                        break;
+                    }
+                case HeapAllocationStrategy::Paging:
+                    {
+                        RHI::HeapPagingParameters heapAllocationParameters;
+                        heapAllocationParameters.m_collectLatency = platformLimitsDescriptor->m_pagingParameters.m_collectLatency;
+                        heapAllocationParameters.m_initialAllocationPercentage =
+                            platformLimitsDescriptor->m_pagingParameters.m_initialAllocationPercentage;
+                        heapAllocationParameters.m_pageSizeInBytes = platformLimitsDescriptor->m_pagingParameters.m_pageSizeInBytes;
+                        frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters =
+                            RHI::HeapAllocationParameters(heapAllocationParameters);
+                        break;
+                    }
                 case HeapAllocationStrategy::MemoryHint:
-                {
-                    RHI::HeapMemoryHintParameters heapAllocationParameters;
-                    heapAllocationParameters.m_heapSizeScaleFactor = platformLimitsDescriptor->m_usageHintParameters.m_heapSizeScaleFactor;
-                    heapAllocationParameters.m_collectLatency = platformLimitsDescriptor->m_usageHintParameters.m_collectLatency;
-                    heapAllocationParameters.m_maxHeapWastedPercentage = platformLimitsDescriptor->m_usageHintParameters.m_maxHeapWastedPercentage;
-                    heapAllocationParameters.m_minHeapSizeInBytes = platformLimitsDescriptor->m_usageHintParameters.m_minHeapSizeInBytes;
-                    frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters = RHI::HeapAllocationParameters(heapAllocationParameters);
-                    break;
-                }
+                    {
+                        RHI::HeapMemoryHintParameters heapAllocationParameters;
+                        heapAllocationParameters.m_heapSizeScaleFactor =
+                            platformLimitsDescriptor->m_usageHintParameters.m_heapSizeScaleFactor;
+                        heapAllocationParameters.m_collectLatency = platformLimitsDescriptor->m_usageHintParameters.m_collectLatency;
+                        heapAllocationParameters.m_maxHeapWastedPercentage =
+                            platformLimitsDescriptor->m_usageHintParameters.m_maxHeapWastedPercentage;
+                        heapAllocationParameters.m_minHeapSizeInBytes =
+                            platformLimitsDescriptor->m_usageHintParameters.m_minHeapSizeInBytes;
+                        frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_heapParameters =
+                            RHI::HeapAllocationParameters(heapAllocationParameters);
+                        break;
+                    }
                 default:
-                {
-                    AZ_Assert(false, "UnSupported type");
-                    break;
+                    {
+                        AZ_Assert(false, "UnSupported type");
+                        break;
+                    }
                 }
+
+                frameSchedulerDescriptor.m_platformLimitsDescriptor = platformLimitsDescriptor;
+                perDeviceObjects.m_frameScheduler.Init(*perDeviceObjects.m_device, frameSchedulerDescriptor);
             }
-                
-            frameSchedulerDescriptor.m_platformLimitsDescriptor = platformLimitsDescriptor;
-            m_frameScheduler.Init(*m_device, frameSchedulerDescriptor);
         }
 
-        RHI::Ptr<RHI::Device> RHISystem::InitInternalDevice()
+        void RHISystem::InitInternalDevice()
         {
             RHI::PhysicalDeviceList physicalDevices = RHI::Factory::Get().EnumeratePhysicalDevices();
 
@@ -96,93 +111,108 @@ namespace AZ
             if (physicalDevices.empty())
             {
                 AZ_Printf("RHISystem", "Unable to initialize RHI! No supported physical device found.\n");
-                return nullptr;
+                return;
             }
 
-            AZStd::string preferredUserAdapterName = RHI::GetCommandLineValue("forceAdapter");
-            AZStd::to_lower(preferredUserAdapterName.begin(), preferredUserAdapterName.end());
-            bool findPreferredUserDevice = preferredUserAdapterName.size() > 0;
+            static const char* MultiGPUCommandLineOption = "rhi-multiple-devices";
 
-            RHI::PhysicalDevice* preferredUserDevice{};
-            RHI::PhysicalDevice* preferredVendorDevice{};
+            AZStd::string multipleDevicesValue = RHI::GetCommandLineValue(MultiGPUCommandLineOption);
 
-            for (RHI::Ptr<RHI::PhysicalDevice>& physicalDevice : physicalDevices)
+            RHI::PhysicalDeviceList usePhysicalDevices;
+
+            if (AzFramework::StringFunc::Equal(multipleDevicesValue.c_str(), "enable"))
             {
-                const RHI::PhysicalDeviceDescriptor& descriptor = physicalDevice->GetDescriptor();
+                AZ_Printf("RHISystem", "\tUsing multiple devices\n");
 
-                AZ_Printf("RHISystem", "\tEnumerated physical device: %s\n", descriptor.m_description.c_str());
-                if (findPreferredUserDevice)
+                usePhysicalDevices = AZStd::move(physicalDevices);
+            }
+            else
+            {
+                AZStd::string preferredUserAdapterName = RHI::GetCommandLineValue("forceAdapter");
+                AZStd::to_lower(preferredUserAdapterName.begin(), preferredUserAdapterName.end());
+                bool findPreferredUserDevice = !preferredUserAdapterName.empty();
+
+                RHI::PhysicalDevice* preferredUserDevice{};
+                RHI::PhysicalDevice* preferredVendorDevice{};
+
+                for (RHI::Ptr<RHI::PhysicalDevice>& physicalDevice : physicalDevices)
                 {
-                    AZStd::string descriptorLowerCase = descriptor.m_description;
-                    AZStd::to_lower( descriptorLowerCase.begin(), descriptorLowerCase.end());
-                    if (!preferredUserDevice && descriptorLowerCase.contains(preferredUserAdapterName))
+                    const RHI::PhysicalDeviceDescriptor& descriptor = physicalDevice->GetDescriptor();
+
+                    AZ_Printf("RHISystem", "\tEnumerated physical device: %s\n", descriptor.m_description.c_str());
+                    if (findPreferredUserDevice)
                     {
-                        preferredUserDevice = physicalDevice.get();
+                        AZStd::string descriptorLowerCase = descriptor.m_description;
+                        AZStd::to_lower(descriptorLowerCase.begin(), descriptorLowerCase.end());
+                        if (!preferredUserDevice && descriptorLowerCase.contains(preferredUserAdapterName))
+                        {
+                            preferredUserDevice = physicalDevice.get();
+                        }
+                    }
+                    // Record the first nVidia or AMD device we find.
+                    if (!preferredVendorDevice &&
+                        (descriptor.m_vendorId == RHI::VendorId::AMD || descriptor.m_vendorId == RHI::VendorId::nVidia))
+                    {
+                        preferredVendorDevice = physicalDevice.get();
                     }
                 }
-                // Record the first nVidia or AMD device we find.
-                if (!preferredVendorDevice && (descriptor.m_vendorId == RHI::VendorId::AMD || descriptor.m_vendorId == RHI::VendorId::nVidia))
+
+                AZ_Warning(
+                    "RHISystem", preferredUserAdapterName.empty() || preferredUserDevice, "Specified adapter name not found: '%s'",
+                    preferredUserAdapterName.c_str());
+
+                if (preferredUserDevice)
                 {
-                    preferredVendorDevice = physicalDevice.get();
+                    // First, prefer the user specified device if found.
+                    usePhysicalDevices.emplace_back(preferredUserDevice);
+                }
+                else if (preferredVendorDevice)
+                {
+                    // Second, prefer specific vendor devices.
+                    usePhysicalDevices.emplace_back(preferredVendorDevice);
+                }
+                else
+                {
+                    // Default to first device if no other preferred device is found.
+                    usePhysicalDevices.emplace_back(physicalDevices.front().get());
                 }
             }
 
-            AZ_Warning("RHISystem", preferredUserAdapterName.empty() || preferredUserDevice, "Specified adapter name not found: '%s'", preferredUserAdapterName.c_str());
+            for (RHI::Ptr<RHI::PhysicalDevice>& physicalDevice : usePhysicalDevices)
+            {
+                // Validate the GPU driver version.
+                // Some GPU drivers have known issues and it is recommended to update or use other versions.
+                auto settingsRegistry = AZ::SettingsRegistry::Get();
+                PhysicalDeviceDriverValidator physicalDriverValidator;
+                if (!(settingsRegistry && settingsRegistry->GetObject(physicalDriverValidator, "/O3DE/Atom/RHI/PhysicalDeviceDriverInfo")))
+                {
+                    AZ_Printf("RHISystem", "Failed to get settings registry for GPU driver Info.");
+                }
+                else
+                {
+                    physicalDriverValidator.ValidateDriverVersion(physicalDevice->GetDescriptor());
+                }
 
-            RHI::PhysicalDevice* physicalDeviceFound{};
+                AZ_Printf("RHISystem", "\tUsing physical device: %s\n", physicalDevice->GetDescriptor().m_description.c_str());
 
-            if (preferredUserDevice)
-            {
-                // First, prefer the user specified device if found.
-                physicalDeviceFound = preferredUserDevice;
-            }
-            else if (preferredVendorDevice)
-            {
-                // Second, prefer specific vendor devices.
-                physicalDeviceFound = preferredVendorDevice;
-            }
-            else
-            {
-                // Default to first device if no other preferred device is found.
-                physicalDeviceFound = physicalDevices.front().get();
-            }
-
-            // Validate the GPU driver version.
-            // Some GPU drivers have known issues and it is recommended to update or use other versions.
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            PhysicalDeviceDriverValidator physicalDriverValidator;
-            if (!(settingsRegistry && settingsRegistry->GetObject(physicalDriverValidator, "/O3DE/Atom/RHI/PhysicalDeviceDriverInfo")))
-            {
-                AZ_Printf("RHISystem", "Failed to get settings registry for GPU driver Info.");
-            }
-            else
-            {
-                physicalDriverValidator.ValidateDriverVersion(physicalDeviceFound->GetDescriptor());
+                RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
+                if (device->Init(static_cast<int>(m_perDeviceObjects.size()), *physicalDevice) == RHI::ResultCode::Success)
+                {
+                    m_perDeviceObjects.emplace_back(PerDeviceObjects{ AZStd::move(device), nullptr, {}, {} });
+                }
             }
 
-            AZ_Printf("RHISystem", "\tUsing physical device: %s\n", physicalDeviceFound->GetDescriptor().m_description.c_str());
-
-            RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
-            if (device->Init(*physicalDeviceFound) == RHI::ResultCode::Success)
-            {
-                m_physicalDeviceDescriptor = physicalDeviceFound->GetDescriptor();
-                PlatformLimitsDescriptor::Create();
-                return device;
-            }
-
-            AZ_Error("RHISystem", false, "Failed to initialize RHI device.");
-            return nullptr;
+            if (m_perDeviceObjects.empty())
+                AZ_Error("RHISystem", false, "Failed to initialize RHI device.");
         }
 
         void RHISystem::Shutdown()
         {
-            m_frameScheduler.Shutdown();
-            m_pipelineStateCache = nullptr;
-            if (m_device)
+            while (!m_perDeviceObjects.empty())
             {
-                m_device->PreShutdown();
-                AZ_Assert(m_device->use_count()==1, "The ref count for Device is %i but it should be 1 here to ensure all the resources are released", m_device->use_count());
-                m_device = nullptr;
+                m_perDeviceObjects.back().m_frameScheduler.Shutdown();
+                m_perDeviceObjects.back().m_device->PreShutdown();
+                m_perDeviceObjects.pop_back();
             }
             Interface<RHISystemInterface>::Unregister(this);
         }
@@ -190,44 +220,52 @@ namespace AZ
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
             AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate");
+            auto& perDeviceObjects = m_perDeviceObjects[0];
+
             {
                 AZ_PROFILE_SCOPE(RHI, "main per-frame work");
-                if (m_frameScheduler.BeginFrame() == ResultCode::Success)
+                if (perDeviceObjects.m_frameScheduler.BeginFrame() == ResultCode::Success)
                 {
-                    frameGraphCallback(m_frameScheduler);
+                    frameGraphCallback(perDeviceObjects.m_frameScheduler);
 
                     // This exists as a hook to enable RHI sample tests, which are allowed to queue their
                     // own RHI scopes to the frame scheduler. This happens prior to the RPI pass graph registration.
                     {
                         AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate: OnFramePrepare");
-                        RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnFramePrepare, m_frameScheduler);
+                        RHISystemNotificationBus::Broadcast(
+                            &RHISystemNotificationBus::Events::OnFramePrepare, perDeviceObjects.m_frameScheduler);
                     }
 
-                    RHI::MessageOutcome outcome = m_frameScheduler.Compile(m_compileRequest);
+                    RHI::MessageOutcome outcome = perDeviceObjects.m_frameScheduler.Compile(perDeviceObjects.m_compileRequest);
                     if (outcome.IsSuccess())
                     {
-                        m_frameScheduler.Execute(RHI::JobPolicy::Parallel);
+                        perDeviceObjects.m_frameScheduler.Execute(RHI::JobPolicy::Parallel);
                     }
                     else
                     {
                         AZ_Error("RHISystem", false, "Frame Scheduler Compilation Failure: %s", outcome.GetError().c_str());
                     }
 
-                    m_pipelineStateCache->Compact();
+                    perDeviceObjects.m_pipelineStateCache->Compact();
                 }
             }
 
-            m_frameScheduler.EndFrame();
+            perDeviceObjects.m_frameScheduler.EndFrame();
         }
 
-        RHI::Device* RHISystem::GetDevice()
+        RHI::Device* RHISystem::GetDevice(size_t index)
         {
-            return m_device.get();
+            return m_perDeviceObjects[index].m_device.get();
+        }
+
+        int RHISystem::GetDeviceCount()
+        {
+            return static_cast<int>(m_perDeviceObjects.size());
         }
 
         RHI::PipelineStateCache* RHISystem::GetPipelineStateCache()
         {
-            return m_pipelineStateCache.get();
+            return m_perDeviceObjects[0].m_pipelineStateCache.get();
         }
 
         RHI::DrawListTagRegistry* RHISystem::GetDrawListTagRegistry()
@@ -235,52 +273,41 @@ namespace AZ
             return m_drawListTagRegistry.get();
         }
 
-        const RHI::FrameSchedulerCompileRequest& RHISystem::GetFrameSchedulerCompileRequest() const
-        {
-            return m_compileRequest;
-        }
-
         void RHISystem::ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags)
         {
-            m_compileRequest.m_statisticsFlags =
-                enableFlags
-                ? RHI::SetBits(m_compileRequest.m_statisticsFlags, statisticsFlags)
-                : RHI::ResetBits(m_compileRequest.m_statisticsFlags, statisticsFlags);
+            m_perDeviceObjects[0].m_compileRequest.m_statisticsFlags = enableFlags
+                ? RHI::SetBits(m_perDeviceObjects[0].m_compileRequest.m_statisticsFlags, statisticsFlags)
+                : RHI::ResetBits(m_perDeviceObjects[0].m_compileRequest.m_statisticsFlags, statisticsFlags);
         }
 
         double RHISystem::GetCpuFrameTime() const
         {
-            return m_frameScheduler.GetCpuFrameTime();
+            return m_perDeviceObjects[0].m_frameScheduler.GetCpuFrameTime();
         }
 
         const RHI::TransientAttachmentStatistics* RHISystem::GetTransientAttachmentStatistics() const
         {
-            return m_frameScheduler.GetTransientAttachmentStatistics();
+            return m_perDeviceObjects[0].m_frameScheduler.GetTransientAttachmentStatistics();
         }
 
         const RHI::MemoryStatistics* RHISystem::GetMemoryStatistics() const
         {
-            return m_frameScheduler.GetMemoryStatistics();
+            return m_perDeviceObjects[0].m_frameScheduler.GetMemoryStatistics();
         }
 
         const AZ::RHI::DeviceTransientAttachmentPoolDescriptor* RHISystem::GetTransientAttachmentPoolDescriptor() const
         {
-            return m_frameScheduler.GetTransientAttachmentPoolDescriptor();
+            return m_perDeviceObjects[0].m_frameScheduler.GetTransientAttachmentPoolDescriptor();
         }
 
         ConstPtr<PlatformLimitsDescriptor> RHISystem::GetPlatformLimitsDescriptor() const
         {
-            return m_device->GetDescriptor().m_platformLimitsDescriptor;
+            return m_perDeviceObjects[0].m_device->GetDescriptor().m_platformLimitsDescriptor;
         }
 
         void RHISystem::QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable)
         {
-            m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
-        }
-
-        const PhysicalDeviceDescriptor& RHISystem::GetPhysicalDeviceDescriptor()
-        {
-            return m_physicalDeviceDescriptor;
+            m_perDeviceObjects[0].m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
         }
 
         void RHISystem::RegisterXRSystem(XRRenderingInterface* xrRenderingInterface)

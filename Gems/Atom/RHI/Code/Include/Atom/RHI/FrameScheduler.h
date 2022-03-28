@@ -132,6 +132,7 @@ namespace AZ
             virtual ~FrameScheduler() = default;
             FrameScheduler() = default;
             FrameScheduler(const FrameScheduler&) = delete;
+            FrameScheduler(FrameScheduler&&) = default;
 
             bool IsInitialized() const;
 

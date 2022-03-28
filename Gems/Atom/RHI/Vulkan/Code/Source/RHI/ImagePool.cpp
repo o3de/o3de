@@ -38,7 +38,8 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(deviceBase);
 
-            VkDeviceSize imagePageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_imagePoolPageSizeInBytes;
+            VkDeviceSize imagePageSizeInBytes =
+                device.GetDescriptor().m_platformLimitsDescriptor->m_platformDefaultValues.m_imagePoolPageSizeInBytes;
             RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             if (const auto* descriptor = azrtti_cast<const ImagePoolDescriptor*>(&descriptorBase))
             {

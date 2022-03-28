@@ -45,7 +45,8 @@ namespace AZ
             m_memoryAllocatorUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
             MemoryAllocator::Descriptor memoryAllocDescriptor;
             memoryAllocDescriptor.m_device = &device;
-            memoryAllocDescriptor.m_pageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_imagePoolPageSizeInBytes;
+            memoryAllocDescriptor.m_pageSizeInBytes =
+                device.GetDescriptor().m_platformLimitsDescriptor->m_platformDefaultValues.m_imagePoolPageSizeInBytes;
             memoryAllocDescriptor.m_heapMemoryLevel = heapMemoryLevel;
             memoryAllocDescriptor.m_memoryTypeBits = memoryTypeBits;
             // We don't pass the DeviceResourcePool MemoryUsage because we will manually control residency when expanding/trimming.

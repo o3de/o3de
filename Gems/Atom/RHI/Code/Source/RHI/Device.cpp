@@ -60,7 +60,7 @@ namespace AZ
             return true;
         }
 
-        ResultCode Device::Init(PhysicalDevice& physicalDevice)
+        ResultCode Device::Init(int index, PhysicalDevice& physicalDevice)
         {
             if (Validation::IsEnabled())
             {
@@ -73,7 +73,9 @@ namespace AZ
 
             m_formatsCapabilities.fill(FormatCapabilities::None);
             m_nearestSupportedFormats.fill(Format::Unknown);
-            
+
+            m_index = index;
+
             m_physicalDevice = &physicalDevice;
 
             RHI::ResultCode resultCode = InitInternal(physicalDevice);
@@ -185,6 +187,11 @@ namespace AZ
         const PhysicalDevice& Device::GetPhysicalDevice() const
         {
             return *m_physicalDevice;
+        }
+
+        int Device::GetIndex() const
+        {
+            return m_index;
         }
 
         const DeviceDescriptor& Device::GetDescriptor() const
