@@ -43,15 +43,10 @@ namespace AzToolsFramework
 
         void PrefabUndoInstance::Undo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, true);
+            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
         }
 
         void PrefabUndoInstance::Redo()
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
-        }
-
-        void PrefabUndoInstance::RedoBatched()
         {
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
         }
@@ -100,7 +95,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Undo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, true);
+                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -111,7 +106,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Redo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -336,7 +331,7 @@ namespace AzToolsFramework
 
             //propagate the link changes
             link->get().UpdateTarget();
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), false, instanceToExclude);
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), instanceToExclude);
 
             //mark as dirty
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);

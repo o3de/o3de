@@ -46,7 +46,6 @@ namespace AzToolsFramework
             //! Updates the template links (updating instances) for the given template and triggers propagation on its instances.
             //! @param providedPatch The patch to apply to the template.
             //! @param templateId The id of the template to update.
-            //! @param immediate An optional flag whether to apply the patch immediately (needed for Undo/Redos) or wait until next system tick.
             //! @param instanceToExclude An optional reference to an instance of the template being updated that should not be refreshes as part of propagation.
             //!     Defaults to nullopt, which means that all instances will be refreshed.
             //! @return True if the template was patched correctly, false if the operation failed.

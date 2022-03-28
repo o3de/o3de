@@ -71,9 +71,6 @@ namespace AzToolsFramework
         // FocusModeNotificationBus overrides ...
         void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
-        // FocusModeNotificationBus overrides ...
-        void OnEditorFocusChanged(AZ::EntityId entityId) override;
-
         //! Renders the left side of the item: appropriate background, branch lines, icons.
         void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
 

@@ -178,7 +178,7 @@ namespace AzToolsFramework
                     (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
                     "Some of the patches were not successfully applied.");
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
-                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, immediate, instanceToExclude);
+                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
                 return true;
             }
         }

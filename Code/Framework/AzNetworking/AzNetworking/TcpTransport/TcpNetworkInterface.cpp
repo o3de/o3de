@@ -26,7 +26,6 @@ namespace AzNetworking
         , m_trustZone(trustZone)
         , m_connectionListener(connectionListener)
         , m_listenThread(listenThread)
-        , m_timeoutMs(net_TcpDefaultTimeoutMs)
     {
         ;
     }

@@ -80,11 +80,6 @@ namespace AzToolsFramework
                     m_instancesUpdateQueue.emplace_back(instance);
                 }
             }
-
-            if (immediate)
-            {
-                UpdateTemplateInstancesInQueue();
-            }
         }
 
         void InstanceUpdateExecutor::RemoveTemplateInstanceFromQueue(const Instance* instance)

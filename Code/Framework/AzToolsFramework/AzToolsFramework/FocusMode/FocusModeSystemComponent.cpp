@@ -78,7 +78,6 @@ namespace AzToolsFramework
     {
         AZ::EntityId previousFocusEntityId = m_focusRoot;
         m_focusRoot = entityId;
-        FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, m_focusRoot);
 
         RefreshFocusedEntityIdList();
 

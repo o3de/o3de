@@ -197,7 +197,7 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::UpdatePrefabInstances(TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
         {
-            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId, immediate, instanceToExclude);
+            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId, instanceToExclude);
         }
 
         void PrefabSystemComponent::UpdateLinkedInstances(AZStd::queue<LinkIds>& linkIdsQueue)

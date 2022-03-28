@@ -1202,7 +1202,7 @@ namespace AzToolsFramework
     {
         QTimer::singleShot(1, this, [this]() {
             m_gui->m_objectTree->setUpdatesEnabled(true);
-            m_gui->m_objectTree->expandToDepth(0);
+            m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
         });
     }
 

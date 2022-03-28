@@ -35,10 +35,6 @@ namespace AzToolsFramework::Prefab
         //! @param entityId The entityId of the entity whose owning instance we want the prefab system to focus on.
         virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) = 0;
 
-        //! Set the focused prefab instance to the instance at position index of the current path.
-        //! @param index The index of the instance in the current path that we want the prefab system to focus on.
-        virtual PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) = 0;
-
         //! Returns the template id of the instance the prefab system is focusing on.
         virtual TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const = 0;
 

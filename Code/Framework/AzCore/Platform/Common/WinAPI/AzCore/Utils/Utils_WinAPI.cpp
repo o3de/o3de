@@ -82,7 +82,5 @@ namespace AZ
         {
             return SetEnv(envname, "", 1);
         }
-
-
     }
 }

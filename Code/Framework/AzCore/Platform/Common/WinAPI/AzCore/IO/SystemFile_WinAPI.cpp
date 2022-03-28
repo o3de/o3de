@@ -408,7 +408,6 @@ namespace Platform
         AZStd::to_wstring(fileNameW, fileName);
         if (DeleteFileW(fileNameW.c_str()) == 0)
         {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, fileName, (int)GetLastError());
             return false;
         }
 
@@ -423,7 +422,6 @@ namespace Platform
         AZStd::to_wstring(targetFileNameW, targetFileName);
         if (MoveFileExW(sourceFileNameW.c_str(), targetFileNameW.c_str(), overwrite ? MOVEFILE_REPLACE_EXISTING : 0) == 0)
         {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, sourceFileName, (int)GetLastError());
             return false;
         }
 

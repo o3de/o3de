@@ -14,7 +14,6 @@
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/time.h>
-#include <AzCore/std/chrono/chrono.h>
 
 namespace AZ
 {
