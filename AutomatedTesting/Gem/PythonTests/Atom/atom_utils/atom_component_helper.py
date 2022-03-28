@@ -120,6 +120,7 @@ def initial_viewport_setup(screen_width=1280, screen_height=720):
     :return: None
     """
     import azlmbr.legacy.general as general
+
     general.set_viewport_size(screen_width, screen_height)
     general.idle_wait_frames(1)
     general.update_viewport()

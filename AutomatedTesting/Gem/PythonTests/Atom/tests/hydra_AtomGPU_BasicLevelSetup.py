@@ -114,6 +114,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     """
 
     import os
+
     import azlmbr.legacy.general as general
     import azlmbr.math as math
     import azlmbr.paths
