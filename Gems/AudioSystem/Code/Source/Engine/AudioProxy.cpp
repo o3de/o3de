@@ -11,14 +11,10 @@
 
 #include <ATLCommon.h>
 #include <SoundCVars.h>
-#include <AudioLogger.h>
 #include <MathConversion.h>
 
 namespace Audio
 {
-    extern CAudioLogger g_audioLogger;
-
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioProxy::~CAudioProxy()
     {
@@ -60,13 +56,7 @@ namespace Audio
         {
             reserveObject.m_flags = eARF_SYNC_CALLBACK;
             AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(reserveObject));
-
-        #if !defined(AUDIO_RELEASE)
-            if (m_nAudioObjectID == INVALID_AUDIO_OBJECT_ID)
-            {
-                g_audioLogger.Log(LogType::Assert, "Failed to reserve audio object ID on AudioProxy (%s)!", sObjectName);
-            }
-        #endif // !AUDIO_RELEASE
+            AZ_Assert(m_nAudioObjectID != INVALID_AUDIO_OBJECT_ID, "Failed to reserve audio object ID on AudioProxy '%s'", sObjectName);
         }
     }
 

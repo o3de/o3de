@@ -10,7 +10,6 @@ set(FILES
     Include/Engine/ATLEntityData.h
     Include/Engine/AudioAllocators.h
     Include/Engine/AudioFileUtils.h
-    Include/Engine/AudioLogger.h
     Include/Engine/AudioRingBuffer.h
     Include/Engine/ATLCommon.h
     Include/Engine/IAudioSystemImplementation.h

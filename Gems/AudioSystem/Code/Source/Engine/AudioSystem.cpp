@@ -13,13 +13,13 @@
 #include <AudioSystem_Traits_Platform.h>
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace Audio
 {
-    extern CAudioLogger g_audioLogger;
     static constexpr const char AudioControlsBasePath[]{ "libs/gameaudio/" };
 
     // Save off the threadId of the "Main Thread" that was used to connect EBuses.
@@ -373,8 +373,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(
-                LogType::Error, "AudioSystem::UpdateControlsPath - failed to normalize the controls path '%s'!", controlsPath.c_str());
+            AZLOG_ERROR("AudioSystem::UpdateControlsPath - failed to normalize the controls path '%s'!", controlsPath.c_str());
         }
     }
 
@@ -417,13 +416,7 @@ namespace Audio
         else
         {
             audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator, "AudioProxyEx");
-
-        #if !defined(AUDIO_RELEASE)
-            if (!audioProxy)
-            {
-                g_audioLogger.Log(LogType::Assert, "AudioSystem::GetAudioProxy - failed to create new AudioProxy instance!");
-            }
-        #endif // !AUDIO_RELEASE
+            AZ_Assert(audioProxy != nullptr, "AudioSystem::GetAudioProxy - failed to create new AudioProxy instance!");
         }
 
         return static_cast<IAudioProxy*>(audioProxy);

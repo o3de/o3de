@@ -10,6 +10,7 @@
 #include <ATLAudioObject.h>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/std/chrono/clocks.h>
 
 #include <MathConversion.h>
@@ -32,8 +33,6 @@
 
 namespace Audio
 {
-    extern CAudioLogger g_audioLogger;
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CATLAudioObjectBase::TriggerInstanceStarting(TAudioTriggerInstanceID triggerInstanceId, TAudioControlID audioControlId)
     {
@@ -596,13 +595,17 @@ namespace Audio
         if (!m_cActiveEvents.empty())
         {
             const char* const sEventString = GetEventIDs("; ").c_str();
-            g_audioLogger.Log(LogType::Warning, "Active events on an object (ID: %u) being released!  #Events: %u   EventIDs: %s", GetID(), m_cActiveEvents.size(), sEventString);
+            AZLOG_NOTICE(
+                "Events are active on an object (ID: %llu) being released!  #Events: %zu   EventIDs: %s", GetID(), m_cActiveEvents.size(),
+                sEventString);
         }
 
         if (!m_cTriggers.empty())
         {
             const char* const sTriggerString = GetTriggerNames("; ", pDebugNameStore).c_str();
-            g_audioLogger.Log(LogType::Warning, "Active triggers on an object (ID: %u) being released!  #Triggers: %u   TriggerNames: %s", GetID(), m_cTriggers.size(), sTriggerString);
+            AZLOG_NOTICE(
+                "Triggers are active on an object (ID: %llu) being released!  #Triggers: %zu   TriggerNames: %s", GetID(),
+                m_cTriggers.size(), sTriggerString);
         }
     }
 

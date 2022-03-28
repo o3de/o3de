@@ -9,6 +9,7 @@
 
 #include <ATLComponents.h>
 
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/functional.h>
@@ -36,8 +37,6 @@
 
 namespace Audio
 {
-    extern CAudioLogger g_audioLogger;
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // AudioObjectIDFactory
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -195,8 +194,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CATLEvent* CAudioEventManager::GetImplInstance()
     {
-        // must be called within a block protected by a critical section!
-
         CATLEvent* pEvent = nullptr;
 
         if (!m_oAudioEventPool.m_cReserved.empty())
@@ -216,10 +213,7 @@ namespace Audio
 
             if (!pEvent)
             {
-                --m_oAudioEventPool.m_nIDCounter;
-
-                g_audioLogger.Log(LogType::Warning, "Failed to get a new instance of an AudioEvent from the implementation");
-                //failed to get a new instance from the implementation
+                AZLOG_ERROR("Failed to get a new instance of an ATLEvent from the implementation.");
             }
         }
 
@@ -229,8 +223,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioEventManager::ReleaseImplInstance(CATLEvent* const pOldEvent)
     {
-        // must be called within a block protected by a critical section!
-
         if (pOldEvent)
         {
             pOldEvent->Clear();
@@ -253,8 +245,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CATLEvent* CAudioEventManager::GetInternalInstance()
     {
-        // must be called within a block protected by a critical section!
-
         AZ_Assert(false, "GetInternalInstance was called yet it has no implementation!"); // implement when it is needed
         return nullptr;
     }
@@ -262,8 +252,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioEventManager::ReleaseInternalInstance([[maybe_unused]] CATLEvent* const pOldEvent)
     {
-        // must be called within a block protected by a critical section!
-
         AZ_Assert(false, "ReleaseInternalInstance was called yet it has no implementation!"); // implement when it is needed
     }
 
@@ -436,8 +424,8 @@ namespace Audio
 #if !defined(AUDIO_RELEASE)
             else
             {
-                g_audioLogger.Log(
-                    LogType::Warning, "Removing Event %llu from object '%s': Object no longer exists!", atlEvent->GetID(),
+                AZLOG_DEBUG(
+                    "Removing Event %llu from object '%s' - Object no longer exists!", atlEvent->GetID(),
                     m_pDebugNameStore->LookupAudioObjectName(atlEvent->m_nObjectID));
             }
 #endif // !AUDIO_RELEASE
@@ -479,13 +467,9 @@ namespace Audio
 
             if (!pObject)
             {
-                --m_cObjectPool.m_nIDCounter;
-
-                const char* msg = "Failed to get a new instance of an AudioObject from the implementation. "
+                AZLOG_ERROR("Failed to get a new instance of an AudioObject from the implementation. "
                     "If this limit was reached from legitimate content creation and not a scripting error, "
-                    "try increasing the Capacity of Audio::AudioSystemAllocator.";
-
-                g_audioLogger.Log(LogType::Assert, msg);
+                    "try increasing the Capacity of Audio::AudioSystemAllocator.");
                 //failed to get a new instance from the implementation
             }
         }
@@ -777,7 +761,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(LogType::Warning, "CAudioListenerManager::ReserveID - Reserved pool of pre-allocated Audio Listeners has been exhausted!");
+            AZLOG_WARN("CAudioListenerManager::ReserveID - Reserved pool of pre-allocated Audio Listeners has been exhausted!");
         }
 
         return bSuccess;
@@ -884,7 +868,7 @@ namespace Audio
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
-            g_audioLogger.Log(LogType::Comment, "Loading Audio Controls Library: '%s'", file.c_str());
+            AZLOG_INFO("Loading Audio Controls Library: '%s'", file.c_str());
 
             Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
@@ -932,7 +916,7 @@ namespace Audio
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
-            g_audioLogger.Log(LogType::Comment, "Loading Audio Preloads Library: '%s'", file.c_str());
+            AZLOG_INFO("Loading Audio Preloads Library: '%s'", file.c_str());
 
             Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())

@@ -9,10 +9,10 @@
 
 #include <SoundCVars.h>
 #include <IAudioSystem.h>
-#include <AudioLogger.h>
 #include <AudioSystem_Traits_Platform.h>
 
 #include <AzCore/Console/ConsoleTypeHelpers.h>
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <MicrophoneBus.h>
@@ -187,31 +187,6 @@ namespace Audio::CVars
         "Filters debug drawing to only audio objects whose name matches this filter as a sub-string.\n"
         "Usage: s_AudioObjectsDebugFilter=weapon_axe\n");
 
-    auto OnChangeLogOptions = [](const AZ::CVarFixedString& options) -> void
-    {
-        if (options == "0")
-        {
-            Audio::Log::s_audioLogOptions = Log::Options::None;
-            return;
-        }
-
-        Audio::Flags<AZ::u32> flags;
-        flags.SetFlags(Log::Options::Errors, options.contains("a"));
-        flags.SetFlags(Log::Options::Warnings, options.contains("b"));
-        flags.SetFlags(Log::Options::Comments, options.contains("c"));
-        Audio::Log::s_audioLogOptions = flags.GetRawFlags();
-    };
-
-    AZ_CVAR(AZ::CVarFixedString, s_AudioLoggingOptions, "ab",
-        OnChangeLogOptions,
-        AZ::ConsoleFunctorFlags::Null,
-        "Toggles the log level of audio related messages.\n"
-        "Usage: s_AudioLoggingOptions=abc (flags can be combined)\n"
-        "Default: ab (Errors & Warnings)\n"
-        "a: Errors\n"
-        "b: Warnings\n"
-        "c: Comments\n");
-
     auto OnChangeDebugDrawOptions = [](const AZ::CVarFixedString& options) -> void
     {
         s_debugDrawOptions.ClearAllFlags();
@@ -374,7 +349,7 @@ namespace Audio::CVars
                 {
                     if (!AZ::ConsoleTypeHelpers::StringToValue<TAudioObjectID>(objectId, args[1]))
                     {
-                        g_audioLogger.Log(LogType::Error, "Invalid Object ID: %.*s", AZ_STRING_ARG(args[1]));
+                        AZLOG_DEBUG("Invalid Object ID: %.*s", AZ_STRING_ARG(args[1]));
                         return;
                     }
                 }
@@ -386,12 +361,12 @@ namespace Audio::CVars
             }
             else
             {
-                g_audioLogger.Log(LogType::Error, "Unknown trigger name: %.*s", AZ_STRING_ARG(args[0]));
+                AZLOG_DEBUG("Unknown trigger name: %.*s", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_ExecuteTrigger TriggerName [Optional Object ID]");
+            AZLOG_INFO("Usage: s_ExecuteTrigger <TriggerName> [<Object ID>]");
         }
     }
 
@@ -410,7 +385,7 @@ namespace Audio::CVars
                 {
                     if (!AZ::ConsoleTypeHelpers::StringToValue<TAudioObjectID>(objectId, args[1]))
                     {
-                        g_audioLogger.Log(LogType::Error, "Invalid Object ID: %.*s", AZ_STRING_ARG(args[1]));
+                        AZLOG_DEBUG("Invalid Object ID: %.*s", AZ_STRING_ARG(args[1]));
                         return;
                     }
                 }
@@ -422,12 +397,12 @@ namespace Audio::CVars
             }
             else
             {
-                g_audioLogger.Log(LogType::Error, "Unknown trigger name: %.*s", AZ_STRING_ARG(args[0]));
+                AZLOG_DEBUG("Unknown trigger name: %.*s", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_StopTrigger TriggerName [Optional Object ID]");
+            AZLOG_INFO("Usage: s_StopTrigger <TriggerName> [<Object ID>]");
         }
     }
 
@@ -444,7 +419,7 @@ namespace Audio::CVars
                 float value = 0.f;
                 if (!AZ::ConsoleTypeHelpers::StringToValue<float>(value, args[1]))
                 {
-                    g_audioLogger.Log(LogType::Error, "Invalid float number: %.*s", AZ_STRING_ARG(args[1]));
+                    AZLOG_DEBUG("Invalid float number: %.*s", AZ_STRING_ARG(args[1]));
                     return;
                 }
 
@@ -453,7 +428,7 @@ namespace Audio::CVars
                 {
                     if (!AZ::ConsoleTypeHelpers::StringToValue<TAudioObjectID>(objectId, args[2]))
                     {
-                        g_audioLogger.Log(LogType::Error, "Invalid Object ID: %.*s", AZ_STRING_ARG(args[2]));
+                        AZLOG_DEBUG("Invalid Object ID: %.*s", AZ_STRING_ARG(args[2]));
                         return;
                     }
                 }
@@ -466,12 +441,12 @@ namespace Audio::CVars
             }
             else
             {
-                g_audioLogger.Log(LogType::Error, "Unknown Rtpc name: %.*s", AZ_STRING_ARG(args[0]));
+                AZLOG_DEBUG("Unknown parameter name: %.*s", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_SetRtpc RtpcName RtpcValue [Optional Object ID]");
+            AZLOG_INFO("Usage: s_SetRtpc <ParameterName> [<Object ID>]");
         }
     }
 
@@ -495,7 +470,7 @@ namespace Audio::CVars
                     {
                         if (!AZ::ConsoleTypeHelpers::StringToValue<TAudioObjectID>(objectId, args[2]))
                         {
-                            g_audioLogger.Log(LogType::Error, "Invalid Object ID: %.*s", AZ_STRING_ARG(args[2]));
+                            AZLOG_DEBUG("Invalid Object ID: %.*s", AZ_STRING_ARG(args[2]));
                             return;
                         }
                     }
@@ -508,17 +483,17 @@ namespace Audio::CVars
                 }
                 else
                 {
-                    g_audioLogger.Log(LogType::Error, "Invalid Switch State name: %.*s", AZ_STRING_ARG(args[1]));
+                    AZLOG_DEBUG("Invalid Switch State name: %.*s", AZ_STRING_ARG(args[1]));
                 }
             }
             else
             {
-                g_audioLogger.Log(LogType::Error, "Unknown Switch name: %.*s", AZ_STRING_ARG(args[0]));
+                AZLOG_DEBUG("Unknown Switch name: %.*s", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_SetSwitchState SwitchName SwitchStateName [Optional Object ID]");
+            AZLOG_INFO("Usage: s_SetSwitchState <SwitchName> <StateName> [<Object ID>]");
         }
     }
 
@@ -538,12 +513,12 @@ namespace Audio::CVars
             }
             else
             {
-                g_audioLogger.Log(LogType::Error, "Preload named %.*s not found", AZ_STRING_ARG(args[0]));
+                AZLOG_DEBUG("Preload named %.*s not found", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_LoadPreload PreloadName");
+            AZLOG_INFO("Usage: s_LoadPreload <PreloadName>");
         }
     }
 
@@ -562,12 +537,12 @@ namespace Audio::CVars
             }
             else
             {
-                g_audioLogger.Log(LogType::Error, "Preload named %.*s not found", AZ_STRING_ARG(args[0]));
+                AZLOG_DEBUG("Preload name %.*s not found", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_UnloadPreload PreloadName");
+            AZLOG_INFO("Usage: s_UnloadPreload <PreloadName>");
         }
     }
 
@@ -606,20 +581,19 @@ namespace Audio::CVars
                         audioInputConfig.m_bitsPerSample = 16;
                         if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u32>(audioInputConfig.m_numChannels, args[2]))
                         {
-                            g_audioLogger.Log(LogType::Error, "Invalid number of channels '%.*s'", AZ_STRING_ARG(args[2]));
+                            AZLOG_DEBUG("Invalid number of channels: %.*s", AZ_STRING_ARG(args[2]));
                             return;
                         }
                         if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u32>(audioInputConfig.m_sampleRate, args[3]))
                         {
-                            g_audioLogger.Log(LogType::Error, "Invalid sample rate '%.*s'", AZ_STRING_ARG(args[3]));
+                            AZLOG_DEBUG("Invalid sample rate: %.*s", AZ_STRING_ARG(args[3]));
                             return;
                         }
                         audioInputConfig.m_sampleType = AudioInputSampleType::Int;
                     }
                     else
                     {
-                        g_audioLogger.Log(
-                            LogType::Error, "Using PCM file, additional parameters needed: [NumChannels] [SampleRate] (e.g. 2 16000)");
+                        AZLOG_DEBUG("When using PCM file, additional parameters needed: [<NumChannels>] [<SampleRate>]");
                         return;
                     }
                 }
@@ -640,22 +614,22 @@ namespace Audio::CVars
                     else
                     {
                         AZ::Interface<IAudioSystem>::Get()->DestroyAudioSource(sourceId);
-                        g_audioLogger.Log(LogType::Error, "Failed to find the trigger named %.*s", AZ_STRING_ARG(args[1]));
+                        AZLOG_DEBUG("Failed to find the trigger named %.*s", AZ_STRING_ARG(args[1]));
                     }
                 }
                 else
                 {
-                    g_audioLogger.Log(LogType::Error, "Unable to create a new audio source");
+                    AZLOG_DEBUG("Unable to create a new audio source");
                 }
             }
             else
             {
-                g_audioLogger.Log(LogType::Error, "Audio files with extension '.%s' are unsupported", fileext.c_str());
+                AZLOG_DEBUG("Audio files with extension '.%s' are unsupported", fileext.c_str());
             }
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_PlayFile \"path\\to\\myfile.wav\" Play_audio_input_2D");
+            AZLOG_INFO("Usage: s_PlayFile <FilePath> <TriggerName>");
         }
     }
 
@@ -671,7 +645,7 @@ namespace Audio::CVars
             AZ::u32 state;
             if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u32>(state, args[0]))
             {
-                g_audioLogger.Log(LogType::Error, "Invalid number passed '%.*s', should be 0 or 1", AZ_STRING_ARG(args[0]));
+                AZLOG_DEBUG("Invalid number passed: %.*s, should be 0 or 1", AZ_STRING_ARG(args[0]));
                 return;
             }
 
@@ -679,7 +653,7 @@ namespace Audio::CVars
 
             if (state == 1 && !micState && micSourceId == INVALID_AUDIO_SOURCE_ID && triggerId == INVALID_AUDIO_CONTROL_ID)
             {
-                g_audioLogger.Log(LogType::Always, "Turning on Microhpone with %s\n", triggerName.c_str());
+                AZLOG_INFO("Turning on Microphone with %s", triggerName.c_str());
                 bool success = true;
 
                 triggerId = AZ::Interface<IAudioSystem>::Get()->GetAudioTriggerID(triggerName.c_str());
@@ -711,19 +685,19 @@ namespace Audio::CVars
                         else
                         {
                             success = false;
-                            g_audioLogger.Log(LogType::Error, "Failed to create a new audio source for the microphone");
+                            AZLOG_DEBUG("Failed to create a new audio source for the microphone");
                         }
                     }
                     else
                     {
                         success = false;
-                        g_audioLogger.Log(LogType::Error, "Failed to start the microphone session");
+                        AZLOG_DEBUG("Failed to start the microphone session");
                     }
                 }
                 else
                 {
                     success = false;
-                    g_audioLogger.Log(LogType::Error, "Failed to find the trigger named %s", triggerName.c_str());
+                    AZLOG_DEBUG("Failed to find the trigger named '%s'", triggerName.c_str());
                 }
 
                 if (success)
@@ -740,7 +714,7 @@ namespace Audio::CVars
             }
             else
             {
-                g_audioLogger.Log(LogType::Error, "Error encountered while turning on/off microphone");
+                AZLOG_DEBUG("Error encountered while turning on/off microphone");
             }
         }
         else if (args.size() == 1)
@@ -748,13 +722,13 @@ namespace Audio::CVars
             AZ::u32 state;
             if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u32>(state, args[0]))
             {
-                g_audioLogger.Log(LogType::Error, "Invalid number passed '%.*s', should be 0 or 1", AZ_STRING_ARG(args[0]));
+                AZLOG_DEBUG("Invalid number passed '%.*s', should be 0 or 1", AZ_STRING_ARG(args[0]));
                 return;
             }
 
             if (state == 0 && micState && micSourceId != INVALID_AUDIO_SOURCE_ID && triggerId != INVALID_AUDIO_CONTROL_ID)
             {
-                g_audioLogger.Log(LogType::Always, "Turning off Microphone\n");
+                AZLOG_INFO("Turning off Microphone");
 
                 // Stop the trigger (may not be necessary)
                 Audio::ObjectRequest::StopTrigger stopTrigger;
@@ -771,12 +745,12 @@ namespace Audio::CVars
             }
             else
             {
-                g_audioLogger.Log(LogType::Error, "Error encountered while turning on/off microphone");
+                AZLOG_DEBUG("Error encountered while turning on/off microphone");
             }
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_Microphone 1 Play_audio_input_2D\nUsage: s_Microphone 0");
+            AZLOG_INFO("Usage: s_Microphone 1 <TriggerName>\nUsage: s_Microphone 0");
         }
     }
 
@@ -797,26 +771,26 @@ namespace Audio::CVars
             triggerId = AZ::Interface<IAudioSystem>::Get()->GetAudioTriggerID(triggerName.c_str());
             if (triggerId == INVALID_AUDIO_CONTROL_ID)
             {
-                g_audioLogger.Log(LogType::Error, "Failed to find the trigger named '%s'\n", triggerName.c_str());
+                AZLOG_DEBUG("Failed to find the trigger named '%s'", triggerName.c_str());
                 return;
             }
 
             AZ::u64 collection;
             if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u64>(collection, args[1]))
             {
-                g_audioLogger.Log(LogType::Error, "Invalid collection number passed '%.*s'", AZ_STRING_ARG(args[1]));
+                AZLOG_DEBUG("Invalid collection number: %.*s", AZ_STRING_ARG(args[1]));
                 return;
             }
             AZ::u64 language;
             if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u64>(language, args[2]))
             {
-                g_audioLogger.Log(LogType::Error, "Invalid language number passed '%.*s'", AZ_STRING_ARG(args[2]));
+                AZLOG_DEBUG("Invalid language number: %.*s", AZ_STRING_ARG(args[2]));
                 return;
             }
             AZ::u64 file;
             if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u64>(file, args[3]))
             {
-                g_audioLogger.Log(LogType::Error, "Invalid file number passed '%.*s'", AZ_STRING_ARG(args[3]));
+                AZLOG_DEBUG("Invalid file number: %.*s", AZ_STRING_ARG(args[3]));
                 return;
             }
 
@@ -827,7 +801,7 @@ namespace Audio::CVars
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_PlayExternalSource Play_ext_vo 0 0 1");
+            AZLOG_INFO("Usage: s_PlayExternalSource <TriggerName> <Collection#> <Language#> <File#>");
         }
     }
 
@@ -842,18 +816,16 @@ namespace Audio::CVars
             if (mode == "speakers")
             {
                 setPanningMode.m_panningMode = PanningMode::Speakers;
-                g_audioLogger.Log(LogType::Comment, "Setting Panning Mode to 'Speakers'\n");
+                AZLOG_DEBUG("Setting Panning Mode to 'Speakers'");
             }
             else if (mode == "headphones")
             {
                 setPanningMode.m_panningMode = PanningMode::Headphones;
-                g_audioLogger.Log(LogType::Comment, "Setting Panning Mode to 'Headphones'\n");
+                AZLOG_DEBUG("Setting Panning Mode to 'Headphones'");
             }
             else
             {
-                g_audioLogger.Log(LogType::Error,
-                    "Panning mode '%.*s' is invalid.  Please specify either 'speakers' or 'headphones'\n",
-                    AZ_STRING_ARG(args[0]));
+                AZLOG_DEBUG("Panning mode '%.*s' is invalid.  Please specify either 'speakers' or 'headphones'", AZ_STRING_ARG(args[0]));
                 return;
             }
 
@@ -861,7 +833,7 @@ namespace Audio::CVars
         }
         else
         {
-            g_audioLogger.Log(LogType::Error, "Usage: s_SetPanningMode (speakers|headphones)\n");
+            AZLOG_INFO("Usage: s_SetPanningMode <Speakers|Headphones>");
         }
     }
 

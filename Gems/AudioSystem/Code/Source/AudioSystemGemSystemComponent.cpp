@@ -8,6 +8,7 @@
 
 #include <AudioSystemGemSystemComponent.h>
 
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/Environment.h>
@@ -16,7 +17,6 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <AudioAllocators.h>
-#include <AudioLogger.h>
 #include <AudioSystem.h>
 #include <NullAudioSystem.h>
 
@@ -32,9 +32,6 @@
 
 namespace Audio
 {
-    // Module globals/statics
-    CAudioLogger g_audioLogger;
-
     namespace Platform
     {
         void InitializeAudioAllocators();
@@ -161,7 +158,7 @@ namespace AudioSystemGem
 
         if (CreateAudioSystem())
         {
-            g_audioLogger.Log(LogType::Always, "AudioSystem created!");
+            AZLOG_INFO("AudioSystem created!");
 
             // Initialize the implementation module...
             bool initImplSuccess = false;
@@ -177,11 +174,11 @@ namespace AudioSystemGem
             {
                 if (Gem::AudioEngineGemRequestBus::HasHandlers())
                 {
-                    g_audioLogger.Log(LogType::Error, "The Audio Engine did not initialize correctly!");
+                    AZLOG_ERROR("The Audio Engine did not initialize correctly!");
                 }
                 else
                 {
-                    g_audioLogger.Log(LogType::Warning, "Running without any AudioEngine!");
+                    AZLOG_NOTICE("Running without any Audio Engine!");
                 }
             }
 
@@ -293,7 +290,7 @@ namespace AudioSystemGem
         }
         else
         {
-            Audio::g_audioLogger.Log(Audio::LogType::Error, "Could not create AudioSystem!");
+            AZLOG_ERROR("Could not create AudioSystem!");
         }
 
         return success;

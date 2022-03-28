@@ -9,6 +9,7 @@
 #include <AudioEngineWwiseGemSystemComponent.h>
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -17,7 +18,6 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 
 #include <AudioAllocators.h>
-#include <AudioLogger.h>
 #include <AudioSystemImplCVars.h>
 #include <AudioSystemImpl_wwise.h>
 #include <Common_wwise.h>
@@ -30,8 +30,6 @@
 
 namespace Audio
 {
-    CAudioLogger g_audioImplLogger_wwise;
-
     namespace Platform
     {
         void* InitializeSecondaryMemoryPool(size_t& secondarySize);
@@ -147,7 +145,7 @@ namespace AudioEngineWwiseGem
         m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
         if (m_engineWwise)
         {
-            Audio::g_audioImplLogger_wwise.Log(Audio::LogType::Always, "AudioEngineWwise created!");
+            AZLOG_INFO("AudioEngineWwise created!");
 
             Audio::SystemRequest::Initialize initRequest;
             AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(initRequest));
@@ -156,7 +154,7 @@ namespace AudioEngineWwiseGem
         }
         else
         {
-            Audio::g_audioImplLogger_wwise.Log(Audio::LogType::Always, "Could not create AudioEngineWwise!");
+            AZLOG_ERROR("Could not create AudioEngineWwise!");
         }
 
         return success;
