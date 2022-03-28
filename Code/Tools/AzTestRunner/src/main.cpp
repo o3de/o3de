@@ -19,6 +19,7 @@ namespace AzTestRunner
     const int INCORRECT_USAGE = 101;
     const int LIB_NOT_FOUND = 102;
     const int SYMBOL_NOT_FOUND = 103;
+    constexpr char argFromFileSeparator = '\n';
 
     //! display proper usage of the application
     void usage([[maybe_unused]] AZ::Test::Platform& platform)
