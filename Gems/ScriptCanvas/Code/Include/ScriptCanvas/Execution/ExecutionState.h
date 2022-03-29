@@ -79,6 +79,22 @@ namespace ScriptCanvas
 
         AZ::Data::AssetId GetAssetId() const;
 
+        const Grammar::DebugExecution* GetDebugSymbolIn(size_t index) const;
+
+        const Grammar::DebugExecution* GetDebugSymbolIn(size_t index, const AZ::Data::AssetId& id) const;
+
+        const Grammar::DebugExecution* GetDebugSymbolOut(size_t index) const;
+
+        const Grammar::DebugExecution* GetDebugSymbolOut(size_t index, const AZ::Data::AssetId& id) const;
+
+        const Grammar::DebugExecution* GetDebugSymbolReturn(size_t index) const;
+
+        const Grammar::DebugExecution* GetDebugSymbolReturn(size_t index, const AZ::Data::AssetId& id) const;
+
+        const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index) const;
+
+        const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index, const AZ::Data::AssetId& id) const;
+
         virtual ExecutionMode GetExecutionMode() const = 0;
 
         const RuntimeDataOverrides& GetRuntimeDataOverrides() const;

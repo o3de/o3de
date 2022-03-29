@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
@@ -16,6 +17,20 @@
 #include "Interpreted/ExecutionStateInterpretedSingleton.h"
 
 #include "ExecutionState.h"
+
+
+namespace ExecutionStateCpp
+{
+    using namespace ScriptCanvas;
+
+    AZ::Data::Asset<RuntimeAsset> GetSubgraphAssetForDebug(const AZ::Data::AssetId& id)
+    {
+        // #functions2 this may have to be made recursive
+        auto asset = AZ::Data::AssetManager::Instance().GetAsset<SubgraphInterfaceAsset>(id, AZ::Data::AssetLoadBehavior::PreLoad);
+        asset.BlockUntilLoadComplete();
+        return asset;
+    }
+}
 
 namespace ScriptCanvas
 {
@@ -101,6 +116,67 @@ namespace ScriptCanvas
         return GetRuntimeComponent()->GetRuntimeDataOverrides();
     }
     // chopping block - end
+
+
+    const Grammar::DebugExecution* ExecutionState::GetDebugSymbolIn(size_t index) const
+    {
+        return index < GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_ins.size()
+            ? &(GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_ins[index])
+            : nullptr;
+    }
+
+    const Grammar::DebugExecution* ExecutionState::GetDebugSymbolIn(size_t index, const AZ::Data::AssetId& id) const
+    {
+        auto asset = ExecutionStateCpp::GetSubgraphAssetForDebug(id);
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_ins.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_ins[index])
+            : nullptr;
+    }
+
+    const Grammar::DebugExecution* ExecutionState::GetDebugSymbolOut(size_t index) const
+    {
+        return index < GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_outs.size()
+            ? &(GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_outs[index])
+            : nullptr;
+    }
+
+    const Grammar::DebugExecution* ExecutionState::GetDebugSymbolOut(size_t index, const AZ::Data::AssetId& id) const
+    {
+        auto asset = ExecutionStateCpp::GetSubgraphAssetForDebug(id);
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_outs.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_outs[index])
+            : nullptr;
+    }
+
+    const Grammar::DebugExecution* ExecutionState::GetDebugSymbolReturn(size_t index) const
+    {
+        return index < GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_returns.size()
+            ? &(GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_returns[index])
+            : nullptr;
+    }
+
+    const Grammar::DebugExecution* ExecutionState::GetDebugSymbolReturn(size_t index, const AZ::Data::AssetId& id) const
+    {
+        auto asset = ExecutionStateCpp::GetSubgraphAssetForDebug(id);
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_returns.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_returns[index])
+            : nullptr;
+    }
+
+    const Grammar::DebugDataSource* ExecutionState::GetDebugSymbolVariableChange(size_t index) const
+    {
+        return index < GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_variables.size()
+            ? &(GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_variables[index])
+            : nullptr;
+    }
+
+    const Grammar::DebugDataSource* ExecutionState::GetDebugSymbolVariableChange(size_t index, const AZ::Data::AssetId& id) const
+    {
+        auto asset = ExecutionStateCpp::GetSubgraphAssetForDebug(id);
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_variables.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_variables[index])
+            : nullptr;
+    }
 
     void ExecutionState::Reflect(AZ::ReflectContext* reflectContext)
     {

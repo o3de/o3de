@@ -31,24 +31,6 @@ namespace ScriptCanvas
 
         void ClearLuaRegistryIndex();
 
-        // debug symbol code needs to be moved up to the base class
-        const Grammar::DebugExecution* GetDebugSymbolIn(size_t index) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolIn(size_t index, const AZ::Data::AssetId& id) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolOut(size_t index) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolOut(size_t index, const AZ::Data::AssetId& id) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolReturn(size_t index) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolReturn(size_t index, const AZ::Data::AssetId& id) const;
-
-        const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index) const;
-
-        const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index, const AZ::Data::AssetId& id) const;
-        // debug symbol code needs to be moved up to the base class
-
         ExecutionMode GetExecutionMode() const override;
 
         int GetLuaRegistryIndex() const;
