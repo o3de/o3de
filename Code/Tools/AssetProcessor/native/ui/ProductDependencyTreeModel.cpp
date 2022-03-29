@@ -134,37 +134,6 @@ namespace AssetProcessor
         return QVariant();
     }
 
-    QVariant ProductDependencyTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
-    {
-        if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
-        {
-            return QVariant();
-        }
-        if (section < 0 || section >= static_cast<int>(ProductDependencyTreeColumns::Max))
-        {
-            return QVariant();
-        }
-
-        switch (section)
-        {
-        case static_cast<int>(ProductDependencyTreeColumns::Name):
-            switch (m_treeType)
-            {
-            case DependencyTreeType::Incoming:
-                return tr("Incoming Product Dependencies");
-            case DependencyTreeType::Outgoing:
-                return tr("Outgoing Product Dependencies");
-            default:
-                AZ_Warning("AssetProcessor", false, "Unhandled AssetTree tree type %d", m_treeType);
-                return tr("Name");
-            }
-        default:
-            AZ_Warning("AssetProcessor", false, "Unhandled AssetTree section %d", section);
-            break;
-        }
-        return QVariant();
-    }
-
     bool ProductDependencyTreeModel::setData(const QModelIndex& /*index*/, const QVariant& /*value*/, int /*role*/)
     {
         return false;

@@ -54,7 +54,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="ProductInformationTab">
       <attribute name="title">
@@ -570,59 +570,59 @@
          </property>
         </widget>
        </item>
-        <item>
-          <widget class="QLabel" name="MissingProductDependenciesFolderTitleLabel">
-            <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-              </sizepolicy>
-            </property>
-            <property name="font">
-              <font>
-                <family>12pt</family>
-                <pointsize>8</pointsize>
-                <weight>75</weight>
-                <italic>false</italic>
-                <bold>true</bold>
-              </font>
-            </property>
-            <property name="styleSheet">
-              <string notr="true">font: bold, 12pt;</string>
-            </property>
-            <property name="text">
-              <string>Missing Product Dependencies</string>
-            </property>
-            <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
+       <item>
+        <widget class="QLabel" name="MissingProductDependenciesFolderTitleLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>12pt</family>
+           <pointsize>8</pointsize>
+           <weight>75</weight>
+           <italic>false</italic>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font: bold, 12pt;</string>
+         </property>
+         <property name="text">
+          <string>Missing Product Dependencies</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="MissingDependenciesFolderButtonsLayout">
+         <item>
+          <widget class="QPushButton" name="ScanFolderButton">
+           <property name="toolTip">
+            <string>Scans all files in this folder and subfolders for missing dependencies. This may take some time.</string>
+           </property>
+           <property name="text">
+            <string>Scan folder</string>
+           </property>
           </widget>
-        </item>
-        <item>
-          <layout class="QHBoxLayout" name="MissingDependenciesFolderButtonsLayout">
-            <item>
-              <widget class="QPushButton" name="ScanFolderButton">
-                <property name="toolTip">
-                  <string>Scans all files in this folder and subfolders for missing dependencies. This may take some time.</string>
-                </property>
-                <property name="text">
-                  <string>Scan folder</string>
-                </property>
-              </widget>
-            </item>
-            <item>
-              <widget class="QPushButton" name="ClearScanFolderButton">
-                <property name="toolTip">
-                  <string>Clears all dependency scan results for files in this folder and subfolders.</string>
-                </property>
-                <property name="text">
-                  <string>Clear results</string>
-                </property>
-              </widget>
-            </item>
-          </layout>
-        </item>
-        <item>
+         </item>
+         <item>
+          <widget class="QPushButton" name="ClearScanFolderButton">
+           <property name="toolTip">
+            <string>Clears all dependency scan results for files in this folder and subfolders.</string>
+           </property>
+           <property name="text">
+            <string>Clear results</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="OutgoingDependenciesTitleLayout">
          <item>
           <widget class="QLabel" name="outgoingProductDependenciesTitleLabel">
@@ -688,6 +688,9 @@
          <property name="sortingEnabled">
           <bool>false</bool>
          </property>
+         <attribute name="headerVisible">
+          <bool>false</bool>
+         </attribute>
          <attribute name="headerDefaultSectionSize">
           <number>300</number>
          </attribute>
@@ -749,6 +752,9 @@
         <widget class="QTreeView" name="IncomingProductDependenciesTreeView">
          <property name="sortingEnabled">
           <bool>false</bool>
+         </property>
+         <property name="headerHidden">
+          <bool>true</bool>
          </property>
          <attribute name="headerDefaultSectionSize">
           <number>300</number>
