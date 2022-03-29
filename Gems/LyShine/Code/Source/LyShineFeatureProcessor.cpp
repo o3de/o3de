@@ -43,7 +43,7 @@ namespace LyShine
 
     void LyShineFeatureProcessor::ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline)
     {
-        // Get the pass request to create terrain parent pass from the asset
+        // Get the pass request to create LyShine parent pass from the asset
         const char* passRequestAssetFilePath = "Passes/LyShinePassRequest.azasset";
         auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
             passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);

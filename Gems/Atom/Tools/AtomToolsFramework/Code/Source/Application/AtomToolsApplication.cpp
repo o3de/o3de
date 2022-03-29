@@ -69,25 +69,6 @@ namespace AtomToolsFramework
         m_styleManager.reset(new AzQtComponents::StyleManager(this));
         m_styleManager->initialize(this, engineRootPath);
 
-        const int updateIntervalWhenActive =
-            aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive", 1));
-        const int updateIntervalWhenNotActive =
-            aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive", 64));
-
-        m_timer.setInterval(updateIntervalWhenActive);
-        connect(&m_timer, &QTimer::timeout, this, [this]()
-        {
-            this->PumpSystemEventLoopUntilEmpty();
-            this->Tick();
-        });
-
-        connect(this, &QGuiApplication::applicationStateChanged, this, [this, updateIntervalWhenActive, updateIntervalWhenNotActive]()
-        {
-            // Limit the update interval when not in focus to reduce power consumption and interference with other applications
-            this->m_timer.setInterval(
-                (applicationState() & Qt::ApplicationActive) ? updateIntervalWhenActive : updateIntervalWhenNotActive);
-        });
-
         AtomToolsMainWindowNotificationBus::Handler::BusConnect(m_toolId);
     }
 
@@ -197,7 +178,8 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
-        const bool enableSourceControl = GetSettingsValue("/O3DE/AtomToolsFramework/Application/EnableSourceControl", true);
+        // Disabling source control integration by default to disable messages and menus if no supported source control system is active
+        const bool enableSourceControl = GetSettingsValue("/O3DE/AtomToolsFramework/Application/EnableSourceControl", false);
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
             &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
 
@@ -208,6 +190,8 @@ namespace AtomToolsFramework
 
         LoadSettings();
 
+        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
         if (editorPythonEventsInterface)
         {
@@ -217,33 +201,35 @@ namespace AtomToolsFramework
             editorPythonEventsInterface->StartPython();
         }
 
-        // Delay execution of commands and scripts post initialization
-        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
-
-        m_timer.start();
+        // Delay command line processing until first update 
+        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); OnIdle(); });
     }
-
     void AtomToolsApplication::Tick()
     {
         TickSystem();
         Base::Tick();
-
-        if (WasExitMainLoopRequested())
-        {
-            m_timer.disconnect();
-            quit();
-        }
     }
 
     void AtomToolsApplication::Destroy()
     {
+        m_assetBrowserInteractions.reset();
         m_styleManager.reset();
 
-        // Save application settings to settings registry file
-        AZ::IO::FixedMaxPath savePath = AZ::Utils::GetProjectPath();
-        savePath /= AZStd::string::format("user/Registry/%s.setreg", m_targetName.c_str());
-        SaveSettingsToFile(savePath, { "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) });
+        // Save application registry settings to a target specific settings file. The file must be named so that it is only loaded for an
+        // application with the corresponding target name.
+        AZStd::string settingsFileName(AZStd::string::format("usersettings.%s.setreg", m_targetName.c_str()));
+        AZStd::to_lower(settingsFileName.begin(), settingsFileName.end());
 
+        const AZ::IO::FixedMaxPath settingsFilePath(
+            AZStd::string::format("%s/user/Registry/%s", AZ::Utils::GetProjectPath().c_str(), settingsFileName.c_str()));
+
+        // This will only save modified registry settings that match the following filters
+        const AZStd::vector<AZStd::string> filters = {
+            "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
+
+        SaveSettingsToFile(settingsFilePath, filters);
+
+        // Handler for serializing legacy user settings
         UnloadSettings();
 
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
@@ -256,6 +242,23 @@ namespace AtomToolsFramework
 #else
         Base::Destroy();
 #endif
+    }
+
+    void AtomToolsApplication::OnIdle()
+    {
+        if (WasExitMainLoopRequested())
+        {
+            quit();
+            return;
+        }
+
+        PumpSystemEventLoopUntilEmpty();
+        Tick();
+
+        const int updateInterval = (applicationState() & Qt::ApplicationActive)
+            ? aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive", 1))
+            : aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive", 250));
+        QTimer::singleShot(updateInterval, [this]() { OnIdle(); });
     }
 
     void AtomToolsApplication::OnMainWindowClosing()
@@ -323,7 +326,8 @@ namespace AtomToolsFramework
         if (!failedAssets.empty())
         {
             QMessageBox::critical(
-                activeWindow(), QString("Failed to compile critical assets"),
+                GetToolMainWindow(),
+                QString("Failed to compile critical assets"),
                 QString("Failed to compile the following critical assets:\n%1\n%2")
                 .arg(failedAssets.join(",\n"))
                 .arg("Make sure this is an Atom project."));
@@ -428,6 +432,17 @@ namespace AtomToolsFramework
         if (commandLine.HasSwitch(exitAfterCommandsSwitchName))
         {
             ExitMainLoop();
+        }
+
+        // Enable native UI for some low level system popup message when it's not in automated test mode
+        constexpr const char* testModeSwitch = "autotest_mode";
+        m_isAutoTestMode = commandLine.HasSwitch(testModeSwitch);
+        if (!m_isAutoTestMode)
+        {
+            if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+            {
+                nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+            }
         }
     }
 

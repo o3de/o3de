@@ -86,9 +86,10 @@ namespace PhysX
         ClearHeightfield();
     }
 
-    void HeightfieldColliderComponent::OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion)
+    void HeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
-        RefreshHeightfield();
+        RefreshHeightfield(dirtyRegion, changeMask);
     }
 
     void HeightfieldColliderComponent::ClearHeightfield()
@@ -146,7 +147,8 @@ namespace PhysX
         Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), colliderConfig->m_materialSelection);
     }
 
-    void HeightfieldColliderComponent::RefreshHeightfield()
+    void HeightfieldColliderComponent::RefreshHeightfield([[maybe_unused]] const AZ::Aabb& dirtyRegion, 
+        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
         ClearHeightfield();
         InitHeightfieldShapeConfiguration();

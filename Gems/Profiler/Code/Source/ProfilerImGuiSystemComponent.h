@@ -12,6 +12,8 @@
 
 #include <ImGuiCpuProfiler.h>
 
+#include "ImGuiTreemapImpl.h"
+
 #include <AzCore/Component/Component.h>
 
 #if defined(IMGUI_ENABLED)
@@ -57,6 +59,7 @@ namespace Profiler
 
     private:
 #if defined(IMGUI_ENABLED)
+        ImGuiTreemapFactoryImpl m_imguiTreemapFactory;
         ImGuiCpuProfiler m_imguiCpuProfiler;
         bool m_showCpuProfiler{ false };
 #endif // defined(IMGUI_ENABLED)

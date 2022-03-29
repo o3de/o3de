@@ -66,6 +66,11 @@ namespace AZ
             //! @return the list of possible paths, ordered from highest priority to lowest priority
             AZStd::vector<AZStd::string> GetPossibleDepenencyPaths(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
 
+            //! Takes an arbitrary string and replaces some characters to make it a valid filename. The result will be compatible with AzQtComponents::FileDialog.
+            //! Ex. SanitizeFileName("Left=>Right.txt") == "Left_Right.txt"
+            //! Ex. SanitizeFileName("Material::Red#1") == "Material_Red_1"
+            AZStd::string SanitizeFileName(AZStd::string filename);
+
             // Definitions...
 
             template<typename AssetDataT>

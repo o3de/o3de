@@ -27,10 +27,12 @@ namespace AZ
             public:
                 //! @param originalAssetId   AssetId of the original built-in material, which will be exported.
                 //! @param materialSlotName  The name of the material slot will be used as part of the exported file name.
-                ExportItem(AZ::Data::AssetId originalAssetId, const AZStd::string& materialSlotName)
+                ExportItem(AZ::Data::AssetId originalAssetId, const AZStd::string& materialSlotName, const AZStd::string& exportPath = {})
                     : m_originalAssetId(originalAssetId)
                     , m_materialSlotName(materialSlotName)
-                {}
+                    , m_exportPath(!exportPath.empty() ? exportPath : GetExportPathByAssetId(originalAssetId, materialSlotName))
+                {
+                }
 
                 void SetEnabled(bool enabled) { m_enabled = enabled; }
                 void SetExists(bool exists) { m_exists = exists; }

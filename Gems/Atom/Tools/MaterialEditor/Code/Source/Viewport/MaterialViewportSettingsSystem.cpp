@@ -9,6 +9,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -339,7 +340,12 @@ namespace MaterialEditor
 
     void MaterialViewportSettingsSystem::QueueLoadPresetCache(const AZ::Data::AssetInfo& assetInfo)
     {
-        if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset"))
+        if (assetInfo.m_assetType != AZ::RPI::AnyAsset::RTTI_Type())
+        {
+            return;
+        }
+
+        if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension))
         {
             AZ::TickBus::QueueFunction([=]() {
                 const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
@@ -356,7 +362,7 @@ namespace MaterialEditor
             return;
         }
 
-        if (AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
+        if (AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension))
         {
             AZ::TickBus::QueueFunction([=]() {
                 const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);

@@ -47,8 +47,8 @@ namespace ImageProcessingAtomEditor
         bool HasValidImage();
 
     protected:
-        void OnSave();
         void OnHelp();
+        void OnSave();
 
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus

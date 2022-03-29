@@ -85,16 +85,16 @@ namespace AtomToolsFramework
     {
         menu->addAction("Duplicate...", [entry]()
             {
-                const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
-                if (!duplicateFileInfo.absoluteFilePath().isEmpty())
+                const auto& duplicateFilePath = GetUniqueDuplicateFilePath(entry->GetFullPath());
+                if (!duplicateFilePath.empty())
                 {
-                    if (QFile::copy(entry->GetFullPath().c_str(), duplicateFileInfo.absoluteFilePath()))
+                    if (QFile::copy(entry->GetFullPath().c_str(), duplicateFilePath.c_str()))
                     {
-                        QFile::setPermissions(duplicateFileInfo.absoluteFilePath(), QFile::ReadOther | QFile::WriteOther);
+                        QFile::setPermissions(duplicateFilePath.c_str(), QFile::ReadOther | QFile::WriteOther);
 
                         // Auto add file to source control
                         AzToolsFramework::SourceControlCommandBus::Broadcast(&AzToolsFramework::SourceControlCommandBus::Events::RequestEdit,
-                            duplicateFileInfo.absoluteFilePath().toUtf8().constData(), true, [](bool, const AzToolsFramework::SourceControlFileInfo&) {});
+                            duplicateFilePath.c_str(), true, [](bool, const AzToolsFramework::SourceControlFileInfo&) {});
                     }
                 }
             });
@@ -175,12 +175,10 @@ namespace AtomToolsFramework
         bool isActive = false;
         SourceControlConnectionRequestBus::BroadcastResult(isActive, &SourceControlConnectionRequests::IsActive);
 
-        if (isActive)
+        AZStd::string path = entry->GetFullPath();
+        if (isActive && ValidateDocumentPath(path))
         {
             menu->addSeparator();
-
-            AZStd::string path = entry->GetFullPath();
-            AzFramework::StringFunc::Path::Normalize(path);
 
             QMenu* sourceControlMenu = menu->addMenu("Source Control");
 

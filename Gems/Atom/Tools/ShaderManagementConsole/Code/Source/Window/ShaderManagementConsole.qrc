@@ -1,18 +1,5 @@
 <RCC>
-    <qresource>
-        <file>Icons/add.png</file>
-        <file>Icons/addnew.png</file>
-        <file>Icons/down.png</file>
-        <file>Icons/up.png</file>
-        <file>Icons/refresh.png</file>
-        <file>Icons/remove.png</file>
-        <file>Icons/save.png</file>
-        <file>Icons/save_active.png</file>
-        <file>Icons/save_disabled.png</file>
-        <file>Icons/save_normal.png</file>
-        <file>Icons/texture_edit.png</file>
-        <file>Icons/grid.svg</file>
-        <file>Icons/shadow.svg</file>
-        <file>Icons/toneMapping.svg</file>
+    <qresource prefix="/">
+        <file>Icons/application.svg</file>
     </qresource>
 </RCC>

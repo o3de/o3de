@@ -61,10 +61,9 @@ namespace AZ
             m_computePipelineStates.clear();
         }
 
-        id<MTLRenderPipelineState> PipelineLibrary::CreateGraphicsPipelineState(uint64_t hash, MTLRenderPipelineDescriptor* pipelineStateDesc)
+        id<MTLRenderPipelineState> PipelineLibrary::CreateGraphicsPipelineState(uint64_t hash, MTLRenderPipelineDescriptor* pipelineStateDesc, NSError** error)
         {
             Device& device = static_cast<Device&>(GetDevice());
-            NSError* error = nil;
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             
             NSArray* binArchives = [NSArray arrayWithObjects:m_mtlBinaryArchive,nil];
@@ -72,15 +71,17 @@ namespace AZ
             //Create a new PSO. The drivers will use the Pso cache if the PSO resides in it
             id<MTLRenderPipelineState> graphicsPipelineState =
                 [device.GetMtlDevice() newRenderPipelineStateWithDescriptor:pipelineStateDesc
-                                                                      error:&error];
-            m_renderPipelineStates.emplace(hash, pipelineStateDesc);
+                                                                      error:error];
+            if(graphicsPipelineState)
+            {
+                m_renderPipelineStates.emplace(hash, pipelineStateDesc);
+            }
             return graphicsPipelineState;
         }
         
-        id<MTLComputePipelineState> PipelineLibrary::CreateComputePipelineState(uint64_t hash, MTLComputePipelineDescriptor* pipelineStateDesc)
+        id<MTLComputePipelineState> PipelineLibrary::CreateComputePipelineState(uint64_t hash, MTLComputePipelineDescriptor* pipelineStateDesc, NSError** error)
         {
             Device& device = static_cast<Device&>(GetDevice());
-            NSError* error = nil;
             MTLComputePipelineReflection* ref;
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             
@@ -91,8 +92,11 @@ namespace AZ
                 [device.GetMtlDevice() newComputePipelineStateWithDescriptor: pipelineStateDesc
                                                                      options: MTLPipelineOptionBufferTypeInfo
                                                                   reflection: &ref
-                                                                       error: &error];
-            m_computePipelineStates.emplace(hash, pipelineStateDesc);
+                                                                       error: error];
+            if(computePipelineState)
+            {
+                m_computePipelineStates.emplace(hash, pipelineStateDesc);
+            }
             return computePipelineState;
         }
     

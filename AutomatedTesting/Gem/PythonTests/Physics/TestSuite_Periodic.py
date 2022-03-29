@@ -169,9 +169,9 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_ForceRegion_SliceFileInstantiates(self, request, workspace, editor, launcher_platform):
-        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+    def test_ForceRegion_PrefabFileInstantiates(self, request, workspace, editor, launcher_platform):
+        from .tests.force_region import ForceRegion_PrefabFileInstantiates as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ZeroLocalSpaceForceDoesNothing(self, request, workspace, editor, launcher_platform):
@@ -208,7 +208,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ScriptCanvas_ShapeCast(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_InitialAngularVelocity(self, request, workspace, editor, launcher_platform):
@@ -329,7 +329,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_ScriptCanvas_PostUpdateEvent(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PostUpdateEvent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_Restitution.setreg_override',
@@ -343,7 +343,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_ScriptCanvas_PreUpdateEvent(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PreUpdateEvent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_PxMeshShapedForce(self, request, workspace, editor, launcher_platform):
@@ -517,6 +517,10 @@ class TestAutomation(TestAutomationBase):
 
     def test_Joints_GlobalFrameConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_GlobalFrameConstrained as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptCanvas_SpawnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
+        from .tests.script_canvas import ScriptCanvas_SpawnEntityWithPhysComponents as test_module
         self._run_test(request, workspace, editor, test_module)
     
     @revert_physics_config

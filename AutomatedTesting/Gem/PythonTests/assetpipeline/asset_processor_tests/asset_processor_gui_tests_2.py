@@ -177,7 +177,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
                                                                         asset_processor):
         # fmt:on
         """
-        Deleting slices and uicanvases while AP is running
+        Deleting files while AP is running
 
         Test Steps:
         1. Create temporary testing environment with test assets
@@ -190,7 +190,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Copy test assets to project folder and verify test assets folder exists in project folder
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C1591337")
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
         assert os.path.exists(test_assets_folder), f"Test assets folder was not found {test_assets_folder}"
 
         # Launch Asset Processor and wait for it to go idle
@@ -221,7 +221,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         self, ap_setup_fixture, asset_processor, workspace, request
     ):
         """
-        Process slice files and uicanvas files from the additional scanfolder
+        Process files from the additional scanfolder
 
         Test Steps:
         1. Create temporary testing environment
@@ -264,7 +264,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
 
         # Run AP GUI and read the config file we just modified to pick up our scan folder
         # Pass in a pattern so we don't spend time processing unrelated folders
-        result, _ = asset_processor.gui_process(quitonidle=True, add_config_scan_folders=True,
+        result, _ = asset_processor.gui_process(add_config_scan_folders=True,
                                                 scan_folder_pattern="*C4874115*",
                                                 extra_params=test_scan_folder_params)
         assert result, "AP GUI failed"

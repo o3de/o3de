@@ -293,21 +293,12 @@ namespace AzToolsFramework
         const bool iconsVisible = IconsVisible(viewportInfo.m_viewportId);
         const bool helpersVisible = HelpersVisible(viewportInfo.m_viewportId);
 
-        auto displayCheck = [this](const size_t entityCacheIndex, const AZ::EntityId entityId)
-        {
-            if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) || !IsSelectableInViewport(entityId))
-            {
-                return false;
-            }
-            return true;
-        };
-
         if (helpersVisible)
         {
             for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
             {
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
-                    displayCheck(entityCacheIndex, entityId))
+                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
                 {
                     // notify components to display
                     DisplayComponents(entityId, viewportInfo, debugDisplay);
@@ -326,7 +317,7 @@ namespace AzToolsFramework
             for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
             {
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
-                    displayCheck(entityCacheIndex, entityId))
+                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && IsSelectableInViewport(entityId))
                 {
                     if (m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) ||
                         (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))

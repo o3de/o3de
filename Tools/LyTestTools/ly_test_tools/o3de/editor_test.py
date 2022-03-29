@@ -136,8 +136,11 @@ class EditorBatchedTest(EditorSharedTest):
     is_batchable = True
     is_parallelizable = False
 
-
 class Result:
+
+    class EditorTestResultException(Exception):
+        """ Indicates that an unknown result was found during the tests  """
+
     class Base:
         def get_output_str(self):
             # type () -> str
@@ -319,8 +322,6 @@ class EditorTestSuite:
     use_null_renderer = True
     # Maximum time for a single editor to stay open on a shared test
     timeout_editor_shared_test = 300
-    # Flag to determine whether to use new prefab system or use deprecated slice system for this test suite
-    enable_prefab_system = True
 
     # Function to calculate number of editors to run in parallel, this can be overridden by the user
     @staticmethod
@@ -331,6 +332,8 @@ class EditorTestSuite:
     _TEST_FAIL_RETCODE = 0xF  # Return code for test failure
 
     class TestData:
+        __test__ = False  # Required to tell PyTest to skip collecting this class even though it has "Test" in the name; avoids PyTest warnings.
+
         def __init__(self):
             self.results = {}  # Dict of str(test_spec.__name__) -> Result
             self.asset_processor = None
@@ -467,7 +470,11 @@ class EditorTestSuite:
                         def result(self, request, workspace, editor, editor_test_data, launcher_platform):
                             # The runner must have filled the editor_test_data.results dict fixture for this test.
                             # Hitting this assert could mean if there was an error executing the runner
-                            assert test_spec.__name__ in editor_test_data.results, f"No run data for test: {test_spec.__name__}."
+                            if test_spec.__name__ not in editor_test_data.results:
+                                raise Result.EditorTestResultException(f"No results found for {test_spec.__name__}. "
+                                                                       f"Test may not have ran due to the Editor "
+                                                                       f"shutting down. Check for issues in previous "
+                                                                       f"tests.")
                             cls._report_result(test_spec.__name__, editor_test_data.results[test_spec.__name__])
                         return result
                     
@@ -767,6 +774,10 @@ class EditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        test_cmdline_args += [
+            "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+            f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+
         test_spec_uses_null_renderer = getattr(test_spec, "use_null_renderer", None)
         if test_spec_uses_null_renderer or (test_spec_uses_null_renderer is None and self.use_null_renderer):
             test_cmdline_args += ["-rhi=null"]
@@ -774,12 +785,6 @@ class EditorTestSuite:
             test_cmdline_args += ["--attach-debugger"]
         if test_spec.wait_for_debugger:
             test_cmdline_args += ["--wait-for-debugger"]
-        if self.enable_prefab_system:
-            test_cmdline_args += [
-                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
-        else:
-            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)
@@ -811,9 +816,12 @@ class EditorTestSuite:
                     test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
                     # Save the crash log
                     crash_file_name = os.path.basename(workspace.paths.crash_log())
-                    workspace.artifact_manager.save_artifact(
-                        os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
-                    editor_utils.cycle_crash_report(run_id, workspace)
+                    if os.path.exists(crash_file_name):
+                        workspace.artifact_manager.save_artifact(
+                            os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
+                        editor_utils.cycle_crash_report(run_id, workspace)
+                    else:
+                        logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                 else:
                     test_result = Result.Fail(test_spec, output, editor_log_content)
         except WaitTimeoutError:
@@ -848,18 +856,16 @@ class EditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        test_cmdline_args += [
+            "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+            f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+
         if self.use_null_renderer:
             test_cmdline_args += ["-rhi=null"]
         if any([t.attach_debugger for t in test_spec_list]):
             test_cmdline_args += ["--attach-debugger"]
         if any([t.wait_for_debugger for t in test_spec_list]):
             test_cmdline_args += ["--wait-for-debugger"]
-        if self.enable_prefab_system:
-            test_cmdline_args += [
-                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
-        else:
-            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)
@@ -906,9 +912,12 @@ class EditorTestSuite:
                                                                                  self._TIMEOUT_CRASH_LOG)
                                 # Save the crash log
                                 crash_file_name = os.path.basename(workspace.paths.crash_log())
-                                workspace.artifact_manager.save_artifact(
-                                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
-                                editor_utils.cycle_crash_report(run_id, workspace)
+                                if os.path.exists(crash_file_name):
+                                    workspace.artifact_manager.save_artifact(
+                                        os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
+                                    editor_utils.cycle_crash_report(run_id, workspace)
+                                else:
+                                    logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                                 results[test_spec_name] = Result.Crash(result.test_spec, output, return_code,
                                                                        crash_error, result.editor_log)
                                 crashed_result = result
