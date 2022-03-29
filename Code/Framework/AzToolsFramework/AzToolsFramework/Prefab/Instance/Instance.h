@@ -229,7 +229,7 @@ namespace AzToolsFramework
 
             Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias);
 
-            void ClearEntities();
+            void ClearEntities(bool shouldClearContainerEntity = true);
 
             void RemoveEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
 

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+#pragma optimize("", off)
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -285,12 +285,20 @@ namespace AzToolsFramework
             );
         }
 
-        void Instance::ClearEntities()
+        void Instance::ClearEntities(bool shouldClearContainerEntity)
         {
+            AZ::EntityId containerEntityId;
+            EntityAlias containerEntityAlias;
+
             if (m_containerEntity)
             {
-                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
-                m_containerEntity.reset();
+                containerEntityId = m_containerEntity->GetId();
+                containerEntityAlias = GetEntityAlias(containerEntityId)->get();
+                if (shouldClearContainerEntity)
+                {
+                    m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+                    m_containerEntity.reset();
+                }
             }
 
             for (const auto&[entityAlias, entity] : m_entities)
@@ -314,6 +322,12 @@ namespace AzToolsFramework
             m_entities.clear();
             m_instanceToTemplateEntityIdMap.clear();
             m_templateToInstanceEntityIdMap.clear();
+
+            if (!shouldClearContainerEntity)
+            {
+                m_instanceToTemplateEntityIdMap.emplace(containerEntityId, containerEntityAlias);
+                m_templateToInstanceEntityIdMap.emplace(containerEntityAlias, containerEntityId);
+            }
         }
 
         bool Instance::RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias)
@@ -861,4 +875,5 @@ namespace AzToolsFramework
             m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
         }
     }
-}
+} // namespace AzToolsFramework
+#pragma optimize("", on)

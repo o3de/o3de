@@ -695,6 +695,9 @@ namespace AzToolsFramework
             PrefabUndoHelpers::UpdatePrefabInstance(
                 entityOwningInstance, "Undo adding entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
 
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
+
             return AZ::Success(entityId);
         }
 

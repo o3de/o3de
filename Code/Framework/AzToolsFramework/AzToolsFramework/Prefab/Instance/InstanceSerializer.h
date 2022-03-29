@@ -45,6 +45,12 @@ namespace AzToolsFramework
                 Instance* instance,
                 PrefabDom patches,
                 AZ::JsonSerializationResult::ResultCode& result);
+
+            void ClearAndLoadEntities(
+                const rapidjson::Value& inputValue,
+                AZ::JsonDeserializerContext& context,
+                Instance* instance,
+                AZ::JsonSerializationResult::ResultCode& result);
         };
     }
 }
