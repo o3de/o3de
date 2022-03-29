@@ -20,4 +20,4 @@ server*.cfg
 _savebackup/
 *.swatches
 /imgui.ini
-
+build-mono/

@@ -13,17 +13,16 @@ from ly_test_tools.o3de.editor_test import EditorTestSuite
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
-from Tools.LyTestTools.ly_test_tools.environment import process_utils
-from Tools.LyTestTools.ly_test_tools.launchers import launcher_helper
-from Tools.LyTestTools.ly_test_tools.log.log_monitor import LogMonitor
-
-import Tools.LyTestTools.ly_test_tools.environment.waiter as waiter
+import ly_test_tools.environment.process_utils as       process_utils
+import ly_test_tools.launchers.launcher_helper as       launcher_helper
+from   ly_test_tools.log.log_monitor           import   LogMonitor
+import ly_test_tools.environment.waiter        as       waiter
 
 @pytest.mark.SUITE_sandbox
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
-    def test_Multiplayer_SimpleGameServerLauncher_ConnectsSuccessfully(self, workspace, launcher_platform):
+    def test_Multiplayer_SimpleGameServerLauncher_ConnectsSuccessfully(self, workspace, launcher_platform, crash_log_watchdog):
         unexpected_lines = []
         expected_lines = ["New outgoing connection to remote address:"]
         halt_on_unexpected = False
@@ -45,3 +44,6 @@ class TestAutomation(EditorTestSuite):
         game_launcher_log_file = os.path.join(game_launcher.workspace.paths.project_log(), 'Game.log')
         game_launcher_log_monitor = LogMonitor(game_launcher, game_launcher_log_file)
         game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected, timeout)
+
+        game_launcher.stop()
+        server_launcher.stop()
