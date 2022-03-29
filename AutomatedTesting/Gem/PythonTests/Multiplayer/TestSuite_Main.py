@@ -33,24 +33,5 @@ class TestAutomation(EditorTestSuite):
         def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
             save_multiplayer_level_cache_folder_artifact(workspace, "autocomponent_networkinput")
 
-    class test_Multiplayer_AutoComponent_RPC(EditorSingleTest):
-        from .tests import Multiplayer_AutoComponent_RPC as test_module
 
-        @classmethod
-        def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
-            save_multiplayer_level_cache_folder_artifact(workspace, "autocomponent_rpc")
-
-    class test_Multiplayer_BasicConnectivity_Connects(EditorSingleTest):
-        from .tests import Multiplayer_BasicConnectivity_Connects as test_module
-
-        @classmethod
-        def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
-            save_multiplayer_level_cache_folder_artifact(workspace, "basicconnectivity_connects")
-
-    class test_Multiplayer_SimpleNetworkLevelEntity(EditorSingleTest):
-        from .tests import Multiplayer_SimpleNetworkLevelEntity as test_module
-
-        @classmethod
-        def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
-            save_multiplayer_level_cache_folder_artifact(workspace, "simplenetworklevelentity")
 
