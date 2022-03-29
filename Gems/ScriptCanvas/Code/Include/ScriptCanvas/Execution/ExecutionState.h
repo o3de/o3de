@@ -47,8 +47,9 @@ namespace ScriptCanvas
     {
     public:
         // chopping block - begin
-        const RuntimeComponent* m_component = nullptr;
-
+    protected:
+        const RuntimeComponent* GetRuntimeComponent() const;
+    public:
         AZ::ComponentId GetComponentId() const;
 
         AZ::EntityId GetEntityId() const;
@@ -59,7 +60,6 @@ namespace ScriptCanvas
 
         AZ::EntityId GetScriptCanvasId() const;
 
-        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
         // chopping block - end
 
         AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}", AZStd::enable_shared_from_this<ExecutionState>);
@@ -80,6 +80,8 @@ namespace ScriptCanvas
         AZ::Data::AssetId GetAssetId() const;
 
         virtual ExecutionMode GetExecutionMode() const = 0;
+
+        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
         virtual void Initialize() = 0;
 

@@ -60,7 +60,7 @@ namespace ScriptCanvas
         struct Reference
         {
             AZ_TYPE_INFO(Reference, "{608FD64B-EA34-45EB-9ADB-265B8A69AE00}");
-            void* address;
+            void* const address;
             const AZ::TypeId type;
                            
             Reference(void* address, const AZ::TypeId& type);

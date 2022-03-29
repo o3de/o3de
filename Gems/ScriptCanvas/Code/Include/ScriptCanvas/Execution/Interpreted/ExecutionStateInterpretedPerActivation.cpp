@@ -46,8 +46,8 @@ namespace ScriptCanvas
         AZ::Internal::LuaClassToStack(lua, this, azrtti_typeid<ExecutionStateInterpretedPerActivation>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::None);
         // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>
         Execution::ActivationInputArray storage;
-        Execution::ActivationData data(m_component->GetRuntimeDataOverrides(), storage);
-        Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, m_component->GetEntityId());
+        Execution::ActivationData data(GetRuntimeComponent()->GetRuntimeDataOverrides(), storage);
+        Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, GetRuntimeComponent()->GetEntityId());
 
         if (range.requiresDependencyConstructionParameters)
         {

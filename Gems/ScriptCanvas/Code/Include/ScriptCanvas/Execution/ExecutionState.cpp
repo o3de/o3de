@@ -59,24 +59,31 @@ namespace ScriptCanvas
     }
 
     // chopping block - begin
+
+    const RuntimeComponent* ExecutionState::GetRuntimeComponent() const
+    {
+        auto reference = AZStd::any_cast<Execution::Reference>(&m_userData);
+        return reference ? reference->As<RuntimeComponent>() : nullptr;
+    }
+
     AZ::Data::AssetId ExecutionState::GetAssetId() const
     {
-        return m_component->GetRuntimeDataOverrides().m_runtimeAsset.GetId();
+        return GetRuntimeComponent()->GetRuntimeDataOverrides().m_runtimeAsset.GetId();
     }
 
     AZ::EntityId ExecutionState::GetEntityId() const
     {
-        return m_component->GetEntityId();
+        return GetRuntimeComponent()->GetEntityId();
     }
 
     AZ::ComponentId ExecutionState::GetComponentId() const
     {
-        return m_component->GetId();
+        return GetRuntimeComponent()->GetId();
     }
 
     GraphIdentifier ExecutionState::GetGraphIdentifier() const
     {
-        return  m_component->GetGraphIdentifier();
+        return GetRuntimeComponent()->GetGraphIdentifier();
     }
 
     GraphIdentifier ExecutionState::GetGraphIdentifier(const AZ::Data::AssetId& id) const
@@ -86,12 +93,12 @@ namespace ScriptCanvas
 
     AZ::EntityId ExecutionState::GetScriptCanvasId() const
     {
-        return m_component->GetScriptCanvasId();
+        return GetRuntimeComponent()->GetScriptCanvasId();
     }
 
     const RuntimeDataOverrides& ExecutionState::GetRuntimeDataOverrides() const
     {
-        return m_component->GetRuntimeDataOverrides();
+        return GetRuntimeComponent()->GetRuntimeDataOverrides();
     }
     // chopping block - end
 
