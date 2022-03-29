@@ -266,19 +266,21 @@ set(FILES
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.ScriptCanvasNodeable.xml
-    Include/ScriptCanvas/Libraries/String/Contains.h
-    Include/ScriptCanvas/Libraries/String/Contains.ScriptCanvasGrammar.xml
+    Include/ScriptCanvas/Libraries/String/Deprecated/Contains.h
+    Include/ScriptCanvas/Libraries/String/Deprecated/Contains.ScriptCanvasGrammar.xml
+    Include/ScriptCanvas/Libraries/String/Deprecated/Replace.h
+    Include/ScriptCanvas/Libraries/String/Deprecated/Replace.ScriptCanvasGrammar.xml
+    Include/ScriptCanvas/Libraries/String/Deprecated/StringGenerics.h
+    Include/ScriptCanvas/Libraries/String/Deprecated/Utilities.h
+    Include/ScriptCanvas/Libraries/String/Deprecated/Utilities.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/String/Format.h
     Include/ScriptCanvas/Libraries/String/Format.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/String/Print.h
     Include/ScriptCanvas/Libraries/String/Print.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/String/Replace.h
-    Include/ScriptCanvas/Libraries/String/Replace.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/String/String.h
+    Include/ScriptCanvas/Libraries/String/StringFunctions.h
+    Include/ScriptCanvas/Libraries/String/StringFunctions.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/String/StringMethods.h
-    Include/ScriptCanvas/Libraries/String/StringGenerics.h
-    Include/ScriptCanvas/Libraries/String/Utilities.h
-    Include/ScriptCanvas/Libraries/String/Utilities.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.h
     Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/UnitTesting/AddSuccess.h

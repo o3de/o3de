@@ -127,6 +127,7 @@ namespace ScriptCanvas
         static const char* GetDescription() { return DESCRIPTION; };\
         static const char* GetNodeName() { return #NODE_NAME; };\
         static bool IsDeprecated() { return ISDEPRECATED; };\
+        static const char* GetReplacementMethodName(){ return "None"; };\
         \
     private:\
         static AZStd::string_view GetName(size_t i)\
@@ -142,6 +143,24 @@ namespace ScriptCanvas
     };\
     using NODE_NAME##Node = ScriptCanvas::NodeFunctionGenericMultiReturn<AZStd::add_pointer_t<decltype(NODE_NAME)>, NODE_NAME##Traits, &NODE_NAME, AZStd::add_pointer_t<decltype(DEFAULT_FUNC)>, &DEFAULT_FUNC>;
 
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, METHOD_NAME)\
+    struct NODE_NAME##Traits\
+    {\
+        AZ_TYPE_INFO(NODE_NAME##Traits, UUID);\
+        using FunctionTraits = AZStd::function_traits< decltype(&NODE_NAME) >;\
+        static const size_t s_numArgs = FunctionTraits::arity;\
+        static AZStd::string GetArgName([[maybe_unused]]size_t i) { return ""; };\
+        static AZStd::string GetResultName([[maybe_unused]]size_t i) { return ""; };\
+        static const char* GetDependency() { return CATEGORY; }\
+        static const char* GetCategory() { return "Deprecated"; };\
+        static const char* GetDescription() { return "Deprecated Node"; };\
+        static const char* GetNodeName() { return #NODE_NAME; };\
+        static bool IsDeprecated() { return true; };\
+        static const char* GetReplacementMethodName() { return METHOD_NAME; };\
+    };\
+    using NODE_NAME##Node = ScriptCanvas::NodeFunctionGenericMultiReturn<AZStd::add_pointer_t<decltype(NODE_NAME)>, NODE_NAME##Traits, &NODE_NAME, AZStd::add_pointer_t<decltype(ScriptCanvas::NoDefaultArguments)>, &ScriptCanvas::NoDefaultArguments>;
+
+// Following MACROS will be removed after all generic functions get migrated
 #define SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(NODE_NAME, CATEGORY, UUID, DESCRIPTION, ...)\
     SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE_WITH_DEFAULTS(NODE_NAME, ScriptCanvas::NoDefaultArguments, CATEGORY, UUID, false, DESCRIPTION, __VA_ARGS__)
 
@@ -217,7 +236,7 @@ namespace ScriptCanvas
         AZ_POP_DISABLE_WARNING
 
 
-            static const char* GetNodeFunctionName()
+        static const char* GetNodeFunctionName()
         {
             return t_Traits::GetNodeName();
         }
@@ -276,6 +295,21 @@ namespace ScriptCanvas
             scope.m_type = Grammar::LexicalScopeType::Namespace;
             scope.m_namespaces.push_back(Translation::Context::GetCategoryLibraryName(t_Traits::GetDependency()));
             return AZ::Success(scope);
+        }
+
+        bool IsDeprecated() const override
+        {
+            return t_Traits::IsDeprecated();
+        }
+
+        ScriptCanvas::NodeConfiguration GetReplacementNodeConfiguration() const override
+        {
+            ScriptCanvas::NodeConfiguration replacementNode;
+            // Replacement node should always be behavior context global method
+            // ScriptCanvas method node uuid is E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF
+            replacementNode.m_type = AZ::Uuid("E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF");
+            replacementNode.m_methodName = t_Traits::GetReplacementMethodName();
+            return replacementNode;
         }
 
     protected:

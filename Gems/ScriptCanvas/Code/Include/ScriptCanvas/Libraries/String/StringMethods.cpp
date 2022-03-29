@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
-
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include "StringMethods.h"
