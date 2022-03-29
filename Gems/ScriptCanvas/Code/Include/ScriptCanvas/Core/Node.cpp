@@ -1260,31 +1260,6 @@ namespace ScriptCanvas
         OnReconfigurationEnd();        
     }
 
-    Signal Node::CreateNodeInputSignal(const SlotId& slotId) const
-    {
-        return Signal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), GetInputNodeType(slotId), CreateNamedEndpoint(slotId), CreateInputMap());
-    }
-
-    Signal Node::CreateNodeOutputSignal(const SlotId& slotId) const
-    {
-        return Signal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), GetOutputNodeType(slotId), CreateNamedEndpoint(slotId), CreateOutputMap());
-    }
-
-    NodeStateChange Node::CreateNodeStateUpdate() const
-    {
-        return NodeStateChange();
-    }
-
-    VariableChange Node::CreateVariableChange(const GraphVariable& graphVariable) const
-    {
-        return CreateVariableChange((*graphVariable.GetDatum()), graphVariable.GetVariableId());
-    }
-
-    VariableChange Node::CreateVariableChange(const Datum& /*datum*/, const VariableId& /*variableId*/) const
-    {
-        return VariableChange{};
-    }
-
     void Node::ClearDisplayType(const AZ::Crc32& dynamicGroup, ExploredDynamicGroupCache& exploredGroupCache)
     {
         SetDisplayType(dynamicGroup, Data::Type::Invalid(), exploredGroupCache);

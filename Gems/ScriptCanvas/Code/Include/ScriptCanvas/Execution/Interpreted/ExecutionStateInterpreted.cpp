@@ -19,20 +19,20 @@ namespace ScriptCanvas
         : ExecutionState(config)
         , m_interpretedAsset(config.runtimeData.m_script)
     {
-        RuntimeAsset* runtimeAsset = config.asset.Get();
+        RuntimeAsset* runtimeAsset = config.overrides.m_runtimeAsset.Get();
 
 #if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
         if (!runtimeAsset)
         {
             AZ_Error("ScriptCanvas", false
                 , "ExecutionStateInterpreted created with ExecutionStateConfig that contained bad runtime asset data. %s"
-                , config.asset.GetId().ToString<AZStd::string>().data());
+                , config.overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
             return;
         }
 #else
         AZ_Assert(false
             , "ExecutionStateInterpreted created with ExecutionStateConfig that contained bad runtime asset data. %s"
-            , config.asset.GetId().ToString<AZStd::string>().data());
+            , config.overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
 #endif
 
         if (!runtimeAsset->m_runtimeData.m_areStaticsInitialized)

@@ -119,6 +119,9 @@ namespace ScriptCanvas
 
         bool IsInLoop(const ExecutionTreeConstPtr& execution);
 
+        // #scriptcanvas_component_extension
+        bool IsInputSelf(const ExecutionInput& input);
+
         bool IsInputSelf(const ExecutionTreeConstPtr& execution, size_t index);
 
         bool IsIsNull(const ExecutionTreeConstPtr& execution);
@@ -156,6 +159,8 @@ namespace ScriptCanvas
         bool IsPure(const Node* node, const Slot* slot);
 
         bool IsRandomSwitchStatement(const ExecutionTreeConstPtr& execution);
+
+        bool IsSelf(VariableConstPtr variable);
 
         bool IsSequenceNode(const Node* node);
 

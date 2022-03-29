@@ -47,7 +47,7 @@ namespace ScriptCanvas
         lua_State* LoadLuaScript();
         
     private:
-        AZ::Data::Asset<AZ::ScriptAsset> m_interpretedAsset;
+        const AZ::Data::Asset<AZ::ScriptAsset>& m_interpretedAsset;
         int m_luaRegistryIndex = LUA_NOREF;
     };
 } 

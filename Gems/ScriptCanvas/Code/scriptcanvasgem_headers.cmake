@@ -102,6 +102,7 @@ set(FILES
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedClassAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.h
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedComponentAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedDebugAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedEBusAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedOut.h

@@ -63,10 +63,6 @@ namespace ScriptCanvas
 
         void CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const;
 
-        AZ::Data::AssetId GetAssetId() const;
-
-        AZ::EntityId GetEntityId() const;
-
         const Execution::FunctorOut& GetExecutionOut(size_t index) const;
         
         const Execution::FunctorOut& GetExecutionOutChecked(size_t index) const;

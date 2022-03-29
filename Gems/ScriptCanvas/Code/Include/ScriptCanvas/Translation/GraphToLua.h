@@ -156,6 +156,7 @@ namespace ScriptCanvas
             void WriteHeader();
             void WriteInfiniteLoopCheckPost(Grammar::ExecutionTreeConstPtr execution);
             void WriteInfiniteLoopCheckPre(Grammar::ExecutionTreeConstPtr execution);
+            void WriteInitializeLocalSelfEntityId();
             void WriteLocalInputCreation(Grammar::ExecutionTreeConstPtr execution);
             void WriteLocalOutputInitialization(Grammar::ExecutionTreeConstPtr execution);
             void WriteLocalVariableInitializion(Grammar::ExecutionTreeConstPtr execution);

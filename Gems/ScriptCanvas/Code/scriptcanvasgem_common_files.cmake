@@ -70,6 +70,7 @@ set(FILES
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.cpp
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedComponentAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedDebugAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedEBusAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedOut.cpp

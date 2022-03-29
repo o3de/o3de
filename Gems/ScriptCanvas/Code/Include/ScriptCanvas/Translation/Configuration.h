@@ -24,8 +24,6 @@ namespace ScriptCanvas
             AZStd::string_view m_blockCommentClose;
             AZStd::string_view m_blockCommentOpen;
             AZStd::string_view m_dependencyDelimiter;
-            AZStd::string_view m_executionStateEntityIdName;
-            AZStd::string_view m_executionStateEntityIdRef;
             AZStd::string_view m_executionStateName;
             AZStd::string_view m_executionStateReferenceGraph;
             AZStd::string_view m_executionStateReferenceLocal;
@@ -41,6 +39,9 @@ namespace ScriptCanvas
             AZStd::string_view m_scopeOpen;
             AZStd::string_view m_singleLineComment;
             AZStd::string_view m_suffix;
+            // #scriptcanvas_component_extension
+            AZStd::string_view m_executionStateEntityIdRefInitialization;
+            AZStd::string_view m_executionStateEntityIdRef;
         };
 
     } 

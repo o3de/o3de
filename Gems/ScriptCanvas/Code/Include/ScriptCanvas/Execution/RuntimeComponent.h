@@ -61,8 +61,6 @@ namespace ScriptCanvas
 
         ExecutionMode GetExecutionMode() const;
 
-        AZ::EntityId GetScriptCanvasId() const;
-
         const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
         void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
@@ -101,7 +99,6 @@ namespace ScriptCanvas
 
     private:
         ExecutionStatePtr m_executionState;
-        AZ::EntityId m_scriptCanvasId;
         RuntimeDataOverrides m_runtimeOverrides;
     };
 }

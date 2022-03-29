@@ -46,16 +46,6 @@ namespace ScriptCanvas
         OnDeactivate();
     }
 
-    AZ::Data::AssetId Nodeable::GetAssetId() const
-    {
-        return m_executionState->GetAssetId();
-    }
-
-    AZ::EntityId Nodeable::GetEntityId() const
-    {
-        return m_executionState->GetEntityId();
-    }
-
     ExecutionStateWeakConstPtr Nodeable::GetExecutionState() const
     {
         return m_executionState;

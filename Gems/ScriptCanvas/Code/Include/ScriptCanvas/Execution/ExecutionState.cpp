@@ -34,19 +34,21 @@ namespace ExecutionStateCpp
 
 namespace ScriptCanvas
 {
-    ExecutionStateConfig::ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset)
-        : runtimeData(asset.Get()->m_runtimeData)
-        , asset(asset)
+    ExecutionStateConfig::ExecutionStateConfig(const RuntimeDataOverrides& overrides)
+        : runtimeData(overrides.m_runtimeAsset.Get()->m_runtimeData)
+        , overrides(overrides)
     {}
 
-    ExecutionStateConfig::ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset, AZStd::any&& userData)
-        : runtimeData(asset.Get()->m_runtimeData)
-        , asset(asset)
+    ExecutionStateConfig::ExecutionStateConfig(const RuntimeDataOverrides& overrides, AZStd::any&& userData)
+        : runtimeData(overrides.m_runtimeAsset.Get()->m_runtimeData)
+        , overrides(overrides)
         , userData(userData)
     {}
     
     ExecutionState::ExecutionState(ExecutionStateConfig& config)
-        : m_userData(AZStd::move(config.userData))
+        : m_runtimeData(config.runtimeData)
+        , m_overrides(config.overrides)
+        , m_userData(AZStd::move(config.userData))
     {}
 
     ExecutionStatePtr ExecutionState::Create(ExecutionStateConfig& config)
@@ -73,50 +75,15 @@ namespace ScriptCanvas
         }
     }
 
-    // chopping block - begin
-
-    const RuntimeComponent* ExecutionState::GetRuntimeComponent() const
-    {
-        auto reference = AZStd::any_cast<Execution::Reference>(&m_userData);
-        return reference ? reference->As<RuntimeComponent>() : nullptr;
-    }
-
     AZ::Data::AssetId ExecutionState::GetAssetId() const
     {
-        return GetRuntimeComponent()->GetRuntimeDataOverrides().m_runtimeAsset.GetId();
+        return m_overrides.m_runtimeAsset.GetId();
     }
-
-    AZ::EntityId ExecutionState::GetEntityId() const
-    {
-        return GetRuntimeComponent()->GetEntityId();
-    }
-
-    AZ::ComponentId ExecutionState::GetComponentId() const
-    {
-        return GetRuntimeComponent()->GetId();
-    }
-
-    GraphIdentifier ExecutionState::GetGraphIdentifier() const
-    {
-        return GraphIdentifier(AZ::Data::AssetId(), GetComponentId());
-    }
-
-    GraphIdentifier ExecutionState::GetGraphIdentifier(const AZ::Data::AssetId& id) const
-    {
-        return GraphIdentifier(AZ::Data::AssetId(id.m_guid, 0), GetComponentId());
-    }
-
-    const RuntimeDataOverrides& ExecutionState::GetRuntimeDataOverrides() const
-    {
-        return GetRuntimeComponent()->GetRuntimeDataOverrides();
-    }
-    // chopping block - end
-
 
     const Grammar::DebugExecution* ExecutionState::GetDebugSymbolIn(size_t index) const
     {
-        return index < GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_ins.size()
-            ? &(GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_ins[index])
+        return index < m_runtimeData.m_debugMap.m_ins.size()
+            ? &(m_runtimeData.m_debugMap.m_ins[index])
             : nullptr;
     }
 
@@ -130,8 +97,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionState::GetDebugSymbolOut(size_t index) const
     {
-        return index < GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_outs.size()
-            ? &(GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_outs[index])
+        return index < m_runtimeData.m_debugMap.m_outs.size()
+            ? &(m_runtimeData.m_debugMap.m_outs[index])
             : nullptr;
     }
 
@@ -145,8 +112,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionState::GetDebugSymbolReturn(size_t index) const
     {
-        return index < GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_returns.size()
-            ? &(GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_returns[index])
+        return index < m_runtimeData.m_debugMap.m_returns.size()
+            ? &(m_runtimeData.m_debugMap.m_returns[index])
             : nullptr;
     }
 
@@ -160,8 +127,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugDataSource* ExecutionState::GetDebugSymbolVariableChange(size_t index) const
     {
-        return index < GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_variables.size()
-            ? &(GetRuntimeComponent()->GetRuntimeAssetData().m_debugMap.m_variables[index])
+        return index < m_runtimeData.m_debugMap.m_variables.size()
+            ? &(m_runtimeData.m_debugMap.m_variables[index])
             : nullptr;
     }
 
@@ -173,6 +140,26 @@ namespace ScriptCanvas
             : nullptr;
     }
 
+    const RuntimeDataOverrides& ExecutionState::GetRuntimeDataOverrides() const
+    {
+        return m_overrides;
+    }
+
+    const RuntimeData& ExecutionState::GetRuntimeData() const
+    {
+        return m_runtimeData;
+    }
+
+    const AZStd::any& ExecutionState::GetUserData() const
+    {
+        return m_userData;
+    }
+
+    AZStd::any& ExecutionState::ModUserData() const
+    {
+        return const_cast<AZStd::any&>(m_userData);
+    }
+
     void ExecutionState::Reflect(AZ::ReflectContext* reflectContext)
     {
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
@@ -180,7 +167,6 @@ namespace ScriptCanvas
             behaviorContext->Class<ExecutionState>()
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                 ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
-                ->Method("GetEntityId", &ExecutionState::GetEntityId)
                 ->Method("ToString", &ExecutionState::ToString)
                     ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                 ;

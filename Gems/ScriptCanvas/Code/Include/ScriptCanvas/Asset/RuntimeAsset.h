@@ -122,6 +122,8 @@ namespace ScriptCanvas
         {}
     };
 
+    using RuntimeAssetPtr = AZ::Data::Asset<RuntimeAsset>;
+
     class SubgraphInterfaceAsset;
 
     class SubgraphInterfaceAssetDescription : public AssetDescription

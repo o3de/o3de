@@ -14,8 +14,8 @@
 #include "Variable/GraphVariable.h"
 #include "Core/NamedId.h"
 
-#include <AzCore/Component/NamedEntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 #define SC_EXECUTION_TRACE_THREAD_BEGUN(arg) ;
 #define SC_EXECUTION_TRACE_THREAD_ENDED(arg) ;
@@ -40,17 +40,15 @@ namespace ScriptCanvas
         AZ_CLASS_ALLOCATOR(GraphInfo, AZ::SystemAllocator, 0);
         AZ_RTTI(GraphInfo, "{8D40A70D-3846-46B4-B0BF-22B5D0F55ADC}");
 
-        NamedActiveEntityId m_runtimeEntity;
-        GraphIdentifier m_graphIdentifier;
-
+        ExecutionStateWeakConstPtr m_executionState;
+        
         GraphInfo() = default;
         virtual ~GraphInfo() = default;
 
         GraphInfo(const GraphInfo&) = default;
 
-        GraphInfo(const NamedActiveEntityId& runtimeEntity, const GraphIdentifier& graphIdentifier)
-            : m_runtimeEntity(runtimeEntity)
-            , m_graphIdentifier(graphIdentifier)
+        GraphInfo(ExecutionStateWeakConstPtr executionState)
+            : m_executionState(executionState)
         {}
 
         bool operator==(const GraphInfo& graphInfo) const;
@@ -102,9 +100,8 @@ namespace AZStd
 
         AZ_FORCE_INLINE size_t operator()(const argument_type& argument) const
         {
-            AZStd::size_t graphInfoHash = AZStd::hash<AZ::EntityId>()(argument.m_runtimeEntity);
-            AZStd::hash_combine(graphInfoHash, argument.m_graphIdentifier);
-
+            auto voidPtr = reinterpret_cast<const void*>(argument.m_executionState);
+            AZStd::size_t graphInfoHash = AZStd::hash<const void*>()(voidPtr);
             return graphInfoHash;
         }
     };
@@ -625,8 +622,8 @@ namespace AZStd
 
         AZ_FORCE_INLINE size_t operator()(const argument_type& argument) const
         {
-            result_type result = AZStd::hash<const AZ::u64>()(static_cast<AZ::u64>(argument.m_runtimeEntity));
-            AZStd::hash_combine(result, argument.m_graphIdentifier);
+            auto voidPtr = reinterpret_cast<const void*>(argument.m_executionState);
+            AZStd::size_t result = AZStd::hash<const void*>()(voidPtr);
             AZStd::hash_combine(result, argument.m_endpoint);
             return result;
         }

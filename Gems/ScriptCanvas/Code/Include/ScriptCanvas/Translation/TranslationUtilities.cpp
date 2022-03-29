@@ -112,6 +112,7 @@ namespace ScriptCanvas
     {
         AZStd::string EntityIdValueToString(const AZ::EntityId& entityId, const Configuration& config)
         {
+            // #scriptcanvas_component_extension
             if (entityId == GraphOwnerId)
             {
                 return config.m_executionStateEntityIdRef;

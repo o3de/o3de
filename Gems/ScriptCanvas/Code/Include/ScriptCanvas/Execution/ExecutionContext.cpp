@@ -57,7 +57,7 @@ namespace ScriptCanvas
             }
         }
 
-        ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData, [[maybe_unused]] const AZ::EntityId& forSliceSupportOnly)
+        ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData)
         {
             const RuntimeData& runtimeData = activationData.runtimeData;
             ActivationInputRange rangeOut = runtimeData.m_activationInputRange;

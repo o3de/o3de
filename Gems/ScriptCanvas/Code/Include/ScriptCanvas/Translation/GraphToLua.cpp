@@ -55,9 +55,6 @@ namespace ScriptCanvas
             configuration.m_blockCommentOpen = "--[[";
             configuration.m_dependencyDelimiter = "/";
             configuration.m_executionStateName = "executionState";
-
-            configuration.m_executionStateEntityIdName = "m_entityId";
-            configuration.m_executionStateEntityIdRef = "executionState:GetEntityId()";
             configuration.m_executionStateReferenceGraph = "self.executionState";
             configuration.m_executionStateReferenceLocal = configuration.m_executionStateName;
             configuration.m_executionStateScriptCanvasIdName = "m_scriptCanvasId";
@@ -71,6 +68,10 @@ namespace ScriptCanvas
             configuration.m_scopeOpen = "end";
             configuration.m_singleLineComment = "--";
             configuration.m_suffix = Grammar::k_internalRuntimeSuffix;
+
+            // #scriptcanvas_component_extension
+            configuration.m_executionStateEntityIdRefInitialization = Grammar::k_GetSelfEntityIdCall;
+            configuration.m_executionStateEntityIdRef = "selfEntityId";
             return configuration;
         }
 
@@ -828,13 +829,18 @@ namespace ScriptCanvas
             m_dotLua.WriteIndented("end");
         }
 
-        void GraphToLua::TranslateFunctionBlock(Grammar::ExecutionTreeConstPtr functionBlock, IsNamed /*lex*/)
+        void GraphToLua::TranslateFunctionBlock(Grammar::ExecutionTreeConstPtr functionBlock, [[maybe_unused]] IsNamed lex)
         {
             ScopedIndent indent(m_dotLua);
 
             if (!functionBlock->IsPure())
             {
                 m_dotLua.WriteLineIndented("local %s = %s", m_configuration.m_executionStateName.data(), m_configuration.m_executionStateReferenceGraph.data());
+            }
+
+            if (functionBlock->RefersToSelfEntityId())
+            {
+                WriteInitializeLocalSelfEntityId();
             }
 
             if (functionBlock->IsInfiniteLoopDetectionPoint())
@@ -1159,6 +1165,9 @@ namespace ScriptCanvas
         {
             const auto& staticVariableNames = m_model.GetStaticVariablesNames();
             auto& variables = m_model.GetVariables();
+
+            bool isSelfLocalInitialized = false;
+
             for (auto& variable : variables)
             {
                 if (variable->m_isDebugOnly && m_buildConfiguration != BuildConfiguration::Debug)
@@ -1240,6 +1249,12 @@ namespace ScriptCanvas
                         m_dotLua.WriteLineIndented("%s%s = %s", leftValue.data(), variable->m_name.data(), variable->m_name.data());
                         break;
 
+                    case Grammar::VariableConstructionRequirement::SelfEntityId:
+                        if (!isSelfLocalInitialized)
+                        {
+                            WriteInitializeLocalSelfEntityId();
+                            isSelfLocalInitialized = true;
+                        } // fall through to VariableConstructionRequirement::None case
                     case Grammar::VariableConstructionRequirement::None:
                         m_dotLua.WriteLineIndented("%s%s = %s", leftValue.data(), variable->m_name.data(), ToValueString(variable->m_datum, m_configuration).data());
                         break;
@@ -1265,6 +1280,7 @@ namespace ScriptCanvas
                         break;
                     }
 
+                    
                     default:
                         break;
                     }
@@ -1987,6 +2003,13 @@ namespace ScriptCanvas
                     AddError(execution, aznew Internal::ParseError(execution->GetNodeId(), ParseErrors::MissingInfiniteLoopDetectionVariable));
                 }
             }
+        }
+
+        void GraphToLua::WriteInitializeLocalSelfEntityId()
+        {
+            m_dotLua.WriteLineIndented("local %s = %s"
+                , m_configuration.m_executionStateEntityIdRef.data()
+                , m_configuration.m_executionStateEntityIdRefInitialization.data());
         }
 
         void GraphToLua::WriteLocalInputCreation(Grammar::ExecutionTreeConstPtr functionBlock)

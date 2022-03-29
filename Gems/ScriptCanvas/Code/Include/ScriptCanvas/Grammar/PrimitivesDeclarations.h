@@ -109,6 +109,10 @@ namespace ScriptCanvas
         constexpr const char* k_SetExecutionOutNameNodeable = "SetExecutionOutNodeable";
         constexpr const char* k_SetExecutionOutResultNameNodeable = "SetExecutionOutResultNodeable";
 
+        // #scriptcanvas_component_extension
+        constexpr const char* k_GetSelfEntityId = "GetSelfEntityId_SCVM";
+        constexpr const char* k_GetSelfEntityIdCall = "GetSelfEntityId_SCVM(executionState)";
+
         constexpr const char* k_GetExecutionOutNameInterpretedClass = "GetExecutionOutClass_SCVM";
         constexpr const char* k_InitializeExecutionOutsNameInterpretedClass = "InitializeExecutionOutsClass_SCVM";
         constexpr const char* k_SetExecutionOutNameInterpretedClass = "SetExecutionOutClass_SCVM";
@@ -159,6 +163,7 @@ namespace ScriptCanvas
             InputNodeable,
             InputVariable,
             None,
+            SelfEntityId,
             Static,
         };
 

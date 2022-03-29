@@ -35,39 +35,23 @@ namespace ScriptCanvas
     struct ExecutionStateConfig
     {
         const RuntimeData& runtimeData;
-        AZ::Data::Asset<RuntimeAsset> asset;
+        const RuntimeDataOverrides& overrides;
         AZStd::any userData;
 
-        ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset);
-        ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset, AZStd::any&& userData);
+        ExecutionStateConfig(const RuntimeDataOverrides& overrides);
+        ExecutionStateConfig(const RuntimeDataOverrides& overrides, AZStd::any&& userData);
     };
 
     class ExecutionState
         : public AZStd::enable_shared_from_this<ExecutionState>
     {
     public:
-        // chopping block - begin
-    protected:
-        const RuntimeComponent* GetRuntimeComponent() const;
-    public:
-        AZ::ComponentId GetComponentId() const;
-
-        AZ::EntityId GetEntityId() const;
-
-        GraphIdentifier GetGraphIdentifier() const;
-
-        GraphIdentifier GetGraphIdentifier(const AZ::Data::AssetId& id) const;
-
-        // chopping block - end
-
         AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}", AZStd::enable_shared_from_this<ExecutionState>);
         AZ_CLASS_ALLOCATOR(ExecutionState, AZ::SystemAllocator, 0);
 
         static ExecutionStatePtr Create(ExecutionStateConfig& config);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
-
-        AZStd::any m_userData;
 
         ExecutionState(ExecutionStateConfig& config);
 
@@ -97,7 +81,13 @@ namespace ScriptCanvas
 
         const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
+        const RuntimeData& GetRuntimeData() const;
+
+        const AZStd::any& GetUserData() const;
+
         virtual void Initialize() = 0;
+
+        AZStd::any& ModUserData() const;
 
         ExecutionStatePtr SharedFromThis();
 
@@ -110,6 +100,11 @@ namespace ScriptCanvas
         ExecutionStateWeakPtr WeakFromThis();
 
         ExecutionStateWeakConstPtr WeakFromThisConst() const;
+
+    private:
+        const RuntimeData& m_runtimeData;
+        const RuntimeDataOverrides& m_overrides;
+        AZStd::any m_userData;
     };
 
 }

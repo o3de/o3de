@@ -81,7 +81,6 @@ namespace ScriptCanvas
             static const size_t k_variableIndex = 1;
             AZStd::variant<SlotId, VariableId> m_source;
 
-
             static DebugDataSource FromInternal();
 
             static DebugDataSource FromInternal(const Data::Type& dataType);

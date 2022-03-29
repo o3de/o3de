@@ -204,6 +204,8 @@ namespace ScriptCanvas
 
             void MarkDebugEmptyStatement();
 
+            void MarkHasExplicitUserOutCalls();
+
             void MarkInfiniteLoopDetectionPoint();
 
             void MarkInputHasThisPointer();
@@ -213,6 +215,8 @@ namespace ScriptCanvas
             void MarkInternalOut();
 
             void MarkPure();
+
+            void MarkRefersToSelfEntityId();
 
             void MarkRootLatent();
 
@@ -236,9 +240,9 @@ namespace ScriptCanvas
 
             void ReduceInputSet(const AZ::InputRestriction& indices);
 
-            AZ::Outcome<AZStd::pair<size_t, ExecutionChild>> RemoveChild(const ExecutionTreeConstPtr& child);
+            bool RefersToSelfEntityId() const;
 
-            void MarkHasExplicitUserOutCalls();
+            AZ::Outcome<AZStd::pair<size_t, ExecutionChild>> RemoveChild(const ExecutionTreeConstPtr& child);
 
             void SetExecutedPropertyExtraction(PropertyExtractionConstPtr propertyExtraction);
 
@@ -275,6 +279,8 @@ namespace ScriptCanvas
 
             ConversionByIndex m_inputConversion;
 
+            bool m_hasExplicitUserOutCalls = false;
+
             bool m_isInfiniteLoopDetectionPoint = false;
 
             bool m_inputHasThisPointer = false;
@@ -289,7 +295,8 @@ namespace ScriptCanvas
 
             bool m_isStartCall = false;
 
-            bool m_hasExplicitUserOutCalls = false;
+            // #scriptcanvas_component_extension
+            bool m_refersToSelfEntityId = false;
 
             size_t m_outCallIndex = std::numeric_limits<size_t>::max();
 

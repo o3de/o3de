@@ -98,7 +98,7 @@ namespace ScriptCanvas
 
             if (const Grammar::DebugExecution* debugIn = executionState->GetDebugSymbolIn(debugExecutionIndex))
             {
-                InputSignal inSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier()));
+                auto inSignal = InputSignal(GraphInfo(executionState));
                 inSignal.m_endpoint = debugIn->m_namedEndpoint;
                 ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 3, inSignal, debugIn->m_data);
                 ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledInput, inSignal);
@@ -122,7 +122,7 @@ namespace ScriptCanvas
 
             if (const Grammar::DebugExecution* debugIn = executionState->GetDebugSymbolIn(debugExecutionIndex, subgraphId))
             {
-                InputSignal inSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier(subgraphId)));
+                auto inSignal = InputSignal(GraphInfo(executionState));
                 inSignal.m_endpoint = debugIn->m_namedEndpoint;
                 ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 4, inSignal, debugIn->m_data);
                 ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledInput, inSignal);
@@ -143,7 +143,7 @@ namespace ScriptCanvas
 
             if (const Grammar::DebugExecution* debugOut = executionState->GetDebugSymbolOut(debugExecutionIndex))
             {
-                OutputSignal outSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier()));
+                auto outSignal = OutputSignal(GraphInfo(executionState));
                 outSignal.m_endpoint = debugOut->m_namedEndpoint;
                 ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 3, outSignal, debugOut->m_data);
                 ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledOutput, outSignal);
@@ -167,7 +167,7 @@ namespace ScriptCanvas
 
             if (const Grammar::DebugExecution* debugOut = executionState->GetDebugSymbolOut(debugExecutionIndex, subgraphId))
             {
-                OutputSignal outSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier(subgraphId)));
+                auto outSignal = OutputSignal(GraphInfo(executionState));
                 outSignal.m_endpoint = debugOut->m_namedEndpoint;
                 ExecutionInterpretedDebugAPIcpp::PopulateSignalData(lua, 4, outSignal, debugOut->m_data);
                 ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::NodeSignaledOutput, outSignal);
@@ -221,7 +221,7 @@ namespace ScriptCanvas
             {
                 DatumValue value;
                 ExecutionInterpretedDebugAPIcpp::PopulateSignalDatum(lua, 3, value, variableChangeSymbol);
-                VariableChange variableChangeSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier()), value);
+                VariableChange variableChangeSignal(GraphInfo(executionState), value);
                 // \todo this signal is missing the variable id
                 ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::VariableChanged, variableChangeSignal);
             }
@@ -246,7 +246,7 @@ namespace ScriptCanvas
             {
                 DatumValue value;
                 ExecutionInterpretedDebugAPIcpp::PopulateSignalDatum(lua, 4, value, variableChangeSymbol);
-                VariableChange variableChangeSignal(GraphInfo(executionState->GetEntityId(), executionState->GetGraphIdentifier(subgraphId)), value);
+                VariableChange variableChangeSignal(GraphInfo(executionState), value);
                 // \todo this signal is missing the variable id
                 ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::VariableChanged, variableChangeSignal);
             }

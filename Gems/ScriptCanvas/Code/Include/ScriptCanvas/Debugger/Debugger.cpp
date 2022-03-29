@@ -264,8 +264,9 @@ namespace ScriptCanvas
             }
         }
 
-        void ServiceComponent::GraphActivated(const GraphActivation& graphInfo)
+        void ServiceComponent::GraphActivated([[maybe_unused]] const GraphActivation& graphInfo)
         {
+            /*
             SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("GraphActivation: %s", graphInfo.ToString().data());
 
             Lock lock(m_mutex);
@@ -396,10 +397,12 @@ namespace ScriptCanvas
 //             GraphActivation payload = graphInfo;
 //             payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
 //             AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::GraphActivated(payload));
+            */
         }
 
-        void ServiceComponent::GraphDeactivated(const GraphActivation& graphInfo)
+        void ServiceComponent::GraphDeactivated([[maybe_unused]] const GraphActivation& graphInfo)
         {
+            /*
             SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("GraphDeactivated: %s", graphInfo.ToString().data());
 
             Lock lock(m_mutex);
@@ -451,6 +454,7 @@ namespace ScriptCanvas
             // GraphActivation payload = graphInfo;
             // payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
             // AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::GraphDeactivated(payload));
+            */
         }
 
         bool ServiceComponent::IsAssetObserved(const AZ::Data::AssetId& assetId) const

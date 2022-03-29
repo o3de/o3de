@@ -40,11 +40,6 @@ namespace RuntimeComponentCpp
 
 namespace ScriptCanvas
 {
-    GraphInfo CreateGraphInfo(ScriptCanvasId scriptCanvasId, const GraphIdentifier& graphIdentifier)
-    {
-        return GraphInfo(scriptCanvasId, graphIdentifier);
-    }
-
     RuntimeComponentUserData::RuntimeComponentUserData(RuntimeComponent& component, const AZ::EntityId& entity)
         : component(component)
         , entity(entity)
@@ -57,7 +52,7 @@ namespace ScriptCanvas
 
     ActivationInfo RuntimeComponent::CreateActivationInfo() const
     {
-        return ActivationInfo(GraphInfo(GetEntityId(), GraphIdentifier(m_runtimeOverrides.m_runtimeAsset.GetId(), GetId())));
+        return ActivationInfo(GraphInfo(m_executionState.get()));
     }
 
     void RuntimeComponent::Execute()
@@ -80,11 +75,6 @@ namespace ScriptCanvas
         return m_executionState ? m_executionState->GetExecutionMode() : ExecutionMode::Interpreted;
     }
 
-    AZ::EntityId RuntimeComponent::GetScriptCanvasId() const
-    {
-        return m_scriptCanvasId;
-    }
-
     const RuntimeDataOverrides& RuntimeComponent::GetRuntimeDataOverrides() const
     {
         return m_runtimeOverrides;
@@ -98,7 +88,6 @@ namespace ScriptCanvas
 
     void RuntimeComponent::Init()
     {
-        m_scriptCanvasId = AZ::Entity::MakeId();
         AZ_Assert(RuntimeDataOverrides::IsPreloadBehaviorEnforced(m_runtimeOverrides)
             , "RuntimeComponent::m_runtimeAsset Auto load behavior MUST be set to AZ::Data::AssetLoadBehavior::PreLoad");
     }
@@ -122,7 +111,7 @@ namespace ScriptCanvas
         AZ_PROFILE_SCOPE(ScriptCanvas, "RuntimeComponent::InitializeExecution (%s)"
             , m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         
-        ExecutionStateConfig config(m_runtimeOverrides.m_runtimeAsset, AZStd::any(Execution::Reference(this, azrtti_typeid<RuntimeComponent>())));
+        ExecutionStateConfig config(m_runtimeOverrides, AZStd::any(Execution::Reference(this, azrtti_typeid<RuntimeComponent>())));
         m_executionState = ExecutionState::Create(config);
                 
 #if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)

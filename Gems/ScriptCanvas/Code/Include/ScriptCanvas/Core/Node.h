@@ -897,13 +897,6 @@ protected:
         SlotDataMap CreateInputMap() const;
         SlotDataMap CreateOutputMap() const;
 
-        Signal CreateNodeInputSignal(const SlotId& slotId) const;
-        Signal CreateNodeOutputSignal(const SlotId& slotId) const;
-
-        NodeStateChange CreateNodeStateUpdate() const;
-        VariableChange CreateVariableChange(const GraphVariable& graphVariable) const;
-        VariableChange CreateVariableChange(const Datum& variableDatum, const VariableId& variableId) const;
-
         void ClearDisplayType(const AZ::Crc32& dynamicGroup)
         {
             ExploredDynamicGroupCache cache;

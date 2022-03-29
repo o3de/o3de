@@ -784,11 +784,14 @@ namespace ScriptCanvas
             return IsInLoop(parent);
         }
 
+        bool IsInputSelf(const ExecutionInput& input)
+        {
+           return IsSelf(input.m_value);
+        }
+
         bool IsInputSelf(const ExecutionTreeConstPtr& execution, size_t index)
         {
-            return execution->GetInputCount() > index
-                && ((execution->GetInput(index).m_value->m_datum.GetAs<Data::NamedEntityIDType>() && *execution->GetInput(index).m_value->m_datum.GetAs<Data::NamedEntityIDType>() == GraphOwnerId && !execution->GetInput(index).m_value->m_isExposedToConstruction)
-                    || (execution->GetInput(index).m_value->m_datum.GetAs<Data::EntityIDType>() && *execution->GetInput(index).m_value->m_datum.GetAs<Data::EntityIDType>() == GraphOwnerId && !execution->GetInput(index).m_value->m_isExposedToConstruction));
+            return execution->GetInputCount() > index && IsInputSelf(execution->GetInput(index));
         }
 
         bool IsIsNull(const ExecutionTreeConstPtr& execution)
@@ -1053,6 +1056,17 @@ namespace ScriptCanvas
                 && execution->GetId().m_slot->GetType() == CombinedSlotType::ExecutionIn;
         }
 
+        bool IsSelf(VariableConstPtr variable)
+        {
+            return variable
+                && ((variable->m_datum.GetAs<Data::NamedEntityIDType>()
+                    && *variable->m_datum.GetAs<Data::NamedEntityIDType>() == GraphOwnerId
+                    && !variable->m_isExposedToConstruction)
+                    || (variable->m_datum.GetAs<Data::EntityIDType>()
+                        && *variable->m_datum.GetAs<Data::EntityIDType>() == GraphOwnerId
+                        && !variable->m_isExposedToConstruction));
+        }
+
         bool IsSequenceNode(const Node* node)
         {
             return azrtti_istypeof<const ScriptCanvas::Nodes::Logic::OrderedSequencer*>(node);
@@ -1145,6 +1159,10 @@ namespace ScriptCanvas
             {
                 return VariableConstructionRequirement::InputEntityId;
             }
+            else if (IsSelf(variable))
+            {
+                return VariableConstructionRequirement::SelfEntityId;
+            }
             else if (variable->m_isExposedToConstruction)
             {
                 if (variable->m_nodeableNodeId.IsValid())
@@ -1164,7 +1182,7 @@ namespace ScriptCanvas
             {
                 return VariableConstructionRequirement::Static;
             }
-
+            
             return VariableConstructionRequirement::None;
         }
 
