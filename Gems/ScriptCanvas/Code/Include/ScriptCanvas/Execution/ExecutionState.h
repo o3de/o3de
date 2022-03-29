@@ -58,8 +58,6 @@ namespace ScriptCanvas
 
         GraphIdentifier GetGraphIdentifier(const AZ::Data::AssetId& id) const;
 
-        AZ::EntityId GetScriptCanvasId() const;
-
         // chopping block - end
 
         AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}", AZStd::enable_shared_from_this<ExecutionState>);

@@ -59,8 +59,6 @@ namespace ScriptCanvas
         // used to provide debug symbols, usually coming in the form of Node/Slot/Variable IDs
         const RuntimeData& GetRuntimeAssetData() const;
 
-        GraphIdentifier GetGraphIdentifier() const;
-
         ExecutionMode GetExecutionMode() const;
 
         AZ::EntityId GetScriptCanvasId() const;

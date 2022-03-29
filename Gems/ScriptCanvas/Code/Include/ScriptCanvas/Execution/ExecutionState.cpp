@@ -98,17 +98,12 @@ namespace ScriptCanvas
 
     GraphIdentifier ExecutionState::GetGraphIdentifier() const
     {
-        return GetRuntimeComponent()->GetGraphIdentifier();
+        return GraphIdentifier(AZ::Data::AssetId(), GetComponentId());
     }
 
     GraphIdentifier ExecutionState::GetGraphIdentifier(const AZ::Data::AssetId& id) const
     {
         return GraphIdentifier(AZ::Data::AssetId(id.m_guid, 0), GetComponentId());
-    }
-
-    AZ::EntityId ExecutionState::GetScriptCanvasId() const
-    {
-        return GetRuntimeComponent()->GetScriptCanvasId();
     }
 
     const RuntimeDataOverrides& ExecutionState::GetRuntimeDataOverrides() const
@@ -186,7 +181,6 @@ namespace ScriptCanvas
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                 ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
                 ->Method("GetEntityId", &ExecutionState::GetEntityId)
-                ->Method("GetScriptCanvasId", &ExecutionState::GetScriptCanvasId)
                 ->Method("ToString", &ExecutionState::ToString)
                     ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                 ;

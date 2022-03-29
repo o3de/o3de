@@ -222,7 +222,14 @@ namespace ScriptCanvas
 
             case Data::eType::BehaviorContextObject:
             {
-                return "nil";
+                if (datum.GetType().GetAZType() != azrtti_typeid<ExecutionState>())
+                {
+                    return "nil";
+                }
+                else
+                {
+                    return config.m_executionStateName;
+                }
             }
 
             case Data::eType::Boolean:

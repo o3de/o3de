@@ -62,7 +62,7 @@ namespace ScriptCanvas
             if (executionState)
             {
                 bool isObserved{};
-                ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsGraphObserved, executionState->GetEntityId(), executionState->GetGraphIdentifier());
+                ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsGraphObserved, *executionState);
                 lua_pushboolean(lua, isObserved);
             }
             else
@@ -81,7 +81,8 @@ namespace ScriptCanvas
 
             if (executionState)
             {
-                ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::RuntimeError, executionState->GetScriptCanvasId(), executionState->GetGraphIdentifier(), lua_tostring(lua, -1));
+                // reconfigure this bus to only take the  execution state
+                ExecutionNotificationsBus::Broadcast(&ExecutionNotifications::RuntimeError, *executionState, lua_tostring(lua, -1));
             }
 
             lua_remove(lua, -2);

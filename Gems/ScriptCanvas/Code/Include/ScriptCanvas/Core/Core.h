@@ -51,6 +51,7 @@ namespace ScriptCanvas
     using GraphOwnerIdType = AZ::EntityId;
     static const GraphOwnerIdType GraphOwnerId = AZ::EntityId(0xacedc0de);
 
+    // \note Deprecated
     // A place holder identifier for unique runtime graph on Entity that is running more than one instance of the same graph.
     // This allows multiple instances of the same graph to be addressed individually on the same entity.
     // The actual value in each location initialized to UniqueId is populated at run-time.

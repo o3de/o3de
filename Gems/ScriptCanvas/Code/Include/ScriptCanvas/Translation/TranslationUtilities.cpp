@@ -118,7 +118,7 @@ namespace ScriptCanvas
             }
             else if (entityId == UniqueId)
             {
-                return config.m_executionStateScriptCanvasIdRef;
+                return config.m_executionStateName;
             }
             else
             {

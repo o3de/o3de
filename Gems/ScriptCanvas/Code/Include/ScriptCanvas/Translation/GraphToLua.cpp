@@ -61,7 +61,6 @@ namespace ScriptCanvas
             configuration.m_executionStateReferenceGraph = "self.executionState";
             configuration.m_executionStateReferenceLocal = configuration.m_executionStateName;
             configuration.m_executionStateScriptCanvasIdName = "m_scriptCanvasId";
-            configuration.m_executionStateScriptCanvasIdRef = "executionState:GetScriptCanvasId()";
             configuration.m_functionBlockClose = "end";
             configuration.m_functionBlockOpen = "";
             configuration.m_lexicalScopeDelimiter = ".";

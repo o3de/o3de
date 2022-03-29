@@ -117,7 +117,7 @@ namespace ScriptCanvas
         AZ_UNUSED(eventName);
         AZ_PROFILE_SCOPE(ScriptCanvas, "EBusEventHandler::OnEvent %s", eventName);
         auto handler = reinterpret_cast<EBusHandler*>(userData);
-        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(handler->GetScriptCanvasId(), handler->GetAssetId());
+        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(handler->GetExecutionState());
         handler->OnEvent(nullptr, eventIndex, result, numParameters, parameters);
     }
 

@@ -290,10 +290,6 @@ namespace ScriptCanvasEditor
                         Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->m_runtimeData);
                         Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->m_runtimeData);
                     }
-                    else
-                    {
-                        reporter.SetGraph(AZ::Entity::MakeId());
-                    }
                 }
             }
 
@@ -306,7 +302,7 @@ namespace ScriptCanvasEditor
                 else
                 {
                     loadResult.m_entity->Init();
-                    reporter.SetGraph(loadResult.m_runtimeComponent->GetScriptCanvasId());
+                    reporter.SetGraph(loadResult.m_runtimeAsset.GetId());
 
                     {
                         ScopedOutputSuppression outputSuppressor;

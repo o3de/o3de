@@ -73,8 +73,6 @@ namespace ScriptCanvas
 
         virtual NodePropertyInterface* GetPropertyInterface(AZ::Crc32 /*propertyId*/) { return nullptr; }
 
-        AZ::EntityId GetScriptCanvasId() const;
-
         void Deactivate();
 
         // \todo delete until needed, this level of optimization is not so necessary
@@ -88,6 +86,8 @@ namespace ScriptCanvas
         void SetExecutionOutChecked(size_t index, Execution::FunctorOut&& out);
 
     protected:
+        ExecutionStateWeakConstPtr GetExecutionState() const;
+
         void InitializeExecutionOutByRequiredCount();
 
         void InitializeExecutionState(ExecutionState* executionState);

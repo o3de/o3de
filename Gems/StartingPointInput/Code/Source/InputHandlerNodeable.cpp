@@ -33,19 +33,19 @@ namespace StartingPointInput
 
     void InputHandlerNodeable::OnPressed(float value)
     {
-        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
+        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetExecutionState());
         CallPressed(value);
     }
 
     void InputHandlerNodeable::OnHeld(float value)
     {
-        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
+        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetExecutionState());
         CallHeld(value);
     }
 
     void InputHandlerNodeable::OnReleased(float value)
     {
-        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
+        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetExecutionState());
         CallReleased(value);
     }
 }

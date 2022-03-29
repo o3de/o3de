@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/EntityId.h>
@@ -83,7 +84,7 @@ namespace ScriptCanvasEditor
 
         const AZStd::vector<Report>& GetFailure() const;
 
-        const ScriptCanvasId& GetScriptCanvasId() const;
+        const AZ::Data::AssetId& GetGraph() const;
 
         AZStd::sys_time_t GetParseDuration() const;
 
@@ -131,7 +132,7 @@ namespace ScriptCanvasEditor
 
         void SetEntity(const AZ::EntityId& entityID);
 
-        void SetGraph(const ScriptCanvasId& scriptCanvasId);
+        void SetGraph(const AZ::Data::AssetId& graphID);
 
         void SetProcessOnly(bool processOnly);
 
@@ -169,12 +170,12 @@ namespace ScriptCanvasEditor
         // IsGraphObserved is needed for unit testing code support only, no other event is
         void GraphActivated(const GraphActivation&) override {}
         void GraphDeactivated(const GraphActivation&) override {}
-        bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier) override;
+        bool IsGraphObserved(const ExecutionState& executionState) override;
         bool IsVariableObserved(const VariableId&) override { return false; }
         void NodeSignaledOutput(const OutputSignal&) override {}
         void NodeSignaledInput(const InputSignal&) override {}
         void NodeStateUpdated(const NodeStateChange&) override {}
-        void RuntimeError(const AZ::EntityId& entityId, const GraphIdentifier& identifier, const AZStd::string_view& description) override;
+        void RuntimeError(const ExecutionState& executionState, const AZStd::string_view& description) override;
         void VariableChanged(const VariableChange&) override {}
         void AnnotateNode(const AnnotateNodeSignal&) override {}
 
@@ -194,7 +195,7 @@ namespace ScriptCanvasEditor
         Execution::PerformanceTrackingReport m_performanceReport;
         AZStd::sys_time_t m_parseDuration;
         AZStd::sys_time_t m_translationDuration;
-        ScriptCanvasId m_scriptCanvasId;
+        AZ::Data::AssetId m_graph;
         AZ::EntityId m_entityId;
         AZStd::vector<Report> m_checkpoints;
         AZStd::vector<Report> m_failures;
