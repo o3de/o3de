@@ -431,8 +431,6 @@ namespace AssetProcessor
         m_ui->ScanMissingDependenciesButton->setVisible(visible);
         m_ui->ClearMissingDependenciesButton->setVisible(visible);
 
-        m_ui->DependencySeparatorLine->setVisible(visible);
-
         m_ui->IncomingProductDependenciesTreeView->setVisible(visible);
         m_ui->OutgoingProductDependenciesTreeView->setVisible(visible);
 
