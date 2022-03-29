@@ -22,8 +22,8 @@ protected:
 
     void TeardownEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
 };
 
