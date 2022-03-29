@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 #include <QCheckBox>
 #include <QSizePolicy>
@@ -40,6 +41,9 @@ namespace ImageProcessingAtomEditor
         m_ui->propertyEditor->AddInstance(instance, classId);
         m_ui->propertyEditor->InvalidateAll();
         m_ui->propertyEditor->ExpandAll();
+
+        // Style the Checkbox
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_ui->enableCheckBox);
 
         RefreshUI();
 
