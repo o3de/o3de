@@ -76,7 +76,7 @@ namespace AZ
         bool operator==(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return true; }
         bool operator!=(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return false; }
 
-        void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
+        O3DEKERNEL_API void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
         {
             const bool releaseByUseCount = (--m_useCount == 0);
             // We take over the lock, and release it before potentially destroying/freeing ourselves
@@ -441,22 +441,22 @@ namespace AZ
             }
         }
 
-        EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock)
+        O3DEKERNEL_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock)
         {
             return EnvironmentImpl::Get()->AddAndAllocateVariable(guid, byteSize, alignment, addedVariableLock);
         }
 
-        EnvironmentVariableResult GetVariable(u32 guid)
+        O3DEKERNEL_API EnvironmentVariableResult GetVariable(u32 guid)
         {
             return EnvironmentImpl::Get()->GetVariable(guid);
         }
 
-        Environment::AllocatorInterface* GetAllocator()
+        O3DEKERNEL_API Environment::AllocatorInterface* GetAllocator()
         {
             return EnvironmentImpl::Get()->GetAllocator();
         }
 
-        u32 EnvironmentVariableNameToId(const char* uniqueName)
+        O3DEKERNEL_API u32 EnvironmentVariableNameToId(const char* uniqueName)
         {
             return Crc32(uniqueName);
         }
@@ -464,17 +464,17 @@ namespace AZ
 
     namespace Environment
     {
-        bool IsReady()
+        O3DEKERNEL_API bool IsReady()
         {
             return Internal::EnvironmentInterface::s_environment != nullptr;
         }
 
-        EnvironmentInstance GetInstance()
+        O3DEKERNEL_API EnvironmentInstance GetInstance()
         {
             return Internal::EnvironmentImpl::Get();
         }
 
-        void* GetModuleId()
+        O3DEKERNEL_API void* GetModuleId()
         {
             return &Internal::g_environmentCleanUp;
         }
@@ -488,7 +488,7 @@ namespace AZ
             void DeAllocate(void* address) override { AZ_OS_FREE(address); }
         };
 
-        bool Create(AllocatorInterface* allocator)
+        O3DEKERNEL_API bool Create(AllocatorInterface* allocator)
         {
             if (Internal::EnvironmentImpl::s_environment)
             {
@@ -508,7 +508,7 @@ namespace AZ
             return true;
         }
 
-        void Destroy()
+        O3DEKERNEL_API void Destroy()
         {
             if (!Internal::g_environmentCleanUp.m_isAttached && Internal::g_environmentCleanUp.m_isOwner)
             {
@@ -524,14 +524,12 @@ namespace AZ
             }
         }
 
-        void Detach()
+        O3DEKERNEL_API void Detach()
         {
-            Internal::EnvironmentImpl::Detach();
         }
 
-        void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback)
+        O3DEKERNEL_API void Attach([[maybe_unused]] EnvironmentInstance sourceEnvironment, [[maybe_unused]] bool useAsGetFallback)
         {
-            Internal::EnvironmentImpl::Attach(sourceEnvironment, useAsGetFallback);
         }
     } // namespace Environment
 } // namespace AZ

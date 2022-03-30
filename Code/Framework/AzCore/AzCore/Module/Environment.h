@@ -109,10 +109,10 @@ namespace AZ
         EnvironmentVariable<T>  FindVariable(const char* uniqueName);
 
         /// Returns the environment so you can share it with \ref AttachEnvironment
-        EnvironmentInstance GetInstance();
+        O3DEKERNEL_API EnvironmentInstance GetInstance();
 
         /// Returns module id (non persistent)
-        void* GetModuleId();
+        O3DEKERNEL_API void* GetModuleId();
 
         /**
          * Create Environment with customer allocator interface. You don't have to call create or destroy as they will
@@ -120,13 +120,13 @@ namespace AZ
          * two environments will end up on different heaps.
          * \returns true if Create was successful, false if environment is already created/attached.
          */
-        bool Create(AllocatorInterface* allocator);
+        O3DEKERNEL_API bool Create(AllocatorInterface* allocator);
 
         /**
          * Explicit Destroy, you don't have to call it unless you want to control order. It will be called when the module is unloaded.
          * Of course no order is guaranteed.
          */
-        void Destroy();
+        O3DEKERNEL_API void Destroy();
 
         /**
          * Attaches the current module environment from sourceEnvironment.
@@ -135,13 +135,13 @@ namespace AZ
          * \param useAsFallback if set to true a new environment will be created and only failures to GetVariable
          * which check the shared environment. This way you can change the environment.
          */
-        void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback = false);
+        O3DEKERNEL_API void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback = false);
 
         /// Detaches the active environment (if one is attached)
-        void Detach();
+        O3DEKERNEL_API void Detach();
 
         /// Returns true if an environment is attached to this module
-        bool IsReady();
+        O3DEKERNEL_API bool IsReady();
     };
 
     namespace Internal
@@ -235,7 +235,7 @@ namespace AZ
             using DestructFunc = void (*)(EnvironmentVariableHolderBase *, DestroyTarget);
             // Assumes the m_mutex is already locked.
             // On return m_mutex is in an unlocked state.
-            void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
+            O3DEKERNEL_API void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
 
             AZ::Internal::EnvironmentInterface* m_environmentOwner; ///< Used to know which environment we should use to free the variable if we can't transfer ownership
             void* m_moduleOwner; ///< Used when the variable can't transfered across module and we need to destruct the variable when the module is going away
@@ -335,16 +335,16 @@ namespace AZ
         * If you provide addedVariableLock you will receive lock if a variable has been created, so you can safely construct the object and then
         * release the lock.
         */
-        EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock = nullptr);
+        O3DEKERNEL_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock = nullptr);
 
         /// Returns the value of the variable if found, otherwise nullptr.
-        EnvironmentVariableResult GetVariable(u32 guid);
+        O3DEKERNEL_API EnvironmentVariableResult GetVariable(u32 guid);
 
         /// Returns the allocator used by the current environment.
-        Environment::AllocatorInterface* GetAllocator();
+        O3DEKERNEL_API Environment::AllocatorInterface* GetAllocator();
 
         /// Converts a string name to an ID (using Crc32 function)
-        u32  EnvironmentVariableNameToId(const char* uniqueName);
+        O3DEKERNEL_API u32  EnvironmentVariableNameToId(const char* uniqueName);
     } // namespace Internal
 
     /**
