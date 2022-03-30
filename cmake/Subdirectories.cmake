@@ -17,14 +17,14 @@ include_guard()
 function(add_engine_gem_json_external_subdirectories gem_path)
     set(gem_json_path ${gem_path}/gem.json)
     if(EXISTS ${gem_json_path})
-        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
         # Read the gem_name from the gem.json and map it to the gem path
         o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
         if (gem_name)
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
 
-        foreach(gem_external_subdir ${gem_external_subdirs})
+        o3de_read_json_external_subdirs(gem_external_subdirs "${gem_path}/gem.json")
+        foreach(gem_external_subdir IN LISTS gem_external_subdirs)
             file(REAL_PATH ${gem_external_subdir} real_external_subdir BASE_DIRECTORY ${gem_path})
 
             # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_ENGINE PROPERTY
@@ -41,7 +41,7 @@ function(add_engine_json_external_subdirectories)
     set(engine_json_path ${LY_ROOT_FOLDER}/engine.json)
     if(EXISTS ${engine_json_path})
         o3de_read_json_external_subdirs(engine_external_subdirs ${engine_json_path})
-        foreach(engine_external_subdir ${engine_external_subdirs})
+        foreach(engine_external_subdir IN LISTS engine_external_subdirs )
             file(REAL_PATH ${engine_external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
 
             # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_ENGINE PROPERTY
@@ -67,7 +67,7 @@ function(add_project_gem_json_external_subdirectories gem_path project_name)
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
 
-        foreach(gem_external_subdir ${gem_external_subdirs})
+        foreach(gem_external_subdir IN LISTS gem_external_subdirs)
             file(REAL_PATH ${gem_external_subdir} real_external_subdir BASE_DIRECTORY ${gem_path})
 
             # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_${project_name} PROPERTY
@@ -84,7 +84,7 @@ function(add_project_json_external_subdirectories project_path project_name)
     set(project_json_path ${project_path}/project.json)
     if(EXISTS ${project_json_path})
         o3de_read_json_external_subdirs(project_external_subdirs ${project_path}/project.json)
-        foreach(project_external_subdir ${project_external_subdirs})
+        foreach(project_external_subdir IN LISTS project_external_subdirs)
             file(REAL_PATH ${project_external_subdir} real_external_subdir BASE_DIRECTORY ${project_path})
 
             # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_${project_name} PROPERTY
@@ -110,7 +110,7 @@ function(add_o3de_manifest_gem_json_external_subdirectories gem_path)
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
 
-        foreach(gem_external_subdir ${gem_external_subdirs})
+        foreach(gem_external_subdir IN LISTS gem_external_subdirs)
             file(REAL_PATH ${gem_external_subdir} real_external_subdir BASE_DIRECTORY ${gem_path})
 
             # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST PROPERTY
@@ -129,7 +129,7 @@ function(add_o3de_manifest_json_external_subdirectories)
     o3de_get_manifest_path(manifest_path)
     if(EXISTS ${manifest_path})
         o3de_read_json_external_subdirs(o3de_manifest_external_subdirs ${manifest_path})
-        foreach(manifest_external_subdir ${o3de_manifest_external_subdirs})
+        foreach(manifest_external_subdir IN LISTS o3de_manifest_external_subdirs)
             file(REAL_PATH ${manifest_external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
 
             # Append external subdirectory ONLY to LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST PROPERTY
@@ -165,23 +165,21 @@ function(get_all_external_subdirectories output_subdirs)
 endfunction()
 
 
-#! get_registered_gems_to_external_subdirs:
-#! Accepts a list of gem_names (which can be read from the project.json or engine.json)
+#! Accepts a list of gem names (which can be read from the project.json, gem.json or engine.json)
+#! and a list of ALL registered external subdirectories across all manifest
 #! and cross checks them against union of all external subdirectories to determine the gem path.
-#! If that gem exist it is appended to the output parameter so that that the build generator
-#! adds to the generated build project.
+#! If that gem path exist it is appended to the output parameter output gem directories parameter
 #! A fatal error is logged indicating that is not gem could not be found in the list of external subdirectories
-function(add_registered_gems_to_external_subdirs output_gem_dirs gem_names)
+function(query_gem_paths_from_external_subdirs output_gem_dirs gem_names registered_external_subdirs)
     if (gem_names)
-        get_all_external_subdirectories(all_external_subdirs)
         foreach(gem_name IN LISTS gem_names)
             unset(gem_path)
-            o3de_find_gem(${gem_name} gem_path)
+            o3de_find_gem_with_registered_external_subdirs(${gem_name} gem_path "${registered_external_subdirs}")
             if (gem_path)
                 list(APPEND gem_dirs ${gem_path})
             else()
-                list(JOIN all_external_subdirs "\n" external_subdirs_formatted)
-                message(SEND_ERROR "The gem \"${gem_name}\" from the \"gem_names\" field in the engine.json/project.json "
+                list(JOIN registered_external_subdirs "\n" external_subdirs_formatted)
+                message(SEND_ERROR "The gem \"${gem_name}\""
                 " could not be found in any gem.json from the following list of registered external subdirectories:\n"
                 "${external_subdirs_formatted}")
                 break()
@@ -189,6 +187,80 @@ function(add_registered_gems_to_external_subdirs output_gem_dirs gem_names)
         endforeach()
     endif()
     set(${output_gem_dirs} ${gem_dirs} PARENT_SCOPE)
+endfunction()
+
+#! Queries the list of gem names against the list of ALL registered external subdirectories
+#! in order to determine the paths corresponding to the gem names
+function(add_registered_gems_to_external_subdirs output_gem_dirs gem_names)
+    get_all_external_subdirectories(registered_external_subdirs)
+    query_gem_paths_from_external_subdirs(gem_dirs "${gem_names}" "${registered_external_subdirs}")
+    set(${output_gem_dirs} ${gem_dirs} PARENT_SCOPE)
+endfunction()
+
+#! Recurses "dependencies" array if the external subdirectory is a gem(contains a gem.json)
+#! for each subdirectory in use.
+#! This function looks up the each dependent gem path from the registered external subdirectory set
+#! That list of resolved gem paths then have this function invoked on it to perform the same behavior
+#! When every descendent gem referenced from the "dependencies" field of the current subdirectory is visited
+#! it is then appended to a list of output external subdirectories
+#! NOTE: This must be invoked after all the add_*_json_external_subdirectories function
+function(reorder_dependent_gems_with_cycle_detection _output_external_dirs subdirs_in_use registered_external_subdirs cycle_detection_set)
+    # output_external_dirs is a variable whose value is the name of a variable to set in the parent scope
+    # So double resolve the variable to retrieve its value
+    set(current_external_dirs "${${_output_external_dirs}}")
+
+
+    foreach(external_subdir IN LISTS subdirs_in_use)
+        # If a cycle is detected, fatal error and output the list of subdirectories that led to the outcome
+        if (external_subdir IN_LIST cycle_detection_set)
+            message(FATAL_ERROR "While visiting \"${external_subdir}\", a cycle was detected in the \"dependencies\""
+            " array of the following gem.json files in the directories: ${cycle_detection_set}")
+        endif()
+        # This subdirectory has already been processed so skip to the next one
+        if(external_subdir IN_LIST current_external_dirs)
+            continue()
+        endif()
+
+        get_property(ordered_dependent_subdirs GLOBAL PROPERTY "Dependent:${external_subdir}")
+        if(ordered_dependent_subdirs)
+            # Re-use the cached list of dependent subdirs if available
+            list(APPEND current_external_dirs "${ordered_dependent_subdirs}")
+        else()
+            cmake_path(SET gem_manifest_path "${external_subdir}/gem.json")
+            if(EXISTS ${gem_manifest_path})
+                # Read the "dependencies" array from gem.json
+                o3de_read_json_array(dependencies_array "${gem_manifest_path}" "dependencies")
+                # Lookup the paths using the dependent gem names
+                unset(reference_external_dirs)
+                query_gem_paths_from_external_subdirs(reference_external_dirs "${dependencies_array}" "${registered_external_subdirs}")
+
+                # Append the external subdirectory into the children cycle_detection_set
+                set(child_cycle_detection_set ${cycle_detection_set} ${external_subdir})
+
+                # Recursively visit the list of gem dependencies for the current external subdir
+                reorder_dependent_gems_with_cycle_detection(current_external_dirs "${reference_external_dirs}"
+                    "${registered_external_subdirs}" "${child_cycle_detection_set}")
+                # Append the referenced gem directories before the current external subdir so that they are visited first
+                list(APPEND current_external_dirs "${reference_external_dirs}")
+
+                # Cache the list of external subdirectories so that it can be reused in subsequent calls
+                set_property(GLOBAL PROPERTY "Dependent:${external_subdir}" "${reference_external_dirs}")
+            endif()
+        endif()
+
+        # Now append the external subdir
+        list(APPEND current_external_dirs ${external_subdir})
+    endforeach()
+
+    set(${_output_external_dirs} ${current_external_dirs} PARENT_SCOPE)
+endfunction()
+
+function(reorder_dependent_gems_before_external_subdirs output_gem_subdirs subdirs_in_use)
+    # Lookup the registered external subdirectories once and re-use it for each call
+    get_all_external_subdirectories(registered_external_subdirs)
+    # Supply an empty visited set and cycle_detection_set argument
+    reorder_dependent_gems_with_cycle_detection(output_external_dirs "${subdirs_in_use}" "${registered_external_subdirs}" "")
+    set(${output_gem_subdirs} ${output_external_dirs} PARENT_SCOPE)
 endfunction()
 
 #! Gather unique_list of all external subdirectories that the project provides or uses
@@ -239,6 +311,9 @@ function(get_external_subdirectories_in_use output_subdirs)
         list(APPEND all_external_subdirs ${external_subdirs})
     endforeach()
 
+    # Make sure any gems in the "dependencies" field of a gem.json
+    # are ordered before that gem, so they are parsed first.
+    reorder_dependent_gems_before_external_subdirs(all_external_subdirs "${all_external_subdirs}")
     list(REMOVE_DUPLICATES all_external_subdirs)
     set(${output_subdirs} ${all_external_subdirs} PARENT_SCOPE)
 endfunction()
@@ -251,8 +326,15 @@ endfunction()
 function(add_subdirectory_on_external_subdirs)
     # Query the list of external subdirectories in use by the engine and any projects
     get_external_subdirectories_in_use(all_external_subdirs)
+
+    # Log the external subdirectory visit order
+    message(VERBOSE "add_subdirectory will be called on the following external subdirectories in order:")
+    foreach(external_directory IN LISTS all_external_subdirs)
+        message(VERBOSE "${external_directory}")
+    endforeach()
+
     # Loop over the additional external subdirectories and invoke add_subdirectory on them
-    foreach(external_directory ${all_external_subdirs})
+    foreach(external_directory IN LISTS all_external_subdirs)
         # Hash the external_directory name and append it to the Binary Directory section of add_subdirectory
         # This is to deal with potential situations where multiple external directories has the same last directory name
         # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
