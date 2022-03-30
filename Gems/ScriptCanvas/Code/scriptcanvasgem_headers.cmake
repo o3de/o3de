@@ -92,6 +92,7 @@ set(FILES
     Include/ScriptCanvas/Deprecated/VariableDatum.h
     Include/ScriptCanvas/Deprecated/VariableHelpers.h
     Include/ScriptCanvas/Execution/ErrorBus.h
+    Include/ScriptCanvas/Execution/Executor.h
     Include/ScriptCanvas/Execution/ExecutionBus.h
     Include/ScriptCanvas/Execution/ExecutionContext.h
     Include/ScriptCanvas/Execution/ExecutionObjectCloning.h

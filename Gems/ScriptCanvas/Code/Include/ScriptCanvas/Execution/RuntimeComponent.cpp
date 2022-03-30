@@ -6,9 +6,8 @@
  *
  */
 
-#include <ScriptCanvas/Execution/RuntimeComponent.h>
-
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/IdUtils.h>
@@ -18,11 +17,7 @@
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
-
-#include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
-#include <AzCore/Asset/AssetSerializer.h>
-
-AZ_DECLARE_BUDGET(ScriptCanvas);
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 
 namespace RuntimeComponentCpp
 {
@@ -94,6 +89,8 @@ namespace ScriptCanvas
 
     void RuntimeComponent::InitializeExecution()
     {
+        // m_executor.Initialize(m_runtimeOverrides, AZStd::any(Execution::Reference(this, azrtti_typeid<RuntimeComponent>())));
+
 #if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
         if (!m_runtimeOverrides.m_runtimeAsset.Get())
         {

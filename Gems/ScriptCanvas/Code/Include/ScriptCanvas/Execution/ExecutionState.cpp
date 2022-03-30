@@ -34,15 +34,10 @@ namespace ExecutionStateCpp
 
 namespace ScriptCanvas
 {
-    ExecutionStateConfig::ExecutionStateConfig(const RuntimeDataOverrides& overrides)
-        : runtimeData(overrides.m_runtimeAsset.Get()->m_runtimeData)
-        , overrides(overrides)
-    {}
-
     ExecutionStateConfig::ExecutionStateConfig(const RuntimeDataOverrides& overrides, AZStd::any&& userData)
         : runtimeData(overrides.m_runtimeAsset.Get()->m_runtimeData)
         , overrides(overrides)
-        , userData(userData)
+        , userData(AZStd::move(userData))
     {}
     
     ExecutionState::ExecutionState(ExecutionStateConfig& config)

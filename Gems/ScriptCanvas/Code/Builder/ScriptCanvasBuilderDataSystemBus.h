@@ -24,7 +24,7 @@ namespace ScriptCanvasBuilder
     struct BuildResult
     {
         BuilderDataStatus status = BuilderDataStatus::Failed;
-        BuildVariableOverrides data;
+        const BuildVariableOverrides* data;
     };
 
     class DataSystemRequests

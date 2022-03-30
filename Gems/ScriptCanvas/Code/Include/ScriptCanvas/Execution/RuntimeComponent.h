@@ -17,6 +17,7 @@
 #include <ScriptCanvas/Execution/ExecutionPerformanceTimer.h>
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
+#include <ScriptCanvas/Execution/Executor.h>
 
 namespace ScriptCanvas
 {
@@ -100,5 +101,6 @@ namespace ScriptCanvas
     private:
         ExecutionStatePtr m_executionState;
         RuntimeDataOverrides m_runtimeOverrides;
+        Executor m_executor;
     };
 }

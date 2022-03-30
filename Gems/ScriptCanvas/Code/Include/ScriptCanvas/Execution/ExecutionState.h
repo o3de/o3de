@@ -36,7 +36,7 @@ namespace ScriptCanvas
     {
         const RuntimeData& runtimeData;
         const RuntimeDataOverrides& overrides;
-        AZStd::any userData;
+        AZStd::any&& userData;
 
         ExecutionStateConfig(const RuntimeDataOverrides& overrides);
         ExecutionStateConfig(const RuntimeDataOverrides& overrides, AZStd::any&& userData);

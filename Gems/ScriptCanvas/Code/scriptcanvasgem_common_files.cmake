@@ -63,6 +63,7 @@ set(FILES
     Include/ScriptCanvas/Deprecated/VariableDatumBase.cpp
     Include/ScriptCanvas/Deprecated/VariableDatum.cpp
     Include/ScriptCanvas/Deprecated/VariableHelpers.cpp
+    Include/ScriptCanvas/Execution/Executor.cpp
     Include/ScriptCanvas/Execution/ExecutionContext.cpp
     Include/ScriptCanvas/Execution/ExecutionObjectCloning.cpp
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.cpp
