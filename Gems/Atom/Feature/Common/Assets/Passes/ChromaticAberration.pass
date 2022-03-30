@@ -33,6 +33,13 @@
                     "FormatSource": {
                         "Pass": "This",
                         "Attachment": "Input"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "Color",
+                            "ShaderReadWrite"
+                        ]
                     }
                 }
             ],
