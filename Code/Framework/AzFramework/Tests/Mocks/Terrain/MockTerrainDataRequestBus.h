@@ -51,6 +51,8 @@ namespace UnitTest
 
         MOCK_CONST_METHOD0(GetTerrainHeightQueryResolution, float());
         MOCK_METHOD1(SetTerrainHeightQueryResolution, void(float));
+        MOCK_CONST_METHOD0(GetTerrainSurfaceDataQueryResolution, float());
+        MOCK_METHOD1(SetTerrainSurfaceDataQueryResolution, void(float));
         MOCK_CONST_METHOD0(GetTerrainAabb, AZ::Aabb());
         MOCK_METHOD1(SetTerrainAabb, void(const AZ::Aabb&));
         MOCK_CONST_METHOD3(GetHeight, float(const AZ::Vector3&, Sampler, bool*));
@@ -92,8 +94,8 @@ namespace UnitTest
             ProcessSurfaceWeightsFromListOfVector2, void(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD3(
             ProcessSurfacePointsFromListOfVector2, void(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
-        MOCK_CONST_METHOD2(
-            GetNumSamplesFromRegion, AZStd::pair<size_t, size_t>(const AZ::Aabb&, const AZ::Vector2&));
+        MOCK_CONST_METHOD3(
+            GetNumSamplesFromRegion, AZStd::pair<size_t, size_t>(const AZ::Aabb&, const AZ::Vector2&, Sampler));
         MOCK_CONST_METHOD4(
             ProcessHeightsFromRegion, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler));
         MOCK_CONST_METHOD4(

@@ -6,6 +6,8 @@
 #
 #
 
+# this file allows you to specify all 3p packages (provided by O3DE or the operating system) for Android.
+
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5       PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform TARGETS RapidJSON PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
