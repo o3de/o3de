@@ -24,7 +24,7 @@ namespace ScriptCanvas
     * 3) Stop()
     * 4) Optional (repeat steps 1-3), Stop() and Initialize() MUST be called before subsequent calls to Execute();
     */
-    class Executor
+    class Executor final
     {
     public:
         AZ_TYPE_INFO(Executor, "{02E0EB5F-B28E-4B95-9FF2-DEA42ECC575D}");
@@ -34,11 +34,6 @@ namespace ScriptCanvas
 
         ActivationInfo CreateActivationInfo() const;
 
-        // \todo consider making a template version with return values, similar to execution out
-        // or perhaps safety checked versions with an array / table of any. something parsable
-        // or consider just having users make ebuses that the graphs will handle
-        // and wrapping the whole thing in a single class
-        // interpreter + ebus, and calling it EZ SC Hook or something like that
         void Execute();
 
         ExecutionMode GetExecutionMode() const;

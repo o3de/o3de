@@ -28,9 +28,12 @@ namespace AZ
         AZ_Assert(outputValue, "EditorScriptCanvasComponentSerializer Load against null output");
 
         // load as parent class
-        auto outputComponent = reinterpret_cast<ScriptCanvasEditor::EditorScriptCanvasComponent*>(outputValue);
         JsonSerializationResult::ResultCode result = BaseJsonSerializer::Load(outputValue
             , azrtti_typeid<AzToolsFramework::Components::EditorComponentBase>(), inputValue, context);
+
+        //auto outputComponent = reinterpret_cast<ScriptCanvasEditor::EditorScriptCanvasComponent*>(outputValue);
+
+        /*
 
         // load child data one by one
         if (result.GetProcessing() != JSR::Processing::Halted)
@@ -87,6 +90,8 @@ namespace AZ
                 }
             }
         }
+
+        */
 
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "EditorScriptCanvasComponentSerializer Load finished loading EditorScriptCanvasComponent"

@@ -1797,32 +1797,6 @@ namespace ScriptCanvasEditor
 
             AzFramework::StringFunc::Path::GetFileName(memoryAsset.Path().c_str(), tabName);
 
-            if (assetIdHasChanged)
-            {
-                auto entity = memoryAsset.Get()->GetEntity();
-
-                auto editorComponents = AZ::EntityUtils::FindDerivedComponents<EditorScriptCanvasComponent>(entity);
-
-                if (editorComponents.empty())
-                {
-                    if (auto firstRequestBus = EditorScriptCanvasComponentRequestBus::FindFirstHandler(entity->GetId()))
-                    {
-                        firstRequestBus->SetAssetId(memoryAsset.Describe());
-                    }
-                }
-                else
-                {
-                    for (auto editorComponent : editorComponents)
-                    {
-                        if (editorComponent->GetAssetId() == oldId)
-                        {
-                            editorComponent->SetAssetId(memoryAsset.Describe());
-                            break;
-                        }
-                    }
-                }
-            }             
-
             // Soft switch the asset id here. We'll do a double scene switch down below to actually switch the active assetid
             m_activeGraph = fileAssetId;
 
