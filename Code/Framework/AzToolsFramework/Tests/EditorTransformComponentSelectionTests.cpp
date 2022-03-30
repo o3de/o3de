@@ -1751,6 +1751,77 @@ namespace UnitTest
                 AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation),
                 AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation) }));
 
+    struct ManipulatorPick
+    {
+        AZStd::array<AzToolsFramework::ViewportInteraction::KeyboardModifier, 3> m_keyboardModifiers{};
+        AZ::Vector3 m_pickPosition;
+        AZ::Vector3 m_expectedManipulatorPosition;
+    };
+
+    class EditorTransformComponentSelectionTranslationManipulatorPickingEntityTestFixtureParam
+        : public EditorTransformComponentSelectionManipulatorInteractionTestFixture
+        , public ::testing::WithParamInterface<ManipulatorPick>
+    {
+    };
+
+    static constexpr float ManipulatorPickBoxHalfSize = 0.5f;
+    static constexpr float ManipulatorPickOffsetTolerance = 0.1f;
+
+    TEST_P(
+        EditorTransformComponentSelectionTranslationManipulatorPickingEntityTestFixtureParam,
+        DittoManipulatorOnEntityChangesManipulatorToEntityTransformOrPickIntersectionBasedOnModifiers)
+    {
+        using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
+
+        PositionEntities();
+
+        // camera (go to position format) - 10.00, 15.00, 10.00, 0.00, 90.00
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.0f)));
+
+        SetTransformMode(EditorTransformComponentSelectionRequestBus::Events::Mode::Translation);
+
+        // at position 5.0, 16.0, 10.0 (right most entity)
+        AzToolsFramework::SelectEntities({ m_entityId3 });
+
+        // bottom left corner of left most box (entity 2)
+        const auto clickPositionWorld = GetParam().m_pickPosition;
+        const auto clickPositionScreen = AzFramework::WorldToScreen(clickPositionWorld, m_cameraState);
+
+        for (auto modifier : GetParam().m_keyboardModifiers)
+        {
+            m_actionDispatcher->KeyboardModifierDown(modifier);
+        }
+
+        // click the corner of the box
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(clickPositionScreen)->MouseLButtonDown()->MouseLButtonUp();
+
+        const auto manipulatorPosition = GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity()).GetTranslation();
+        EXPECT_THAT(manipulatorPosition, IsCloseTolerance(GetParam().m_expectedManipulatorPosition, 0.01f));
+    }
+
+    static const AZ::Vector3 ManipulatorPickBoxCorner = EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation +
+        AZ::Vector3(ManipulatorPickBoxHalfSize,
+                    -ManipulatorPickBoxHalfSize + ManipulatorPickOffsetTolerance,
+                    -ManipulatorPickBoxHalfSize + ManipulatorPickOffsetTolerance);
+
+    INSTANTIATE_TEST_CASE_P(
+        All,
+        EditorTransformComponentSelectionTranslationManipulatorPickingEntityTestFixtureParam,
+        testing::Values(
+            // manipulator should move to exact pick position when alt and control are held
+            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Control,
+                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
+                             ManipulatorPickBoxCorner,
+                             ManipulatorPickBoxCorner },
+            // manipulator should move to picked entity position when alt alone is held
+            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
+                             ManipulatorPickBoxCorner,
+                             EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation }));
+
     using EditorTransformComponentSelectionManipulatorTestFixture =
         IndirectCallManipulatorViewportInteractionFixtureMixin<EditorTransformComponentSelectionFixture>;
 
