@@ -57,13 +57,6 @@ namespace ScriptCanvas
 
         RuntimeComponent() = default;
 
-        // used to provide debug symbols, usually coming in the form of Node/Slot/Variable IDs
-        const RuntimeData& GetRuntimeAssetData() const;
-
-        ExecutionMode GetExecutionMode() const;
-
-        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
-
         void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
 
     protected:
@@ -81,17 +74,10 @@ namespace ScriptCanvas
 
         void Activate() override;
 
-        ActivationInfo CreateActivationInfo() const;
-
         void Deactivate() override {}
-
-        void Execute();
 
         void Init() override;
 
-        void InitializeExecution();
-
-        // AZ::EntityBus handling
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         void OnEntityDeactivated(const AZ::EntityId&) override;
@@ -99,7 +85,6 @@ namespace ScriptCanvas
         void StopExecution();
 
     private:
-        ExecutionStatePtr m_executionState;
         RuntimeDataOverrides m_runtimeOverrides;
         Executor m_executor;
     };

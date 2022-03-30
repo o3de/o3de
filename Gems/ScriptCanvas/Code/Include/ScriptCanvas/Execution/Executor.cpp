@@ -56,6 +56,7 @@ namespace ScriptCanvas
 
     void Executor::Initialize(const RuntimeDataOverrides& overrides, AZStd::any&& userData)
     {
+        m_overrides = &overrides;
 #if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
         if (!m_overrides->m_runtimeAsset.Get())
         {

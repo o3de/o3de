@@ -740,39 +740,41 @@ namespace ScriptCanvas
         {
         }
 
-        void ServiceComponent::SetTargetsObserved(const TargetEntities& targetEntities, bool /*observedState*/)
+        void ServiceComponent::SetTargetsObserved
+            ( [[maybe_unused]] const TargetEntities& targetEntities
+            , [[maybe_unused]] bool observedState)
         {
-            for (auto target : targetEntities)
-            {
-                AZ::Entity* entity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, target.first);
-
-                if (entity)
-                {
-                    auto runtimeComponents = AZ::EntityUtils::FindDerivedComponents<RuntimeComponent>(entity);
-
-                    if (runtimeComponents.empty())
-                    {
-                        continue;
-                    }
-
-                    for (auto graphIdentifier : target.second)
-                    {
-                        for (auto graphIter = runtimeComponents.begin(); graphIter != runtimeComponents.end(); ++graphIter)
-                        {
-                            auto runtimeComponent = (*graphIter);
-
-                            if (graphIdentifier.m_assetId.m_guid == runtimeComponent->GetRuntimeDataOverrides().m_runtimeAsset.GetId().m_guid)
-                            {
-                                // TODO: Gate on ComponentId
-                                // runtimeComponent->SetIsGraphObserved(observedState);
-                                runtimeComponents.erase(graphIter);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+//             for (auto target : targetEntities)
+//             {
+//                 AZ::Entity* entity = nullptr;
+//                 AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, target.first);
+// 
+//                 if (entity)
+//                 {
+//                     auto runtimeComponents = AZ::EntityUtils::FindDerivedComponents<RuntimeComponent>(entity);
+// 
+//                     if (runtimeComponents.empty())
+//                     {
+//                         continue;
+//                     }
+// 
+//                     for (auto graphIdentifier : target.second)
+//                     {
+//                         for (auto graphIter = runtimeComponents.begin(); graphIter != runtimeComponents.end(); ++graphIter)
+//                         {
+//                             auto runtimeComponent = (*graphIter);
+// 
+//                             if (graphIdentifier.m_assetId.m_guid == runtimeComponent->GetRuntimeDataOverrides().m_runtimeAsset.GetId().m_guid)
+//                             {
+//                                 // TODO: Gate on ComponentId
+//                                 // runtimeComponent->SetIsGraphObserved(observedState);
+//                                 runtimeComponents.erase(graphIter);
+//                                 break;
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
         }
 
         void ServiceComponent::DisconnectFromClient()

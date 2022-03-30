@@ -42,43 +42,9 @@ namespace ScriptCanvas
 
     void RuntimeComponent::Activate()
     {
-        InitializeExecution();
-    }
-
-    ActivationInfo RuntimeComponent::CreateActivationInfo() const
-    {
-        return ActivationInfo(GraphInfo(m_executionState.get()));
-    }
-
-    void RuntimeComponent::Execute()
-    {
-        AZ_PROFILE_SCOPE(ScriptCanvas, "RuntimeComponent::Execute (%s)"
-            , m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
-        AZ_Assert(m_executionState, "RuntimeComponent::Execute called without an execution state");
-        SC_EXECUTION_TRACE_GRAPH_ACTIVATED(CreateActivationInfo());
-        SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(m_executionState.get());
-        m_executionState->Execute();
-    }
-
-    const RuntimeData& RuntimeComponent::GetRuntimeAssetData() const
-    {
-        return m_runtimeOverrides.m_runtimeAsset->m_runtimeData;
-    }
-
-    ExecutionMode RuntimeComponent::GetExecutionMode() const
-    {
-        return m_executionState ? m_executionState->GetExecutionMode() : ExecutionMode::Interpreted;
-    }
-
-    const RuntimeDataOverrides& RuntimeComponent::GetRuntimeDataOverrides() const
-    {
-        return m_runtimeOverrides;
-    }
-
-    void RuntimeComponent::TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData)
-    {
-        m_runtimeOverrides = AZStd::move(overrideData);
-        m_runtimeOverrides.EnforcePreloadBehavior();
+        const auto entityId = GetEntityId();
+        AZ::EntityBus::Handler::BusConnect(entityId);
+        m_executor.Initialize(m_runtimeOverrides, AZStd::any(RuntimeComponentUserData(*this, entityId)));
     }
 
     void RuntimeComponent::Init()
@@ -87,50 +53,9 @@ namespace ScriptCanvas
             , "RuntimeComponent::m_runtimeAsset Auto load behavior MUST be set to AZ::Data::AssetLoadBehavior::PreLoad");
     }
 
-    void RuntimeComponent::InitializeExecution()
-    {
-        // m_executor.Initialize(m_runtimeOverrides, AZStd::any(Execution::Reference(this, azrtti_typeid<RuntimeComponent>())));
-
-#if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
-        if (!m_runtimeOverrides.m_runtimeAsset.Get())
-        {
-            AZ_Error("ScriptCanvas", false
-                , "RuntimeComponent::m_runtimeAsset AssetId: %s was valid, but the data was not pre-loaded, so this script will not run"
-                , m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
-            return;
-        }
-#else
-        AZ_Assert(m_runtimeOverrides.m_runtimeAsset.Get()
-            , "RuntimeComponent::m_runtimeAsset AssetId: %s was valid, but the data was not pre-loaded, so this script will not run"
-            , m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
-#endif
-
-        AZ_PROFILE_SCOPE(ScriptCanvas, "RuntimeComponent::InitializeExecution (%s)"
-            , m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
-        
-        ExecutionStateConfig config(m_runtimeOverrides, AZStd::any(Execution::Reference(this, azrtti_typeid<RuntimeComponent>())));
-        m_executionState = ExecutionState::Create(config);
-                
-#if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
-        if (!m_executionState)
-        {
-            AZ_Error("ScriptCanvas", false, "RuntimeComponent::m_runtimeAsset AssetId: %s failed to create an execution state, possibly due to missing dependent asset, script will not run"
-                , m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
-            return;
-        }
-#else
-        AZ_Assert(m_executionState, "RuntimeComponent::m_runtimeAsset AssetId: %s failed to create an execution state, possibly due to missing dependent asset, script will not run"
-            , m_runtimeOverrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
-#endif
-
-        SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(m_executionState.get());
-        AZ::EntityBus::Handler::BusConnect(GetEntityId());
-        m_executionState->Initialize();
-    }
-
     void RuntimeComponent::OnEntityActivated(const AZ::EntityId&)
     {
-        Execute();
+        m_executor.Execute();
     }
 
     void RuntimeComponent::OnEntityDeactivated(const AZ::EntityId&)
@@ -151,12 +76,13 @@ namespace ScriptCanvas
 
     void RuntimeComponent::StopExecution()
     {
-        if (m_executionState)
-        {
-            m_executionState->StopExecution();
-            SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState.get());
-            SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
-        }
+        m_executor.Stop();
+    }
+
+    void RuntimeComponent::TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData)
+    {
+        m_runtimeOverrides = AZStd::move(overrideData);
+        m_runtimeOverrides.EnforcePreloadBehavior();
     }
 
     bool RuntimeComponent::VersionConverter(AZ::SerializeContext&, AZ::SerializeContext::DataElementNode& classElement)
