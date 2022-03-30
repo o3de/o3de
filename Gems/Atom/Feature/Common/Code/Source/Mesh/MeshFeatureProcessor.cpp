@@ -1055,13 +1055,10 @@ namespace AZ
                 if (propertyIndex.IsValid())
                 {
                     subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
-                    if (material->FindPropertyIndex(AZ::Name("irradiance.color")).IsValid())
-                    {
-                        AZ_Warning(
-                            "MeshFeatureProcessor", false,
-                            "Found both irradiance.manualColor and irradiance.color fields. "
-                            "Using irradiance.manualColor and ignoring irradiance.color.");
-                    }
+                    AZ_Warning(
+                        "MeshFeatureProcessor", !material->FindPropertyIndex(AZ::Name("irradiance.color")).IsValid(),
+                        "Found both irradiance.manualColor and irradiance.color fields. "
+                        "Using irradiance.manualColor and ignoring irradiance.color.");
                 }
                 else
                 {
@@ -1072,11 +1069,11 @@ namespace AZ
                     {
                         subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                     }
-                    else if (irradianceColorSource == AZ::Name("Manual"))
+                    else
                     {
-                        // Warn the user if an explicit manual irradianceColorSource was requested, but no color found
-                        AZ_Warning("MeshFeatureProcessor", false, "Requested manual color as irradianceColorSource but I "
-                                "could not find an irradiance.manualColor or irradiance.color field. Defaulting to black.");
+                        AZ_Warning(
+                            "MeshFeatureProcessor", false,
+                            "No irradiance.manualColor or irradiance.color field found. Defaulting to black.");
                         subMesh.m_irradianceColor = AZ::Colors::Black;
                     }
                 }

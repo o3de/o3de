@@ -21,9 +21,11 @@ namespace AZ
     {
         class MaterialAsset;
 
-        // This class contains a toVersion and a list of actions to specify what operations were performed to upgrade a materialType. 
+        // This class contains a toVersion and a list of actions to specify what operations were performed to upgrade a materialType.
         class MaterialVersionUpdate
         {
+            friend class MaterialVersionUpdates;
+
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate, "{B36E7712-AED8-46AA-AFE0-01F8F884C44A}");
 
@@ -38,25 +40,69 @@ namespace AZ
                 AZ::Name m_operation;
                 ArgsMap m_argsMap;
 
+                //! Generic structure for arbitrary version update actions that maps nicely to json.
+                //! The operation type is stored as a string under the "op" key.
+                //! All other entries depend on which "op" is being used, see the @ref Action()
+                //! constructor for details.
+                //! Note that we are somewhat hijacking the MaterialPropertyValue class here: not
+                //! every argument will be an actual material property value, some will be generic
+                //! strings like the "op" string or they could be property names for example. But
+                //! when the arg *does* happen to represent a property value it is convenient to
+                //! rely on the associated JsonMaterialPropertyValueSerializer to load the value.
+                //! Since MaterialPropertyValue has the option of holding a string type, we can use
+                //! it for all cases.
+                //! Lastly, note that we don't use an unordered_map to keep json deserialization
+                //! (and the associated unit tests) deterministic.
                 using ActionDefinition = AZStd::map<AZStd::string, MaterialPropertyValue>;
 
                 Action() = default;
-                Action(const AZ::Name& operation, const AZStd::initializer_list<AZStd::pair<AZ::Name, MaterialPropertyValue>>& args);
-                //! The operation type is given as a string under the "op" key, the remaining items define the operation's arguments.
+
+                //! Main constructor for creating a material version update Action from within c++ code.
+                //! @param operation The operation type for this action, supported are
+                //!                   - rename,
+                //!                   - setValue.
+                //! @param args The specific arguments for the chosen operation type:
+                //!              - rename operation: {"from":"oldPropertyName", "to":"newPropertyName"},
+                //!              - setValue operation: {"name":"myInt", "value":100}.
+                //!                In the case where the property's name also has 'rename' version
+                //!                updates, the name to use in 'setValue' is always the final name
+                //!                (even if the 'setValue' occurs at an older version number where
+                //!                that name would not yet have been renamed).
+                Action(
+                    const AZ::Name& operation,
+                    const AZStd::initializer_list<AZStd::pair<AZ::Name, MaterialPropertyValue>>& args);
+
+                //! Constructor to facilitate loading from parsed json data.
+                //! The operation type is given as a string under the "op" key, the remaining items
+                //! define the operation's arguments as in the main constructor.
+                //! (e.g. {"op":"rename", "from":"oldPropertyName", "to":"newPropertyName"}).
                 Action(const ActionDefinition& fullActionDefinition);
+                //! Initializer list version of @ref Action(ActionDefinition&) to facilitate literal construction in c++ code.
                 Action(const AZStd::initializer_list<AZStd::pair<AZStd::string, MaterialPropertyValue>>& fullActionDefinition);
 
                 void AddArg(const AZ::Name& key, const MaterialPropertyValue& argument);
-                MaterialPropertyValue GetArg(const AZ::Name& key, bool verbose = true) const;
+                MaterialPropertyValue GetArg(const AZ::Name& key) const;
+                //! Helper function for the common case where an AZStd::string value is requested as an AZ::Name.
+                AZ::Name GetArgAsName(const AZ::Name& key) const;
                 size_t GetNumArgs() const;
+
+                //! Validates our internal consistency.
+                //! Runs additional checks if @p materialPropertiesLayout is provided (e.g. type
+                //! checking for 'setValue' actions).
+                bool Validate(
+                    const MaterialPropertiesLayout* materialPropertiesLayout = NULL,
+                    AZStd::function<void(const char*)> onError = nullptr) const;
 
                 bool HasExpectedNumArguments(
                     size_t expectedNum, const char* expectedArgs, AZStd::function<void(const char*)> onError) const;
 
+                //! Checks for the existence of an argument of type T with name @p expectedArgName.
+                //! @arg T_str String describing the expected type T, used in error messages via @p onError.
                 template <typename T>
                 bool HasExpectedArgument(
                     const char* expectedArgName, const char* T_str, AZStd::function<void(const char*)> onError) const;
-
+                //! Checks for the existence of an argument with name @p expectedArgName, regardless
+                //! of its type.
                 bool HasExpectedArgumentAnyType(
                     const char* expectedArgName, AZStd::function<void(const char*)> onError) const;
 
@@ -68,57 +114,80 @@ namespace AZ
 
             uint32_t GetVersion() const;
             void SetVersion(uint32_t toVersion);
-            
-            //! Possibly renames @propertyId based on the material version update actions.
-            //! @return true if the property was renamed
-            bool ApplyPropertyRenames(AZ::Name& propertyId) const;
-
-            //! Possibly changes or adds values in @rawProperties based on the material version update actions.
-            //! @return true if a property was set
-            bool ApplySetValues(
-                AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& rawProperties,
-                const MaterialPropertiesLayout* materialPropertiesLayout,
-                AZStd::function<void(const char*)> onError) const;
-
-            //! Apply version updates to the given material asset.
-            //! @return true if any changes were made
-            bool ApplyVersionUpdates(MaterialAsset& materialAsset, AZStd::function<void(const char*)> reportError) const;
-
-            //! Validates the internal consistency of the given action
-            static bool ValidateAction(
-                const Action& action,
-                const MaterialPropertiesLayout* materialPropertiesLayout = NULL,
-                AZStd::function<void(const char*)> onError = nullptr);
-            //! Validates the internal consistency of our update actions
-            bool ValidateActions(
-                const MaterialPropertiesLayout* materialPropertiesLayout, AZStd::function<void(const char*)> onError) const;
 
             using Actions = AZStd::vector<Action>;
             const Actions& GetActions() const;
-            //! Add the given action. Optionally, @sourceDataResolver may be given to resolve a
+            //! Add the given action. Optionally, @p sourceDataResolver may be given to resolve a
             //! MaterialPropertyValue from a source type into an asset-ready type (e.g. from an
             //! image filename string to an ImageAsset).
             void AddAction(
                 const Action& action,
                 AZStd::function<MaterialPropertyValue(const Name&, const MaterialPropertyValue&)> sourceDataResolver = nullptr);
 
-            //! Validate a series of material updates against a MaterialTypeAsset with version
-            //! @materialTypeVersion and properties layout @materialPropertiesLayout.
-            static bool ValidateUpdates(
-                const AZStd::vector<MaterialVersionUpdate>& versionUpdates,
-                uint32_t materialTypeVersion,
-                const MaterialPropertiesLayout* materialPropertiesLayout,
-                AZStd::function<void(const char*)> onError);
-
         private:
-            static MaterialPropertyValue CastToExpectedValue(
+            //! Possibly renames @p propertyId based on the material version update actions.
+            //! @return true if the property was renamed
+            bool ApplyPropertyRenames(AZ::Name& propertyId) const;
+
+            //! Possibly changes or adds values in @p rawProperties based on the material version update actions.
+            //! @return true if a property was set
+            bool ApplySetValues(
+                AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& rawProperties,
+                const MaterialPropertiesLayout* materialPropertiesLayout,
+                AZStd::function<void(const char*)> onError) const;
+
+            //! Tries to cast @p value in-place to its expected type based on its @p propertyId and
+            //! the @p materialPropertiesLayout.
+            //! @return true if the cast was successful
+            static bool CastToExpectedValue(
                 const Name& propertyId,
-                const MaterialPropertyValue& value,
+                MaterialPropertyValue& value,
                 const MaterialPropertiesLayout* materialPropertiesLayout,
                 AZStd::function<void(const char*)> onError = nullptr);
 
+            //! Validates the internal consistency of our update actions
+            bool ValidateActions(
+                const MaterialPropertiesLayout* materialPropertiesLayout, AZStd::function<void(const char*)> onError) const;
+
             uint32_t m_toVersion;
             Actions m_actions;
+        };
+
+        class MaterialVersionUpdates
+        {
+        public:
+            AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdates, "{91EBA78E-83F6-4EA5-916A-A3C81B08137C}");
+
+            static void Reflect(ReflectContext* context);
+
+            MaterialVersionUpdates() = default;
+
+            void AddVersionUpdate(const MaterialVersionUpdate& versionUpdate);
+
+            size_t GetNumVersionUpdates() const;
+
+            const MaterialVersionUpdate& GetVersionUpdate(size_t i) const;
+
+            //! Validate our updates against a MaterialTypeAsset with version @p materialTypeVersion
+            //! and updated properties layout @p materialPropertiesLayout.
+            //! @param materialPropertiesLayout The property layout that was already updated
+            //!        to use the latest property names (e.g. using @ref ApplyPropertyRenames()).
+            bool ValidateUpdates(
+                uint32_t materialTypeVersion,
+                const MaterialPropertiesLayout* materialPropertiesLayout,
+                AZStd::function<void(const char*)> onError) const;
+
+            //! Apply rename actions to the given @p propertyId if applicable.
+            //! @return true if the @p propertyId was renamed
+            bool ApplyPropertyRenames(AZ::Name& propertyId) const;
+
+            //! Apply our version updates to the given material asset.
+            //! @return true if any changes were made
+            bool ApplyVersionUpdates(MaterialAsset& materialAsset, AZStd::function<void(const char*)> reportError) const;
+
+        private:
+            using MaterialVersionUpdateList = AZStd::vector<MaterialVersionUpdate>;
+            MaterialVersionUpdateList m_versionUpdates;
         };
 
     } // namespace RPI

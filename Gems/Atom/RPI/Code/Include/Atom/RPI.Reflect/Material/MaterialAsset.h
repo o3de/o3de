@@ -41,7 +41,7 @@ namespace AZ
             , public MaterialReloadNotificationBus::Handler
             , public AssetInitBus::Handler
         {
-            friend class MaterialVersionUpdate;
+            friend class MaterialVersionUpdates;
             friend class MaterialAssetCreator;
             friend class MaterialAssetHandler;
             friend class UnitTest::MaterialTests;

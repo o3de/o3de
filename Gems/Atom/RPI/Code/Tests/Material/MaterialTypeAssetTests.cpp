@@ -95,7 +95,7 @@ namespace UnitTest
         Data::Asset<ImageAsset> m_testImageAsset;
         Data::Asset<ImageAsset> m_testImageAsset2;
         const char* m_testImageFilename = "test.streamingimage";
-        const char* m_testImageFilename2 = "test.streamingimage2";
+        const char* m_testImageFilename2 = "test2.streamingimage";
 
         static void AddRenameAction(MaterialVersionUpdate& versionUpdate, const char* from, const char* to)
         {
@@ -818,13 +818,12 @@ namespace UnitTest
         ErrorMessageFinder errorMessageFinder;
         errorMessageFinder.AddExpectedErrorMessage(
             "setValue material version update: Could not find property 'InvalidPropertyName' in the material properties layout");
-        errorMessageFinder.AddExpectedErrorMessage("Failed to build MaterialTypeAsset because 1 error(s) reported");
 
         EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
 
         errorMessageFinder.CheckExpectedErrorsFound();
 
-        EXPECT_EQ(2, materialTypeCreator.GetErrorCount());
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
     }
 
     TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_InvalidType)
@@ -847,13 +846,43 @@ namespace UnitTest
 
         ErrorMessageFinder errorMessageFinder;
         errorMessageFinder.AddExpectedErrorMessage("Unexpected type for property MyFloat in a setValue version update");
-        errorMessageFinder.AddExpectedErrorMessage("Failed to build MaterialTypeAsset because 1 error(s) reported");
 
         EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
 
         errorMessageFinder.CheckExpectedErrorsFound();
 
-        EXPECT_EQ(2, materialTypeCreator.GetErrorCount());
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_UsingOldName)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset);
+        AddCommonTestMaterialProperties(materialTypeCreator);
+
+        MaterialVersionUpdate versionUpdate(2);
+        // add them in the 'worst' order to make sure we handle it correctly in either case
+        AddSetValueAction(versionUpdate, "MyOldIntName", -4);
+        AddRenameAction(versionUpdate, "MyOldIntName", "MyInt");
+
+        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage(
+            "setValue material version update: Could not find property 'MyOldIntName' in the material properties layout");
+
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
     }
 
     TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_NoOperation)
@@ -969,7 +998,7 @@ namespace UnitTest
         materialTypeCreator.AddShader(m_testShaderAsset);
 
         ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("Expected a 'from' field in 'rename' of type AZStd::string");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'from' field in 'rename' of type string");
 
         MaterialVersionUpdate versionUpdate(2);
         versionUpdate.AddAction(MaterialVersionUpdate::Action(
@@ -997,7 +1026,7 @@ namespace UnitTest
         materialTypeCreator.AddShader(m_testShaderAsset);
 
         ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("Expected a 'to' field in 'rename' of type AZStd::string");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'to' field in 'rename' of type string");
 
         MaterialVersionUpdate versionUpdate(2);
         versionUpdate.AddAction(MaterialVersionUpdate::Action(
@@ -1025,7 +1054,7 @@ namespace UnitTest
         materialTypeCreator.AddShader(m_testShaderAsset);
 
         ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("Expected a 'from' field in 'rename' of type AZStd::string");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'from' field in 'rename' of type string");
 
         MaterialVersionUpdate versionUpdate(2);
         versionUpdate.AddAction(MaterialVersionUpdate::Action(
@@ -1053,7 +1082,7 @@ namespace UnitTest
         materialTypeCreator.AddShader(m_testShaderAsset);
 
         ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("Expected a 'to' field in 'rename' of type AZStd::string");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'to' field in 'rename' of type string");
 
         MaterialVersionUpdate versionUpdate(2);
         versionUpdate.AddAction(MaterialVersionUpdate::Action(
@@ -1108,7 +1137,7 @@ namespace UnitTest
         materialTypeCreator.AddShader(m_testShaderAsset);
 
         ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("Expected a 'name' field in 'setValue' of type AZStd::string");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'name' field in 'setValue' of type string");
 
         MaterialVersionUpdate versionUpdate(2);
         versionUpdate.AddAction(MaterialVersionUpdate::Action(
@@ -1165,7 +1194,7 @@ namespace UnitTest
         materialTypeCreator.AddShader(m_testShaderAsset);
 
         ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("Expected a 'name' field in 'setValue' of type AZStd::string");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'name' field in 'setValue' of type string");
 
         MaterialVersionUpdate versionUpdate(2);
         versionUpdate.AddAction(MaterialVersionUpdate::Action(

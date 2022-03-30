@@ -89,8 +89,8 @@ namespace AZ
 
         bool MaterialTypeAssetCreator::ValidateMaterialVersion()
         {
-            return MaterialVersionUpdate::ValidateUpdates(
-                m_asset->m_materialVersionUpdates, m_asset->m_version, m_asset->GetMaterialPropertiesLayout(),
+            return m_asset->m_materialVersionUpdates.ValidateUpdates(
+                m_asset->m_version, m_asset->GetMaterialPropertiesLayout(),
                 [this](const char* message){ ReportError("%s", message); });
         }
 
@@ -124,7 +124,7 @@ namespace AZ
 
         void MaterialTypeAssetCreator::AddVersionUpdate(const MaterialVersionUpdate& materialVersionUpdate)
         {
-            m_asset->m_materialVersionUpdates.push_back(materialVersionUpdate);
+            m_asset->m_materialVersionUpdates.AddVersionUpdate(materialVersionUpdate);
         }
 
         void MaterialTypeAssetCreator::ClaimShaderOptionOwnership(const Name& shaderOptionName)

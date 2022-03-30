@@ -2061,8 +2061,9 @@ namespace UnitTest
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
 
-        EXPECT_EQ(materialTypeAsset->GetMaterialVersionUpdateList().size(), 1);
-        auto actions = materialTypeAsset->GetMaterialVersionUpdateList()[0].GetActions();
+        auto materialVersionUpdates = materialTypeAsset->GetMaterialVersionUpdates();
+        EXPECT_EQ(materialVersionUpdates.GetNumVersionUpdates(), 1);
+        auto actions = materialVersionUpdates.GetVersionUpdate(0).GetActions();
         EXPECT_EQ(actions.size(), 2);
 
         EXPECT_EQ(actions[0].m_operation, Name("setValue"));

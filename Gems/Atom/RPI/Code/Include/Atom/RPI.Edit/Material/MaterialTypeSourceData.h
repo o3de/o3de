@@ -12,6 +12,7 @@
 #include <AzCore/std/containers/map.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 
@@ -186,11 +187,7 @@ namespace AZ
                 AZStd::unordered_map<Name/*shaderOption*/, Name/*value*/> m_shaderOptionValues;
             };
 
-            //! Generic structure for arbitrary version updates. The operation type is stored as a string under the "op" key.
-            using VersionUpdatesOperationDefinition = AZStd::map<AZStd::string, MaterialPropertyValue>; // not unordered_map to keep json deserialization deterministic
-
-            // TODO: Support script operations
-            using VersionUpdateActions = AZStd::vector<VersionUpdatesOperationDefinition>;
+            using VersionUpdateActions = AZStd::vector<MaterialVersionUpdate::Action::ActionDefinition>;
 
             struct VersionUpdateDefinition
             {

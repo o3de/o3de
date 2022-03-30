@@ -270,17 +270,14 @@ namespace AZ
             {
                 return;
             }
+            [[maybe_unused]] const uint32_t originalVersion = m_materialTypeVersion;
 
-            [[maybe_unused]] bool changesWereApplied = false;
-            for (const MaterialVersionUpdate& versionUpdate : m_materialTypeAsset->GetMaterialVersionUpdateList())
-            {
-                changesWereApplied |= versionUpdate.ApplyVersionUpdates(*this, reportError);
-            }
+            [[maybe_unused]] bool changesWereApplied =
+                m_materialTypeAsset->GetMaterialVersionUpdates().ApplyVersionUpdates(*this, reportError);
 
 #if AZ_ENABLE_TRACING
             if (changesWereApplied)
             {
-                const uint32_t originalVersion = m_materialTypeVersion;
                 const AZStd::string versionString = (originalVersion == UnspecifiedMaterialTypeVersion) ?
                     "<Unspecified>" : AZStd::string::format("'%u'", originalVersion);
 

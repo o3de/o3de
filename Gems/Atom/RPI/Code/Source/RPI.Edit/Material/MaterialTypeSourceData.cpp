@@ -67,7 +67,7 @@ namespace AZ
                 serializeContext->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<PropertyDefinition>>>();
                 serializeContext->RegisterGenericType<PropertyConnectionList>();
 
-                serializeContext->RegisterGenericType<VersionUpdatesOperationDefinition>();
+                serializeContext->RegisterGenericType<MaterialVersionUpdate::Action::ActionDefinition>();
                 serializeContext->RegisterGenericType<VersionUpdateActions>();
 
                 serializeContext->Class<VersionUpdateDefinition>()
@@ -75,8 +75,6 @@ namespace AZ
                     ->Field("toVersion", &VersionUpdateDefinition::m_toVersion)
                     ->Field("actions", &VersionUpdateDefinition::m_actions)
                     ;
-
-                serializeContext->RegisterGenericType<VersionUpdates>();
 
                 serializeContext->Class<ShaderVariantReferenceData>()
                     ->Version(2)
@@ -105,6 +103,7 @@ namespace AZ
                     ->Field("propertyGroups", &PropertyLayout::m_propertyGroups)
                     ;
 
+                serializeContext->RegisterGenericType<VersionUpdates>();
                 serializeContext->RegisterGenericType<UvNameMap>();
 
                 serializeContext->Class<MaterialTypeSourceData>()
@@ -606,7 +605,7 @@ namespace AZ
             MaterialPropertyIndex propertyIndex = materialPropertiesLayout->FindPropertyIndex(propertyId);
             if (!propertyIndex.IsValid())
             {
-                onError(AZStd::string::format("Could not resolve '%s': unknown property", propertyId.GetCStr()).data());
+                onError(AZStd::string::format("Could not resolve '%s': unknown property", propertyId.GetCStr()).c_str());
                 return sourceValue;
             }
             const MaterialPropertyDescriptor* descriptor = materialPropertiesLayout->GetPropertyDescriptor(propertyIndex);
@@ -624,8 +623,8 @@ namespace AZ
                 {
                     onError(AZStd::string::format(
                                 "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
-                                sourceValue.GetValue<AZStd::string>().data())
-                                .data());
+                                sourceValue.GetValue<AZStd::string>().c_str())
+                                .c_str());
                 }
                 else
                 {
@@ -642,7 +641,7 @@ namespace AZ
                     onError(AZStd::string::format(
                                 "Material property '%s': Enum value '%s' couldn't be found",
                                 propertyId.GetCStr(), enumName.GetCStr())
-                                .data());
+                                .c_str());
                 }
                 else
                 {
