@@ -361,7 +361,12 @@ namespace MaterialCanvas
         const bool enableAlternateSkybox = viewportRequests->GetAlternateSkyboxEnabled();
         viewportRequests->GetLightingPreset().ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
-            cameraConfig, m_lightHandles, m_shadowCatcherMaterial, m_shadowCatcherOpacityPropertyIndex, enableAlternateSkybox);
+            cameraConfig, m_lightHandles, enableAlternateSkybox);
+
+        if (m_shadowCatcherMaterial && m_shadowCatcherOpacityPropertyIndex.IsValid())
+        {
+            m_shadowCatcherMaterial->SetPropertyValue(m_shadowCatcherOpacityPropertyIndex, viewportRequests->GetLightingPreset().m_shadowCatcherOpacity);
+        }
     }
 
     void MaterialCanvasViewportWidget::UpdateModel(MaterialCanvasViewportRequests* viewportRequests)
