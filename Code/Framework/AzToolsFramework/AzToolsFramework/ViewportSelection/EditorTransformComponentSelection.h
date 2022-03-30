@@ -301,6 +301,7 @@ namespace AzToolsFramework
         // ReadOnlyEntityPublicNotificationBus overrides ...
         void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
 
+        //!@{
         //! Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
@@ -308,6 +309,7 @@ namespace AzToolsFramework
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation);
+        //!@}
 
         bool PerformGroupDitto(AZ::EntityId entityId);
         bool PerformIndividualDitto(AZ::EntityId entityId);

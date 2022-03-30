@@ -1125,7 +1125,6 @@ namespace UnitTest
         m_actionDispatcher->SetStickySelect(GetParam())
             ->CameraState(m_cameraState)
             ->MousePosition(entity2ScreenPosition)
-            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt)
             ->MouseLButtonDown()
             ->MouseLButtonUp();
@@ -1165,7 +1164,6 @@ namespace UnitTest
         m_actionDispatcher->SetStickySelect(GetParam())
             ->CameraState(m_cameraState)
             ->MousePosition(entity2ScreenPosition)
-            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt)
             ->MouseLButtonDown()
             ->MouseLButtonUp()
