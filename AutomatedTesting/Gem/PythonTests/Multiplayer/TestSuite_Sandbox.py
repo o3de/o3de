@@ -47,6 +47,9 @@ class TestAutomation(EditorTestSuite):
         game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected, timeout)
         process_utils.kill_processes_named("AssetProcessor.exe", ignore_extensions=True)
     
+    class test_Multiplayer_AutoComponent_NetworkInput(EditorSingleTest):
+        from .tests import Multiplayer_AutoComponent_NetworkInput as test_module
+
     class test_Multiplayer_AutoComponent_RPC(EditorSingleTest):
         from .tests import Multiplayer_AutoComponent_RPC as test_module
 
