@@ -47,12 +47,6 @@ namespace ScriptCanvas
         m_executor.Initialize(m_runtimeOverrides, AZStd::any(RuntimeComponentUserData(*this, entityId)));
     }
 
-    void RuntimeComponent::Init()
-    {
-        AZ_Assert(RuntimeDataOverrides::IsPreloadBehaviorEnforced(m_runtimeOverrides)
-            , "RuntimeComponent::m_runtimeAsset Auto load behavior MUST be set to AZ::Data::AssetLoadBehavior::PreLoad");
-    }
-
     void RuntimeComponent::OnEntityActivated(const AZ::EntityId&)
     {
         m_executor.Execute();
@@ -60,7 +54,7 @@ namespace ScriptCanvas
 
     void RuntimeComponent::OnEntityDeactivated(const AZ::EntityId&)
     {
-        StopExecution();
+        m_executor.Stop();
     }
 
     void RuntimeComponent::Reflect(AZ::ReflectContext* context)
@@ -72,11 +66,6 @@ namespace ScriptCanvas
                 ->Field("runtimeOverrides", &RuntimeComponent::m_runtimeOverrides)
                 ;
         }
-    }
-
-    void RuntimeComponent::StopExecution()
-    {
-        m_executor.Stop();
     }
 
     void RuntimeComponent::TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData)

@@ -36,14 +36,11 @@ namespace ScriptCanvas
         RuntimeComponentUserData(RuntimeComponent& component, const AZ::EntityId& entity);
     };
 
-    //! Runtime Component responsible for loading an executing the compiled ScriptCanvas graph from a runtime
-    //! asset.
-    //! It contains none of the Graph functionality of Validating Connections, as well as adding
-    //! and removing nodes. Furthermore none of the functionality to remove and add variables
-    //! exist in this component.
-    //! It is assumed that the graph has runtime graph has already been validated and compiled
-    //! at this point.
-    //! This component should only be used at runtime 
+    //! Runtime Component responsible for loading and executing the compiled ScriptCanvas graph from a runtime asset.
+    //! It connects the execution of the graph to the EntityBus and the Entity/Component framework
+    //! Component Activate: Connect to EntityBus, initialize runtime graph
+    //! OnEntityActivated: Begin (and optionally complete) runtime graph execution
+    //! OnEntityDeactivated or RuntimeComponent::Destruction: (optionally) halt runtime graph execution
     class RuntimeComponent
         : public AZ::Component
         , public AZ::EntityBus::Handler
@@ -60,13 +57,6 @@ namespace ScriptCanvas
         void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
 
     protected:
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-            // Cannot be used with either the GraphComponent or the VariableManager Component
-            incompatible.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
-            incompatible.push_back(AZ_CRC("ScriptCanvasVariableService", 0x819c8460));
-        }
-
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC("ScriptCanvasRuntimeService", 0x776e1e3a));
@@ -76,13 +66,9 @@ namespace ScriptCanvas
 
         void Deactivate() override {}
 
-        void Init() override;
-
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         void OnEntityDeactivated(const AZ::EntityId&) override;
-
-        void StopExecution();
 
     private:
         RuntimeDataOverrides m_runtimeOverrides;

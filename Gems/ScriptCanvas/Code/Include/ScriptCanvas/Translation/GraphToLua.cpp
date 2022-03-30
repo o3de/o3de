@@ -309,7 +309,6 @@ namespace ScriptCanvas
 
             if (configuration == BuildConfiguration::Release)
             {
-                m_dotLua.WriteNewLine();
                 m_dotLua.WriteLine("-- ***** end release configuration");
                 m_dotLua.WriteLine(k_stars);
                 m_dotLua.WriteLine("elseif _G.%s then", Grammar::k_InterpretedConfigurationPerformance);
@@ -318,7 +317,6 @@ namespace ScriptCanvas
             }
             else if (configuration == BuildConfiguration::Performance)
             {
-                m_dotLua.WriteNewLine();
                 m_dotLua.WriteLine("-- ***** end performance configuration");
                 m_dotLua.WriteLine(k_stars);
                 m_dotLua.WriteLine("else");
@@ -328,7 +326,6 @@ namespace ScriptCanvas
             }
             else
             {
-                m_dotLua.WriteNewLine();
                 m_dotLua.WriteLine("-- ***** end debug configuration");
                 m_dotLua.WriteLine(k_stars);
                 m_dotLua.WriteLine("end");
@@ -763,8 +760,6 @@ namespace ScriptCanvas
 
             if (!functions.empty())
             {
-                m_dotLua.WriteNewLine();
-
                 for (auto function : functions)
                 {
                     TranslateFunction(function, IsNamed::Yes);
@@ -827,6 +822,11 @@ namespace ScriptCanvas
             }
 
             m_dotLua.WriteIndented("end");
+
+            if (lex == IsNamed::Yes)
+            {
+                m_dotLua.WriteNewLine();
+            }
         }
 
         void GraphToLua::TranslateFunctionBlock(Grammar::ExecutionTreeConstPtr functionBlock, [[maybe_unused]] IsNamed lex)

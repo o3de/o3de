@@ -17,28 +17,31 @@ namespace AZ
 
 namespace ScriptCanvas
 {
+    /*
+    * Usage:
+    * 1) Initialize
+    * 2) Execute
+    * 3) Stop()
+    * 4) Optional (repeat steps 1-3), Stop() and Initialize() MUST be called before subsequent calls to Execute();
+    */
     class Executor
     {
     public:
         AZ_TYPE_INFO(Executor, "{02E0EB5F-B28E-4B95-9FF2-DEA42ECC575D}");
         AZ_CLASS_ALLOCATOR(Executor, AZ::SystemAllocator, 0);
 
-        // will need a source handle version, with builder overrides
-        // use the data system, use a different class for that, actually
-        // the Interpreter
-
         ~Executor();
 
         ActivationInfo CreateActivationInfo() const;
 
-        // make a template version with return values
+        // \todo consider making a template version with return values, similar to execution out
+        // or perhaps safety checked versions with an array / table of any. something parsable
+        // or consider just having users make ebuses that the graphs will handle
+        // and wrapping the whole thing in a single class
+        // interpreter + ebus, and calling it EZ SC Hook or something like that
         void Execute();
 
-        const RuntimeData& GetRuntimeAssetData() const;
-
         ExecutionMode GetExecutionMode() const;
-
-        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
         void Initialize(const RuntimeDataOverrides& overrides, AZStd::any&& userData = AZStd::any());
 
@@ -48,7 +51,6 @@ namespace ScriptCanvas
 
     private:
         ExecutionStatePtr m_executionState;
-        const RuntimeDataOverrides* m_overrides = nullptr;
     };
 
 }

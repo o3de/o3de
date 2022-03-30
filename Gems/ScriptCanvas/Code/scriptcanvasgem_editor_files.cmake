@@ -253,6 +253,8 @@ set(FILES
     Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.cpp
     Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.h
     Editor/View/Windows/Tools/UpgradeTool/View.ui
+    Editor/Framework/Interpreter.cpp
+    Editor/Framework/Interpreter.h
     Editor/Framework/ScriptCanvasGraphUtilities.inl
     Editor/Framework/ScriptCanvasGraphUtilities.h
     Editor/Framework/ScriptCanvasTraceUtilities.h

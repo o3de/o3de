@@ -93,8 +93,6 @@ namespace ScriptCanvas
         AZ_TYPE_INFO(RuntimeDataOverrides, "{CE3C0AE6-4EBA-43B2-B2D5-7AC24A194E63}");
         AZ_CLASS_ALLOCATOR(RuntimeDataOverrides, AZ::SystemAllocator, 0);
 
-        static bool IsPreloadBehaviorEnforced(const RuntimeDataOverrides& overrides);
-
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         AZ::Data::Asset<RuntimeAsset> m_runtimeAsset;
@@ -106,6 +104,33 @@ namespace ScriptCanvas
         void EnforcePreloadBehavior();
     };
 
+    enum class IsPreloadedResult
+    {
+        Yes,
+        PreloadBehaviorNotEnforced,
+        DataNotLoaded,
+    };
+
+    IsPreloadedResult IsPreloaded(const RuntimeDataOverrides& overrides);
+
+    constexpr const char* ToString(IsPreloadedResult result)
+    {
+        switch (result)
+        {
+        case ScriptCanvas::IsPreloadedResult::Yes:
+            return "Data are preloaded and preload behavior enforced";
+
+        case ScriptCanvas::IsPreloadedResult::PreloadBehaviorNotEnforced:
+            return "Preload behavior is NOT enforced";
+
+        case ScriptCanvas::IsPreloadedResult::DataNotLoaded:
+            return "Data are NOT loaded and ready";
+
+        default:
+            return "";
+        }
+    }
+    
     class RuntimeAsset
         : public AZ::Data::AssetData
     {

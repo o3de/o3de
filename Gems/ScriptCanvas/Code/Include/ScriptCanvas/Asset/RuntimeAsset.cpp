@@ -111,22 +111,27 @@ namespace ScriptCanvas
         return !m_cloneSources.empty();
     }
 
-    bool RuntimeDataOverrides::IsPreloadBehaviorEnforced(const RuntimeDataOverrides& overrides)
+    IsPreloadedResult IsPreloaded(const RuntimeDataOverrides& overrides)
     {
         if (overrides.m_runtimeAsset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
         {
-            return false;
+            return IsPreloadedResult::PreloadBehaviorNotEnforced;
+        }
+
+        if (!overrides.m_runtimeAsset.Get())
+        {
+            return IsPreloadedResult::DataNotLoaded;
         }
 
         for (auto& dependency : overrides.m_dependencies)
         {
-            if (!IsPreloadBehaviorEnforced(dependency))
+            if (const auto dependecyResult = IsPreloaded(dependency); dependecyResult != IsPreloadedResult::Yes)
             {
-                return false;
+                return dependecyResult;
             }
         }
 
-        return true;
+        return IsPreloadedResult::Yes;
     }
 
     void RuntimeDataOverrides::EnforcePreloadBehavior()
