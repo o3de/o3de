@@ -94,7 +94,7 @@ int ApplicationManagerBase::ProcessedAssetCount() const
 }
 int ApplicationManagerBase::FailedAssetsCount() const
 {
-    return m_failedAssetsCount;
+    return static_cast<int>(m_failedAssets.size());
 }
 
 void ApplicationManagerBase::ResetProcessedAssetCount()
@@ -104,7 +104,7 @@ void ApplicationManagerBase::ResetProcessedAssetCount()
 
 void ApplicationManagerBase::ResetFailedAssetCount()
 {
-    m_failedAssetsCount = 0;
+    m_failedAssets = {};
 }
 
 
@@ -493,7 +493,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
             {
                 m_fileStateCache->UpdateFile(path);
             }
-            
+
             [[maybe_unused]] bool result = QMetaObject::invokeMethod(
                 m_assetProcessorManager,
                 [this, path]
@@ -940,6 +940,19 @@ bool ApplicationManagerBase::Run()
 
     AZ_Printf(AssetProcessor::ConsoleChannel, "-----------------------------------------\n");
     AZ_Printf(AssetProcessor::ConsoleChannel, "Asset Processor Batch Processing complete\n");
+
+    if (!m_failedAssets.empty())
+    {
+        AZ_Printf(AssetProcessor::ConsoleChannel, "---------------FAILED ASSETS-------------\n");
+
+        for (const auto& failedAsset : m_failedAssets)
+        {
+            AZ_Printf(AssetProcessor::ConsoleChannel, "%s\n", failedAsset.c_str());
+        }
+
+        AZ_Printf(AssetProcessor::ConsoleChannel, "-----------------------------------------\n");
+    }
+
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Assets Successfully Processed: %d.\n", ProcessedAssetCount());
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Assets Failed to Process: %d.\n", FailedAssetsCount());
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Warnings Reported: %d.\n", m_warningCount);
