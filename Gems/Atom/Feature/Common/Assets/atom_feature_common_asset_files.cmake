@@ -115,6 +115,7 @@ set(FILES
     Passes/EditorModeMask.pass
     Passes/EditorModeDesaturation.pass
     Passes/EditorModeTint.pass
+    Passes/EditorModeBlurParent.pass
     Passes/EditorModeBlur.pass
     Passes/EditorModeOutline.pass
     Passes/ContrastAdaptiveSharpening.pass
@@ -387,13 +388,10 @@ set(FILES
     Shaders/Depth/DepthPassTransparentMin.shader
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseComposite_nomsaa.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample_nomsaa.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationComposite.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationComposite.shader
     Shaders/ImGui/ImGui.azsl
@@ -536,10 +534,8 @@ set(FILES
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader
-    Shaders/Reflections/ReflectionComposite_nomsaa.azsl
     Shaders/Reflections/ReflectionGlobalFullscreen.azsl
     Shaders/Reflections/ReflectionGlobalFullscreen.shader
-    Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.azsl
     Shaders/Reflections/ReflectionProbeBlendWeight.azsl
     Shaders/Reflections/ReflectionProbeBlendWeight.shader
     Shaders/Reflections/ReflectionProbeRenderCommon.azsli

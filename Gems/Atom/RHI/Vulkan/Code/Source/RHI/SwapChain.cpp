@@ -21,6 +21,7 @@
 #include <RHI/Queue.h>
 #include <RHI/RenderPass.h>
 #include <RHI/SwapChain.h>
+#include <RHI/ReleaseContainer.h>
 
 namespace AZ
 {
@@ -120,7 +121,7 @@ namespace AZ
 
         void SwapChain::ShutdownInternal()
         {
-            InvalidateNativeSwapChain();
+            InvalidateNativeSwapChainImmediately();
             InvalidateSurface();
 
             m_presentationQueue = nullptr;
@@ -437,7 +438,7 @@ namespace AZ
             createInfo.compositeAlpha = m_compositeAlphaFlagBits;
             createInfo.presentMode = m_presentMode;
             createInfo.clipped = VK_FALSE;
-            createInfo.oldSwapchain = VK_NULL_HANDLE;
+            createInfo.oldSwapchain = m_oldNativeSwapChain;
 
             const VkResult result = vkCreateSwapchainKHR(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSwapChain);
             AssertSuccess(result);
@@ -483,7 +484,27 @@ namespace AZ
         void SwapChain::InvalidateNativeSwapChain()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            auto presentCommand = [this,  &device]([[maybe_unused]] void* queue)
+            auto presentCommand = [this, &device]([[maybe_unused]] void* queue)
+            {
+                vkDeviceWaitIdle(device.GetNativeDevice());
+                if (m_nativeSwapChain != VK_NULL_HANDLE)
+                {
+                    //Add the swapchain on the release queue to be released later as we still need it in order to transition to the new swapchain
+                    device.QueueForRelease(
+                        new ReleaseContainer<VkSwapchainKHR>(device.GetNativeDevice(), m_nativeSwapChain, vkDestroySwapchainKHR));
+                    m_oldNativeSwapChain = m_nativeSwapChain;
+                    m_nativeSwapChain = VK_NULL_HANDLE;
+                }
+            };
+
+            m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
+            m_presentationQueue->FlushCommands();
+        }
+
+        void SwapChain::InvalidateNativeSwapChainImmediately()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            auto presentCommand = [this, &device]([[maybe_unused]] void* queue)
             {
                 vkDeviceWaitIdle(device.GetNativeDevice());
                 if (m_nativeSwapChain != VK_NULL_HANDLE)

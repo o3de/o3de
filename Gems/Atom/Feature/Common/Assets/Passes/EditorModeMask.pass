@@ -8,10 +8,13 @@
             "Name": "EditorModeMaskTemplate",
             "PassClass": "RasterPass",
             "Slots": [
+                // Depth buffer of existing scene contents for manual depth testing in the fragment shader
                 {
                     "Name": "InputDepth",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ShaderInputName": "m_existingDepth",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_existingDepthDimensions"
                 },
                 {
                     "Name": "OutputEntityMask",
@@ -41,8 +44,9 @@
                         }
                     },
                     "ImageDescriptor": {
-                        // Use R8G8B8A8 format for now, actual format will be determined in LYN-9878 
-                        "Format": "R8G8B8A8_UNORM",
+                        // Red channel holds visible entities of interest fragments
+                        // Green channel holds visible and occluded entities of interest fragments
+                        "Format": "R8G8_UNORM",
                         "SharedQueueMask": "Graphics"
                     }
                 }
@@ -59,7 +63,10 @@
             "PassData": {
                 "$type": "RasterPassData",
                 "DrawListTag": "editormodemask",
-                "PipelineViewTag": "MainCamera"
+                "PipelineViewTag": "MainCamera",
+                "PassSrgShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/EditorModeMask.shader"
+                }
             }
         }
     }
