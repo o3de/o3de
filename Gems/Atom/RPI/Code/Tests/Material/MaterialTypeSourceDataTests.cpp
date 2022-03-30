@@ -2075,6 +2075,32 @@ namespace UnitTest
         EXPECT_EQ(actions[1].GetArg(Name("value")), m_testImageAsset2);
     }
 
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_VersionInWrongLocation)
+    {
+        // The version field used to be under the propertyLayout section, but it has been moved up to the top level.
+        // If any users have their own custom .materialtype with an older format that has the version in the wrong place
+        // then we will report an error with instructions to move it to the correct location.
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("The field '/propertyLayout/version' is deprecated and moved to '/version'. Please edit this material type source file and move the '\"version\": 4' setting up one level");
+
+        const AZStd::string inputJson = R"(
+            {
+                "propertyLayout": {
+                    "version": 4
+                }
+            }
+        )";
+
+        MaterialTypeSourceData materialType;
+        JsonTestResult loadResult = LoadTestDataFromJson(materialType, inputJson);
+
+        auto materialTypeOutcome = materialType.CreateMaterialTypeAsset(Uuid::CreateRandom());
+        EXPECT_FALSE(materialTypeOutcome.IsSuccess());
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+
     TEST_F(MaterialTypeSourceDataTests, LoadWithImportedJson)
     {
         const AZStd::string propertyGroupJson = R"(

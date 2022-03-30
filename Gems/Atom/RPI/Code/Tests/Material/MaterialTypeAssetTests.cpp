@@ -307,6 +307,44 @@ namespace UnitTest
         CheckPropertyValue<uint32_t>(materialTypeAsset, Name{"MyEnum"}, 0u);
     }
 
+    TEST_F(MaterialTypeAssetTests, SetPropertyValues)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        AddCommonTestMaterialProperties(materialTypeCreator);
+
+        materialTypeCreator.SetPropertyValue(Name{"MyBool"},   true);
+        materialTypeCreator.SetPropertyValue(Name{"MyFloat"},  1.2f);
+        materialTypeCreator.SetPropertyValue(Name{"MyInt"},    -12);
+        materialTypeCreator.SetPropertyValue(Name{"MyUInt"},   12u);
+        materialTypeCreator.SetPropertyValue(Name{"MyFloat2"}, Vector2{ 1.1f, 2.2f });
+        materialTypeCreator.SetPropertyValue(Name{"MyFloat3"}, Vector3{ 3.3f, 4.4f, 5.5f });
+        materialTypeCreator.SetPropertyValue(Name{"MyFloat4"}, Vector4{ 6.6f, 7.7f, 8.8f, 9.9f });
+        materialTypeCreator.SetPropertyValue(Name{"MyColor"},  Color{ 0.1f, 0.2f, 0.3f, 0.4f });
+        materialTypeCreator.SetPropertyValue(Name{"MyImage"},  m_testImageAsset);
+        materialTypeCreator.SetPropertyValue(Name{"MyEnum"}, 1u);
+
+        EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
+
+        CheckPropertyValue<bool>    (materialTypeAsset, Name{"MyBool"}, true);
+        CheckPropertyValue<float>   (materialTypeAsset, Name{"MyFloat"}, 1.2f);
+        CheckPropertyValue<int32_t> (materialTypeAsset, Name{"MyInt"}, -12);
+        CheckPropertyValue<uint32_t>(materialTypeAsset, Name{"MyUInt"}, 12u);
+        CheckPropertyValue<Vector2> (materialTypeAsset, Name{"MyFloat2"}, Vector2{ 1.1f, 2.2f });
+        CheckPropertyValue<Vector3> (materialTypeAsset, Name{"MyFloat3"}, Vector3{ 3.3f, 4.4f, 5.5f });
+        CheckPropertyValue<Vector4> (materialTypeAsset, Name{"MyFloat4"}, Vector4{ 6.6f, 7.7f, 8.8f, 9.9f });
+        CheckPropertyValue<Color>   (materialTypeAsset, Name{"MyColor"}, Color{ 0.1f, 0.2f, 0.3f, 0.4f });
+        CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{"MyImage"}, m_testImageAsset);
+        CheckPropertyValue<uint32_t>(materialTypeAsset, Name{"MyEnum"}, 1u);
+    }
+
     TEST_F(MaterialTypeAssetTests, ApplySetValues)
     {
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
