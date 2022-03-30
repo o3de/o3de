@@ -72,7 +72,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     set(additional_tool_deps ${pal_dir}/additional_${PAL_PLATFORM_NAME_LOWERCASE}_tool_deps.cmake)
     foreach(pal_tools_platform ${LY_PAL_TOOLS_ENABLED})
         string(TOLOWER ${pal_tools_platform} pal_tools_platform_lowercase)
-        ly_get_list_relative_pal_filename(pal_runtime_dependencies_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${pal_tools_platform})
+        o3de_pal_dir(pal_runtime_dependencies_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${pal_tools_platform} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
         list(APPEND additional_tool_deps ${pal_runtime_dependencies_source_dir}/additional_${pal_tools_platform_lowercase}_tool_deps.cmake)
     endforeach()
 

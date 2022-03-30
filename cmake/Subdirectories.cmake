@@ -12,13 +12,42 @@ include_guard()
 # Subdirectory processing
 ################################################################################
 
-# this function is building up the LY_EXTERNAL_SUBDIRS global property
+# these functions are used to build up the LY_EXTERNAL_SUBDIRS global property
+
+function(add_pal_external_subdirectories object_type object_path object_json_path)
+    set(pal_platforms ${PAL_PLATFORM_NAME})
+        list(APPEND pal_platforms ${LY_PAL_TOOLS_ENABLED})
+        foreach(platform ${pal_platforms})
+            string(TOLOWER ${platform} platform_lower)
+            o3de_restricted_path(${object_json_path} restricted_path parent_relative_path)
+            if(restricted_path)
+                o3de_pal_dir(pal_dir "${object_path}/Platform/${platform}" "${restricted_path}" "${object_path}" "${parent_relative_path}")
+                set(restricted_json_path "${pal_dir}/${object_type}_${platform_lower}.json")
+                if(EXISTS ${restricted_json_path})
+                    o3de_read_json_external_subdirs(restricted_external_subdirs ${restricted_json_path})
+                    foreach(restricted_external_subdir ${restricted_external_subdirs})
+                        file(REAL_PATH ${restricted_external_subdir} real_external_subdir BASE_DIRECTORY ${pal_dir})
+
+                        # Append external subdirectory if it is not in global property
+                        get_property(current_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+                        if(NOT real_external_subdir IN_LIST current_external_subdirs)
+                            set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_external_subdir})
+                            # Also append the project external subdirectores to the LY_EXTERNAL_SUBDIRS_ENGINE property
+                            set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS_ENGINE ${real_external_subdir})
+                            add_engine_gem_json_external_subdirectories(${real_external_subdir})
+                        endif()
+                    endforeach()
+                endif()
+            endif()
+        endforeach()
+endfunction()
+
 function(add_engine_gem_json_external_subdirectories gem_path)
-    set(gem_json_path ${gem_path}/gem.json)
+    set(gem_json_path "${gem_path}/gem.json")
     if(EXISTS ${gem_json_path})
-        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
+        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_json_path})
         # Read the gem_name from the gem.json and map it to the gem path
-        o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
+        o3de_read_json_key(gem_name ${gem_json_path} "gem_name")
         if (gem_name)
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
@@ -35,11 +64,16 @@ function(add_engine_gem_json_external_subdirectories gem_path)
                 add_engine_gem_json_external_subdirectories(${real_external_subdir})
             endif()
         endforeach()
+
+        # see if this o3de object has any pal/restricted external subdir additions
+        add_pal_external_subdirectories("gem" ${gem_path} ${gem_json_path})
+
     endif()
 endfunction()
 
 function(add_engine_json_external_subdirectories)
-    set(engine_json_path ${LY_ROOT_FOLDER}/engine.json)
+    set(engine_path ${LY_ROOT_FOLDER})
+    set(engine_json_path "${engine_path}/engine.json")
     if(EXISTS ${engine_json_path})
         o3de_read_json_external_subdirs(engine_external_subdirs ${engine_json_path})
         foreach(engine_external_subdir ${engine_external_subdirs})
@@ -54,16 +88,19 @@ function(add_engine_json_external_subdirectories)
                 add_engine_gem_json_external_subdirectories(${real_external_subdir})
             endif()
         endforeach()
+
+        # see if this o3de engine has any pal/restricted external subdirectories
+        add_pal_external_subdirectories("engine" ${engine_path} ${engine_json_path})
     endif()
 endfunction()
 
 
 function(add_project_gem_json_external_subdirectories gem_path project_name)
-    set(gem_json_path ${gem_path}/gem.json)
+    set(gem_json_path "${gem_path}/gem.json")
     if(EXISTS ${gem_json_path})
-        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
+        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_json_path})
         # Read the gem_name from the gem.json and map it to the gem path
-        o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
+        o3de_read_json_key(gem_name ${gem_json_path} "gem_name")
         if (gem_name)
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
@@ -80,13 +117,16 @@ function(add_project_gem_json_external_subdirectories gem_path project_name)
                 add_project_gem_json_external_subdirectories(${real_external_subdir} "${project_name}")
             endif()
         endforeach()
+
+        # see if this o3de gem has any pal/restricted external subdirectories
+        add_pal_external_subdirectories("gem" ${gem_path} ${gem_json_path})
     endif()
 endfunction()
 
 function(add_project_json_external_subdirectories project_path project_name)
-    set(project_json_path ${project_path}/project.json)
+    set(project_json_path "${project_path}/project.json")
     if(EXISTS ${project_json_path})
-        o3de_read_json_external_subdirs(project_external_subdirs ${project_path}/project.json)
+        o3de_read_json_external_subdirs(project_external_subdirs ${project_json_path})
         foreach(project_external_subdir ${project_external_subdirs})
             file(REAL_PATH ${project_external_subdir} real_external_subdir BASE_DIRECTORY ${project_path})
 
@@ -99,6 +139,10 @@ function(add_project_json_external_subdirectories project_path project_name)
                 add_project_gem_json_external_subdirectories(${real_external_subdir} "${project_name}")
             endif()
         endforeach()
+
+        # see if this o3de project has any pal/restricted external subdirectories
+        add_pal_external_subdirectories("project" ${project_path} ${project_json_path})
+
     endif()
 endfunction()
 
@@ -106,11 +150,11 @@ endfunction()
 #! add_o3de_manifest_gem_json_external_subdirectories : Recurses through external subdirectories
 #! originally found in the add_o3de_manifest_json_external_subdirectories command
 function(add_o3de_manifest_gem_json_external_subdirectories gem_path)
-    set(gem_json_path ${gem_path}/gem.json)
+    set(gem_json_path "${gem_path}/gem.json")
     if(EXISTS ${gem_json_path})
-        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
+        o3de_read_json_external_subdirs(gem_external_subdirs ${gem_json_path})
         # Read the gem_name from the gem.json and map it to the gem path
-        o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
+        o3de_read_json_key(gem_name ${gem_json_path} "gem_name")
         if (gem_name)
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
@@ -126,6 +170,10 @@ function(add_o3de_manifest_gem_json_external_subdirectories gem_path)
                 add_o3de_manifest_gem_json_external_subdirectories(${real_external_subdir})
             endif()
         endforeach()
+
+        # see if this o3de object has any pal/restricted external subdir additions
+        add_pal_external_subdirectories("gem" ${gem_path} ${gem_json_path})
+
     endif()
 endfunction()
 
@@ -189,10 +237,10 @@ function(add_subdirectory_on_external_subdirs)
     # and append them to the LY_EXTERNAL_SUBDIRS property
     foreach(project ${LY_PROJECTS})
         file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
-        o3de_read_json_array(gem_names ${full_directory_path}/project.json "gem_names")
+        o3de_read_json_array(gem_names "${full_directory_path}/project.json" "gem_names")
         add_registered_gems_to_external_subdirs("${gem_names}")
     endforeach()
-    o3de_read_json_array(gem_names ${LY_ROOT_FOLDER}/engine.json "gem_names")
+    o3de_read_json_array(gem_names "${LY_ROOT_FOLDER}/engine.json" "gem_names")
     add_registered_gems_to_external_subdirs("${gem_names}")
 
     get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
@@ -210,6 +258,6 @@ function(add_subdirectory_on_external_subdirs)
         string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
         # Use the last directory as the suffix path to use for the Binary Directory
         cmake_path(GET external_directory FILENAME directory_name)
-        add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
+        add_subdirectory(${external_directory} "${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash}")
     endforeach()
 endfunction()

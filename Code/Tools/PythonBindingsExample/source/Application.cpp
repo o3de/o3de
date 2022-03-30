@@ -89,7 +89,7 @@ namespace PythonBindingsExample
     bool Application::Run()
     {
         ApplicationParameters params;
-        if (params.Parse(GetCommandLine()))
+        if (params.Parse(GetApplicationCommandLine()))
         {
             return RunWithParameters(params);
         }

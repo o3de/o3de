@@ -22,7 +22,6 @@
         "Atom_RHI_DX12",
         "Atom_RHI_Metal",
         "Atom_RHI_Vulkan",
-        "Atom_RHI_Salem",
         "Atom_RHI_Null",
         "Atom_Feature_Common"
     ]

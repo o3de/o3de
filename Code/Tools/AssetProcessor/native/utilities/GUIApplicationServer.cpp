@@ -24,7 +24,7 @@ bool GUIApplicationServer::startListening(unsigned short port)
     if (!isListening())
     {
         const AzFramework::CommandLine* commandLine = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
         bool randomPort = commandLine && commandLine->HasSwitch(ApplicationServer::RandomListeningPortOption);
         if (port == 0 && !randomPort)
         {

@@ -62,7 +62,7 @@ def get_o3de_download_folder() -> pathlib.Path:
 
 
 def get_o3de_engines_folder() -> pathlib.Path:
-    engines_folder = get_o3de_folder() / 'Engines'
+    engines_folder = get_o3de_user_folder() / 'Engines'
     engines_folder.mkdir(parents=True, exist_ok=True)
     return engines_folder
 
@@ -86,7 +86,7 @@ def get_o3de_templates_folder() -> pathlib.Path:
 
 
 def get_o3de_restricted_folder() -> pathlib.Path:
-    restricted_folder = get_o3de_folder() / 'Restricted'
+    restricted_folder = get_o3de_user_folder() / 'Restricted'
     restricted_folder.mkdir(parents=True, exist_ok=True)
     return restricted_folder
 
@@ -116,6 +116,7 @@ def get_default_o3de_manifest_json_data() -> dict:
     default_cache_folder = get_o3de_cache_folder()
     default_downloads_folder = get_o3de_download_folder()
     default_logs_folder = get_o3de_logs_folder()
+    user_folder = get_o3de_user_folder()
     default_engines_folder = get_o3de_engines_folder()
     default_projects_folder = get_o3de_projects_folder()
     default_gems_folder = get_o3de_gems_folder()

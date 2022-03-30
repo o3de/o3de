@@ -147,7 +147,7 @@ int main(int argc, char** argv)
     app.Start(AzFramework::Application::Descriptor());    
     {
         DeltaCatalogerParams params;
-        exitCode = ParseArgs(app.GetCommandLine(), params);
+        exitCode = ParseArgs(app.GetApplicationCommandLine(), params);
         if (exitCode != DeltaCatalogerResult::Success)
         {
             return static_cast<int>(exitCode);

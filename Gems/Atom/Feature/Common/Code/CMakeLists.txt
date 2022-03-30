@@ -6,8 +6,8 @@
 #
 #
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
-set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+o3de_pal_dir(pal_source_dir "${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME}" "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+set(common_source_dir "${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common")
 
 ly_add_target(
     NAME Atom_Feature_Common.Static STATIC
@@ -95,7 +95,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     set(runtime_dependencies_tools ${pal_source_dir}/runtime_dependencies_tools.cmake)
     foreach(pal_tools_platform ${LY_PAL_TOOLS_ENABLED})
-        ly_get_list_relative_pal_filename(pal_runtime_dependencies_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${pal_tools_platform})
+        o3de_pal_dir(pal_runtime_dependencies_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${pal_tools_platform} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
         list(APPEND runtime_dependencies_tools ${pal_runtime_dependencies_source_dir}/runtime_dependencies_tools.cmake)
     endforeach()
 

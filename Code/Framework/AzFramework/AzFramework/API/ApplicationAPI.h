@@ -67,9 +67,6 @@ namespace AzFramework
         /// Make path relative to the provided root.
         virtual void MakePathRelative(AZStd::string& /*fullPath*/, const char* /*rootPath*/) {}
 
-        /// Get the Command Line arguments passed in.
-        virtual const CommandLine* GetCommandLine() { return nullptr; }
-
         /// Get the Command Line arguments passed in. (Avoids collisions with platform specific macros.)
         virtual const CommandLine* GetApplicationCommandLine() { return nullptr; }
 

@@ -489,7 +489,7 @@ bool ApplicationManager::StartAZFramework()
     Reflect();
 
     const AzFramework::CommandLine* commandLine = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
     if (commandLine && commandLine->HasSwitch("logDir"))
     {
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@log@", commandLine->GetSwitchValue("logDir", 0).c_str());

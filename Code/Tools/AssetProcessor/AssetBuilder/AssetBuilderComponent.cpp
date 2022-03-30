@@ -244,7 +244,7 @@ bool AssetBuilderComponent::Run()
 {
     AZ_TracePrintf("AssetBuilderComponent", "Run:  Parsing command line.\n");
     const AzFramework::CommandLine* commandLine = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
     if (commandLine->HasSwitch(s_paramHelp))
     {
         PrintHelp();
@@ -557,7 +557,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
     AZStd::unordered_set<AZStd::string> platformTags{"tools", "debug"};
     {
         const AzFramework::CommandLine* commandLine = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
         if (commandLine)
         {
             size_t tagSwitchSize = commandLine->GetNumSwitchValues(s_paramPlatformTags);
@@ -1070,7 +1070,7 @@ void AssetBuilderComponent::UpdateResultCode(const AssetBuilderSDK::ProcessJobRe
 bool AssetBuilderComponent::GetParameter(const char* paramName, AZStd::string& outValue, [[maybe_unused]] bool required /*= true*/) const
 {
     const AzFramework::CommandLine* commandLine = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
 
     size_t optionCount = commandLine->GetNumSwitchValues(paramName);
     if (optionCount > 0)
