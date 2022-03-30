@@ -193,7 +193,7 @@ void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const c
 void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint nRootSize)
 {
     char szPath[_MAX_PATH];
-    AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
+    [[maybe_unused]] AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
     AZ_Assert(ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success, "The path to the current executable exceeds the expected length");
     const size_t nLen = strnlen(szPath, _MAX_PATH);
 
