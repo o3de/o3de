@@ -252,7 +252,7 @@ namespace AzToolsFramework
             const AzFramework::ClickDetector::ClickOutcome clickOutcome, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
         {
             return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click &&
-                !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
         }
 
@@ -261,7 +261,7 @@ namespace AzToolsFramework
         {
             return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
-                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Shift();
         }
 
         static bool IndividualSelect(const AzFramework::ClickDetector::ClickOutcome clickOutcome)
@@ -274,7 +274,8 @@ namespace AzToolsFramework
         {
             return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
-                !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
+                !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt() &&
+                !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Shift();
         }
     } // namespace Input
 

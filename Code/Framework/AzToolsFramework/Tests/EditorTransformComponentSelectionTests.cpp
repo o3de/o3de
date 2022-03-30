@@ -1125,6 +1125,7 @@ namespace UnitTest
         m_actionDispatcher->SetStickySelect(GetParam())
             ->CameraState(m_cameraState)
             ->MousePosition(entity2ScreenPosition)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt)
             ->MouseLButtonDown()
             ->MouseLButtonUp();
@@ -1164,6 +1165,7 @@ namespace UnitTest
         m_actionDispatcher->SetStickySelect(GetParam())
             ->CameraState(m_cameraState)
             ->MousePosition(entity2ScreenPosition)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt)
             ->MouseLButtonDown()
             ->MouseLButtonUp()
@@ -1181,6 +1183,7 @@ namespace UnitTest
                     EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(Entity2WorldTranslation));
                 })
             ->MousePosition(clickOffPositionScreen)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt)
             ->MouseLButtonDown()
             ->MouseLButtonUp();
@@ -1193,7 +1196,7 @@ namespace UnitTest
             manipulatorTransform, AzToolsFramework::GetEntityContextId(),
             &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
 
-        // manipulator transform remains where it was (with only Alt to update the position of the manipulator)
+        // manipulator transform remains where it was (when using Ctrl+Alt to update the position of the manipulator)
         EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(Entity2WorldTranslation));
     }
 
@@ -1809,24 +1812,26 @@ namespace UnitTest
         All,
         EditorTransformComponentSelectionTranslationManipulatorPickingEntityTestFixtureParam,
         testing::Values(
-            // manipulator should move to exact pick position when alt and control are held
+            // manipulator should move to exact pick position when ctrl and shift are held
             ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Control,
-                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
+                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift },
                              ManipulatorPickBoxCorner,
                              ManipulatorPickBoxCorner },
-            // manipulator should move to picked entity position when alt alone is held
-            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
+            // manipulator should move to picked entity position when ctrl and alt is held
+            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Control,
+                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
                              ManipulatorPickBoxCorner,
                              EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation },
             ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Control,
-                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
+                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift },
                              // click position above boxes/entities
                              AZ::Vector3(5.0f, 15.0f, 12.0f),
                              // position in front of camera when there was no pick intersection (uses GetDefaultEntityPlacementDistance,
                              // which has a default value of 10) note: the camera is positioned 10 units along the x-axis looking down it
                              // (negative) and the near clip plane is set to 0.1, so the absolute position is -0.1 on the x-axis
                              AZ::Vector3(-0.1f, 15.0f, 12.0f) },
-            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
+            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Control,
+                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
                              // click position above boxes/entities
                              AZ::Vector3(5.0f, 15.0f, 12.0f),
                              // position remains unchanged (manipulator won't move as an entity wasn't picked)
