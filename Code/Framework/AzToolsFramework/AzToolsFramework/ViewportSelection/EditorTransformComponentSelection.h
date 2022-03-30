@@ -64,24 +64,10 @@ namespace AzToolsFramework
     //! Temporary manipulator frame used during selection.
     struct OptionalFrame
     {
-        //! What part of the transform did we pick (when using ditto on
-        //! the manipulator). This will depend on the transform mode we're in.
-        struct PickType
-        {
-            enum : AZ::u8
-            {
-                None = 0,
-                Orientation = 1 << 0,
-                Translation = 1 << 1
-            };
-        };
-
         bool HasTranslationOverride() const;
         bool HasOrientationOverride() const;
         bool HasTransformOverride() const;
         bool HasEntityOverride() const;
-        bool PickedTranslation() const;
-        bool PickedOrientation() const;
 
         //! Clear all state associated with the frame.
         void Reset();
@@ -93,7 +79,6 @@ namespace AzToolsFramework
         AZ::EntityId m_pickedEntityIdOverride; //!< 'Picked' Entity - frame and parent space relative to this if active.
         AZStd::optional<AZ::Vector3> m_translationOverride; //!< Translation override, if set, reset when selection is empty.
         AZStd::optional<AZ::Quaternion> m_orientationOverride; //!< Orientation override, if set, reset when selection is empty.
-        AZ::u8 m_pickTypes = PickType::None; //!< What mode(s) were we in when picking an EntityId override.
     };
 
     //! How a manipulator should treat an adjustment.
@@ -314,7 +299,7 @@ namespace AzToolsFramework
         bool PerformGroupDitto(AZ::EntityId entityId);
         bool PerformIndividualDitto(AZ::EntityId entityId);
         //! ManipulatorTranslationFn returns the position to use when 'dittoing' the manipulator.
-        //! @note: signature - AZ::Vector3(AZ::EntityId).
+        //! @note: signature - AZ::Vector3(void).
         template<typename ManipulatorTranslationFn>
         void PerformManipulatorDitto(AZ::EntityId entityId, ManipulatorTranslationFn&& manipulatorTranslationFn);
         void PerformSnapToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
@@ -381,10 +366,10 @@ namespace AzToolsFramework
         ViewportInteraction::MouseButtons mouseButtons,
         const AZStd::function<void(AZ::EntityId, bool)>& setEntityAccentedFn);
 
-    //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
+    //! The Etcs (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
     //! the EditorTransformComponentSelection type. Functions in this namespace are exposed to facilitate testing
     //! and should not be used outside of EditorTransformComponentSelection or EditorTransformComponentSelectionTests.
-    namespace ETCS
+    namespace Etcs
     {
         //! The result from calculating the entity (transform component) orientation.
         //! Does the entity have a parent or not, and what orientation should the manipulator have when
@@ -415,5 +400,5 @@ namespace AzToolsFramework
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal);
-    } // namespace ETCS
+    } // namespace Etcs
 } // namespace AzToolsFramework
