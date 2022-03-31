@@ -66,11 +66,11 @@ namespace AssetProcessor
 
         
         connect(
-            m_outgoingDependencyTreeModel, &QAbstractItemModel::modelAboutToBeReset, this,
-            &ProductAssetDetailsPanel::IncomingProductDependencyTreeModelReset);
-        connect(
-            m_incomingDependencyTreeModel, &QAbstractItemModel::modelAboutToBeReset, this,
+            m_outgoingDependencyTreeModel, &QAbstractItemModel::modelReset, this,
             &ProductAssetDetailsPanel::OutgoingProductDependencyTreeModelReset);
+        connect(
+            m_incomingDependencyTreeModel, &QAbstractItemModel::modelReset, this,
+            &ProductAssetDetailsPanel::IncomingProductDependencyTreeModelReset);
 
         AzQtComponents::StyleManager::setStyleSheet(m_ui->OutgoingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
         AzQtComponents::StyleManager::setStyleSheet(m_ui->IncomingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
@@ -397,6 +397,12 @@ namespace AssetProcessor
         m_ui->ClearScanFolderButton->setVisible(!visible);
         m_ui->FolderDescriptionProductDependencies->setVisible(!visible);
         m_ui->MissingProductDependenciesFolderTitleLabel->setVisible(!visible);
+
+        // When selecting a folder, use a vertical spacer to push the UI elements to the top of the display area.
+        // Otherwise, disable the spacer so that the UI for the product asset can expand to fill the display area.
+        m_ui->verticalSpacer_dependencies_tab->changeSize(0, 0,
+            visible ? QSizePolicy::Fixed : QSizePolicy::Expanding,
+            visible ? QSizePolicy::Fixed : QSizePolicy::Expanding);
 
         m_ui->productAssetIdTitleLabel->setVisible(visible);
         m_ui->productAssetIdValueLabel->setVisible(visible);

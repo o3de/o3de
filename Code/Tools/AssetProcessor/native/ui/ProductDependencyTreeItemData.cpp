@@ -89,20 +89,15 @@ namespace AssetProcessor
         return 0;
     }
 
-    int ProductDependencyTreeItem::GetColumnCount() const
-    {
-        return static_cast<int>(ProductDependencyTreeColumns::Max);
-    }
-
     QVariant ProductDependencyTreeItem::GetDataForColumn(int column) const
     {
-        if (column < 0 || column >= GetColumnCount() || !m_data)
+        if (!m_data)
         {
             return QVariant();
         }
         switch (column)
         {
-        case static_cast<int>(AssetTreeColumns::Name):
+        case static_cast<int>(ProductDependencyTreeColumns::Name):
             return m_data->m_name;
         default:
             AZ_Warning("AssetProcessor", false, "Unhandled ProductDependencyTreeItem column %d", column);

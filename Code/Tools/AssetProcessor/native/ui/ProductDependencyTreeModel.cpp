@@ -95,17 +95,9 @@ namespace AssetProcessor
         return parentItem->getChildCount();
     }
 
-    int ProductDependencyTreeModel::columnCount(const QModelIndex& parent) const
+    int ProductDependencyTreeModel::columnCount(const QModelIndex& /*parent*/) const
     {
-        if (parent.isValid())
-        {
-            return static_cast<ProductDependencyTreeItem*>(parent.internalPointer())->GetColumnCount();
-        }
-        if (m_root)
-        {
-            return m_root->GetColumnCount();
-        }
-        return 0;
+        return static_cast<int>(ProductDependencyTreeColumns::Max);
     }
 
     QVariant ProductDependencyTreeModel::data(const QModelIndex& index, int role) const

@@ -61,7 +61,6 @@ namespace AssetProcessor
         void EraseChild(ProductDependencyTreeItem* child);
 
         int getChildCount() const;
-        int GetColumnCount() const;
         int GetRow() const;
         QVariant GetDataForColumn(int column) const;
         ProductDependencyTreeItem* GetParent() const;

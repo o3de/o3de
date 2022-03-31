@@ -54,7 +54,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="ProductInformationTab">
       <attribute name="title">
@@ -685,6 +685,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="rootIsDecorated">
+          <bool>false</bool>
+         </property>
+         <property name="uniformRowHeights">
+          <bool>true</bool>
+         </property>
          <property name="sortingEnabled">
           <bool>false</bool>
          </property>
@@ -692,7 +698,7 @@
           <bool>false</bool>
          </attribute>
          <attribute name="headerDefaultSectionSize">
-          <number>300</number>
+          <number>40</number>
          </attribute>
         </widget>
        </item>
@@ -750,6 +756,12 @@
        </item>
        <item>
         <widget class="QTreeView" name="IncomingProductDependenciesTreeView">
+         <property name="rootIsDecorated">
+          <bool>false</bool>
+         </property>
+         <property name="uniformRowHeights">
+          <bool>true</bool>
+         </property>
          <property name="sortingEnabled">
           <bool>false</bool>
          </property>
@@ -757,7 +769,7 @@
           <bool>true</bool>
          </property>
          <attribute name="headerDefaultSectionSize">
-          <number>300</number>
+          <number>40</number>
          </attribute>
         </widget>
        </item>
