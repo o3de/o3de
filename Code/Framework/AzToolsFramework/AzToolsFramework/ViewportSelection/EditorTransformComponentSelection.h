@@ -67,7 +67,6 @@ namespace AzToolsFramework
         bool HasTranslationOverride() const;
         bool HasOrientationOverride() const;
         bool HasTransformOverride() const;
-        bool HasEntityOverride() const;
 
         //! Clear all state associated with the frame.
         void Reset();
@@ -76,7 +75,6 @@ namespace AzToolsFramework
         //! Clear only picked orientation state.
         void ResetPickedOrientation();
 
-        AZ::EntityId m_pickedEntityIdOverride; //!< 'Picked' Entity - frame and parent space relative to this if active.
         AZStd::optional<AZ::Vector3> m_translationOverride; //!< Translation override, if set, reset when selection is empty.
         AZStd::optional<AZ::Quaternion> m_orientationOverride; //!< Orientation override, if set, reset when selection is empty.
     };
@@ -246,7 +244,7 @@ namespace AzToolsFramework
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
 
         // EditorManipulatorCommandUndoRedoRequestBus overrides ...
-        void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) override;
+        void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;
 
         // EditorContextMenuBus overrides ...
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;

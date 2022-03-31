@@ -182,28 +182,20 @@ namespace AzToolsFramework
         return m_translationOverride.has_value() || m_orientationOverride.has_value();
     }
 
-    bool OptionalFrame::HasEntityOverride() const
-    {
-        return m_pickedEntityIdOverride.IsValid();
-    }
-
     void OptionalFrame::Reset()
     {
         m_orientationOverride.reset();
         m_translationOverride.reset();
-        m_pickedEntityIdOverride.SetInvalid();
     }
 
     void OptionalFrame::ResetPickedTranslation()
     {
         m_translationOverride.reset();
-        m_pickedEntityIdOverride.SetInvalid();
     }
 
     void OptionalFrame::ResetPickedOrientation()
     {
         m_orientationOverride.reset();
-        m_pickedEntityIdOverride.SetInvalid();
     }
 
     using EntityIdTransformMap = AZStd::unordered_map<AZ::EntityId, AZ::Transform>;
@@ -1207,8 +1199,7 @@ namespace AzToolsFramework
         }
 
         return { BuildPivotOverride(m_pivotOverrideFrame.HasTranslationOverride(), m_pivotOverrideFrame.HasOrientationOverride()),
-                 TransformNormalizedScale(m_entityIdManipulators.m_manipulators->GetLocalTransform()),
-                 m_pivotOverrideFrame.m_pickedEntityIdOverride };
+                 TransformNormalizedScale(m_entityIdManipulators.m_manipulators->GetLocalTransform()) };
     }
 
     void EditorTransformComponentSelection::BeginRecordManipulatorCommand()
@@ -2124,20 +2115,6 @@ namespace AzToolsFramework
                 default:
                     break;
                 }
-
-                // only update pivot override when in translation or rotation mode
-                switch (m_mode)
-                {
-                case Mode::Rotation:
-                case Mode::Translation:
-                    m_pivotOverrideFrame.m_pickedEntityIdOverride = entityId;
-                    break;
-                case Mode::Scale:
-                    // do nothing
-                    break;
-                default:
-                    break;
-                }
             }
             else
             {
@@ -2157,7 +2134,7 @@ namespace AzToolsFramework
 
             manipulatorCommand->SetManipulatorAfter(EntityManipulatorCommand::State(
                 BuildPivotOverride(m_pivotOverrideFrame.HasTranslationOverride(), m_pivotOverrideFrame.HasOrientationOverride()),
-                m_entityIdManipulators.m_manipulators->GetLocalTransform(), entityId));
+                m_entityIdManipulators.m_manipulators->GetLocalTransform()));
 
             manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
             manipulatorCommand.release();
@@ -2218,11 +2195,11 @@ namespace AzToolsFramework
         case Mode::Rotation:
             ClearManipulatorOrientationOverride();
             break;
-        case Mode::Scale:
-            m_pivotOverrideFrame.m_pickedEntityIdOverride.SetInvalid();
-            break;
         case Mode::Translation:
             ClearManipulatorTranslationOverride();
+            break;
+        case Mode::Scale:
+            // do nothing
             break;
         }
     }
@@ -2822,8 +2799,7 @@ namespace AzToolsFramework
         RegenerateManipulators();
     }
 
-    void EditorTransformComponentSelection::UndoRedoEntityManipulatorCommand(
-        const AZ::u8 pivotOverride, const AZ::Transform& transform, const AZ::EntityId entityId)
+    void EditorTransformComponentSelection::UndoRedoEntityManipulatorCommand(const AZ::u8 pivotOverride, const AZ::Transform& transform)
     {
         m_pivotOverrideFrame.Reset();
 
@@ -2841,11 +2817,6 @@ namespace AzToolsFramework
             if (PivotHasTranslationOverride(pivotOverride))
             {
                 m_pivotOverrideFrame.m_translationOverride = transform.GetTranslation();
-            }
-
-            if (entityId.IsValid())
-            {
-                m_pivotOverrideFrame.m_pickedEntityIdOverride = entityId;
             }
         }
     }
@@ -2958,7 +2929,6 @@ namespace AzToolsFramework
                 AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
             m_pivotOverrideFrame.ResetPickedTranslation();
-            m_pivotOverrideFrame.m_pickedEntityIdOverride.SetInvalid();
 
             m_entityIdManipulators.m_manipulators->SetLocalTransform(RecalculateAverageManipulatorTransform(
                 m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
@@ -2984,7 +2954,6 @@ namespace AzToolsFramework
                 AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
             m_pivotOverrideFrame.ResetPickedOrientation();
-            m_pivotOverrideFrame.m_pickedEntityIdOverride.SetInvalid();
 
             // parent reference frame is the default (when no modifiers are held)
             m_entityIdManipulators.m_manipulators->SetLocalTransform(AZ::Transform::CreateFromQuaternionAndTranslation(
@@ -3060,8 +3029,7 @@ namespace AzToolsFramework
             manipulatorCommand->SetManipulatorAfter(EntityManipulatorCommand::State(
                 BuildPivotOverride(m_pivotOverrideFrame.HasTranslationOverride(), m_pivotOverrideFrame.HasOrientationOverride()),
                 AZ::Transform::CreateFromQuaternionAndTranslation(
-                    QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform()), translation),
-                m_pivotOverrideFrame.m_pickedEntityIdOverride));
+                    QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform()), translation)));
 
             manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
             manipulatorCommand.release();
@@ -3113,8 +3081,7 @@ namespace AzToolsFramework
             manipulatorCommand->SetManipulatorAfter(EntityManipulatorCommand::State(
                 BuildPivotOverride(m_pivotOverrideFrame.HasTranslationOverride(), m_pivotOverrideFrame.HasOrientationOverride()),
                 AZ::Transform::CreateFromQuaternionAndTranslation(
-                    QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform()), translation),
-                m_pivotOverrideFrame.m_pickedEntityIdOverride));
+                    QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform()), translation)));
 
             manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
             manipulatorCommand.release();
@@ -3526,25 +3493,6 @@ namespace AzToolsFramework
 
         if (!m_selectedEntityIds.empty())
         {
-            if (m_pivotOverrideFrame.m_pickedEntityIdOverride.IsValid())
-            {
-                const AZ::Transform pickedEntityWorldTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-                    Etcs::CalculatePivotOrientation(m_pivotOverrideFrame.m_pickedEntityIdOverride, referenceFrame).m_worldOrientation,
-                    CalculatePivotTranslation(m_pivotOverrideFrame.m_pickedEntityIdOverride, m_pivotMode));
-
-                const float scaledSize =
-                    PivotSize * CalculateScreenToWorldMultiplier(pickedEntityWorldTransform.GetTranslation(), cameraState);
-
-                debugDisplay.DepthWriteOff();
-                debugDisplay.DepthTestOff();
-                debugDisplay.SetColor(PickedOrientationColor);
-
-                debugDisplay.DrawWireSphere(pickedEntityWorldTransform.GetTranslation(), scaledSize);
-
-                debugDisplay.DepthTestOn();
-                debugDisplay.DepthWriteOn();
-            }
-
             // check what pivot orientation we are in (based on if a modifier is
             // held to move us from parent to world space or parent to local space)
             // or if we set a pivot override
