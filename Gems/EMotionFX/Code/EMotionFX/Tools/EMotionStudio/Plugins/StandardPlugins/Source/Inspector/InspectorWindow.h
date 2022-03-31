@@ -23,6 +23,9 @@ namespace EMStudio
     class ContentWidget;
     class NoSelectionWidget;
 
+    //! Unified inspector window
+    //! This plugin handles requests from the inspector bus and is used to show properties of
+    //! selected objects in the Animation Editor.
     class InspectorWindow
         : public DockWidgetPlugin
         , public InspectorRequestBus::Handler
@@ -38,13 +41,13 @@ namespace EMStudio
         InspectorWindow() = default;
         ~InspectorWindow() override;
 
-        // DockWidgetPlugin overrides
+        // DockWidgetPlugin overrides...
         bool Init() override;
         EMStudioPlugin* Clone() const override { return new InspectorWindow(); }
         const char* GetName() const override { return "Inspector"; }
         uint32 GetClassID() const override { return CLASS_ID; }
 
-        // InspectorRequestBus overrides
+        // InspectorRequestBus overrides...
         void Update(const QString& headerTitle, const QString& iconFilename, QWidget* widget) override;
         void UpdateWithRpe(const QString& headerTitle, const QString& iconFilename, const AZStd::vector<CardElement>& cardElements) override;
         void Clear() override;

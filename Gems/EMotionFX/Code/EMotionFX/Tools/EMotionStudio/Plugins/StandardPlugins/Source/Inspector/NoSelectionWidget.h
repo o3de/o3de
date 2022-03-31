@@ -13,6 +13,7 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace EMStudio
 {
+    //! Widget is shown in the inspector window in case no object is selected.
     class NoSelectionWidget
         : public QWidget
     {

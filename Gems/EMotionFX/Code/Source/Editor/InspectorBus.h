@@ -20,7 +20,7 @@ namespace EMStudio
     {
     public:
         // Call in case a fully customized widget shall be shown in the inspector. The header widget will be shown above the given widget.
-        virtual void Update([[maybe_unused]] const QString& headerTitle, [[maybe_unused]] const QString& iconFilename, [[maybe_unused]] QWidget* widget) {}
+        virtual void Update([[maybe_unused]] const QString& headerTitle, [[maybe_unused]] const QString& iconFilename, [[maybe_unused]] QWidget* widget) = 0;
 
         // Call in case the objects to be inspected are reflected. This creates a card with a reflected property editor inside in the standard way for each object along with a header widget above.
         // Use this method whenever a single, reflected object shall be visible in the inspector.
@@ -31,10 +31,10 @@ namespace EMStudio
             QString m_cardName;
             QWidget* m_customWidget = nullptr;
         };
-        virtual void UpdateWithRpe([[maybe_unused]] const QString& headerTitle, [[maybe_unused]] const QString& iconFilename, [[maybe_unused]] const AZStd::vector<CardElement>& cardElements) {}
+        virtual void UpdateWithRpe([[maybe_unused]] const QString& headerTitle, [[maybe_unused]] const QString& iconFilename, [[maybe_unused]] const AZStd::vector<CardElement>& cardElements) = 0;
 
         // Call in case the inspected object got removed or unselected. This will show the no selection widget in the inspector.
-        virtual void Clear() {}
+        virtual void Clear() = 0;
     };
 
     using InspectorRequestBus = AZ::EBus<InspectorRequests>;

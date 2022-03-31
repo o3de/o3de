@@ -1096,7 +1096,7 @@ namespace EMStudio
 
         AZStd::vector<AZStd::string> sortedPluginNames;
         sortedPluginNames.reserve(numRegisteredPlugins);
-        for (EMStudioPlugin* plugin : registeredPlugins)
+        for (const EMStudioPlugin* plugin : registeredPlugins)
         {
             sortedPluginNames.push_back(plugin->GetName());
         }

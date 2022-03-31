@@ -13,6 +13,8 @@
 
 namespace EMStudio
 {
+    //! Plugin that will be constructed along with the Animation Editor and survive its full life-cycle.
+    //! Persistent plugins will not be destructed and re-created along with changing layouts.
     class PersistentPlugin
     {
     public:

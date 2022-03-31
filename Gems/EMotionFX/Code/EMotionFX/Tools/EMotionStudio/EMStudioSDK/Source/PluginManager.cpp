@@ -94,7 +94,7 @@ namespace EMStudio
                 pluginToNotify->OnBeforeRemovePlugin((*plugin)->GetClassID());
             }
 
-            delete* plugin;
+            delete *plugin;
             m_activePlugins.pop_back();
         }
 
@@ -189,7 +189,7 @@ namespace EMStudio
 
     void PluginManager::RemovePersistentPlugin(PersistentPlugin* plugin)
     {
-        const auto iterator = AZStd::find_if(m_persistentPlugins.begin(), m_persistentPlugins.end(), [=](const AZStd::unique_ptr<PersistentPlugin>& currentPlugin)
+        const auto iterator = AZStd::find_if(m_persistentPlugins.begin(), m_persistentPlugins.end(), [plugin](const AZStd::unique_ptr<PersistentPlugin>& currentPlugin)
             {
                 return (currentPlugin.get() == plugin);
             });
