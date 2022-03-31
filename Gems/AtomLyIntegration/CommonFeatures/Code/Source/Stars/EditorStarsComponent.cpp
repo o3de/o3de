@@ -41,7 +41,7 @@ namespace AZ::Render
                     ;
 
                 editContext->Class<StarsComponentController>(
-                    "HDRiSkyboxComponentController", "")
+                    "StarsComponentController", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &StarsComponentController::m_configuration, "Configuration", "")
@@ -49,7 +49,7 @@ namespace AZ::Render
                     ;
 
                 editContext->Class<EditorStarsComponent>(
-                    "Stars", "Stars component render the background of your scene with cubemap")
+                    "Stars", "Renders stars in the background")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Atom")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
