@@ -33,7 +33,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_HandleIrradianceColorSource.lua"
+                "file": "Materials/Types/StandardPBR_HandleIrradianceColorSource.lua"
             }
         }
     ]
