@@ -13,6 +13,8 @@
 #include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderDataSystemBus.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
+#include <ScriptCanvas/Components/EditorDeprecationData.h>
 
 namespace ScriptCanvasEditor
 {
@@ -24,8 +26,13 @@ namespace ScriptCanvasEditor
         : public AzFramework::AssetCatalogEventBus::Handler
         , public ScriptCanvasBuilder::DataSystemNotificationsBus::Handler
     {
+        friend class AZ::EditorScriptCanvasComponentSerializer;
+        friend class Deprecated::EditorScriptCanvasComponentVersionConverter;
+
     public:
         AZ_TYPE_INFO(Configuration, "{0F4D78A9-EF29-4D6A-AC5B-8F4E19B1A6EE}");
+
+        static void Reflect(AZ::ReflectContext* context);
 
         Configuration();
 
@@ -37,8 +44,6 @@ namespace ScriptCanvasEditor
 
         const SourceHandle& GetSource() const;
 
-        const AZStd::string& GetName() const;
-
         bool HasSource() const;
 
         void Refresh();
@@ -46,8 +51,6 @@ namespace ScriptCanvasEditor
         void Refresh(const SourceHandle& sourceHandle);
 
     protected:
-        static void Reflect(AZ::ReflectContext* context);
-
         void ClearVariables();
 
         void MergeWithLatestCompilation(const ScriptCanvasBuilder::BuildVariableOverrides& buildData);
@@ -56,8 +59,6 @@ namespace ScriptCanvasEditor
 
         // on RPE source selection changed
         AZ::u32 OnEditorChangeNotify();
-
-        void SetName(AZStd::string_view name) { m_name = name; }
 
         // if result is good, merge results and update display
         void SourceFileChanged
@@ -72,7 +73,7 @@ namespace ScriptCanvasEditor
         void SourceFileRemoved(AZStd::string_view relativePath, AZStd::string_view scanFolder) override;
 
     private:
-        AZStd::string m_name;
+        AZStd::string m_sourceName;
         ScriptCanvasBuilder::BuildVariableOverrides m_propertyOverrides;
         SourceHandle m_sourceHandle;
     };

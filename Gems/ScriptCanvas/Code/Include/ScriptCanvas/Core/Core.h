@@ -374,6 +374,8 @@ namespace ScriptCanvasEditor
 
         GraphPtr Mod() const;
 
+        AZStd::string Name() const;
+
         bool operator==(const SourceHandle& other) const;
 
         bool operator!=(const SourceHandle& other) const;
@@ -389,7 +391,7 @@ namespace ScriptCanvasEditor
     private:
         ScriptCanvas::DataPtr m_data;
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
-        AZ::IO::Path m_path;
+        AZ::IO::Path m_absolutePath;
         AZ::IO::Path m_relativePath;
 
         void SanitizePaths();

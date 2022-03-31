@@ -17,6 +17,12 @@ namespace ScriptCanvasEditor
 {
     namespace Deprecated
     {
+        class EditorScriptCanvasComponentVersionConverter
+        {
+        public:
+            static bool Convert(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement);
+        };  
+
         // only used as a pass-through to loading a guid / hint during version conversion
         class ScriptCanvasAsset
             : public AZ::Data::AssetData

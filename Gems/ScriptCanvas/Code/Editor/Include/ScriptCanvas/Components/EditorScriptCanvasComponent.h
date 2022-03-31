@@ -10,8 +10,9 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
 #include <Editor/Framework/Configuration.h>
+#include <ScriptCanvas/Components/EditorDeprecationData.h>
+#include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
 
 namespace ScriptCanvasEditor
 {
@@ -25,6 +26,18 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_COMPONENT(EditorScriptCanvasComponent, "{C28E2D29-0746-451D-A639-7F113ECF5D72}", AzToolsFramework::Components::EditorComponentBase);
+
+        enum Version
+        {
+            PrefabIntegration = 10,
+            InternalDev,
+            AddSourceHandle,
+            RefactorAssets,
+            RemoveRuntimeData,
+            SeparateFromConfiguration,
+            // add description above
+            Current
+        };
 
         friend class AZ::EditorScriptCanvasComponentSerializer;
 
@@ -49,8 +62,6 @@ namespace ScriptCanvasEditor
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
         void SetPrimaryAsset(const AZ::Data::AssetId&) override;
-        
-        void MergeWithLatestCompilation(const ScriptCanvasBuilder::BuildVariableOverrides& buildData);
 
     private:
        Configuration m_configuration;

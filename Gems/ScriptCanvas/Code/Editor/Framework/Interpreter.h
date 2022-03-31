@@ -35,7 +35,10 @@ namespace ScriptCanvasEditor
         // and wrapping the whole thing in a single class
         // interpreter + ebus, and calling it EZ SC Hook or something like that
 
-       
+       // the EZ Code driven thing, when it uses the click button, opens up a graph
+       // and drops in the main function WItH the typed arguments and return values stubbed out
+       // and makes those the required function of the graph!
+       // this code include using an ebus, for easiy switching to C++ extension
 
 
     private:

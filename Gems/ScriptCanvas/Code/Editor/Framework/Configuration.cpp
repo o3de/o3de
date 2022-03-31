@@ -72,11 +72,6 @@ namespace ScriptCanvasEditor
         return m_sourceHandle;
     }
 
-    const AZStd::string& Configuration::GetName() const
-    {
-        return m_name;
-    }
-
     bool Configuration::HasSource() const
     {
         return m_sourceHandle.IsDescriptionValid();
@@ -123,7 +118,7 @@ namespace ScriptCanvasEditor
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Configuration>()
-                ->Field("name", &Configuration::m_name)
+                ->Field("sourceName", &Configuration::m_sourceName)
                 ->Field("propertyOverrides", &Configuration::m_propertyOverrides)
                 ->Field("sourceHandle", &Configuration::m_sourceHandle)
                 ;
@@ -136,8 +131,7 @@ namespace ScriptCanvasEditor
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/scripting/script-canvas/")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_sourceHandle, "Script Canvas Source File", "Script Canvas source file associated with this component")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_sourceHandle, "Source File", "Script Canvas source file associated with this component")
                         ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                         ->Attribute("EditButton", "")
                         ->Attribute("EditDescription", "Open in Script Canvas Editor")
@@ -165,7 +159,7 @@ namespace ScriptCanvasEditor
 
         if (m_sourceHandle.IsDescriptionValid())
         {
-            SetName(m_sourceHandle.Path().Filename().Native());
+            m_sourceName = m_sourceHandle.Path().Filename().Native();
         }
 
         if (m_sourceHandle.Id().IsNull())
@@ -179,17 +173,7 @@ namespace ScriptCanvasEditor
 
             if (!(m_sourceHandle.Id().IsNull() && m_sourceHandle.Path().empty()))
             {
-                ScriptCanvasBuilder::BuildResult result;
-                ScriptCanvasBuilder::DataSystemRequestsBus::BroadcastResult
-                    ( result
-                    , &ScriptCanvasBuilder::DataSystemRequests::CompileBuilderData
-                    , m_sourceHandle);
-
-                if (result.status == ScriptCanvasBuilder::BuilderDataStatus::Good)
-                {
-                    MergeWithLatestCompilation(result.data);
-                }
-                else
+                if (!CompileLatest())
                 {
                     AZ_Warning("ScriptCanvasBuilder", false, "Runtime information did not build for ScriptCanvas Component using source: %s"
                         , m_sourceHandle.ToString().c_str());
