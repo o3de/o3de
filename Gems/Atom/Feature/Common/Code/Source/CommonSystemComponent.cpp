@@ -78,6 +78,7 @@
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 #include <SkyBox/SkyBoxFogSettings.h>
 #include <SkyBox/SkyBoxFeatureProcessor.h>
+#include <Stars/StarsFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
@@ -131,6 +132,7 @@ namespace AZ
             ProjectedShadowFeatureProcessor::Reflect(context);
             SkyBoxFeatureProcessor::Reflect(context);
             SkyBoxFogSettings::Reflect(context);
+            StarsFeatureProcessor::Reflect(context);
             UseTextureFunctor::Reflect(context);
             DrawListFunctor::Reflect(context);
             SubsurfaceTransmissionParameterFunctor::Reflect(context);
@@ -205,6 +207,7 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<AuxGeomFeatureProcessor, RPI::AuxGeomFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<TransformServiceFeatureProcessor, TransformServiceFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SkyBoxFeatureProcessor, SkyBoxFeatureProcessorInterface>();
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<StarsFeatureProcessor, StarsFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<MeshFeatureProcessor, MeshFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ImageBasedLightFeatureProcessor, ImageBasedLightFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<DecalTextureArrayFeatureProcessor, DecalFeatureProcessorInterface>();
@@ -345,6 +348,7 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DecalTextureArrayFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ImageBasedLightFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<MeshFeatureProcessor>();
+            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<StarsFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyBoxFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<TransformServiceFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AuxGeomFeatureProcessor>();

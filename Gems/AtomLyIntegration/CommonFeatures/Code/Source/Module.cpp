@@ -38,6 +38,7 @@
 #include <ScreenSpace/DeferredFogComponent.h>
 #include <SkyBox/HDRiSkyboxComponent.h>
 #include <SkyBox/PhysicalSkyComponent.h>
+#include <Stars/StarsComponent.h>
 #include <Scripting/EntityReferenceComponent.h>
 #include <SurfaceData/SurfaceDataMeshComponent.h>
 #include <Animation/AttachmentComponent.h>
@@ -75,6 +76,7 @@
 #include <ScreenSpace/EditorDeferredFogComponent.h>
 #include <SkyBox/EditorHDRiSkyboxComponent.h>
 #include <SkyBox/EditorPhysicalSkyComponent.h>
+#include <Stars/EditorStarsComponent.h>
 #include <Scripting/EditorEntityReferenceComponent.h>
 #include <SurfaceData/EditorSurfaceDataMeshComponent.h>
 #include <Animation/EditorAttachmentComponent.h>
@@ -122,6 +124,7 @@ namespace AZ
                         DiffuseProbeGridComponent::CreateDescriptor(),
                         DiffuseGlobalIlluminationComponent::CreateDescriptor(),
                         DeferredFogComponent::CreateDescriptor(),
+                        StarsComponent::CreateDescriptor(),
                         SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
                         AttachmentComponent::CreateDescriptor(),
                         OcclusionCullingPlaneComponent::CreateDescriptor(),
@@ -154,6 +157,7 @@ namespace AZ
                         RenderDebugEditorComponent::CreateDescriptor(),
                         EditorRadiusWeightModifierComponent::CreateDescriptor(),
                         EditorShapeWeightModifierComponent::CreateDescriptor(),
+                        EditorStarsComponent::CreateDescriptor(),
                         EditorEntityReferenceComponent::CreateDescriptor(),
                         EditorGradientWeightModifierComponent::CreateDescriptor(),
                         EditorDiffuseProbeGridComponent::CreateDescriptor(),

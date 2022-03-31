@@ -351,6 +351,8 @@ set(FILES
     Source/SkyBox/SkyBoxFogSettings.cpp
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
+    Source/Stars/StarsFeatureProcessor.cpp
+    Source/Stars/StarsFeatureProcessor.h
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
