@@ -350,16 +350,16 @@ namespace AzFramework
     }
 
     bool TargetManagementComponent::HandleRequest(
-        [[maybe_unused]] AzNetworking::IConnection* connection,
+        AzNetworking::IConnection* connection,
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
-        [[maybe_unused]] const AzFrameworkPackets::TargetConnect& packet)
+        const AzFrameworkPackets::TargetConnect& packet)
     {
         EBUS_EVENT(Neighborhood::NeighborhoodBus, OnNodeJoined, packet, static_cast<uint32_t>(connection->GetConnectionId()));
         return true;
     }
 
     bool TargetManagementComponent::HandleRequest(
-        [[maybe_unused]] AzNetworking::IConnection* connection,
+        AzNetworking::IConnection* connection,
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         [[maybe_unused]] const AzFrameworkPackets::TargetMessage& packet)
     {
@@ -459,7 +459,7 @@ namespace AzFramework
     }
 
     AzNetworking::PacketDispatchResult TargetManagementComponent::OnPacketReceived(
-        [[maybe_unused]] AzNetworking::IConnection* connection,
+        AzNetworking::IConnection* connection,
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         [[maybe_unused]] AzNetworking::ISerializer& serializer)
     {
