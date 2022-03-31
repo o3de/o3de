@@ -1,0 +1,7 @@
+{
+	"flags" : 
+	{
+		"IMPORT_FBX_READ_LIGHTS" : false,
+		"IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES": true
+	}
+}

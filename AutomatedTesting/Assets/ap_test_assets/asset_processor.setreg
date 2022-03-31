@@ -1,0 +1,21 @@
+{
+  "Amazon": {
+    "AzCore": {
+      "Bootstrap": {
+        "allowed_list": "",
+        "assetProcessor_branch_token": "0x95F4A227"
+      }
+    }
+  },
+  "O3DE": {
+    "SceneAPI": {
+      "AssetImporter": {
+        "AssimpFlags": {
+          "ProcessFlags" :  "0x3A",
+          "IMPORT_FBX_PRESERVE_PIVOTS": false,
+          "IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES": false
+        }
+      }
+    }
+  }
+}
