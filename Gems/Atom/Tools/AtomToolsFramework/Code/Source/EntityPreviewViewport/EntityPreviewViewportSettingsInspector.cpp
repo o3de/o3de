@@ -31,6 +31,7 @@ namespace AtomToolsFramework
         : InspectorWidget(parent)
         , m_toolId(toolId)
     {
+        setObjectName("EntityPreviewViewportSettingsInspector");
         SetGroupSettingsPrefix("/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector");
         Populate();
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);

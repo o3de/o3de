@@ -51,7 +51,7 @@ namespace AtomToolsFramework
         , m_sceneName(sceneName)
         , m_pipelineAssetPath(pipelineAssetPath)
     {
-        setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
         AZ::TickBus::Handler::BusConnect();
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }

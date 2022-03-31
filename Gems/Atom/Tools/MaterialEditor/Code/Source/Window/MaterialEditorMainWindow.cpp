@@ -6,7 +6,6 @@
  *
  */
 
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #include <Window/MaterialEditorMainWindow.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
 
@@ -23,7 +22,6 @@ namespace MaterialEditor
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
 
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
-        m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
         m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
@@ -34,7 +32,8 @@ namespace MaterialEditor
         m_materialViewport->Init();
         centralWidget()->layout()->addWidget(m_materialViewport);
 
-        AddDockWidget("Viewport Settings", new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this), Qt::LeftDockWidgetArea);
+        m_viewportSettingsInspector = new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this);
+        AddDockWidget("Viewport Settings", m_viewportSettingsInspector, Qt::LeftDockWidgetArea);
         SetDockWidgetVisible("Viewport Settings", false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());

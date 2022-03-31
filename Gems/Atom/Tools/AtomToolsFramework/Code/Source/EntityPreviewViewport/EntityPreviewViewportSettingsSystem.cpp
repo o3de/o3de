@@ -51,7 +51,7 @@ namespace AtomToolsFramework
             behaviorContext->EBus<EntityPreviewViewportSettingsRequestBus>("EntityPreviewViewportSettingsRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "EntityPreview")
+                ->Attribute(AZ::Script::Attributes::Module, "atomtools")
                 ->Event("SetLightingPreset", &EntityPreviewViewportSettingsRequestBus::Events::SetLightingPreset)
                 ->Event("GetLightingPreset", &EntityPreviewViewportSettingsRequestBus::Events::GetLightingPreset)
                 ->Event("SaveLightingPreset", &EntityPreviewViewportSettingsRequestBus::Events::SaveLightingPreset)
@@ -79,7 +79,7 @@ namespace AtomToolsFramework
             behaviorContext->EBus<EntityPreviewViewportSettingsNotificationBus>("EntityPreviewViewportSettingsNotificationBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "EntityPreview")
+                ->Attribute(AZ::Script::Attributes::Module, "atomtools")
                 ->Event("OnViewportSettingsChanged", &EntityPreviewViewportSettingsNotificationBus::Events::OnViewportSettingsChanged)
                 ;
         }

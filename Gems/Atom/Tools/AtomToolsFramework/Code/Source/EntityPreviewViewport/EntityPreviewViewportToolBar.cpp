@@ -26,6 +26,8 @@ namespace AtomToolsFramework
         : QToolBar(parent)
         , m_toolId(toolId)
     {
+        setObjectName("EntityPreviewViewportToolBar");
+
         AzQtComponents::ToolBar::addMainToolBarStyle(this);
 
         // Add toggle grid button

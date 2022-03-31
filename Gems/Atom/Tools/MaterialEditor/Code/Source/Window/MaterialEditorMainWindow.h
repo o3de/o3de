@@ -14,6 +14,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <Window/MaterialEditorViewportWidget.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #endif
 
 namespace MaterialEditor
@@ -46,6 +47,7 @@ namespace MaterialEditor
         void OpenHelp() override;
 
         AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
+        AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         MaterialEditorViewportWidget* m_materialViewport = {};
     };

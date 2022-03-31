@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentInspector.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <GraphCanvas/Styling/StyleManager.h>
@@ -55,6 +56,7 @@ namespace MaterialCanvas
         GraphCanvas::GraphCanvasTreeItem* GetNodePaletteRootTreeItem() const;
 
         AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
+        AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
         GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};

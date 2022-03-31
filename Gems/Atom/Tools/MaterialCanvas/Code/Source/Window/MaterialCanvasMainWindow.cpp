@@ -6,7 +6,6 @@
  *
  */
 
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
 #include <AzCore/IO/FileIO.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
@@ -25,7 +24,6 @@ namespace MaterialCanvas
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
 
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
-        m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
         m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
@@ -36,7 +34,8 @@ namespace MaterialCanvas
         m_materialViewport->Init();
         AddDockWidget("Viewport", m_materialViewport, Qt::RightDockWidgetArea);
 
-        AddDockWidget("Viewport Settings", new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this), Qt::LeftDockWidgetArea);
+        m_viewportSettingsInspector = new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this);
+        AddDockWidget("Viewport Settings", m_viewportSettingsInspector, Qt::LeftDockWidgetArea);
         SetDockWidgetVisible("Viewport Settings", false);
 
         AddDockWidget("MiniMap", aznew GraphCanvas::MiniMapDockWidget(m_toolId, this), Qt::RightDockWidgetArea);
