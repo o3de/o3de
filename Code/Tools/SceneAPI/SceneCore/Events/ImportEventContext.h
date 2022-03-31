@@ -31,13 +31,16 @@ namespace AZ
             public:
                 AZ_RTTI(PreImportEventContext, "{89BA9931-E6B5-4096-B5AE-80E80A8B4DB2}", ICallContext);
                 ~PreImportEventContext() override = default;
-                SCENE_CORE_API PreImportEventContext(const char* inputDirectory);
-                SCENE_CORE_API PreImportEventContext(const AZStd::string& inputDirectory);
-                SCENE_CORE_API PreImportEventContext(AZStd::string&& inputDirectory);
+                SCENE_CORE_API PreImportEventContext(const char* inputDirectory, Containers::Scene& scene);
+                SCENE_CORE_API PreImportEventContext(const AZStd::string& inputDirectory, Containers::Scene& scene);
+                SCENE_CORE_API PreImportEventContext(AZStd::string&& inputDirectory, Containers::Scene& scene);
+
                 SCENE_CORE_API const AZStd::string& GetInputDirectory() const;
+                SCENE_CORE_API Containers::Scene& GetScene();
 
             private:
                 const AZStd::string m_inputDirectory;
+                Containers::Scene& m_scene;
             };
 
             // Signals that the scene is ready to import the scene graph from source data

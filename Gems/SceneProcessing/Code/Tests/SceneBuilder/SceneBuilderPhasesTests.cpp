@@ -122,7 +122,7 @@ public:
         auto scene = AZStd::make_shared<AZ::SceneAPI::Containers::Scene>("import scene");
 
         AZ::SceneAPI::Events::ProcessingResultCombiner contextResult;
-        contextResult += AZ::SceneAPI::Events::Process<AZ::SceneAPI::Events::PreImportEventContext>(assetFilePath);
+        contextResult += AZ::SceneAPI::Events::Process<AZ::SceneAPI::Events::PreImportEventContext>(assetFilePath, *scene);
         contextResult += AZ::SceneAPI::Events::Process<AZ::SceneAPI::Events::ImportEventContext>(assetFilePath, *scene);
         contextResult += AZ::SceneAPI::Events::Process<AZ::SceneAPI::Events::PostImportEventContext>(*scene);
     }

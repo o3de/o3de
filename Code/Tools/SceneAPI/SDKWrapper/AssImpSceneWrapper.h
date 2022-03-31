@@ -8,6 +8,7 @@
 #pragma once
 #include <SceneAPI/SDKWrapper/SceneWrapper.h>
 #include <assimp/Importer.hpp>
+#include <AzCore/std/any.h>
 
 struct aiScene;
 
@@ -43,13 +44,21 @@ namespace AZ
             AZStd::pair<AxisVector, int32_t> GetFrontVectorAndSign() const;
 
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
+
+            using FlagsMap = AZStd::unordered_map<AZStd::string, AZStd::any>;
+            void SetImportFlags(FlagsMap&& flagsMap);
+            const FlagsMap& GetImportFlags() const;
+
         protected:
             const aiScene* m_assImpScene = nullptr;
-            Assimp::Importer m_importer;
+            AZStd::unique_ptr<Assimp::Importer> m_importer;
 
             // FBX SDK automatically resolved relative paths to textures based on the current file location.
             // AssImp does not, so it needs to be specifically handled.
             AZStd::string m_sceneFileName;
+
+            // AssImp flags mappings
+            FlagsMap m_importFlagsMap;
         };
 
     } // namespace AssImpSDKWrapper

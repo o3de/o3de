@@ -26,6 +26,13 @@
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzToolsFramework/Asset/AssetUtils.h>
+
+#include <AzCore/Serialization/Json/JsonUtils.h>
+
 namespace AZ
 {
     namespace SceneAPI
@@ -49,6 +56,7 @@ namespace AZ
                 : m_sceneSystem(new SceneSystem())
             {
                 m_sceneWrapper = AZStd::make_unique<AssImpSDKWrapper::AssImpSceneWrapper>();
+                BindToCall(&SceneImporter::PreImportProcessing);
                 BindToCall(&SceneImporter::ImportProcessing);
             }
 
@@ -59,6 +67,134 @@ namespace AZ
                 {
                     serializeContext->Class<SceneImporter, SceneCore::LoadingComponent>()->Version(2); // SPEC-5776
                 }
+            }
+
+            void SceneImporter_LoadAssetInfo(Events::PreImportEventContext& context, AssImpSDKWrapper::AssImpSceneWrapper::FlagsMap& flagsMap)
+            {
+                // this allows the flags to be control per souce scene asset
+                auto readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonFile(context.GetScene().GetSourceFilename() + ".assetinfo");
+                if (!readJsonOutcome.IsSuccess())
+                {
+                    // This may be an old format xml file.  We don't have any dependencies in the old format so there's no point trying to parse an xml
+                    return;
+                }
+
+                rapidjson::Document document = readJsonOutcome.TakeValue();
+                auto manifestObject = document.GetObject();
+                auto flagsMemberIterator = manifestObject.FindMember("flags");
+                if (flagsMemberIterator == manifestObject.MemberEnd())
+                {
+                    // no flags so will fallback to defaults
+                    return;
+                }
+
+                auto flagsObject = flagsMemberIterator->value.GetObject();
+                for(auto flagsIterator = flagsObject.MemberBegin(); flagsIterator != flagsObject.MemberEnd(); ++flagsIterator)
+                {
+                    if (flagsIterator->value.IsBool())
+                    {
+                        bool value = flagsIterator->value.GetBool();
+                        flagsMap.insert({ flagsIterator->name.GetString(), AZStd::make_any<bool>(value) });
+                    }
+                    else if (flagsIterator->value.IsInt())
+                    {
+                        s64 value = aznumeric_cast<s64>(flagsIterator->value.GetInt());
+                        flagsMap.insert({ flagsIterator->name.GetString(), AZStd::make_any<s64>(value) });
+                    }
+                    else if (flagsIterator->value.IsInt64())
+                    {
+                        s64 value = aznumeric_cast<s64>(flagsIterator->value.GetInt64());
+                        flagsMap.insert({ flagsIterator->name.GetString(), AZStd::make_any<s64>(value) });
+                    }
+                    else if (flagsIterator->value.IsUint())
+                    {
+                        u64 value = aznumeric_cast<u64>(flagsIterator->value.GetUint());
+                        flagsMap.insert({ flagsIterator->name.GetString(), AZStd::make_any<u64>(value) });
+                    }
+                    else if (flagsIterator->value.IsUint64())
+                    {
+                        u64 value = aznumeric_cast<u64>(flagsIterator->value.GetUint64());
+                        flagsMap.insert({ flagsIterator->name.GetString(), AZStd::make_any<u64>(value) });
+                    }
+                    else if (flagsIterator->value.IsFloat())
+                    {
+                        float value = flagsIterator->value.GetFloat();
+                        flagsMap.insert({ flagsIterator->name.GetString(), AZStd::make_any<double>(value) });
+                    }
+                    else if (flagsIterator->value.IsDouble())
+                    {
+                        double value = flagsIterator->value.GetDouble();
+                        flagsMap.insert({ flagsIterator->name.GetString(), AZStd::make_any<double>(value) });
+                    }
+                    else if (flagsIterator->value.IsString())
+                    {
+                        AZStd::string value{ flagsIterator->value.GetString(), flagsIterator->value.GetStringLength() };
+                        flagsMap.insert({ flagsIterator->name.GetString(), AZStd::make_any<AZStd::string>(value) });
+                    }
+                }
+            }
+
+            Events::ProcessingResult SceneImporter::PreImportProcessing(Events::PreImportEventContext& context)
+            {
+                if (!azrtti_istypeof<AssImpSDKWrapper::AssImpSceneWrapper>(m_sceneWrapper.get()))
+                {
+                    return Events::ProcessingResult::Failure;
+                }
+
+                // use System Registry
+                auto settingsRegistry = AZ::SettingsRegistry::Get();
+                if (settingsRegistry == nullptr)
+                {
+                    return Events::ProcessingResult::Failure;
+                }
+
+                struct AssimpSettingsVisitor
+                    : public AZ::SettingsRegistryInterface::Visitor
+                {
+                    using AZ::SettingsRegistryInterface::Visitor::Visit;
+                    using Type = AZ::SettingsRegistryInterface::Type;
+
+                    AssimpSettingsVisitor(AssImpSDKWrapper::AssImpSceneWrapper::FlagsMap& flagsMap)
+                        : m_flagsMap(flagsMap)
+                    {
+                    }
+                    AssImpSDKWrapper::AssImpSceneWrapper::FlagsMap& m_flagsMap;
+
+                    void Visit(AZStd::string_view, AZStd::string_view valueName, Type, bool value) override
+                    {
+                        m_flagsMap.insert({ valueName, AZStd::make_any<bool>(value) });
+                    }
+
+                    void Visit(AZStd::string_view, AZStd::string_view valueName, Type, s64 value) override
+                    {
+                        m_flagsMap.insert({ valueName, AZStd::make_any<s64>(value) });
+                    }
+
+                    void Visit(AZStd::string_view, AZStd::string_view valueName, Type, u64 value) override
+                    {
+                        m_flagsMap.insert({ valueName, AZStd::make_any<u64>(value) });
+                    }
+
+                    void Visit(AZStd::string_view, AZStd::string_view valueName, Type, double value) override
+                    {
+                        m_flagsMap.insert({ valueName, AZStd::make_any<double>(value) });
+                    }
+
+                    void Visit(AZStd::string_view, AZStd::string_view valueName, Type, AZStd::string_view value) override
+                    {
+                        m_flagsMap.insert({ valueName, AZStd::make_any<AZStd::string>(value) });
+                    }
+                };
+
+                AssImpSDKWrapper::AssImpSceneWrapper::FlagsMap flagsMap;
+                AssimpSettingsVisitor visitor{ flagsMap };
+                settingsRegistry->Visit(visitor, AZ::SettingsRegistryInterface::FixedValueString(AzToolsFramework::AssetUtils::AssetImporterSettingsKey) + "/AssimpFlags");
+
+                SceneImporter_LoadAssetInfo(context, flagsMap);
+
+                auto* assImpSDKWrapper = azrtti_cast<AssImpSDKWrapper::AssImpSceneWrapper*>(m_sceneWrapper.get());
+                assImpSDKWrapper->SetImportFlags(AZStd::move(flagsMap));
+                return Events::ProcessingResult::Success;
             }
 
             Events::ProcessingResult SceneImporter::ImportProcessing(Events::ImportEventContext& context)

@@ -185,7 +185,7 @@ namespace AZ
                 if (serializeContext)
                 {
                     serializeContext->Class<SceneManifest>()
-                        ->Version(1, &SceneManifest::VersionConverter)
+                        ->Version(2, &SceneManifest::VersionConverter) // POC AssImp Flags
                         ->Field("values", &SceneManifest::m_values);
                 }
 

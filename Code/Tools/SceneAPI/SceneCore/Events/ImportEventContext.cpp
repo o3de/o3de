@@ -18,24 +18,32 @@ namespace AZ
             // PreImportEventContext
             /////////////
 
-            PreImportEventContext::PreImportEventContext(const char* inputDirectory)
+            PreImportEventContext::PreImportEventContext(const char* inputDirectory, Containers::Scene& scene)
                 : m_inputDirectory(inputDirectory)
+                , m_scene(scene)
             {
             }
 
-            PreImportEventContext::PreImportEventContext(const AZStd::string& inputDirectory)
+            PreImportEventContext::PreImportEventContext(const AZStd::string& inputDirectory, Containers::Scene& scene)
                 : m_inputDirectory(inputDirectory)
+                , m_scene(scene)
             {
             }
 
-            PreImportEventContext::PreImportEventContext(AZStd::string&& inputDirectory)
+            PreImportEventContext::PreImportEventContext(AZStd::string&& inputDirectory, Containers::Scene& scene)
                 : m_inputDirectory(AZStd::move(inputDirectory))
+                , m_scene(scene)
             {
             }
 
             const AZStd::string& PreImportEventContext::GetInputDirectory() const
             {
                 return m_inputDirectory;
+            }
+
+            Containers::Scene& PreImportEventContext::GetScene()
+            {
+                return m_scene;
             }
 
             /////////////

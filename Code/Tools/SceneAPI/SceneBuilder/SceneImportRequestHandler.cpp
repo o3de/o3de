@@ -85,7 +85,7 @@ namespace AZ
 
             // Push contexts
             Events::ProcessingResultCombiner contextResult;
-            contextResult += Events::Process<Events::PreImportEventContext>(path);
+            contextResult += Events::Process<Events::PreImportEventContext>(path, scene);
             contextResult += Events::Process<Events::ImportEventContext>(path, scene);
             contextResult += Events::Process<Events::PostImportEventContext>(scene);
 

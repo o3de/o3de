@@ -38,6 +38,7 @@ namespace AZ
 
                 static void Reflect(ReflectContext* context);
 
+                Events::ProcessingResult PreImportProcessing(Events::PreImportEventContext& context);
                 Events::ProcessingResult ImportProcessing(Events::ImportEventContext& context);
 
             protected:
