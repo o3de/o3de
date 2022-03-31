@@ -39,9 +39,11 @@ namespace ImageProcessingAtomEditor
         }
 
         // Tooltips
-        m_ui->downResLabel->setToolTip(QString("Adjust the resolution based on the target platform. \
-                                        Use this setting to preserve the resolution of a source file even though it appears smaller in the game. \
-                                        Select 0 to preserve the original size or 5 for the maximum reduction."));
+        m_ui->platformLabel->setToolTip(QString("Each row displays the resolution and pixel format settings for the relative target platform in this column."));
+        m_ui->downResLabel->setToolTip(QString("Adjust the maximum resolution based on the target platform.\n\
+                                        Values range from 0 (full resolution) to 5 (lowest resolution) with each step being half the resolution of the preceding step."));
+        m_ui->resolutionLabel->setToolTip(QString("The maximum texture resolution for the target platform based on the Resolution Limit setting."));
+        m_ui->formatLabel->setToolTip(QString("The pixel format of the processed texture for the target platform."));
     }
 
     ResolutionSettingWidget::~ResolutionSettingWidget()
