@@ -112,7 +112,11 @@ namespace AZ
         O3DEKERNEL_API EnvironmentInstance GetInstance();
 
         /// Returns module id (non persistent)
-        O3DEKERNEL_API void* GetModuleId();
+        inline const void* GetModuleId()
+        {
+            static const bool uniqueMemoryAddress{};
+            return &uniqueMemoryAddress;
+        }
 
         /**
          * Create Environment with customer allocator interface. You don't have to call create or destroy as they will
@@ -238,7 +242,7 @@ namespace AZ
             O3DEKERNEL_API void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
 
             AZ::Internal::EnvironmentInterface* m_environmentOwner; ///< Used to know which environment we should use to free the variable if we can't transfer ownership
-            void* m_moduleOwner; ///< Used when the variable can't transfered across module and we need to destruct the variable when the module is going away
+            const void* m_moduleOwner; ///< Used when the variable can't transferred across module and we need to destruct the variable when the module is going away
             bool m_canTransferOwnership; ///< True if variable can be allocated in one module and freed in other. Usually true for POD types when they share allocator.
             bool m_isConstructed; ///< When we can't transfer the ownership, and the owning module is destroyed we have to "destroy" the variable.
             u32 m_guid;
@@ -301,7 +305,7 @@ namespace AZ
             {
                 m_mutex.lock();
                 const bool moduleRelease = (--s_moduleUseCount == 0);
-                UnregisterAndDestroy(DestructDispatchNoLock, moduleRelease);
+                UnregisterAndDestroy(DestructDispatchNoLock, moduleRelease && m_moduleOwner == AZ::Environment::GetModuleId());
             }
 
             template <class... Args>

@@ -82,7 +82,7 @@ namespace AZ
             // We take over the lock, and release it before potentially destroying/freeing ourselves
             {
                 AZStd::scoped_lock envLockHolder(AZStd::adopt_lock, m_mutex);
-                const bool releaseByModule = (moduleRelease && !m_canTransferOwnership && m_moduleOwner == AZ::Environment::GetModuleId());
+                const bool releaseByModule = moduleRelease && !m_canTransferOwnership;
 
                 if (!releaseByModule && !releaseByUseCount)
                 {
@@ -472,11 +472,6 @@ namespace AZ
         O3DEKERNEL_API EnvironmentInstance GetInstance()
         {
             return Internal::EnvironmentImpl::Get();
-        }
-
-        O3DEKERNEL_API void* GetModuleId()
-        {
-            return &Internal::g_environmentCleanUp;
         }
 
         class ModuleAllocator
