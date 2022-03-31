@@ -18,12 +18,6 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
     # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
     # Otherwise the the absolute project_path is returned with symlinks resolved
     file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
-    if(NOT project_name)
-        o3de_read_json_key(project_name ${project_real_path}/project.json "project_name")
-        message(WARNING "The project located at path ${project_real_path} has a valid \"project name\" of '${project_name}' read from it's project.json file."
-            " This indicates that the ${project_real_path}/CMakeLists.txt is not properly appending the \"project name\" "
-            "to the O3DE_PROJECTS_NAME global property. Other configuration errors might occur")
-    endif()
 
     ################################################################################
     # Assets

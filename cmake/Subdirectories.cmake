@@ -149,15 +149,15 @@ function(get_all_external_subdirectories output_subdirs)
     get_property(all_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
     get_property(manifest_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST)
     list(APPEND all_external_subdirs ${manifest_external_subdirs})
-    get_property(manifest_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_ENGINE)
-    list(APPEND all_external_subdirs ${manifest_external_subdirs})
+    get_property(engine_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_ENGINE)
+    list(APPEND all_external_subdirs ${engine_external_subdirs})
 
     # Gather the list of every configured project external subdirectory
     # and and append them to the list of external subdirectories
     get_property(project_names GLOBAL PROPERTY O3DE_PROJECTS_NAME)
     foreach(project_name IN LISTS project_names)
-        get_property(manifest_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_${project_name})
-        list(APPEND all_external_subdirs ${manifest_external_subdirs})
+        get_property(project_external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS_${project_name})
+        list(APPEND all_external_subdirs ${project_external_subdirs})
     endforeach()
 
     list(REMOVE_DUPLICATES all_external_subdirs)
@@ -208,7 +208,6 @@ function(reorder_dependent_gems_with_cycle_detection _output_external_dirs subdi
     # output_external_dirs is a variable whose value is the name of a variable to set in the parent scope
     # So double resolve the variable to retrieve its value
     set(current_external_dirs "${${_output_external_dirs}}")
-
 
     foreach(external_subdir IN LISTS subdirs_in_use)
         # If a cycle is detected, fatal error and output the list of subdirectories that led to the outcome
