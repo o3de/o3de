@@ -157,6 +157,9 @@ namespace UnitTest
             m_entityId1 = CreateEntityWithBounds("Entity1");
             m_entityId2 = CreateEntityWithBounds("Entity2");
             m_entityId3 = CreateEntityWithBounds("Entity3");
+
+            // ensure manipulator view base scale has a sensible default value
+            AzToolsFramework::SetManipulatorViewBaseScale(1.0f);
         }
 
         void PositionEntities()
@@ -1762,9 +1765,6 @@ namespace UnitTest
         UsingScaleManipulatorWithCtrlHeldAdjustsManipulatorBaseViewScale)
     {
         using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
-
-        // ensure manipulator view base scale has a sensible default value
-        AzToolsFramework::SetManipulatorViewBaseScale(1.0f);
 
         PositionEntities();
 
