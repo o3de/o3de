@@ -107,11 +107,9 @@ namespace AZ
 
             if (!m_meshPipelineState->GetRHIPipelineState())
             {
-                // we need an RHI pipeline state
                 return;
             }
 
-            // how to apply orientation by overriding object world matrix?
             RHI::DrawLinear drawLinear;
             drawLinear.m_vertexCount = m_numStarsVertices;
             drawLinear.m_vertexOffset = 0;
@@ -131,10 +129,8 @@ namespace AZ
             const RHI::DrawPacket* drawPacket = drawPacketBuilder.End();
             if (drawPacket)
             {
-
                 for (auto& view : packet.m_views)
                 {
-                    // If this view is ignoring packets with our draw list tag then skip this view
                     if (!view->HasDrawListTag(m_drawListTag))
                     {
                        continue;
@@ -195,6 +191,7 @@ namespace AZ
         {
             m_radiusFactor = radiusFactor;
         }
+
         void StarsFeatureProcessor::SetOrientation(AZ::Quaternion orientation)
         {
             m_orientation = AZ::Matrix3x3::CreateFromQuaternion(orientation);

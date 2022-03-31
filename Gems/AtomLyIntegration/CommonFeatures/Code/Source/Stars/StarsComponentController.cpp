@@ -162,8 +162,7 @@ namespace AZ::Render
                 m_starsFeatureProcessor->SetStars(starVertices);
                 m_starsFeatureProcessor->Enable(m_visible);
             }
-		}
-
+        }
     }
 
     void StarsComponentController::Deactivate()

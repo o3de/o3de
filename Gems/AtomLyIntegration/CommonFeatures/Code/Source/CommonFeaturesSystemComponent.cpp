@@ -78,6 +78,7 @@ namespace AZ
         void AtomLyIntegrationCommonFeaturesSystemComponent::Deactivate()
         {
             m_starsAssetHandler->Unregister();
+            delete m_starsAssetHandler;
         }
     } // namespace Render
 } // namespace AZ
