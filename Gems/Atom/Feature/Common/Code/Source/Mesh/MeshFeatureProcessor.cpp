@@ -1055,10 +1055,6 @@ namespace AZ
                 if (propertyIndex.IsValid())
                 {
                     subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
-                    AZ_Warning(
-                        "MeshFeatureProcessor", !material->FindPropertyIndex(AZ::Name("irradiance.color")).IsValid(),
-                        "Found both irradiance.manualColor and irradiance.color fields. "
-                        "Using irradiance.manualColor and ignoring irradiance.color.");
                 }
                 else
                 {
