@@ -201,7 +201,7 @@ namespace GraphCanvas
         {
             int leftScore = CalculateSortingScore(source_left);
             int rightScore = CalculateSortingScore(source_right);
-            // When sorting score is equal, sort based on alphabetical order
+            // When sorting score is equal, follow alphabetical order instead
             if (leftScore == rightScore)
             {
                 return left < right;
@@ -216,7 +216,14 @@ namespace GraphCanvas
     int NodePaletteSortFilterProxyModel::CalculateSortingScore(const QModelIndex& source) const
     {
         QAbstractItemModel* model = sourceModel();
+        QString sourceString = model->data(source).toString();
+        if (sourceString.compare(m_filter, Qt::CaseInsensitive) == 0)
+        {
+            return -1; // match has highest priority
+        }
+
         int result = INT_MAX;
+        // Calculate the score from children if available
         if (model->hasChildren(source))
         {
             for (int i = 0; i < model->rowCount(source); ++i)
@@ -225,12 +232,7 @@ namespace GraphCanvas
                 result = AZStd::min(result, CalculateSortingScore(child));
             }
         }
-        QString sourceString = model->data(source).toString();
-
-        if (sourceString.compare(m_filter, Qt::CaseInsensitive) == 0)
-        {
-            return -1; // match has highest priority
-        }
+        // If name contains filter or filter regex, assuming shorter name has stronger relevance
         if (sourceString.contains(m_filter) || sourceString.contains(m_filterRegex))
         {
             result = AZStd::min(result, sourceString.size());
