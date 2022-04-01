@@ -28,8 +28,6 @@ namespace MaterialEditor
         ~MaterialEditorViewportWidget();
 
         void Init() override;
-        AZ::Aabb GetObjectBoundsLocal() const override;
-        AZ::Aabb GetObjectBoundsWorld() const override;
         AZ::EntityId GetObjectEntityId() const override;
         AZ::EntityId GetEnvironmentEntityId() const override;
         AZ::EntityId GetPostFxEntityId() const override;

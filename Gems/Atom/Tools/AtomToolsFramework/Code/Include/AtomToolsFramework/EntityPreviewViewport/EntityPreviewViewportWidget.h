@@ -48,8 +48,8 @@ namespace AtomToolsFramework
         ~EntityPreviewViewportWidget();
 
         virtual void Init();
-        virtual AZ::Aabb GetObjectBoundsLocal() const;
-        virtual AZ::Aabb GetObjectBoundsWorld() const;
+        virtual AZ::Aabb GetObjectLocalBounds() const;
+        virtual AZ::Aabb GetObjectWorldBounds() const;
         virtual AZ::EntityId GetObjectEntityId() const;
         virtual AZ::EntityId GetCameraEntityId() const;
         virtual AZ::EntityId GetEnvironmentEntityId() const;

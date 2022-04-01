@@ -41,6 +41,7 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 
 namespace AtomToolsFramework
 {
@@ -79,14 +80,20 @@ namespace AtomToolsFramework
         AZ::TransformNotificationBus::MultiHandler::BusConnect(GetCameraEntityId());
     }
 
-    AZ::Aabb EntityPreviewViewportWidget::GetObjectBoundsLocal() const
+    AZ::Aabb EntityPreviewViewportWidget::GetObjectLocalBounds() const
     {
-        return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        AZ::Aabb objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        AzFramework::BoundsRequestBus::EventResult(
+            objectBounds, GetObjectEntityId(), &AzFramework::BoundsRequestBus::Events::GetLocalBounds);
+        return objectBounds;
     }
 
-    AZ::Aabb EntityPreviewViewportWidget::GetObjectBoundsWorld() const
+    AZ::Aabb EntityPreviewViewportWidget::GetObjectWorldBounds() const
     {
-        return AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        AZ::Aabb objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        AzFramework::BoundsRequestBus::EventResult(
+            objectBounds, GetObjectEntityId(), &AzFramework::BoundsRequestBus::Events::GetWorldBounds);
+        return objectBounds;
     }
 
     AZ::EntityId EntityPreviewViewportWidget::GetObjectEntityId() const
@@ -314,10 +321,10 @@ namespace AtomToolsFramework
     {
         RenderViewportWidget::OnTick(deltaTime, time);
 
-        if (m_objectBoundsOld != GetObjectBoundsLocal())
+        if (m_objectBoundsOld != GetObjectLocalBounds())
         {
-            m_objectBoundsOld = GetObjectBoundsLocal();
-            m_viewportController->SetObjectBounds(GetObjectBoundsWorld());
+            m_objectBoundsOld = GetObjectLocalBounds();
+            m_viewportController->SetObjectBounds(GetObjectWorldBounds());
             m_viewportController->Reset();
         }
 

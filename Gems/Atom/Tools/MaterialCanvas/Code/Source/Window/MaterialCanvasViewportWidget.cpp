@@ -62,22 +62,6 @@ namespace MaterialCanvas
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
-    AZ::Aabb MaterialCanvasViewportWidget::GetObjectBoundsLocal() const
-    {
-        AZ::Aabb objectBounds = AtomToolsFramework::EntityPreviewViewportWidget::GetObjectBoundsLocal();
-        AZ::Render::MeshComponentRequestBus::EventResult(
-            objectBounds, GetObjectEntityId(), &AZ::Render::MeshComponentRequestBus::Events::GetLocalBounds);
-        return objectBounds;
-    }
-
-    AZ::Aabb MaterialCanvasViewportWidget::GetObjectBoundsWorld() const
-    {
-        AZ::Aabb objectBounds = AtomToolsFramework::EntityPreviewViewportWidget::GetObjectBoundsWorld();
-        AZ::Render::MeshComponentRequestBus::EventResult(
-            objectBounds, GetObjectEntityId(), &AZ::Render::MeshComponentRequestBus::Events::GetWorldBounds);
-        return objectBounds;
-    }
-
     AZ::EntityId MaterialCanvasViewportWidget::GetObjectEntityId() const
     {
         return m_objectEntity ? m_objectEntity->GetId() : AZ::EntityId();
