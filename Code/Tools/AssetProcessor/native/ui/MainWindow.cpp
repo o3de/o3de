@@ -41,8 +41,10 @@
 
 #include <QClipboard>
 #include <QDesktopServices>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QUrl>
+#include <QWidgetAction>
 #include <QKeyEvent>
 
 static const char* g_showContextDetailsKey = "ShowContextDetailsTable";
@@ -1318,10 +1320,34 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     {
         assetTabSourceAction->setToolTip(tr("Show the source asset for this job in the Assets tab."));
 
-        QMenu* productMenu = menu.addMenu(productMenuTitle);
-        productMenu->setToolTipsVisible(true);
+        QMenu* productTableMenu = menu.addMenu(productMenuTitle);
+        QWidgetAction* productMenuListAction = new QWidgetAction(productTableMenu);
+        productMenuListAction->setToolTip(tr("Shows this product asset in the Product Assets tab."));
+        QListWidget* productMenuList = new QListWidget(productTableMenu);
+        productMenuList->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+        productMenuList->setTextElideMode(Qt::ElideLeft);
+        productMenuList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        productMenuList->setSelectionMode(QAbstractItemView::NoSelection);
 
-        bool anyProductsAvailableForJob = false;
+        auto productMenuItemClicked = [this, &menu](QListWidgetItem* item)
+        {
+            if (item)
+            {
+                ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
+                ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
+                AZStd::string productFromQString(item->text().toUtf8().data());
+                ui->sourceAssetDetailsPanel->GoToProduct(productFromQString);
+                menu.close();
+            }
+        };
+
+        connect(productMenuList, &QListWidget::itemClicked, this, productMenuItemClicked);
+
+        productMenuListAction->setDefaultWidget(productMenuList);
+
+        productTableMenu->addAction(productMenuListAction);
+
+        int productCount = 0;
         m_sharedDbConnection->QueryJobByJobRunKey(
             item->m_jobRunKey,
             [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
@@ -1334,30 +1360,33 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
                 {
                     return true;
                 }
-                anyProductsAvailableForJob = true;
-                QAction* assetTabProductAction = productMenu->addAction(productEntry.m_productName.c_str(), this, [&, productEntry]()
-                {
-                    ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
-                    ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
-                    ui->sourceAssetDetailsPanel->GoToProduct(productEntry.m_productName);
-                });
-                assetTabProductAction->setToolTip("Shows this product asset in the Product Assets tab.");
+                ++productCount;
+                productMenuList->addItem(productEntry.m_productName.c_str());
                 return true; // Keep iterating, add all products.
             });
             return false; // Stop iterating, there should only be one job with this run key.
         });
 
-        if (!anyProductsAvailableForJob)
+        if (productCount == 0)
         {
             // If there were no products, then show a disabled action with a tooltip.
             // Disabled menus don't support tooltips, so remove the menu first.
-            menu.removeAction(productMenu->menuAction());
-            productMenu->deleteLater();
-            productMenu = nullptr;
+            menu.removeAction(productTableMenu->menuAction());
+            productTableMenu->deleteLater();
+            productTableMenu = nullptr;
 
-            QAction* productMenuAction = menu.addAction(productMenuTitle);
-            productMenuAction->setToolTip(tr("This job created no products."));
-            productMenuAction->setDisabled(true);
+            QAction* disabledProductTableAction = menu.addAction(productMenuTitle);
+            disabledProductTableAction->setToolTip(tr("This job created no products."));
+            disabledProductTableAction->setDisabled(true);
+        }
+        else
+        {
+            // Using fixed width and height because the size hints aren't working well within a qmenu popout menu.
+
+            // Clamp the max products displayed at once. This is a list view, so it will show a scroll bar for anything over this.
+            productCount = AZStd::min(20, productCount);
+            productMenuList->setFixedHeight(productCount * productMenuList->sizeHintForRow(0));
+            productMenuList->setFixedWidth(productMenuList->sizeHintForColumn(0));
         }
     }
 
