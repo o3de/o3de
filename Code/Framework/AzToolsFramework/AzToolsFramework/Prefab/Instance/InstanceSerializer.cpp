@@ -44,6 +44,7 @@ namespace AzToolsFramework
                     if (patchEntryIterator != patchEntry.MemberEnd())
                     {
                         AZStd::string_view patchPath = patchEntryIterator->value.GetString();
+
                         if (patchPath == PathMatchingEntities)
                         {
                             clearAndLoadAllEntities = true;
@@ -67,6 +68,7 @@ namespace AzToolsFramework
                                 if (patchEntryIterator != patchEntry.MemberEnd())
                                 {
                                     AZStd::string opPath = patchEntryIterator->value.GetString();
+
                                     if (opPath == "remove") // Removal of entity needs to be addressed later.
                                     {
                                         entitiesToRemove.emplace(AZStd::move(patchPath));
@@ -417,4 +419,3 @@ namespace AzToolsFramework
         }
     } // namespace Prefab
 } // namespace AzToolsFramework
-#pragma optimize("", on)
