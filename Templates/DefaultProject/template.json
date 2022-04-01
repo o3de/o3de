@@ -123,6 +123,10 @@
             "isTemplated": true
         },
         {
+            "file": "Gem/Registry/assetprocessor_settings.setreg",
+            "isTemplated": true
+        },
+        {
             "file": "Gem/Source/${Name}Module.cpp",
             "isTemplated": true
         },
@@ -183,7 +187,7 @@
             "isTemplated": false
         },
         {
-            "file": "Registry/assets_scan_folders.setreg",
+            "file": "Registry/assetprocessor_settings.setreg",
             "isTemplated": true
         },
         {
@@ -413,6 +417,9 @@
         },
         {
             "dir": "Gem/Platform/iOS"
+        },
+        {
+            "dir": "Gem/Registry"
         },
         {
             "dir": "Gem/Source"

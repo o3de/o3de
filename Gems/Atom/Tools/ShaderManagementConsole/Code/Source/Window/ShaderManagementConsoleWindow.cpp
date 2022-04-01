@@ -11,10 +11,8 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Utils/Utils.h>
-#include <Window/ShaderManagementConsoleTableView.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
-#include <QDesktopServices>
 #include <QFileDialog>
 #include <QUrl>
 #include <QWindow>
@@ -22,46 +20,11 @@
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent)
-        : Base(toolId, parent)
+        : Base(toolId, "ShaderManagementConsoleWindow",  parent)
     {
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
-        m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath)
-            {
-                if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderSourceData::Extension) ||
-                    AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
-                {
-                    AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                        m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
-                    return;
-                }
-
-                QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
-            });
-
-        // Disable unused actions
-        m_actionNew->setVisible(false);
-        m_actionNew->setEnabled(false);
-        m_actionSaveAsChild->setVisible(false);
-        m_actionSaveAsChild->setEnabled(false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
-    }
-
-    bool ShaderManagementConsoleWindow::GetOpenDocumentParams(AZStd::string& openPath)
-    {
-        openPath = QFileDialog::getOpenFileName(
-            this, tr("Open Document"), AZ::Utils::GetProjectPath().c_str(),
-            tr("Shader Files (*.%1);;Shader Variant List Files (*.%2)")
-                .arg(AZ::RPI::ShaderSourceData::Extension)
-                .arg(AZ::RPI::ShaderVariantListSourceData::Extension))
-            .toUtf8()
-            .constData();
-        return !openPath.empty();
-    }
-
-    QWidget* ShaderManagementConsoleWindow::CreateDocumentTabView(const AZ::Uuid& documentId)
-    {
-        return new ShaderManagementConsoleTableView(m_toolId, documentId, centralWidget());
     }
 } // namespace ShaderManagementConsole
 

@@ -11,8 +11,6 @@
 
 namespace GradientSignal
 {
-    constexpr const char* s_gradientImageSettingsExtension = "gradimagesettings";
-
     class GradientSignalSystemComponent
         : public AZ::Component
     {

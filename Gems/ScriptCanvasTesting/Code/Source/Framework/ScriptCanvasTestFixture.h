@@ -89,6 +89,16 @@ namespace ScriptCanvasTests
             AZ_Assert(fileIO, "SC unit tests require filehandling");
 
             s_setupSucceeded = fileIO->GetAlias("@engroot@") != nullptr;
+            // Set the @gemroot:<gem-name> alias for active gems
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                AZ::Test::AddActiveGem("ScriptCanvasTesting", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("GraphCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptEvents", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ExpressionEvaluation", *settingsRegistry, fileIO);
+            }
             
             AZ::TickBus::AllowFunctionQueuing(true);
 

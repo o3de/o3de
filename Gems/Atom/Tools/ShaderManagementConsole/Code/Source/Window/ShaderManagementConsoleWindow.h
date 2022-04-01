@@ -14,8 +14,7 @@ namespace ShaderManagementConsole
 {
     //! ShaderManagementConsoleWindow is the main class. Its responsibility is limited to initializing and connecting
     //! its panels, managing selection of assets, and performing high-level actions like saving. It contains...
-    class ShaderManagementConsoleWindow
-        : public AtomToolsFramework::AtomToolsDocumentMainWindow
+    class ShaderManagementConsoleWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
         Q_OBJECT
     public:
@@ -25,9 +24,5 @@ namespace ShaderManagementConsole
 
         ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
         ~ShaderManagementConsoleWindow() = default;
-
-    protected:
-        bool GetOpenDocumentParams(AZStd::string& openPath) override;
-        QWidget* CreateDocumentTabView(const AZ::Uuid& documentId) override;
     };
 } // namespace ShaderManagementConsole

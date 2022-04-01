@@ -1242,15 +1242,17 @@ namespace Multiplayer
             const AZStd::size_t portSeparator = remoteAddress.find_first_of(':');
             if (portSeparator == AZStd::string::npos)
             {
-                AZLOG_INFO("Remote address %s was malformed", remoteAddress.c_str());
-                return;
+                AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), cl_serverport);
             }
-            char* mutableAddress = remoteAddress.data();
-            mutableAddress[portSeparator] = '\0';
-            const char* addressStr = mutableAddress;
-            const char* portStr = &(mutableAddress[portSeparator + 1]);
-            int32_t portNumber = atol(portStr);
-            AZ::Interface<IMultiplayer>::Get()->Connect(addressStr, static_cast<uint16_t>(portNumber));
+            else
+            {
+                char* mutableAddress = remoteAddress.data();
+                mutableAddress[portSeparator] = '\0';
+                const char* addressStr = mutableAddress;
+                const char* portStr = &(mutableAddress[portSeparator + 1]);
+                int32_t portNumber = atol(portStr);
+                AZ::Interface<IMultiplayer>::Get()->Connect(addressStr, static_cast<uint16_t>(portNumber));
+            }
         }
     }
     AZ_CONSOLEFREEFUNC(connect, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection to a remote host");

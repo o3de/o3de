@@ -67,7 +67,7 @@ namespace AtomToolsFramework
                 {
                     CreateListItem(
                         assetInfo.m_assetId,
-                        GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId).c_str()));
+                        GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId)).c_str());
                 }
             };
 
@@ -125,7 +125,7 @@ namespace AtomToolsFramework
                 {
                     CreateListItem(
                         assetInfo.m_assetId,
-                        GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId).c_str()));
+                        GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId)).c_str());
                 }
                 m_ui->m_assetList->sortItems();
             });

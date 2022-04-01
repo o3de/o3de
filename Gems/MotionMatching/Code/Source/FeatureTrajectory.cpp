@@ -103,9 +103,8 @@ namespace EMotionFX::MotionMatching
     void FeatureTrajectory::ExtractFeatureValues(const ExtractFeatureContext& context)
     {
         const ActorInstance* actorInstance = context.m_actorInstance;
-        AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
-        AnimGraphPose* samplePose = posePool.RequestPose(actorInstance);
-        AnimGraphPose* nextSamplePose = posePool.RequestPose(actorInstance);
+        AnimGraphPose* samplePose = context.m_posePool.RequestPose(actorInstance);
+        AnimGraphPose* nextSamplePose = context.m_posePool.RequestPose(actorInstance);
 
         const size_t frameIndex = context.m_frameIndex;
         const Frame& currentFrame = context.m_frameDatabase->GetFrame(context.m_frameIndex);
@@ -149,8 +148,8 @@ namespace EMotionFX::MotionMatching
             *samplePose = *nextSamplePose;
         }
 
-        posePool.FreePose(samplePose);
-        posePool.FreePose(nextSamplePose);
+        context.m_posePool.FreePose(samplePose);
+        context.m_posePool.FreePose(nextSamplePose);
     }
 
     void FeatureTrajectory::SetPastTimeRange(float timeInSeconds)

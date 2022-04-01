@@ -84,7 +84,7 @@ public:
         AudioObjectPropertyAddress theAddress = {
             kAudioHardwarePropertyDefaultInputDevice,
             kAudioObjectPropertyScopeGlobal,
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_12_0
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 120000 // Needs to be 120000 instead of __MAC_12_0 because that will not be defined in earlier versions on the SDK.
             kAudioObjectPropertyElementMain
 #else
             kAudioObjectPropertyElementMaster

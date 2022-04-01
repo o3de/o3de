@@ -17,6 +17,7 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/IOUtils.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
@@ -94,18 +95,36 @@ namespace AZ
 
             m_rpiSystem.Initialize(m_rpiDescriptor);
             AZ::SystemTickBus::Handler::BusConnect();
+            AZ::RHI::RHISystemNotificationBus::Handler::BusConnect();
         }
 
         void RPISystemComponent::Deactivate()
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_rpiSystem.Shutdown();
+            AZ::RHI::RHISystemNotificationBus::Handler::BusDisconnect();
         }
 
         void RPISystemComponent::OnSystemTick()
         {
             m_rpiSystem.SimulationTick();
             m_rpiSystem.RenderTick();
+        }
+        
+        void RPISystemComponent::OnDeviceRemoved([[maybe_unused]] RHI::Device* device)
+        {
+            const AZStd::string errorMessage = "GPU device was removed. Check the log file for more detail.";
+            if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+            {
+                nativeUI->DisplayOkDialog("O3DE Fatal Error", errorMessage.c_str(), false);
+            }
+            else
+            {
+                AZ_Error("Atom", false, "O3DE Fatal Error: %s\n", errorMessage.c_str());
+            }
+
+            // Stop execution since we can't recover from device removal error
+            Debug::Trace::Crash();
         }
 
     } // namespace RPI

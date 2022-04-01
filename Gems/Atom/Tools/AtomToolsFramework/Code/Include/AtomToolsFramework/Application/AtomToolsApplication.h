@@ -10,6 +10,7 @@
 #include <AtomToolsFramework/Communication/LocalServer.h>
 #include <AtomToolsFramework/Communication/LocalSocket.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
+#include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
@@ -60,6 +61,8 @@ namespace AtomToolsFramework
         void Destroy() override;
 
     protected:
+        void OnIdle();
+
         // AtomsToolMainWindowNotificationBus::Handler overrides...
         void OnMainWindowClosing() override;
 
@@ -99,12 +102,14 @@ namespace AtomToolsFramework
         //! Are local settings loaded
         bool m_activatedLocalUserSettings = false;
 
-        QTimer m_timer;
-
         AtomToolsFramework::LocalSocket m_socket;
         AtomToolsFramework::LocalServer m_server;
 
+        AZStd::unique_ptr<AtomToolsFramework::AtomToolsAssetBrowserInteractions> m_assetBrowserInteractions;
+
         const AZStd::string m_targetName;
         const AZ::Crc32 m_toolId = {};
+
+        bool m_isAutoTestMode = false;
     };
 } // namespace AtomToolsFramework
