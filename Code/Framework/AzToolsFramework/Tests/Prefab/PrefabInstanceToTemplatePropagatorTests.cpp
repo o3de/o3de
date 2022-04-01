@@ -172,7 +172,7 @@ namespace UnitTest
         ASSERT_TRUE(confirmXValue == updatedXValue);
     }
 
-    TEST_F(PrefabInstanceToTemplateTests, DISABLED_PrefabUpdateTemplate_AddEntityToInstance)
+    TEST_F(PrefabInstanceToTemplateTests, PrefabUpdateTemplate_AddEntityToInstance)
     {
         //create template with single entity
         const char* newEntityName = "New Entity";
@@ -222,7 +222,7 @@ namespace UnitTest
         EXPECT_EQ(entityIdVector.size(), 2);
     }
 
-    TEST_F(PrefabInstanceToTemplateTests, DISABLED_PrefabUpdateTemplate_RemoveEntityFromInstance)
+    TEST_F(PrefabInstanceToTemplateTests, PrefabUpdateTemplate_RemoveEntityFromInstance)
     {
         //create template with single entity
 

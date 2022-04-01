@@ -285,20 +285,12 @@ namespace AzToolsFramework
             );
         }
 
-        void Instance::ClearEntities(bool shouldClearContainerEntity)
+        void Instance::ClearEntities()
         {
-            AZ::EntityId containerEntityId;
-            EntityAlias containerEntityAlias;
-
             if (m_containerEntity)
             {
-                containerEntityId = m_containerEntity->GetId();
-                containerEntityAlias = GetEntityAlias(containerEntityId)->get();
-                if (shouldClearContainerEntity)
-                {
-                    m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
-                    m_containerEntity.reset();
-                }
+                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+                m_containerEntity.reset();
             }
 
             for (const auto&[entityAlias, entity] : m_entities)
@@ -323,11 +315,6 @@ namespace AzToolsFramework
             m_instanceToTemplateEntityIdMap.clear();
             m_templateToInstanceEntityIdMap.clear();
 
-            if (!shouldClearContainerEntity)
-            {
-                m_instanceToTemplateEntityIdMap.emplace(containerEntityId, containerEntityAlias);
-                m_templateToInstanceEntityIdMap.emplace(containerEntityAlias, containerEntityId);
-            }
         }
 
         bool Instance::RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias)

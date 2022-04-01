@@ -313,7 +313,11 @@ namespace AzToolsFramework
             Instance* instance,
             AZ::JsonSerializationResult::ResultCode& result)
         {
-            instance->ClearEntities(false);
+            for (auto& [entityAlias, entity] :instance->m_entities)
+            {
+                instance->UnregisterEntity(entity->GetId());
+            }
+            instance->m_entities.clear();
 
             AZ::JsonSerializationResult::ResultCode entitiesResult = ContinueLoadingFromJsonObjectField(
                 &instance->m_entities, azrtti_typeid<Instance::AliasToEntityMap>(), inputValue, "Entities", context);

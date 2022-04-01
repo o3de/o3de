@@ -127,12 +127,14 @@ namespace AzToolsFramework
         {
             AzFramework::EntityContextEventBus::Handler::BusConnect(editorEntityContextId);
         }
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 
         Reset();
     }
 
     EditorEntityModel::~EditorEntityModel()
     {
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityContextEventBus::Handler::BusDisconnect();
         SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -515,7 +517,11 @@ namespace AzToolsFramework
                 EditorEntityInfoNotificationBus::Broadcast(&EditorEntityInfoNotificationBus::Events::OnEntityInfoUpdatedRemoveChildEnd, parentId, childId);
             }
         }
-        AzToolsFramework::RemoveEntityIdFromSortInfo(parentId, childId);
+
+        if (!m_isPrefabPropagationInProgress)
+        {
+            AzToolsFramework::RemoveEntityIdFromSortInfo(parentId, childId);
+        }
 
         childInfo.SetParentId(AZ::EntityId());
         UpdateSliceInfoHierarchy(childInfo.GetId());
@@ -845,6 +851,16 @@ namespace AzToolsFramework
         }
 
         AZ::TickBus::Handler::BusDisconnect();
+    }
+
+    void EditorEntityModel::OnPrefabInstancePropagationBegin()
+    {
+        m_ignoreOrphaningChildren = true;
+    }
+
+    void EditorEntityModel::OnPrefabInstancePropagationEnd()
+    {
+        m_ignoreOrphaningChildren = false;
     }
 
     void EditorEntityModel::UpdateSliceInfoHierarchy(AZ::EntityId entityId)
