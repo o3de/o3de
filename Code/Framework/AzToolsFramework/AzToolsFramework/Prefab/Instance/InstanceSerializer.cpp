@@ -6,7 +6,6 @@
  *
  */
 
-#pragma optimize("", off)
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -69,7 +68,7 @@ namespace AzToolsFramework
                                 {
                                     AZStd::string opPath = patchEntryIterator->value.GetString();
 
-                                    if (opPath == "remove") // Removal of entity needs to be addressed later.
+                                    if (opPath == "remove")
                                     {
                                         entitiesToRemove.emplace(AZStd::move(patchPath));
                                     }

@@ -518,6 +518,7 @@ namespace AzToolsFramework
             }
         }
 
+        // During prefab propagation, we don't need to update the sort order. It'll be taken care by prefab instance deserialization.
         if (!m_isPrefabPropagationInProgress)
         {
             AzToolsFramework::RemoveEntityIdFromSortInfo(parentId, childId);
@@ -855,12 +856,12 @@ namespace AzToolsFramework
 
     void EditorEntityModel::OnPrefabInstancePropagationBegin()
     {
-        m_ignoreOrphaningChildren = true;
+        m_isPrefabPropagationInProgress = true;
     }
 
     void EditorEntityModel::OnPrefabInstancePropagationEnd()
     {
-        m_ignoreOrphaningChildren = false;
+        m_isPrefabPropagationInProgress = false;
     }
 
     void EditorEntityModel::UpdateSliceInfoHierarchy(AZ::EntityId entityId)

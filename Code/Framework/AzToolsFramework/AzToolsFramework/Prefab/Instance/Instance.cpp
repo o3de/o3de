@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma optimize("", off)
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -863,4 +862,3 @@ namespace AzToolsFramework
         }
     }
 } // namespace AzToolsFramework
-#pragma optimize("", on)
