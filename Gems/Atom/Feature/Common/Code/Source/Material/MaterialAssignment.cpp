@@ -34,9 +34,10 @@ namespace AZ
                 serializeContext->RegisterGenericType<MaterialPropertyOverrideMap>();
 
                 serializeContext->Class<MaterialAssignment>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("MaterialAsset", &MaterialAssignment::m_materialAsset)
                     ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides)
+                    ->Field("ModelUvOverrides", &MaterialAssignment::m_matModUvOverrides)
                     ;
 
                 if (auto editContext = serializeContext->GetEditContext())
