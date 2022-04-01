@@ -36,7 +36,7 @@ namespace AzToolsFramework
         bool SaveLastKnownLocation(const ViewBookmark& bookmark) override;
         bool RemoveBookmarkAtIndex(int index) override;
         AZStd::optional<ViewBookmark> LoadBookmarkAtIndex(int index) override;
-        AZStd::optional<ViewBookmark> LoadLastKnownLocation() const override;
+        AZStd::optional<ViewBookmark> LoadLastKnownLocation() override;
 
     private:
         bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);

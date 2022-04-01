@@ -373,8 +373,10 @@ namespace AzToolsFramework
         return success;
     }
 
-    AZStd::optional<ViewBookmark> LocalViewBookmarkLoader::LoadLastKnownLocation() const
+    AZStd::optional<ViewBookmark> LocalViewBookmarkLoader::LoadLastKnownLocation()
     {
+        ReadViewBookmarksFromSettingsRegistry();
+
         return m_lastKnownLocation;
     }
 
