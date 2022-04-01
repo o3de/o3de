@@ -1570,7 +1570,15 @@ void MainWindow::ShowSourceAssetContextMenu(const QPoint& pos)
             });
             return true; // Stop iterating, there should only be one job with this run key.
         });
-        ResizeProductAssetRightClickMenuList(productAssetMenu.m_listWidget, productCount);
+        if (productCount == 0)
+        {
+            CreateDisabledProductAssetRightClickMenu(&menu, productAssetMenu.m_productMenu, tr("This source asset has no products."));
+            productAssetMenu.m_productMenu = nullptr;
+        }
+        else
+        {
+            ResizeProductAssetRightClickMenuList(productAssetMenu.m_listWidget, productCount);
+        }
     }
 
     QAction* fileBrowserAction = menu.addAction(AzQtComponents::fileBrowserActionName(), this, [&]()
