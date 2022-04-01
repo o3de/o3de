@@ -196,8 +196,6 @@ namespace AZ
             virtual Environment::AllocatorInterface* GetAllocator() = 0;
 
             virtual void DeleteThis() = 0;
-
-            static EnvironmentInterface*  s_environment;
         };
 
         // Don't use any virtual methods to we make sure we can reuse variables across modules
@@ -636,7 +634,6 @@ namespace AZ
     {
         inline void AttachGlobalEnvironment(void* globalEnv)
         {
-            AZ_Assert(!AZ::Environment::IsReady(), "An environment is already created in this module!");
             AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(globalEnv));
         }
     }
