@@ -31,6 +31,7 @@ namespace ScriptCanvasBuilder
         AZ_CLASS_ALLOCATOR(DataSystem, AZ::SystemAllocator, 0);
 
         DataSystem();
+        virtual ~DataSystem();
 
         BuildResult CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle) override;
 
