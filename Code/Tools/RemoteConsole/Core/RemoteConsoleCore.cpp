@@ -9,6 +9,7 @@
 #include <AzCore/Socket/AzSocket.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/API/ApplicationAPI.h>
 
 #include <platform.h>
 #include <IConsole.h>
@@ -487,21 +488,26 @@ void SRemoteClient::FillAutoCompleteList(AZStd::vector<AZStd::string>& list)
         return;
     }
 
-    for (int i = 0, end = gEnv->pSystem->GetILevelSystem()->GetLevelCount(); i < end; ++i)
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+    if (!usePrefabSystemForLevels)
     {
-        ILevelInfo* pLevel = gEnv->pSystem->GetILevelSystem()->GetLevelInfo(i);
-        AZStd::string item = "map ";
-        const char* levelName = pLevel->GetName();
-        int start = 0;
-        for (int k = 0, kend = static_cast<int>(strlen(levelName)); k < kend; ++k)
+        for (int i = 0, end = gEnv->pSystem->GetILevelSystem()->GetLevelCount(); i < end; ++i)
         {
-            if ((levelName[k] == '\\' || levelName[k] == '/') && k + 1 < kend)
+            ILevelInfo* pLevel = gEnv->pSystem->GetILevelSystem()->GetLevelInfo(i);
+            AZStd::string item = "map ";
+            const char* levelName = pLevel->GetName();
+            int start = 0;
+            for (int k = 0, kend = static_cast<int>(strlen(levelName)); k < kend; ++k)
             {
-                start = k + 1;
+                if ((levelName[k] == '\\' || levelName[k] == '/') && k + 1 < kend)
+                {
+                    start = k + 1;
+                }
             }
+            item += levelName + start;
+            list.push_back(item);
         }
-        item += levelName + start;
-        list.push_back(item);
     }
 }
 
