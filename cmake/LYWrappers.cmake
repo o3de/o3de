@@ -602,7 +602,6 @@ macro(ly_configure_target_platform_properties)
         ly_source_groups_from_folders("${platform_include_file}")
 
         if(LY_FILES_CMAKE)
-            set(ALLFILES)
             foreach(file_cmake ${LY_FILES_CMAKE})
                 ly_include_cmake_file_list(${file_cmake})
             endforeach()
