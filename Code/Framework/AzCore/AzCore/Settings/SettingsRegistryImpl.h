@@ -18,11 +18,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/mutex.h>
 
-// Prevent macros to override certain function names
-#ifdef GetObject
-#undef GetObject
-#endif
-
 // Using a define instead of a static string to avoid the need for temporary buffers to composite the full paths.
 #define AZ_SETTINGS_REGISTRY_HISTORY_KEY "/Amazon/AzCore/Runtime/Registry/FileHistory"
 

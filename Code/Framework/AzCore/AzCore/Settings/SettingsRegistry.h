@@ -20,6 +20,11 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+// Prevent macros to override certain function names
+#ifdef GetObject
+#undef GetObject
+#endif
+
 namespace AZ
 {
     struct JsonApplyPatchSettings;
