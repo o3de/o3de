@@ -93,6 +93,22 @@
                 "Path": "Passes/AuxGeom.pass"
             },
             {
+                "Name": "SkyAtmosphereParentTemplate",
+                "Path": "Passes/SkyAtmosphereParent.pass"
+            },
+            {
+                "Name": "SkyAtmosphereTemplate",
+                "Path": "Passes/SkyAtmosphere.pass"
+            },
+            {
+                "Name": "SkyTransmittanceLUTTemplate",
+                "Path": "Passes/SkyTransmittanceLUT.pass"
+            },
+            {
+                "Name": "SkyRayMarchingTemplate",
+                "Path": "Passes/SkyRayMarching.pass"
+            },
+            {
                 "Name": "SkyBoxTemplate",
                 "Path": "Passes/SkyBox.pass"
             },

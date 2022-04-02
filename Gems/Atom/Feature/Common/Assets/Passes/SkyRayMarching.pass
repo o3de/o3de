@@ -1,0 +1,55 @@
+{
+    "Type": "JsonSerialization",
+    "Description" : "This is the pass template that renders the sky atmosphere",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SkyRayMarchingTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "SkyTransmittanceLUTInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_transmittanceLUT"
+                },
+                {
+                    "Name": "SkyViewLUTInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_skyViewLUT"
+                },
+                {
+                    "Name": "SpecularInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "ReflectionInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "DepthStencilTextureInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_depth",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                }
+
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "shaders/skyatmosphere/skyraymarching.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}
