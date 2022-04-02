@@ -62,29 +62,29 @@ ShaderResourceGroup AtmosParamsSRG : SRG_PerPass
         float	top_radius; /////////////////
 
         float3	mie_absorption; ////////////
-        float	pad0;  // not used
+        float	pad00;  // not used
 
         float3	ground_albedo; ///////////
-        float   pad1; //not used
+        float   pad0; //not used
 
         float4 rayleigh_density[3];  ////////////////
         float4 mie_density[3];   ////////////////
         float4 absorption_density[3];  ///////////////
 
         float3 gSunIlluminance;
-        float  pad2;
+        float  pad7;
 
         float3 sun_direction;
         float MultipleScatteringFactor;
 
         float2 RayMarchMinMaxSPP;
-        float2  pad3;
+        float2  pad8;
 
-        float3	planet_origin; ///////////
+        float3 planet_origin; ///////////
         float   pad4; // origin_at_surface; 
 
         uint2 gResolution;
-		uint2 pad5;
+		uint2 pad6;
 	};
 
 	Constants m_constants;
