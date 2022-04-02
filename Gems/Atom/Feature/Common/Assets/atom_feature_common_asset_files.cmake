@@ -235,6 +235,10 @@ set(FILES
     Passes/ReflectionScreenSpaceTrace.pass
     Passes/ShadowParent.pass
     Passes/Skinning.pass
+    Passes/SkyAtmosphereParent.pass
+    Passes/SkyAtmosphere.pass
+    Passes/SkyTransmittanceLUT.pass
+    Passes/SkyRayMarching.pass
     Passes/SkyBox.pass
     Passes/SkyBox_TwoOutputs.pass
     Passes/SlowClear.pass
@@ -574,4 +578,9 @@ set(FILES
     Shaders/SkyBox/SkyBox.shader
     Shaders/SkyBox/SkyBox_TwoOutputs.azsl
     Shaders/SkyBox/SkyBox_TwoOutputs.shader
+    Shaders/SkyAtmosphere/SkyAtmosphereCommon.azsli
+    Shaders/SkyAtmosphere/SkyTransmittanceLUT.azsl
+    Shaders/SkyAtmosphere/SkyTransmittanceLUT.shader
+    Shaders/SkyAtmosphere/SkyRayMarching.azsl
+    Shaders/SkyAtmosphere/SkyRayMarching.shader
 ) 

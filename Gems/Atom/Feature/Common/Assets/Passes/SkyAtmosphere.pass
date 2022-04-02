@@ -1,0 +1,76 @@
+{
+    "Type": "JsonSerialization",
+    "Description" : "This is the group of passes that render the sky atmosphere.",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SkyAtmosphereTemplate",
+            "PassClass": "SkyAtmospherePass",
+            "Slots": [
+                {
+                    "Name": "SpecularInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "ReflectionInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "SkyBoxDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "SkyTransmittanceLUTPass",
+                    "TemplateName": "SkyTransmittanceLUTTemplate",
+                    "Enabled": true
+                },
+                {
+                    "Name": "SkyRayMarchingPass",
+                    "TemplateName": "SkyRayMarchingTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkyTransmittanceLUTInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyTransmittanceLUTPass",
+                                "Attachment": "SkyTransmittanceLUTOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SpecularInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReflectionInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ReflectionInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkyBoxDepth"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

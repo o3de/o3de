@@ -1,0 +1,93 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <viewsrg.srgi>
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <SkyAtmosphereCommon.azsli>
+
+struct RayMarchPixelOutputStruct
+{
+	float4 m_luminance : SV_Target0;
+	float4 m_reflection : SV_Target1;
+};
+
+float3 ScreenToWorldPosition(in float2 uv, in float depth)
+{
+	float2 ndcPos = float2(uv.x, 1.0f - uv.y) * 2.0f - 1.0f;
+	float4 projectedPos = float4(ndcPos, depth, 1.0f);
+	float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, projectedPos);
+	positionWS /= positionWS.w;
+	return  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
+}
+
+RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV_SampleIndex)
+{
+	RayMarchPixelOutputStruct output = (RayMarchPixelOutputStruct)0;
+
+	AtmosphereParameters Atmosphere = GetAtmosphereParameters();
+
+	// atmosphere units are km, but world units are meters
+	const float worldScale = 0.001f;
+	//const float worldScale = 1.0f;
+	const float invWorldScale = 1.0 / worldScale;
+    const float exposure = 20.0;
+	float3 luminance = 0;
+
+	// see ReflectionScreenSpaceComposite.azsl for example of reconstructing coords
+	float2 screenCoords = Input.m_position.xy;
+    float depth = AtmosParamsSRG::m_depth.Load(screenCoords, sampleIndex).r;
+
+	float2 ndcPos = float2(Input.m_texCoord.x, 1.0f - Input.m_texCoord.y) * 2.0f - 1.0f;
+	float4 projectedPos = float4(ndcPos, depth, 1.0f);
+	float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, projectedPos);
+	positionWS /= positionWS.w;
+
+	float3 viewToPosition =  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
+	float3 worldDir = normalize(viewToPosition);
+	float3 worldPosKm = ViewSrg::m_worldPosition * worldScale + float3(0, 0, Atmosphere.BottomRadius);
+	float worldDepth = depth * invWorldScale;
+	if (depth == 0.0f)
+	{
+		// nothing is obstructing, add any luminance from the sun
+		luminance = GetSunLuminance(worldPosKm, worldDir, Atmosphere.BottomRadius);
+	}
+
+	// when outside the atmosphere, this moves worldPosKM to the 
+	// start of the atmosphere, unless the entire ray never intersects
+	if (!MoveToTopAtmosphere(worldPosKm, worldDir, Atmosphere.TopRadius))
+	{
+		// Ray is not intersecting the atmosphere
+		output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0);
+		output.m_reflection = output.m_luminance;
+		return output;
+	}
+
+	// calculate maxTraceDepth here to avoid modifying shared skycommon 
+	float maxTraceDepth = 9000000.0f; 
+	if (depth > 0.0f)
+	{
+		maxTraceDepth = min(length(viewToPosition) * worldScale, maxTraceDepth);
+	}
+
+	const bool ground = false; 
+	const float sampleCountIni = 14.0f;
+	const bool variableSampleCount = true;
+	const bool mieRayPhase = true;
+
+	SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, Input.m_texCoord, worldPosKm, worldDir, AtmosParamsSRG::m_constants.sun_direction, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
+	luminance += ss.L;
+	const float Transmittance = dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
+
+	output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0 - Transmittance);
+	output.m_reflection = output.m_luminance;
+	return output;
+}
+

@@ -36,6 +36,7 @@
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponent.h>
 #include <PostProcess/GradientWeightModifier/GradientWeightModifierComponent.h>
 #include <ScreenSpace/DeferredFogComponent.h>
+#include <SkyAtmosphere/SkyAtmosphereComponent.h>
 #include <SkyBox/HDRiSkyboxComponent.h>
 #include <SkyBox/PhysicalSkyComponent.h>
 #include <Scripting/EntityReferenceComponent.h>
@@ -73,6 +74,7 @@
 #include <PostProcess/ShapeWeightModifier/EditorShapeWeightModifierComponent.h>
 #include <PostProcess/GradientWeightModifier/EditorGradientWeightModifierComponent.h>
 #include <ScreenSpace/EditorDeferredFogComponent.h>
+#include <SkyAtmosphere/EditorSkyAtmosphereComponent.h>
 #include <SkyBox/EditorHDRiSkyboxComponent.h>
 #include <SkyBox/EditorPhysicalSkyComponent.h>
 #include <Scripting/EditorEntityReferenceComponent.h>
@@ -108,6 +110,7 @@ namespace AZ
                         LookModificationComponent::CreateDescriptor(),
                         GridComponent::CreateDescriptor(),
                         HDRiSkyboxComponent::CreateDescriptor(),
+                        SkyAtmosphereComponent::CreateDescriptor(),
                         ImageBasedLightComponent::CreateDescriptor(),
                         MaterialComponent::CreateDescriptor(),
                         MeshComponent::CreateDescriptor(),
@@ -143,6 +146,7 @@ namespace AZ
                         EditorLookModificationComponent::CreateDescriptor(),
                         EditorGridComponent::CreateDescriptor(),
                         EditorHDRiSkyboxComponent::CreateDescriptor(),
+                        EditorSkyAtmosphereComponent::CreateDescriptor(),
                         EditorImageBasedLightComponent::CreateDescriptor(),
                         EditorMaterialComponent::CreateDescriptor(),
                         EditorMaterialSystemComponent::CreateDescriptor(),
