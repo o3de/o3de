@@ -76,10 +76,7 @@ namespace ScriptCanvasEditor
 
     // IPropertyEditorNotify ...
     void InterpreterWidget::AfterPropertyModified(AzToolsFramework::InstanceDataNode* /*node*/)
-    {
-        AZ_TracePrintf("ScriptCanvas", "InterpreterWidget::AfterPropertyModified(), refreshing configuration");
-        // m_interpreter.RefreshConfiguration();
-    }
+    {}
 
     void InterpreterWidget::BeforePropertyModified(AzToolsFramework::InstanceDataNode* /*node*/)
     {}
@@ -88,19 +85,13 @@ namespace ScriptCanvasEditor
     {}
 
     void InterpreterWidget::SealUndoStack()
-    {
-        AZ_TracePrintf("ScriptCanvas", "InterpreterWidget::SealUndoStack(), refreshing configuration");
-        // m_interpreter.RefreshConfiguration();
-    }
+    {}
 
     void InterpreterWidget::SetPropertyEditingActive(AzToolsFramework::InstanceDataNode* /*node*/)
     {}
 
     void InterpreterWidget::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* /*node*/)
-    {
-        AZ_TracePrintf("ScriptCanvas", "InterpreterWidget::SetPropertyEditingComplete(), refreshing configuration");
-        // m_interpreter.RefreshConfiguration();
-    }
+    {}
     // ... IPropertyEditorNotify
 }
 
