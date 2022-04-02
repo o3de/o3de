@@ -8,6 +8,8 @@
             "Name": "GSI16",
             "PixelFormat": "R16",
             "DiscardAlpha": true,
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
             "IsPowerOf2": true,
             "MipMapSetting": {
                 "MipGenType": "Box"
@@ -20,6 +22,8 @@
                 "PixelFormat": "R16",
                 "MaxTextureSize": 2048,
                 "DiscardAlpha": true,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -31,6 +35,8 @@
                 "PixelFormat": "R16",
                 "MaxTextureSize": 2048,
                 "DiscardAlpha": true,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -41,6 +47,8 @@
                 "Name": "GSI16",
                 "PixelFormat": "R16",
                 "DiscardAlpha": true,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -51,6 +59,8 @@
                 "Name": "GSI16",
                 "PixelFormat": "R16",
                 "DiscardAlpha": true,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
