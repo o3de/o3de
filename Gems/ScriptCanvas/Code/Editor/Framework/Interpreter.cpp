@@ -61,7 +61,11 @@ namespace ScriptCanvasEditor
     {
         MutexLock lock(m_mutex);
         m_runtimeDataOverrides = AZStd::move(ConvertToRuntime(m_configuration.GetOverrides()));
-        m_runtimeDataOverrides.m_runtimeAsset.BlockUntilLoadComplete();
+        auto asset = AZ::Data::AssetManager::Instance().GetAsset<RuntimeAsset>
+            ( m_runtimeDataOverrides.m_runtimeAsset.GetId()
+            , AZ::Data::AssetLoadBehavior::PreLoad);
+        asset.BlockUntilLoadComplete();
+        m_runtimeDataOverrides.m_runtimeAsset = asset;
         m_executor.Initialize(m_runtimeDataOverrides, AZStd::any(m_userData));
     }
 

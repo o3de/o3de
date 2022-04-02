@@ -47,6 +47,7 @@ namespace ScriptCanvasEditor
         if (m_interpreter.IsExecutable())
         {
             ToggleStartStopButtonEnabled();
+            m_interpreter.Execute();
         }
     }
 
@@ -54,6 +55,7 @@ namespace ScriptCanvasEditor
     {
         if (m_interpreter.IsExecutable())
         {
+            m_interpreter.Stop();
             ToggleStartStopButtonEnabled();
         }
     }
