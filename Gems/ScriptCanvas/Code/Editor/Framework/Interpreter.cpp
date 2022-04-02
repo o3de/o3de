@@ -8,18 +8,42 @@
 
 #include <Editor/Framework/Interpreter.h>
 
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Builder/ScriptCanvasBuilder.h>
+
+// \todo consider making a template version with return values, similar to execution out
+// or perhaps safety checked versions with an array / table of any. something parsable
+// or consider just having users make ebuses that the graphs will handle
+// and wrapping the whole thing in a single class
+// interpreter + ebus, and calling it EZ SC Hook or something like that
+
+// the EZ Code driven thing, when it uses the click button, opens up a graph
+// and drops in the main function WItH the typed arguments and return values stubbed out
+// and makes those the required function of the graph!
+// this code include using an ebus, for easiy switching to C++ extension
 
 namespace ScriptCanvasEditor
 {
     using namespace ScriptCanvas;
 
+    Interpreter::Interpreter()
+    {
+        m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceCompiled(); });
+        m_handlerSourceFailed = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceFailed(); });
+        m_configuration.ConnectToSourceCompiled(m_handlerSourceCompiled);
+        m_configuration.ConnectToSourceFailed(m_handlerSourceFailed);
+    }
+
+    // this can outrun the AP, and attmept to execute something before the asset is done, or ready, or about to be reloaded
     bool Interpreter::Execute()
     {
+        MutexLock lock(m_mutex);
+
         if (IsExecutable())
         {
-            m_executor.InitializeAndExecute(m_runtimeDataOverrides, AZStd::any(m_runtimeUserData));
+            AZ::SystemTickBus::QueueFunction([this]() { m_executor.Execute(); });
             return true;
         }
         else
@@ -33,10 +57,18 @@ namespace ScriptCanvasEditor
         return m_executor.IsExecutable();
     }
 
-    void Interpreter::OnAssetAvailable()
+    void Interpreter::OnSourceCompiled()
     {
-        // copy build, convert to runtime
-        m_executor.Initialize(m_runtimeDataOverrides, AZStd::any(m_runtimeDataOverrides));
+        MutexLock lock(m_mutex);
+        m_runtimeDataOverrides = AZStd::move(ConvertToRuntime(m_configuration.GetOverrides()));
+        m_runtimeDataOverrides.m_runtimeAsset.BlockUntilLoadComplete();
+        m_executor.Initialize(m_runtimeDataOverrides, AZStd::any(m_userData));
+    }
+
+    void Interpreter::OnSourceFailed()
+    {
+        MutexLock lock(m_mutex);
+        m_executor.StopAndClearExecutable();
     }
 
     void Interpreter::Reflect(AZ::ReflectContext* context)
@@ -47,7 +79,7 @@ namespace ScriptCanvasEditor
                 ->Field("sourceName", &Interpreter::m_configuration)
                 ;
 
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<Interpreter>("Script Canvas Interpreter", "Select, Configure, and Execute a ScriptCanvas Graph")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -59,28 +91,35 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void Interpreter::ResetRuntimeUserData()
+    void Interpreter::ResetUserData()
     {
-        m_runtimeUserData = Execution::Reference(this, azrtti_typeid(this));
+        MutexLock lock(m_mutex);
+        m_userData = Execution::Reference(this, azrtti_typeid(this));
     }
 
     void Interpreter::SetScript(SourceHandle source)
     {
+        MutexLock lock(m_mutex);
         m_configuration.Refresh(source);
-        // register OnAssetAvailable() for execution
     }
 
-    void Interpreter::SetRuntimeUserData(AZStd::any&& runtimeUserData)
+    void Interpreter::SetUserData(AZStd::any&& runtimeUserData)
     {
-        m_runtimeUserData = runtimeUserData;
+        MutexLock lock(m_mutex);
+        m_userData = runtimeUserData;
     }
 
     void Interpreter::Stop()
     {
+        MutexLock lock(m_mutex);
+
         if (IsExecutable())
         {
-            m_executor.Stop();
-            // consider running a full garbage collect
+            AZ::SystemTickBus::QueueFunction([this]()
+            {
+                m_executor.StopAndKeepExecutable();
+                // consider running a full garbage collect
+            });
         }
     }
 }

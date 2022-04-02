@@ -54,7 +54,7 @@ namespace ScriptCanvas
 
     void RuntimeComponent::OnEntityDeactivated(const AZ::EntityId&)
     {
-        m_executor.Stop();
+        m_executor.StopAndClearExecutable();
     }
 
     void RuntimeComponent::Reflect(AZ::ReflectContext* context)

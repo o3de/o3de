@@ -54,12 +54,17 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<Ui::InterpreterWidget> m_view;
         Interpreter m_interpreter;
 
-        // IPropertyEditorNotify
+        void OnButtonStartPressed();
+        void OnButtonStopPressed();
+        void ToggleStartStopButtonEnabled();
+
+        // IPropertyEditorNotify ...
         void AfterPropertyModified(AzToolsFramework::InstanceDataNode* /*node*/) override;
-        void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode* /*node*/, const QPoint& /*point*/) override;
         void BeforePropertyModified(AzToolsFramework::InstanceDataNode* /*node*/) override;
+        void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode* /*node*/, const QPoint& /*point*/) override;
+        void SealUndoStack() override;
         void SetPropertyEditingActive(AzToolsFramework::InstanceDataNode* /*node*/) override;
         void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* /*node*/) override;
-        void SealUndoStack() override;
+        // ... IPropertyEditorNotify
     };
 }

@@ -25,6 +25,29 @@
 
 namespace ScriptCanvasEditor
 {
+    class OnScopeEnd
+    {
+    public:
+        using ScopeEndFunctor = std::function<void()>;
+
+    private:
+        ScopeEndFunctor m_functor;
+
+    public:
+        OnScopeEnd(ScopeEndFunctor&& functor)
+            : m_functor(AZStd::move(functor))
+        {}
+
+        OnScopeEnd(const ScopeEndFunctor& functor)
+            : m_functor(functor)
+        {}
+
+        ~OnScopeEnd()
+        {
+            m_functor();
+        }
+    };
+
     Configuration::Configuration()
         : Configuration(SourceHandle())
     {
@@ -65,6 +88,21 @@ namespace ScriptCanvasEditor
         {
             return nullptr;
         }
+    }
+
+    void Configuration::ConnectToSourceCompiled(AZ::EventHandler<const Configuration&>& handler) const
+    {
+        handler.Connect(m_eventSourceCompiled);
+    }
+
+    void Configuration::ConnectToSourceFailed(AZ::EventHandler<const Configuration&>& handler) const
+    {
+        handler.Connect(m_eventSourceFailed);
+    }
+
+    const ScriptCanvasBuilder::BuildVariableOverrides& Configuration::GetOverrides() const
+    {
+        return m_propertyOverrides;
     }
 
     const SourceHandle& Configuration::GetSource() const
@@ -118,9 +156,9 @@ namespace ScriptCanvasEditor
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Configuration>()
+                ->Field("sourceHandle", &Configuration::m_sourceHandle)
                 ->Field("sourceName", &Configuration::m_sourceName)
                 ->Field("propertyOverrides", &Configuration::m_propertyOverrides)
-                ->Field("sourceHandle", &Configuration::m_sourceHandle)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -162,29 +200,43 @@ namespace ScriptCanvasEditor
             m_sourceName = m_sourceHandle.Path().Filename().Native();
         }
 
+        const OnScopeEnd onScopeEnd([]()
+        {
+            AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
+                ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
+                , AzToolsFramework::Refresh_EntireTree_NewContent);
+        });
+        
         if (!m_sourceHandle.Id().IsNull())
         {
             ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
 
-            if (!(m_sourceHandle.Id().IsNull() && m_sourceHandle.Path().empty()))
+            if (!m_sourceHandle.Path().empty())
             {
-                if (!CompileLatest())
+                if (CompileLatest())
+                {
+                    m_eventSourceCompiled.Signal(*this);
+                    return;
+                }
+                else
                 {
                     AZ_Warning("ScriptCanvasBuilder", false, "Runtime information did not build for ScriptCanvas Component using source: %s"
                         , m_sourceHandle.ToString().c_str());
                 }
             }
+            else
+            {
+                AZ_Warning("ScriptCanvasBuilder", false, "Configuration had no valid path for %s and won't compile or expose variables."
+                    , m_sourceHandle.ToString().c_str());
+            }
         }
         else
         {
             AZ_Warning("ScriptCanvas", m_sourceHandle.Path().empty()
-                , "Configuration had no valid ID for %s and won't properly expose variables.", m_sourceHandle.Path().c_str());
-            
+                , "Configuration had no valid ID for %s and won't compile or expose variables.", m_sourceHandle.Path().c_str());
         }
 
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
-            ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
-            , AzToolsFramework::Refresh_EntireTree_NewContent);
+        m_eventSourceFailed.Signal(*this);
     }
 
     void Configuration::SourceFileChanged
@@ -198,9 +250,11 @@ namespace ScriptCanvasEditor
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
                 ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
                 , AzToolsFramework::Refresh_EntireTree_NewContent);
+            m_eventSourceCompiled.Signal(*this);
         }
         else
         {
+            m_eventSourceFailed.Signal(*this);
             // display error icon
         }
     }
@@ -208,18 +262,20 @@ namespace ScriptCanvasEditor
     void Configuration::SourceFileFailed([[maybe_unused]] AZStd::string_view relativePath
         , [[maybe_unused]] AZStd::string_view scanFolder)
     {
-        // display error icon
+        m_eventSourceFailed.Signal(*this);
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
             ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
             , AzToolsFramework::Refresh_EntireTree_NewContent);
+        // display error icon
     }
 
     void Configuration::SourceFileRemoved([[maybe_unused]] AZStd::string_view relativePath
         , [[maybe_unused]] AZStd::string_view scanFolder)
     {
-        // display removed icon
+        m_eventSourceFailed.Signal(*this);
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
             ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
             , AzToolsFramework::Refresh_EntireTree_NewContent);
+        // display removed icon
     }
 }

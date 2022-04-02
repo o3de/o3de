@@ -59,7 +59,9 @@ namespace ScriptCanvas
 
         bool IsExecutable() const;
 
-        void Stop();
+        void StopAndClearExecutable();
+
+        void StopAndKeepExecutable();
 
     protected:
         ExecutionStatePtr m_executionState;

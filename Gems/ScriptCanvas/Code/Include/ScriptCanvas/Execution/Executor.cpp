@@ -21,7 +21,7 @@ namespace ScriptCanvas
 {
     Executor::~Executor()
     {
-        Stop();
+        StopAndClearExecutable();
     }
 
     ActivationInfo Executor::CreateActivationInfo() const
@@ -49,6 +49,7 @@ namespace ScriptCanvas
 
     bool Executor::IsExecutable() const
     {
+        AZ_TracePrintf("Executor::IsExecutable: %s", AZStd::to_string(m_executionState != nullptr).c_str());
         return m_executionState != nullptr;
     }
 
@@ -63,7 +64,7 @@ namespace ScriptCanvas
         if (auto isPreloaded = IsPreloaded(overrides); isPreloaded != IsPreloadedResult::Yes)
         {
             AZ_Error("ScriptCanvas", false
-                , "Execution::Intialize runtime asset %s-%s loading problem: "
+                , "Execution::Intialize runtime asset %s-%s loading problem: %s"
                 , overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data()
                 , overrides.m_runtimeAsset.GetHint().c_str()
                 , ToString(isPreloaded));
@@ -71,7 +72,7 @@ namespace ScriptCanvas
         }
 #else
         AZ_Assert(IsPreloaded(overrides) == IsPreloadedResult::Yes
-            , "Execution::Intialize runtime asset %s-%s loading problem: "
+            , "Execution::Intialize runtime asset %s-%s loading problem: %s"
             , m_overrides->m_runtimeAsset.GetId().ToString<AZStd::string>().data()
             , m_overrides->m_runtimeAsset.GetHint().c_str()
             , ToString(IsPreloaded(overrides)));
@@ -103,7 +104,7 @@ namespace ScriptCanvas
         Execute();
     }
 
-    void Executor::Stop()
+    void Executor::StopAndClearExecutable()
     {
         if (m_executionState)
         {
@@ -111,6 +112,15 @@ namespace ScriptCanvas
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState.get());
             SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
             m_executionState = nullptr;
+        }
+    }
+    void Executor::StopAndKeepExecutable()
+    {
+        if (m_executionState)
+        {
+            m_executionState->StopExecution();
+            SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState.get());
+            SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
         }
     }
 }
