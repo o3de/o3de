@@ -49,7 +49,6 @@ namespace ScriptCanvas
 
     bool Executor::IsExecutable() const
     {
-        AZ_TracePrintf("Executor::IsExecutable: %s", AZStd::to_string(m_executionState != nullptr).c_str());
         return m_executionState != nullptr;
     }
 
