@@ -29,10 +29,9 @@
 #include <Editor/Settings.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
-
-#include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
 
 namespace ScriptCanvasEditor
 {

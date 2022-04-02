@@ -235,6 +235,9 @@ set(FILES
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.cpp
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.ui
     Editor/View/Windows/Tools/UpgradeTool/Controller.cpp
     Editor/View/Windows/Tools/UpgradeTool/Controller.h
     Editor/View/Windows/Tools/UpgradeTool/FileSaver.cpp

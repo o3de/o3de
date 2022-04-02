@@ -79,6 +79,8 @@ namespace ScriptCanvas
         // used to initialize statics only once, and not necessarily on the loading thread
         bool m_areStaticsInitialized = false;
 
+        bool IsPure() const;
+
         bool RequiresStaticInitialization() const;
 
         bool RequiresDependencyConstructionParameters() const;

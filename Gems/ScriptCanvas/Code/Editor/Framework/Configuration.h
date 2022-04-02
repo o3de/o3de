@@ -32,6 +32,7 @@ namespace ScriptCanvasEditor
     public:
         AZ_TYPE_INFO(Configuration, "{0F4D78A9-EF29-4D6A-AC5B-8F4E19B1A6EE}");
 
+        // make file handling for this class specifically
         static void Reflect(AZ::ReflectContext* context);
 
         Configuration();

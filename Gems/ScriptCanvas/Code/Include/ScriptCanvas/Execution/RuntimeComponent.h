@@ -12,17 +12,10 @@
 #include <AzCore/Component/EntityBus.h>
 
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Core/Core.h>
-#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
-#include <ScriptCanvas/Execution/ExecutionPerformanceTimer.h>
-#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
-#include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Execution/Executor.h>
 
 namespace ScriptCanvas
 {
-    using VariableIdMap = AZStd::unordered_map<VariableId, VariableId>;
-
     class RuntimeComponent;
 
     struct RuntimeComponentUserData

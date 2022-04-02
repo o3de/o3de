@@ -47,6 +47,11 @@ namespace ScriptCanvas
         m_executionState->Execute();
     }
 
+    bool Executor::IsExecutable() const
+    {
+        return m_executionState != nullptr;
+    }
+
     ExecutionMode Executor::GetExecutionMode() const
     {
         return m_executionState ? m_executionState->GetExecutionMode() : ExecutionMode::COUNT;

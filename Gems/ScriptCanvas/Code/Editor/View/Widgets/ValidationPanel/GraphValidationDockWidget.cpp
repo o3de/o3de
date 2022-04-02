@@ -26,6 +26,7 @@
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Nodes/NodeCreateUtils.h>
 #include <Editor/View/Widgets/VariablePanel/VariableDockWidget.h>
+#include <Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
@@ -591,7 +592,7 @@ namespace ScriptCanvasEditor
 
         m_proxyModel->setSourceModel(aznew GraphValidationModel()); 
         ui->statusTableView->setModel(m_proxyModel);
-
+        ui->interpretedWidget = new InterpreterWidget(this);
         ui->statusTableView->horizontalHeader()->setStretchLastSection(false);
 
         ui->statusTableView->horizontalHeader()->setSectionResizeMode(GraphValidationModel::Description, QHeaderView::ResizeMode::Stretch);

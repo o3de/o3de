@@ -162,12 +162,7 @@ namespace ScriptCanvasEditor
             m_sourceName = m_sourceHandle.Path().Filename().Native();
         }
 
-        if (m_sourceHandle.Id().IsNull())
-        {
-            AZ_Warning("ScriptCanvas", m_sourceHandle.Path().empty()
-                , "Configuration had no valid ID for %s and won't properly expose variables.", m_sourceHandle.Path().c_str());
-        }
-        else
+        if (!m_sourceHandle.Id().IsNull())
         {
             ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
 
@@ -179,6 +174,12 @@ namespace ScriptCanvasEditor
                         , m_sourceHandle.ToString().c_str());
                 }
             }
+        }
+        else
+        {
+            AZ_Warning("ScriptCanvas", m_sourceHandle.Path().empty()
+                , "Configuration had no valid ID for %s and won't properly expose variables.", m_sourceHandle.Path().c_str());
+            
         }
 
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast

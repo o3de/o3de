@@ -133,9 +133,9 @@
 #include <Editor/View/Windows/EBusHandlerActionMenu.h>
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 #include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
+#include <Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
-
 #include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
 
 // Save Format Conversion
@@ -728,6 +728,9 @@ namespace ScriptCanvasEditor
 
         connect(ui->action_UpgradeTool, &QAction::triggered, this, &MainWindow::RunUpgradeTool);
         ui->action_UpgradeTool->setVisible(true);
+
+        connect(ui->action_Interpreter, &QAction::triggered, this, &MainWindow::ShowInterpreter);
+        ui->action_Interpreter->setVisible(true);
 
         // List of recent files.
         {
@@ -3104,10 +3107,27 @@ namespace ScriptCanvasEditor
         DeleteConnections(graphCanvasGraphId, { connections.begin(), connections.end() });
     }
 
+    void MainWindow::ShowInterpreter()
+    {
+        using namespace ScriptCanvasEditor;
+
+        if (!m_interpreterWidget)
+        {
+            m_interpreterWidget = AZStd::make_unique<InterpreterWidget>();
+        }
+
+        if (m_interpreterWidget)
+        {
+            m_interpreterWidget->show();
+            m_interpreterWidget->raise();
+            m_interpreterWidget->activateWindow();
+        }
+    }
+
     void MainWindow::RunUpgradeTool()
     {
         using namespace VersionExplorer;
-        auto versionExplorer = aznew VersionExplorer::Controller(this);
+        auto versionExplorer = AZStd::make_unique<Controller>(this);
         versionExplorer->exec();
 
         const ModificationResults* result = nullptr;
@@ -3118,8 +3138,6 @@ namespace ScriptCanvasEditor
             UpgradeHelper* upgradeHelper = new UpgradeHelper(this);
             upgradeHelper->show();
         }
-
-        delete versionExplorer;
     }
 
     void MainWindow::OnShowValidationErrors()
