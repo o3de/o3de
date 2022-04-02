@@ -90,6 +90,11 @@ namespace ScriptCanvasEditor
         }
     }
 
+    void Configuration::ConnectToPropertiesChanged(AZ::EventHandler<const Configuration&>& handler) const
+    {
+        handler.Connect(m_eventPropertiesChanged);
+    }
+
     void Configuration::ConnectToSourceCompiled(AZ::EventHandler<const Configuration&>& handler) const
     {
         handler.Connect(m_eventSourceCompiled);
@@ -128,7 +133,13 @@ namespace ScriptCanvasEditor
         m_propertyOverrides.SetHandlesToDescription();
     }
 
-    AZ::u32 Configuration::OnEditorChangeNotify()
+    AZ::u32 Configuration::OnEditorChangeProperties()
+    {
+        m_eventPropertiesChanged.Signal(*this);
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
+    AZ::u32 Configuration::OnEditorChangeSource()
     {
         ClearVariables();
         Refresh(m_sourceHandle);
@@ -176,8 +187,9 @@ namespace ScriptCanvasEditor
                         ->Attribute("EditCallback", &Configuration::OpenEditor)
                         ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Script Canvas")
                         ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.scriptcanvas")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Configuration::OnEditorChangeNotify)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Configuration::OnEditorChangeSource)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_propertyOverrides, "Properties", "Script Canvas Graph Properties")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Configuration::OnEditorChangeProperties)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

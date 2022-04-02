@@ -30,20 +30,57 @@ namespace ScriptCanvasEditor
 
     Interpreter::Interpreter()
     {
+        m_handlerPropertiesChanged = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnPropertiesChanged(); });
         m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceCompiled(); });
         m_handlerSourceFailed = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceFailed(); });
+        m_configuration.ConnectToPropertiesChanged(m_handlerPropertiesChanged);
         m_configuration.ConnectToSourceCompiled(m_handlerSourceCompiled);
         m_configuration.ConnectToSourceFailed(m_handlerSourceFailed);
     }
 
-    // this can outrun the AP, and attmept to execute something before the asset is done, or ready, or about to be reloaded
+    void Interpreter::ConvertPropertiesToRuntime()
+    {
+        MutexLock lock(m_mutex);
+        if (m_runtimePropertiesDirty)
+        {
+            m_runtimeDataOverrides = AZStd::move(ConvertToRuntime(m_configuration.GetOverrides()));
+            m_runtimePropertiesDirty = false;
+        }
+    }
+
+    // this can outrun the AP, and attempt to execute something before the asset is done, or ready, or about to be reloaded
     bool Interpreter::Execute()
     {
         MutexLock lock(m_mutex);
 
+        if (m_runtimePropertiesDirty)
+        {
+            InitializeExecution();
+        }
+        
         if (IsExecutable())
         {
             AZ::SystemTickBus::QueueFunction([this]() { m_executor.Execute(); });
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool Interpreter::InitializeExecution()
+    {
+        ConvertPropertiesToRuntime();
+
+        m_runtimeDataOverrides.m_runtimeAsset = AZ::Data::AssetManager::Instance().GetAsset<RuntimeAsset>
+            ( m_runtimeDataOverrides.m_runtimeAsset.GetId()
+            , AZ::Data::AssetLoadBehavior::PreLoad);
+        m_runtimeDataOverrides.m_runtimeAsset.BlockUntilLoadComplete();
+
+        if (m_runtimeDataOverrides.m_runtimeAsset.Get())
+        {
+            m_executor.Initialize(m_runtimeDataOverrides, AZStd::any(m_userData));
             return true;
         }
         else
@@ -57,22 +94,22 @@ namespace ScriptCanvasEditor
         return m_executor.IsExecutable();
     }
 
+    void Interpreter::OnPropertiesChanged()
+    {
+        m_runtimePropertiesDirty = true;
+    }
+
     void Interpreter::OnSourceCompiled()
     {
         MutexLock lock(m_mutex);
-        m_runtimeDataOverrides = AZStd::move(ConvertToRuntime(m_configuration.GetOverrides()));
-        auto asset = AZ::Data::AssetManager::Instance().GetAsset<RuntimeAsset>
-            ( m_runtimeDataOverrides.m_runtimeAsset.GetId()
-            , AZ::Data::AssetLoadBehavior::PreLoad);
-        asset.BlockUntilLoadComplete();
-        m_runtimeDataOverrides.m_runtimeAsset = asset;
-        m_executor.Initialize(m_runtimeDataOverrides, AZStd::any(m_userData));
+        InitializeExecution();
     }
 
     void Interpreter::OnSourceFailed()
     {
         MutexLock lock(m_mutex);
         m_executor.StopAndClearExecutable();
+        m_runtimePropertiesDirty = true;
     }
 
     void Interpreter::Reflect(AZ::ReflectContext* context)
@@ -93,6 +130,12 @@ namespace ScriptCanvasEditor
                     ;
             }
         }
+    }
+
+    void Interpreter::RefreshConfiguration()
+    {
+        MutexLock lock(m_mutex);
+        m_configuration.Refresh();
     }
 
     void Interpreter::ResetUserData()

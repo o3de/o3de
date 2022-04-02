@@ -43,6 +43,8 @@ namespace ScriptCanvasEditor
 
         const ScriptCanvasBuilder::BuildVariableOverrides* CompileLatest();
 
+        void ConnectToPropertiesChanged(AZ::EventHandler<const Configuration&>& handler) const;
+
         void ConnectToSourceCompiled(AZ::EventHandler<const Configuration&>& handler) const;
 
         void ConnectToSourceFailed(AZ::EventHandler<const Configuration&>& handler) const;
@@ -58,6 +60,7 @@ namespace ScriptCanvasEditor
         void Refresh(const SourceHandle& sourceHandle);
 
     private:
+        mutable AZ::Event<const Configuration&> m_eventPropertiesChanged;
         mutable AZ::Event<const Configuration&> m_eventSourceCompiled;
         mutable AZ::Event<const Configuration&> m_eventSourceFailed;
         SourceHandle m_sourceHandle;
@@ -71,7 +74,9 @@ namespace ScriptCanvasEditor
         void OpenEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&);
 
         // on RPE source selection changed
-        AZ::u32 OnEditorChangeNotify();
+        AZ::u32 OnEditorChangeSource();
+
+        AZ::u32 OnEditorChangeProperties();
 
         // if result is good, merge results and update display
         void SourceFileChanged

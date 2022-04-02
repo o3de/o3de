@@ -39,6 +39,8 @@ namespace ScriptCanvasEditor
 
         bool IsExecutable() const;
 
+        void RefreshConfiguration();
+
         void ResetUserData();
 
         void SetUserData(AZStd::any&& runtimeUserData);
@@ -50,13 +52,21 @@ namespace ScriptCanvasEditor
     private:
         Mutex m_mutex;
 
+        AZ::EventHandler<const Configuration&> m_handlerPropertiesChanged;
         AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
         AZ::EventHandler<const Configuration&> m_handlerSourceFailed;
+
         AZStd::any m_userData;
         ScriptCanvas::RuntimeDataOverrides m_runtimeDataOverrides;
         Configuration m_configuration;
-
+        bool m_runtimePropertiesDirty = true;
         ScriptCanvas::Executor m_executor;
+
+        void ConvertPropertiesToRuntime();
+
+        bool InitializeExecution();
+
+        void OnPropertiesChanged();
 
         void OnSourceCompiled();
 
