@@ -34,17 +34,8 @@ namespace AtomToolsFramework
         //! @param objectPosition world space position to point camera at
         virtual void SetObjectPosition(const AZ::Vector3& objectPosition) = 0;
 
-        //! Set camera object bounds
-        //! @param objectBounds AABB of object
-        virtual void SetObjectBounds(const AZ::Aabb& objectBounds) = 0;
-
         //! Get distance between camera and its object
         virtual float GetDistanceToObject() const = 0;
-
-        //! Get minimum and maximum camera distance to the object based on its size
-        //! @param distanceMin closest camera can be to the object
-        //! @param distanceMax furthest camera can be from the object
-        virtual void GetExtents(float& distanceMin, float& distanceMax) const = 0;
 
         //! Get bounding sphere radius of the active object
         virtual float GetRadius() const = 0;

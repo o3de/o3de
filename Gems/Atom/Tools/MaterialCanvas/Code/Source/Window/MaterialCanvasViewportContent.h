@@ -10,31 +10,27 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
 #endif
 
-namespace MaterialEditor
+namespace MaterialCanvas
 {
-    class MaterialEditorViewportWidget final
-        : public AtomToolsFramework::EntityPreviewViewportWidget
+    class MaterialCanvasViewportContent final
+        : public AtomToolsFramework::EntityPreviewViewportContent
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
     {
     public:
-        MaterialEditorViewportWidget(
+        MaterialCanvasViewportContent(
             const AZ::Crc32& toolId,
-            const AZStd::string& sceneName,
-            const AZStd::string pipelineAssetPath,
-            QWidget* parent = nullptr);
-        ~MaterialEditorViewportWidget();
+            AtomToolsFramework::RenderViewportWidget* widget,
+            AZStd::shared_ptr<AzFramework::EntityContext> entityContext);
+        ~MaterialCanvasViewportContent();
 
-        void Init() override;
         AZ::EntityId GetObjectEntityId() const override;
         AZ::EntityId GetEnvironmentEntityId() const override;
         AZ::EntityId GetPostFxEntityId() const override;
         AZ::EntityId GetShadowCatcherEntityId() const;
         AZ::EntityId GetGridEntityId() const;
-
-        void CreateEntities() override;
 
     private:
         // AtomToolsDocumentNotificationBus::Handler overrides...
@@ -49,4 +45,4 @@ namespace MaterialEditor
         AZ::Entity* m_postFxEntity = {};
         AZ::Entity* m_shadowCatcherEntity = {};
     };
-} // namespace MaterialEditor
+} // namespace MaterialCanvas

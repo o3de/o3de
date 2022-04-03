@@ -5,18 +5,19 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <ACES/Aces.h>
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/std/string/string.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/std/string/string.h>
 
 namespace AtomToolsFramework
 {
-    class EntityPreviewViewportRequests
-        : public AZ::EBusTraits
+    //! EntityPreviewViewportSettingsRequests provides an interface for various settings that affect what is displayed in the viewport
+    class EntityPreviewViewportSettingsRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -106,5 +107,5 @@ namespace AtomToolsFramework
         virtual AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const = 0;
     };
 
-    using EntityPreviewViewportSettingsRequestBus = AZ::EBus<EntityPreviewViewportRequests>;
+    using EntityPreviewViewportSettingsRequestBus = AZ::EBus<EntityPreviewViewportSettingsRequests>;
 } // namespace AtomToolsFramework

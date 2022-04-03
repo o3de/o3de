@@ -18,8 +18,7 @@
 
 namespace AtomToolsFramework
 {
-    //! EntityPreviewViewportSettingsSystem manages storing and retrieving different viewport settings, loading and saving lighting and
-    //! model presets
+    //! EntityPreviewViewportSettingsSystem manages storing and retrieving different viewport settings, lighting, and model presets
     class EntityPreviewViewportSettingsSystem final
         : public EntityPreviewViewportSettingsRequestBus::Handler
         , public AZ::TickBus::Handler
@@ -36,11 +35,7 @@ namespace AtomToolsFramework
         EntityPreviewViewportSettingsSystem(const AZ::Crc32& toolId);
         ~EntityPreviewViewportSettingsSystem();
 
-    private:
         void ClearContent();
-
-        // AZ::TickBus::Handler overrides ...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         // EntityPreviewViewportSettingsRequestBus::Handler overrides ...
         void SetLightingPreset(const AZ::Render::LightingPreset& preset) override;
@@ -69,6 +64,10 @@ namespace AtomToolsFramework
         float GetFieldOfView() const override;
         void SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType) override;
         AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const override;
+
+    private:
+        // AZ::TickBus::Handler overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         // AzFramework::AssetCatalogEventBus::Handler overrides ...
         void OnCatalogLoaded(const char* catalogFile) override;

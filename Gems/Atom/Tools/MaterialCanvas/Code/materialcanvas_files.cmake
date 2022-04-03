@@ -20,6 +20,6 @@ set(FILES
     Source/Window/MaterialCanvasGraphView.h
     Source/Window/MaterialCanvasMainWindow.cpp
     Source/Window/MaterialCanvasMainWindow.h
-    Source/Window/MaterialCanvasViewportWidget.cpp
-    Source/Window/MaterialCanvasViewportWidget.h
+    Source/Window/MaterialCanvasViewportContent.cpp
+    Source/Window/MaterialCanvasViewportContent.h
 )

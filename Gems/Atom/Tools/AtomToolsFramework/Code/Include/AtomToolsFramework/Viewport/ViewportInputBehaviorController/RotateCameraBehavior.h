@@ -12,12 +12,13 @@
 
 namespace AtomToolsFramework
 {
-    //! Moves camera along its vertical and horizontal axis
-    class MoveCameraBehavior final : public ViewportInputBehavior
+    //! Rotates camera around its own axis, allowing to look up/down/left/right
+    class RotateCameraBehavior final : public ViewportInputBehavior
     {
     public:
-        MoveCameraBehavior(ViewportInputBehaviorControllerInterface* controller);
-        virtual ~MoveCameraBehavior() = default;
+        RotateCameraBehavior(ViewportInputBehaviorControllerInterface* controller);
+        virtual ~RotateCameraBehavior() = default;
+
         void End() override;
 
     protected:
@@ -26,7 +27,7 @@ namespace AtomToolsFramework
         float GetSensitivityY() override;
 
     private:
-        static constexpr float SensitivityX = 0.01f;
-        static constexpr float SensitivityY = 0.01f;
+        static constexpr float SensitivityX = 0.005f;
+        static constexpr float SensitivityY = 0.005f;
     };
 } // namespace AtomToolsFramework

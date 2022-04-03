@@ -6,18 +6,8 @@
  *
  */
 
-#undef RC_INVOKED
-
-#include <Atom/Component/DebugCamera/CameraComponent.h>
-#include <Atom/Component/DebugCamera/NoClipControllerComponent.h>
-#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
-#include <Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h>
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
-#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
-#include <Atom/Feature/PostProcessing/PostProcessingConstants.h>
 #include <Atom/Feature/SkyBox/SkyboxConstants.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
@@ -34,63 +24,20 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h>
-#include <AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxComponentConfig.h>
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/Entity.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <Document/MaterialDocumentRequestBus.h>
-#include <Window/MaterialEditorViewportWidget.h>
+#include <Document/MaterialCanvasDocumentRequestBus.h>
+#include <Window/MaterialCanvasViewportContent.h>
 
-namespace MaterialEditor
+namespace MaterialCanvas
 {
-    MaterialEditorViewportWidget::MaterialEditorViewportWidget(
-        const AZ::Crc32& toolId, const AZStd::string& sceneName, const AZStd::string pipelineAssetPath, QWidget* parent)
-        : AtomToolsFramework::EntityPreviewViewportWidget(toolId, sceneName, pipelineAssetPath, parent)
+    MaterialCanvasViewportContent::MaterialCanvasViewportContent(
+        const AZ::Crc32& toolId,
+        AtomToolsFramework::RenderViewportWidget* widget,
+        AZStd::shared_ptr<AzFramework::EntityContext> entityContext)
+        : AtomToolsFramework::EntityPreviewViewportContent(toolId, widget, entityContext)
     {
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-    }
-
-    MaterialEditorViewportWidget::~MaterialEditorViewportWidget()
-    {
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
-    }
-
-    void MaterialEditorViewportWidget::Init()
-    {
-        AtomToolsFramework::EntityPreviewViewportWidget::Init();
-        OnDocumentOpened(AZ::Uuid::CreateNull());
-    }
-
-    AZ::EntityId MaterialEditorViewportWidget::GetObjectEntityId() const
-    {
-        return m_objectEntity ? m_objectEntity->GetId() : AZ::EntityId();
-    }
-
-    AZ::EntityId MaterialEditorViewportWidget::GetEnvironmentEntityId() const
-    {
-        return m_environmentEntity ? m_environmentEntity->GetId() : AZ::EntityId();
-    }
-
-    AZ::EntityId MaterialEditorViewportWidget::GetPostFxEntityId() const
-    {
-        return m_postFxEntity ? m_postFxEntity->GetId() : AZ::EntityId();
-    }
-
-    AZ::EntityId MaterialEditorViewportWidget::GetShadowCatcherEntityId() const
-    {
-        return m_shadowCatcherEntity ? m_shadowCatcherEntity->GetId() : AZ::EntityId();
-    }
-
-    AZ::EntityId MaterialEditorViewportWidget::GetGridEntityId() const
-    {
-        return m_gridEntity ? m_gridEntity->GetId() : AZ::EntityId();
-    }
-
-    void MaterialEditorViewportWidget::CreateEntities()
-    {
-        AtomToolsFramework::EntityPreviewViewportWidget::CreateEntities();
-
         // Configure tone mapper
         m_postFxEntity = CreateEntity(
             "PostFxEntity",
@@ -138,25 +85,48 @@ namespace MaterialEditor
                 gridComponentRequests->SetPrimaryColor(AZ::Color(0.1f, 0.1f, 0.1f, 1.0f));
                 gridComponentRequests->SetSecondaryColor(AZ::Color(0.1f, 0.1f, 0.1f, 1.0f));
             });
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
-    void MaterialEditorViewportWidget::OnDocumentOpened([[maybe_unused]] const AZ::Uuid& documentId)
+    MaterialCanvasViewportContent::~MaterialCanvasViewportContent()
     {
-        AZ::Data::Instance<AZ::RPI::Material> materialInstance;
-        MaterialDocumentRequestBus::EventResult(materialInstance, documentId, &MaterialDocumentRequestBus::Events::GetInstance);
-
-        AZ::Render::MaterialAssignmentMap materials;
-        auto& materialAssignment = materials[AZ::Render::DefaultMaterialAssignmentId];
-        materialAssignment.m_materialInstance = materialInstance;
-        materialAssignment.m_materialInstancePreCreated = true;
-
-        AZ::Render::MaterialComponentRequestBus::Event(
-            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverrides, materials);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
-    void MaterialEditorViewportWidget::OnViewportSettingsChanged()
+    AZ::EntityId MaterialCanvasViewportContent::GetObjectEntityId() const
     {
-        AtomToolsFramework::EntityPreviewViewportWidget::OnViewportSettingsChanged();
+        return m_objectEntity ? m_objectEntity->GetId() : AZ::EntityId();
+    }
+
+    AZ::EntityId MaterialCanvasViewportContent::GetEnvironmentEntityId() const
+    {
+        return m_environmentEntity ? m_environmentEntity->GetId() : AZ::EntityId();
+    }
+
+    AZ::EntityId MaterialCanvasViewportContent::GetPostFxEntityId() const
+    {
+        return m_postFxEntity ? m_postFxEntity->GetId() : AZ::EntityId();
+    }
+
+    AZ::EntityId MaterialCanvasViewportContent::GetShadowCatcherEntityId() const
+    {
+        return m_shadowCatcherEntity ? m_shadowCatcherEntity->GetId() : AZ::EntityId();
+    }
+
+    AZ::EntityId MaterialCanvasViewportContent::GetGridEntityId() const
+    {
+        return m_gridEntity ? m_gridEntity->GetId() : AZ::EntityId();
+    }
+
+    void MaterialCanvasViewportContent::OnDocumentOpened([[maybe_unused]] const AZ::Uuid& documentId)
+    {
+    }
+
+    void MaterialCanvasViewportContent::OnViewportSettingsChanged()
+    {
+        AtomToolsFramework::EntityPreviewViewportContent::OnViewportSettingsChanged();
 
         AtomToolsFramework::EntityPreviewViewportSettingsRequestBus::Event(
             m_toolId,
@@ -180,8 +150,9 @@ namespace MaterialEditor
                     [&](AZ::Render::HDRiSkyboxRequests* skyboxComponentRequests)
                     {
                         skyboxComponentRequests->SetExposure(lightingPreset.m_skyboxExposure);
-                        skyboxComponentRequests->SetCubemapAsset(viewportRequests->GetAlternateSkyboxEnabled() ?
-                            lightingPreset.m_alternateSkyboxImageAsset : lightingPreset.m_skyboxImageAsset);
+                        skyboxComponentRequests->SetCubemapAsset(
+                            viewportRequests->GetAlternateSkyboxEnabled() ? lightingPreset.m_alternateSkyboxImageAsset
+                                                                          : lightingPreset.m_skyboxImageAsset);
                     });
 
                 AZ::Render::MeshComponentRequestBus::Event(
@@ -201,4 +172,4 @@ namespace MaterialEditor
                     viewportRequests->GetGridEnabled() ? 4.0f : 0.0f);
             });
     }
-} // namespace MaterialEditor
+} // namespace MaterialCanvas

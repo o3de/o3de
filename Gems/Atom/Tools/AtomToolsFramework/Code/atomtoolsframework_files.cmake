@@ -55,6 +55,25 @@ set(FILES
     Source/DynamicProperty/DynamicProperty.cpp
     Source/DynamicProperty/DynamicPropertyGroup.cpp
 
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportInputController.h
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportScene.h
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettings.h
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h
+    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h
+    Source/EntityPreviewViewport/EntityPreviewViewportContent.cpp
+    Source/EntityPreviewViewport/EntityPreviewViewportInputController.cpp
+    Source/EntityPreviewViewport/EntityPreviewViewportScene.cpp
+    Source/EntityPreviewViewport/EntityPreviewViewportSettings.cpp
+    Source/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.cpp
+    Source/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.cpp
+    Source/EntityPreviewViewport/EntityPreviewViewportToolBar.cpp
+    Source/EntityPreviewViewport/EntityPreviewViewportWidget.cpp
+
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h
     Include/AtomToolsFramework/Inspector/InspectorNotificationBus.h
@@ -99,24 +118,11 @@ set(FILES
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
 
-    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettings.h
-    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h
-    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h
-    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h
-    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h
-    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h
-    Include/AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h
-    Source/EntityPreviewViewport/EntityPreviewViewportSettings.cpp
-    Source/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.cpp
-    Source/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.cpp
-    Source/EntityPreviewViewport/EntityPreviewViewportToolBar.cpp
-    Source/EntityPreviewViewport/EntityPreviewViewportWidget.cpp
-
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.h
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/IdleBehavior.h
-    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.h
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/PanCameraBehavior.h
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateCameraBehavior.h
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateEnvironmentBehavior.h
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateObjectBehavior.h
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h
@@ -124,9 +130,9 @@ set(FILES
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorControllerInterface.h
     Source/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.cpp
     Source/Viewport/ViewportInputBehaviorController/IdleBehavior.cpp
-    Source/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.cpp
     Source/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.cpp
     Source/Viewport/ViewportInputBehaviorController/PanCameraBehavior.cpp
+    Source/Viewport/ViewportInputBehaviorController/RotateCameraBehavior.cpp
     Source/Viewport/ViewportInputBehaviorController/RotateEnvironmentBehavior.cpp
     Source/Viewport/ViewportInputBehaviorController/RotateObjectBehavior.cpp
     Source/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.cpp

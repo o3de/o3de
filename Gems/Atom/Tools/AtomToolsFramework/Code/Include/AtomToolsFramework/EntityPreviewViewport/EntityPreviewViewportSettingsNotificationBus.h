@@ -5,17 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <ACES/Aces.h>
 #include <AzCore/EBus/EBus.h>
-#include <Atom/Feature/Utils/LightingPreset.h>
-#include <Atom/Feature/Utils/ModelPreset.h>
 
 namespace AtomToolsFramework
 {
-    class EntityPreviewViewportNotifications
-        : public AZ::EBusTraits
+    //! EntityPreviewViewportSettingsNotifications is an interface for handling notifications sent when any viewport settings change
+    class EntityPreviewViewportSettingsNotifications : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -23,8 +21,8 @@ namespace AtomToolsFramework
         typedef AZ::Crc32 BusIdType;
 
         //! Notify when any setting changes
-        virtual void OnViewportSettingsChanged() {}
+        virtual void OnViewportSettingsChanged(){};
     };
 
-    using EntityPreviewViewportSettingsNotificationBus = AZ::EBus<EntityPreviewViewportNotifications>;
+    using EntityPreviewViewportSettingsNotificationBus = AZ::EBus<EntityPreviewViewportSettingsNotifications>;
 } // namespace AtomToolsFramework

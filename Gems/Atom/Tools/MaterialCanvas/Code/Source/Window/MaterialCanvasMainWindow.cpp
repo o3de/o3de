@@ -6,11 +6,11 @@
  *
  */
 
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
 #include <AzCore/IO/FileIO.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <Window/MaterialCanvasMainWindow.h>
+#include <Window/MaterialCanvasViewportContent.h>
 
 #include <QMessageBox>
 
@@ -30,8 +30,26 @@ namespace MaterialCanvas
         m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/MaterialInspector");
         AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea);
 
-        m_materialViewport = new MaterialCanvasViewportWidget(m_toolId, "MaterialCanvasViewportWidget", "passes/MainRenderPipeline.azasset", this);
-        m_materialViewport->Init();
+        // Set up the dockable viewport widget
+        m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
+
+        // Initialize the entity context that will be used to create all of the entities displayed in the viewport
+        auto entityContext = AZStd::make_shared<AzFramework::EntityContext>();
+        entityContext->InitContext();
+
+        // Initialize the atom scene and pipeline that will bind to the viewport window to render entities and presets
+        auto viewportScene = AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportScene>(
+            m_toolId, m_materialViewport, entityContext, "MaterialCanvasViewportWidget", "passes/MainRenderPipeline.azasset");
+
+        // Viewport content will instantiate all of the entities that will be displayed and controlled by the viewport
+        auto viewportContent = AZStd::make_shared<MaterialCanvasViewportContent>(m_toolId, m_materialViewport, entityContext);
+
+        // The input controller creates and binds input behaviors to control viewport objects
+        auto viewportController = AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportInputController>(m_toolId, m_materialViewport, viewportContent);
+
+        // Inject the entity context, scene, content, and controller into the viewport widget
+        m_materialViewport->Init(entityContext, viewportScene, viewportContent, viewportController);
+
         AddDockWidget("Viewport", m_materialViewport, Qt::RightDockWidgetArea);
 
         m_viewportSettingsInspector = new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this);
@@ -124,10 +142,10 @@ namespace MaterialCanvas
         QMessageBox::information(
             this, windowTitle(),
             R"(<html><head/><body>
-            <p><h3><u>Material Canvas Controls</u></h3></p>
-            <p><b>LMB</b> - pan camera</p>
+            <p><h3><u>Camera Controls</u></h3></p>
+            <p><b>LMB</b> - rotate camera</p>
             <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>
-            <p><b>MMB</b> or <b>Alt+MMB</b> - move camera on its xy plane</p>
+            <p><b>MMB</b> or <b>Alt+MMB</b> - pan camera on its xy plane</p>
             <p><b>Alt+RMB</b> or <b>LMB+RMB</b> - dolly camera on its z axis</p>
             <p><b>Ctrl+LMB</b> - rotate model</p>
             <p><b>Shift+LMB</b> - rotate environment</p>

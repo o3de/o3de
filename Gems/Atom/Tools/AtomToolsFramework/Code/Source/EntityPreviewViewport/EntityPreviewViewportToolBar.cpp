@@ -117,7 +117,7 @@ namespace AtomToolsFramework
     {
         EntityPreviewViewportSettingsRequestBus::Event(
             m_toolId,
-            [this](EntityPreviewViewportRequests* viewportRequests)
+            [this](EntityPreviewViewportSettingsRequests* viewportRequests)
             {
                 m_toggleGrid->setChecked(viewportRequests->GetGridEnabled());
                 m_toggleShadowCatcher->setChecked(viewportRequests->GetShadowCatcherEnabled());

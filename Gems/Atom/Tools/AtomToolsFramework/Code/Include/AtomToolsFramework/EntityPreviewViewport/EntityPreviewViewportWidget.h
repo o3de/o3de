@@ -11,88 +11,57 @@
 #if !defined(Q_MOC_RUN)
 #include <Atom/RPI.Public/Base.h>
 #include <AtomCore/Instance/Instance.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportInputController.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportScene.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h>
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
-#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.h>
-#include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #endif
 
-namespace AZ
-{
-    class Entity;
-    class Component;
-
-    namespace RPI
-    {
-        class SwapChainPass;
-        class WindowContext;
-    } // namespace RPI
-} // namespace AZ
-
 namespace AtomToolsFramework
 {
-    class EntityPreviewViewportWidget
+    //! EntityPreviewViewportWidget is a viewport render widget that can be set up to display lighting and model presets, entities and
+    //! components, and other rendering features. The lighting and model presets and other viewport content will be updated as notifications
+    //! are received for viewport settings changes.
+    class EntityPreviewViewportWidget final
         : public RenderViewportWidget
-        , public AZ::TransformNotificationBus::MultiHandler
         , public EntityPreviewViewportSettingsNotificationBus::Handler
     {
     public:
-        EntityPreviewViewportWidget(
-            const AZ::Crc32& toolId,
-            const AZStd::string& sceneName = "EntityPreviewViewport",
-            const AZStd::string pipelineAssetPath = "passes/MainRenderPipeline.azasset",
-            QWidget* parent = nullptr);
+        EntityPreviewViewportWidget(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~EntityPreviewViewportWidget();
 
-        virtual void Init();
-        virtual AZ::Aabb GetObjectLocalBounds() const;
-        virtual AZ::Aabb GetObjectWorldBounds() const;
-        virtual AZ::EntityId GetObjectEntityId() const;
-        virtual AZ::EntityId GetCameraEntityId() const;
-        virtual AZ::EntityId GetEnvironmentEntityId() const;
-        virtual AZ::EntityId GetPostFxEntityId() const;
+        //! Initializes the input controller and other content after the render widget has been created. This is not done on construction
+        //! because multiple objects require the widget to be allocated beforehand.
+        void Init(
+            AZStd::shared_ptr<AzFramework::EntityContext> entityContext,
+            AZStd::shared_ptr<EntityPreviewViewportScene> viewportScene,
+            AZStd::shared_ptr<EntityPreviewViewportContent> viewportContent,
+            AZStd::shared_ptr<EntityPreviewViewportInputController> viewportController);
 
-        AZ::Entity* CreateEntity(const AZStd::string& name, const AZStd::vector<AZ::Uuid>& componentTypeIds);
-        void DestroyEntity(AZ::Entity*& entity);
-
-        virtual void CreateScene();
-        virtual void DestroyScene();
-
-        virtual void CreateEntities();
-        virtual void DestroyEntities();
-
-        virtual void CreateInputController();
-
-    protected:
+    private:
         // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
 
         // AZ::TickBus::Handler overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // AZ::TransformNotificationBus::MultiHandler overrides...
-        void OnTransformChanged(const AZ::Transform&, const AZ::Transform&) override;
-
         const AZ::Crc32 m_toolId = {};
-        const AZStd::string m_sceneName;
-        const AZStd::string m_pipelineAssetPath;
+        AZStd::shared_ptr<AzFramework::EntityContext> m_entityContext;
+        AZStd::shared_ptr<EntityPreviewViewportScene> m_viewportScene;
+        AZStd::shared_ptr<EntityPreviewViewportContent> m_viewportContent;
+        AZStd::shared_ptr<EntityPreviewViewportInputController> m_viewportController;
 
-        AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
+        // Last recorded local object bounds used to check for object changes
+        AZ::Aabb m_objectLocalBoundsOld = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
 
-        AZ::RPI::ScenePtr m_scene;
-        AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
-        AZ::RPI::RenderPipelinePtr m_renderPipeline;
-        AZ::Data::Instance<AZ::RPI::SwapChainPass> m_swapChainPass = {};
+        // Last recorded camera transform used to update directional lights for the lighting preset
+        AZ::Transform m_cameraTransformOld = AZ::Transform::CreateIdentity();
 
-        AZ::Entity* m_cameraEntity = {};
-        AZStd::vector<AZ::Entity*> m_entities;
-        AZ::Aabb m_objectBoundsOld = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        // Directional light handles produced by the lighting preset
         using DirectionalLightHandle = AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle;
         AZStd::vector<DirectionalLightHandle> m_lightHandles;
-
-        AZStd::shared_ptr<ViewportInputBehaviorController> m_viewportController;
     };
 } // namespace AtomToolsFramework

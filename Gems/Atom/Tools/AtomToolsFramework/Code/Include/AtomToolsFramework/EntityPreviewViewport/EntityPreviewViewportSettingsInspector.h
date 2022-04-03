@@ -20,7 +20,7 @@
 
 namespace AtomToolsFramework
 {
-    //! Provides controls for viewing and editing lighting and model preset settings.
+    //! EntityPreviewViewportSettingsInspector provides controls for viewing and editing presets and other common viewport settings.
     class EntityPreviewViewportSettingsInspector
         : public InspectorWidget
         , private AzToolsFramework::IPropertyEditorNotify
@@ -57,13 +57,13 @@ namespace AtomToolsFramework
         void OnViewportSettingsChanged() override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
-        void BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
+        void BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override{};
         void AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-        void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
+        void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override{};
         void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;
-        void SealUndoStack() override {}
-        void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode*, const QPoint&) override {}
-        void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override {}
+        void SealUndoStack() override{};
+        void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode*, const QPoint&) override{};
+        void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override{};
 
         AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
 

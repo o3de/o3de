@@ -17,6 +17,7 @@
 
 namespace AtomToolsFramework
 {
+    //! EntityPreviewViewportSettings is a collection of common viewport settings
     struct EntityPreviewViewportSettings final
     {
         AZ_RTTI(EntityPreviewViewportSettings, "{16150503-A314-4765-82A3-172670C9EA90}");

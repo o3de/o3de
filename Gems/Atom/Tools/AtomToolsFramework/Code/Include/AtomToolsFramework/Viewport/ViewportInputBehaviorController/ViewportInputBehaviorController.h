@@ -57,9 +57,7 @@ namespace AtomToolsFramework
         const AZ::EntityId& GetEnvironmentEntityId() const override;
         const AZ::Vector3& GetObjectPosition() const override;
         void SetObjectPosition(const AZ::Vector3& objectPosition) override;
-        void SetObjectBounds(const AZ::Aabb& objectBounds) override;
         float GetDistanceToObject() const override;
-        void GetExtents(float& distanceMin, float& distanceMax) const override;
         float GetRadius() const override;
         void Reset() override;
         void SetFieldOfView(float value) override;
@@ -70,8 +68,6 @@ namespace AtomToolsFramework
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
     private:
-        //! Calculate min and max dist and center based on mesh size of object
-        void CalculateExtents();
         //! Determine which behavior to set based on mouse/keyboard input
         void EvaluateControlBehavior();
 
@@ -95,14 +91,6 @@ namespace AtomToolsFramework
         AZ::Vector3 m_objectPosition = AZ::Vector3::CreateZero();
         //! Object bounds
         AZ::Aabb m_objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
-        //! Center of the object observed
-        AZ::Vector3 m_objectCenter = AZ::Vector3::CreateZero();
-        //! Minimum distance from camera to object
-        float m_distanceMin = 1.0f;
-        //! Maximum distance from camera to object
-        float m_distanceMax = 10.0f;
-        //! Object radius
-        float m_radius = 1.0f;
         //! True if camera is centered on an object
         bool m_isCameraCentered = true;
 

@@ -11,10 +11,10 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentInspector.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h>
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
-#include <Window/MaterialEditorViewportWidget.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #endif
 
 namespace MaterialEditor
@@ -49,6 +49,6 @@ namespace MaterialEditor
         AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
-        MaterialEditorViewportWidget* m_materialViewport = {};
+        AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};
     };
 } // namespace MaterialEditor

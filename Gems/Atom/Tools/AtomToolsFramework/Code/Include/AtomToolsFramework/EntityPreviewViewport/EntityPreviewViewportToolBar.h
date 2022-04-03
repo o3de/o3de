@@ -18,7 +18,8 @@
 
 namespace AtomToolsFramework
 {
-    class EntityPreviewViewportToolBar
+    //! EntityPreviewViewportToolBar contains common, easily accessible controls for manipulating viewport settings
+    class EntityPreviewViewportToolBar final
         : public QToolBar
         , public EntityPreviewViewportSettingsNotificationBus::Handler
     {
