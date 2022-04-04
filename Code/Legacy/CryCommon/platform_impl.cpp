@@ -86,19 +86,11 @@ void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName
     {
         gEnv = pSystem->GetGlobalEnvironment();
         assert(gEnv);
-        
-        if (!AZ::Environment::IsReady() || (AZ::Environment::GetInstance() != gEnv->pSharedEnvironment))
-        {
-            AZ::Environment::Attach(gEnv->pSharedEnvironment);
-            AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
-        }
     } // if pSystem
 }
 
 void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
 {
-    // Unregister with AZ environment.
-    AZ::Environment::Detach();
 }
 
 void* GetModuleInitISystemSymbol()
