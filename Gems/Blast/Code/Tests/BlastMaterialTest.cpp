@@ -8,7 +8,7 @@
 
 #include <AzTest/AzTest.h>
 
-#include <Material/Material.h>
+#include <BlastMaterial/Material.h>
 
 namespace UnitTest
 {

@@ -21,7 +21,7 @@
 #include <Blast/BlastActorData.h>
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastFamilyComponentBus.h>
-#include <Material/MaterialAsset.h>
+#include <BlastMaterial/MaterialAsset.h>
 #include <IConsole.h>
 #include <NvBlastExtPxSerialization.h>
 #include <NvBlastExtTkSerialization.h>

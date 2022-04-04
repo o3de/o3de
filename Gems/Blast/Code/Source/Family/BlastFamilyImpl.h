@@ -12,7 +12,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <Blast/BlastActor.h>
 #include <Blast/BlastDebug.h>
-#include <Material/Material.h>
+#include <BlastMaterial/Material.h>
 
 #include <Family/ActorTracker.h>
 #include <Family/BlastFamily.h>

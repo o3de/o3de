@@ -9,7 +9,7 @@
 
 #include "AzCore/Interface/Interface.h"
 
-#include <Material/Material.h>
+#include <BlastMaterial/Material.h>
 #include <Family/ActorTracker.h>
 #include <Blast/BlastSystemBus.h>
 #include <AzCore/Interface/Interface.h>

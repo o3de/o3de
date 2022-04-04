@@ -22,7 +22,7 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <Blast/BlastActor.h>
 #include <Blast/BlastSystemBus.h>
-#include <Material/Material.h>
+#include <BlastMaterial/Material.h>
 #include <Common/Utils.h>
 #include <Components/BlastFamilyComponentNotificationBusHandler.h>
 #include <Components/BlastMeshDataComponent.h>

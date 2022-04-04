@@ -10,7 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-#include <Material/MaterialConfiguration.h>
+#include <BlastMaterial/MaterialConfiguration.h>
 
 namespace Blast
 {

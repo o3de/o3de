@@ -6,7 +6,7 @@
  *
  */
 
-#include <Material/Material.h>
+#include <BlastMaterial/Material.h>
 
 namespace Blast
 {

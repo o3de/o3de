@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Material/MaterialConfiguration.h>
+#include <BlastMaterial/MaterialConfiguration.h>
 
 #include <NvBlastExtDamageShaders.h>
 #include <NvBlastExtStressSolver.h>
