@@ -156,7 +156,28 @@ namespace AtomToolsFramework
 
     bool ValidateDocumentPath(AZStd::string& path)
     {
-        return !path.empty() && AzFramework::StringFunc::Path::Normalize(path) && !AzFramework::StringFunc::Path::IsRelative(path.c_str());
+        return !path.empty() && AzFramework::StringFunc::Path::Normalize(path) &&
+            !AzFramework::StringFunc::Path::IsRelative(path.c_str()) && IsValidSourceDocumentPath(path);
+    }
+
+    bool IsValidSourceDocumentPath(const AZStd::string& path)
+    {
+        bool assetFoldersRetrieved = false;
+        AZStd::vector<AZStd::string> assetFolders;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            assetFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetFolders);
+
+        AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(path).LexicallyNormal();
+        for (const auto& assetFolder : assetFolders)
+        {
+            // Check if the path is relative to the asset folder
+            if (assetPath.IsRelativeTo(AZ::IO::PathView(assetFolder)))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool LaunchTool(const QString& baseName, const QStringList& arguments)
