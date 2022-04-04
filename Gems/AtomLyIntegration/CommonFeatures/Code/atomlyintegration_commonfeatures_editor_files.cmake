@@ -70,6 +70,8 @@ set(FILES
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.h
     Source/PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.cpp
     Source/PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.h
+    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackFeatureProcessor.cpp
+    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackFeatureProcessor.h
     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.cpp
     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.h
     Source/PostProcess/DisplayMapper/EditorDisplayMapperComponent.cpp

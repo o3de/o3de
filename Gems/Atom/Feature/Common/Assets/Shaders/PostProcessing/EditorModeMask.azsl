@@ -16,9 +16,6 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     //! Id of this draw object for retrieval of transformation matrices.
     uint m_objectId;
 
-    //! Id to fill the mask with for this draw object.
-    uint m_maskId;
-
     //! Returns the matrix for transforming points from Object Space to World Space.
     float4x4 GetWorldMatrix()
     {

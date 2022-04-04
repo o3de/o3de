@@ -243,8 +243,6 @@ set(FILES
     Source/PostProcessing/EditorModeFeedbackPassBase.h
     Source/PostProcessing/EditorModeDesaturationPass.cpp
     Source/PostProcessing/EditorModeDesaturationPass.h
-    Source/PostProcessing/EditorModeTintPass.cpp
-    Source/PostProcessing/EditorModeTintPass.h
     Source/PostProcessing/EditorModeBlurPass.cpp
     Source/PostProcessing/EditorModeBlurPass.h
     Source/PostProcessing/EditorModeOutlinePass.cpp

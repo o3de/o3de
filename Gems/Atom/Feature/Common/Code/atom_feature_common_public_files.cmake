@@ -61,6 +61,7 @@ set(FILES
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldConstants.h
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldParams.inl
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldSettingsInterface.h
+    Include/Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h
     Include/Atom/Feature/PostProcess/ExposureControl/ExposureControlConstants.h
     Include/Atom/Feature/PostProcess/ExposureControl/ExposureControlParams.inl
     Include/Atom/Feature/PostProcess/ExposureControl/ExposureControlSettingsInterface.h

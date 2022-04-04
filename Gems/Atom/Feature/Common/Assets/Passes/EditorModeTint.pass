@@ -6,7 +6,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "EditorModeTintTemplate",
-            "PassClass": "EditorModeTintPass",
+            "PassClass": "FullScreenTriangle",
             "Slots": [
                 {
                     "Name": "InputDepth",

@@ -7,6 +7,7 @@
  */
 
 #include <PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.h>
+#include <PostProcess/EditorModeFeedback/EditorModeFeedbackFeatureProcessor.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -54,8 +55,7 @@ namespace AZ
         static Data::Instance<RPI::ShaderResourceGroup> CreateMaskShaderResourceGroup(
             const MeshFeatureProcessorInterface* featureProcessor,
             const MeshFeatureProcessorInterface::MeshHandle& meshHandle,
-            Data::Instance<RPI::Material> maskMaterial,
-            const AZ::u32 maskId)
+            Data::Instance<RPI::Material> maskMaterial)
         {
             const auto& shaderAsset = maskMaterial->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
             const auto& objectSrgLayout = maskMaterial->GetAsset()->GetObjectSrgLayout();
@@ -64,12 +64,7 @@ namespace AZ
             // Set the object id so the correct MVP matrices can be selected in the shader
             const auto objectId = featureProcessor->GetObjectId(meshHandle).GetIndex();
             RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
-            maskMeshObjectSrg->SetConstant(objectIdIndex, objectId);
-
-            // Set the id to write to the entity mask texture.
-            RHI::ShaderInputNameIndex maskIdIndex = "m_maskId";
-            maskMeshObjectSrg->SetConstant(maskIdIndex, maskId);
-            
+            maskMeshObjectSrg->SetConstant(objectIdIndex, objectId);            
             maskMeshObjectSrg->Compile();
 
             return maskMeshObjectSrg;
@@ -121,17 +116,23 @@ namespace AZ
                         ;
                 }
             }
+
+            EditorModeFeatureProcessor::Reflect(context);
         }
 
         EditorEditorModeFeedbackSystemComponent::~EditorEditorModeFeedbackSystemComponent() = default;
 
         void EditorEditorModeFeedbackSystemComponent::Activate()
         {
-            AzFramework::ApplicationRequests::Bus::Broadcast(
-                [this](AzFramework::ApplicationRequests::Bus::Events* ebus)
-                {
-                    m_registeryEnabled = ebus->IsEditorModeFeedbackEnabled();
-                });
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<EditorModeFeatureProcessor>();
+           
+            //AzFramework::ApplicationRequests::Bus::Broadcast(
+            //    [this](AzFramework::ApplicationRequests::Bus::Events* ebus)
+            //    {
+            //        m_registeryEnabled = ebus->IsEditorModeFeedbackEnabled();
+            //    });
+
+            m_registeryEnabled = true;
 
             AzToolsFramework::Components::EditorComponentBase::Activate();
             AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
@@ -153,6 +154,7 @@ namespace AZ
             AZ::TickBus::Handler::BusDisconnect();
             AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
             AzToolsFramework::Components::EditorComponentBase::Deactivate();
+            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<EditorModeFeatureProcessor>();
         }
 
         bool EditorEditorModeFeedbackSystemComponent::IsEnabled() const
@@ -243,6 +245,7 @@ namespace AZ
                 for (auto& [componentId, meshHandleDrawPackets] : componentMeshHandleDrawPackets)
                 {
                     const auto scene = RPI::Scene::GetSceneForEntityId(entityId);
+                    //auto editorModeFeatureProcessor = scene->GetFeatureProcessor<EditorModeFeatureProcessor>();
                     if (const auto* featureProcessor = scene->GetFeatureProcessor<MeshFeatureProcessorInterface>())
                     {
                         const auto view = GetViewFromScene(scene);
@@ -257,9 +260,8 @@ namespace AZ
                             (meshHandleDrawPackets.m_meshDrawPackets.empty() || meshHandleDrawPackets.m_modelLodIndex != modelLodIndex))
                         {
                             // The id value to write to the mask texture for this entity (unused in the current use case)
-                            const AZ::u8 maskId = 1;
                             const auto maskMeshObjectSrg = CreateMaskShaderResourceGroup(
-                                featureProcessor, *meshHandleDrawPackets.m_meshHandle, m_maskMaterial, maskId);
+                                featureProcessor, *meshHandleDrawPackets.m_meshHandle, m_maskMaterial);
                             meshHandleDrawPackets.m_modelLodIndex = modelLodIndex;
                             
                             meshHandleDrawPackets.m_meshDrawPackets = BuildMeshDrawPackets(
