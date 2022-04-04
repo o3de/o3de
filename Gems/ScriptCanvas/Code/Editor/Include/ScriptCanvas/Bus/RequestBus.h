@@ -209,6 +209,7 @@ namespace ScriptCanvasEditor
             ScriptCanvas::GraphVariable* m_graphVariable = nullptr;
             AZStd::string m_currentName;
             ScriptCanvas::Data::Type m_currentType;
+            AZStd::string m_configurationVariableTitle = "Variable";
         };
 
         struct VariableConfigurationOutput

@@ -347,6 +347,7 @@ namespace ScriptCanvasEditor
                     // First we need to automatically display the ShowVariableConfigurationWidget dialog so the user
                     // can assign a type and name to the slot they are adding
                     VariablePaletteRequests::VariableConfigurationInput selectedSlotSetup;
+                    selectedSlotSetup.m_configurationVariableTitle = "Slot";
                     selectedSlotSetup.m_createVariable = false;
                     selectedSlotSetup.m_currentName = slot->GetName();
                     selectedSlotSetup.m_currentType = slot->GetDataType();

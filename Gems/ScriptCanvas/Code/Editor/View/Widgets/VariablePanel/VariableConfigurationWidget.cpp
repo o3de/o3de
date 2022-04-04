@@ -69,6 +69,16 @@ namespace ScriptCanvasEditor
         , m_input(input)
     {
         ui->setupUi(this);
+        {
+            const auto windowTitle = AZStd::string::format("Pick %s name/type", input.m_configurationVariableTitle.c_str());
+            setWindowTitle(QCoreApplication::translate("VariableConfigurationWidget", windowTitle.c_str(), nullptr));
+            const auto labelText = AZStd::string::format("%s Name", input.m_configurationVariableTitle.c_str());
+            ui->label->setText(QCoreApplication::translate("VariableConfigurationWidget", labelText.c_str(), nullptr));
+            const auto slotPlaceHolderText = AZStd::string::format("Type the name for your %s here...", input.m_configurationVariableTitle.c_str());
+            ui->slotName->setPlaceholderText(QCoreApplication::translate("VariableConfigurationWidget", slotPlaceHolderText.c_str(), nullptr));
+            const auto label_2Text = AZStd::string::format("%s Type", input.m_configurationVariableTitle.c_str());
+            ui->label_2->setText(QCoreApplication::translate("VariableConfigurationWidget", label_2Text.c_str(), nullptr));
+        }
 
         ui->variablePalette->SetActiveScene(scriptCanvasId);
 
