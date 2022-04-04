@@ -490,8 +490,8 @@ namespace GradientSignal
         auto width = m_imageDescriptor.m_size.m_width;
         auto height = m_imageDescriptor.m_size.m_height;
 
-        // Retrieve all the pixel values from our image data
-        AZStd::vector<float> pixelValues(width * height);
+        float min = AZStd::numeric_limits<float>::max();
+        float max = AZStd::numeric_limits<float>::min();
 
         if (m_currentChannel == ChannelToUse::Terrarium)
         {
@@ -499,7 +499,16 @@ namespace GradientSignal
             {
                 for (uint32_t x = 0; x < width; x++)
                 {
-                    pixelValues[(y * width) + x] = GetTerrariumPixelValue(x, y);
+                    float value = GetTerrariumPixelValue(x, y);
+
+                    if (value < min)
+                    {
+                        min = value;
+                    }
+                    if (value > max)
+                    {
+                        max = value;
+                    }
                 }
             }
         }
@@ -509,12 +518,21 @@ namespace GradientSignal
             auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(width, height);
 
             AZ::RPI::GetSubImagePixelValues(
-                m_configuration.m_imageAsset, topLeft, bottomRight, pixelValues, aznumeric_cast<AZ::u8>(m_currentChannel));
+                m_configuration.m_imageAsset, topLeft, bottomRight,
+                [&min, &max]([[maybe_unused]] const AZ::u32& x, [[maybe_unused]] const AZ::u32& y, const float& value) {
+                if (value < min)
+                {
+                    min = value;
+                }
+                if (value > max)
+                {
+                    max = value;
+                }
+            }, aznumeric_cast<AZ::u8>(m_currentChannel));
         }
 
         // Retrieve the min/max values from our image data and set our multiplier and offset based on that
-        auto [min, max] = AZStd::minmax_element(pixelValues.begin(), pixelValues.end());
-        SetupMultiplierAndOffset(*min, *max);
+        SetupMultiplierAndOffset(min, max);
     }
 
     void ImageGradientComponent::SetupManualScaleMultiplierAndOffset()
