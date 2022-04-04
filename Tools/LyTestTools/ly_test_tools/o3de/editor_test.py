@@ -888,8 +888,12 @@ class EditorTestSuite:
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the editor log
-            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
-                                                     f'({run_id}){log_name}')
+            try:
+                workspace.artifact_manager.save_artifact(
+                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
+            except FileNotFoundError:
+                # Error logging is already performed and we don't want this to fail the test
+                pass
             if return_code == 0:
                 # No need to scrape the output, as all the tests have passed
                 for test_spec in test_spec_list:

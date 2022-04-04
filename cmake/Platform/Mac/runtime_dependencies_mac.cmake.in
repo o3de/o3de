@@ -32,6 +32,25 @@ if (NOT LY_INSTALL_NAME_TOOL)
     message(FATAL_ERROR "Unable to locate 'install_name_tool'")
 endif()
 
+# IS_NEWER_THAN returns true if:
+# 1. file1 is newer than file2
+# 2. Either file1 or file2 do not exist
+# 3. If both files have the same timestamp
+# We would like it to return false if the mod times are the same.
+function(ly_is_newer_than file1 file2 is_newer)
+
+    set(${is_newer} FALSE PARENT_SCOPE)
+
+    if("${file1}" IS_NEWER_THAN "${file2}")
+        file(TIMESTAMP "${file1}" file1_mod_time)
+        file(TIMESTAMP "${file2}" file2_mod_time)
+        if (NOT file1_mod_time EQUAL file2_mod_time)
+            set(${is_newer} TRUE PARENT_SCOPE)
+        endif()
+    endif()
+
+endfunction()
+
 function(ly_copy source_file target_directory)
     
     cmake_path(GET source_file FILENAME target_filename)
@@ -120,26 +139,17 @@ function(ly_copy source_file target_directory)
             file(MAKE_DIRECTORY "${target_directory}")
         endif()
 
-        set(is_framework FALSE)
-        if("${source_file}" MATCHES "\\.[Ff]ramework")
-            set(is_framework TRUE)
-        endif()
-        if(NOT is_framework)
-            # if it is a bundle, there is no contention about the files in the destination, each bundle target will copy everything
-            # we dont want these files to invalidate the bundle and cause a new signature
-            file(LOCK "${target_file}.lock" GUARD FUNCTION TIMEOUT 300)
-            file(SIZE "${source_file}" source_file_size)
-            if(EXISTS "${target_file}")
-                file(SIZE "${target_file}" target_file_size)
-            else()
-                set(target_file_size 0)
-            endif()
-        else()
-            set(source_file_size 0)
-            set(target_file_size 0)
-        endif()
+        unset(is_source_newer)
+
+        # ly_is_newer_than will be true if:
+        # 1. The source library was rebuilt.
+        # 2. The library is a 3rdParty lib and it was downloaded after the target was copied.
+        # 3. The library is being copied over for the first time(target does not exist).
+        # While downloaded 3rdParty libs will have the creation time set to when it was built,
+        # their modification time will reflect the time it was downloaded.
+        ly_is_newer_than(${source_file} ${target_file} is_source_newer)
         
-        if((NOT source_file_size EQUAL target_file_size) OR "${source_file}" IS_NEWER_THAN "${target_file}")
+        if(${is_source_newer})
             message(STATUS "Copying \"${source_file}\" to \"${target_directory}\"...")
             file(MAKE_DIRECTORY "${target_directory}")
             file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
@@ -160,9 +170,7 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
     string(REGEX REPLACE "(.*\\.app)/Contents/MacOS.*" "\\1" bundle_path "@target_file_dir@")
     set(fixup_timestamp_file "${bundle_path}.fixup.stamp")
     if(NOT anything_new)
-        if(NOT EXISTS "${fixup_timestamp_file}" OR "${bundle_path}" IS_NEWER_THAN "${fixup_timestamp_file}")
-            set(anything_new TRUE)
-        endif()
+        ly_is_newer_than(${bundle_path} ${fixup_timestamp_file} anything_new)
     endif()
     if(anything_new)
         unset(fixup_bundle_ignore)
@@ -211,8 +219,6 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         list(REMOVE_DUPLICATES plugin_libs)
         list(REMOVE_DUPLICATES plugin_dirs)
         fixup_bundle("${bundle_path}" "${plugin_libs}" "${plugin_dirs}" IGNORE_ITEM ${fixup_bundle_ignore})
-        file(TOUCH "${bundle_path}")
-        file(TOUCH "${fixup_timestamp_file}")
 
         # fixup bundle ends up removing the rpath of dxc (despite we exclude it)
         if(EXISTS "${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7")
@@ -223,19 +229,14 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         # Interrupted signatures can leave cstemp files behind that fail next signature
         file(GLOB_RECURSE remove_file_list 
             "${bundle_path}/**/.DS_Store"
-            "${bundle_path/}**/*.cstemp"
+            "${bundle_path}/**/*.cstemp"
         )
         if(remove_file_list)
             file(REMOVE_RECURSE "${remove_file_list}")
         endif()
 
+        file(TOUCH "${bundle_path}")
+        file(TOUCH "${fixup_timestamp_file}")
+
     endif()
-
-else() # Non-bundle case
-
-    if(depends_on_python)
-        # RPATH fix python
-        execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}" -change @rpath/Python @rpath/Python.framework/Versions/Current/Python "@target_file@")
-    endif()
-
 endif()
