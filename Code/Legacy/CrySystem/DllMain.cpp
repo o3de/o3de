@@ -70,7 +70,7 @@ ISystem* CreateSystemInterface(const SSystemInitParams& startupParams)
 {
     CSystem* pSystem = NULL;
 
-    pSystem = new CSystem(startupParams.pSharedEnvironment);
+    pSystem = new CSystem();
     ModuleInitISystem(pSystem, "CrySystem");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
