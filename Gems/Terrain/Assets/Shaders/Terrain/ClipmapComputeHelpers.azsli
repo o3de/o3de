@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 // Clipmap levels
 // --------|--------------|-------- level 0 stack 0
 //   ------|--------------|------   level 1 stack 1
@@ -18,23 +20,23 @@
 
 float GetClipmapScale(uint clipmapLevel)
 {
-    return PassSrg::m_clipmapData.m_clipmapScaleInv[clipmapLevel].x;
+    return TerrainSrg::m_clipmapData.m_clipmapScaleInv[clipmapLevel].x;
 }
 
 float2 GetPreviousClipmapCenter(uint clipmapLevel)
 {
-    return PassSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].xy;
+    return TerrainSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].xy;
 }
 
 float2 GetCurrentClipmapCenter(uint clipmapLevel)
 {
-    return PassSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].zw;
+    return TerrainSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].zw;
 }
 
 float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapLevel)
 {
-    float2 normalizedPixelPosition = float2(float(pixelPosition.x) + 0.5, float(pixelPosition.y) + 0.5) / PassSrg::m_clipmapData.m_clipmapSize;
-    
+    float2 normalizedPixelPosition = float2(float(pixelPosition.x) + 0.5, float(pixelPosition.y) + 0.5) / TerrainSrg::m_clipmapData.m_clipmapSize;
+
     float2 distance = normalizedPixelPosition - clipmapCenter;
 
     // Toroidal addressing:
@@ -46,9 +48,23 @@ float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapL
     distance.y += step(distance.y, -0.5);
 
     float clipmapScale = GetClipmapScale(clipmapLevel);
-    float2 maxRenderSize = PassSrg::m_clipmapData.m_maxRenderSize.xy;
+    float2 maxRenderSize = TerrainSrg::m_clipmapData.m_maxRenderSize.xy;
     float2 viewRelativePosition = distance * (maxRenderSize * clipmapScale);
-    return PassSrg::m_clipmapData.m_viewPosition.zw + viewRelativePosition;
+    return TerrainSrg::m_clipmapData.m_viewPosition.zw + viewRelativePosition;
+}
+
+int2 GetPixelPosition(float2 viewRelativePosition, uint clipmapLevel)
+{
+    float clipmapScale = GetClipmapScale(clipmapLevel);
+    float2 maxRenderSize = TerrainSrg::m_clipmapData.m_maxRenderSize.xy;
+    float2 normalizedDistance = viewRelativePosition / (maxRenderSize * clipmapScale);
+    float2 normalizedPixelPosition = GetCurrentClipmapCenter(clipmapLevel) + normalizedDistance;
+    normalizedPixelPosition.x -= normalizedPixelPosition.x > 1.0 ? 1.0 : 0.0;
+    normalizedPixelPosition.y -= normalizedPixelPosition.y > 1.0 ? 1.0 : 0.0;
+    normalizedPixelPosition.x += normalizedPixelPosition.x < 0.0 ? 1.0 : 0.0;
+    normalizedPixelPosition.y += normalizedPixelPosition.y < 0.0 ? 1.0 : 0.0;
+
+    return int2(normalizedPixelPosition * TerrainSrg::m_clipmapData.m_clipmapSize);
 }
 
 float2 GetPreviousWorldPosition(uint2 pixelPosition, uint clipmapLevel)
@@ -66,13 +82,68 @@ float2 GetCurrentWorldPosition(uint2 pixelPosition, uint clipmapLevel)
 float2 ddxPosition(uint clipmapLevel)
 {
     float clipmapScale = GetClipmapScale(clipmapLevel);
-    float2 dxdy = PassSrg::m_clipmapData.m_maxRenderSize / PassSrg::m_clipmapData.m_clipmapSize * clipmapScale;
+    float2 dxdy = TerrainSrg::m_clipmapData.m_maxRenderSize / TerrainSrg::m_clipmapData.m_clipmapSize * clipmapScale;
     return float2(dxdy.x, 0.0);
 }
 
 float2 ddyPosition(uint clipmapLevel)
 {
     float clipmapScale = GetClipmapScale(clipmapLevel);
-    float2 dxdy = PassSrg::m_clipmapData.m_maxRenderSize / PassSrg::m_clipmapData.m_clipmapSize * clipmapScale;
+    float2 dxdy = TerrainSrg::m_clipmapData.m_maxRenderSize / TerrainSrg::m_clipmapData.m_clipmapSize * clipmapScale;
     return float2(0.0, dxdy.y);
+}
+
+struct ClipmapSample
+{
+    float3 m_macroColor;
+    float3 m_macroNormal;
+    bool   m_hasDetail;
+    float3 m_detailColor;
+    float3 m_detailNormal;
+    float  m_detailRoughness;
+    float  m_detailSpecularF0;
+    float  m_detailMetalness;
+    float  m_detailOcclusion;
+    float  m_height;
+};
+
+ClipmapSample SampleClipmap(float2 worldPosition)
+{
+    float2 currentViewPosition = TerrainSrg::m_clipmapData.m_viewPosition.zw;
+    float2 halfMaxRenderSize = TerrainSrg::m_clipmapData.m_maxRenderSize / 2.0;
+    // The top clipmap's render distance
+    float2 halfMinRenderSize = halfMaxRenderSize / (float)(1u << (ClipmapStackSize - 1u));
+
+    float2 distance = worldPosition - currentViewPosition;
+    float2 clampedDistance = clamp(halfMinRenderSize, abs(distance), halfMaxRenderSize);
+    float2 distanceRatio = halfMaxRenderSize / clampedDistance;
+    // Due to clamping, the max result of log2 is (ClipmapStackSize - 1u), which falls into the first clipmap
+    uint clipmapLevel = ClipmapStackSize - 1u - uint(floor(log2(min(distanceRatio.x, distanceRatio.y))));
+    uint2 pixelPosition = GetPixelPosition(distance, clipmapLevel);
+    uint3 sampleIndex = uint3(pixelPosition, clipmapLevel);
+
+    float4 macroColor = TerrainSrg::m_macroColorClipmaps[sampleIndex];
+    float4 macroNormal = TerrainSrg::m_macroNormalClipmaps[sampleIndex];
+    float4 detailColor = TerrainSrg::m_detailColorClipmaps[sampleIndex];
+
+    ClipmapSample data;
+    data.m_macroColor = macroColor.rgb;
+    data.m_macroNormal = macroNormal.xyz;
+    data.m_hasDetail = detailColor.a > 0.5;
+    if (data.m_hasDetail)
+    {
+        float4 detailNormal = TerrainSrg::m_detailNormalClipmaps[sampleIndex];
+        float detailHeight = TerrainSrg::m_detailHeightClipmaps[sampleIndex];
+        float4 detailMisc = TerrainSrg::m_detailMiscClipmaps[sampleIndex];
+
+        data.m_detailColor = detailColor.rgb;
+        data.m_detailNormal = detailNormal.xyz;
+        data.m_detailRoughness = detailMisc.x;
+        data.m_detailSpecularF0 = detailMisc.y;
+        data.m_detailMetalness = detailMisc.z;
+        data.m_detailOcclusion = detailMisc.w;
+        data.m_height = detailHeight;
+    }
+
+    return data;
 }

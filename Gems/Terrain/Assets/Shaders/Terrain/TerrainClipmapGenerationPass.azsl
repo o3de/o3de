@@ -5,10 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "TerrainClipmapPassSrg.azsli"
+#include <TerrainSrg.azsli>
+#include <TerrainMaterialSrg.azsli>
 #include "ClipmapComputeHelpers.azsli"
 #include "TerrainDetailHelpers.azsli"
-#include <Atom/RPI/TangentSpace.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    RWTexture2DArray<float4> m_macroColorClipmaps;
+    RWTexture2DArray<float4> m_macroNormalClipmaps;
+    RWTexture2DArray<float4> m_detailColorClipmaps;
+    RWTexture2DArray<float4> m_detailNormalClipmaps;
+    RWTexture2DArray<float> m_detailHeightClipmaps;
+    RWTexture2DArray<float4> m_detailMiscClipmaps;
+}
 
 void SampleMacroTexture(float2 worldPosition, uint clipmapLevel, out float3 macroColor, out float3 macroNormal)
 {
@@ -85,10 +95,10 @@ void MainCS(
 {
     uint2 pixelPosition = dispatchThreadID.xy;
 
-    for (uint clipmapLevel = 0; clipmapLevel < CLIPMAP_STACK_SIZE; ++clipmapLevel)
+    for (uint clipmapLevel = 0; clipmapLevel < ClipmapStackSize; ++clipmapLevel)
     {
         float2 worldPosition = GetCurrentWorldPosition(pixelPosition, clipmapLevel);
-        if (any(worldPosition < PassSrg::m_clipmapData.m_worldBounds.xy) || any(worldPosition > PassSrg::m_clipmapData.m_worldBounds.zw))
+        if (any(worldPosition < TerrainSrg::m_clipmapData.m_worldBounds.xy) || any(worldPosition > TerrainSrg::m_clipmapData.m_worldBounds.zw))
         {
             PassSrg::m_macroColorClipmaps[uint3(dispatchThreadID.xy, clipmapLevel)] = float4(TerrainMaterialSrg::m_baseColor.rgb, 1.0);
             PassSrg::m_macroNormalClipmaps[uint3(dispatchThreadID.xy, clipmapLevel)] = float4(0.0, 0.0, 1.0, 1.0);
