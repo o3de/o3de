@@ -263,6 +263,13 @@ namespace Terrain
             const uint32_t updateWidth = aznumeric_cast<uint32_t>(numSamples.first);
             const uint32_t updateHeight = aznumeric_cast<uint32_t>(numSamples.second);
 
+            // If there aren't any samples in the region, there's nothing to update, so just return.
+            if ((updateWidth == 0) || (updateHeight == 0))
+            {
+                m_dirtyRegion = AZ::Aabb::CreateNull();
+                return;
+            }
+
             AZStd::vector<uint16_t> pixels;
             pixels.reserve(updateWidth * updateHeight);
 
