@@ -105,9 +105,8 @@ extern "C" AZ_DLL_EXPORT void DestroyDLLTestVirtualClass()
 //////////////////////////////////////////////////////////////////////////
 
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* azEnvironmentInstance)
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
-    AZ_Assert(AZ::Environment::GetInstance() == azEnvironmentInstance, "Invalid!");
     AZ_Printf("DLL", "InitializeDynamicModule called");
 }
 

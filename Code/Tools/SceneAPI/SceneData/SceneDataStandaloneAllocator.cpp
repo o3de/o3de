@@ -16,7 +16,7 @@ namespace AZ
     {
         bool SceneDataStandaloneAllocator::m_allocatorInitialized = false;
 
-        void SceneDataStandaloneAllocator::Initialize(AZ::EnvironmentInstance /*environment*/)
+        void SceneDataStandaloneAllocator::Initialize()
         {
             if (!AZ::AllocatorInstance<AZ::SystemAllocator>().IsReady())
             {

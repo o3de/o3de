@@ -22,7 +22,7 @@
 static AZ::SceneAPI::UI::GraphMetaInfoHandler* g_graphMetaInfoHandler = nullptr;
 static AZ::SceneAPI::UI::ManifestMetaInfoHandler* g_manifestMetaInfoHandler = nullptr;
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* /*env*/)
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
     AZ::SceneAPI::UI::HeaderHandler::Register();
     AZ::SceneAPI::UI::NodeListSelectionHandler::Register();

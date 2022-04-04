@@ -117,36 +117,7 @@ namespace AZ
             static const bool uniqueMemoryAddress{};
             return &uniqueMemoryAddress;
         }
-
-        /**
-         * Create Environment with customer allocator interface. You don't have to call create or destroy as they will
-         * created on demand, but is such case the module allocator will used. For example on Windows if you link the CRT
-         * two environments will end up on different heaps.
-         * \returns true if Create was successful, false if environment is already created/attached.
-         */
-        O3DEKERNEL_API bool Create(AllocatorInterface* allocator);
-
-        /**
-         * Explicit Destroy, you don't have to call it unless you want to control order. It will be called when the module is unloaded.
-         * Of course no order is guaranteed.
-         */
-        O3DEKERNEL_API void Destroy();
-
-        /**
-         * Attaches the current module environment from sourceEnvironment.
-         * note: this is not a copy it will actually reference the source environment, so any variables
-         * you add remove will be visible to all shared modules
-         * \param useAsFallback if set to true a new environment will be created and only failures to GetVariable
-         * which check the shared environment. This way you can change the environment.
-         */
-        O3DEKERNEL_API void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback = false);
-
-        /// Detaches the active environment (if one is attached)
-        O3DEKERNEL_API void Detach();
-
-        /// Returns true if an environment is attached to this module
-        O3DEKERNEL_API bool IsReady();
-    };
+    } // namespace Environment
 
     namespace Internal
     {
@@ -629,15 +600,6 @@ namespace AZ
     {
         return FindVariable<T>(AZ::Internal::EnvironmentVariableNameToId(uniqueName));
     }
-
-    namespace Internal
-    {
-        inline void AttachGlobalEnvironment(void* globalEnv)
-        {
-            AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(globalEnv));
-        }
-    }
-
 } // namespace AZ
 
 #ifdef AZ_MONOLITHIC_BUILD
@@ -650,11 +612,10 @@ namespace AZ
 /// For more details see:
 /// \ref AZ::InitializeDynamicModuleFunction, \ref AZ::UninitializeDynamicModuleFunction
 #define AZ_DECLARE_MODULE_INITIALIZATION \
-    extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env) \
+    extern "C" AZ_DLL_EXPORT void InitializeDynamicModule() \
     { \
-        AZ::Internal::AttachGlobalEnvironment(env); \
     } \
-    extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule() { AZ::Environment::Detach(); }
+    extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule() { }
 
 #endif // AZ_MONOLITHIC_BUILD
 

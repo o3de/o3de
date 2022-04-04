@@ -19,7 +19,7 @@ public:
 protected:
     void SetupEnvironment() override
     {
-        AZ::SceneAPI::SceneCoreStandaloneAllocator::Initialize(AZ::Environment::GetInstance());
+        AZ::SceneAPI::SceneCoreStandaloneAllocator::Initialize();
     }
 
     void TeardownEnvironment() override

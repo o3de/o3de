@@ -122,8 +122,6 @@ namespace AZ
             using MapType = AZStd::unordered_map<u32, void *, AZStd::hash<u32>, AZStd::equal_to<u32>, OSStdAllocator>;
 
             static EnvironmentInterface* Get();
-            static void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback);
-            static void Detach();
 
             EnvironmentImpl(Environment::AllocatorInterface* allocator)
                 : m_variableMap(MapType::hasher(), MapType::key_eq(), OSStdAllocator(allocator))
@@ -357,14 +355,6 @@ namespace AZ
             return &environment;
         }
 
-        void EnvironmentImpl::Attach([[maybe_unused]] EnvironmentInstance sourceEnvironment, [[maybe_unused]] bool useAsGetFallback)
-        {
-        }
-
-        void EnvironmentImpl::Detach()
-        {
-        }
-
         O3DEKERNEL_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock)
         {
             return EnvironmentImpl::Get()->AddAndAllocateVariable(guid, byteSize, alignment, addedVariableLock);
@@ -388,31 +378,9 @@ namespace AZ
 
     namespace Environment
     {
-        O3DEKERNEL_API bool IsReady()
-        {
-            return true;
-        }
-
         O3DEKERNEL_API EnvironmentInstance GetInstance()
         {
             return Internal::EnvironmentImpl::Get();
-        }
-
-        O3DEKERNEL_API bool Create([[maybe_unused]] AllocatorInterface* allocator)
-        {
-            return true;
-        }
-
-        O3DEKERNEL_API void Destroy()
-        {
-        }
-
-        O3DEKERNEL_API void Detach()
-        {
-        }
-
-        O3DEKERNEL_API void Attach([[maybe_unused]] EnvironmentInstance sourceEnvironment, [[maybe_unused]] bool useAsGetFallback)
-        {
         }
     } // namespace Environment
 } // namespace AZ

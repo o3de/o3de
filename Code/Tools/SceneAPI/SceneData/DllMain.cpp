@@ -108,7 +108,7 @@ namespace AZ {
 
 static bool g_sceneDataInitialized = false;
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* /*env*/)
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
     if (g_sceneDataInitialized)
     {

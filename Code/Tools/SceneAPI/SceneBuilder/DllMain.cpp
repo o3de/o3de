@@ -101,7 +101,7 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* /*env*/)
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
 }
 extern "C" AZ_DLL_EXPORT void Reflect(AZ::SerializeContext* context)
