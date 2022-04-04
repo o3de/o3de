@@ -408,26 +408,27 @@ namespace GradientSignal
                 y = (height - 1) - y;
 
                 // For terrarium, there is a separate algorithm for retrieving the value
-                if (m_currentChannel == ChannelToUse::Terrarium)
-                {
-                    return GetTerrariumPixelValue(x, y);
-                }
+                const float value = (m_currentChannel == ChannelToUse::Terrarium)
+                    ? GetTerrariumPixelValue(x, y, m_imageData)
+                    : AZ::RPI::GetImageDataPixelValue<float>(
+                        m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
 
-                const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
-                return (value * m_multiplier) + m_offset;
+                // Scale (inverse lerp) the value into a 0 - 1 range. We also clamp it because manual scale values could cause
+                // the result to fall outside of the expected output range.
+                return AZStd::clamp((value - m_offset) * m_multiplier, 0.0f, 1.0f);
             }
         }
 
         return defaultValue;
     }
 
-    float ImageGradientComponent::GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const
+    float ImageGradientComponent::GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y, AZStd::span<const uint8_t> imageData) const
     {
         const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
 
-        float r = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Red));
-        float g = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
-        float b = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
+        float r = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Red));
+        float g = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
+        float b = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
 
         /*
             "Terrarium" is an image-based terrain file format as defined here:  https://www.mapzen.com/blog/terrain-tile-service/
@@ -443,10 +444,23 @@ namespace GradientSignal
         return (r * redMultiplier) + (g * greenMultiplier) + (b * blueMultiplier);
     }
 
+    void ImageGradientComponent::SetupMultiplierAndOffset(float min, float max)
+    {
+        // Pre-calculate values for scaling our input range to our output range of 0 - 1. Scaling just uses the standard inverse lerp
+        // formula of "output = (input - min) / (max - min)", or "output = (input - offset) * multiplier" where
+        // multiplier is 1 / (max - min) and offset is min. Precalculating this way lets us gracefully handle the case where min and
+        // max are equal, since we don't want to divide by infinity, without needing to check for that case on every pixel.
+
+        // If our range is equivalent, set our multiplier and offset so that
+        // any input value > min goes to 1 and any input value <= min goes to 0. 
+        m_multiplier = (min == max) ? AZStd::numeric_limits<float>::max() : (1.0f / (max - min));
+        m_offset = min;
+    }
+
     void ImageGradientComponent::SetupDefaultMultiplierAndOffset()
     {
-        m_multiplier = 1.0f;
-        m_offset = 0.0f;
+        // By default, don't perform any scaling - assume the input range is from 0 - 1, same as the desired output.
+        SetupMultiplierAndOffset(0.0f, 1.0f);
     }
 
     void ImageGradientComponent::SetupAutoScaleMultiplierAndOffset()
@@ -457,24 +471,39 @@ namespace GradientSignal
 
         // Retrieve all the pixel values from our image data
         AZStd::vector<float> pixelValues(width * height);
-        auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
-        auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(width, height);
-        AZ::RPI::GetSubImagePixelValues(m_configuration.m_imageAsset, topLeft, bottomRight, pixelValues, aznumeric_cast<AZ::u8>(m_currentChannel));
 
-        // Retrieve the min/max values from our image data
+        if (m_currentChannel == ChannelToUse::Terrarium)
+        {
+            const auto& imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
+            for (uint32_t y = 0; y < height; y++)
+            {
+                for (uint32_t x = 0; x < width; x++)
+                {
+                    pixelValues[(y * width) + x] = GetTerrariumPixelValue(x, y, imageData);
+                }
+            }
+        }
+        else
+        {
+            auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
+            auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(width, height);
+
+            AZ::RPI::GetSubImagePixelValues(
+                m_configuration.m_imageAsset, topLeft, bottomRight, pixelValues, aznumeric_cast<AZ::u8>(m_currentChannel));
+        }
+
+        // Retrieve the min/max values from our image data and set our multiplier and offset based on that
         auto [min, max] = AZStd::minmax_element(pixelValues.begin(), pixelValues.end());
-
-        m_multiplier = *max -*min;
-        m_offset = *min;
+        SetupMultiplierAndOffset(*min, *max);
     }
 
     void ImageGradientComponent::SetupManualScaleMultiplierAndOffset()
     {
         m_configuration.m_scaleRangeMin = AZStd::clamp(m_configuration.m_scaleRangeMin, 0.0f, 1.0f);
         m_configuration.m_scaleRangeMax = AZStd::clamp(m_configuration.m_scaleRangeMax, 0.0f, 1.0f);
-
-        m_multiplier = m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin;
-        m_offset = m_configuration.m_scaleRangeMin;
+        // Set our multiplier and offset based on the manual scale range. Note that the manual scale range might be less than the
+        // input range and possibly even inverted.
+        SetupMultiplierAndOffset(m_configuration.m_scaleRangeMin, m_configuration.m_scaleRangeMax);
     }
 
     void ImageGradientComponent::Activate()
