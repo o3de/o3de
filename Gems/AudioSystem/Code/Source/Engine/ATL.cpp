@@ -540,7 +540,7 @@ namespace Audio
                     }
                     else
                     {
-                        AZLOG_DEBUG("ATL could not find listener with ID %u", listenerId);
+                        AZLOG_DEBUG("ATL could not find listener with ID %llu", listenerId);
                         result = EAudioRequestStatus::FailureInvalidObjectId;
                     }
                 }

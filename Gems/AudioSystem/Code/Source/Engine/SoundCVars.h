@@ -36,7 +36,6 @@ namespace Audio::CVars
     AZ_CVAR_EXTERNED(bool, s_ShowActiveAudioObjectsOnly);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioTriggersDebugFilter);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioObjectsDebugFilter);
-    AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioLoggingOptions);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_DrawAudioDebug);
     inline Audio::Flags<AZ::u32> s_debugDrawOptions;
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_FileCacheManagerDebugFilter);
