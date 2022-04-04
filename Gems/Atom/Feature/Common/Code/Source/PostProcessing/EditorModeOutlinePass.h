@@ -18,6 +18,13 @@ namespace AZ
             : public EditorModeFeedbackPassBase
         {
         public:
+            //! The outline syles supported by the outline effect.
+            enum class OutlineStyle : AZ::u32
+            {
+                Always, //!< Outlines both visible and occluded fragments of the entitites of interest.
+                Visible //!< Outlines only the visible fragments of the entitites of interest.
+            };
+
             AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", EditorModeFeedbackPassBase);
             AZ_CLASS_ALLOCATOR(EditorModeOutlinePass, SystemAllocator, 0);
 
@@ -32,6 +39,9 @@ namespace AZ
             //! Sets the outline line color.
             void SetLineColor(AZ::Color color);
 
+            //! Sets the outline mode.
+            void SetOutlineStyle(OutlineStyle mode);
+
         protected:
             EditorModeOutlinePass(const RPI::PassDescriptor& descriptor);
             
@@ -45,8 +55,10 @@ namespace AZ
 
             RHI::ShaderInputNameIndex m_lineThicknessIndex = "m_lineThickness";
             RHI::ShaderInputNameIndex m_lineColorIndex = "m_lineColor";
+            RHI::ShaderInputNameIndex m_outlineStyleIndex = "m_outlineStyle";
             float m_lineThickness = 3.0f; //!< Default line thickness for the outline effect.
             AZ::Color m_lineColor = AZ::Color(0.96f, 0.65f, 0.13f, 1.0f); //!< Default line color for the outline effect.
+            OutlineStyle m_outlineStyle = OutlineStyle::Always; //!< Default outline style for the outline effect.
         };
     }   // namespace Render
 }   // namespace AZ

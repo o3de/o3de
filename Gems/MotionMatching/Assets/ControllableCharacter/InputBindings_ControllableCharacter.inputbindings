@@ -65,6 +65,18 @@
 					</Class>
 					<Class name="bool" field="Exclude From Release" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 				</Class>
+				<Class name="InputEventGroup" field="element" version="1" type="{25143B7E-2FEC-4CC5-92FE-270B67E79734}">
+					<Class name="AZStd::string" field="Event Name" value="UseFacingDir" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::vector" field="Event Generators" type="{7B0B6F41-794A-5CFF-8275-91A3137E747D}">
+						<Class name="InputEventMap" field="element" version="2" type="{A14EA0A3-F053-469D-840E-A70002F51384}">
+							<Class name="AZStd::string" field="Input Device Type" value="gamepad" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="AZStd::string" field="Input Name" value="gamepad_trigger_r2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							<Class name="float" field="Event Value Multiplier" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+							<Class name="float" field="Dead Zone" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+						</Class>
+					</Class>
+					<Class name="bool" field="Exclude From Release" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+				</Class>
 			</Class>
 		</Class>
 	</Class>
