@@ -169,13 +169,12 @@ namespace AzFramework
         : m_serializeContext(nullptr)
         , m_networkImpl(nullptr)
     {
-        m_targetJoinThread = AZStd::make_unique<TargetJoinThread>(target_autoconnect_interval);
+        ;
     }
 
     TargetManagementComponent::~TargetManagementComponent()
     {
         AZ_Assert(m_networkImpl == nullptr, "We still have networkImpl! Was Deactivate() called?");
-        m_targetJoinThread = nullptr;
     }
 
     void TargetManagementComponent::Activate()
@@ -229,10 +228,12 @@ namespace AzFramework
         m_networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
                 AZ::Name("TargetManagement"), AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
         m_networkInterface->SetTimeoutMs(AZ::TimeMs(0));
+        m_targetJoinThread = AZStd::make_unique<TargetJoinThread>(target_autoconnect_interval);
     }
 
     void TargetManagementComponent::Deactivate()
     {
+        m_targetJoinThread = nullptr;
         AZ::Interface<AzNetworking::INetworking>::Get()->DestroyNetworkInterface(AZ::Name("TargetManagement"));
 
         m_stopRequested = true;
@@ -301,7 +302,7 @@ namespace AzFramework
     void TargetManagementComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC("UserSettingsService", 0xa0eadff5));
-        required.push_back(AZ_CRC("NetworkingService"));
+        required.push_back(AZ_CRC_CE("NetworkingService"));
     }
 
     void TargetManagementComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -769,6 +770,12 @@ namespace AzFramework
         ;
     }
 
+     TargetJoinThread::~TargetJoinThread()
+     {
+         Stop();
+         Join();
+     }
+
     void TargetJoinThread::OnUpdate([[maybe_unused]] AZ::TimeMs updateRateMs)
     {
         connect_target(AZ::ConsoleCommandContainer());
@@ -778,6 +785,7 @@ namespace AzFramework
                 networkInterface.second->GetConnectionSet().GetActiveConnectionCount() > 0)
             {
                 Stop();
+                Join();
             }
         }
     }

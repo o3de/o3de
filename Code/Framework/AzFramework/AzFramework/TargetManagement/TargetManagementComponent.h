@@ -47,6 +47,7 @@ namespace AzFramework
     {
     public:
         TargetJoinThread(int updateRate);
+        ~TargetJoinThread() override;
     private:
         AZ_DISABLE_COPY_MOVE(TargetJoinThread);
 
