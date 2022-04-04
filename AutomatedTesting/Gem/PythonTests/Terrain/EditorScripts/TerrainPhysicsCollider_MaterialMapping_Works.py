@@ -10,6 +10,10 @@ class Tests:
         "Entered Game Mode",
         "Failed to enter Game Mode"
     )
+    glass_cube_moves = (
+        "Glass cube started moving",
+        "Glass cube has unexpectedly remained stationary"
+    )
     cubes_are_stationary = (
         "Cubes have both come to a rest",
         "One or both cubes are unexpectedly still moving"
@@ -58,8 +62,11 @@ def TerrainPhysicsCollider_MaterialMapping_Works():
     glass_start = components.TransformBus(bus.Event, "GetWorldTranslation", physics_cube_glass)
     rubber_start = components.TransformBus(bus.Event, "GetWorldTranslation", physics_cube_rubber)
 
-    # Wait for both cubes to become stationary, re-check positions, and calculate distance traveled
-    glass_is_stationary = helper.wait_for_condition(lambda: is_stationary(physics_cube_glass), 10.0)
+    # Wait for cube on glass to start moving, then wait for both cubes to become stationary, re-check positions, and
+    # calculate distance traveled
+    glass_is_moving = helper.wait_for_condition(lambda: not is_stationary(physics_cube_glass), 3.0)
+    Report.result(Tests.glass_cube_moves, glass_is_moving)
+    glass_is_stationary = helper.wait_for_condition(lambda: is_stationary(physics_cube_glass), 30.0)
     rubber_is_stationary = helper.wait_for_condition(lambda: is_stationary(physics_cube_rubber), 10.0)
     Report.result(Tests.cubes_are_stationary, glass_is_stationary and rubber_is_stationary)
     glass_finish = components.TransformBus(bus.Event, "GetWorldTranslation", physics_cube_glass)

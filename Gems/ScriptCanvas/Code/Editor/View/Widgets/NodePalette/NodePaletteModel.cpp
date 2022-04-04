@@ -35,6 +35,12 @@ AZ_DEFINE_BUDGET(NodePaletteModel);
 
 namespace
 {
+    static constexpr char DefaultGlobalConstantCategory[] = "Global Constants";
+    static constexpr char DefaultGlobalMethodCategory[] = "Global Methods";
+    static constexpr char DefaultClassMethodCategory[] = "Class Methods";
+    static constexpr char DefaultEbusHandlerCategory[] = "Event Handlers";
+    static constexpr char DefaultEbusEventCategory[] = "Events";
+
     // Various Helper Methods
     bool IsDeprecated(const AZ::AttributeArray& attributes)
     {
@@ -496,7 +502,7 @@ namespace
                     }
                     else
                     {
-                        categoryPath = "Other";
+                        categoryPath = DefaultClassMethodCategory;
                     }
                 }
 
@@ -588,16 +594,16 @@ namespace
                     }
                     else
                     {
-                        categoryPath = "Other/";
+                        categoryPath = AZStd::string::format("%s/", DefaultEbusHandlerCategory);
                     }
 
                     if (!details.m_name.empty())
                     {
                         categoryPath.append(details.m_name.c_str());
                     }
-                    else if (categoryPath.contains("Other"))
+                    else if (categoryPath.contains(DefaultEbusHandlerCategory))
                     {
-                        // Use the BehaviorEBus name to categorize within the 'Other' category
+                        // Use the BehaviorEBus name to categorize within the default ebus handler category
                         categoryPath.append(behaviorEbus.m_name.c_str());
                     }
                 }
@@ -635,16 +641,16 @@ namespace
             }
             else
             {
-                categoryPath = "Other/";
+                categoryPath = AZStd::string::format("%s/", DefaultEbusEventCategory);
             }
 
             if (!details.m_name.empty())
             {
                 categoryPath.append(details.m_name.c_str());
             }
-            else if (categoryPath.contains("Other"))
+            else if (categoryPath.contains(DefaultEbusEventCategory))
             {
-                // Use the behavior EBus name to categorize within the 'Other' category
+                // Use the behavior EBus name to categorize within the ebus event category
                 categoryPath.append(behaviorEbus.m_name.c_str());
             }
 
@@ -1026,7 +1032,7 @@ namespace ScriptCanvasEditor
 
             if (methodModelInformation->m_categoryPath.empty())
             {
-                methodModelInformation->m_categoryPath = "Other";
+                methodModelInformation->m_categoryPath = DefaultClassMethodCategory;
             }
 
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, methodModelInformation));
@@ -1067,14 +1073,14 @@ namespace ScriptCanvasEditor
 
             if (methodModelInformation->m_categoryPath.empty())
             {
-                methodModelInformation->m_categoryPath = "Constants";
+                methodModelInformation->m_categoryPath = DefaultGlobalConstantCategory;
             }
 
             m_registeredNodes.emplace(nodeIdentifier, methodModelInformation.release());
         }
     }
 
-    void NodePaletteModel::RegisterMethodNode(const AZ::BehaviorContext&, const AZ::BehaviorMethod& behaviorMethod)
+    void NodePaletteModel::RegisterMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod)
     {
         AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterMethodNode");
 
@@ -1098,7 +1104,15 @@ namespace ScriptCanvasEditor
 
             methodModelInformation->m_displayName = details.m_name.empty() ? behaviorMethod.m_name : details.m_name;
             methodModelInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
-            methodModelInformation->m_categoryPath = details.m_category.empty() ? "Behavior Context: Global Methods" : details.m_category;
+            if (details.m_category.empty())
+            {
+                auto categoryPath = GetCategoryPath(behaviorMethod.m_attributes, behaviorContext);
+                methodModelInformation->m_categoryPath = categoryPath.empty() ? DefaultGlobalMethodCategory : categoryPath;
+            }
+            else
+            {
+                methodModelInformation->m_categoryPath = details.m_category;
+            }
 
             m_registeredNodes.emplace(nodeIdentifier, methodModelInformation.release());
         }

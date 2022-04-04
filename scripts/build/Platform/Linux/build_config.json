@@ -99,7 +99,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
       "TEST_RESULTS": "False"
     }
   },
@@ -115,7 +115,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLY_PARALLEL_LINK_JOBS=4 -DLY_GCC_BUILD_FOR_GCOV=ON",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
       "TEST_RESULTS": "False",
       "LY_MIN_MEMORY_PER_CORE": "2097152"
     }
@@ -129,7 +129,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
       "TEST_RESULTS": "False"
     }
   },
@@ -287,11 +287,17 @@
         "CMAKE_TARGET": "install"
     }
   },
-  "installer": {
+  "installer_pipe": { 
     "TAGS": [
       "nightly-clean",
       "nightly-installer"
     ],
+    "steps": [
+      "installer"
+    ]
+  },
+  "installer": {
+    "TAGS": [],
     "PIPELINE_ENV":{
       "NODE_LABEL":"linux-707531fc7-packaging"
     },

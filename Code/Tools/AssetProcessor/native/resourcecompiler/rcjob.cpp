@@ -337,8 +337,8 @@ namespace AssetProcessor
 
         if (builderParams.m_rcJob->m_jobDetails.m_autoFail)
         {
-            // if this is an auto-fail job, we should avoid doing any additional work besides the work required to fail the job and 
-            // write the details into its log.  This is because Auto-fail jobs have 'incomplete' job descriptors, and only exist to 
+            // if this is an auto-fail job, we should avoid doing any additional work besides the work required to fail the job and
+            // write the details into its log.  This is because Auto-fail jobs have 'incomplete' job descriptors, and only exist to
             // force a job to fail with a reasonable log file stating the reason for failure.  An example of where it is useful to
             // use auto-fail jobs is when, after compilation was successful, something goes wrong integrating the result into the
             // cache.  (For example, files collide, or the product file name would be too long).  The job will have at that point
@@ -381,7 +381,7 @@ namespace AssetProcessor
         {
             builderParams.m_rcJob->SetOriginalFingerprint(fingerprint);
             QThread::msleep(g_sleepDurationForLockingAndFingerprintChecking);
-            
+
             if (listener.WasQuitRequested() || (ticker.elapsed() > g_jobMaximumWaitTime))
             {
                 result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
@@ -390,7 +390,7 @@ namespace AssetProcessor
             }
 
             fingerprint = AssetUtilities::GenerateFingerprint(builderParams.m_rcJob->m_jobDetails);
-        }        
+        }
 
         Q_EMIT builderParams.m_rcJob->BeginWork();
         // We will actually start working on the job after this point and even if RcController gets the same job again, we will put it in the queue for processing
@@ -400,7 +400,7 @@ namespace AssetProcessor
 
     void RCJob::AutoFailJob(BuilderParams& builderParams)
     {
-        // force the fail data to be captured to the log file.  
+        // force the fail data to be captured to the log file.
         // because this is being executed in a thread worker, this won't stomp the main thread's job id.
         AssetProcessor::SetThreadLocalJobId(builderParams.m_rcJob->GetJobEntry().m_jobRunKey);
         AssetUtilities::JobLogTraceListener jobLogTraceListener(builderParams.m_rcJob->m_jobDetails.m_jobEntry);
@@ -421,10 +421,10 @@ namespace AssetProcessor
         }
         else
         {
-            // since we didn't have a custom auto-fail reason, add a token to the log file that will help with 
-            // forensic debugging to differentiate auto-fails from regular fails (although it should also be 
+            // since we didn't have a custom auto-fail reason, add a token to the log file that will help with
+            // forensic debugging to differentiate auto-fails from regular fails (although it should also be
             // obvious from the output in other ways)
-            AZ_TracePrintf("Debug", "(auto-failed)\n"); 
+            AZ_TracePrintf("Debug", "(auto-failed)\n");
         }
         auto failLogFile = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailLogFile));
         if (failLogFile != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
@@ -454,10 +454,10 @@ namespace AssetProcessor
         }
 #endif
 
-        // note that this line below is printed out to be consistent with the output from a job that normally failed, so 
+        // note that this line below is printed out to be consistent with the output from a job that normally failed, so
         // applications reading log file will find it.
-        AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Builder indicated that the job has failed.\n"); 
-        
+        AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Builder indicated that the job has failed.\n");
+
         if (builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailOmitFromDatabaseKey)) != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
         {
             // we don't add Auto-fail jobs to the database if they have asked to be emitted.
@@ -479,16 +479,16 @@ namespace AssetProcessor
             result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed; // failed by default
 
 #if defined(AZ_ENABLE_TRACING)
-            auto warningMessage = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::JobWarningKey));
-            if (warningMessage != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
+            for (const auto& warningMessage : builderParams.m_rcJob->m_jobDetails.m_warnings)
             {
                 // you are allowed to have many lines in your warning message.
                 AZStd::vector<AZStd::string> delimited;
-                AzFramework::StringFunc::Tokenize(warningMessage->second.c_str(), delimited, "\n");
+                AzFramework::StringFunc::Tokenize(warningMessage.c_str(), delimited, "\n");
                 for (const AZStd::string& token : delimited)
                 {
                     AZ_Warning(AssetBuilderSDK::WarningWindow, false, "%s", token.c_str());
                 }
+                jobLogTraceListener.AddWarning();
             }
 #endif
 
@@ -508,7 +508,7 @@ namespace AssetProcessor
             builderParams.m_processJobRequest.m_tempDirPath = AZStd::string(workFolder.toUtf8().data());
 
             QString sourceFullPath(builderParams.m_processJobRequest.m_fullPath.c_str());
-            
+
             if (sourceFullPath.length() >= AP_MAX_PATH_LEN)
             {
                 AZ_Warning(AssetBuilderSDK::WarningWindow, false, "Source Asset: %s filepath length %d exceeds the maximum path length (%d) allowed.\n", sourceFullPath.toUtf8().data(), sourceFullPath.length(), AP_MAX_PATH_LEN);
@@ -648,7 +648,7 @@ namespace AssetProcessor
         case AssetBuilderSDK::ProcessJobResult_Success:
             // make sure there's no subid collision inside a job.
             {
-                
+
                 if (!CopyCompiledAssets(builderParams, result))
                 {
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -756,17 +756,17 @@ namespace AssetProcessor
                 AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Cannot copy file: Product '%s' path length (%d) exceeds the max path length (%d) allowed on disk\n", productFile.toUtf8().data(), productFile.length(), AP_MAX_PATH_LEN);
                 return false;
             }
-            
+
             QFileInfo inFile(absolutePathOfSource);
             if (!inFile.exists())
             {
                 AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Cannot copy file - product file with absolute path '%s' attempting to save into cache could not be found", absolutePathOfSource.toUtf8().constData());
                 return false;
             }
-            
+
             totalFileSizeRequired += inFile.size();
             outputsToCopy.push_back(qMakePair(absolutePathOfSource, productFile));
-            
+
             // also update the product file name to be the final resting place of this product in the cache (normalized!)
             product.m_productFileName = AssetUtilities::NormalizeFilePath(productFile).toUtf8().constData();
         }
@@ -798,14 +798,14 @@ namespace AssetProcessor
                 anyFileFailed = true;
                 continue;
             }
-            
+
             //we now ensure that the file is writable - this is just a warning if it fails, not a complete failure.
             if (!AssetUtilities::MakeFileWritable(productAbsolutePath))
             {
                 AZ_TracePrintf(AssetBuilderSDK::WarningWindow, "Unable to change permission for the file: %s.\n", productAbsolutePath.toUtf8().data());
             }
         }
-        
+
         return !anyFileFailed;
     }
 
@@ -829,7 +829,7 @@ namespace AssetProcessor
 
                 // We need to handle case 3 here (Case 2 was above, case 1 is treated as relative within temp)
                 // If the path was not absolute within the temp folder and not relative it should be an absolute path beneath our source (Including the source)
-                // meaning a copy job which needs to be added to our archive.  
+                // meaning a copy job which needs to be added to our archive.
                 if (!AzFramework::StringFunc::Path::IsRelative(product.m_productFileName.c_str()))
                 {
                     AZStd::string sourceFile{ builderParams.m_rcJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().data() };
@@ -886,7 +886,7 @@ namespace AssetProcessor
             return false;
         }
 
-        //Ensure that ProcessJobResponse have the correct absolute paths 
+        //Ensure that ProcessJobResponse have the correct absolute paths
         for (AssetBuilderSDK::JobProduct& product : jobResponse.m_outputProducts)
         {
             AzFramework::StringFunc::Replace(product.m_productFileName, s_tempString, builderParams.m_processJobRequest.m_tempDirPath.c_str(), s_tempString);
@@ -912,7 +912,7 @@ namespace AssetProcessor
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to find job log from the server. This could happen if you are trying to use the server cache with a copy job,\
 please check the assetprocessorplatformconfig.ini file and ensure that server cache is disabled for the job.\n");
             }
-            
+
             return false;
         }
 

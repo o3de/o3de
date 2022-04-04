@@ -16,7 +16,6 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
-#include <GradientSignal/ImageAsset.h>
 #include <GradientSignal/Util.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 
@@ -41,6 +40,27 @@ namespace GradientSignal
             AZ::JsonDeserializerContext& context) override;
     };
 
+    enum class ChannelToUse : AZ::u8
+    {
+        Red,
+        Green,
+        Blue,
+        Alpha,
+        //! "Terrarium" is an image - based terrain file format as defined here:
+        //!     https://www.mapzen.com/blog/terrain-tile-service/
+        //! According to the website : "Terrarium format PNG tiles contain raw elevation
+        //! data in meters, in Mercator projection (EPSG:3857)."
+        Terrarium
+    };
+
+    //! Custom scaling to apply to the values retrieved from the image data
+    enum class CustomScaleType : AZ::u8
+    {
+        None,                   //! Data left as-is, no scaling calculation performed
+        Auto,                   //! Automatically scale based on the min/max values in the data
+        Manual                  //! Scale according to m_scaleRangeMin and m_scaleRangeMax
+    };
+
     class ImageGradientConfig
         : public AZ::ComponentConfig
     {
@@ -48,9 +68,19 @@ namespace GradientSignal
         AZ_CLASS_ALLOCATOR(ImageGradientConfig, AZ::SystemAllocator, 0);
         AZ_RTTI(ImageGradientConfig, "{1BDB5DA4-A4A8-452B-BE6D-6BD451D4E7CD}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
+
+        bool IsAdvancedModeReadOnly() const;
+        AZ::Crc32 GetManualScaleVisibility() const;
+
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_imageAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
         float m_tilingX = 1.0f;
         float m_tilingY = 1.0f;
+
+        bool m_advancedMode = false;
+        ChannelToUse m_channelToUse = ChannelToUse::Red;
+        CustomScaleType m_customScaleType = CustomScaleType::None;
+        float m_scaleRangeMin = 0.0f;
+        float m_scaleRangeMax = 1.0f;
     };
 
     static const AZ::Uuid ImageGradientComponentTypeId = "{4741F079-157F-457E-93E0-D6BA4EAF76FE}";
@@ -99,7 +129,12 @@ namespace GradientSignal
         void SetupDependencies();
 
         void GetSubImageData();
-        float GetValueFromImageData(const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue) const;
+        float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
+        float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y, AZStd::span<const uint8_t> imageData) const;
+        void SetupMultiplierAndOffset(float min, float max);
+        void SetupDefaultMultiplierAndOffset();
+        void SetupAutoScaleMultiplierAndOffset();
+        void SetupManualScaleMultiplierAndOffset();
 
         // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;
@@ -117,5 +152,8 @@ namespace GradientSignal
         mutable AZStd::shared_mutex m_imageMutex;
         GradientTransform m_gradientTransform;
         AZStd::span<const uint8_t> m_imageData;
+        ChannelToUse m_currentChannel = ChannelToUse::Red;
+        float m_multiplier = 1.0f;
+        float m_offset = 0.0f;
     };
 }

@@ -56,7 +56,7 @@ class TestAutomationBase:
         cls._kill_ly_processes(include_asset_processor=True)
 
     def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[], batch_mode=True,
-                  autotest_mode=True, use_null_renderer=True, enable_prefab_system=True):
+                  autotest_mode=True, use_null_renderer=True):
         test_starttime = time.time()
         self.logger = logging.getLogger(__name__)
         errors = []
@@ -96,19 +96,16 @@ class TestAutomationBase:
         editor_starttime = time.time()
         self.logger.debug("Running automated test")
         testcase_module_filepath = self._get_testcase_module_filepath(testcase_module)
-        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={request.node.name}"]
+        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={request.node.name}",
+                 "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                 f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+
         if use_null_renderer:
             pycmd += ["-rhi=null"]
         if batch_mode:
             pycmd += ["-BatchMode"]
         if autotest_mode:
             pycmd += ["-autotest_mode"]
-        if enable_prefab_system:
-            pycmd += [
-                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
-        else:
-            pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
         pycmd += extra_cmdline_args
         editor.args.extend(pycmd) # args are added to the WinLauncher start command

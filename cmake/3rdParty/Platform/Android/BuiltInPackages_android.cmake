@@ -6,6 +6,8 @@
 #
 #
 
+# this file allows you to specify all 3p packages (provided by O3DE or the operating system) for Android.
+
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5       PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform TARGETS RapidJSON PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
@@ -24,7 +26,7 @@ ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-android  TARGETS Phy
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-android      TARGETS googletest      PACKAGE_HASH 95671be75287a61c9533452835c3647e9c1b30f81b34b43bcb0ec1997cc23894)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-android TARGETS GoogleBenchmark PACKAGE_HASH 20b46e572211a69d7d94ddad1c89ec37bb958711d6ad4025368ac89ea83078fb)
-ly_associate_package(PACKAGE_NAME libpng-1.6.37-rev1-android         TARGETS libpng          PACKAGE_HASH 51d3ec1559c5595196c11e11674cf5745989d3073bf33dabc6697e3eee77a1cc)
+ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-android            TARGETS PNG             PACKAGE_HASH c2240299251d97d963d2e9f4320fbc384bfb2e1b1e073419d1171df0e8ea983d)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android   TARGETS libsamplerate   PACKAGE_HASH bf13662afe65d02bcfa16258a4caa9b875534978227d6f9f36c9cfa92b3fb12b)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-android        TARGETS OpenSSL         PACKAGE_HASH 4036d4019d722f0e1b7a1621bf60b5a17ca6a65c9c78fd8701cee1131eec8480)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-android           TARGETS ZLIB            PACKAGE_HASH 73c9e88892c237a3fc6eafc04268ccd9d479e6d55f9df2ed58b236c8f9cf2cae)

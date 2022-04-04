@@ -939,3 +939,8 @@ TEST_F(ScriptCanvasTestFixture, PromotedUserVariables)
 {
     RunUnitTestGraph("LY_SC_UnitTest_PromotedUserVariables", ExecutionMode::Interpreted);
 }
+
+TEST_F(ScriptCanvasTestFixture, UseClassWithDefaultOut)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UseClassWithDefaultOut", ExecutionMode::Interpreted);
+}

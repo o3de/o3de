@@ -9,6 +9,13 @@
 #pragma once
 
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Component/ComponentApplication.h> // Galib
+#include <AzFramework/IO/LocalFileIO.h>
+#include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/ObjectStream.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
 
 namespace UnitTest
 {
@@ -25,6 +32,7 @@ namespace UnitTest
         void SetUp() override;
         void TearDown() override;
         ///////////////////////////////////////////////////////////////////////
+
     };
 } // namespace UnitTest
 

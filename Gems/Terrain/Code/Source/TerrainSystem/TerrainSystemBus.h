@@ -23,7 +23,6 @@ namespace Terrain
 {
     /**
     * A bus to signal the life times of terrain areas
-    * Note: all the API are meant to be queued events
     */
     class TerrainSystemServiceRequests
         : public AZ::EBusTraits
@@ -53,7 +52,6 @@ namespace Terrain
 
     /**
     * A bus to signal the life times of terrain areas
-    * Note: all the API are meant to be queued events
     */
     class TerrainAreaHeightRequests
         : public AZ::ComponentBus
@@ -62,6 +60,11 @@ namespace Terrain
         ////////////////////////////////////////////////////////////////////////
         // EBusTraits
         using MutexType = AZStd::recursive_mutex;
+
+        // This bus will not lock during an EBus call. This lets us run multiple queries in parallel, but it also means
+        // that anything that implements this EBus will need to ensure that queries can't be in the middle of running at the
+        // same time as bus connects / disconnects.
+        static const bool LocklessDispatch = true;
         ////////////////////////////////////////////////////////////////////////
 
         virtual ~TerrainAreaHeightRequests() = default;

@@ -61,7 +61,13 @@ namespace EMotionFX::MotionMatching
         const AZStd::vector<Feature*>& GetFeaturesInKdTree() const { return m_featuresInKdTree; }
 
     protected:
+        //! Extract features from the motion database (multi-threaded).
         bool ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth=20, size_t minFramesPerKdTreeNode=2000);
+
+        //! Extract features for a given range of frames and store the values in the feature matrix.
+        static void ExtractFeatureValuesRange(ActorInstance* actorInstance, FrameDatabase& frameDatabase, const FeatureSchema& featureSchema, FeatureMatrix& featureMatrix, size_t startFrame, size_t endFrame);
+
+        const size_t s_numFramesPerBatch = 1000; //!< Number of frames per task in the multi-threaded feature extraction routine.
 
         FrameDatabase m_frameDatabase; //< The animation database with all the keyframes and joint transform data.
 
