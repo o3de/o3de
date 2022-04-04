@@ -63,10 +63,6 @@ namespace ScriptCanvasEditor
                     {
                         return "Unique";
                     }
-                    else
-                    {
-                        return "Invalid";
-                    }
                 }
             }
 
@@ -79,8 +75,7 @@ namespace ScriptCanvasEditor
 
             enum EntityMenuAction
             {
-                SetToSelf,
-                SetToInvalid,
+                SetToSelf
             };
 
             QMenu entityMenu;
@@ -88,19 +83,12 @@ namespace ScriptCanvasEditor
             setToSelf->setToolTip("Reset the EntityId to the Entity that owns this graph.");
             setToSelf->setData(EntityMenuAction::SetToSelf);
 
-            QAction* setToInvalid = entityMenu.addAction("Set to Invalid");
-            setToInvalid->setToolTip("Reset the EntityId to an invalid value that can be exposed to the component.");
-            setToInvalid->setData(EntityMenuAction::SetToInvalid);
-
-            if (QAction* selectedItem = entityMenu.exec(globalPos); selectedItem)
+            QAction* selectedItem = entityMenu.exec(globalPos);
+            if (selectedItem)
             {
                 if (selectedItem->data().toInt() == EntityMenuAction::SetToSelf)
                 {
                     SetEntityId(ScriptCanvas::GraphOwnerId);
-                }
-                else if (selectedItem->data().toInt() == EntityMenuAction::SetToInvalid)
-                {
-                    SetEntityId(AZ::EntityId());
                 }
             }
         }
