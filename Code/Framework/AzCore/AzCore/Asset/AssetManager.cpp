@@ -864,10 +864,10 @@ namespace AZ::Data
         return Asset<AssetData>(assetReferenceLoadBehavior);
     }
 
-    AZStd::pair<AZStd::chrono::milliseconds, AZ::IO::IStreamerTypes::Priority> GetEffectiveDeadlineAndPriority(
+    AZStd::pair<AZ::IO::IStreamerTypes::Deadline, AZ::IO::IStreamerTypes::Priority> GetEffectiveDeadlineAndPriority(
         const AssetHandler& handler, AssetType assetType, const AssetLoadParameters& loadParams)
     {
-        AZStd::chrono::milliseconds deadline;
+        AZ::IO::IStreamerTypes::Deadline deadline;
         AZ::IO::IStreamerTypes::Priority priority;
 
         handler.GetDefaultAssetLoadPriority(assetType, deadline, priority);

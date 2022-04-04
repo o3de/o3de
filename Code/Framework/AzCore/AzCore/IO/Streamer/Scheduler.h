@@ -52,6 +52,8 @@ namespace AZ::IO
         void SuspendProcessing();
         //! Resumes processing of requests on the Scheduler's main thread.
         void ResumeProcessing();
+        //! Whether or not processing of requests has been suspended.
+        bool IsSuspended() const;
 
         //! Collects various metrics that are recorded by streamer and its stream stack.
         //! This function is deliberately not thread safe. All stats use a sliding window and never
@@ -107,6 +109,10 @@ namespace AZ::IO
         //! files this value should be larger than the read speed of the storage drive otherwise compressing files has
         //! no benefit (other than reduced disk space).
         AverageWindow<double, double, s_statisticsWindowSize> m_processingSpeedStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_schedulingTimeStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_queuingTimeStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_executingTimeStat;
+        TimedAverageWindow<s_statisticsWindowSize> m_preparingTimeStat;
 
         //! Percentage of reads that come in that are already on their deadline. Requests like this are disruptive
         //! as they cause the scheduler to prioritize these over the most optimal read layout.

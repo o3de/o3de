@@ -258,11 +258,11 @@ namespace AZ
             {
             }
             AssetFilterCB m_assetLoadFilterCB{ nullptr };
-            AZStd::optional<AZStd::chrono::milliseconds> m_deadline{ };
+            AZStd::optional<AZ::IO::IStreamerTypes::Deadline> m_deadline{};
             AZStd::optional<IO::IStreamerTypes::Priority> m_priority{ };
             AssetDependencyLoadRules m_dependencyRules{ AssetDependencyLoadRules::Default };
             // If the asset we're requesting is already loaded and we don't want to check for any
-            // depenencies that need loading, leave this as true.  If you wish to force a clean evaluation
+            // dependencies that need loading, leave this as true.  If you wish to force a clean evaluation
             // for dependent assets set to false
             bool m_reloadMissingDependencies{ false };
             bool operator==(const AssetLoadParameters& rhs) const

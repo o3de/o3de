@@ -139,8 +139,9 @@ namespace AZ::IO::Requests
     {
     }
 
-    ReportData::ReportData(ReportType reportType)
-        : m_reportType(reportType)
+    ReportData::ReportData(AZStd::vector<AZ::IO::Statistic>& output, IStreamerTypes::ReportType reportType)
+        : m_output(output)
+        , m_reportType(reportType)
     {
     }
 
@@ -293,11 +294,11 @@ namespace AZ::IO
         SetOptionalParent(parent);
     }
 
-    void FileRequest::CreateReport(Requests::ReportType reportType)
+    void FileRequest::CreateReport(AZStd::vector<AZ::IO::Statistic>& output, IStreamerTypes::ReportType reportType)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'Report', but another task was already assigned.");
-        m_command.emplace<Requests::ReportData>(reportType);
+        m_command.emplace<Requests::ReportData>(output, reportType);
     }
 
     void FileRequest::CreateCustom(AZStd::any data, bool failWhenUnhandled, FileRequest* parent)

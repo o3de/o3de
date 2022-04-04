@@ -70,7 +70,7 @@ namespace UnitTest
         bool SaveAssetData(const Asset<AssetData>& asset, IO::GenericStream* stream) override;
         void DestroyAsset(AssetPtr ptr) override;
         void GetHandledAssetTypes(AZStd::vector<AssetType>& assetTypes) override;
-        void GetDefaultAssetLoadPriority(AssetType type, AZStd::chrono::milliseconds& defaultDeadline,
+        void GetDefaultAssetLoadPriority(AssetType type, AZ::IO::IStreamerTypes::Deadline& defaultDeadline,
             AZ::IO::IStreamerTypes::Priority& defaultPriority) const override;
 
         AssetStreamInfo GetStreamInfoForLoad(const AssetId& id, const AssetType& /*type*/) override;
