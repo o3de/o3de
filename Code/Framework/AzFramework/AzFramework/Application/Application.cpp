@@ -71,8 +71,8 @@
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
-#if !defined(_RELEASE)
 #include <AzNetworking/AzNetworkingModule.h>
+#if !defined(_RELEASE)
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #endif
 
@@ -396,10 +396,7 @@ namespace AzFramework
     {
         AZ::ComponentApplication::CreateStaticModules(outModules);
 
-#if !defined(_RELEASE)
-        // Required for TargetManagementComponent which is only added in non-release
         outModules.emplace_back(aznew AzNetworking::AzNetworkingModule());
-#endif
         outModules.emplace_back(aznew AzFrameworkModule());
     }
 

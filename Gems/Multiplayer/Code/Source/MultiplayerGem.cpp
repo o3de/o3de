@@ -22,7 +22,6 @@ namespace Multiplayer
         m_descriptors.insert(
             m_descriptors.end(),
             {
-                AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
                 MultiplayerSystemComponent::CreateDescriptor(),
                 NetBindComponent::CreateDescriptor(),
                 NetworkSpawnableHolderComponent::CreateDescriptor(),
