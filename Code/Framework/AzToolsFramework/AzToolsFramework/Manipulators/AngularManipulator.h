@@ -87,10 +87,9 @@ namespace AzToolsFramework
         }
 
         void SetView(AZStd::unique_ptr<ManipulatorView>&& view);
-        ManipulatorView* GetView() const
-        {
-            return m_manipulatorView.get();
-        }
+
+        ManipulatorView* GetView();
+        const ManipulatorView* GetView() const;
 
     private:
         void OnLeftMouseDownImpl(const ViewportInteraction::MouseInteraction& interaction, float rayIntersectionDistance) override;
@@ -158,4 +157,14 @@ namespace AzToolsFramework
             const AZ::Vector3& rayDirection,
             ViewportInteraction::KeyboardModifiers keyboardModifiers);
     };
+
+    inline const ManipulatorView* AngularManipulator::GetView() const
+    {
+        return m_manipulatorView.get();
+    }
+
+    inline ManipulatorView* AngularManipulator::GetView()
+    {
+        return m_manipulatorView.get();
+    }
 } // namespace AzToolsFramework

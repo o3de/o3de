@@ -9,8 +9,10 @@
 #include "AngularManipulator.h"
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/Manipulators/ManipulatorDebug.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 namespace AzToolsFramework
 {
@@ -189,10 +191,69 @@ namespace AzToolsFramework
         const AzFramework::CameraState& cameraState,
         const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
+        [[maybe_unused]] auto action = CalculateManipulationDataAction(
+            m_fixed, m_actionInternal, m_actionInternal.m_start.m_worldFromLocal, m_actionInternal.m_start.m_localTransform,
+            AngleSnapping(mouseInteraction.m_interactionId.m_viewportId), AngleStep(mouseInteraction.m_interactionId.m_viewportId),
+            mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection, mouseInteraction.m_keyboardModifiers);
+
+        const auto manipulatorState =
+            ManipulatorState{ ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() };
+
         m_manipulatorView->Draw(
-            GetManipulatorManagerId(), managerState, GetManipulatorId(),
-            ManipulatorState{ ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
-            cameraState, mouseInteraction);
+            GetManipulatorManagerId(), managerState, GetManipulatorId(), manipulatorState, debugDisplay, cameraState, mouseInteraction);
+
+        const auto worldPosition = manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition);
+
+        const float viewScale = CalculateScreenToWorldMultiplier(worldPosition, cameraState);
+
+        const AZ::Transform orientation =
+            AZ::Transform::CreateFromQuaternion((QuaternionFromTransformNoScaling(manipulatorState.m_worldFromLocal) *
+                                                 AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), GetAxis()))
+                                                    .GetNormalized());
+
+        // transform circle based on delta between default z up axis and other axes
+        const AZ::Transform worldFromLocalWithOrientation =
+            AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.GetTranslation()) * orientation;
+
+        if (PerformingAction())
+        {
+            if (ed_manipulatorDrawDebug)
+            {
+                // todo
+
+                // display the exact hit (ray intersection) of the mouse pick on the manipulator
+                //DrawTransformAxes(
+                //    debugDisplay,
+                //    GetSpace() *
+                //        AZ::Transform::CreateTranslation(
+                //            action.m_start.m_localHitPosition + GetNonUniformScale() * action.m_current.m_localPositionOffset));
+            }
+
+            debugDisplay.CullOn();
+            debugDisplay.PushMatrix(worldFromLocalWithOrientation);
+            debugDisplay.SetColor(AZ::Colors::AliceBlue /*ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor)*/);
+
+            const auto totalAngle = AZ::DegToRad(360.0f);
+            const auto stepIncrement = totalAngle / 100.0f;
+            auto step = 0.0f;
+
+            while (step < totalAngle * 0.25f)
+            {
+                auto first = AZ::Quaternion::CreateRotationZ(step).TransformVector(AZ::Vector3::CreateAxisY());
+                auto second = AZ::Quaternion::CreateRotationZ(step + stepIncrement).TransformVector(AZ::Vector3::CreateAxisY());
+                debugDisplay.DrawTri(
+                    manipulatorState.m_localPosition,
+                    manipulatorState.m_localPosition + first * 2.24f * viewScale /*torusBound.m_majorRadius*/,
+                    manipulatorState.m_localPosition + second * 2.24f * viewScale /*torusBound.m_majorRadius*/);
+
+                step += stepIncrement;
+            }
+
+            debugDisplay.PopMatrix();
+            debugDisplay.CullOff();
+        }
+
+        // annotation drawing
     }
 
     void AngularManipulator::SetAxis(const AZ::Vector3& axis)
