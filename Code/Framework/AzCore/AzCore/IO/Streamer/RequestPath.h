@@ -40,8 +40,8 @@ namespace AZ
             bool IsValid() const;
             void Clear();
 
-            const char* GetAbsolutePathString() const;
-            const char* GetRelativePathString() const;
+            const char* GetAbsolutePathCStr() const;
+            const char* GetRelativePathCStr() const;
             PathView GetAbsolutePath() const;
             PathView GetRelativePath() const;
             size_t GetHash() const;

@@ -599,7 +599,7 @@ namespace AZ::IO
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
             auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, fileSize);
-            EXPECT_STREQ(readRequest.m_path.GetAbsolutePath().Native().data(), m_dummyFilepath.c_str());
+            EXPECT_EQ(readRequest.m_path.GetAbsolutePath(), AZStd::string_view(m_dummyFilepath));
         };
 
         request->SetCompletionCallback(AZStd::move(callback));
@@ -644,7 +644,7 @@ namespace AZ::IO
             auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, unalignedSize);
             EXPECT_EQ(readRequest.m_offset, unalignedOffset);
-            EXPECT_STREQ(readRequest.m_path.GetAbsolutePath().Native().data(), m_dummyFilepath.c_str());
+            EXPECT_EQ(readRequest.m_path.GetAbsolutePath(), AZStd::string_view(m_dummyFilepath));
         };
 
         request->SetCompletionCallback(AZStd::move(callback));

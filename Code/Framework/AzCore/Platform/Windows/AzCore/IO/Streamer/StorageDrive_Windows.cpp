@@ -471,7 +471,7 @@ namespace AZ::IO
                 DWORD shareMode = (m_constructionOptions.m_enableSharing || data.m_sharedRead) ? FILE_SHARE_READ: 0;
 
                 AZStd::wstring filenameW;
-                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePathString());
+                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePathCStr());
                 file = ::CreateFileW(
                     filenameW.c_str(),              // file name
                     FILE_GENERIC_READ,              // desired access
@@ -812,7 +812,7 @@ namespace AZ::IO
 
         WIN32_FILE_ATTRIBUTE_DATA attributes;
         AZStd::wstring filenameW;
-        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePathString());
+        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePathCStr());
         if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes))
         {
             if ((attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) &&
@@ -871,7 +871,7 @@ namespace AZ::IO
         {
             WIN32_FILE_ATTRIBUTE_DATA attributes;
             AZStd::wstring filenameW;
-            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePathString());
+            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePathCStr());
             if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes) &&
                 (attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) && ((attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0))
             {

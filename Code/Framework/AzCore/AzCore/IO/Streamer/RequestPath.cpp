@@ -72,13 +72,13 @@ namespace AZ
             m_relativePathOffset = 0;
         }
 
-        const char* RequestPath::GetAbsolutePathString() const
+        const char* RequestPath::GetAbsolutePathCStr() const
         {
             ResolvePath();
             return m_path.c_str();
         }
 
-        const char* RequestPath::GetRelativePathString() const
+        const char* RequestPath::GetRelativePathCStr() const
         {
             return m_path.c_str() + m_relativePathOffset;
         }
@@ -93,7 +93,7 @@ namespace AZ
         {
             // In case m_path has not been resolved it holds the relative path with the path offset set to exclude the alias.
             // If m_path has been resolved it holds the absolute path with the path offset set to the start of the start of the relative part.
-            return PathView(AZStd::string_view(m_path.c_str() + m_relativePathOffset, m_path.Native().length() - m_relativePathOffset));
+            return PathView(m_path).Native().substr(m_relativePathOffset);
         }
 
         size_t RequestPath::GetHash() const
@@ -108,24 +108,17 @@ namespace AZ
                 AZ_Assert(FileIOBase::GetInstance(),
                     "Trying to resolve a path in RequestPath before the low level file system has been initialized.");
 
-                AZStd::optional<AZ::IO::FixedMaxPath> fullPath = FileIOBase::GetInstance()->ResolvePath(m_path);
-                if (!fullPath)
-                {
-                    m_absolutePathHash = s_invalidPathHash;
-                    return;
-                }
-
                 size_t relativePathLength = m_path.Native().length() - m_relativePathOffset;
-                m_path = fullPath.value();
-                m_absolutePathHash = AZStd::hash<decltype(m_path)>{}(m_path);
-                if (m_path.Native().length() >= relativePathLength)
+                if (FileIOBase::GetInstance()->ResolvePath(m_path, m_path))
                 {
-                    m_relativePathOffset = m_path.Native().length() - relativePathLength;
+                    m_absolutePathHash = AZ::IO::hash_value(m_path);
+                    if (m_path.Native().length() >= relativePathLength)
+                    {
+                        m_relativePathOffset = m_path.Native().length() - relativePathLength;
+                        return;
+                    }
                 }
-                else
-                {
-                    m_absolutePathHash = s_invalidPathHash;
-                }
+                m_absolutePathHash = s_invalidPathHash;
             }
         }
 

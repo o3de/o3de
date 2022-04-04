@@ -309,7 +309,7 @@ namespace AzFramework
             }
 
             TIMED_AVERAGE_WINDOW_SCOPE(m_fileOpenCloseTimeAverage);
-            if (!m_fileIO.Open(data->m_path.GetRelativePathString(), OpenMode::ModeRead, file))
+            if (!m_fileIO.Open(data->m_path.GetRelativePathCStr(), OpenMode::ModeRead, file))
             {
                 StreamStackEntry::QueueRequest(request);
                 return;
@@ -328,7 +328,7 @@ namespace AzFramework
         AZ_Assert(
             file != InvalidHandle,
             "While searching for file '%s' RemoteStorageDevice::ReadFile encountered a problem that wasn't reported.",
-            data->m_path.GetRelativePathString());
+            data->m_path.GetRelativePathCStr());
         {
             TIMED_AVERAGE_WINDOW_SCOPE(m_readTimeAverage);
             AZ::u64 currentOffset = 0;
@@ -336,7 +336,7 @@ namespace AzFramework
             {
                 AZ_Warning(
                     "IO", false, "RemoteIO failed to tell the offset for a valid file handle for file '%s'.",
-                    data->m_path.GetRelativePathString());
+                    data->m_path.GetRelativePathCStr());
                 m_readSizeAverage.PushEntry(0);
                 request->SetStatus(IStreamerTypes::RequestStatus::Failed);
                 m_context->MarkRequestAsCompleted(request);
@@ -347,7 +347,7 @@ namespace AzFramework
                 {
                     AZ_Warning(
                         "IO", false, "RemoteIO failed to tell to seek to %" PRIu64 " in '%s'.", data->m_offset,
-                        data->m_path.GetRelativePathString());
+                        data->m_path.GetRelativePathCStr());
                     m_readSizeAverage.PushEntry(0);
                     request->SetStatus(IStreamerTypes::RequestStatus::Failed);
                     m_context->MarkRequestAsCompleted(request);
@@ -356,7 +356,7 @@ namespace AzFramework
             if (!m_fileIO.Read(file, data->m_output, data->m_size, true))
             {
                 AZ_Warning("IO", false, "RemoteIO failed to read %i bytes at offset %" PRIu64 " from '%s'.",
-                    data->m_size, data->m_offset, data->m_path.GetRelativePathString());
+                    data->m_size, data->m_offset, data->m_path.GetRelativePathCStr());
                 m_readSizeAverage.PushEntry(0);
                 request->SetStatus(IStreamerTypes::RequestStatus::Failed);
                 m_context->MarkRequestAsCompleted(request);
@@ -412,7 +412,7 @@ namespace AzFramework
         }
         else
         {
-            if (m_fileIO.Exists(fileExists.m_path.GetAbsolutePathString()))
+            if (m_fileIO.Exists(fileExists.m_path.GetAbsolutePathCStr()))
             {
                 fileExists.m_found = true;
                 request->SetStatus(IStreamerTypes::RequestStatus::Completed);
@@ -443,13 +443,13 @@ namespace AzFramework
         {
             AZ_Assert(
                 m_fileHandles[cacheIndex] != InvalidHandle, "File path '%s' doesn't have an associated file handle.",
-                m_filePaths[cacheIndex].GetRelativePathString());
+                m_filePaths[cacheIndex].GetRelativePathCStr());
             found = m_fileIO.Size(m_fileHandles[cacheIndex], fileSize);
         }
         else
         {
             // The file is not open yet, so try to get the file size by name.
-            m_fileIO.Size(command.m_path.GetAbsolutePathString(), fileSize);
+            m_fileIO.Size(command.m_path.GetAbsolutePathCStr(), fileSize);
         }
 
         if (found)
@@ -476,7 +476,7 @@ namespace AzFramework
             m_filePaths[cacheIndex].Clear();
             AZ_Assert(
                 m_fileHandles[cacheIndex] != AZ::IO::InvalidHandle, "File path '%s' doesn't have an associated file handle.",
-                m_filePaths[cacheIndex].GetRelativePathString());
+                m_filePaths[cacheIndex].GetRelativePathCStr());
             m_fileIO.Close(m_fileHandles[cacheIndex]);
             m_fileHandles[cacheIndex] = InvalidHandle;
         }
@@ -545,7 +545,7 @@ namespace AzFramework
             {
                 if (m_fileHandles[i] != InvalidHandle)
                 {
-                    AZ_Printf("Streamer", "File lock in %s : '%s'.\n", m_name.c_str(), m_filePaths[i].GetRelativePathString());
+                    AZ_Printf("Streamer", "File lock in %s : '%s'.\n", m_name.c_str(), m_filePaths[i].GetRelativePathCStr());
                 }
             }
             break;
