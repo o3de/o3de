@@ -15,29 +15,23 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <GraphCanvas/Styling/StyleManager.h>
-#include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
-#include <GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h>
-#include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
-#include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
-#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
-#include <QTranslator>
 #endif
 
-namespace MaterialCanvas
+namespace MaterialEditor
 {
-    //! MaterialCanvasMainWindow
-    class MaterialCanvasMainWindow
-        : public AtomToolsFramework::AtomToolsDocumentMainWindow
+    //! MaterialEditorMainWindow is the main class. Its responsibility is limited to initializing and connecting
+    //! its panels, managing selection of assets, and performing high-level actions like saving. It contains...
+    //! 2) MaterialViewport        - The user can see the selected Material applied to a model.
+    //! 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
+    class MaterialEditorMainWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MaterialCanvasMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialEditorMainWindow, AZ::SystemAllocator, 0);
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
-        MaterialCanvasMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
-        ~MaterialCanvasMainWindow();
+        MaterialEditorMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
 
     protected:
         // AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler overrides...
@@ -52,16 +46,9 @@ namespace MaterialCanvas
         void OpenSettings() override;
         void OpenHelp() override;
 
-    private:
-        GraphCanvas::GraphCanvasTreeItem* GetNodePaletteRootTreeItem() const;
-
         AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};
-        GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
-        GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
-        GraphCanvas::StyleManager m_styleManager;
-        QTranslator m_translator;
     };
-} // namespace MaterialCanvas
+} // namespace MaterialEditor

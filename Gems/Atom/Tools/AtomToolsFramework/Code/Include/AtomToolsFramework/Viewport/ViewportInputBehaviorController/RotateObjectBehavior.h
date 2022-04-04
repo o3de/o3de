@@ -12,12 +12,14 @@
 
 namespace AtomToolsFramework
 {
-    //! Moves(zooms) camera back and forth towards the object
-    class DollyCameraBehavior final : public ViewportInputBehavior
+    //! Rotates object in viewport
+    class RotateObjectBehavior final : public ViewportInputBehavior
     {
     public:
-        DollyCameraBehavior(ViewportInputBehaviorControllerInterface* controller);
-        virtual ~DollyCameraBehavior() = default;
+        RotateObjectBehavior(ViewportInputBehaviorControllerInterface* controller);
+        virtual ~RotateObjectBehavior() = default;
+
+        void Start() override;
 
     protected:
         void TickInternal(float x, float y, float z) override;
@@ -25,7 +27,11 @@ namespace AtomToolsFramework
         float GetSensitivityY() override;
 
     private:
-        static constexpr float SensitivityX = 0;
-        static constexpr float SensitivityY = 0.005f;
+        static constexpr float SensitivityX = 0.01f;
+        static constexpr float SensitivityY = 0.01f;
+
+        AZ::EntityId m_objectEntityId;
+        AZ::Vector3 m_cameraRight = AZ::Vector3::CreateAxisX();
+        AZ::Vector3 m_cameraUp = AZ::Vector3::CreateAxisZ();
     };
 } // namespace AtomToolsFramework
