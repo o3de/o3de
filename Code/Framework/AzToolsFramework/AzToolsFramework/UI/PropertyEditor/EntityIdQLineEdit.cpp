@@ -34,19 +34,12 @@ namespace AzToolsFramework
     {
     }
 
-    void EntityIdQLineEdit::SetEntityId(AZ::EntityId newId, const AZStd::string_view& nameOverride, bool useNameOverrideInInvalidCase)
+    void EntityIdQLineEdit::SetEntityId(AZ::EntityId newId, const AZStd::string_view& nameOverride)
     {
         m_entityId = newId;
         if (!m_entityId.IsValid())
         {
-            if (useNameOverrideInInvalidCase)
-            {
-                setText(nameOverride.data());
-            }
-            else
-            {
-                setText(QString());
-            }
+            setText(QString());
             return;
         }
 

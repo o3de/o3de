@@ -66,7 +66,8 @@ namespace GraphCanvas
 
     GeometryComponent::GeometryComponent()
         : m_animating(false)
-    {}
+    {
+    }
 
     GeometryComponent::~GeometryComponent()
     {

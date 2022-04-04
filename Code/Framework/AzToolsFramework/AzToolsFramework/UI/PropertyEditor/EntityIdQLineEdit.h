@@ -27,7 +27,7 @@ namespace AzToolsFramework
         explicit EntityIdQLineEdit(QWidget* parent = nullptr);
         ~EntityIdQLineEdit() override;
 
-        void SetEntityId(AZ::EntityId newId, const AZStd::string_view& nameOverride, bool useNameOverrideInInvalidCase = false);
+        void SetEntityId(AZ::EntityId newId, const AZStd::string_view& nameOverride);
         AZ::EntityId GetEntityId() const { return m_entityId; }
 
     signals:

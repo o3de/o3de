@@ -417,6 +417,9 @@ namespace GraphCanvas
         //! A node in the scene is being edited
         virtual void OnNodeIsBeingEdited(bool /*isEditing*/){}
 
+        //! A Scene Member was added to the scene
+        virtual void OnSceneMemberAdded(const AZ::EntityId& /*sceneMemberId*/) {};
+
         //! A Scene Member was removed from the scene
         virtual void OnSceneMemberRemoved(const AZ::EntityId& /*sceneMemberId*/) {};
 
