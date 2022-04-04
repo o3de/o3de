@@ -21,7 +21,6 @@ public:
 protected:
     void SetupEnvironment() override
     {
-        AZ::Environment::Create(nullptr);
         AZ::SceneAPI::SceneDataStandaloneAllocator::Initialize(AZ::Environment::GetInstance());
 
         sceneCoreModule = AZ::DynamicModuleHandle::Create("SceneCore");
@@ -40,7 +39,6 @@ protected:
         (*uninit)();
         sceneCoreModule.reset();
         AZ::SceneAPI::SceneDataStandaloneAllocator::TearDown();
-        AZ::Environment::Destroy();
     }
 
 private:

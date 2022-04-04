@@ -291,8 +291,6 @@ CSystem::~CSystem()
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
 
-    AZ::Environment::Detach();
-
     m_env.pSystem = 0;
     gEnv = 0;
 }
