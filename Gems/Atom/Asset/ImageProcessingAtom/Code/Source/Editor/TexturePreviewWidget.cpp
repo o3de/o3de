@@ -10,15 +10,17 @@
 #include <Processing/PixelFormatInfo.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QCheckBox>
 #include <QPushButton>
+#include <QToolButton>
 #include <QLabel>
 #include <QPixmap>
+#include <QSvgWidget>
 #include <QSize>
 #include <QPoint>
-#include <QPixmap>
 #include <QPainter>
 #include <QComboBox>
 #include <QColor>
@@ -35,10 +37,10 @@ namespace ImageProcessingAtomEditor
 {
     using namespace ImageProcessingAtom;
 
-    TexturePreviewWidget::TexturePreviewWidget(EditorTextureSetting& texureSetting, QWidget* parent /*= nullptr*/)
+    TexturePreviewWidget::TexturePreviewWidget(EditorTextureSetting& textureSetting, QWidget* parent /*= nullptr*/)
         : QWidget(parent)
         , m_ui(new Ui::TexturePreviewWidget)
-        , m_textureSetting(&texureSetting)
+        , m_textureSetting(&textureSetting)
     {
         m_ui->setupUi(this);
 
@@ -54,6 +56,8 @@ namespace ImageProcessingAtomEditor
         m_ui->mipLevelLabel->setAttribute(Qt::WA_NoSystemBackground);
         m_ui->imageSizeLabel->setAttribute(Qt::WA_NoSystemBackground);
         m_ui->fileSizeLabel->setAttribute(Qt::WA_NoSystemBackground);
+
+        m_ui->warningIcon->load(QStringLiteral(":/warning.svg"));
 
         // Setup preview mode combo box
         static const QString previewModeString[] = { "RGB",
@@ -79,13 +83,16 @@ namespace ImageProcessingAtomEditor
         QObject::connect(m_ui->prevMipBtn, &QPushButton::clicked, this, &TexturePreviewWidget::OnPrevMip);
         QObject::connect(m_ui->previewComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TexturePreviewWidget::OnChangePreviewMode);
 
+        // Style the Checkbox
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_ui->previewCheckBox);
+
         // Set up Refresh button
-        m_alwaysRefreshAction = new QAction("Always refresh preview", this);
+        m_alwaysRefreshAction = new QAction("Automatic update", this);
         m_alwaysRefreshAction->setCheckable(true);
         m_alwaysRefreshAction->setChecked(m_alwaysRefreshPreview);
         QObject::connect(m_alwaysRefreshAction, &QAction::triggered, this, &TexturePreviewWidget::OnAlwaysRefresh);
 
-        m_refreshPerClickAction = new QAction("Press to refresh preview", this);
+        m_refreshPerClickAction = new QAction("Manual update", this);
         m_refreshPerClickAction->setCheckable(true);
         m_refreshPerClickAction->setChecked(!m_alwaysRefreshPreview);
         QObject::connect(m_refreshPerClickAction, &QAction::triggered, this, &TexturePreviewWidget::OnRefreshPerClick);
@@ -95,21 +102,22 @@ namespace ImageProcessingAtomEditor
         menu->addAction(m_refreshPerClickAction);
 
         m_ui->refreshBtn->setMenu(menu);
-        AzQtComponents::PushButton::applySmallIconStyle(m_ui->refreshBtn);
 
         QObject::connect(m_ui->refreshBtn, &QPushButton::clicked, this, &TexturePreviewWidget::OnRefreshClicked);
-        m_alwaysRefreshIcon.addFile(QStringLiteral(":/refresh.png"), QSize(), QIcon::Normal, QIcon::On);
-        m_refreshPerClickIcon.addFile(QStringLiteral(":/refresh-active.png"), QSize(), QIcon::Normal, QIcon::On);
+        m_alwaysRefreshIcon.addFile(QStringLiteral(":/refresh.svg"), QSize(), QIcon::Normal, QIcon::On);
+        m_refreshPerClickIcon.addFile(QStringLiteral(":/refresh-active.svg"), QSize(), QIcon::Normal, QIcon::On);
         m_ui->refreshBtn->setIcon(m_alwaysRefreshIcon);
 
         m_ui->busyLabel->SetBusyIconSize(16);
         SetImageLabelText(QString(), false);
 
         // Tooltips
-        m_ui->previewComboBox->setToolTip(QString("Preview the texture in different channels."));
-        m_ui->previewCheckBox->setToolTip(QString("Show or hide a 2x2 tiling of the texture."));
-        m_ui->hotkeyLabel->setToolTip(QString("Preview different texture states with keyboard shortcuts."));
-        m_ui->refreshBtn->setToolTip(QString("Provide different ways to refresh the preview. Click on the button to refresh manually."));
+        m_ui->mainWidget->setToolTip(QString("Display hotkeys:\nShift - RGBA\nAlt - Alpha\nSpace - Full Resolution"));
+        m_ui->previewComboBox->setToolTip(QString("Select the texture channel(s) to preview."));
+        m_ui->previewCheckBox->setToolTip(QString("When enabled, a 2x2 tiled texture preview is displayed."));
+        m_ui->refreshBtn->setToolTip(QString("Select automatic or manual preview update.\nClick on the button to refresh manually."));
+        m_ui->prevMipBtn->setToolTip(QString("Display the previous higher level mipmap."));
+        m_ui->nextMipBtn->setToolTip(QString("Display the next lower level mipmap."));
 
         EditorInternalNotificationBus::Handler::BusConnect();
     }
@@ -155,7 +163,7 @@ namespace ImageProcessingAtomEditor
 
     void TexturePreviewWidget::RefreshUI(bool fullRefresh)
     {
-        m_ui->mipLevelLabel->setText(QString("Mip %1").arg(QString::number(m_currentMipIndex)));
+        m_ui->mipLevelLabel->setText(QString("Mipmap Level: %1").arg(QString::number(m_currentMipIndex)));
         m_ui->previewCheckBox->setCheckState(m_previewTiled ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
 
         bool hasNextMip = m_currentMipIndex < (int)m_mipCount - 1;
@@ -172,11 +180,11 @@ namespace ImageProcessingAtomEditor
             QString finalResolution;
             if (it->arrayCount > 1)
             {
-                finalResolution = QString("Image Size: %1 x %2 x %3").arg(QString::number(it->width), QString::number(it->height), QString::number(it->arrayCount));
+                finalResolution = QString("Resolution: %1 x %2 x %3").arg(QString::number(it->width), QString::number(it->height), QString::number(it->arrayCount));
             }
             else
             {
-                finalResolution = QString("Image Size: %1 x %2").arg(QString::number(it->width), QString::number(it->height));
+                finalResolution = QString("Resolution: %1 x %2").arg(QString::number(it->width), QString::number(it->height));
             }
             m_ui->imageSizeLabel->setText(finalResolution);
             
@@ -186,7 +194,7 @@ namespace ImageProcessingAtomEditor
             {
                 float size = static_cast<float>(pixelFormats.EvaluateImageDataSize(preset->m_pixelFormat, it->width, it->height));
                 AZStd::string fileSizeString = EditorHelper::GetFileSizeString(static_cast<AZ::u32>(size));
-                QString finalFileSize = QString("File Size: %1").arg(fileSizeString.c_str());
+                QString finalFileSize = QString("Size: %1").arg(fileSizeString.c_str());
                 m_ui->fileSizeLabel->setText(finalFileSize);
             }
 

@@ -28,7 +28,7 @@ AZ_POP_DISABLE_WARNING
 
 static const int LabelColumnStretch = 2;
 static const int ValueColumnStretch = 3;
-
+ 
 namespace AzToolsFramework
 {
     PropertyRowWidget::PropertyRowWidget(QWidget* pParent)
@@ -922,6 +922,13 @@ namespace AzToolsFramework
                 SetNameLabel(labelText.c_str());
             }
         }
+        else if (attributeName == AZ::Edit::Attributes::ContainerReorderAllow)
+        {
+            if (m_containerEditable)
+            {
+                reader.Read<bool>(m_reorderAllow);
+            }
+        }
         else if (attributeName == AZ::Edit::Attributes::DescriptionTextOverride)
         {
             AZStd::string labelText;
@@ -1740,15 +1747,10 @@ namespace AzToolsFramework
 
     bool PropertyRowWidget::CanBeReordered() const
     {
-        if (!m_parentRow)
-        {
-            return false;
-        }
-
-        return m_parentRow->CanChildrenBeReordered();
+        return m_parentRow && m_parentRow->m_reorderAllow && m_parentRow->CanChildrenBeReordered();
     }
 
-        int PropertyRowWidget::GetIndexInParent() const
+    int PropertyRowWidget::GetIndexInParent() const
     {
         if (!GetParentRow())
         {

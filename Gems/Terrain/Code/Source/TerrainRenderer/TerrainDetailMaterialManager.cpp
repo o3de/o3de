@@ -18,6 +18,7 @@
 #include <Atom/Utils/MaterialUtils.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
+#include <SurfaceData/Utility/SurfaceDataUtility.h>
 
 namespace Terrain
 {
@@ -999,7 +1000,7 @@ namespace Terrain
     {
         for (const auto& materialRegion : m_detailMaterialRegions.GetDataVector())
         {
-            if (materialRegion.m_region.Contains(AZ::Vector3(position.GetX(), position.GetY(), 0.0f)))
+            if (SurfaceData::AabbContains2D(materialRegion.m_region, position))
             {
                 return &materialRegion;
             }

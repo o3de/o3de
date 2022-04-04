@@ -12,13 +12,12 @@
 
 namespace AtomToolsFramework
 {
-    //! Rotates camera around its own axis, allowing to look up/down/left/right
+    //! Moves camera along its vertical and horizontal axis
     class PanCameraBehavior final : public ViewportInputBehavior
     {
     public:
         PanCameraBehavior(ViewportInputBehaviorControllerInterface* controller);
         virtual ~PanCameraBehavior() = default;
-
         void End() override;
 
     protected:
@@ -27,7 +26,7 @@ namespace AtomToolsFramework
         float GetSensitivityY() override;
 
     private:
-        static constexpr float SensitivityX = 0.005f;
-        static constexpr float SensitivityY = 0.005f;
+        static constexpr float SensitivityX = 0.01f;
+        static constexpr float SensitivityY = 0.01f;
     };
 } // namespace AtomToolsFramework

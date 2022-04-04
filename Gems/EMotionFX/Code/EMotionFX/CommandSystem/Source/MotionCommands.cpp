@@ -251,6 +251,7 @@ namespace CommandSystem
             if (undoObject.m_animGraphInstance)
             {
                 undoObject.m_animGraph = undoObject.m_animGraphInstance->GetAnimGraph();
+                undoObject.m_animGraphInstance->Destroy();
                 actorInstance->SetAnimGraphInstance(nullptr);
             }
 
