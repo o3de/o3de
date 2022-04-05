@@ -19,21 +19,22 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <ScriptCanvasAutoGenRegistry.h>
 
-{% for ScriptCanvasFunction in dataFiles %}
+{% for ScriptCanvas in dataFiles %}
+{% for Library in ScriptCanvas%}
 
-{{- macros.Required('Include', ScriptCanvasFunction, ScriptCanvasFunction) -}}
-{{- macros.Required('Name', ScriptCanvasFunction, ScriptCanvasFunction) -}}
+{{- macros.Required('Include', Library, Library) -}}
+{{- macros.Required('Name', Library, Library) -}}
 
-#include "{{ ScriptCanvasFunction.attrib['Include'] }}"
+#include "{{ Library.attrib['Include'] }}"
 
-{% set className = macros.CleanName('ScriptCanvasFunction' + ScriptCanvasFunction.attrib['Name']) %}
+{% set className = macros.CleanName('ScriptCanvas' + Library.attrib['Name']) %}
 {% set namespaceList = [] %}
 {% set sanitizedNamespaceName = 'GlobalMethod' %}
-{% if ScriptCanvasFunction.attrib['Namespace'] is defined and ScriptCanvasFunction.attrib['Namespace'] %}
-{% set namespaceList = macros.CleanName(ScriptCanvasFunction.attrib['Namespace']).split('::') %}
-{% set sanitizedNamespaceName = macros.CleanName(ScriptCanvasFunction.attrib['Namespace'].replace('::', '_')) %}
+{% if Library.attrib['Namespace'] is defined and Library.attrib['Namespace'] %}
+{% set namespaceList = macros.CleanName(Library.attrib['Namespace']).split('::') %}
+{% set sanitizedNamespaceName = macros.CleanName(Library.attrib['Namespace'].replace('::', '_')) %}
 {% endif %}
-{% set categoryName = ScriptCanvasFunction.attrib['Category'] %}
+{% set categoryName = Library.attrib['Category'] %}
 
 {% for namespace in namespaceList %}
 namespace {{namespace}}
@@ -58,8 +59,8 @@ namespace {{namespace}}
         {
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-{% for function in ScriptCanvasFunction.findall('Function') %}
-{{ macros.Required('Name', function, ScriptCanvasFunction) }}
+{% for function in Library.findall('Function') %}
+{{ macros.Required('Name', function, Library) }}
 {% set functionName = macros.CleanName(function.attrib['Name']) %}
 {% set sanitizedFunctionName = macros.CleanName(function.attrib['Name']).replace('::', '_') %}
                 behaviorContext->Method("{{sanitizedNamespaceName}}_{{sanitizedFunctionName}}", &{{functionName}},
@@ -83,4 +84,5 @@ namespace {{namespace}}
 
 {{ macros.ReportErrors() }}
 
+{% endfor %}
 {% endfor %}
