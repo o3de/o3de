@@ -77,7 +77,7 @@ namespace LmbrCentral
                 ->Event("SetObstructionType", &AudioTriggerComponentRequestBus::Events::SetObstructionType)
                 ;
 
-            behaviorContext->Class<Audio::TriggerNotificationIdType>("TriggerNotificationIdType")
+            behaviorContext->Class<Audio::TriggerNotificationIdType>("AudioTriggerNotificationIdType")
                 ->Constructor<AZ::EntityId>()
                     ->Attribute(AZ::Script::Attributes::DefaultConstructorOverrideIndex, 0)
                 ;

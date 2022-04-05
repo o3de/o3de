@@ -69,7 +69,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::TriggerInstanceFinished(TObjectTriggerStates::iterator& iter)
+    void CATLAudioObjectBase::TriggerInstanceFinished(TObjectTriggerStates::const_iterator iter)
     {
         if (iter->second.pOwner)
         {
@@ -758,7 +758,7 @@ namespace Audio
                 return;
             }
 
-            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawObjects))
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::DrawObjects)))
             {
                 const float radius = 0.05f;
                 const AZ::Color sphereColor{ 1.f, 0.1f, 0.1f, 1.f };
@@ -776,7 +776,7 @@ namespace Audio
             float posX = screenPos.GetX();
             float posY = screenPos.GetY();
 
-            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectLabels))
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectLabels)))
             {
                 SATLSoundPropagationData obstOccData;
                 GetObstOccData(obstOccData);
@@ -793,7 +793,7 @@ namespace Audio
             }
 
 
-            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectTriggers))
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectTriggers)))
             {
                 posY += lineHeight;
                 debugDisplay.SetColor(brightColor);
@@ -812,7 +812,7 @@ namespace Audio
                 }
             }
 
-            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectStates))
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectStates)))
             {
                 posY += lineHeight;
                 debugDisplay.SetColor(brightColor);
@@ -837,7 +837,7 @@ namespace Audio
                 }
             }
 
-            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectRtpcs))
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectRtpcs)))
             {
                 posY += lineHeight;
                 debugDisplay.SetColor(brightColor);
@@ -857,7 +857,7 @@ namespace Audio
                 }
             }
 
-            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectEnvironments))
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectEnvironments)))
             {
                 posY += lineHeight;
                 debugDisplay.SetColor(brightColor);
@@ -897,8 +897,8 @@ namespace Audio
 
         AZStd::string str;
         const float textSize = 0.7f;
-        const bool drawRays = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawRays);
-        const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::RayLabels);
+        const bool drawRays = CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::DrawRays));
+        const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::RayLabels));
 
         size_t numRays = m_obstOccType == ObstructionType::SingleRay ? 1 : s_maxRaysPerObject;
         for (size_t rayIndex = 0; rayIndex < numRays; ++rayIndex)

@@ -518,7 +518,7 @@ namespace Audio
     struct FindRequestType
     {
         FindRequestType() = default;
-        bool operator()(AudioRequestVariant& refRequest)
+        bool operator()(const AudioRequestVariant& refRequest)
         {
             if (auto request = AZStd::get_if<T>(&refRequest); request != nullptr)
             {

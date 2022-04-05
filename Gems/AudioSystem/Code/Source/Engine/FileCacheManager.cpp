@@ -360,7 +360,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void CFileCacheManager::DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const float posX, const float posY)
     {
-        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::FileCacheInfo))
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::FileCacheInfo)))
         {
             const auto frameTime = AZStd::chrono::system_clock::now();
 
@@ -384,10 +384,11 @@ namespace Audio
             AZ::Color darkish{ 0.3f, 0.3f, 0.3f, originalAlpha };   // file is not loaded
 
             const bool displayAll = CVars::s_fcmDrawOptions.GetRawFlags() == 0;
-            const bool displayGlobals = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Global);
-            const bool displayLevels = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::LevelSpecific);
-            const bool displayUseCounted = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::UseCounted);
-            const bool displayLoaded = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Loaded);
+            const bool displayGlobals = CVars::s_fcmDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::Global));
+            const bool displayLevels = CVars::s_fcmDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::LevelSpecific));
+            const bool displayUseCounted =
+                CVars::s_fcmDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::UseCounted));
+            const bool displayLoaded = CVars::s_fcmDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::Loaded));
 
             // The text
             AZStd::string str = AZStd::string::format(

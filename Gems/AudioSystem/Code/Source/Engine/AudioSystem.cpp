@@ -192,26 +192,32 @@ namespace Audio
 
         auto startUpdateTime = AZStd::chrono::system_clock::now();        // stamp the start time
 
-        bool handledBlockingRequests = false;
+        bool handleBlockingRequest = false;
 
-        {   // Process a single blocking request, if any, and release the semaphore on the main thread.
+        {   // Process a single blocking request, if any, and release the semaphore the main thread is trying to acquire.
             // This ensures that main thread will become unblocked quickly.
             // If blocking requests were processed, can skip processing of normal requests and skip having
             // the audio thread block through the rest of its update period.
-            AZStd::scoped_lock lock(m_blockingRequestsMutex);
-            if (!m_blockingRequestsQueue.empty())
-            {
-                // Blocking request...
-                AudioRequestVariant& request(m_blockingRequestsQueue.front());
-                m_oATL.ProcessRequest(AZStd::move(request));
-                m_blockingRequestsQueue.pop_front();
 
-                handledBlockingRequests = true;
+            AudioRequestVariant blockingRequest;
+            {
+                AZStd::scoped_lock lock(m_blockingRequestsMutex);
+                handleBlockingRequest = !m_blockingRequestsQueue.empty();
+                if (handleBlockingRequest)
+                {
+                    blockingRequest = AZStd::move(m_blockingRequestsQueue.front());
+                    m_blockingRequestsQueue.pop_front();
+                }
+            }
+
+            if (handleBlockingRequest)
+            {
+                m_oATL.ProcessRequest(AZStd::move(blockingRequest));
                 m_mainEvent.release();
             }
         }
 
-        if (!handledBlockingRequests)
+        if (!handleBlockingRequest)
         {
             // Normal request processing: lock and swap the pending requests queue
             // so that the queue can be opened for new requests while the current set
@@ -233,7 +239,7 @@ namespace Audio
 
         m_oATL.Update();
 
-        if (!handledBlockingRequests)
+        if (!handleBlockingRequest)
         {
             auto endUpdateTime = AZStd::chrono::system_clock::now();      // stamp the end time
             auto elapsedUpdateTime = AZStd::chrono::duration_cast<duration_ms>(endUpdateTime - startUpdateTime);

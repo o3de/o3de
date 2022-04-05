@@ -1619,9 +1619,9 @@ namespace Audio
         static const AZ::Color itemOtherColor{ 0.8f, 0.8f, 0.8f, 0.9f };
 
         const float textSize = 0.8f;
-        AZStd::string str = AZStd::string::format("Audio Events [%zu]", m_cActiveAudioEvents.size());
+        auto headerStr = AZStd::fixed_string<32>::format("Audio Events [%zu]", m_cActiveAudioEvents.size());
         debugDisplay.SetColor(headerColor);
-        debugDisplay.Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
+        debugDisplay.Draw2dTextLabel(fPosX, fPosY, textSize, headerStr.c_str());
         fPosX += 20.0f;
         fPosY += 17.0f;
 
@@ -1650,7 +1650,7 @@ namespace Audio
                     debugDisplay.SetColor(itemOtherColor);
                 }
 
-                str = AZStd::string::format(
+                AZStd::string str = AZStd::string::format(
                     "%s (%llu): %s (%llu)", m_pDebugNameStore->LookupAudioObjectName(atlEvent->m_nObjectID), atlEvent->m_nObjectID,
                     triggerName.c_str(), atlEvent->GetID());
                 debugDisplay.Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());

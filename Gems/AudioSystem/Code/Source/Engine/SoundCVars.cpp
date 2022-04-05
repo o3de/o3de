@@ -195,19 +195,19 @@ namespace Audio::CVars
             return;
         }
 
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::DrawObjects, options.contains("a"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectLabels, options.contains("b"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectTriggers, options.contains("c"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectStates, options.contains("d"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectRtpcs, options.contains("e"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectEnvironments, options.contains("f"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::DrawRays, options.contains("g"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::RayLabels, options.contains("h"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::DrawListener, options.contains("i"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::ActiveEvents, options.contains("v"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::ActiveObjects, options.contains("w"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::FileCacheInfo, options.contains("x"));
-        s_debugDrawOptions.SetFlags(DebugDraw::Options::MemoryInfo, options.contains("y"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::DrawObjects), options.contains("a"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::ObjectLabels), options.contains("b"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::ObjectTriggers), options.contains("c"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::ObjectStates), options.contains("d"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::ObjectRtpcs), options.contains("e"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::ObjectEnvironments), options.contains("f"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::DrawRays), options.contains("g"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::RayLabels), options.contains("h"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::DrawListener), options.contains("i"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::ActiveEvents), options.contains("v"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::ActiveObjects), options.contains("w"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::FileCacheInfo), options.contains("x"));
+        s_debugDrawOptions.SetFlags(static_cast<AZ::u32>(DebugDraw::Options::MemoryInfo), options.contains("y"));
     };
 
     AZ_CVAR(AZ::CVarFixedString, s_DrawAudioDebug, "",
@@ -238,10 +238,10 @@ namespace Audio::CVars
             return;
         }
 
-        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::Global, options.contains("a"));
-        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::LevelSpecific, options.contains("b"));
-        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::UseCounted, options.contains("c"));
-        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::Loaded, options.contains("d"));
+        s_fcmDrawOptions.SetFlags(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::Global), options.contains("a"));
+        s_fcmDrawOptions.SetFlags(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::LevelSpecific), options.contains("b"));
+        s_fcmDrawOptions.SetFlags(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::UseCounted), options.contains("c"));
+        s_fcmDrawOptions.SetFlags(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::Loaded), options.contains("d"));
     };
 
     AZ_CVAR(AZ::CVarFixedString, s_FileCacheManagerDebugFilter, "",

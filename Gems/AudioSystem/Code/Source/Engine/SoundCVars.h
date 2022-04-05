@@ -46,11 +46,10 @@ namespace Audio::CVars
 
 
 #if !defined(AUDIO_RELEASE)
-
 // Flags for the debug draw cvars
 namespace Audio::DebugDraw
 {
-    enum Options : AZ::u32
+    enum class Options
     {
         None = 0,
         DrawObjects = (1 << 0),
@@ -68,11 +67,13 @@ namespace Audio::DebugDraw
         MemoryInfo = (1 << 12),
     };
 
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(Audio::DebugDraw::Options);
+
 } // namespace Audio::DebugDraw
 
 namespace Audio::FileCacheManagerDebugDraw
 {
-    enum Options : AZ::u8
+    enum class Options
     {
         All = 0,
         Global = (1 << 0),
@@ -81,6 +82,7 @@ namespace Audio::FileCacheManagerDebugDraw
         Loaded = (1 << 3),
     };
 
-} // namespace Audio::FileCacheManagerDebugDraw
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(Audio::FileCacheManagerDebugDraw::Options);
 
+} // namespace Audio::FileCacheManagerDebugDraw
 #endif // !AUDIO_RELEASE

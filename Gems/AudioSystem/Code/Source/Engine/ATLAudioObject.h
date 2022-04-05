@@ -63,7 +63,7 @@ namespace Audio
     public:
         void TriggerInstanceStarting(TAudioTriggerInstanceID triggerInstanceId, TAudioControlID audioControlId);
         void TriggerInstanceStarted(TAudioTriggerInstanceID triggerInstanceId, void* owner);
-        void TriggerInstanceFinished(TObjectTriggerStates::iterator& iter);
+        void TriggerInstanceFinished(TObjectTriggerStates::const_iterator iter);
         void EventStarted(const CATLEvent* const atlEvent);
         void EventFinished(const CATLEvent* const atlEvent);
 

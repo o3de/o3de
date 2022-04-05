@@ -117,7 +117,7 @@ namespace Audio
         AudioRequestsQueue m_blockingRequestsQueue;
         AudioRequestsQueue m_pendingRequestsQueue;
         AudioRequestsQueue m_pendingCallbacksQueue;
-        AZStd::recursive_mutex m_blockingRequestsMutex;
+        AZStd::mutex m_blockingRequestsMutex;
         AZStd::mutex m_pendingRequestsMutex;
         AZStd::mutex m_pendingCallbacksMutex;
 

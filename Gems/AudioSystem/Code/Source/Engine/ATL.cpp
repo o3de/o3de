@@ -1843,23 +1843,23 @@ namespace Audio
     {
         m_oFileCacheMgr.DrawDebugInfo(debugDisplay, fPosX, fPosY);
 
-        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::MemoryInfo))
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::MemoryInfo)))
         {
             DrawImplMemoryPoolDebugInfo(debugDisplay, fPosX, fPosY);
         }
 
-        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ActiveObjects))
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ActiveObjects)))
         {
             m_oAudioObjectMgr.DrawDebugInfo(debugDisplay, fPosX, fPosY);
             fPosX += 1000.0f;
         }
 
-        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ActiveEvents))
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ActiveEvents)))
         {
             m_oAudioEventMgr.DrawDebugInfo(debugDisplay, fPosX, fPosY);
         }
 
-        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawListener))
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::DrawListener)))
         {
             m_oAudioListenerMgr.DrawDebugInfo(debugDisplay);
         }
