@@ -17,7 +17,7 @@
 namespace AzFramework
 {
     //! A wrapper around Spawnable asset that can be used by Script Canvas and Lua
-    struct SpawnableAssetRef final
+    class SpawnableAssetRef final
         : private AZ::Data::AssetBus::Handler
     {
         AZ_RTTI(AzFramework::SpawnableAssetRef, "{A96A5037-AD0D-43B6-9948-ED63438C4A52}");
