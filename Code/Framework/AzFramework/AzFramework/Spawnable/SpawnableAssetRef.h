@@ -29,11 +29,18 @@ namespace AzFramework
         SpawnableAssetRef(const SpawnableAssetRef& rhs);
         SpawnableAssetRef& operator=(const SpawnableAssetRef& rhs);
 
-        void OnSpawnAssetChanged();
-
-        AZ::Data::Asset<Spawnable> m_asset;
-
+        void SetAsset(const AZ::Data::Asset<Spawnable> asset)
+        {
+            m_asset = asset;
+            OnSpawnAssetChanged();
+         }
+        AZ::Data::Asset<Spawnable> GetAsset() const
+        {
+            return m_asset;
+        }
     private:
+        void OnSpawnAssetChanged();
+        AZ::Data::Asset<Spawnable> m_asset;
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
     };
