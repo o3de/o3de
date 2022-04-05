@@ -4,128 +4,113 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def check_result(result, msg):
-    from editor_python_test_tools.utils import Report
-    if not result:
-        Report.result(msg, False)
-        raise Exception(msg + " : FAILED")
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
 
-def Editor_EntityCRUDCommands_Works():
+class Editor_EntityCRUDCommands_Works(BaseClass):
     # Description: 
     # Tests a portion of the Entity CRUD Python API while the Editor is running
+    
+    @staticmethod
+    def test():
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        from azlmbr.entity import EntityId
+        import azlmbr.globals
+        check_result = BaseClass.check_result
 
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.legacy.general
-    import azlmbr.entity as entity
-    import azlmbr.legacy.settings as settings
-    from azlmbr.entity import EntityId
-    import azlmbr.globals
+        parentEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())
+        childEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())
+        levelEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetCurrentLevelEntityId') 
 
-    # Required for automated tests
-    TestHelper.init_idle()
+        # Test SetParent/GetParent
 
-    # Open the test level
-    TestHelper.open_level(directory="", level="Base")
-    azlmbr.legacy.general.idle_wait_frames(1)
+        queryParent = editor.EditorEntityInfoRequestBus(bus.Event, 'GetParent', childEntityId)
+        check_result(queryParent.ToString() == levelEntityId.ToString(), "childEntity is parented to the Level entity")
 
-    parentEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())
-    childEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())
-    levelEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetCurrentLevelEntityId') 
+        editor.EditorEntityAPIBus(bus.Event, 'SetParent', childEntityId, parentEntityId)
 
-    # Test SetParent/GetParent
+        queryParent = editor.EditorEntityInfoRequestBus(bus.Event, 'GetParent', childEntityId)
+        check_result(queryParent.ToString() == parentEntityId.ToString(), "childEntity is now parented to the parentEntity")
 
-    queryParent = editor.EditorEntityInfoRequestBus(bus.Event, 'GetParent', childEntityId)
-    check_result(queryParent.ToString() == levelEntityId.ToString(), "childEntity is parented to the Level entity")
+        # Test SetLockState and IsLocked
 
-    editor.EditorEntityAPIBus(bus.Event, 'SetParent', childEntityId, parentEntityId)
+        queryLock = editor.EditorEntityInfoRequestBus(bus.Event, 'IsLocked', parentEntityId)
+        check_result(queryLock == False, "parentEntityId isn't locked")
 
-    queryParent = editor.EditorEntityInfoRequestBus(bus.Event, 'GetParent', childEntityId)
-    check_result(queryParent.ToString() == parentEntityId.ToString(), "childEntity is now parented to the parentEntity")
+        editor.EditorEntityAPIBus(bus.Event, 'SetLockState', parentEntityId, True)
 
-    # Test SetLockState and IsLocked
+        queryLock = editor.EditorEntityInfoRequestBus(bus.Event, 'IsLocked', parentEntityId)
+        check_result(queryLock == True, "parentEntityId is now locked")
 
-    queryLock = editor.EditorEntityInfoRequestBus(bus.Event, 'IsLocked', parentEntityId)
-    check_result(queryLock == False, "parentEntityId isn't locked")
+        queryLock = editor.EditorEntityInfoRequestBus(bus.Event, 'IsLocked', childEntityId)
+        check_result(queryLock, "childEntityId is now locked too")
 
-    editor.EditorEntityAPIBus(bus.Event, 'SetLockState', parentEntityId, True)
+        # Test SetVisibilityState, IsVisible and IsHidden
 
-    queryLock = editor.EditorEntityInfoRequestBus(bus.Event, 'IsLocked', parentEntityId)
-    check_result(queryLock == True, "parentEntityId is now locked")
+        queryVisibility = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', parentEntityId)
+        check_result(queryVisibility, "parentEntityId is visible")
 
-    queryLock = editor.EditorEntityInfoRequestBus(bus.Event, 'IsLocked', childEntityId)
-    check_result(queryLock, "childEntityId is now locked too")
+        queryHidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', parentEntityId)
+        check_result(queryHidden == False, "parentEntityId isn't hidden")
 
-    # Test SetVisibilityState, IsVisible and IsHidden
+        editor.EditorEntityAPIBus(bus.Event, 'SetVisibilityState', parentEntityId, False)
 
-    queryVisibility = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', parentEntityId)
-    check_result(queryVisibility, "parentEntityId is visible")
+        queryVisibility = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', parentEntityId)
+        check_result(queryVisibility == False, "parentEntityId is now hidden")
 
-    queryHidden = editor.EditorEntityInfoRequestBus(bus.Event, 'IsHidden', parentEntityId)
-    check_result(queryHidden == False, "parentEntityId isn't hidden")
+        queryVisibility = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', childEntityId)
+        check_result(queryVisibility == False, "childEntityId is now hidden too")
 
-    editor.EditorEntityAPIBus(bus.Event, 'SetVisibilityState', parentEntityId, False)
+        # Test EditorOnly
 
-    queryVisibility = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', parentEntityId)
-    check_result(queryVisibility == False, "parentEntityId is now hidden")
+        queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
+        print("EditorOnly before queryStatus: " + str(queryStatus))
 
-    queryVisibility = editor.EditorEntityInfoRequestBus(bus.Event, 'IsVisible', childEntityId)
-    check_result(queryVisibility == False, "childEntityId is now hidden too")
+        check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_EditorOnly), "parentEntityId isn't set to Editor Only")
 
-    # Test EditorOnly
+        editor.EditorEntityAPIBus(bus.Event, 'SetStartStatus', parentEntityId, azlmbr.globals.property.EditorEntityStartStatus_EditorOnly)
 
-    queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
-    print("EditorOnly before queryStatus: " + str(queryStatus))
+        queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
+        print("EditorOnly after queryStatus: " + str(queryStatus))
 
-    check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_EditorOnly), "parentEntityId isn't set to Editor Only")
+        check_result(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_EditorOnly, "parentEntityId is now set to Editor Only")
 
-    editor.EditorEntityAPIBus(bus.Event, 'SetStartStatus', parentEntityId, azlmbr.globals.property.EditorEntityStartStatus_EditorOnly)
+        queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', childEntityId)
+        check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_EditorOnly), "childEntityId does not inherit Editor Only")
 
-    queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
-    print("EditorOnly after queryStatus: " + str(queryStatus))
+        # Test StartInactive
 
-    check_result(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_EditorOnly, "parentEntityId is now set to Editor Only")
+        queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
+        print("queryStatus: " + str(queryStatus))
 
-    queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', childEntityId)
-    check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_EditorOnly), "childEntityId does not inherit Editor Only")
+        check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartInactive), "parentEntityId isn't set to Start Inactive")
 
-    # Test StartInactive
+        editor.EditorEntityAPIBus(bus.Event, 'SetStartStatus', parentEntityId, azlmbr.globals.property.EditorEntityStartStatus_StartInactive)
 
-    queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
-    print("queryStatus: " + str(queryStatus))
+        queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
+        check_result(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartInactive, "parentEntityId is now set to Start Inactive")
 
-    check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartInactive), "parentEntityId isn't set to Start Inactive")
+        queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', childEntityId)
+        check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartInactive), "childEntityId does not inherit Start Inactive")
 
-    editor.EditorEntityAPIBus(bus.Event, 'SetStartStatus', parentEntityId, azlmbr.globals.property.EditorEntityStartStatus_StartInactive)
+        # Test StartActive
 
-    queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
-    check_result(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartInactive, "parentEntityId is now set to Start Inactive")
+        queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
+        print("queryStatus: " + str(queryStatus))
 
-    queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', childEntityId)
-    check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartInactive), "childEntityId does not inherit Start Inactive")
+        check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartActive), "parentEntityId isn't set to Start Active")
 
-    # Test StartActive
+        editor.EditorEntityAPIBus(bus.Event, 'SetStartStatus', parentEntityId, azlmbr.globals.property.EditorEntityStartStatus_StartActive)
 
-    queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
-    print("queryStatus: " + str(queryStatus))
+        queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
+        check_result(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartActive, "parentEntityId is now set to Start Active")
 
-    check_result(not(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartActive), "parentEntityId isn't set to Start Active")
-
-    editor.EditorEntityAPIBus(bus.Event, 'SetStartStatus', parentEntityId, azlmbr.globals.property.EditorEntityStartStatus_StartActive)
-
-    queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', parentEntityId)
-    check_result(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartActive, "parentEntityId is now set to Start Active")
-
-    queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', childEntityId)
-    check_result(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartActive, "childEntityId should still be set to Start Active by default")
-
-    # all tests worked
-    Report.result("Editor_EntityCRUDCommands_Works ran", True)
+        queryStatus = editor.EditorEntityInfoRequestBus(bus.Event, 'GetStartStatus', childEntityId)
+        check_result(queryStatus == azlmbr.globals.property.EditorEntityStartStatus_StartActive, "childEntityId should still be set to Start Active by default")
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_EntityCRUDCommands_Works)
-
+    tester = Editor_EntityCRUDCommands_Works()
+    tester.test_case(tester.test)
 

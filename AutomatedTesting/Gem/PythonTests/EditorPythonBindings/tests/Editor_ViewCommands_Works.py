@@ -4,71 +4,59 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def check_result(msg, result):
-    from editor_python_test_tools.utils import Report
-    if not result:
-        Report.result(msg, False)
-        raise Exception(msg + " : FAILED")
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
 
-def Editor_ViewCommands_Works():
+class Editor_ViewCommands_Works(BaseClass):
     # Description: 
     # Tests a portion of the Editor View Python API from CryEdit.cpp while the Editor is running
+    
+    @staticmethod
+    def test():
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.math
+        import azlmbr.legacy.general as general
 
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.math
-    import azlmbr.legacy.general as general
+        def fetch_vector3_parts(vec3):
+            x = vec3.get_property('x')
+            y = vec3.get_property('y')
+            z = vec3.get_property('z')
+            return (x, y, z)
 
-    # Required for automated tests
-    TestHelper.init_idle()
+        def compare_vec3(lhs, rhs):
+            xClose = azlmbr.math.Math_IsClose(lhs[0], rhs[0], 0.001)
+            yClose = azlmbr.math.Math_IsClose(lhs[1], rhs[1], 0.001)
+            zClose = azlmbr.math.Math_IsClose(lhs[2], rhs[2], 0.001)
+            return xClose and yClose and zClose
 
-    # Open the test level
-    TestHelper.open_level(directory="", level="TestDependenciesLevel")
-    azlmbr.legacy.general.idle_wait_frames(1)
+        pos = general.get_current_view_position()
+        rot = general.get_current_view_rotation()
 
-    def fetch_vector3_parts(vec3):
-        x = vec3.get_property('x')
-        y = vec3.get_property('y')
-        z = vec3.get_property('z')
-        return (x, y, z)
+        px, py, pz = fetch_vector3_parts(pos)
+        rx, ry, rz = fetch_vector3_parts(rot)
 
-    def compare_vec3(lhs, rhs):
-        xClose = azlmbr.math.Math_IsClose(lhs[0], rhs[0], 0.001)
-        yClose = azlmbr.math.Math_IsClose(lhs[1], rhs[1], 0.001)
-        zClose = azlmbr.math.Math_IsClose(lhs[2], rhs[2], 0.001)
-        return xClose and yClose and zClose
+        px = px + 5.0
+        py = py - 2.0
+        pz = pz + 1.0
 
-    pos = general.get_current_view_position()
-    rot = general.get_current_view_rotation()
+        rx = rx + 2.0
+        ry = ry + 3.0
+        rz = rz - 5.0
 
-    px, py, pz = fetch_vector3_parts(pos)
-    rx, ry, rz = fetch_vector3_parts(rot)
+        general.set_current_view_position(px, py, pz)
+        general.set_current_view_rotation(rx, ry, rz)
 
-    px = px + 5.0
-    py = py - 2.0
-    pz = pz + 1.0
+        pos2 = general.get_current_view_position()
+        rot2 = general.get_current_view_rotation()
 
-    rx = rx + 2.0
-    ry = ry + 3.0
-    rz = rz - 5.0
+        p2x, p2y, p2z = fetch_vector3_parts(pos2)
+        r2x, r2y, r2z = fetch_vector3_parts(rot2)
 
-    general.set_current_view_position(px, py, pz)
-    general.set_current_view_rotation(rx, ry, rz)
-
-    pos2 = general.get_current_view_position()
-    rot2 = general.get_current_view_rotation()
-
-    p2x, p2y, p2z = fetch_vector3_parts(pos2)
-    r2x, r2y, r2z = fetch_vector3_parts(rot2)
-
-    check_result(f'set_current_view_position', compare_vec3( (px,py,pz), (p2x,p2y,p2z) ))
-    check_result(f'set_current_view_rotation {rx},{ry},{rz} {r2x},{r2y},{r2z}', compare_vec3( (rx,ry,rz), (r2x,r2y,r2z) ))
-
-    # all tests worked
-    Report.result("Editor_ViewCommands_Works ran", True)
+        BaseClass.check_result(compare_vec3( (px,py,pz), (p2x,p2y,p2z) ), 'set_current_view_position')
+        BaseClass.check_result(compare_vec3( (rx,ry,rz), (r2x,r2y,r2z) ), 'set_current_view_rotation')
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_ViewCommands_Works)
+    tester = Editor_ViewCommands_Works()
+    tester.test_case(tester.test)

@@ -4,67 +4,52 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def check_result(result, msg):
-    from editor_python_test_tools.utils import Report
-    if not result:
-        Report.result(msg, False)
-        raise Exception(msg + " : FAILED")
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
 
-def Editor_DisplaySettingsBus_Work():
+class Editor_DisplaySettingsBus_Work(BaseClass):
     # Description: 
     # Tests the Python API from DisplaySettingsPythonFuncs.cpp while the Editor is running
+    
+    @staticmethod
+    def test():
+        import azlmbr.bus as bus
+        import azlmbr.display_settings as display_settings
+        check_result = BaseClass.check_result
 
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.legacy.general
-    import azlmbr.entity as entity
-    import azlmbr.display_settings as display_settings
+        # Retrieve current settings
+        existingState = display_settings.DisplaySettingsBus(bus.Broadcast, 'GetSettingsState')
 
-    # Required for automated tests
-    TestHelper.init_idle()
+        # Alter settings
+        alteredState = azlmbr.object.create('DisplaySettingsState')
+        alteredState.no_collision = False
+        alteredState.no_labels = False
+        alteredState.simulate = True
+        alteredState.hide_tracks = False
+        alteredState.hide_links = False
+        alteredState.hide_helpers = False
+        alteredState.show_dimension_figures = True
 
-    # Open the test level
-    TestHelper.open_level(directory="", level="TestDependenciesLevel")
-    azlmbr.legacy.general.idle_wait_frames(1)
+        # Set altered settings
+        display_settings.DisplaySettingsBus(bus.Broadcast, 'SetSettingsState', alteredState)
 
-    # Retrieve current settings
-    existingState = display_settings.DisplaySettingsBus(bus.Broadcast, 'GetSettingsState')
+        # Get settings again
+        newState = display_settings.DisplaySettingsBus(bus.Broadcast, 'GetSettingsState')
 
-    # Alter settings
-    alteredState = azlmbr.object.create('DisplaySettingsState')
-    alteredState.no_collision = False
-    alteredState.no_labels = False
-    alteredState.simulate = True
-    alteredState.hide_tracks = False
-    alteredState.hide_links = False
-    alteredState.hide_helpers = False
-    alteredState.show_dimension_figures = True
+        # Check if the setter worked
+        check_result(alteredState.no_collision == newState.no_collision, 'alteredState.no_collision')
+        check_result(alteredState.no_labels == newState.no_labels, 'alteredState.no_labels')
+        check_result(alteredState.simulate == newState.simulate, 'alteredState.simulate')
+        check_result(alteredState.hide_tracks == newState.hide_tracks, 'alteredState.hide_tracks')
+        check_result(alteredState.hide_links == newState.hide_links, 'alteredState.hide_links')
+        check_result(alteredState.hide_helpers == newState.hide_helpers, 'alteredState.hide_helpers')
+        check_result(alteredState.show_dimension_figures == newState.show_dimension_figures, 'alteredState.show_dimension_figures')
 
-    # Set altered settings
-    display_settings.DisplaySettingsBus(bus.Broadcast, 'SetSettingsState', alteredState)
-
-    # Get settings again
-    newState = display_settings.DisplaySettingsBus(bus.Broadcast, 'GetSettingsState')
-
-    # Check if the setter worked
-    if alteredState.no_collision == newState.no_collision and \
-            alteredState.no_labels == newState.no_labels and \
-            alteredState.simulate == newState.simulate and \
-            alteredState.hide_tracks == newState.hide_tracks and \
-            alteredState.hide_links == newState.hide_links and \
-            alteredState.hide_helpers == newState.hide_helpers and \
-            alteredState.show_dimension_figures == newState.show_dimension_figures:
-        print("display settings were changed correctly")
-
-    # Restore previous settings
-    display_settings.DisplaySettingsBus(bus.Broadcast, 'SetSettingsState', existingState)
-
-    # all tests worked
-    Report.result("Editor_DisplaySettingsBus_Work ran", True)
+        # Restore previous settings
+        display_settings.DisplaySettingsBus(bus.Broadcast, 'SetSettingsState', existingState)
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_DisplaySettingsBus_Work)
+    tester = Editor_DisplaySettingsBus_Work()
+    tester.test_case(tester.test, level="TestDependenciesLevel")
 

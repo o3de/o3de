@@ -4,61 +4,42 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def check_result(result, msg):
-    from editor_python_test_tools.utils import Report
-    if not result:
-        Report.result(msg, False)
-        raise Exception(msg + " : FAILED")
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
 
-def Editor_WaitCommands_Works():
+class Editor_WaitCommands_Works(BaseClass):
     # Description: 
     # Tests hooks into the timing logic of the Editor
+    
+    @staticmethod
+    def test():
+        import azlmbr.bus as bus
+        import azlmbr.legacy.general as general
 
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.math
-    import azlmbr.legacy.general as general
+        preTimePoint = azlmbr.components.TickRequestBus(bus.Broadcast, "GetTimeAtCurrentTick")
+        preTimeMs = preTimePoint.GetMilliseconds()
 
-    # Required for automated tests
-    TestHelper.init_idle()
+        TICKS_TO_WAIT = 5
+        numTicks = 0
 
-    # Open the test level
-    TestHelper.open_level(directory="", level="Base")
-    azlmbr.legacy.general.idle_wait_frames(1)
+        def onTick(args):
+            nonlocal numTicks
+            numTicks += 1
 
-    preTimePoint = azlmbr.components.TickRequestBus(bus.Broadcast, "GetTimeAtCurrentTick")
-    preTimeMs = preTimePoint.GetMilliseconds()
+        handler = bus.NotificationHandler('TickBus')
+        handler.connect()
+        handler.add_callback('OnTick', onTick)
 
-    TICKS_TO_WAIT = 5
-    numTicks = 0
+        general.idle_wait_frames(TICKS_TO_WAIT)
+        handler.disconnect()
 
-    def onTick(args):
-        nonlocal numTicks
-        numTicks += 1
+        postTimePoint = azlmbr.components.TickRequestBus(bus.Broadcast, "GetTimeAtCurrentTick")
+        postTimeMs = postTimePoint.GetMilliseconds()
 
-    handler = bus.NotificationHandler('TickBus')
-    handler.connect()
-    handler.add_callback('OnTick', onTick)
-
-    general.idle_wait_frames(TICKS_TO_WAIT)
-    handler.disconnect()
-
-    postTimePoint = azlmbr.components.TickRequestBus(bus.Broadcast, "GetTimeAtCurrentTick")
-    postTimeMs = postTimePoint.GetMilliseconds()
-
-    check_result(postTimeMs > preTimeMs, "Time is bigger after frames")
-    check_result(numTicks >= TICKS_TO_WAIT, f"Frames elapsed {numTicks} {TICKS_TO_WAIT}")
-
-    # all tests worked
-    Report.result("Editor_WaitCommands_Works ran", True)
+        BaseClass.check_result(postTimeMs > preTimeMs, "Time is bigger after frames")
+        BaseClass.check_result(numTicks >= TICKS_TO_WAIT, f"Frames elapsed {numTicks} {TICKS_TO_WAIT}")
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_WaitCommands_Works)
-
-
-
-
-
+    tester = Editor_WaitCommands_Works()
+    tester.test_case(tester.test)

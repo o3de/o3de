@@ -4,98 +4,80 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def check_result(result, msg):
-    from editor_python_test_tools.utils import Report
-    if not result:
-        Report.result(msg, False)
-        raise Exception(msg + " : FAILED")
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
 
-def Editor_EntitySelectionCommands_Works():
+class Editor_EntitySelectionCommands_Works(BaseClass):
     # Description: 
     # Tests the Entity Selection Python API while the Editor is running
-
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    from azlmbr.entity import EntityId
-
-    # Required for automated tests
-    TestHelper.init_idle()
-
-    # Open the test level
-    TestHelper.open_level(directory="", level="Base")
-    azlmbr.legacy.general.idle_wait_frames(1)
-
-    def createTestEntities(count):
-        testEntityIds = []
     
-        for i in range(count):
-            entityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())
-            testEntityIds.append(entityId)
-            print("Entity " + str(i)  + " created.")
-            editor.EditorEntityAPIBus(bus.Event, 'SetName', entityId, "TestEntity")
+    @staticmethod
+    def test():
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        from azlmbr.entity import EntityId
+        check_result = BaseClass.check_result
 
-        return testEntityIds
+        def createTestEntities(count):
+            testEntityIds = []
+    
+            for i in range(count):
+                entityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())
+                testEntityIds.append(entityId)
+                print("Entity " + str(i)  + " created.")
+                editor.EditorEntityAPIBus(bus.Event, 'SetName', entityId, "TestEntity")
 
-    # Create new test entities at the root level
-    numTestEntities = 10
-    testEntityIds = createTestEntities(numTestEntities)
+            return testEntityIds
 
-    # Select all test entities
-    editor.ToolsApplicationRequestBus(bus.Broadcast, 'SetSelectedEntities', testEntityIds)
+        # Create new test entities at the root level
+        numTestEntities = 10
+        testEntityIds = createTestEntities(numTestEntities)
 
-    # Get all test entities selected and check if any entity selected
-    selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
-    areAnyEntitiesSelected = editor.ToolsApplicationRequestBus(bus.Broadcast, 'AreAnyEntitiesSelected')
+        # Select all test entities
+        editor.ToolsApplicationRequestBus(bus.Broadcast, 'SetSelectedEntities', testEntityIds)
 
-    check_result(len(testEntityIds) == len(selectedTestEntityIds) and areAnyEntitiesSelected, "All Test Entities Selected")
+        # Get all test entities selected and check if any entity selected
+        selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
+        areAnyEntitiesSelected = editor.ToolsApplicationRequestBus(bus.Broadcast, 'AreAnyEntitiesSelected')
 
-    # Mark first test entity deselected
-    editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntityDeselected', testEntityIds[0])
-    selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
-    isSelected = editor.ToolsApplicationRequestBus(bus.Broadcast, 'IsSelected', testEntityIds[0])
+        check_result(len(testEntityIds) == len(selectedTestEntityIds) and areAnyEntitiesSelected, "All Test Entities Selected")
 
-    check_result(len(testEntityIds) - 1 == len(selectedTestEntityIds) and not isSelected, "One Test Entity Marked as DeSelected")
+        # Mark first test entity deselected
+        editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntityDeselected', testEntityIds[0])
+        selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
+        isSelected = editor.ToolsApplicationRequestBus(bus.Broadcast, 'IsSelected', testEntityIds[0])
 
-    # Mark first test entity selected
-    editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitySelected', testEntityIds[0])
-    selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
-    isSelected = editor.ToolsApplicationRequestBus(bus.Broadcast, 'IsSelected', testEntityIds[0])
+        check_result(len(testEntityIds) - 1 == len(selectedTestEntityIds) and not isSelected, "One Test Entity Marked as DeSelected")
 
-    check_result(len(testEntityIds) == len(selectedTestEntityIds) and isSelected, "One New Test Entity Marked as Selected")
+        # Mark first test entity selected
+        editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitySelected', testEntityIds[0])
+        selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
+        isSelected = editor.ToolsApplicationRequestBus(bus.Broadcast, 'IsSelected', testEntityIds[0])
 
-    # Mark first half of test entities as deselected
-    halfNumTestEntities = len(testEntityIds)//2
+        check_result(len(testEntityIds) == len(selectedTestEntityIds) and isSelected, "One New Test Entity Marked as Selected")
 
-    editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitiesDeselected', testEntityIds[:halfNumTestEntities])
-    selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
+        # Mark first half of test entities as deselected
+        halfNumTestEntities = len(testEntityIds)//2
 
-    check_result(len(testEntityIds) - halfNumTestEntities == len(selectedTestEntityIds), "Half of Test Entity Marked as DeSelected")
+        editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitiesDeselected', testEntityIds[:halfNumTestEntities])
+        selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
 
-    # Mark first half test entity as selected
-    editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitiesSelected', testEntityIds[:halfNumTestEntities])
-    selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
+        check_result(len(testEntityIds) - halfNumTestEntities == len(selectedTestEntityIds), "Half of Test Entity Marked as DeSelected")
 
-    check_result(len(testEntityIds) == len(selectedTestEntityIds), "All Test Entities Marked as Selected")
+        # Mark first half test entity as selected
+        editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitiesSelected', testEntityIds[:halfNumTestEntities])
+        selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
 
-    # Clear all test entities selected
-    editor.ToolsApplicationRequestBus(bus.Broadcast, 'SetSelectedEntities', [])
-    selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
-    areAnyEntitiesSelected = editor.ToolsApplicationRequestBus(bus.Broadcast, 'AreAnyEntitiesSelected')
+        check_result(len(testEntityIds) == len(selectedTestEntityIds), "All Test Entities Marked as Selected")
 
-    check_result(len(selectedTestEntityIds) == 0 and not areAnyEntitiesSelected, "Clear All Test Entities Selected")
+        # Clear all test entities selected
+        editor.ToolsApplicationRequestBus(bus.Broadcast, 'SetSelectedEntities', [])
+        selectedTestEntityIds = editor.ToolsApplicationRequestBus(bus.Broadcast, 'GetSelectedEntities')
+        areAnyEntitiesSelected = editor.ToolsApplicationRequestBus(bus.Broadcast, 'AreAnyEntitiesSelected')
 
-    # all tests worked
-    Report.result("Editor_EntitySelectionCommands_Works ran", True)
+        check_result(len(selectedTestEntityIds) == 0 and not areAnyEntitiesSelected, "Clear All Test Entities Selected")
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_EntitySelectionCommands_Works)
-
-
-
-
-
-
-
+    tester = Editor_EntitySelectionCommands_Works()
+    tester.test_case(tester.test)

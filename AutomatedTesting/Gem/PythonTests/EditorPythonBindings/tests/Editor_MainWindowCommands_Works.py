@@ -4,49 +4,36 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def check_result(result, msg):
-    from editor_python_test_tools.utils import Report
-    if not result:
-        Report.result(msg, False)
-        raise Exception(msg + " : FAILED")
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
 
-def Editor_MainWindowCommands_Works():
+class Editor_MainWindowCommands_Works(BaseClass):
     # Description: 
     # Tests the Python API from MainWindow.cpp while the Editor is running
+    
+    @staticmethod
+    def test():
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.legacy.general as general
 
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.legacy.general as general
+        # Get all pane names
+        panes = general.get_pane_class_names()
 
-    # Required for automated tests
-    TestHelper.init_idle()
+        BaseClass.check_result(len(panes) > 0, f'get_pane_class_names worked of {panes}')
 
-    # Open the test level
-    TestHelper.open_level(directory="", level="Base")
-    azlmbr.legacy.general.idle_wait_frames(1)
+        # Get any element from the panes list
+        test_pane = panes[0]
 
-    # Get all pane names
-    panes = general.get_pane_class_names()
+        general.open_pane(test_pane)
 
-    check_result(len(panes) > 0, f'get_pane_class_names worked of {panes}')
+        BaseClass.check_result(general.is_pane_visible(test_pane), f'open_pane worked with {test_pane}')
 
-    # Get any element from the panes list
-    test_pane = panes[0]
+        general.close_pane(test_pane)
 
-    general.open_pane(test_pane)
-
-    check_result(general.is_pane_visible(test_pane), f'open_pane worked with {test_pane}')
-
-    general.close_pane(test_pane)
-
-    check_result(not(general.is_pane_visible(test_pane)), f'close_pane worked with {test_pane}')
-
-    # all tests worked
-    Report.result("Editor_MainWindowCommands_Works ran", True)
+        BaseClass.check_result(not(general.is_pane_visible(test_pane)), f'close_pane worked with {test_pane}')
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_MainWindowCommands_Works)
-
+    tester = Editor_MainWindowCommands_Works()
+    tester.test_case(tester.test)

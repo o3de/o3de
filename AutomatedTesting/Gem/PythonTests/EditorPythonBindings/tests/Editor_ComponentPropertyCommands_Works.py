@@ -4,149 +4,113 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def ReportError(msg):
-    from editor_python_test_tools.utils import Report
-    Report.result(msg, False)
-    raise Exception(msg + " : FAILED")
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
 
-def GetSetCompareTest(component, path, value):
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-
-    oldObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
-
-    if(oldObj.IsSuccess()):
-        oldValue = oldObj.GetValue()
-    else:
-        ReportError(f'oldObj can not be found at {path}')
-
-    oldValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, oldValue)
-
-    editor.EditorComponentAPIBus(bus.Broadcast, 'SetComponentProperty', component, path, value)
-
-    newObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
-
-    if(newObj.IsSuccess()):
-        newValue = newObj.GetValue()
-
-    newValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, newValue)
-
-    isOldNewValueSame = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, oldValue)
-
-    if not(newValue == oldValue and oldValueCompared and newValueCompared and not isOldNewValueSame):
-        print("GetSetCompareTest " + path + ": SUCCESS")
-    else:
-        ReportError("GetSetCompareTest " + path)
-
-def PteTest(pte, path, value):
-    oldObj = pte.get_value(path)
-
-    if(oldObj.IsSuccess()):
-        oldValue = oldObj.GetValue()
-    oldValueCompared = pte.compare_value(path, oldValue)
-
-    pte.set_value(path, value)
-
-    newObj = pte.get_value(path)
-
-    if(newObj.IsSuccess()):
-        newValue = newObj.GetValue()
-
-    newValueCompared = pte.compare_value(path, newValue)
-
-    isOldNewValueSame = pte.compare_value(path, oldValue)
-
-    if not(newValue == oldValue and oldValueCompared and newValueCompared and not isOldNewValueSame):
-        print("PteTest " + path + ": SUCCESS")
-    else:
-        ReportError("PteTest " + path)
-
-def Editor_ComponentPropertyCommands_Works():
-    # Description:
+class Editor_ComponentPropertyCommands_Works(BaseClass):
+    # Description: 
     # Tests a portion of the Component Property Get/Set Python API while the Editor is running
 
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import azlmbr.legacy.general
-    import azlmbr.prefab
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.entity as entity
-    import azlmbr.math as math
+    @staticmethod
+    def GetSetCompareTest(component, path, value):
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
 
-    # Required for automated tests
-    TestHelper.init_idle()
+        oldObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
+        BaseClass.check_result(oldObj.IsSuccess(), 'oldObj.IsSuccess()')
+        oldValue = oldObj.GetValue()
 
-    # Open the test level
-    TestHelper.open_level(directory="", level="Base")
-    azlmbr.legacy.general.idle_wait_frames(1)
+        oldValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, oldValue)
+        editor.EditorComponentAPIBus(bus.Broadcast, 'SetComponentProperty', component, path, value)
+        newObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
+        BaseClass.check_result(newObj.IsSuccess(), 'newObj.IsSuccess()')
+        newValue = newObj.GetValue()
 
-    # Create new Entity
-    entityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())
+        newValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, newValue)
+        isOldNewValueSame = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, oldValue)
+        BaseClass.check_result(not(newValue == oldValue and oldValueCompared and newValueCompared and not isOldNewValueSame), "GetSetCompareTest " + path)
 
-    if (not entityId):
-        ReportError("New entity with no parent created")
+    @staticmethod
+    def PteTest(pte, path, value):
+        oldObj = pte.get_value(path)
+        BaseClass.check_result(oldObj.IsSuccess(), 'oldObj.IsSuccess()')
+        oldValue = oldObj.GetValue()
+        oldValueCompared = pte.compare_value(path, oldValue)
 
-    # Get Component Type for Quad Shape
-    typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', ["Quad Shape"], entity.EntityType().Game)
+        pte.set_value(path, value)
+        newObj = pte.get_value(path)
+        BaseClass.check_result(newObj.IsSuccess(), 'newObj.IsSuccess()')
+        newValue = newObj.GetValue()
 
-    componentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', entityId, typeIdsList)
-
-    if (not componentOutcome.IsSuccess()):
-        ReportError(f"Quad Shape component {typeIdsList} added to entity")
-
-    components = componentOutcome.GetValue()
-    component = components[0]
-
-    hasComponent = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', entityId, typeIdsList[0])
-
-    if(not hasComponent):
-        ReportError("Entity has an Quad Shape component")
-
-    # Test BuildComponentPropertyList
-    paths = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentPropertyList', component)
+        newValueCompared = pte.compare_value(path, newValue)
+        isOldNewValueSame = pte.compare_value(path, oldValue)
+        BaseClass.check_result(not(newValue == oldValue and oldValueCompared and newValueCompared and not isOldNewValueSame), "PteTest " + path)
     
-    if(len(paths) < 1):
-        ReportError("BuildComponentPropertyList")
+    @staticmethod
+    def test():
+        import azlmbr.legacy.general
+        import azlmbr.prefab
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.entity as entity
+        import azlmbr.math as math
+        check_result = BaseClass.check_result
+        GetSetCompareTest = Editor_ComponentPropertyCommands_Works.GetSetCompareTest
+        PteTest = Editor_ComponentPropertyCommands_Works.PteTest
 
-    # Tests for GetComponentProperty/SetComponentProperty
-    path_color = 'Shape Color'
-    path_visible = 'Visible'
-    path_quad_width = 'Quad Shape|Quad Configuration|Width'
+        # Create new Entity
+        entityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())
+        check_result(entityId, "New entity with no parent created")
 
-    GetSetCompareTest(component, path_visible, False)
-    GetSetCompareTest(component, path_quad_width, 42.0)
+        # Get Component Type for Quad Shape
+        typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', ["Quad Shape"], entity.EntityType().Game)
 
-    color = math.Color()
-    color.r = 0.4
-    color.g = 0.5
-    color.b = 0.6
+        componentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', entityId, typeIdsList)
+        check_result(componentOutcome.IsSuccess(), f"Quad Shape component {typeIdsList} added to entity")
 
-    GetSetCompareTest(component, path_color, color)
+        components = componentOutcome.GetValue()
+        component = components[0]
 
-    # Tests for BuildComponentPropertyTreeEditor
-    pteObj = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentPropertyTreeEditor', component)
+        hasComponent = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', entityId, typeIdsList[0])
+        check_result(hasComponent, "Entity has an Quad Shape component")
 
-    if(not pteObj.IsSuccess()):
-        ReportError("BuildComponentPropertyTreeEditor")
+        # Test BuildComponentPropertyList
+        paths = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentPropertyList', component)    
+        check_result(len(paths) > 1, f"BuildComponentPropertyList {len(paths)}")
+
+        # Tests for GetComponentProperty/SetComponentProperty
+        path_color = 'Shape Color'
+        path_visible = 'Visible'
+        path_quad_width = 'Quad Shape|Quad Configuration|Width'
+
+        GetSetCompareTest(component, path_visible, False)
+        GetSetCompareTest(component, path_quad_width, 42.0)
+
+        color = math.Color()
+        color.r = 0.4
+        color.g = 0.5
+        color.b = 0.6
+
+        GetSetCompareTest(component, path_color, color)
+
+        # Tests for BuildComponentPropertyTreeEditor
+        pteObj = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentPropertyTreeEditor', component)
+        check_result(pteObj.IsSuccess(), "BuildComponentPropertyTreeEditor")
      
-    pte = pteObj.GetValue()
+        pte = pteObj.GetValue()
 
-    PteTest(pte, path_visible, True)
-    PteTest(pte, path_quad_width, 48.0)
+        PteTest(pte, path_visible, True)
+        PteTest(pte, path_quad_width, 48.0)
 
-    color = math.Color()
-    color.r = 0.9
-    color.g = 0.1
-    color.b = 0.3
+        color = math.Color()
+        color.r = 0.9
+        color.g = 0.1
+        color.b = 0.3
 
-    PteTest(pte, path_color, color)
-
-    # all tests worked
-    Report.result("Editor_ComponentPropertyCommands_Works succeeded.", True)
+        PteTest(pte, path_color, color)
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_ComponentPropertyCommands_Works)
-
+    tester = Editor_ComponentPropertyCommands_Works()
+    tester.test_case(tester.test)
 

@@ -4,157 +4,119 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def ReportError(msg):
-    from editor_python_test_tools.utils import Report
-    Report.result(msg, False)
-    raise Exception(msg)
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
 
-def GetSetCompareTest(component, path, assetId):
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.asset as asset
+class Editor_ComponentAssetCommands_Works(BaseClass):
+    # Description: 
+    # Tests a portion of the Component Property Get/Set, Python API while the Editor is running
 
-    # Test Get/Set (get old value, set new value, check that new value was set correctly)
-    oldObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
+    @staticmethod
+    def GetSetCompareTest(component, path, assetId):
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.asset as asset
 
-    if(oldObj.IsSuccess()):
+        # Test Get/Set (get old value, set new value, check that new value was set correctly)
+        oldObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
+        BaseClass.check_result(oldObj.IsSuccess(), "GetComponentProperty oldObj")
         oldValue = oldObj.GetValue()
 
-    oldValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, oldValue)
+        oldValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, oldValue)
 
-    editor.EditorComponentAPIBus(bus.Broadcast, 'SetComponentProperty', component, path, assetId)
-    newObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
+        editor.EditorComponentAPIBus(bus.Broadcast, 'SetComponentProperty', component, path, assetId)
+        newObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
 
-    if(newObj.IsSuccess()):
+        BaseClass.check_result(newObj.IsSuccess(), "GetComponentProperty newObj")
         newValue = newObj.GetValue()
 
-    newValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, newValue)
-    isOldNewValueSame = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, oldValue)
+        newValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, newValue)
+        isOldNewValueSame = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, oldValue)
 
-    if not(newValue == oldValue) and oldValueCompared and newValueCompared and not isOldNewValueSame:
-        print("GetSetCompare Test " + path + ": SUCCESS")
-    else:
-        ReportError("GetSetCompare Test " + path + ": FAILURE")
+        compareTest = not(newValue == oldValue) and oldValueCompared and newValueCompared and not isOldNewValueSame
+        BaseClass.check_result(compareTest, "GetSetCompare Test")
 
-    # Test Clear (set an invalid AssetId, check that the field was cleared correctly)
-    editor.EditorComponentAPIBus(bus.Broadcast, 'SetComponentProperty', component, path, asset.AssetId())
+        # Test Clear (set an invalid AssetId, check that the field was cleared correctly)
+        editor.EditorComponentAPIBus(bus.Broadcast, 'SetComponentProperty', component, path, asset.AssetId())
 
-    clearObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
+        clearObj = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentProperty', component, path)
 
-    if(clearObj.IsSuccess()):
+        BaseClass.check_result(clearObj.IsSuccess(), "clear object")
         clearValue = clearObj.GetValue()
 
-    clearedValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, clearValue)
-    isNewClearedValueSame = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, newValue)
+        clearedValueCompared = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, clearValue)
+        isNewClearedValueSame = editor.EditorComponentAPIBus(bus.Broadcast, 'CompareComponentProperty', component, path, newValue)
 
-    if (clearValue == asset.AssetId()) and clearedValueCompared and not isNewClearedValueSame:
-        print("GetSetCompare Clear " + path + ": SUCCESS")
-    else:
-        ReportError("GetSetCompare Clear " + path + ": FAILURE")
+        BaseClass.check_result((clearValue == asset.AssetId()) and clearedValueCompared and not isNewClearedValueSame, "GetSetCompare")
 
+    @staticmethod
+    def PteTest(pte, path, value):
+        import azlmbr.asset as asset
 
-def PteTest(pte, path, value):
-    import azlmbr.asset as asset
-
-    # Test Get/Set (get old value, set new value, check that new value was set correctly)
-    oldObj = pte.get_value(path)
-
-    if(oldObj.IsSuccess()):
+        # Test Get/Set (get old value, set new value, check that new value was set correctly)
+        oldObj = pte.get_value(path)
+        BaseClass.check_result(oldObj.IsSuccess(), 'get_value')
         oldValue = oldObj.GetValue()
 
-    oldValueCompared = pte.compare_value(path, oldValue)
+        oldValueCompared = pte.compare_value(path, oldValue)
+        pte.set_value(path, value)
 
-    pte.set_value(path, value)
-
-    newObj = pte.get_value(path)
-
-    if(newObj.IsSuccess()):
+        newObj = pte.get_value(path)
+        BaseClass.check_result(newObj.IsSuccess(), "get_value")
         newValue = newObj.GetValue()
 
-    newValueCompared = pte.compare_value(path, newValue)
-    isOldNewValueSame = pte.compare_value(path, oldValue)
+        newValueCompared = pte.compare_value(path, newValue)
+        isOldNewValueSame = pte.compare_value(path, oldValue)
+        BaseClass.check_result(not(newValue == oldValue) and oldValueCompared and newValueCompared and not isOldNewValueSame, "compare_value")
 
-    if not(newValue == oldValue) and oldValueCompared and newValueCompared and not isOldNewValueSame:
-        print("PTE Test " + path + ": SUCCESS")
-    else:
-        ReportError("PTE Test " + path + ": FAILURE")
+        # Test Clear (set an invalid AssetId, check that the field was cleared correctly)
+        pte.set_value(path, asset.AssetId())
 
-    # Test Clear (set an invalid AssetId, check that the field was cleared correctly)
-    pte.set_value(path, asset.AssetId())
-
-    clearObj = pte.get_value(path)
-
-    if(clearObj.IsSuccess()):
+        clearObj = pte.get_value(path)
+        BaseClass.check_result(clearObj.IsSuccess(), "set_value")
         clearValue = clearObj.GetValue()
 
-    clearedValueCompared = pte.compare_value(path, clearValue)
-    isNewClearedValueSame = pte.compare_value(path, newValue)
+        clearedValueCompared = pte.compare_value(path, clearValue)
+        isNewClearedValueSame = pte.compare_value(path, newValue)
 
-    if (clearValue == asset.AssetId()) and clearedValueCompared and not isNewClearedValueSame:
-        print("PTE Clear " + path + ": SUCCESS")
-    else:
-        ReportError("PTE Clear " + path + ": FAILURE")
+        BaseClass.check_result((clearValue == asset.AssetId()) and clearedValueCompared and not isNewClearedValueSame, "compare_value")
 
-def Editor_ComponentAssetCommands_Works():
-    # Description: Tests a portion of the Component Property Get/Set 
-    # Python API while the Editor is running
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import azlmbr.legacy.general
-    import azlmbr.prefab
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.entity as entity
-    import azlmbr.math as math
-    import azlmbr.asset as asset
+    @staticmethod
+    def test():
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.entity as entity
+        import azlmbr.math as math
+        import azlmbr.asset as asset
 
-    # Required for automated tests
-    TestHelper.init_idle()
+        # Create new Entity
+        entityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())
+        BaseClass.check_result(entityId, "New entity with no parent created")
 
-    # Open the test level
-    TestHelper.open_level(directory="", level="Base")
-    azlmbr.legacy.general.idle_wait_frames(1)
+        # Get Component Type for Mesh
+        typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', ["Mesh"], entity.EntityType().Game)
 
-    # Create new Entity
-    entityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())
+        componentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', entityId, typeIdsList)
 
-    if (entityId):
-        print("New entity with no parent created: SUCCESS")
+        BaseClass.check_result(componentOutcome.IsSuccess(), "Mesh component added to entity")
 
-    # Get Component Type for Mesh
-    typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', ["Mesh"], entity.EntityType().Game)
+        components = componentOutcome.GetValue()
+        component = components[0]
 
-    componentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', entityId, typeIdsList)
+        hasComponent = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', entityId, typeIdsList[0])
+        BaseClass.check_result(hasComponent, "Entity has a Mesh component: SUCCESS")
 
-    if (componentOutcome.IsSuccess()):
-        print("Mesh component added to entity: SUCCESS")
-
-    components = componentOutcome.GetValue()
-    component = components[0]
-
-    hasComponent = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', entityId, typeIdsList[0])
-
-    if(hasComponent):
-        print("Entity has a Mesh component: SUCCESS")
-
-    # Get the PTE from the Mesh Component
-    pteObj = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentPropertyTreeEditor', component)
-
-    if(pteObj.IsSuccess()):
+        # Get the PTE from the Mesh Component
+        pteObj = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentPropertyTreeEditor', component)
+        BaseClass.check_result(pteObj.IsSuccess(), "BuildComponentPropertyTreeEditor")
         pte = pteObj.GetValue()
 
-    # Tests for the Asset<> case
-    testAssetId = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', 'assets/objects/foliage/cedar.azmodel', math.Uuid(), False)
-    GetSetCompareTest(component, "Controller|Configuration|Mesh Asset", testAssetId)
-    PteTest(pte, "Controller|Configuration|Mesh Asset", testAssetId)
-
-    # all tests worked
-    Report.result("Editor_ComponentAssetCommands_Works succeeded.", True)
+        # Tests for the Asset<> case
+        testAssetId = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', 'assets/objects/foliage/cedar.azmodel', math.Uuid(), False)
+        Editor_ComponentAssetCommands_Works.GetSetCompareTest(component, "Controller|Configuration|Mesh Asset", testAssetId)
+        Editor_ComponentAssetCommands_Works.PteTest(pte, "Controller|Configuration|Mesh Asset", testAssetId)
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_ComponentAssetCommands_Works)
-
-
-
-
+    tester = Editor_ComponentAssetCommands_Works()
+    tester.test_case(tester.test)

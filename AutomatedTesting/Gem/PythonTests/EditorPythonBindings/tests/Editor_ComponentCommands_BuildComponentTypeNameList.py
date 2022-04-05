@@ -4,36 +4,25 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def Editor_ComponentCommands_BuildComponentTypeNameList():
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
+
+class Editor_ComponentCommands_BuildComponentTypeNameList(BaseClass):
     # Description: 
     # LY-107818 reported a crash with this code snippet
     # This new test will be used to regress test the issue
+    
+    @staticmethod
+    def test():
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.entity as entity
 
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.legacy.general
-
-    # Required for automated tests
-    TestHelper.init_idle()
-
-    # Open the test level
-    TestHelper.open_level(directory="", level="Base")
-    azlmbr.legacy.general.idle_wait_frames(1)
-
-    try:
-        componentList = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentTypeNameList')
-        if(componentList is not None and len(componentList) > 0):
-            Report.result("BuildComponentTypeNameList returned a valid list", True)
-
-    except:
-        Report.result("BuildComponentTypeNameList usage threw an exception", False)
-
-
-    # all tests worked
-    Report.result("BuildComponentTypeNameList ran", True)
+        componentList = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentTypeNameListByEntityType', entity.EntityType().Game)
+        BaseClass.check_result(componentList is not None, "BuildComponentTypeNameList returned a valid list")
+        BaseClass.check_result(len(componentList) > 0, "BuildComponentTypeNameList returned a non-empty list")
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_ComponentCommands_BuildComponentTypeNameList)
+    tester = Editor_ComponentCommands_BuildComponentTypeNameList()
+    tester.test_case(tester.test)
