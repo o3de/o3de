@@ -1755,10 +1755,8 @@ namespace UnitTest
                 AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation),
                 AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation) }));
 
-    class EditorTransformComponentSelectionScaleManipulatorInteractionTestFixture
-        : public EditorTransformComponentSelectionManipulatorInteractionTestFixture
-    {
-    };
+    using EditorTransformComponentSelectionScaleManipulatorInteractionTestFixture =
+        EditorTransformComponentSelectionManipulatorInteractionTestFixture;
 
     TEST_F(
         EditorTransformComponentSelectionScaleManipulatorInteractionTestFixture,

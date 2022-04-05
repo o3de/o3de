@@ -1546,7 +1546,7 @@ namespace AzToolsFramework
 
         struct SharedScaleState
         {
-            AZ::Vector3 m_savedScale = AZ::Vector3::CreateZero();
+            AZ::Vector3 m_savedScaleOffset = AZ::Vector3::CreateZero();
             float m_initialViewScale = 0.0f;
             EntityIdList m_entityIds;
         };
@@ -1556,7 +1556,7 @@ namespace AzToolsFramework
 
         auto uniformLeftMouseDownCallback = [this, sharedScaleState]([[maybe_unused]] const LinearManipulator::Action& action)
         {
-            sharedScaleState->m_savedScale = AZ::Vector3::CreateZero();
+            sharedScaleState->m_savedScaleOffset = AZ::Vector3::CreateZero();
             sharedScaleState->m_initialViewScale = ManipulatorViewBaseScale();
             // important to sort entityIds based on hierarchy order when updating transforms
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, sharedScaleState->m_entityIds);
@@ -1582,7 +1582,7 @@ namespace AzToolsFramework
             if (prevModifiers != action.m_modifiers)
             {
                 UpdateInitialTransform(m_entityIdManipulators);
-                sharedScaleState->m_savedScale = action.LocalScaleOffset();
+                sharedScaleState->m_savedScaleOffset = action.LocalScaleOffset();
                 sharedScaleState->m_initialViewScale = ManipulatorViewBaseScale();
             }
 
@@ -1592,7 +1592,7 @@ namespace AzToolsFramework
             };
 
             const float uniformScale =
-                action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset() - sharedScaleState->m_savedScale);
+                action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset() - sharedScaleState->m_savedScaleOffset);
 
             if (action.m_modifiers.Ctrl())
             {
