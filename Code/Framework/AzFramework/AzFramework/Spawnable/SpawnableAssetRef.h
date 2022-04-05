@@ -20,7 +20,8 @@ namespace AzFramework
     struct SpawnableAssetRef final
         : private AZ::Data::AssetBus::Handler
     {
-        AZ_RTTI(SpawnableAssetRef, "{A96A5037-AD0D-43B6-9948-ED63438C4A52}");
+        AZ_RTTI(AzFramework::SpawnableAssetRef, "{A96A5037-AD0D-43B6-9948-ED63438C4A52}");
+
         static void Reflect(AZ::ReflectContext* context);
 
         SpawnableAssetRef();
@@ -35,7 +36,5 @@ namespace AzFramework
     private:
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType) override;
-
     };
 }

@@ -19,7 +19,10 @@ namespace AzFramework
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
-            serializeContext->Class<SpawnableMediator>();
+            serializeContext
+                ->Class<SpawnableMediator>()
+                ->Version(0)
+            ;
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -28,8 +31,11 @@ namespace AzFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
                 ->Attribute(AZ::Script::Attributes::Module, "prefabs")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Method("CreateSpawnTicket", &SpawnableMediator::CreateSpawnTicket)
                 ->Method("Spawn", &SpawnableMediator::Spawn)
+                ->Method("SpawnAndParent", &SpawnableMediator::SpawnAndParent)
+                ->Method("SpawnParentAndTransform", &SpawnableMediator::SpawnParentAndTransform)
                 ->Method("Despawn", &SpawnableMediator::Despawn)
                 ->Method("Clear", &SpawnableMediator::Clear);
 
@@ -51,7 +57,7 @@ namespace AzFramework
         Clear();
     }
 
-    void SpawnableMediator::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+    void SpawnableMediator::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         ProcessDespawnedResults();
         ProcessSpawnedResults();
@@ -63,11 +69,32 @@ namespace AzFramework
         return EntitySpawnTicket(spawnableAsset.m_asset);
     }
 
-    bool SpawnableMediator::Spawn(
+    bool SpawnableMediator::Spawn(EntitySpawnTicket spawnTicket)
+    {
+        static AZ::EntityId parentId;
+        return SpawnParentAndTransform(
+            spawnTicket,
+            parentId,
+            AZ::Vector3::CreateZero(), // translation
+            AZ::Vector3::CreateZero(), // rotation
+            1.0f); // scale
+    }
+
+    bool SpawnableMediator::SpawnAndParent(EntitySpawnTicket spawnTicket, const AZ::EntityId& parentId)
+    {
+        return SpawnParentAndTransform(
+            spawnTicket,
+            parentId,
+            AZ::Vector3::CreateZero(), // translation
+            AZ::Vector3::CreateZero(), // rotation
+            1.0f); // scale
+    }
+
+    bool SpawnableMediator::SpawnParentAndTransform(
         EntitySpawnTicket spawnTicket,
-        AZ::EntityId parentId,
-        AZ::Vector3 translation,
-        AZ::Vector3 rotation,
+        const AZ::EntityId& parentId,
+        const AZ::Vector3& translation,
+        const AZ::Vector3& rotation,
         float scale)
     {
         if (!spawnTicket.IsValid())
@@ -76,12 +103,10 @@ namespace AzFramework
             return false;
         }
 
-        auto preSpawnCB = [this, parentId, translation, rotation, scale](
+        auto preSpawnCB = [parentId, translation, rotation, scale](
                               [[maybe_unused]] EntitySpawnTicket::Id ticketId,
             SpawnableEntityContainerView view)
         {
-            AZStd::lock_guard lock(m_mutex);
-
             AZ::Entity* rootEntity = *view.begin();
             TransformComponent* entityTransform = rootEntity->FindComponent<TransformComponent>();
 
@@ -112,7 +137,7 @@ namespace AzFramework
             {
                 spawnableResult.m_entityList.emplace_back(entity->GetId());
             }
-            m_spawnedResults.push_back(spawnableResult);
+            m_spawnedResults.push_back(AZStd::move(spawnableResult));
         };
 
         SpawnAllEntitiesOptionalArgs optionalArgs;

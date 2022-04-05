@@ -15,14 +15,16 @@
 
 namespace AzFramework
 {
+    //! A helper class for direct calls to SpawnableEntitiesInterface that is
+    //! reflected with BehaviorContext for interfacing with Lua API
     class SpawnableMediator
         : public AZ::TickBus::Handler
     {
     public:
-        AZ_TYPE_INFO(SpawnableMediator, "{9C3118FE-2E78-49BE-BE7A-B41F95B3FCF8}");
+        AZ_TYPE_INFO(AzFramework::SpawnableMediator, "{9C3118FE-2E78-49BE-BE7A-B41F95B3FCF8}");
 
         inline static constexpr const char* RootSpawnableRegistryKey = "/Amazon/AzCore/Bootstrap/RootSpawnable";
-            
+
         SpawnableMediator();
         ~SpawnableMediator();
 
@@ -33,13 +35,19 @@ namespace AzFramework
         //! Creates EntitySpawnTicket using provided prefab asset
         EntitySpawnTicket CreateSpawnTicket(const SpawnableAssetRef& spawnableAsset);
 
+        //! Spawns a prefab and places it under level entity
+        bool Spawn(EntitySpawnTicket spawnTicket);
+
+        //! Spawns a prefab and places it under parentId entity
+        bool SpawnAndParent(EntitySpawnTicket spawnTicket, const AZ::EntityId& parentId);
+
         //! Spawns a prefab and places it relative to provided parent,
         //! if no parentId is specified then places it in world coordinates
-        bool Spawn(
+        bool SpawnParentAndTransform(
             EntitySpawnTicket spawnTicket,
-            AZ::EntityId parentId,
-            AZ::Vector3 translation,
-            AZ::Vector3 rotation,
+            const AZ::EntityId& parentId,
+            const AZ::Vector3& translation,
+            const AZ::Vector3& rotation,
             float scale);
 
         //! Despawns a prefab

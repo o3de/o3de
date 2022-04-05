@@ -32,7 +32,7 @@ namespace AzFramework
                 editContext
                     ->Class<SpawnableAssetRef>("SpawnableAssetRef", "A wrapper around spawnable asset to be used as a variable in Script Canvas.")
                     // m_asset
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SpawnableAssetRef::m_asset, "m_asset", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SpawnableAssetRef::m_asset, "asset", "")
                     ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
                     ->Attribute(AZ::Edit::Attributes::HideProductFilesInAssetPicker, true)
                     ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Spawnable Asset")
@@ -48,39 +48,44 @@ namespace AzFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
                 ->Attribute(AZ::Script::Attributes::Module, "prefabs")
-                ->Property("m_asset", BehaviorValueProperty(&SpawnableAssetRef::m_asset));
+                ->Property("asset", BehaviorValueProperty(&SpawnableAssetRef::m_asset));
         }
     }
 
     SpawnableAssetRef::SpawnableAssetRef()
     {
+        OnSpawnAssetChanged();
     }
 
     SpawnableAssetRef::~SpawnableAssetRef()
     {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
     }
 
     SpawnableAssetRef::SpawnableAssetRef(const SpawnableAssetRef& rhs)
         : m_asset(rhs.m_asset)
     {
+        OnSpawnAssetChanged();
     }
 
     SpawnableAssetRef& SpawnableAssetRef::operator=(const SpawnableAssetRef& rhs)
     {
         m_asset = rhs.m_asset;
+        OnSpawnAssetChanged();
         return *this;
     }
 
     void SpawnableAssetRef::OnSpawnAssetChanged()
     {
+        // Disconnect from the bus beforehand in case the new asset is not valid
+        AZ::Data::AssetBus::Handler::BusDisconnect();
+
         if (m_asset.GetId().IsValid())
         {
             AZStd::string rootSpawnableFile;
             StringFunc::Path::GetFileName(m_asset.GetHint().c_str(), rootSpawnableFile);
-
-            rootSpawnableFile += Spawnable::DotFileExtension;
-
-            AZ::u32 rootSubId = SpawnableAssetHandler::BuildSubId(move(rootSpawnableFile));
+            StringFunc::Path::ReplaceExtension(rootSpawnableFile, Spawnable::DotFileExtension);
+            AZ::u32 rootSubId = SpawnableAssetHandler::BuildSubId(rootSpawnableFile);
 
             if (m_asset.GetId().m_subId != rootSubId)
             {
@@ -95,23 +100,19 @@ namespace AzFramework
                 m_asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::Default);
             }
 
-            AZ::Data::AssetBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::Handler::BusConnect(m_asset.GetId());
         }
     }
 
     void SpawnableAssetRef::OnAssetReady([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
+        m_asset = asset;
+        OnSpawnAssetChanged();
     }
 
     void SpawnableAssetRef::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         m_asset = asset;
-    }
-
-    void SpawnableAssetRef::OnAssetUnloaded(
-        [[maybe_unused]] const AZ::Data::AssetId assetId,
-        [[maybe_unused]] const AZ::Data::AssetType assetType)
-    {
+        OnSpawnAssetChanged();
     }
 }
