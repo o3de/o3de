@@ -104,6 +104,11 @@ namespace AzToolsFramework::Prefab
             registry->GetObject(m_openInstanceMode, s_openInstanceModeRegistryKey);
             registry->GetObject(m_allowContextMenuInstanceExpanding, s_allowContextMenuInstanceExpandingRegistryKey);
             registry->GetObject(m_containerStepByStepSelection, s_containerStepByStepSelectionRegistryKey);
+
+            if (m_openInstanceMode == 2)
+            {
+                m_prefabEditScope = PrefabEditScope::NESTED_INSTANCES;
+            }
         }
     }
 
@@ -588,10 +593,7 @@ namespace AzToolsFramework::Prefab
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
 
         // TEMP - This isn't ideal, but once we've decided which setting is default this won't be necessary.
-        if (m_openInstanceMode == 2)
-        {
-            SwitchToEditScope(PrefabEditScope::NESTED_INSTANCES);
-        }
+        SwitchToEditScope(m_prefabEditScope);
     }
 
     void PrefabFocusHandler::OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, [[maybe_unused]] bool status)
