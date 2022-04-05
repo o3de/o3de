@@ -29,6 +29,7 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorPickEntitySelection.h>
@@ -156,6 +157,9 @@ namespace UnitTest
             m_entityId1 = CreateEntityWithBounds("Entity1");
             m_entityId2 = CreateEntityWithBounds("Entity2");
             m_entityId3 = CreateEntityWithBounds("Entity3");
+
+            // ensure manipulator view base scale has a sensible default value
+            AzToolsFramework::SetManipulatorViewBaseScale(1.0f);
         }
 
         void PositionEntities()
@@ -1835,6 +1839,56 @@ namespace UnitTest
                              AZ::Vector3(5.0f, 15.0f, 12.0f),
                              // position remains unchanged (manipulator won't move as an entity wasn't picked)
                              EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation }));
+
+    using EditorTransformComponentSelectionScaleManipulatorInteractionTestFixture =
+        EditorTransformComponentSelectionManipulatorInteractionTestFixture;
+
+    TEST_F(
+        EditorTransformComponentSelectionScaleManipulatorInteractionTestFixture,
+        UsingScaleManipulatorWithCtrlHeldAdjustsManipulatorBaseViewScale)
+    {
+        using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
+
+        PositionEntities();
+
+        // move camera up and to the left so it's just above the normal row of entities
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 10.1f)));
+
+        SetTransformMode(EditorTransformComponentSelectionRequestBus::Events::Mode::Scale);
+
+        AzToolsFramework::SelectEntities({ m_entityId1 });
+
+        // manipulator should be centered between the two entities
+        const auto initialManipulatorTransform = GetManipulatorTransform();
+
+        const float screenToWorldMultiplier =
+            AzToolsFramework::CalculateScreenToWorldMultiplier(initialManipulatorTransform->GetTranslation(), m_cameraState);
+
+        const auto translationManipulatorStartHoldWorldPosition1 = AzToolsFramework::GetWorldTransform(m_entityId1).GetTranslation() +
+            initialManipulatorTransform->GetBasisZ() * screenToWorldMultiplier;
+        const auto translationManipulatorEndHoldWorldPosition1 =
+            translationManipulatorStartHoldWorldPosition1 + AZ::Vector3::CreateAxisZ(LinearManipulatorZAxisMovementScale);
+
+        // calculate screen space positions
+        const auto scaleManipulatorHoldScreenPosition =
+            AzFramework::WorldToScreen(translationManipulatorStartHoldWorldPosition1, m_cameraState);
+        const auto scaleManipulatorEndHoldScreenPosition =
+            AzFramework::WorldToScreen(translationManipulatorEndHoldWorldPosition1, m_cameraState);
+
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(scaleManipulatorHoldScreenPosition)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
+            ->MouseLButtonDown()
+            ->MousePosition(scaleManipulatorEndHoldScreenPosition)
+            ->MouseLButtonUp();
+
+        // verify the view base scale as changed the expected amount based on the adjustment made to the manipulator
+        const auto expectedManipulatorViewBaseScale = AzToolsFramework::ManipulatorViewBaseScale();
+        EXPECT_NEAR(expectedManipulatorViewBaseScale, 2.0f, 0.01f);
+    }
 
     using EditorTransformComponentSelectionManipulatorTestFixture =
         IndirectCallManipulatorViewportInteractionFixtureMixin<EditorTransformComponentSelectionFixture>;

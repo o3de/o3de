@@ -52,12 +52,12 @@ namespace AtomToolsFramework
         float m_y = {};
         //! delta scroll wheel accumulated during current frame
         float m_z = {};
-        //! Model radius
+        //! object radius
         float m_radius = 1.0f;
 
         AZ::EntityId m_cameraEntityId;
-        AZ::Vector3 m_targetPosition = AZ::Vector3::CreateZero();
-        float m_distanceToTarget = {};
+        AZ::Vector3 m_objectPosition = AZ::Vector3::CreateZero();
+        float m_distanceToObject = {};
         ViewportInputBehaviorControllerInterface* m_controller = {};
 
     private:

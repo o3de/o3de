@@ -445,8 +445,6 @@ namespace AzToolsFramework
 
     static void InitializeTranslationLookup(EntityIdManipulators& entityIdManipulators)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         for (auto& entityIdLookup : entityIdManipulators.m_lookups)
         {
             entityIdLookup.second.m_initial = AZ::Transform::CreateTranslation(GetWorldTranslation(entityIdLookup.first));
@@ -779,10 +777,7 @@ namespace AzToolsFramework
         // or switching type of rotation (modifier keys change))
         for (auto& entityIdLookup : entityManipulators.m_lookups)
         {
-            AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(worldFromLocal, entityIdLookup.first, &AZ::TransformBus::Events::GetWorldTM);
-
-            entityIdLookup.second.m_initial = worldFromLocal;
+            entityIdLookup.second.m_initial = GetWorldTransform(entityIdLookup.first);
         }
     }
 
@@ -1423,13 +1418,7 @@ namespace AzToolsFramework
                 // important to sort entityIds based on hierarchy order when updating transforms
                 BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, sharedRotationState->m_entityIds);
 
-                for (auto& entityIdLookup : m_entityIdManipulators.m_lookups)
-                {
-                    AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                    AZ::TransformBus::EventResult(worldFromLocal, entityIdLookup.first, &AZ::TransformBus::Events::GetWorldTM);
-
-                    entityIdLookup.second.m_initial = worldFromLocal;
-                }
+                UpdateInitialTransform(m_entityIdManipulators);
 
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
@@ -1567,6 +1556,7 @@ namespace AzToolsFramework
         struct SharedScaleState
         {
             AZ::Vector3 m_savedScaleOffset = AZ::Vector3::CreateZero();
+            float m_initialViewScale = 0.0f;
             EntityIdList m_entityIds;
         };
 
@@ -1576,16 +1566,11 @@ namespace AzToolsFramework
         auto uniformLeftMouseDownCallback = [this, sharedScaleState]([[maybe_unused]] const LinearManipulator::Action& action)
         {
             sharedScaleState->m_savedScaleOffset = AZ::Vector3::CreateZero();
+            sharedScaleState->m_initialViewScale = ManipulatorViewBaseScale();
             // important to sort entityIds based on hierarchy order when updating transforms
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, sharedScaleState->m_entityIds);
 
-            for (auto& entityIdLookup : m_entityIdManipulators.m_lookups)
-            {
-                AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                AZ::TransformBus::EventResult(worldFromLocal, entityIdLookup.first, &AZ::TransformBus::Events::GetWorldTM);
-
-                entityIdLookup.second.m_initial = worldFromLocal;
-            }
+            UpdateInitialTransform(m_entityIdManipulators);
 
             m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
             m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
@@ -1603,57 +1588,62 @@ namespace AzToolsFramework
         auto uniformLeftMouseMoveCallback = [this, sharedScaleState, prevModifiers = ViewportInteraction::KeyboardModifiers()](
                                                 const LinearManipulator::Action& action) mutable
         {
-            // do nothing to modify the manipulator
-            if (action.m_modifiers.Ctrl())
-            {
-                return;
-            }
-
             if (prevModifiers != action.m_modifiers)
             {
                 UpdateInitialTransform(m_entityIdManipulators);
                 sharedScaleState->m_savedScaleOffset = action.LocalScaleOffset();
+                sharedScaleState->m_initialViewScale = ManipulatorViewBaseScale();
             }
 
-            // note: must use sorted entityIds based on hierarchy order when updating transforms
-            for (AZ::EntityId entityId : sharedScaleState->m_entityIds)
+            const auto sumVectorElements = [](const AZ::Vector3& vec)
             {
-                auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(entityId);
-                if (entityIdLookupIt == m_entityIdManipulators.m_lookups.end())
+                return vec.GetX() + vec.GetY() + vec.GetZ();
+            };
+
+            const float uniformScale =
+                action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset() - sharedScaleState->m_savedScaleOffset);
+
+            if (action.m_modifiers.Ctrl())
+            {
+                // adjust the manipulator scale when ctrl is held
+                SetManipulatorViewBaseScale(AZ::GetClamp(
+                    sharedScaleState->m_initialViewScale + uniformScale, MinManipulatorViewBaseScale, MaxManipulatorViewBaseScale));
+            }
+            else
+            {
+                // note: must use sorted entityIds based on hierarchy order when updating transforms
+                for (AZ::EntityId entityId : sharedScaleState->m_entityIds)
                 {
-                    continue;
-                }
-
-                const AZ::Transform initial = entityIdLookupIt->second.m_initial;
-                const float initialScale = initial.GetUniformScale();
-
-                const auto sumVectorElements = [](const AZ::Vector3& vec)
-                {
-                    return vec.GetX() + vec.GetY() + vec.GetZ();
-                };
-
-                const float uniformScale =
-                    action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset() - sharedScaleState->m_savedScaleOffset);
-                const float scale = AZ::GetClamp(1.0f + uniformScale / initialScale, AZ::MinTransformScale, AZ::MaxTransformScale);
-                const AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(scale);
-
-                switch (InfluenceFromModifiers(action.m_modifiers))
-                {
-                case Influence::Individual:
+                    auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(entityId);
+                    if (entityIdLookupIt == m_entityIdManipulators.m_lookups.end())
                     {
-                        const AZ::Transform pivotTransform = TransformNormalizedScale(entityIdLookupIt->second.m_initial);
-                        const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
-
-                        SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
+                        continue;
                     }
-                    break;
-                case Influence::Group:
-                    {
-                        const AZ::Transform pivotTransform =
-                            TransformNormalizedScale(m_entityIdManipulators.m_manipulators->GetLocalTransform());
-                        const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
 
-                        SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
+                    const AZ::Transform initial = entityIdLookupIt->second.m_initial;
+                    const float initialScale = initial.GetUniformScale();
+
+                    const float scale = AZ::GetClamp(1.0f + uniformScale / initialScale, AZ::MinTransformScale, AZ::MaxTransformScale);
+                    const AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(scale);
+
+                    switch (InfluenceFromModifiers(action.m_modifiers))
+                    {
+                    case Influence::Individual:
+                        {
+                            const AZ::Transform pivotTransform = TransformNormalizedScale(entityIdLookupIt->second.m_initial);
+                            const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
+
+                            SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
+                        }
+                        break;
+                    case Influence::Group:
+                        {
+                            const AZ::Transform pivotTransform =
+                                TransformNormalizedScale(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+                            const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
+
+                            SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
+                        }
                     }
                 }
             }
@@ -2199,7 +2189,7 @@ namespace AzToolsFramework
             ClearManipulatorTranslationOverride();
             break;
         case Mode::Scale:
-            // do nothing
+            SetManipulatorViewBaseScale(DefaultManipulatorViewBaseScale);
             break;
         }
     }

@@ -37,18 +37,11 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::AtomToolsFramework.Static
-            Gem::AtomToolsFramework.Editor
-            Gem::Atom_RHI.Public
-            Gem::Atom_RHI.Reflect
-            Gem::Atom_RPI.Edit
-            Gem::Atom_RPI.Public
-            Gem::Atom_Feature_Common.Public
-            Gem::Atom_Component_DebugCamera.Static
             Gem::AtomLyIntegration_CommonFeatures.Static
+            Gem::AtomToolsFramework.Editor
+            Gem::AtomToolsFramework.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
-        Gem::EditorPythonBindings.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS MaterialEditor VARIANTS Tools)
