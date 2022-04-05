@@ -125,49 +125,39 @@ namespace AzToolsFramework
             EntityIdList selectedEntities;
             ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
 
+            if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
+            {
+                // Entity is already selected, keep the same selection
+                return entityId;
+            }
+
             // Return the highest closed container, or the entity if none is found.
             AZ::EntityId highestSelectableEntityId = entityId;
             AZ::EntityId secondLastOpenContainerBeforeSelection = entityId;
             AZ::EntityId lastOpenContainerBeforeSelection = entityId;
-            bool hitClosedContainer = false;
-            bool hitSelectedOpenContainer = false;
 
             // Skip the queried entity, as we only want to check its ancestors.
             AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
 
+            // Assumption - there are no closed containers. This is due to the way PrefabEditScope::NESTED_INSTANCES works,
+            // since we open all descendant containers of the focused prefab.
+            // If this is no longer the case, this code will need a rewrite.
+
             // Go up the hierarchy until you hit the root
             while (entityId.IsValid())
             {
-                if (!IsContainerOpen(entityId))
+                if (IsContainer(entityId) &&
+                    AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
                 {
-                    // If one of the ancestors is a container and it's closed, keep track of its id.
-                    // We only return of the higher closed container in the hierarchy.
-                    highestSelectableEntityId = entityId;
-                    hitClosedContainer = true;
+                    return lastOpenContainerBeforeSelection;
                 }
                 else
                 {
-                    if (!hitSelectedOpenContainer)
-                    {
-                        if (IsContainer(entityId) &&
-                            AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
-                        {
-                            hitSelectedOpenContainer = true;
-                        }
-                        else
-                        {
-                            secondLastOpenContainerBeforeSelection = lastOpenContainerBeforeSelection;
-                            lastOpenContainerBeforeSelection = entityId;
-                        }
-                    }
+                    secondLastOpenContainerBeforeSelection = lastOpenContainerBeforeSelection;
+                    lastOpenContainerBeforeSelection = entityId;
                 }
 
                 AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
-            }
-
-            if (hitClosedContainer)
-            {
-                return highestSelectableEntityId;
             }
 
             // We will always hit the root, so exclude it for our purposes
