@@ -25,7 +25,7 @@ namespace AzToolsFramework
 
     bool operator!=(const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs)
     {
-        return lhs.m_pivotOverride != rhs.m_pivotOverride || !lhs.m_transform.IsClose(rhs.m_transform);
+        return !(lhs == rhs);
     }
 
     EntityManipulatorCommand::EntityManipulatorCommand(const State& stateBefore, const AZStd::string& friendlyName)

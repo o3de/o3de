@@ -17,8 +17,8 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
-#include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+#include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
@@ -294,6 +294,8 @@ namespace AzToolsFramework
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation);
         //!@}
 
+        // Note: 'Ditto' is an immediate copy (it updates part of one entity transform to perfectly match
+        // another depending on the transform mode - translate/rotate/scale).
         bool PerformGroupDitto(AZ::EntityId entityId);
         bool PerformIndividualDitto(AZ::EntityId entityId);
         //! ManipulatorTranslationFn returns the position to use when 'dittoing' the manipulator.
@@ -313,7 +315,7 @@ namespace AzToolsFramework
         AZ::EntityId m_editorCameraComponentEntityId; //!< The EditorCameraComponent EntityId if it is set.
         EntityIdSet m_selectedEntityIds; //!< Represents the current entities in the selection.
         //! A cache of packed EntityData that can be iterated over efficiently without the need to make individual EBus calls.
-        const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr; 
+        const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr;
         AZStd::unique_ptr<EditorHelpers> m_editorHelpers; //!< Editor visualization of entities (icons, shapes, debug visuals etc).
         EntityIdManipulators m_entityIdManipulators; //!< Mapping from a Manipulator to potentially many EntityIds.
 

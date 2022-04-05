@@ -1787,7 +1787,6 @@ namespace UnitTest
         // at position 5.0, 16.0, 10.0 (right most entity)
         AzToolsFramework::SelectEntities({ m_entityId3 });
 
-        // bottom left corner of left most box (entity 2)
         const auto clickPositionWorld = GetParam().m_pickPosition;
         const auto clickPositionScreen = AzFramework::WorldToScreen(clickPositionWorld, m_cameraState);
 
