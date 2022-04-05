@@ -3,5 +3,14 @@
         "Preferences": {
             "EnablePrefabSystem": true
         }
+    },
+    "O3DE": {
+        "Preferences": {
+            "Prefabs": {
+                "OpenInstanceMode": 1,
+                "AllowContextMenuInstanceExpanding": false,
+                "ContainerStepByStepSelection": true
+            }
+        }
     }
 }
