@@ -101,6 +101,9 @@ namespace AZ
             //! Returns the average color of this image (alpha-weighted in case of 4-component images).
             Color GetAverageColor() const;
 
+            //! Returns the image descriptor for the specified mip level.
+            RHI::ImageDescriptor GetImageDescriptorForMipLevel(AZ::u32 mipLevel) const;
+
         private:
             struct MipChain
             {
@@ -118,7 +121,7 @@ namespace AZ
             // The tail mip chain asset reference is empty since the data is embedded in m_tailMipChain.
             AZStd::fixed_vector<MipChain, RHI::Limits::Image::MipCountMax> m_mipChains;
 
-            // The tail mip chain data which is embedded in this SreamingImageAsset
+            // The tail mip chain data which is embedded in this StreamingImageAsset
             // The tail mip chain is required at initialization time. This is so the pool can initialize the RHI image with valid,
             // albeit low-resolution, content.
             ImageMipChainAsset m_tailMipChain;
@@ -134,6 +137,12 @@ namespace AZ
 
             // Cached value of the average color of this image (alpha-weighted average in case of 4-component images)
             AZ::Color m_averageColor = AZ::Color(AZStd::numeric_limits<float>::quiet_NaN());
+
+            //! Helper method for retrieving the ImageMipChainAsset for a given
+            //! mip level. The public method GetMipChainAsset takes in the
+            //! mip chain index, not the level. And will fail for any level
+            //! that resides in the tail mip chain.
+            const ImageMipChainAsset* GetImageMipChainAsset(AZ::u32 mipLevel) const;
         };
     }
 }
