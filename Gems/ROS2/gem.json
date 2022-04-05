@@ -1,12 +1,12 @@
 {
     "gem_name": "ROS2",
     "display_name": "ROS2",
-    "license": "What license ROS2 uses goes here: i.e. Apache-2.0 or MIT",
-    "license_url": "Link to the license web site goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
-    "origin": "The name of the originator goes here. i.e. XYZ Inc.",
-    "origin_url": "The primary repo for ROS2 goes here: i.e. http://www.mydomain.com",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.ai",
+    "origin_url": "https://github.com/o3de",
     "type": "Code",
-    "summary": "A short description of ROS2 goes here.",
+    "summary": "Tools and components to support creating simulations for ros2 systems such as robots",
     "canonical_tags": [
         "Gem"
     ],
@@ -14,8 +14,8 @@
         "ROS2"
     ],
     "icon_path": "preview.png",
-    "requirements": "Notice of any requirements ROS2 has goes here. i.e. This requires X other gem",
-    "documentation_url": "Link to any documentation of ROS2 goes here: i.e. https://o3de.org/docs/user-guide/gems/reference/design/white-box/",
+    "requirements": "Requires ros2 installation (supported distributions: foxy, galactic, humble). Source your workspace before building the Gem",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/design/ros2/",
     "dependencies": [],
     "restricted": "ROS2"
 }

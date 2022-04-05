@@ -32,6 +32,8 @@ ly_add_target(
             AZ::AzFramework
 )
 
+target_depends_on_ros2_packages(ROS2.Static rclcpp builtin_interfaces std_msgs)
+
 # Here add ROS2 target, it depends on the ROS2.Static
 ly_add_target(
     NAME ROS2 ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}

@@ -1,17 +1,28 @@
-
+/*
+* Copyright (c) Contributors to the Open 3D Engine Project.
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+*
+* SPDX-License-Identifier: Apache-2.0 OR MIT
+*
+*/
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <rclcpp/node.hpp>
+#include <builtin_interfaces/msg/time.hpp>
 
 namespace ROS2
 {
     class ROS2Requests
     {
     public:
-        AZ_RTTI(ROS2Requests, "{fa9316fc-3eff-46e7-83de-c07a29c94109}");
+        AZ_RTTI(ROS2Requests, "{a9bdbff6-e644-430d-8096-cdb53c88e8fc}");
         virtual ~ROS2Requests() = default;
+
         // Put your public methods here
+        virtual std::shared_ptr<rclcpp::Node> GetNode() const = 0;
+        virtual builtin_interfaces::msg::Time GetROSTimestamp() const = 0;
     };
     
     class ROS2BusTraits

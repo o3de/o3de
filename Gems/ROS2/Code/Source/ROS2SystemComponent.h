@@ -1,9 +1,20 @@
-
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <ROS2/ROS2Bus.h>
+
+#include <memory>
+#include "rclcpp/rclcpp.hpp"
+#include "builtin_interfaces/msg/time.hpp"
+#include "Clock/SimulationClock.h"
 
 namespace ROS2
 {
@@ -13,7 +24,7 @@ namespace ROS2
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT(ROS2SystemComponent, "{c6d15812-3899-43f8-a808-e6870a4fc85a}");
+        AZ_COMPONENT(ROS2SystemComponent, "{cb28d486-afa4-4a9f-a237-ac5eb42e1c87}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -24,6 +35,9 @@ namespace ROS2
 
         ROS2SystemComponent();
         ~ROS2SystemComponent();
+
+        std::shared_ptr<rclcpp::Node> GetNode() const override;
+        builtin_interfaces::msg::Time GetROSTimestamp() const override;
 
     protected:
         ////////////////////////////////////////////////////////////////////////
@@ -42,6 +56,11 @@ namespace ROS2
         // AZTickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
+    
+    private:
+        std::shared_ptr<rclcpp::Node> m_ros2Node;
+        std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> m_executor;
+        SimulationClock m_simulationClock;
     };
 
 } // namespace ROS2

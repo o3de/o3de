@@ -11,4 +11,8 @@ include(${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_gem.cmake)
 
 ly_add_external_target_path(${CMAKE_CURRENT_LIST_DIR}/3rdParty)
 
+# Include ROS2 target function here so that every Project with this Gem can make use of it
+# Currently only affects the Gem itself but this likely will change in the future
+include(${CMAKE_CURRENT_LIST_DIR}/Code/ros2_target_depends.cmake)
+
 add_subdirectory(Code)
