@@ -170,6 +170,19 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
         and sphere.initial_velocity.IsClose(INITIAL_VELOCITY, CLOSE_ENOUGH)
     )
 
+    # Report the state of the level and then the result of that state
+    Report.info(f"Level Correct Setup: Sphere Initial Y Pos {sphere.initial_pos.y} - Force Region Inital Y Pos "
+                f"{force_region.initial_pos.y} = {abs(sphere.initial_pos.y - force_region.initial_pos.y)}")
+    Report.info(f"Level Correct Setup: Sphere Initial Y Pos {sphere.initial_pos.y} - Trigger Inital Y Pos "
+                f"{trigger.initial_pos.y} = {abs(sphere.initial_pos.y - trigger.initial_pos.y)}")
+    Report.info(f"Level Correct Setup: Sphere Initial X Pos {sphere.initial_pos.x} - Force Region Initial X Pos "
+                f"{force_region.initial_pos.x} = {abs(sphere.initial_pos.x - force_region.initial_pos.x)}")
+    Report.info(f"Level Correct Setup: Sphere Initial X Pos {sphere.initial_pos.x} - Trigger Initial X Pos "
+                f"{trigger.initial_pos.x} = {(abs(sphere.initial_pos.x - trigger.initial_pos.x))}")
+    Report.info(f"Level Correct Setup: Sphere Inital Z Pos {sphere.initial_pos.z} > Force Region Inital Z Pos "
+                f"{force_region.initial_pos.z} > Trigger Inital Z Pos {trigger.initial_pos.z}")
+    Report.info(f"Level Correct Setup: Sphere Inital Velocity {sphere.initial_velocity} IsClose to INITIAL_VELOCITY "
+                f"{INITIAL_VELOCITY}")
     Report.critical_result(Tests.level_setup, level_correct)
 
     sphere.current_pos = sphere.initial_pos
