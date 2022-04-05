@@ -814,6 +814,11 @@ class EditorTestSuite:
                 if has_crashed:
                     crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                     test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
+                    # Save the .dmp file which is generated on Windows only
+                    dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
+                                                 'error.dmp')
+                    if os.path.exists(dmp_file_name):
+                        workspace.artifact_manager.save_artifact(dmp_file_name)
                     # Save the crash log
                     crash_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
                                                    os.path.basename(workspace.paths.crash_log()))
@@ -822,11 +827,6 @@ class EditorTestSuite:
                         editor_utils.cycle_crash_report(run_id, workspace)
                     else:
                         logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
-                    # .dmp file is generated on Windows only
-                    dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
-                                                 'error.dmp')
-                    if os.path.exists(dmp_file_name):
-                        workspace.artifact_manager.save_artifact(dmp_file_name)
                 else:
                     test_result = Result.Fail(test_spec, output, editor_log_content)
         except WaitTimeoutError:
@@ -919,6 +919,11 @@ class EditorTestSuite:
                                 # The first test with "Unknown" result (no data in output) is likely the one that crashed
                                 crash_error = editor_utils.retrieve_crash_output(run_id, workspace,
                                                                                  self._TIMEOUT_CRASH_LOG)
+                                # Save the .dmp file which is generated on Windows only
+                                dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
+                                                             'error.dmp')
+                                if os.path.exists(dmp_file_name):
+                                    workspace.artifact_manager.save_artifact(dmp_file_name)
                                 # Save the crash log
                                 crash_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
                                                                os.path.basename(workspace.paths.crash_log()))
@@ -927,11 +932,6 @@ class EditorTestSuite:
                                     editor_utils.cycle_crash_report(run_id, workspace)
                                 else:
                                     logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
-                                # .dmp file is generated on Windows only
-                                dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
-                                                             'error.dmp')
-                                if os.path.exists(dmp_file_name):
-                                    workspace.artifact_manager.save_artifact(dmp_file_name)
                                 results[test_spec_name] = Result.Crash(result.test_spec, output, return_code,
                                                                        crash_error, result.editor_log)
                                 crashed_result = result
