@@ -192,29 +192,27 @@ namespace Audio
 
         auto startUpdateTime = AZStd::chrono::system_clock::now();        // stamp the start time
 
+        // Process a single blocking request, if any, and release the semaphore the main thread is trying to acquire.
+        // This ensures that main thread will become unblocked quickly.
+        // If blocking requests were processed, can skip processing of normal requests and skip having
+        // the audio thread block through the rest of its update period.
         bool handleBlockingRequest = false;
+        AudioRequestVariant blockingRequest;
 
-        {   // Process a single blocking request, if any, and release the semaphore the main thread is trying to acquire.
-            // This ensures that main thread will become unblocked quickly.
-            // If blocking requests were processed, can skip processing of normal requests and skip having
-            // the audio thread block through the rest of its update period.
-
-            AudioRequestVariant blockingRequest;
-            {
-                AZStd::scoped_lock lock(m_blockingRequestsMutex);
-                handleBlockingRequest = !m_blockingRequestsQueue.empty();
-                if (handleBlockingRequest)
-                {
-                    blockingRequest = AZStd::move(m_blockingRequestsQueue.front());
-                    m_blockingRequestsQueue.pop_front();
-                }
-            }
-
+        {
+            AZStd::scoped_lock lock(m_blockingRequestsMutex);
+            handleBlockingRequest = !m_blockingRequestsQueue.empty();
             if (handleBlockingRequest)
             {
-                m_oATL.ProcessRequest(AZStd::move(blockingRequest));
-                m_mainEvent.release();
+                blockingRequest = AZStd::move(m_blockingRequestsQueue.front());
+                m_blockingRequestsQueue.pop_front();
             }
+        }
+
+        if (handleBlockingRequest)
+        {
+            m_oATL.ProcessRequest(AZStd::move(blockingRequest));
+            m_mainEvent.release();
         }
 
         if (!handleBlockingRequest)
