@@ -46,12 +46,14 @@ namespace AzToolsFramework
         {
             AZ::Quaternion m_space; //!< Starting orientation space of manipulator.
             AZ::Quaternion m_rotation; //!< Starting local rotation of the manipulator.
+            AZ::Vector3 m_worldHitPosition; //!< Starting world space hit position.
         };
 
         //! The state of the manipulator during an interaction.
         struct Current
         {
             AZ::Quaternion m_delta; //!< Amount of rotation to apply to manipulator during action.
+            AZ::Vector3 m_worldHitPosition; //!< World space hit position.
         };
 
         //! Mouse action data used by MouseActionCallback (wraps Start and Current manipulator state).
@@ -112,6 +114,7 @@ namespace AzToolsFramework
             AZ::Transform m_localTransform; //!< Additional transform (offset) to apply to manipulator.
             AZ::Vector3 m_planePoint; //!< Position on plane to use for ray intersection.
             AZ::Vector3 m_planeNormal; //!< Normal of plane to use for ray intersection.
+            AZ::Vector3 m_worldHitPosition; //!< Initial world space hit position.
         };
 
         //! Current data recorded each frame during an interaction with an angular manipulator.
@@ -119,7 +122,7 @@ namespace AzToolsFramework
         {
             float m_preSnapRadians = 0.0f; //!< Amount of rotation before a snap (snap increment accumulator).
             float m_radians = 0.0f; //!< Amount of rotation about the axis for this action.
-            AZ::Vector3 m_worldHitPosition; //!< Initial world space hit position.
+            AZ::Vector3 m_worldHitPosition; //!< World space hit position.
         };
 
         //! Wrap start and current internal data during an interaction with an angular manipulator.

@@ -8,11 +8,15 @@
 
 #include "AngularManipulator.h"
 
+#include <AzCore/Math/Plane.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorDebug.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
 
 namespace AzToolsFramework
 {
@@ -46,13 +50,14 @@ namespace AzToolsFramework
         // store initial world hit position
         Internal::CalculateRayPlaneIntersectingPoint(
             rayOrigin, rayDirection, actionInternal.m_start.m_planePoint, actionInternal.m_start.m_planeNormal,
-            actionInternal.m_current.m_worldHitPosition);
+            actionInternal.m_start.m_worldHitPosition);
 
         // store entity transform (to go from local to world space)
         // and store our own starting local transform
         actionInternal.m_start.m_worldFromLocal = worldFromLocal;
         actionInternal.m_start.m_localTransform = localTransform;
         actionInternal.m_current.m_radians = 0.0f;
+        actionInternal.m_current.m_worldHitPosition = actionInternal.m_start.m_worldHitPosition;
 
         return actionInternal;
     }
@@ -71,7 +76,7 @@ namespace AzToolsFramework
         const AZ::Transform worldFromLocalWithTransform = worldFromLocal * localTransform;
         const AZ::Vector3 worldAxis = TransformDirectionNoScaling(worldFromLocalWithTransform, fixed.m_axis);
 
-        AZ::Vector3 worldHitPosition = AZ::Vector3::CreateZero();
+        AZ::Vector3 worldHitPosition = actionInternal.m_start.m_worldHitPosition;
         Internal::CalculateRayPlaneIntersectingPoint(
             rayOrigin, rayDirection, actionInternal.m_start.m_planePoint, actionInternal.m_start.m_planeNormal, worldHitPosition);
 
@@ -111,7 +116,9 @@ namespace AzToolsFramework
         Action action;
         action.m_start.m_space = actionInternal.m_start.m_worldFromLocal.GetRotation().GetNormalized();
         action.m_start.m_rotation = actionInternal.m_start.m_localTransform.GetRotation().GetNormalized();
+        action.m_start.m_worldHitPosition = actionInternal.m_start.m_worldHitPosition;
         action.m_current.m_delta = AZ::Quaternion::CreateFromAxisAngle(fixed.m_axis, actionInternal.m_current.m_radians).GetNormalized();
+        action.m_current.m_worldHitPosition = actionInternal.m_current.m_worldHitPosition;
         action.m_modifiers = keyboardModifiers;
 
         return action;
@@ -203,12 +210,19 @@ namespace AzToolsFramework
             GetManipulatorManagerId(), managerState, GetManipulatorId(), manipulatorState, debugDisplay, cameraState, mouseInteraction);
 
         const auto worldPosition = manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition);
+        const auto localFromWorld = manipulatorState.m_worldFromLocal.GetInverse();
+        const auto initialLocalHitPosition = localFromWorld.TransformPoint(action.m_start.m_worldHitPosition);
+        const auto currentLocalHitPosition = localFromWorld.TransformPoint(action.m_current.m_worldHitPosition);
+
+        const auto plane = AZ::Plane::CreateFromNormalAndPoint(m_fixed.m_axis, localFromWorld.GetTranslation());
+        const auto initialPointOnPlane = plane.GetProjected(initialLocalHitPosition);
+        const auto currentPointOnPlane = plane.GetProjected(currentLocalHitPosition);
 
         const float viewScale = CalculateScreenToWorldMultiplier(worldPosition, cameraState);
 
         const AZ::Transform orientation =
             AZ::Transform::CreateFromQuaternion((QuaternionFromTransformNoScaling(manipulatorState.m_worldFromLocal) *
-                                                 AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), GetAxis()))
+                                                 AZ::Quaternion::CreateShortestArc(m_fixed.m_axis, GetAxis()))
                                                     .GetNormalized());
 
         // transform circle based on delta between default z up axis and other axes
@@ -219,34 +233,44 @@ namespace AzToolsFramework
         {
             if (ed_manipulatorDrawDebug)
             {
-                // todo
-
                 // display the exact hit (ray intersection) of the mouse pick on the manipulator
-                //DrawTransformAxes(
-                //    debugDisplay,
-                //    GetSpace() *
-                //        AZ::Transform::CreateTranslation(
-                //            action.m_start.m_localHitPosition + GetNonUniformScale() * action.m_current.m_localPositionOffset));
+                // DrawTransformAxes(debugDisplay, GetSpace() * AZ::Transform::CreateTranslation(action.m_start.m_worldHitPosition));
+
+                DrawTransformAxes(
+                    debugDisplay,
+                    GetSpace() * AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.TransformPoint(initialPointOnPlane)));
             }
+
+            const auto initialPointToCenter = (initialPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
+            const auto currentPointToCenter = (currentPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
 
             debugDisplay.CullOn();
             debugDisplay.PushMatrix(worldFromLocalWithOrientation);
-            debugDisplay.SetColor(AZ::Colors::AliceBlue /*ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor)*/);
+            debugDisplay.SetColor(AZ::Colors::CornflowerBlue);
 
             const auto totalAngle = AZ::DegToRad(360.0f);
-            const auto stepIncrement = totalAngle / 100.0f;
-            auto step = 0.0f;
+            const auto stepIncrement = totalAngle / 360.0f;
 
-            while (step < totalAngle * 0.25f)
+            const auto right =
+                AZ::Quaternion::CreateFromAxisAngle(m_fixed.m_axis, AZ::DegToRad(90.0f)).TransformVector(initialPointToCenter);
+
+            const auto angle = action.m_current.m_delta.GetAngle();
+            const auto sign = Sign(currentPointToCenter.Dot(right));
+            const auto rotationDirection = angle < AZ::Constants::Pi ? sign : -sign;
+
+            const auto angleStr = AZStd::string::format("Angle %f", angle);
+            debugDisplay.Draw2dTextLabel(100, 100, 1.0f, angleStr.c_str());
+
+            for (auto step = 0.0f; step < angle; step += stepIncrement)
             {
-                auto first = AZ::Quaternion::CreateRotationZ(step).TransformVector(AZ::Vector3::CreateAxisY());
-                auto second = AZ::Quaternion::CreateRotationZ(step + stepIncrement).TransformVector(AZ::Vector3::CreateAxisY());
-                debugDisplay.DrawTri(
-                    manipulatorState.m_localPosition,
-                    manipulatorState.m_localPosition + first * 2.24f * viewScale /*torusBound.m_majorRadius*/,
-                    manipulatorState.m_localPosition + second * 2.24f * viewScale /*torusBound.m_majorRadius*/);
+                const auto first =
+                    AZ::Quaternion::CreateFromAxisAngle(m_fixed.m_axis, step * rotationDirection).TransformVector(initialPointToCenter);
+                const auto second = AZ::Quaternion::CreateFromAxisAngle(m_fixed.m_axis, (step - stepIncrement) * rotationDirection)
+                                        .TransformVector(initialPointToCenter);
 
-                step += stepIncrement;
+                debugDisplay.DrawTri(
+                    manipulatorState.m_localPosition, manipulatorState.m_localPosition + first * 2.0f * viewScale,
+                    manipulatorState.m_localPosition + second * 2.0f * viewScale);
             }
 
             debugDisplay.PopMatrix();
@@ -277,3 +301,6 @@ namespace AzToolsFramework
     }
 
 } // namespace AzToolsFramework
+
+#pragma optimize("", on)
+#pragma inline_depth()
