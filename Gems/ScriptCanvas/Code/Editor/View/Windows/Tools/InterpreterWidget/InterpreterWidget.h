@@ -11,12 +11,10 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzQtComponents/Components/StyledDialog.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <Editor/Framework/Interpreter.h>
-
-#include <AzQtComponents/Components/StyledDialog.h>
 #include <QtWidgets/QWidget>
-
 #endif
 
 namespace AzToolsFramework
@@ -44,13 +42,14 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
+        AZ_TYPE_INFO(InterpreterWidget, "{3D2FAD9B-47C0-494A-9BE0-57C14820B40F}");
         AZ_CLASS_ALLOCATOR(InterpreterWidget, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* context);
 
         explicit InterpreterWidget(QWidget* parent = nullptr);
 
     private:
-        AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor = nullptr;
-        AZ::SerializeContext* m_serializeContext = nullptr;
         AZStd::unique_ptr<Ui::InterpreterWidget> m_view;
         Interpreter m_interpreter;
 
@@ -59,12 +58,12 @@ namespace ScriptCanvasEditor
         void ToggleStartStopButtonEnabled();
 
         // IPropertyEditorNotify ...
-        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* /*node*/) override;
-        void BeforePropertyModified(AzToolsFramework::InstanceDataNode* /*node*/) override;
-        void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode* /*node*/, const QPoint& /*point*/) override;
-        void SealUndoStack() override;
-        void SetPropertyEditingActive(AzToolsFramework::InstanceDataNode* /*node*/) override;
-        void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* /*node*/) override;
+        void AfterPropertyModified(AzToolsFramework::InstanceDataNode*) {}
+        void BeforePropertyModified(AzToolsFramework::InstanceDataNode*) {}
+        void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode*, const QPoint&) {}
+        void SealUndoStack() {}
+        void SetPropertyEditingActive(AzToolsFramework::InstanceDataNode*) {}
+        void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode*) {}
         // ... IPropertyEditorNotify
     };
 }

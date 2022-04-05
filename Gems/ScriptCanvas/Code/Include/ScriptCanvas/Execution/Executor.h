@@ -17,20 +17,6 @@ namespace AZ
 
 namespace ScriptCanvas
 {
-    namespace Internal
-    {
-        class ExecutorBase
-        {
-        public:
-            AZ_TYPE_INFO(ExecutorBase, "{385E32B3-7F27-4ABE-A868-BE1482BACADB}");
-            AZ_CLASS_ALLOCATOR(ExecutorBase, AZ::SystemAllocator, 0);
-
-            ~ExecutorBase();
-
-            bool IsExecutable() const;
-
-        };
-    }
     /*
     * Usage:
     * 1) Initialize()
@@ -39,7 +25,6 @@ namespace ScriptCanvas
     * 4) Optional (repeat steps 1-3), Stop() and Initialize() may be required to be called before subsequent calls to Execute();
     */
     class Executor final
-    //     : public Internal::ExecutorBase
     {
     public:
         AZ_TYPE_INFO(Executor, "{02E0EB5F-B28E-4B95-9FF2-DEA42ECC575D}");
@@ -66,7 +51,4 @@ namespace ScriptCanvas
     protected:
         ExecutionStatePtr m_executionState;
     };
-
-    // add a checked executor
-
 }

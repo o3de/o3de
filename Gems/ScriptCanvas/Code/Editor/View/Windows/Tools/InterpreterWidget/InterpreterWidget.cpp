@@ -17,19 +17,22 @@ namespace ScriptCanvasEditor
         : AzQtComponents::StyledDialog(parent)
         , m_view(new Ui::InterpreterWidget())
     {
-        AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        AZ_Assert(m_serializeContext, "InterpreterWidget::InterpreterWidget Failed to retrieve serialize context.");
+        AZ::SerializeContext* serializeContext = nullptr;
+
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ_Assert(serializeContext, "InterpreterWidget::InterpreterWidget Failed to retrieve serialize context.");
         m_view->setupUi(this);
 
-        m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
-        m_propertyEditor->setObjectName("InterpreterWidget::ReflectedPropertyEditor");
-        m_propertyEditor->Setup(m_serializeContext, this, true, 250);
-        m_propertyEditor->show();
-        m_propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        m_propertyEditor->AddInstance(&m_interpreter, azrtti_typeid(m_interpreter));
-        m_propertyEditor->InvalidateAll();
-        m_propertyEditor->ExpandAll();
-        m_view->interpreterLayout->insertWidget(0, m_propertyEditor, 0);
+        AzToolsFramework::ReflectedPropertyEditor* propertyEditor = nullptr;
+        propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
+        propertyEditor->setObjectName("InterpreterWidget::ReflectedPropertyEditor");
+        propertyEditor->Setup(serializeContext, this, true, 250);
+        propertyEditor->show();
+        propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        propertyEditor->AddInstance(&m_interpreter, azrtti_typeid(m_interpreter));
+        propertyEditor->InvalidateAll();
+        propertyEditor->ExpandAll();
+        m_view->interpreterLayout->insertWidget(0, propertyEditor, 0);
         
         m_view->buttonStart->show();
         m_view->buttonStart->setEnabled(true);
@@ -60,6 +63,28 @@ namespace ScriptCanvasEditor
         }
     }
 
+    void InterpreterWidget::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<Interpreter>()
+                ->Field("interpreter", &InterpreterWidget::m_interpreter)
+                ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<InterpreterWidget>("Script Canvas Interpreter Widget", "A Widget for a ScriptCanvas Interpreted")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &InterpreterWidget::m_interpreter, "Interpreter", "Interpreter")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ;
+            }
+        }
+    }
+
     void InterpreterWidget::ToggleStartStopButtonEnabled()
     {
         if (m_view->buttonStart->isEnabled())
@@ -73,25 +98,5 @@ namespace ScriptCanvasEditor
             m_view->buttonStop->setDisabled(true);
         }
     }
-
-    // IPropertyEditorNotify ...
-    void InterpreterWidget::AfterPropertyModified(AzToolsFramework::InstanceDataNode* /*node*/)
-    {}
-
-    void InterpreterWidget::BeforePropertyModified(AzToolsFramework::InstanceDataNode* /*node*/)
-    {}
-
-    void InterpreterWidget::RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode* /*node*/, const QPoint& /*point*/)
-    {}
-
-    void InterpreterWidget::SealUndoStack()
-    {}
-
-    void InterpreterWidget::SetPropertyEditingActive(AzToolsFramework::InstanceDataNode* /*node*/)
-    {}
-
-    void InterpreterWidget::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* /*node*/)
-    {}
-    // ... IPropertyEditorNotify
 }
 

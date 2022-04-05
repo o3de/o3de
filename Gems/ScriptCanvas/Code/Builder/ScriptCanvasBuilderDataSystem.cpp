@@ -40,6 +40,7 @@ namespace ScriptCanvasBuilder
     {
         DataSystemRequestsBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
     }
 
     void DataSystem::AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuildResult&& result)
@@ -99,13 +100,52 @@ namespace ScriptCanvasBuilder
         AddResult(sourceHandle, AZStd::move(result));
     }
 
-    void DataSystem::SourceFileChanged([[maybe_unused]] AZStd::string relativePath
-        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    void DataSystem::MonitorAsset(AZ::Uuid fileAssetId)
+    {
+        m_assetsReady.erase(fileAssetId);
+        const auto assetId = AZ::Data::AssetId(fileAssetId, AZ_CRC_CE("Runtime"));
+        AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
+        auto asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvas::RuntimeAsset>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+        asset.QueueLoad();
+        m_assetsPending.insert({ fileAssetId, AZStd::move(asset) });
+    }
+
+    void DataSystem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        AZ_TracePrintf
+            ( "ScriptCanvas"
+            , "DataSystem received OnAssetReady: %s : %s"
+            , asset.GetHint().c_str()
+            , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
+        m_assetsReady[asset.GetId().m_guid] = AZStd::move(asset);
+        m_assetsPending.erase(asset.GetId().m_guid);
+    }
+
+    void DataSystem::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        AZ_TracePrintf
+            ( "ScriptCanvas"
+            , "DataSystem received OnAssetReloaded: %s : %s"
+            , asset.GetHint().c_str()
+            , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
+        m_assetsReady[asset.GetId().m_guid] = AZStd::move(asset);
+        m_assetsPending.erase(asset.GetId().m_guid);
+    }
+
+    void DataSystem::SourceFileChanged(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, AZ::Uuid fileAssetId)
     {
         if (!IsScriptCanvasFile(relativePath))
         {
             return;
         }
+
+        AZ_TracePrintf
+            ( "ScriptCanvas"
+            , "DataSystem received source file changed: %s : %s"
+            , relativePath.c_str()
+            , fileAssetId.ToString<AZStd::string>().c_str());
+
+        MonitorAsset(fileAssetId);
 
         if (auto handle = ScriptCanvasEditor::CompleteDescription(ScriptCanvasEditor::SourceHandle(nullptr, fileAssetId, {})))
         {

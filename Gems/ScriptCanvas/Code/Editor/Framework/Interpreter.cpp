@@ -12,17 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Builder/ScriptCanvasBuilder.h>
-
-// \todo consider making a template version with return values, similar to execution out
-// or perhaps safety checked versions with an array / table of any. something parsable
-// or consider just having users make ebuses that the graphs will handle
-// and wrapping the whole thing in a single class
-// interpreter + ebus, and calling it EZ SC Hook or something like that
-
-// the EZ Code driven thing, when it uses the click button, opens up a graph
-// and drops in the main function WItH the typed arguments and return values stubbed out
-// and makes those the required function of the graph!
-// this code include using an ebus, for easiy switching to C++ extension
+#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 
 namespace ScriptCanvasEditor
 {
@@ -36,6 +26,9 @@ namespace ScriptCanvasEditor
         m_configuration.ConnectToPropertiesChanged(m_handlerPropertiesChanged);
         m_configuration.ConnectToSourceCompiled(m_handlerSourceCompiled);
         m_configuration.ConnectToSourceFailed(m_handlerSourceFailed);
+
+        // tell the data system about the script in question...and for it to keep the runtime ready for this thing
+        // then for the data system will keep this up to date on what is ready and what is not 
     }
 
     void Interpreter::ConvertPropertiesToRuntime()
@@ -165,7 +158,7 @@ namespace ScriptCanvasEditor
             AZ::SystemTickBus::QueueFunction([this]()
             {
                 m_executor.StopAndKeepExecutable();
-                // consider running a full garbage collect
+                SystemRequestBus::Broadcast(&SystemRequests::RequestGarbageCollect);
             });
         }
     }
