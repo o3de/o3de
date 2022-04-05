@@ -27,7 +27,7 @@ namespace AZ
             // running under the debugger or has a debugger attached post facto).
             bool IsDebuggerPresent()
             {
-                int                 junk;
+                [[maybe_unused]] int                 junk;
                 int                 mib[4];
                 struct kinfo_proc   info;
                 size_t              size;
