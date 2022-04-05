@@ -134,7 +134,7 @@ namespace AZ
         bool MaterialVersionUpdate::Action::HasExpectedArgument(
             const char* expectedArgName, const char* T_str, AZStd::function<void(const char*)> onError) const
         {
-            const MaterialPropertyValue val = GetArg(AZ::Name{ expectedArgName });
+            const MaterialPropertyValue& val = GetArg(AZ::Name{ expectedArgName });
             bool isValid = val.IsValid() && val.Is<T>();
             if (!isValid && onError != nullptr)
             {
@@ -148,7 +148,7 @@ namespace AZ
         bool MaterialVersionUpdate::Action::HasExpectedArgumentAnyType(
             const char* expectedArgName, AZStd::function<void(const char*)> onError) const
         {
-            const MaterialPropertyValue val = GetArg(AZ::Name{ expectedArgName });
+            const MaterialPropertyValue& val = GetArg(AZ::Name{ expectedArgName });
             bool isValid = val.IsValid();
             if (!isValid && onError != nullptr)
             {
@@ -196,7 +196,7 @@ namespace AZ
                 // If we have a propertyHelper, we can check the property name & value type
                 if (propertyHelper != nullptr)
                 {
-                    const AZ::Name nameToSet = GetArgAsName(AZ::Name("name"));
+                    const AZ::Name& nameToSet = GetArgAsName(AZ::Name("name"));
                     MaterialPropertyValue valueToSet = GetArg(AZ::Name("value"));
                     if (!propertyHelper->CastToExpectedType(nameToSet, valueToSet, onError))
                     {
@@ -238,7 +238,7 @@ namespace AZ
                     continue;
                 }
 
-                const AZ::Name from = action.GetArgAsName(AZ::Name("from"));
+                const AZ::Name& from = action.GetArgAsName(AZ::Name("from"));
                 if (propertyId == from)
                 {
                     propertyId = action.GetArgAsName(AZ::Name("to"));
@@ -320,7 +320,7 @@ namespace AZ
                     continue;
                 }
 
-                const AZ::Name nameFromSetValueAction = action.GetArgAsName(AZ::Name("name"));
+                const AZ::Name& nameFromSetValueAction = action.GetArgAsName(AZ::Name("name"));
 
                 // Update the name in case our setValue action is still using an older name
                 AZ::Name nameToSet(nameFromSetValueAction);
@@ -453,7 +453,7 @@ namespace AZ
             {
                 if (action.m_operation == AZ::Name("setValue"))
                 {
-                    const AZ::Name nameToSet = action.GetArgAsName(AZ::Name("name"));
+                    const AZ::Name& nameToSet = action.GetArgAsName(AZ::Name("name"));
                     MaterialPropertyValue valueToSet = action.GetArg(AZ::Name("value"));
                     // Resolve the value and overwrite it in resolvedAction:
                     resolvedAction.AddArg(AZ::Name("value"), sourceDataResolver(nameToSet, valueToSet));
@@ -634,11 +634,11 @@ namespace AZ
                         continue;
                     }
                     // if we come from a name that was renamed previously: remove that previous new name
-                    Name from = action.GetArgAsName(AZ::Name{ "from" });
+                    const Name& from = action.GetArgAsName(AZ::Name{ "from" });
                     renamedPropertyNewNames.erase(from);
 
                     // and keep track of the new name
-                    Name to = action.GetArgAsName(AZ::Name{ "to" });
+                    const Name& to = action.GetArgAsName(AZ::Name{ "to" });
                     renamedPropertyNewNames.emplace(to);
                 }
 
