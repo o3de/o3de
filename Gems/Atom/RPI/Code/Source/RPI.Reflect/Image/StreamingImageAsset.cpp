@@ -98,6 +98,10 @@ namespace AZ
         {
             RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
 
+            // Retrieve the layout for the particular mip level.
+            // The levels get stored in a series of ImageMipChainAssets, which keep a
+            // record of an offset so that you can calculate the sub-image index
+            // based on the actual mip level.
             const ImageMipChainAsset* mipChainAsset = GetImageMipChainAsset(mipLevel);
             if (mipChainAsset)
             {
