@@ -1,0 +1,246 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "Block",
+        "Components": {
+            "Component_[12685148454899635363]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 12685148454899635363
+            },
+            "Component_[13293703559363270650]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 13293703559363270650
+            },
+            "Component_[13385073974145619238]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 13385073974145619238
+            },
+            "Component_[14616507217301734323]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 14616507217301734323
+            },
+            "Component_[2249736157000349000]": {
+                "$type": "SelectionComponent",
+                "Id": 2249736157000349000
+            },
+            "Component_[3221744830314911851]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 3221744830314911851
+            },
+            "Component_[4591121067188062737]": {
+                "$type": "EditorLockComponent",
+                "Id": 4591121067188062737
+            },
+            "Component_[7436766991617343662]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 7436766991617343662,
+                "Parent Entity": ""
+            },
+            "Component_[7749421973350455123]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 7749421973350455123
+            },
+            "Component_[8403889608313034759]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 8403889608313034759
+            },
+            "Component_[9014638300404925374]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 9014638300404925374,
+                "Child Entity Order": [
+                    "Entity_[39735391596684]"
+                ]
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[39735391596684]": {
+            "Id": "Entity_[39735391596684]",
+            "Name": "BlockGround",
+            "Components": {
+                "Component_[10066177668995811790]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 10066177668995811790,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{593006BE-FE73-5A4B-A0A6-06C02EFFE458}",
+                                    "subId": 285127096
+                                },
+                                "assetHint": "objects/cube.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[10548527094258485017]": {
+                    "$type": "EditorNonUniformScaleComponent",
+                    "Id": 10548527094258485017,
+                    "NonUniformScale": [
+                        36.0,
+                        36.0,
+                        0.20000000298023224
+                    ]
+                },
+                "Component_[10573497884443965562]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 10573497884443965562
+                },
+                "Component_[11711145457399124683]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 11711145457399124683
+                },
+                "Component_[15193391406171912186]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 15193391406171912186,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": {
+                                "{}": {
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{CF91AE08-8FD5-538B-A5F2-427DFA9D5E1C}"
+                                        },
+                                        "assetHint": "materials/basic_grey.azmaterial"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "Component_[16795530782104694704]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 16795530782104694704
+                },
+                "Component_[1994728843212342272]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 1994728843212342272
+                },
+                "Component_[2060805190130936134]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 2060805190130936134,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 3926489640538235917
+                        },
+                        {
+                            "ComponentId": 10548527094258485017,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 10066177668995811790,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 15193391406171912186,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[2794977707858128973]": {
+                    "$type": "SelectionComponent",
+                    "Id": 2794977707858128973
+                },
+                "Component_[3858042015408223948]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 3858042015408223948
+                },
+                "Component_[3926489640538235917]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 3926489640538235917,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[8662696657972096421]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 8662696657972096421
+                },
+                "Component_[9308340284884617869]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 9308340284884617869
+                }
+            }
+        }
+    },
+    "Instances": {
+        "Instance_[1905319653516]": {
+            "Source": "Prefabs/PrefabOverrideSample/House.prefab",
+            "Patches": [
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Parent Entity",
+                    "value": "../ContainerEntity"
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Transform Data/Translate/0",
+                    "value": 9.0
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Transform Data/Translate/1",
+                    "value": 9.0
+                }
+            ]
+        },
+        "Instance_[555257046961]": {
+            "Source": "Prefabs/PrefabOverrideSample/House.prefab",
+            "Patches": [
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Parent Entity",
+                    "value": "../ContainerEntity"
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Transform Data/Translate/0",
+                    "value": -9.0
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Transform Data/Translate/1",
+                    "value": 9.0
+                }
+            ]
+        },
+        "Instance_[7415762694284]": {
+            "Source": "Prefabs/PrefabOverrideSample/House.prefab",
+            "Patches": [
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Parent Entity",
+                    "value": "../ContainerEntity"
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Transform Data/Translate/0",
+                    "value": -9.0
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Transform Data/Translate/1",
+                    "value": -9.0
+                }
+            ]
+        },
+        "Instance_[7420057661580]": {
+            "Source": "Prefabs/PrefabOverrideSample/House.prefab",
+            "Patches": [
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Parent Entity",
+                    "value": "../ContainerEntity"
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Transform Data/Translate/0",
+                    "value": 9.0
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[15660068867765667545]/Transform Data/Translate/1",
+                    "value": -9.0
+                }
+            ]
+        }
+    }
+}
