@@ -21,7 +21,7 @@ namespace AZ
             }
 
             m_descriptor = viewDescriptor;
-            m_hash = TypeHash64(image.GetHash(), m_hash);
+            m_hash = image.GetHash();
             m_hash = TypeHash64(m_descriptor.GetHash(), m_hash);
             return ResourceView::Init(image);
         }

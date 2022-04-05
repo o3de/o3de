@@ -30,7 +30,7 @@ namespace AZ
             }
 
             m_descriptor = viewDescriptor;
-            m_hash = TypeHash64(buffer.GetHash(), m_hash);
+            m_hash = buffer.GetHash();
             m_hash = TypeHash64(m_descriptor.GetHash(), m_hash);
             return ResourceView::Init(buffer);
         }
