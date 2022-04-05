@@ -314,7 +314,7 @@ namespace AzToolsFramework::Prefab
 
         // Open all container entities in the new path.
         SetInstanceContainersOpenState(m_rootAliasFocusPath, true);
-        // Set open state on all nested instances in the old focus subtree based on edit scope.
+        // Set open state on all nested instances in the new focus subtree based on edit scope.
         SetInstanceContainersOpenStateOfAllDescendantContainers(
             GetInstanceReference(m_rootAliasFocusPath), m_prefabEditScope == PrefabEditScope::NESTED_INSTANCES);
 
@@ -586,6 +586,12 @@ namespace AzToolsFramework::Prefab
         // Refresh the path and notify changes in case propagation updated any container names.
         RefreshInstanceFocusPath();
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
+
+        // TEMP - This isn't ideal, but once we've decided which setting is default this won't be necessary.
+        if (m_openInstanceMode == 2)
+        {
+            SwitchToEditScope(PrefabEditScope::NESTED_INSTANCES);
+        }
     }
 
     void PrefabFocusHandler::OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, [[maybe_unused]] bool status)
