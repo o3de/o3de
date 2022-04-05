@@ -6,7 +6,6 @@
     "O3DECopyrightYear": 2021,
     "O3DEBuildNumber": 0,
     "external_subdirectories": [
-        "Gems/ROS2",
         "Gems/Achievements",
         "Gems/AssetValidation",
         "Gems/Atom",
@@ -62,6 +61,7 @@
         "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
+        "Gems/ROS2",
         "Gems/SaveData",
         "Gems/SceneLoggingExample",
         "Gems/SceneProcessing",
