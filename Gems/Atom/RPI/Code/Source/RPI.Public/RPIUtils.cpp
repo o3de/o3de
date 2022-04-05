@@ -631,7 +631,8 @@ namespace AZ
                 return aznumeric_cast<T>(0);
             }
 
-            return GetImageDataPixelValue<T>(imageData, imageAsset->GetImageDescriptor(), x, y, componentIndex);
+            auto imageDescriptor = imageAsset->GetImageDescriptorForMipLevel(mip);
+            return GetImageDataPixelValue<T>(imageData, imageDescriptor, x, y, componentIndex);
         }
 
         template<>
@@ -674,7 +675,7 @@ namespace AZ
             const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset,
             AZStd::pair<uint32_t, uint32_t> topLeft,
             AZStd::pair<uint32_t, uint32_t> bottomRight,
-            AZStd::span<float> outValues,
+            AZStd::function<void(const AZ::u32& x, const AZ::u32& y, const float& value)> callback,
             uint32_t componentIndex,
             uint32_t mip,
             uint32_t slice)
@@ -690,17 +691,16 @@ namespace AZ
                 return false;
             }
 
-            const AZ::RHI::ImageDescriptor& imageDescriptor = imageAsset->GetImageDescriptor();
+            auto imageDescriptor = imageAsset->GetImageDescriptorForMipLevel(mip);
 
-            size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
                     auto imageDataIndices = Internal::GetImageDataIndex(imageDescriptor, x, y);
 
-                    auto& outValue = outValues[outValuesIndex++];
-                    outValue = Internal::RetrieveFloatValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
+                    float value = Internal::RetrieveFloatValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
+                    callback(x, y, value);
                 }
             }
 
@@ -711,7 +711,7 @@ namespace AZ
             const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset,
             AZStd::pair<uint32_t, uint32_t> topLeft,
             AZStd::pair<uint32_t, uint32_t> bottomRight,
-            AZStd::span<AZ::u32> outValues,
+            AZStd::function<void(const AZ::u32& x, const AZ::u32& y, const AZ::u32& value)> callback,
             uint32_t componentIndex,
             uint32_t mip,
             uint32_t slice)
@@ -727,17 +727,16 @@ namespace AZ
                 return false;
             }
 
-            const AZ::RHI::ImageDescriptor& imageDescriptor = imageAsset->GetImageDescriptor();
+            auto imageDescriptor = imageAsset->GetImageDescriptorForMipLevel(mip);
 
-            size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
                     auto imageDataIndices = Internal::GetImageDataIndex(imageDescriptor, x, y);
 
-                    auto& outValue = outValues[outValuesIndex++];
-                    outValue = Internal::RetrieveUintValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
+                    AZ::u32 value = Internal::RetrieveUintValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
+                    callback(x, y, value);
                 }
             }
 
@@ -748,7 +747,7 @@ namespace AZ
             const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset,
             AZStd::pair<uint32_t, uint32_t> topLeft,
             AZStd::pair<uint32_t, uint32_t> bottomRight,
-            AZStd::span<AZ::s32> outValues,
+            AZStd::function<void(const AZ::u32& x, const AZ::u32& y, const AZ::s32& value)> callback,
             uint32_t componentIndex,
             uint32_t mip,
             uint32_t slice)
@@ -764,17 +763,16 @@ namespace AZ
                 return false;
             }
 
-            const AZ::RHI::ImageDescriptor& imageDescriptor = imageAsset->GetImageDescriptor();
+            auto imageDescriptor = imageAsset->GetImageDescriptorForMipLevel(mip);
 
-            size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
                     auto imageDataIndices = Internal::GetImageDataIndex(imageDescriptor, x, y);
 
-                    auto& outValue = outValues[outValuesIndex++];
-                    outValue = Internal::RetrieveIntValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
+                    AZ::s32 value = Internal::RetrieveIntValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
+                    callback(x, y, value);
                 }
             }
 
