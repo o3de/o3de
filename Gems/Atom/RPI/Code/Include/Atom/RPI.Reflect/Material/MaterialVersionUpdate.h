@@ -26,6 +26,9 @@ namespace AZ
         {
             friend class MaterialVersionUpdates;
 
+        private:
+            class PropertyHelper;
+
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate, "{B36E7712-AED8-46AA-AFE0-01F8F884C44A}");
 
@@ -64,10 +67,8 @@ namespace AZ
                 //! @param args The specific arguments for the chosen operation type:
                 //!              - rename operation: {"from":"oldPropertyName", "to":"newPropertyName"},
                 //!              - setValue operation: {"name":"myInt", "value":100}.
-                //!                In the case where the property's name also has 'rename' version
-                //!                updates, the name to use in 'setValue' is always the final name
-                //!                (even if the 'setValue' occurs at an older version number where
-                //!                that name would not yet have been renamed).
+                //!                In the case where the property also has 'rename' version updates,
+                //!                any of the names can be used in 'setValue'.
                 Action(
                     const AZ::Name& operation,
                     const AZStd::initializer_list<AZStd::pair<AZ::Name, MaterialPropertyValue>>& args);
@@ -84,13 +85,12 @@ namespace AZ
                 MaterialPropertyValue GetArg(const AZ::Name& key) const;
                 //! Helper function for the common case where an AZStd::string value is requested as an AZ::Name.
                 AZ::Name GetArgAsName(const AZ::Name& key) const;
-                size_t GetNumArgs() const;
+                size_t GetArgCount() const;
 
                 //! Validates our internal consistency.
-                //! Runs additional checks if @p materialPropertiesLayout is provided (e.g. type
-                //! checking for 'setValue' actions).
+                //! Runs additional checks if @p propertyHelper is provided (e.g. type checking for 'setValue' actions).
                 bool Validate(
-                    const MaterialPropertiesLayout* materialPropertiesLayout = NULL,
+                    const PropertyHelper* propertyHelper = nullptr,
                     AZStd::function<void(const char*)> onError = nullptr) const;
 
                 bool HasExpectedNumArguments(
@@ -125,29 +125,51 @@ namespace AZ
                 AZStd::function<MaterialPropertyValue(const Name&, const MaterialPropertyValue&)> sourceDataResolver = nullptr);
 
         private:
+            //! Helper class for resolving potentially-renamed properties and their types.
+            class PropertyHelper
+            {
+            public:
+                //! @param applyAllPropertyRenames Callback that applies the property renames of
+                //!        all version updates to its argument and returns true if a change was made.
+                //! @param materialPropertiesLayout Material properties layout with all property
+                //!        names already updated to the latest version.
+                PropertyHelper(
+                    AZStd::function<bool(AZ::Name&)> applyAllPropertyRenames,
+                    const MaterialPropertiesLayout* materialPropertiesLayout);
+
+                //! Tries to cast @p value in-place to its expected type based on its @p propertyId
+                //! and our MaterialPropertiesLayout.
+                //! @return True iff the cast was successful
+                bool CastToExpectedType(
+                    const Name& propertyId,
+                    MaterialPropertyValue& value,
+                    AZStd::function<void(const char*)> onError = nullptr) const;
+
+                //! Apply the property renames of all material version updates to the given @p propertyId.
+                bool ApplyAllPropertyRenames(AZ::Name& propertyId) const;
+
+            private:
+                const MaterialPropertiesLayout* m_materialPropertiesLayout;
+                AZStd::function<bool(AZ::Name&)> m_applyAllPropertyRenames;
+            };
+
+
             //! Possibly renames @p propertyId based on the material version update actions.
-            //! @return true if the property was renamed
+            //! @return True iff the property was renamed
             bool ApplyPropertyRenames(AZ::Name& propertyId) const;
 
             //! Possibly changes or adds values in @p rawProperties based on the material version update actions.
-            //! @return true if a property was set
+            //! @return True iff a property was set
             bool ApplySetValues(
                 AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& rawProperties,
-                const MaterialPropertiesLayout* materialPropertiesLayout,
+                const PropertyHelper& propertyHelper,
                 AZStd::function<void(const char*)> onError) const;
 
-            //! Tries to cast @p value in-place to its expected type based on its @p propertyId and
-            //! the @p materialPropertiesLayout.
-            //! @return true if the cast was successful
-            static bool CastToExpectedValue(
-                const Name& propertyId,
-                MaterialPropertyValue& value,
-                const MaterialPropertiesLayout* materialPropertiesLayout,
-                AZStd::function<void(const char*)> onError = nullptr);
-
             //! Validates the internal consistency of our update actions
+            //! @param propertyHelper Perform in-depth validation including property names and type check
+            //!        if provided. If set to nullptr, we only check for internal consistency.
             bool ValidateActions(
-                const MaterialPropertiesLayout* materialPropertiesLayout, AZStd::function<void(const char*)> onError) const;
+                const PropertyHelper* propertyHelper, AZStd::function<void(const char*)> onError) const;
 
             uint32_t m_toVersion;
             Actions m_actions;
@@ -164,7 +186,7 @@ namespace AZ
 
             void AddVersionUpdate(const MaterialVersionUpdate& versionUpdate);
 
-            size_t GetNumVersionUpdates() const;
+            size_t GetVersionUpdateCount() const;
 
             const MaterialVersionUpdate& GetVersionUpdate(size_t i) const;
 
@@ -178,14 +200,16 @@ namespace AZ
                 AZStd::function<void(const char*)> onError) const;
 
             //! Apply rename actions to the given @p propertyId if applicable.
-            //! @return true if the @p propertyId was renamed
+            //! @return True iff the @p propertyId was renamed
             bool ApplyPropertyRenames(AZ::Name& propertyId) const;
 
             //! Apply our version updates to the given material asset.
-            //! @return true if any changes were made
+            //! @return True iff any changes were made
             bool ApplyVersionUpdates(MaterialAsset& materialAsset, AZStd::function<void(const char*)> reportError) const;
 
         private:
+            MaterialVersionUpdate::PropertyHelper MakePropertyHelper(const MaterialPropertiesLayout* materialPropertiesLayout) const;
+
             using MaterialVersionUpdateList = AZStd::vector<MaterialVersionUpdate>;
             MaterialVersionUpdateList m_versionUpdates;
         };

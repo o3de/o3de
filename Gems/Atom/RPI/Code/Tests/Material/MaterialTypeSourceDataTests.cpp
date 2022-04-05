@@ -2062,7 +2062,7 @@ namespace UnitTest
         Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
 
         auto materialVersionUpdates = materialTypeAsset->GetMaterialVersionUpdates();
-        EXPECT_EQ(materialVersionUpdates.GetNumVersionUpdates(), 1);
+        EXPECT_EQ(materialVersionUpdates.GetVersionUpdateCount(), 1);
         auto actions = materialVersionUpdates.GetVersionUpdate(0).GetActions();
         EXPECT_EQ(actions.size(), 2);
 

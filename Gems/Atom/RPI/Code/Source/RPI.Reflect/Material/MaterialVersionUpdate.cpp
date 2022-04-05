@@ -78,12 +78,12 @@ namespace AZ
         bool MaterialVersionUpdate::Action::HasExpectedNumArguments(
             size_t expectedNum, const char* expectedArgs, AZStd::function<void(const char*)> onError) const
         {
-            bool isValid = expectedNum == GetNumArgs();
+            bool isValid = expectedNum == GetArgCount();
             if (!isValid && onError != nullptr)
             {
                 onError(AZStd::string::format(
                             "Expected %zu arguments in '%s' version update (%s), but found %zu",
-                            expectedNum, m_operation.GetCStr(), expectedArgs, GetNumArgs())
+                            expectedNum, m_operation.GetCStr(), expectedArgs, GetArgCount())
                             .c_str());
             }
             return isValid;
@@ -118,11 +118,11 @@ namespace AZ
             return isValid;
         }
         bool MaterialVersionUpdate::ValidateActions(
-            const MaterialPropertiesLayout* materialPropertiesLayout, AZStd::function<void(const char*)> onError) const
+            const PropertyHelper* propertyHelper, AZStd::function<void(const char*)> onError) const
         {
             for (const auto& action : m_actions)
             {
-                if (!action.Validate(materialPropertiesLayout, onError))
+                if (!action.Validate(propertyHelper, onError))
                 {
                     return false;
                 }
@@ -132,7 +132,7 @@ namespace AZ
         }
 
         bool MaterialVersionUpdate::Action::Validate(
-            const MaterialPropertiesLayout* materialPropertiesLayout,
+            const PropertyHelper* propertyHelper,
             AZStd::function<void(const char*)> onError) const
         {
             bool error = false;
@@ -152,12 +152,12 @@ namespace AZ
                     return false;
                 }
 
-                // If we know the materialPropertiesLayout, we can check the property name & value type
-                if (materialPropertiesLayout && onError != nullptr)
+                // If we have a propertyHelper, we can check the property name & value type
+                if (propertyHelper != nullptr)
                 {
                     const AZ::Name nameToSet = GetArgAsName(AZ::Name("name"));
                     MaterialPropertyValue valueToSet = GetArg(AZ::Name("value"));
-                    if (!CastToExpectedValue(nameToSet, valueToSet, materialPropertiesLayout, onError))
+                    if (!propertyHelper->CastToExpectedType(nameToSet, valueToSet, onError))
                     {
                         return false;
                     }
@@ -208,44 +208,67 @@ namespace AZ
             return renamed;
         }
 
-        bool MaterialVersionUpdate::CastToExpectedValue(
-            const Name& propertyId, MaterialPropertyValue& value, const MaterialPropertiesLayout* materialPropertiesLayout,
-            AZStd::function<void(const char*)> onError)
+        MaterialVersionUpdate::PropertyHelper::PropertyHelper(
+            AZStd::function<bool(AZ::Name&)> applyAllPropertyRenames,
+            const MaterialPropertiesLayout* materialPropertiesLayout)
+            : m_applyAllPropertyRenames(applyAllPropertyRenames), m_materialPropertiesLayout(materialPropertiesLayout)
         {
+        }
+
+        bool MaterialVersionUpdate::PropertyHelper::CastToExpectedType(
+            const Name& providedPropertyId, MaterialPropertyValue& value, AZStd::function<void(const char*)> onError) const
+        {
+            AZ_Assert(m_materialPropertiesLayout != nullptr, "PropertyHelper is not properly initialized");
+
+            // Update property id to latest name
+            Name propertyId(providedPropertyId);
+            ApplyAllPropertyRenames(propertyId);
+
             // Check that the property is known
-            const auto propertyIndex = materialPropertiesLayout->FindPropertyIndex(propertyId);
+            const auto propertyIndex = m_materialPropertiesLayout->FindPropertyIndex(propertyId);
             if (propertyIndex.IsNull())
             {
-                onError(AZStd::string::format(
-                            "setValue material version update: Could not find property '%s' in the material properties layout",
-                            propertyId.GetCStr())
-                            .c_str());
+                if (onError != nullptr)
+                {
+                    onError(AZStd::string::format(
+                                "setValue material version update: Could not find property '%s' in the material properties layout",
+                                propertyId.GetCStr())
+                                .c_str());
+                }
                 return false;
             }
 
             // Due to the ambiguity in the json parser (e.g. Color vs Vector[3-4]): try to cast
             // the value into the correct type.
-            const MaterialPropertyDescriptor *descriptor = materialPropertiesLayout->GetPropertyDescriptor(propertyIndex);
+            const MaterialPropertyDescriptor *descriptor = m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex);
             TypeId expectedType = descriptor->GetAssetDataTypeId();
             value = value.CastToType(expectedType);
 
             // Check if that cast was successful
             if (value.GetTypeId() != expectedType)
             {
-                onError(AZStd::string::format(
-                            "Unexpected type for property %s in a setValue version update: expected %s but received %s",
-                            propertyId.GetCStr(), expectedType.ToString<AZStd::string>().c_str(),
-                            value.GetTypeId().ToString<AZStd::string>().c_str())
-                            .c_str());
+                if (onError != nullptr)
+                {
+                    onError(AZStd::string::format(
+                                "Unexpected type for property %s in a setValue version update: expected %s but received %s",
+                                propertyId.GetCStr(), expectedType.ToString<AZStd::string>().c_str(),
+                                value.GetTypeId().ToString<AZStd::string>().c_str())
+                                .c_str());
+                }
                 return false;
             }
 
             return true;
         }
 
+        bool MaterialVersionUpdate::PropertyHelper::ApplyAllPropertyRenames(AZ::Name& propertyId) const
+        {
+            return m_applyAllPropertyRenames(propertyId);
+        }
+
         bool MaterialVersionUpdate::ApplySetValues(
             AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& rawProperties,
-            const MaterialPropertiesLayout* materialPropertiesLayout,
+            const PropertyHelper& propertyHelper,
             AZStd::function<void(const char*)> onError) const
         {
             bool valueWasSet = false;
@@ -256,12 +279,17 @@ namespace AZ
                     continue;
                 }
 
-                const AZ::Name nameToSet = action.GetArgAsName(AZ::Name("name"));
+                const AZ::Name nameFromSetValueAction = action.GetArgAsName(AZ::Name("name"));
+
+                // Update the name in case our setValue action is still using an older name
+                AZ::Name nameToSet(nameFromSetValueAction);
+                propertyHelper.ApplyAllPropertyRenames(nameToSet);
+
                 MaterialPropertyValue valueToSet = action.GetArg(AZ::Name("value"));
                 // Due to the ambiguity in the json parser (e.g. Color vs Vector[3-4]): try to cast
                 // the value into the correct type. This also checks that the property is actually
                 // known.
-                if (!CastToExpectedValue(nameToSet, valueToSet, materialPropertiesLayout, onError))
+                if (!propertyHelper.CastToExpectedType(nameToSet, valueToSet, onError))
                 {
                     return false;
                 }
@@ -273,9 +301,23 @@ namespace AZ
                     if (name == nameToSet)
                     {
                         value = valueToSet;
-                        AZ_Warning(
-                            "MaterialVersionUpdate", false,
-                            "SetValue version update has detected (and overwritten) a previous value for property %s.", name.GetCStr());
+                        if (nameToSet == nameFromSetValueAction)
+                        {
+                            // Property name from setValue is the final property name
+                            AZ_Warning(
+                                "MaterialVersionUpdate", false,
+                                "SetValue operation of update to version %d has detected (and overwritten) a previous value for %s.",
+                                GetVersion(), nameFromSetValueAction.GetCStr());
+                        }
+                        else
+                        {
+                            // SetValue was using an older name
+                            AZ_Warning(
+                                "MaterialVersionUpdate", false,
+                                "SetValue operation of update to version %d has detected (and overwritten) a previous value for %s "
+                                "(final name of this property: %s).",
+                                GetVersion(), nameFromSetValueAction.GetCStr(), nameToSet.GetCStr());
+                        }
 
                         AZ_Warning("MaterialVersionUpdate", !propertyFound, "Found property %s more than once!", name.GetCStr());
                         propertyFound = true;
@@ -291,6 +333,14 @@ namespace AZ
             }
 
             return valueWasSet;
+        }
+
+        MaterialVersionUpdate::PropertyHelper MaterialVersionUpdates::MakePropertyHelper(
+            const MaterialPropertiesLayout* materialPropertiesLayout) const
+        {
+            return MaterialVersionUpdate::PropertyHelper(
+                [this](AZ::Name& propertyId){ return ApplyPropertyRenames(propertyId); },
+                materialPropertiesLayout);
         }
 
         bool MaterialVersionUpdates::ApplyVersionUpdates(
@@ -325,6 +375,8 @@ namespace AZ
             // We can handle setValue actions *only* if the material type version of the material asset is known!
             if (materialAsset.m_materialTypeVersion != MaterialAsset::UnspecifiedMaterialTypeVersion)
             {
+                MaterialVersionUpdate::PropertyHelper propertyHelper = MakePropertyHelper(
+                    materialAsset.GetMaterialPropertiesLayout());
                 for (auto versionUpdate : m_versionUpdates)
                 {
                     if (materialAsset.m_materialTypeVersion >= versionUpdate.GetVersion())
@@ -333,7 +385,7 @@ namespace AZ
                     }
 
                     changesWereApplied |= versionUpdate.ApplySetValues(
-                        materialAsset.m_rawPropertyValues, materialAsset.GetMaterialPropertiesLayout(), reportError);
+                        materialAsset.m_rawPropertyValues, propertyHelper, reportError);
                 }
             }
 
@@ -428,7 +480,7 @@ namespace AZ
             }
         }
 
-        size_t MaterialVersionUpdate::Action::GetNumArgs() const
+        size_t MaterialVersionUpdate::Action::GetArgCount() const
         {
             return m_argsMap.size();
         }
@@ -451,7 +503,12 @@ namespace AZ
         AZ::Name MaterialVersionUpdate::Action::GetArgAsName(const AZ::Name& key) const
         {
             MaterialPropertyValue value = GetArg(key);
-            AZ_Assert(value.Is<AZStd::string>(), "%s: value under key %s was not a string", __FUNCTION__, key.GetCStr());
+
+            if (!value.IsValid() || !value.Is<AZStd::string>())
+            {
+                AZ_Error("MaterialVersionUpdate", false, "%s expected to find a string under the '%s' key", __FUNCTION__, key.GetCStr());
+                return AZ::Name();
+            }
             return AZ::Name(value.GetValue<AZStd::string>());
         }
 
@@ -471,11 +528,25 @@ namespace AZ
 
             uint32_t prevVersion = 0;
 
+            // Do an initial 'light' validation pass without a propertyHelper
+            // to check basic consistency (e.g. check rename actions).
+            for (const MaterialVersionUpdate& versionUpdate : m_versionUpdates)
+            {
+                if (!versionUpdate.ValidateActions(nullptr, onError))
+                {
+                    return false;
+                }
+            }
+
+            // We succeeded in our 'light' validation, make a PropertyHelper that
+            // points back to us for the 'full' validation.
+            MaterialVersionUpdate::PropertyHelper propertyHelper = MakePropertyHelper(materialPropertiesLayout);
+
             AZStd::unordered_set<AZ::Name> renamedPropertyNewNames; // Collect final names of any renamed properties
             for (const MaterialVersionUpdate& versionUpdate : m_versionUpdates)
             {
-                // Validate internal consistency
-                if (!versionUpdate.ValidateActions(materialPropertiesLayout, onError))
+                // Validate internal consistency, 'full' version with propertyHelper
+                if (!versionUpdate.ValidateActions(&propertyHelper, onError))
                 {
                     return false;
                 }
@@ -557,7 +628,7 @@ namespace AZ
             m_versionUpdates.push_back(versionUpdate);
         }
 
-        size_t MaterialVersionUpdates::GetNumVersionUpdates() const
+        size_t MaterialVersionUpdates::GetVersionUpdateCount() const
         {
             return m_versionUpdates.size();
         }

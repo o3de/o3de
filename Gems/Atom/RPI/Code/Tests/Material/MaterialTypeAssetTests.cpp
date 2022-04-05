@@ -1153,37 +1153,6 @@ namespace UnitTest
         EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
     }
 
-    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_UsingOldName)
-    {
-        Data::Asset<MaterialTypeAsset> materialTypeAsset;
-
-        Data::AssetId assetId(Uuid::CreateRandom());
-
-        MaterialTypeAssetCreator materialTypeCreator;
-        materialTypeCreator.Begin(assetId);
-
-        materialTypeCreator.AddShader(m_testShaderAsset);
-        AddCommonTestMaterialProperties(materialTypeCreator);
-
-        MaterialVersionUpdate versionUpdate(2);
-        // add them in the 'worst' order to make sure we handle it correctly in either case
-        AddSetValueAction(versionUpdate, "MyOldIntName", -4);
-        AddRenameAction(versionUpdate, "MyOldIntName", "MyInt");
-
-        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
-        materialTypeCreator.AddVersionUpdate(versionUpdate);
-
-        ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage(
-            "setValue material version update: Could not find property 'MyOldIntName' in the material properties layout");
-
-        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
-
-        errorMessageFinder.CheckExpectedErrorsFound();
-
-        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
-    }
-
     TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_NotEnoughArgs)
     {
         MaterialTypeAssetCreator materialTypeCreator;
