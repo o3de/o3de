@@ -34,12 +34,38 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
+            //! Wrapper around a MaterialPropertyValue object that enables
+            //! efficient conversion of string values to AZ::Name objects.
+            class MaterialPropertyValueWrapper {
+            public:
+                AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate::MaterialPropertyValueWrapper, "{B56677E7-762C-4CDE-AAA7-1361F487A760}");
+                static void Reflect(ReflectContext* context);
+
+                MaterialPropertyValueWrapper() = default;
+                MaterialPropertyValueWrapper(const MaterialPropertyValue &value);
+
+                const MaterialPropertyValue& Get() const;
+
+                //! Get our (string) value as a Name, uses caching to avoid repeated string hashing.
+                //! @return Our property value as a Name, or s_invalidName if our
+                //!         property value is not a valid string.
+                const AZ::Name& GetAsName() const;
+
+                bool operator==(const MaterialPropertyValueWrapper& other) const;
+
+                static inline const AZ::Name s_invalidName = AZ::Name();
+
+            private:
+                MaterialPropertyValue m_value;
+                AZ::Name m_nameCache = s_invalidName;
+            };
+
             struct Action
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate::Action, "{A1FBEB19-EA05-40F0-9700-57D048DF572B}");
                 static void Reflect(ReflectContext* context);
 
-                using ArgsMap = AZStd::unordered_map<AZ::Name, MaterialPropertyValue>;
+                using ArgsMap = AZStd::unordered_map<AZ::Name, MaterialPropertyValueWrapper>;
                 AZ::Name m_operation;
                 ArgsMap m_argsMap;
 
@@ -82,9 +108,12 @@ namespace AZ
                 Action(const AZStd::initializer_list<AZStd::pair<AZStd::string, MaterialPropertyValue>>& fullActionDefinition);
 
                 void AddArg(const AZ::Name& key, const MaterialPropertyValue& argument);
-                MaterialPropertyValue GetArg(const AZ::Name& key) const;
-                //! Helper function for the common case where an AZStd::string value is requested as an AZ::Name.
-                AZ::Name GetArgAsName(const AZ::Name& key) const;
+                //! Get the argument under the given @p key.
+                //! @note The returned reference becomes invalid when calling AddArg().
+                const MaterialPropertyValue& GetArg(const AZ::Name& key) const;
+                //! Efficiently get an AZStd::string value as an AZ::Name.
+                //! @note The returned reference becomes invalid when calling AddArg().
+                const AZ::Name& GetArgAsName(const AZ::Name& key) const;
                 size_t GetArgCount() const;
 
                 //! Validates our internal consistency.
@@ -107,6 +136,8 @@ namespace AZ
                     const char* expectedArgName, AZStd::function<void(const char*)> onError) const;
 
                 bool operator==(const Action& other) const;
+
+                static inline const MaterialPropertyValue s_invalidValue = MaterialPropertyValue();
             };
 
             explicit MaterialVersionUpdate() = default;

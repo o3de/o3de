@@ -15,14 +15,28 @@ namespace AZ
 {
     namespace RPI
     {
+        void MaterialVersionUpdate::MaterialPropertyValueWrapper::Reflect(ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<MaterialVersionUpdate::MaterialPropertyValueWrapper>()
+                    ->Version(0)
+                    ->Field("Value", &MaterialPropertyValueWrapper::m_value)
+                    ->Field("NameCache", &MaterialPropertyValueWrapper::m_nameCache)
+                    ;
+            }
+        }
+
         void MaterialVersionUpdate::Action::Reflect(ReflectContext* context)
         {
+            MaterialVersionUpdate::MaterialPropertyValueWrapper::Reflect(context);
+
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->RegisterGenericType<MaterialVersionUpdate::Action::ArgsMap>();
 
                 serializeContext->Class<MaterialVersionUpdate::Action>()
-                    ->Version(2) // Generic actions based on string -> MaterialPropertyValue map
+                    ->Version(3) // Generic actions based on string -> MaterialPropertyValueWrapper map
                     ->Field("ArgsMap", &Action::m_argsMap)
                     ->Field("Operation", &Action::m_operation)
                     ;
@@ -58,6 +72,33 @@ namespace AZ
                     ->Field("VersionUpdates", &MaterialVersionUpdates::m_versionUpdates)
                     ;
             }
+        }
+
+        MaterialVersionUpdate::MaterialPropertyValueWrapper::MaterialPropertyValueWrapper(const MaterialPropertyValue& value)
+            : m_value(value)
+        {
+            if (m_value.IsValid() && m_value.Is<AZStd::string>())
+            {
+                m_nameCache = AZ::Name(m_value.GetValue<AZStd::string>());
+            }
+        }
+
+        const MaterialPropertyValue& MaterialVersionUpdate::MaterialPropertyValueWrapper::Get() const
+        {
+            return m_value;
+        }
+
+        const AZ::Name& MaterialVersionUpdate::MaterialPropertyValueWrapper::GetAsName() const
+        {
+            AZ_Error(
+                "MaterialVersionUpdate", m_value.IsValid() && m_value.Is<AZStd::string>(),
+                "GetAsName() expects a valid string value");
+            return m_nameCache;
+        }
+
+        bool MaterialVersionUpdate::MaterialPropertyValueWrapper::operator==(const MaterialPropertyValueWrapper& other) const
+        {
+            return m_value == other.m_value;
         }
 
         MaterialVersionUpdate::MaterialVersionUpdate(uint32_t toVersion)
@@ -487,29 +528,27 @@ namespace AZ
 
         void MaterialVersionUpdate::Action::AddArg(const AZ::Name& key, const MaterialPropertyValue& argument)
         {
-            m_argsMap[key] = argument;
+            m_argsMap[key] = MaterialPropertyValueWrapper(argument);
         }
 
-        MaterialPropertyValue MaterialVersionUpdate::Action::GetArg(const AZ::Name& key) const
+        const MaterialPropertyValue& MaterialVersionUpdate::Action::GetArg(const AZ::Name& key) const
         {
             const auto it = m_argsMap.find(key);
             if (it == m_argsMap.end())
             {
-                return MaterialPropertyValue();
+                return s_invalidValue;
             }
-            return it->second;
+            return it->second.Get();
         }
 
-        AZ::Name MaterialVersionUpdate::Action::GetArgAsName(const AZ::Name& key) const
+        const AZ::Name& MaterialVersionUpdate::Action::GetArgAsName(const AZ::Name& key) const
         {
-            MaterialPropertyValue value = GetArg(key);
-
-            if (!value.IsValid() || !value.Is<AZStd::string>())
+            const auto it = m_argsMap.find(key);
+            if (it == m_argsMap.end())
             {
-                AZ_Error("MaterialVersionUpdate", false, "%s expected to find a string under the '%s' key", __FUNCTION__, key.GetCStr());
-                return AZ::Name();
+                return MaterialPropertyValueWrapper::s_invalidName;
             }
-            return AZ::Name(value.GetValue<AZStd::string>());
+            return it->second.GetAsName();
         }
 
         bool MaterialVersionUpdate::Action::operator==(const Action& other) const
