@@ -600,16 +600,13 @@ namespace AZ
             }
             else
             {
-                AZ::Data::AssetInfo assetInfo;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
-
                 Data::Instance<Image> image = nullptr;
-                if (assetInfo.m_assetType == azrtti_typeid<StreamingImageAsset>())
+                if (imageAsset.GetType() == azrtti_typeid<StreamingImageAsset>())
                 {
                     Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset);
                     image = StreamingImage::FindOrCreate(streamingImageAsset);
                 }
-                else if (assetInfo.m_assetType == azrtti_typeid<AttachmentImageAsset>())
+                else if (imageAsset.GetType() == azrtti_typeid<AttachmentImageAsset>())
                 {
                     Data::Asset<AttachmentImageAsset> attachmentImageAsset = Data::static_pointer_cast<AttachmentImageAsset>(imageAsset);
                     image = AttachmentImage::FindOrCreate(attachmentImageAsset);
@@ -622,7 +619,7 @@ namespace AZ
 
                 if (!image)
                 {
-                    AZ_Error(s_debugTraceName, false, "Could not create an image from the ImageAsset [%s]", assetInfo.m_relativePath.c_str());
+                    AZ_Error(s_debugTraceName, false, "Image asset could not be loaded");
                     return false;
                 }
 
