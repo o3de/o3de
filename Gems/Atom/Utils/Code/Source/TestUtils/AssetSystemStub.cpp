@@ -46,6 +46,11 @@ namespace UnitTest
         m_sourceGuid_sourceInfo_map.emplace(assetInfo.m_assetId.m_guid, sourceInfo);
     }
 
+    void AssetSystemStub::RegisterScanFolder(const char* scanFolderPath)
+    {
+        m_scanFolders.push_back(scanFolderPath);
+    }
+
     bool AssetSystemStub::GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder)
     {
         AZStd::string normalizedSourcePath = sourcePath;
@@ -104,11 +109,13 @@ namespace UnitTest
 
     bool AssetSystemStub::GetScanFolders([[maybe_unused]] AZStd::vector<AZStd::string>& scanFolders)
     {
+        scanFolders = m_scanFolders;
         return false;
     }
 
     bool AssetSystemStub::GetAssetSafeFolders([[maybe_unused]] AZStd::vector<AZStd::string>& assetSafeFolders)
     {
+        assetSafeFolders = m_scanFolders;
         return false;
     }
 

@@ -42,6 +42,12 @@ namespace UnitTest
             RegisterSourceAsset("textures/red.png");
             RegisterSourceAsset("textures/gold.png");
             RegisterSourceAsset("textures/fuzz.png");
+
+            m_assetSystemStub.RegisterScanFolder("d:/projects/project1/assets/");
+            m_assetSystemStub.RegisterScanFolder("d:/projects/project2/assets/");
+            m_assetSystemStub.RegisterScanFolder("d:/o3de/gems/atom/assets/");
+            m_assetSystemStub.RegisterScanFolder("d:/o3de/gems/atom/testdata/");
+            m_assetSystemStub.RegisterScanFolder("d:/o3de/gems/atom/tools/materialeditor/assets/");
         }
 
         void TearDown() override
@@ -75,6 +81,55 @@ namespace UnitTest
         ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", false), "materials/condor.material");
         ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", false), "materials/condor.material");
         ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", false), "materials/condor.material");
+    }
+
+    TEST_F(AtomToolsFrameworkTest, IsValidSourceDocumentPath_Succeeds)
+    {
+        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath("c:/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath("d:/project/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath("d:/projects/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath("d:/projects/project1/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath("e:/projects/project1/assets/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath("e:/projects/project1/assets/subfolder/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath("e:/projects/project2/assets/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath("e:/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json"));
+        ASSERT_TRUE(AtomToolsFramework::IsValidSourceDocumentPath("d:/projects/project1/assets/somerandomasset.json"));
+        ASSERT_TRUE(AtomToolsFramework::IsValidSourceDocumentPath("d:/projects/project1/assets/subfolder/somerandomasset.json"));
+        ASSERT_TRUE(AtomToolsFramework::IsValidSourceDocumentPath("d:/projects/project2/assets/somerandomasset.json"));
+        ASSERT_TRUE(AtomToolsFramework::IsValidSourceDocumentPath("d:/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json"));
+    }
+
+    TEST_F(AtomToolsFrameworkTest, ValidateDocumentPath_Succeeds)
+    {
+        AZStd::string testPath;
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "somerandomasset.json";
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "../somerandomasset.json";
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "c:/somerandomasset.json";
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "d:/project/somerandomasset.json";
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "d:/projects/somerandomasset.json";
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "d:/projects/project1/somerandomasset.json";
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "e:/projects/project1/assets/somerandomasset.json";
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "e:/projects/project1/assets/subfolder/somerandomasset.json";
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "e:/projects/project2/assets/somerandomasset.json";
+        testPath="e:/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json";
+        ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "d:/projects/project1/assets/somerandomasset.json";
+        ASSERT_TRUE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "d:/projects/project1/assets/subfolder/somerandomasset.json";
+        ASSERT_TRUE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "d:/projects/project2/assets/somerandomasset.json";
+        ASSERT_TRUE(AtomToolsFramework::ValidateDocumentPath(testPath));
+        testPath = "d:/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json";
+        ASSERT_TRUE(AtomToolsFramework::ValidateDocumentPath(testPath));
     }
 
     AZ_UNIT_TEST_HOOK(new AtomToolsFrameworkTestEnvironment);
