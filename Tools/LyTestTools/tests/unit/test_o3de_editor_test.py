@@ -20,18 +20,18 @@ class TestEditorTestBase(unittest.TestCase):
 
     def test_EditorSharedTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorSharedTest()
-        assert mock_editorsharedtest.is_batchable == True
-        assert mock_editorsharedtest.is_parallelizable == True
+        assert mock_editorsharedtest.is_batchable
+        assert mock_editorsharedtest.is_parallelizable
 
     def test_EditorParallelTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorParallelTest()
-        assert mock_editorsharedtest.is_batchable == False
-        assert mock_editorsharedtest.is_parallelizable == True
+        assert not mock_editorsharedtest.is_batchable
+        assert mock_editorsharedtest.is_parallelizable
 
     def test_EditorBatchedTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorBatchedTest()
-        assert mock_editorsharedtest.is_batchable == True
-        assert mock_editorsharedtest.is_parallelizable == False
+        assert mock_editorsharedtest.is_batchable
+        assert not mock_editorsharedtest.is_parallelizable
 
 
 class TestResultBase(unittest.TestCase):
@@ -648,6 +648,8 @@ class TestRunningTests(unittest.TestCase):
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Crash)
         assert mock_editor.start.called
         assert mock_retrieve_crash.called
+        # Save editor log, crash log, and crash dmp
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 3
 
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
@@ -760,6 +762,8 @@ class TestRunningTests(unittest.TestCase):
         assert mock_cycle_crash.call_count == 2
         assert mock_get_results.called
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Crash)
+        # Save editor log, crash log, and crash dmp
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 3
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_crash_output')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')

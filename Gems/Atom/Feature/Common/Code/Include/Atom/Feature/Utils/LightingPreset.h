@@ -95,9 +95,7 @@ namespace AZ
                 DirectionalLightFeatureProcessorInterface* directionalLightFeatureProcessor,
                 const Camera::Configuration& cameraConfig,
                 AZStd::vector<DirectionalLightFeatureProcessorInterface::LightHandle>& lightHandles,
-                Data::Instance<AZ::RPI::Material> shadowCatcherMaterial = nullptr,
-                RPI::MaterialPropertyIndex shadowCatcherOpacityPropertyIndex = RPI::MaterialPropertyIndex(),
-                bool enableAlternateSkybox = false) const;
+                bool enableAlternateSkybox) const;
         };
 
         using LightingPresetPtr = AZStd::shared_ptr<LightingPreset>;

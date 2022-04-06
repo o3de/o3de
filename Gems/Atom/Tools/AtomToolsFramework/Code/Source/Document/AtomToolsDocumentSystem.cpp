@@ -453,18 +453,27 @@ namespace AtomToolsFramework
         if (!m_queueReopenDocuments)
         {
             m_queueReopenDocuments = true;
-            QTimer::singleShot(0, [this] { ReopenDocuments(); });
+            QTimer::singleShot(500, [this] { ReopenDocuments(); });
         }
     }
 
     void AtomToolsDocumentSystem::ReopenDocuments()
     {
+        m_queueReopenDocuments = false;
+
         const bool enableHotReload = GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableHotReload", true);
         if (!enableHotReload)
         {
             m_documentIdsWithDependencyChanges.clear();
             m_documentIdsWithExternalChanges.clear();
-            m_queueReopenDocuments = false;
+            return;
+        }
+
+        // Postpone document reload if a modal dialog is active or the application is out of focus
+        if (QApplication::activeModalWidget() || !(QApplication::applicationState() & Qt::ApplicationActive))
+        {
+            QueueReopenDocuments();
+            return;
         }
 
         const bool enableHotReloadPrompts =
@@ -530,6 +539,5 @@ namespace AtomToolsFramework
 
         m_documentIdsWithDependencyChanges.clear();
         m_documentIdsWithExternalChanges.clear();
-        m_queueReopenDocuments = false;
     }
 } // namespace AtomToolsFramework

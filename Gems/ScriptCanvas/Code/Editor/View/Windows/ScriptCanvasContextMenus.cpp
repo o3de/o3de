@@ -19,7 +19,7 @@
 #include <Editor/Nodes/NodeUtils.h>
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/VariablePanel/GraphVariablesTableView.h>
-#include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
+#include <Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
@@ -570,29 +570,52 @@ namespace ScriptCanvasEditor
             return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
         }
 
-        // Show the selection dialog
-        bool createSlot = false;
-        VariablePaletteRequests::SlotSetup selectedSlotSetup;
+        auto variable = slot->GetVariable();
+        if (!variable)
+        {
+            return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+        }
+
+        ScriptCanvas::ScriptCanvasId scriptCanvasGraphId;
+        GeneralRequestBus::BroadcastResult(scriptCanvasGraphId, &GeneralRequests::GetScriptCanvasId, graphId);
+        if (!scriptCanvasGraphId.IsValid())
+        {
+            return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+        }
+
+        VariablePaletteRequests::VariableConfigurationInput selectedSlotSetup;
+        selectedSlotSetup.m_changeVariableType = true;
+        selectedSlotSetup.m_graphVariable = variable;
+        selectedSlotSetup.m_currentName = slot->GetName();
+        selectedSlotSetup.m_currentType = slot->GetDataType();
+
         QPoint scenePoint(static_cast<int>(scenePos.GetX()), static_cast<int>(scenePos.GetY()));
-        VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+        VariablePaletteRequests::VariableConfigurationOutput output;
+        VariablePaletteRequestBus::BroadcastResult(output, &VariablePaletteRequests::ShowVariableConfigurationWidget
+            , selectedSlotSetup, scenePoint);
 
         bool changed = false;
-        if (createSlot && !selectedSlotSetup.m_type.IsNull())
+
+        if (output.m_actionIsValid)
         {
-            if (slot)
+            if ((output.m_nameChanged && !output.m_name.empty()) || (output.m_typeChanged && output.m_type.IsValid()))
             {
-                auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
-                if (displayType.IsValid())
+                GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, scriptCanvasGraphId);
+                GraphCanvas::ScopedGraphUndoBlocker undoBlocker(graphId);
+
+                if ((output.m_nameChanged && !output.m_name.empty()))
                 {
-                    slot->SetDisplayType(displayType);
-                    changed = true;
+                    variable->SetVariableName(output.m_name);
                 }
 
-                if (!selectedSlotSetup.m_name.empty())
+                if (output.m_typeChanged && output.m_type.IsValid())
                 {
-                    slot->Rename(selectedSlotSetup.m_name);
-                    changed = true;
+                    variable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
+                    ScriptCanvas::GraphRequestBus::Event(scriptCanvasGraphId, &ScriptCanvas::GraphRequests::RefreshVariableReferences
+                        , variable->GetVariableId());
                 }
+
+                changed = true;
             }
         }
 
