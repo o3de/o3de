@@ -45,6 +45,17 @@ namespace AzToolsFramework
                 Instance* instance,
                 PrefabDom patches,
                 AZ::JsonSerializationResult::ResultCode& result);
+
+            //! Clears all the entities in the instance and loads them from scratch using the DOM provided.
+            //! @param inputValue The Dom that contains the instance information.
+            //! @param context The context that could contain additional metadata needed for the deserialization.
+            //! @instance The instance in which the entities need to be reloaded.
+            //! @result The result code that could be modified during the process of reloading.
+            void ClearAndLoadEntities(
+                const rapidjson::Value& inputValue,
+                AZ::JsonDeserializerContext& context,
+                Instance* instance,
+                AZ::JsonSerializationResult::ResultCode& result);
         };
     }
 }

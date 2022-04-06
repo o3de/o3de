@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -314,6 +313,7 @@ namespace AzToolsFramework
             m_entities.clear();
             m_instanceToTemplateEntityIdMap.clear();
             m_templateToInstanceEntityIdMap.clear();
+
         }
 
         bool Instance::RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias)
@@ -861,4 +861,4 @@ namespace AzToolsFramework
             m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
         }
     }
-}
+} // namespace AzToolsFramework

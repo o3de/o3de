@@ -86,7 +86,7 @@ namespace UnitTest
                     // active state.
                     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
                 }
-                else
+                else if (entity->GetName() == "Entity1")
                 {
                     // Validate that the entity is in 'constructed' state, which indicates that it got reloaded.
                     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Constructed);
@@ -135,7 +135,7 @@ namespace UnitTest
                     // active state.
                     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
                 }
-                else
+                else if (entity->GetName() == "Entity1")
                 {
                     // Validate that the entity is in 'constructed' state, which indicates that it got reloaded.
                     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Constructed);
@@ -191,7 +191,7 @@ namespace UnitTest
                     // active state.
                     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
                 }
-                else
+                else if(entity->GetName() == "Entity1")
                 {
                     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Constructed);
                     AZStd::vector<AZ::Component*> entity1Components = entity->GetComponents();
@@ -201,5 +201,126 @@ namespace UnitTest
                 }
                 return true;
             });
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponAddingEntityToExistingEntities)
+    {
+        AZ::Entity* entity1 = CreateEntity("Entity1", false);
+
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+
+        createdPrefab->AddEntity(AZStd::move(AZStd::make_unique<AZ::Entity>("Entity2")));
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        bool isEntity1Found = false, isEntity2Found = false;
+        instantiatedPrefab->GetEntities(
+            [&isEntity1Found, &isEntity2Found](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                if (entity->GetName() == "Entity1")
+                {
+                    // Since we didn't touch entity1 in createdPrefab, it should remain untouched in instantiatedPrefab and thus retain its
+                    // active state.
+                    EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+                    isEntity1Found = true;
+                }
+                else if (entity->GetName() == "Entity2")
+                {
+                    // Validate that the entity2 is in 'constructed' state, which indicates that it got added from dom.
+                    EXPECT_EQ(entity->GetState(), AZ::Entity::State::Constructed);
+                    isEntity2Found = true;
+                }
+                return true;
+            });
+        EXPECT_TRUE(isEntity1Found);
+        EXPECT_TRUE(isEntity2Found);
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponAddingEntityToEmptyInstance)
+    {
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
+            SetupPrefabInstances(AzToolsFramework::EntityList{}, m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+
+        createdPrefab->AddEntity(AZStd::move(AZStd::make_unique<AZ::Entity>("Entity1")));
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        bool isEntity1Found = false;
+        instantiatedPrefab->GetEntities(
+            [&isEntity1Found](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                if (entity->GetName() == "Entity1")
+                {
+                    isEntity1Found = true;
+                }
+                return true;
+            });
+        EXPECT_TRUE(isEntity1Found);
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponDeletingOneAmongManyEntities)
+    {
+        AZ::Entity* entity1 = CreateEntity("Entity1", false);
+        AZ::Entity* entity2 = CreateEntity("Entity2", false);
+
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1, entity2 }, m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+
+        createdPrefab->DetachEntity(entity2->GetId());
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        bool isEntity1Found = false, isEntity2Found = false;
+        instantiatedPrefab->GetEntities(
+            [&isEntity1Found, &isEntity2Found](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                if (entity->GetName() == "Entity1")
+                {
+                    // Since we didn't touch entity1 in createdPrefab, it should remain untouched in instantiatedPrefab and thus retain its
+                    // active state.
+                    EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+                    isEntity1Found = true;
+                }
+                else if (entity->GetName() == "Entity2")
+                {
+                    // This shouldn't be hit since Entity2 should have been removed. Mark the boolean as true and throw an error later.
+                    isEntity2Found = true;
+                }
+                return true;
+            });
+        EXPECT_TRUE(isEntity1Found);
+        EXPECT_FALSE(isEntity2Found);
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponDeletingTheOnlyEntity)
+    {
+        AZ::Entity* entity1 = CreateEntity("Entity1", false);
+
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+
+        createdPrefab->DetachEntity(entity1->GetId());
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        bool isEntity1Found = false;
+        instantiatedPrefab->GetEntities(
+            [&isEntity1Found](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                if (entity->GetName() == "Entity1")
+                {
+                    // Since we didn't touch entity1 in createdPrefab, it should remain untouched in instantiatedPrefab and thus retain its
+                    // active state.
+                    EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+                    isEntity1Found = true;
+                }
+                return true;
+            });
+        EXPECT_FALSE(isEntity1Found);
     }
 } // namespace UnitTest

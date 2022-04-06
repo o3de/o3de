@@ -695,6 +695,9 @@ namespace AzToolsFramework
             PrefabUndoHelpers::UpdatePrefabInstance(
                 entityOwningInstance, "Undo adding entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
 
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
+
             return AZ::Success(entityId);
         }
 
@@ -1299,9 +1302,6 @@ namespace AzToolsFramework
             Prefab::PrefabDom instanceDomAfter;
             m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonOwningInstance->get());
 
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
-
             // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
             // and then add the deletion as children.
             // Commands always execute themselves first and then their children (when going forwards)
@@ -1323,7 +1323,10 @@ namespace AzToolsFramework
             PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
             command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
             command->SetParent(undoBatch.GetUndoBatch());
-            command->Redo(commonOwningInstance->get());
+            command->Redo();
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             
             return AZ::Success();
         }

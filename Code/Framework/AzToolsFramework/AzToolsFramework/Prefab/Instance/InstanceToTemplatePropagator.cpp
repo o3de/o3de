@@ -172,11 +172,11 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ_Error(
-                    "Prefab",
-                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
-                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
-                    "Some of the patches were not successfully applied.");
+                if (result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Skipped ||
+                    result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip)
+                {
+                    AZ_Error("Prefab", false, "Some of the patches were not successfully applied.");
+                }
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
                 return true;
