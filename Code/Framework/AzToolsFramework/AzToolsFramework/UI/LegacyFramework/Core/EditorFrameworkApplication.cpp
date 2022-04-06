@@ -199,6 +199,10 @@ namespace LegacyFramework
             CreateReflectionManager();
         }
 
+        // Add the AzNetworking Gem modules to the list of "modules" to load for Lua IDE
+        m_descriptor.m_modules.push_back(AZ::DynamicModuleDescriptor{ "AzNetworking" });
+        LoadDynamicModules();
+
         CreateSystemComponents();
 
         m_ptrSystemEntity->Init();

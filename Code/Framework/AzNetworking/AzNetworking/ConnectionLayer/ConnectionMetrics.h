@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzNetworking/AzNetworkingConfiguration.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
 #include <AzCore/Time/ITime.h>
 
@@ -47,11 +48,11 @@ namespace AzNetworking
 
         //! Retrieve a sample of the datarate being incurred by this connection in bytes per second.
         //! @return datarate for traffic sent to or from the connection in bytes per second
-        float GetBytesPerSecond() const;
+        AZNETWORKING_API float GetBytesPerSecond() const;
 
         //! Returns the estimated packet loss rate as a percentage of packets.
         //! @return the estimated percentage loss rate
-        float GetLossRatePercent() const;
+        AZNETWORKING_API float GetLossRatePercent() const;
 
     private:
 

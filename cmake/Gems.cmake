@@ -250,6 +250,8 @@ function(ly_add_gem_dependencies_to_project_variants)
                 ${PREFIX_CLAUSE}
                 TARGETS ${ly_add_gem_dependencies_TARGET}
                 DEPENDENT_TARGETS ${dealiased_gem_target})
+        else()
+            message(VERBOSE "Gem \"${gem_name}\" does not expose a variant of ${ly_add_gem_dependencies_VARIANT}")
         endif()
     endforeach()
 endfunction()
@@ -261,7 +263,7 @@ function(ly_enable_gems_delayed)
     get_property(targets_with_variants GLOBAL PROPERTY LY_TARGETS_WITH_GEM_VARIANTS)
     # Query the projects that have made calls to ly_enable_gems
     get_property(enable_gem_projects GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS)
-
+    
     foreach(target ${targets_with_variants})
         if (NOT TARGET ${target})
             message(FATAL_ERROR "ly_set_gem_variant_to_load specified TARGET '${target}' but no such target was found.")

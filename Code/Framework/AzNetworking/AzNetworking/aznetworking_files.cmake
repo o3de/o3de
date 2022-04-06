@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    AzNetworkingConfiguration.h
     AzNetworkingModule.cpp
     AzNetworkingModule.h
     AutoGen/AutoPacketDispatcher_Header.jinja

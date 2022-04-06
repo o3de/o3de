@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzNetworking/AzNetworkingConfiguration.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/Serialization/AbstractValue.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
@@ -25,19 +26,19 @@ namespace AzNetworking
     {
     public:
 
-        SerializerDelta();
+        AZNETWORKING_API SerializerDelta();
 
-        uint32_t GetNumDirtyBits() const;
-        bool GetDirtyBit(uint32_t index) const;
-        bool InsertDirtyBit(bool dirtyBit);
+        AZNETWORKING_API uint32_t GetNumDirtyBits() const;
+        AZNETWORKING_API bool GetDirtyBit(uint32_t index) const;
+        AZNETWORKING_API bool InsertDirtyBit(bool dirtyBit);
 
-        uint8_t* GetBufferPtr();
-        uint32_t GetBufferSize() const;
-        uint32_t GetBufferCapacity() const;
+        AZNETWORKING_API uint8_t* GetBufferPtr();
+        AZNETWORKING_API uint32_t GetBufferSize() const;
+        AZNETWORKING_API uint32_t GetBufferCapacity() const;
 
-        void SetBufferSize(uint32_t size);
+        AZNETWORKING_API void SetBufferSize(uint32_t size);
 
-        bool Serialize(ISerializer& serializer);
+        AZNETWORKING_API bool Serialize(ISerializer& serializer);
 
     private:
 
@@ -54,8 +55,8 @@ namespace AzNetworking
     {
     public:
 
-        DeltaSerializerCreate(SerializerDelta& delta);
-        ~DeltaSerializerCreate();
+        AZNETWORKING_API DeltaSerializerCreate(SerializerDelta& delta);
+        AZNETWORKING_API ~DeltaSerializerCreate();
 
         template <typename TYPE>
         bool CreateDelta(TYPE& base, TYPE& current);
@@ -114,7 +115,7 @@ namespace AzNetworking
     {
     public:
 
-        DeltaSerializerApply(SerializerDelta& delta);
+        AZNETWORKING_API DeltaSerializerApply(SerializerDelta& delta);
 
         template <typename TYPE>
         bool ApplyDelta(TYPE& output);

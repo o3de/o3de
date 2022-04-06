@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/queue.h>
+#include <AzNetworking/AzNetworkingConfiguration.h>
 
 namespace AzNetworking
 {
@@ -29,7 +30,7 @@ namespace AzNetworking
     {
     public:
 
-        struct TimeoutItem
+        struct AZNETWORKING_API TimeoutItem
         {
             TimeoutItem() = default;
             TimeoutItem(uint64_t userData, AZ::TimeMs timeoutMs);
@@ -41,32 +42,32 @@ namespace AzNetworking
             AZ::TimeMs m_nextTimeoutTimeMs = AZ::Time::ZeroTimeMs;
         };
 
-        TimeoutQueue() = default;
-        ~TimeoutQueue() = default;
+        AZNETWORKING_API TimeoutQueue() = default;
+        AZNETWORKING_API ~TimeoutQueue() = default;
 
         //! Resets all internal state for this timeout queue.
-        void Reset();
+        AZNETWORKING_API void Reset();
 
         //! Registers a new item with the TimeoutQueue.
         //! @param userData  value to register a timeout callback for
         //! @param timeoutMs number of milliseconds to trigger the callback after
         //! @return boolean true if registration was successful
-        TimeoutId RegisterItem(uint64_t userData, AZ::TimeMs timeoutMs);
+        AZNETWORKING_API TimeoutId RegisterItem(uint64_t userData, AZ::TimeMs timeoutMs);
 
         //! Returns the provided timeout item if it exists, also refreshes the timeout value.
         //! @param timeoutId the identifier of the item to fetch
         //! @return pointer to the timeout item if it exists
-        TimeoutItem *RetrieveItem(TimeoutId timeoutId);
+        AZNETWORKING_API TimeoutItem* RetrieveItem(TimeoutId timeoutId);
 
         //! Removes an item from the TimeoutQueue.
         //! @param timeoutId the identifier of the item to remove
-        void RemoveItem(TimeoutId timeoutId);
+        AZNETWORKING_API void RemoveItem(TimeoutId timeoutId);
 
         //! Updates timeouts for all items, invokes the provided timeout functor if required.
         //! @param timeoutHandler lambda to invoke for all timeouts
         //! @param maxTimeouts    the maximum number of timeouts to process before breaking iteration
         using TimeoutHandler = AZStd::function<TimeoutResult(TimeoutQueue::TimeoutItem&)>;
-        void UpdateTimeouts(const TimeoutHandler& timeoutHandler, int32_t maxTimeouts = -1);
+        AZNETWORKING_API void UpdateTimeouts(const TimeoutHandler& timeoutHandler, int32_t maxTimeouts = -1);
 
     private:
 

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzNetworking/AzNetworkingConfiguration.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 
 namespace AzNetworking
@@ -22,43 +23,43 @@ namespace AzNetworking
         //! Constructor.
         //! @param buffer         output buffer to read from
         //! @param bufferCapacity capacity of the buffer in bytes
-        NetworkOutputSerializer(const uint8_t* buffer, uint32_t bufferCapacity);
+        AZNETWORKING_API NetworkOutputSerializer(const uint8_t* buffer, uint32_t bufferCapacity);
 
         //! Returns the unread portion of the data stream.
         //! @return the unread portion of the data stream
-        const uint8_t* GetUnreadData() const;
+        AZNETWORKING_API const uint8_t* GetUnreadData() const;
 
         //! Returns the number of bytes not yet consumed from the serialization buffer.
         //! @return number of bytes not yet consumed from the serialization buffer
-        uint32_t GetUnreadSize() const;
+        AZNETWORKING_API uint32_t GetUnreadSize() const;
 
         //! Returns the number of bytes consumed by serialization.
         //! @return number of bytes consumed by serialization
-        uint32_t GetReadSize() const;
+        AZNETWORKING_API uint32_t GetReadSize() const;
 
         // ISerializer interfaces
-        SerializerMode GetSerializerMode() const override;
-        bool Serialize(    bool& value, const char* name) override;
-        bool Serialize(    char& value, const char* name,     char minValue,     char maxValue) override;
-        bool Serialize(  int8_t& value, const char* name,   int8_t minValue,   int8_t maxValue) override;
-        bool Serialize( int16_t& value, const char* name,  int16_t minValue,  int16_t maxValue) override;
-        bool Serialize( int32_t& value, const char* name,  int32_t minValue,  int32_t maxValue) override;
-        bool Serialize( int64_t& value, const char* name,  int64_t minValue,  int64_t maxValue) override;
-        bool Serialize( uint8_t& value, const char* name,  uint8_t minValue,  uint8_t maxValue) override;
-        bool Serialize(uint16_t& value, const char* name, uint16_t minValue, uint16_t maxValue) override;
-        bool Serialize(uint32_t& value, const char* name, uint32_t minValue, uint32_t maxValue) override;
-        bool Serialize(uint64_t& value, const char* name, uint64_t minValue, uint64_t maxValue) override;
-        bool Serialize(   float& value, const char* name,    float minValue,    float maxValue) override;
-        bool Serialize(  double& value, const char* name,   double minValue,   double maxValue) override;
-        bool SerializeBytes(uint8_t* buffer, uint32_t bufferCapacity, bool isString, uint32_t& outSize, const char* name) override;
-        bool BeginObject(const char *name, const char* typeName) override;
-        bool EndObject(const char *name, const char* typeName) override;
+        AZNETWORKING_API SerializerMode GetSerializerMode() const override;
+        AZNETWORKING_API bool Serialize(bool& value, const char* name) override;
+        AZNETWORKING_API bool Serialize(char& value, const char* name, char minValue, char maxValue) override;
+        AZNETWORKING_API bool Serialize(int8_t& value, const char* name, int8_t minValue, int8_t maxValue) override;
+        AZNETWORKING_API bool Serialize(int16_t& value, const char* name, int16_t minValue, int16_t maxValue) override;
+        AZNETWORKING_API bool Serialize(int32_t& value, const char* name, int32_t minValue, int32_t maxValue) override;
+        AZNETWORKING_API bool Serialize(int64_t& value, const char* name, int64_t minValue, int64_t maxValue) override;
+        AZNETWORKING_API bool Serialize(uint8_t& value, const char* name, uint8_t minValue, uint8_t maxValue) override;
+        AZNETWORKING_API bool Serialize(uint16_t& value, const char* name, uint16_t minValue, uint16_t maxValue) override;
+        AZNETWORKING_API bool Serialize(uint32_t& value, const char* name, uint32_t minValue, uint32_t maxValue) override;
+        AZNETWORKING_API bool Serialize(uint64_t& value, const char* name, uint64_t minValue, uint64_t maxValue) override;
+        AZNETWORKING_API bool Serialize(float& value, const char* name, float minValue, float maxValue) override;
+        AZNETWORKING_API bool Serialize(double& value, const char* name, double minValue, double maxValue) override;
+        AZNETWORKING_API bool SerializeBytes(uint8_t* buffer, uint32_t bufferCapacity, bool isString, uint32_t& outSize, const char* name) override;
+        AZNETWORKING_API bool BeginObject(const char* name, const char* typeName) override;
+        AZNETWORKING_API bool EndObject(const char* name, const char* typeName) override;
 
-        const uint8_t* GetBuffer() const override;
-        uint32_t GetCapacity() const override;
-        uint32_t GetSize() const override;
-        void ClearTrackedChangesFlag() override {}
-        bool GetTrackedChangesFlag() const override { return false; }
+        AZNETWORKING_API const uint8_t* GetBuffer() const override;
+        AZNETWORKING_API uint32_t GetCapacity() const override;
+        AZNETWORKING_API uint32_t GetSize() const override;
+        AZNETWORKING_API void ClearTrackedChangesFlag() override {}
+        AZNETWORKING_API bool GetTrackedChangesFlag() const override { return false; }
         // ISerializer interfaces
 
     private:

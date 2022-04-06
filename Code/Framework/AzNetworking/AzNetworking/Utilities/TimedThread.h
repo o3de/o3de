@@ -10,6 +10,7 @@
 
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/Time/ITime.h>
+#include <AzNetworking/AzNetworkingConfiguration.h>
 
 namespace AzNetworking
 {
@@ -19,21 +20,21 @@ namespace AzNetworking
     {
     public:
 
-        TimedThread(const char* name, AZ::TimeMs updateRate);
-        virtual ~TimedThread();
+        AZNETWORKING_API TimedThread(const char* name, AZ::TimeMs updateRate);
+        AZNETWORKING_API virtual ~TimedThread();
 
         //! Starts the thread.
-        void Start();
+        AZNETWORKING_API void Start();
 
         //! Stops the thread.
-        void Stop();
+        AZNETWORKING_API void Stop();
 
         //! Joins the thread.
-        void Join();
+        AZNETWORKING_API void Join();
 
         //! Returns true if the thread is running.
         //! @return boolean true if the thread is running, false otherwise
-        bool IsRunning() const;
+        AZNETWORKING_API bool IsRunning() const;
 
     protected:
 

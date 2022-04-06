@@ -40,8 +40,6 @@ namespace StandaloneTools
 
         RegisterComponentDescriptor(LegacyFramework::IPCComponent::CreateDescriptor());
 
-        RegisterComponentDescriptor(AzNetworking::NetworkingSystemComponent::CreateDescriptor());
-
         RegisterComponentDescriptor(AZ::UserSettingsComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
 

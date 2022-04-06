@@ -87,7 +87,7 @@ define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_STATIC GEM_SHARED GEM_MODULE HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
@@ -110,6 +110,10 @@ function(ly_add_target)
     # If the GEM_STATIC tag is passed mark the target as STATIC
     if(ly_add_target_GEM_STATIC)
         set(ly_add_target_STATIC ${ly_add_target_GEM_STATIC})
+    endif()
+    # If the GEM_SHARED tag is passed mark the target as SHARED
+    if(ly_add_target_GEM_SHARED)
+        set(ly_add_target_SHARED ${ly_add_target_GEM_SHARED})
     endif()
 
     foreach(file_cmake ${ly_add_target_FILES_CMAKE})
@@ -220,7 +224,7 @@ function(ly_add_target)
 
     endif()
 
-    if(ly_add_target_GEM_MODULE OR ly_add_target_GEM_STATIC)
+    if(ly_add_target_GEM_MODULE OR ly_add_target_GEM_STATIC OR ly_add_target_GEM_SHARED)
         set_target_properties(${ly_add_target_NAME} PROPERTIES GEM_MODULE TRUE)
     endif()
 

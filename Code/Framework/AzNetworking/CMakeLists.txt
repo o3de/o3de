@@ -10,11 +10,14 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O
 set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 ly_add_target(
-    NAME AzNetworking STATIC
+    NAME AzNetworking ${PAL_TRAIT_MONOLITHIC_DRIVEN_GEM_SHARED_TYPE}
     NAMESPACE AZ
     FILES_CMAKE
         AzNetworking/aznetworking_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AZNETWORKING_EXPORTS
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -35,6 +38,15 @@ ly_add_target(
         *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
         *.AutoPackets.xml,AutoPackets_Source.jinja,$path/$fileprefix.AutoPackets.cpp
 )
+
+# Add aliases for the AzNetworking library
+ly_create_alias(NAME AzNetworking.Clients NAMESPACE Gem TARGETS AZ::AzNetworking)
+ly_create_alias(NAME AzNetworking.Servers NAMESPACE Gem TARGETS AZ::AzNetworking)
+ly_create_alias(NAME AzNetworking.Tools NAMESPACE Gem TARGETS AZ::AzNetworking)
+ly_create_alias(NAME AzNetworking.Builders NAMESPACE Gem TARGETS AZ::AzNetworking)
+
+# Core libraries currently depend on NetworkingSystemComponent so enable by default
+ly_enable_gems(GEMS AzNetworking)
 
 ################################################################################
 # Tests
@@ -69,4 +81,3 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     
 endif()
-
