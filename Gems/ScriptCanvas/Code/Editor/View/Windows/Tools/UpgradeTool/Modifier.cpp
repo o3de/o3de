@@ -73,14 +73,20 @@ namespace ScriptCanvasEditor
 
         void Modifier::AssetCompilationSuccess([[maybe_unused]] const AZStd::string& assetPath)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-            m_successNotifications.insert(assetPath);
+            const AZStd::string assetPathValue(assetPath);
+            AZ::SystemTickBus::QueueFunction([this, assetPathValue]()
+            {
+                m_successNotifications.insert(assetPathValue);
+            });
         }
 
         void Modifier::AssetCompilationFailed(const AZStd::string& assetPath)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-            m_failureNotifications.insert(assetPath);
+            const AZStd::string assetPathValue(assetPath);
+            AZ::SystemTickBus::QueueFunction([this, assetPathValue]()
+            {
+                m_failureNotifications.insert(assetPathValue);
+            });
         }
 
         AZStd::sys_time_t Modifier::CalculateRemainingWaitTime(const AZStd::unordered_set<size_t>& dependencies) const
@@ -279,7 +285,7 @@ namespace ScriptCanvasEditor
             if (!result.tempFileRemovalError.empty())
             {
                 VE_LOG
-                ("Temporary file not removed for %s: %s"
+                    ( "Temporary file not removed for %s: %s"
                     , m_result.asset.Path().c_str()
                     , result.tempFileRemovalError.c_str());
             }
