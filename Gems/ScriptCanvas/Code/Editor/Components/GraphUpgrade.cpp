@@ -434,7 +434,7 @@ namespace ScriptCanvasEditor
 
         for (auto& node : sm->m_deprecatedNodes)
         {
-            ScriptCanvas::NodeConfiguration nodeConfig = node->GetReplacementNodeConfiguration();
+            ScriptCanvas::NodeReplacementConfiguration nodeConfig = node->GetReplacementNodeConfiguration();
             if (nodeConfig.IsValid())
             {
                 ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;

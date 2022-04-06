@@ -53,22 +53,26 @@ class QPushButton;
 
 namespace Ui
 {
-    class SlotTypeSelectorWidget;
+    class VariableConfigurationWidget;
 }
 
 namespace ScriptCanvasEditor
 {
-    class SlotTypeSelectorWidget
+    class VariableConfigurationWidget
         : public AzQtComponents::StyledDialog
         , public AzToolsFramework::EditorEvents::Bus::Handler
     {
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(SlotTypeSelectorWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableConfigurationWidget, AZ::SystemAllocator, 0);
 
-        SlotTypeSelectorWidget(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, QWidget* parent = nullptr);
-        ~SlotTypeSelectorWidget();
+        VariableConfigurationWidget
+            ( const ScriptCanvas::ScriptCanvasId& scriptCanvasId
+            , const VariablePaletteRequests::VariableConfigurationInput& input
+            , QWidget* parent = nullptr);
+
+        ~VariableConfigurationWidget();
 
         void PopulateVariablePalette(const AZStd::unordered_set< AZ::Uuid >& objectTypes);
 
@@ -107,8 +111,6 @@ namespace ScriptCanvasEditor
 
         void OnContextMenuRequested(const QPoint& pos);
 
-        //bool event(QEvent* ev) override;
-
         bool m_manipulatingSelection;
 
         AZStd::vector< AZStd::unique_ptr<AZ::Entity> > m_propertyHelpers;
@@ -119,8 +121,9 @@ namespace ScriptCanvasEditor
 
         AZ::Uuid m_selectedType;
         AZStd::string m_slotName;
+        const VariablePaletteRequests::VariableConfigurationInput& m_input;
 
-        AZStd::unique_ptr<Ui::SlotTypeSelectorWidget> ui;
+        AZStd::unique_ptr<Ui::VariableConfigurationWidget> ui;
 
         QTimer m_filterTimer;
     };
