@@ -26,9 +26,9 @@ namespace AzNetworking
         //! Construct with a packet type and size.
         //! @param packetType  type of packet
         //! @param packetSize size of the packet in bytes, not including header size
-        TcpPacketHeader(PacketType packetType, uint16_t packetSize);
+        AZNETWORKING_API TcpPacketHeader(PacketType packetType, uint16_t packetSize);
 
-        virtual ~TcpPacketHeader() = default;
+        AZNETWORKING_API virtual ~TcpPacketHeader() = default;
 
         //! IPacketHeader interface.
         // @{

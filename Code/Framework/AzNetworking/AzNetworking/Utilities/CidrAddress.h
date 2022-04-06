@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
+#include <AzNetworking/AzNetworkingConfiguration.h>
 
 namespace AzNetworking
 {
@@ -16,7 +17,7 @@ namespace AzNetworking
 
     //! @class CidrAddress
     //! @brief Helper class that implements Classless Inter-Domain Routing (CIDR) IP address filtering.
-    class CidrAddress
+    class AZNETWORKING_API CidrAddress
     {
     public:
 

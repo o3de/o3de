@@ -23,43 +23,43 @@ namespace AzNetworking
     {
     public:
 
-        UdpPacketTracker();
-        ~UdpPacketTracker();
+        AZNETWORKING_API UdpPacketTracker();
+        AZNETWORKING_API ~UdpPacketTracker();
 
         //! Resets all internal state for this packet tracker.
-        void Reset();
+        AZNETWORKING_API void Reset();
 
         //! Returns the next packet id for this UdpPacketTracker instance.
         //! @return the next sequence id for this UdpPacketTracker instance
-        PacketId GetNextPacketId();
+        AZNETWORKING_API PacketId GetNextPacketId();
 
         //! Process a received packet header.
         //! @param connection the connection this packet was received on, used for ack callbacks
         //! @param header     the packet header received to process
         //! @return boolean true on successful handling of the received header
-        bool ProcessReceived(UdpConnection* connection, UdpPacketHeader& header);
+        AZNETWORKING_API bool ProcessReceived(UdpConnection* connection, UdpPacketHeader& header);
 
         //! Returns whether or not a particular packet was confirmed received by the remote connection.
         //! @param sequenceId the sequence number of the packet to check the ack status of
         //! @return boolean true if the requested sequence id was acked, false otherwise
-        PacketAckState GetPacketAckStatus(PacketId packetId) const;
+        AZNETWORKING_API PacketAckState GetPacketAckStatus(PacketId packetId) const;
 
         //! Returns the last received remote sequence id.
         //! @return the last received remote sequence id
-        SequenceId GetLastReceivedSequenceId() const;
+        AZNETWORKING_API SequenceId GetLastReceivedSequenceId() const;
 
         //! Returns a bit sequence representing the last received packets from the remote connection.
         //! @param outWindow window to store the output bit sequence in
         //! @return reference to the output parameter
-        BitsetChunk& GetSequencedAckHistory(BitsetChunk& outWindow) const;
+        AZNETWORKING_API BitsetChunk& GetSequencedAckHistory(BitsetChunk& outWindow) const;
 
         //! Const access to the packet trackers received window.
         //! @return const reference to the packet trackers received window
-        const UdpPacketIdWindow& GetReceivedWindow() const;
+        AZNETWORKING_API const UdpPacketIdWindow& GetReceivedWindow() const;
 
         //! Const access to the packet trackers acknowledged window.
         //! @return const reference to the packet trackers acknowledged window
-        const UdpPacketIdWindow& GetAcknowledgedWindow() const;
+        AZNETWORKING_API const UdpPacketIdWindow& GetAcknowledgedWindow() const;
 
     private:
 

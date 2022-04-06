@@ -42,14 +42,14 @@ namespace AzNetworking
 
         //! AZ::Component overrides.
         //! @{
-        void Activate() override;
-        void Deactivate() override;
+        AZNETWORKING_API void Activate() override;
+        AZNETWORKING_API void Deactivate() override;
         //! @}
 
         //! AZ::TickBus::Handler overrides.
         //! @{
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
+        AZNETWORKING_API void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        AZNETWORKING_API int GetTickOrder() override;
         //! @}
 
         //! INetworking overrides.

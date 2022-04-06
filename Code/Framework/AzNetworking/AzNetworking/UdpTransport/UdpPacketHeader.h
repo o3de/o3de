@@ -30,18 +30,18 @@ namespace AzNetworking
         AZ_RTTI(UdpPacketHeader, "{21A11FF3-6829-4A59-9906-C06EF7F39AC1}", IPacketHeader);
 
         //! Default constructor, for when receiving a header from a remote connection.
-        UdpPacketHeader();
+        AZNETWORKING_API UdpPacketHeader();
 
         //! Constructor for generating a new header to send to a remote connection.
         //! @param packetTracker    packet delivery tracker instance for the connection in question
         //! @param packetType       type of packet
         //! @param reliableSequence reliable sequence value, or InvalidSequenceId if the packet is unreliable
-        UdpPacketHeader(UdpPacketTracker& packetTracker, PacketType packetType, SequenceId reliableSequence);
+        AZNETWORKING_API UdpPacketHeader(UdpPacketTracker& packetTracker, PacketType packetType, SequenceId reliableSequence);
 
         //! Constructor for generating generic header with just a packet id, used for dispatching a bulk message.
         //! @param packetType type of packet
         //! @param packetId   packet id we're duplicating
-        UdpPacketHeader(PacketType packetType, PacketId packetId);
+        AZNETWORKING_API UdpPacketHeader(PacketType packetType, PacketId packetId);
 
         //! Full constructor for unit tests.
         //! @param packetType         type of packet
@@ -50,7 +50,7 @@ namespace AzNetworking
         //! @param reliableSequence   if this is a reliable packet, this is the reliable sequence number
         //! @param sequenceWindow     this is the ack vector for ack replication, corresponding to remoteSequence
         //! @param localRolloverCount this is the reconstructed rollover count, used to convert localSequence to a full PacketId
-        UdpPacketHeader
+        AZNETWORKING_API UdpPacketHeader
         (
             PacketType  packetType, 
             SequenceId  localSequence, 
@@ -60,7 +60,7 @@ namespace AzNetworking
             SequenceRolloverCount localRolloverCount
         );
 
-        ~UdpPacketHeader() override = default;
+        AZNETWORKING_API ~UdpPacketHeader() override = default;
 
         //! IPacketHeader interface.
         // @{

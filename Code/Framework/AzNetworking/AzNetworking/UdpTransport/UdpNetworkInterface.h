@@ -110,11 +110,11 @@ namespace AzNetworking
 
         //! Returns true if this is an encrypted socket, false if not.
         //! @return boolean true if this is an encrypted socket, false if not
-        bool IsEncrypted() const;
+        AZNETWORKING_API bool IsEncrypted() const;
 
         //! Returns true if this connection instance is in an open state, and is capable of actively sending and receiving packets.
         //! @return boolean true if this connection instance is in an open state
-        bool IsOpen() const;
+        AZNETWORKING_API bool IsOpen() const;
 
     private:
 
