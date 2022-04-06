@@ -302,9 +302,9 @@ namespace ScriptCanvas
             return t_Traits::IsDeprecated();
         }
 
-        ScriptCanvas::NodeConfiguration GetReplacementNodeConfiguration() const override
+        ScriptCanvas::NodeReplacementConfiguration GetReplacementNodeConfiguration() const override
         {
-            ScriptCanvas::NodeConfiguration replacementNode;
+            ScriptCanvas::NodeReplacementConfiguration replacementNode;
             // Replacement node should always be behavior context global method
             // ScriptCanvas method node uuid is E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF
             replacementNode.m_type = AZ::Uuid("E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF");
