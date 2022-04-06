@@ -262,7 +262,8 @@ MaterialContext GetMaterialContext(in uint materialId, in float2 uv, in float2 u
     // With different materials in the quad, we can't rely on ddx/ddy of the transformed uv because
     // the materials may have different uv transforms. This would create visible seams where the wrong
     // mip was being used. Instead, manually calculate the transformed ddx/ddy using the ddx/ddy of the
-    // original uv.
+    // original uv. Original derivatives are precalculated and passed in as parameters due to both pixel
+    // and compute shader access.
 
     float2 uvX = uv + uvDdx;
     float2 uvY = uv + uvDdy;
