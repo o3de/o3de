@@ -39,14 +39,14 @@ namespace AzNetworking
     protected:
 
         //! Invoked on thread start.
-        virtual void OnStart() = 0;
+        AZNETWORKING_API virtual void OnStart() = 0;
 
         //! Invoked on thread stop.
-        virtual void OnStop() = 0;
+        AZNETWORKING_API virtual void OnStop() = 0;
 
         //! Invoked on thread update.
         //! @param updateRateMs The amount of time the thread can spend in OnUpdate in ms
-        virtual void OnUpdate(AZ::TimeMs updateRateMs) = 0;
+        AZNETWORKING_API virtual void OnUpdate(AZ::TimeMs updateRateMs) = 0;
 
     private:
 
