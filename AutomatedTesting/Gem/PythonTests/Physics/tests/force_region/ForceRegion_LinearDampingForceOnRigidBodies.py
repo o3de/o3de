@@ -161,28 +161,43 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
 
     sphere.initial_velocity = azlmbr.physics.RigidBodyRequestBus(azlmbr.bus.Event, "GetLinearVelocity", sphere.id)
 
-    level_correct = (
-        (abs(sphere.initial_pos.y - force_region.initial_pos.y) < CLOSE_ENOUGH)
-        and (abs(sphere.initial_pos.y - trigger.initial_pos.y) < CLOSE_ENOUGH)
-        and (abs(sphere.initial_pos.x - force_region.initial_pos.x) < CLOSE_ENOUGH)
-        and (abs(sphere.initial_pos.x - trigger.initial_pos.x) < CLOSE_ENOUGH)
-        and (sphere.initial_pos.z > force_region.initial_pos.z > trigger.initial_pos.z)
-        and sphere.initial_velocity.IsClose(INITIAL_VELOCITY, CLOSE_ENOUGH)
-    )
+    # Starting Level State Values
+    Report.info(f"Sphere Initial Values - X: {sphere.initial_pos.x} Y: {sphere.initial_pos.y} Z: {sphere.initial_pos.x} Velocity: {sphere.initial_velocity}")
+    Report.info(f"Force Region Initial Values - X: {force_region.initial_pos.x} Y: {force_region.initial_pos.y} Z: {force_region.initial_pos.z}")
+    Report.info(f"Trigger Initial Values - X: {trigger.initial_pos.x} Y: {trigger.initial_pos.y} Z: {trigger.initial_pos.z}")
 
-    # Report the state of the level and then the result of that state
-    Report.info(f"Level Correct Setup: Sphere Initial Y Pos {sphere.initial_pos.y} - Force Region Inital Y Pos "
-                f"{force_region.initial_pos.y} = {abs(sphere.initial_pos.y - force_region.initial_pos.y)}")
-    Report.info(f"Level Correct Setup: Sphere Initial Y Pos {sphere.initial_pos.y} - Trigger Inital Y Pos "
-                f"{trigger.initial_pos.y} = {abs(sphere.initial_pos.y - trigger.initial_pos.y)}")
-    Report.info(f"Level Correct Setup: Sphere Initial X Pos {sphere.initial_pos.x} - Force Region Initial X Pos "
-                f"{force_region.initial_pos.x} = {abs(sphere.initial_pos.x - force_region.initial_pos.x)}")
-    Report.info(f"Level Correct Setup: Sphere Initial X Pos {sphere.initial_pos.x} - Trigger Initial X Pos "
-                f"{trigger.initial_pos.x} = {(abs(sphere.initial_pos.x - trigger.initial_pos.x))}")
-    Report.info(f"Level Correct Setup: Sphere Inital Z Pos {sphere.initial_pos.z} > Force Region Inital Z Pos "
-                f"{force_region.initial_pos.z} > Trigger Inital Z Pos {trigger.initial_pos.z}")
-    Report.info(f"Level Correct Setup: Sphere Inital Velocity {sphere.initial_velocity} IsClose to INITIAL_VELOCITY "
-                f"{INITIAL_VELOCITY}")
+    # Perform Calculations
+    sphere_acceleration_y = abs(sphere.initial_pos.y - force_region.initial_pos.y)
+    sphere_damping_y = abs(sphere.initial_pos.y - trigger.initial_pos.y)
+    sphere_acceleration_x = abs(sphere.initial_pos.x - force_region.initial_pos.x)
+    sphere_damping_x = abs(sphere.initial_pos.x - trigger.initial_pos.x)
+
+    # Perform Checks
+    sphere_acceleration_y_valid = sphere_acceleration_y < CLOSE_ENOUGH
+    sphere_damping_y_valid = sphere_damping_y < CLOSE_ENOUGH
+    sphere_acceleration_x_valid = sphere_acceleration_x < CLOSE_ENOUGH
+    sphere_damping_x_valid = sphere_damping_x < CLOSE_ENOUGH
+    setup_entity_priority_valid = sphere.initial_pos.z > force_region.initial_pos.z > trigger.initial_pos.z
+    sphere_is_close = sphere.initial_velocity.IsClose(INITIAL_VELOCITY, CLOSE_ENOUGH)
+    level_correct = (sphere_acceleration_y_valid and sphere_damping_y_valid and sphere_acceleration_x_valid
+                     and sphere_damping_x_valid and setup_entity_priority_valid and sphere_is_close)
+
+    # Report
+    if not sphere_acceleration_y_valid:
+        Report.info(f"Sphere Acceleration Y was not within expected bounds.")
+    if not sphere_damping_y_valid:
+        Report.info(f"Sphere Damping Y was not within expected bounds.")
+    if not sphere_acceleration_x_valid:
+        Report.info(f"Sphere Acceleration X was not within the expected bounds")
+    if not sphere_damping_x_valid:
+        Report.info(f"Sphere Damping X was not within the expected bounds")
+    if not sphere_damping_x_valid:
+        Report.info(f"Sphere Damping X was not within the expected bounds")
+    if not setup_entity_priority_valid:
+        Report.info(f"Initial level entity states were not in the expected positional priority")
+    if not sphere_is_close:
+        Report.info(f"Sphere initial velocity")
+
     Report.critical_result(Tests.level_setup, level_correct)
 
     sphere.current_pos = sphere.initial_pos
