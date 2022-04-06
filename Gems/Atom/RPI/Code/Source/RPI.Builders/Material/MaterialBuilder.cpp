@@ -54,7 +54,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 132; // Job Dependency subIds
+            materialBuilderDescriptor.m_version = 133; // Preload material dependencies
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -545,6 +545,12 @@ namespace AZ
                 {
                     AZ_Error(MaterialBuilderName, false, "Failed to output product dependencies.");
                     return;
+                }
+
+                for (auto& dependency : jobProduct.m_dependencies)
+                {
+                    // Set the load behavior to PreLoad, without clearing any other product dependency flags
+                    Data::ProductDependencyInfo::SetAssetLoadBehavior(dependency.m_flags, Data::AssetLoadBehavior::PreLoad);
                 }
 
                 response.m_outputProducts.push_back(AZStd::move(jobProduct));

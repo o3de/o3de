@@ -253,5 +253,40 @@ namespace UnitTest
         }
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
+
+    TEST(ProductDependencyFlags, CreateFlags_LoadBehaviorFromFlags_LoadBehaviorMatchesCreateBehavior)
+    {
+        // Test that creating product dependency flags with asset load behaviors
+        ProductDependencyInfo::ProductDependencyFlags flags = ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::PreLoad);
+        EXPECT_EQ(ProductDependencyInfo::LoadBehaviorFromFlags(flags), Data::AssetLoadBehavior::PreLoad);
+
+        flags = ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::QueueLoad);
+        EXPECT_EQ(ProductDependencyInfo::LoadBehaviorFromFlags(flags), Data::AssetLoadBehavior::QueueLoad);
+
+        flags = ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::NoLoad);
+        EXPECT_EQ(ProductDependencyInfo::LoadBehaviorFromFlags(flags), Data::AssetLoadBehavior::NoLoad);
+
+    }
+
+    TEST(ProductDependencyFlags, SetAssetLoadBehavior_TestBitIsSet_AssetLoadBehaviorIsSetAndTestBitIsSet)
+    {
+        // Create flags with NoLoad behavior and an arbitrary bit set
+        ProductDependencyInfo::ProductDependencyFlags flags = ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::NoLoad);
+        constexpr uint8_t testBit = 7;
+        flags.set(testBit);
+
+        // Test that SetFlags will change the asset load behavior
+        ProductDependencyInfo::SetAssetLoadBehavior(flags, Data::AssetLoadBehavior::PreLoad);
+        EXPECT_EQ(ProductDependencyInfo::LoadBehaviorFromFlags(flags), Data::AssetLoadBehavior::PreLoad);
+
+        ProductDependencyInfo::SetAssetLoadBehavior(flags, Data::AssetLoadBehavior::QueueLoad);
+        EXPECT_EQ(ProductDependencyInfo::LoadBehaviorFromFlags(flags), Data::AssetLoadBehavior::QueueLoad);
+
+        ProductDependencyInfo::SetAssetLoadBehavior(flags, Data::AssetLoadBehavior::NoLoad);
+        EXPECT_EQ(ProductDependencyInfo::LoadBehaviorFromFlags(flags), Data::AssetLoadBehavior::NoLoad);
+        
+        // Test that SetAssetLoadBehavior does not clear the test bit
+        EXPECT_TRUE(flags.test(testBit));
+    }
 }
 

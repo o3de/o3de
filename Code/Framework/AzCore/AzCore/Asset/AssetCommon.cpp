@@ -459,5 +459,20 @@ namespace AZ::Data
             }
             return returnFlags;
         }
+
+        void SetAssetLoadBehavior(ProductDependencyFlags& dependencyFlags, AZ::Data::AssetLoadBehavior autoLoadBehavior)
+        {
+            // Create flags that can clear any load behaviors
+            Data::ProductDependencyInfo::ProductDependencyFlags clearLoadBehaviorBits;
+            for (AZ::u8 thisFlag = aznumeric_cast<AZ::u8>(Data::ProductDependencyInfo::ProductDependencyFlagBits::LoadBehaviorLow);
+                 thisFlag <= aznumeric_cast<AZ::u8>(Data::ProductDependencyInfo::ProductDependencyFlagBits::LoadBehaviorHigh); ++thisFlag)
+            {
+                clearLoadBehaviorBits.set(thisFlag);
+            }
+            clearLoadBehaviorBits.flip();
+
+            dependencyFlags &= clearLoadBehaviorBits;
+            dependencyFlags |= Data::ProductDependencyInfo::CreateFlags(autoLoadBehavior);
+        }
     }
 } // namespace AZ::Data
