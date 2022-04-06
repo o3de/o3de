@@ -17,7 +17,7 @@ namespace AzFramework
 {
     //! A helper class for direct calls to SpawnableEntitiesInterface that is
     //! reflected with BehaviorContext for interfacing with Lua API
-    class SpawnableMediator
+    class SpawnableMediator final
         : public AZ::TickBus::Handler
     {
     public:
