@@ -24,6 +24,8 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <DebugDraw/DebugDrawBus.h>
+
 
 namespace Multiplayer
 {
@@ -181,11 +183,12 @@ namespace Multiplayer
             
             if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName)))
             {
-                editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
+                editorNetworkInterface->StopListening();
+                //editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
             if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
             {
-                console->PerformCommand("disconnect");
+                //console->PerformCommand("disconnect");
             }
 
             AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
@@ -265,7 +268,7 @@ namespace Multiplayer
         }
 
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i)",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --editorsv_editorIsListening true)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
             server_rhi.GetCStr(),
@@ -280,6 +283,8 @@ namespace Multiplayer
 
         if (outProcess)
         {
+            DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawTextOnScreen, "Starting server...", AZ::Colors::White, 3.0f);
+
             // Stop the previous server if one exists
             if (m_serverProcessWatcher)
             {
@@ -357,11 +362,15 @@ namespace Multiplayer
             AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
             if (!editorNetworkInterface->Listen(editorsv_port))
             {
-                AZ_Warning(
-                    "MultiplayerEditor", false, "Launching editor server skipped because editor failed to listen on port: %i.",
+                AZStd::string warningMessage = AZStd::string::format("Launching editor server skipped because editor failed to listen on port: %i. Try changing editorsv_port or wait until port is available.",
                     static_cast<uint16_t>(editorsv_port));
-                return;
+                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawTextOnScreen, warningMessage, AZ::Colors::Red, 3.0f);
+
+                AZ_Warning("MultiplayerEditor", false, warningMessage.c_str());
+                //return;
             }
+
+            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
 
             // Launch the editor-server
             LaunchEditorServer();
