@@ -779,7 +779,6 @@ namespace ScriptCanvasEditor
         , LiveSlotInfo& oldSlotInfo
         , const ReplacementInfoByNode& infoByNewNode)
     {
-        const auto graphCanvasGraphId = GetGraphCanvasGraphId();
         const auto newSCEndpoint = ScriptCanvas::Endpoint(node.GetEntityId(), slot.GetId());
         const auto newGCEndpoint = ConvertToGraphCanvasEndpoint(newSCEndpoint);
 
