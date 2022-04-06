@@ -17,7 +17,7 @@
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFrameworkSystemComponent.h>
 
-#include <PropertyEditor/ImagePropertyAssetCtrl.h>
+#include <PropertyEditor/PropertyImageAssetCtrl.h>
 
 namespace AtomToolsFramework
 {

@@ -6,7 +6,7 @@
  *
  */
 
-#include <PropertyEditor/ImagePropertyAssetCtrl.h>
+#include <PropertyEditor/PropertyImageAssetCtrl.h>
 
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -18,12 +18,12 @@ namespace AtomToolsFramework
 {
     using namespace AzToolsFramework;
 
-    ImagePropertyAssetCtrl::ImagePropertyAssetCtrl(QWidget* parent)
+    PropertyImageAssetCtrl::PropertyImageAssetCtrl(QWidget* parent)
         : PropertyAssetCtrl(parent)
     {
     }
 
-    AssetBrowser::AssetSelectionModel ImagePropertyAssetCtrl::GetAssetSelectionModel()
+    AssetBrowser::AssetSelectionModel PropertyImageAssetCtrl::GetAssetSelectionModel()
     {
         // allows to select two assets which are derieved from ImageAsset
         AZStd::vector<AZ::Data::AssetType> assetTypes;
@@ -35,7 +35,7 @@ namespace AtomToolsFramework
         return selectionModel;
     }
 
-    void ImagePropertyAssetCtrl::ConfigureAutocompleter()
+    void PropertyImageAssetCtrl::ConfigureAutocompleter()
     {
         if (m_completerIsConfigured)
         {
@@ -49,7 +49,7 @@ namespace AtomToolsFramework
         m_model->SetFilter(selection.GetDisplayFilter());
     }
 
-    bool ImagePropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
+    bool PropertyImageAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
     {
         if (!assetId.IsValid() || assetType.IsNull())
         {
@@ -62,10 +62,10 @@ namespace AtomToolsFramework
     QWidget* ImageAssetPropertyHandler::CreateGUI(QWidget* parent)
     {
         // This is the same logic as the AssetPropertyHandlerDefault, only we create our own
-        // ImagePropertyAssetCtrl instead for the GUI widget
-        ImagePropertyAssetCtrl* newCtrl = aznew ImagePropertyAssetCtrl(parent);
+        // PropertyImageAssetCtrl instead for the GUI widget
+        PropertyImageAssetCtrl* newCtrl = aznew PropertyImageAssetCtrl(parent);
 
-        QObject::connect(newCtrl, &ImagePropertyAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
+        QObject::connect(newCtrl, &PropertyImageAssetCtrl::OnAssetIDChanged, this, [newCtrl](AZ::Data::AssetId newAssetID)
         {
             (void)newAssetID;
             PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::RequestWrite, newCtrl);
@@ -75,13 +75,13 @@ namespace AtomToolsFramework
         return newCtrl;
     }
 
-    void ImageAssetPropertyHandler::ConsumeAttribute(ImagePropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
+    void ImageAssetPropertyHandler::ConsumeAttribute(PropertyImageAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
     {
         // Let the AssetPropertyHandlerDefault handle all of the attributes
         AssetPropertyHandlerDefault::ConsumeAttributeInternal(GUI, attrib, attrValue, debugName);
     }
 
-    void ImageAssetPropertyHandler::WriteGUIValuesIntoProperty([[maybe_unused]] size_t index, ImagePropertyAssetCtrl* GUI, property_t& instance, [[maybe_unused]] InstanceDataNode* node)
+    void ImageAssetPropertyHandler::WriteGUIValuesIntoProperty([[maybe_unused]] size_t index, PropertyImageAssetCtrl* GUI, property_t& instance, [[maybe_unused]] InstanceDataNode* node)
     {
         if (!GUI->GetSelectedAssetID().IsValid())
         {
@@ -96,7 +96,7 @@ namespace AtomToolsFramework
         }
     }
 
-    bool ImageAssetPropertyHandler::ReadValuesIntoGUI(size_t index, ImagePropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    bool ImageAssetPropertyHandler::ReadValuesIntoGUI(size_t index, PropertyImageAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         // Let the AssetPropertyHandlerDefault handle reading values into the GUI
         return AssetPropertyHandlerDefault::ReadValuesIntoGUIInternal(index, GUI, instance, node);

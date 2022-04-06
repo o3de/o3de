@@ -17,15 +17,15 @@
 
 namespace AtomToolsFramework
 {
-    class ImagePropertyAssetCtrl
+    class PropertyImageAssetCtrl
         : public AzToolsFramework::PropertyAssetCtrl
     {
     Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(ImagePropertyAssetCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyImageAssetCtrl, AZ::SystemAllocator, 0);
 
-        ImagePropertyAssetCtrl(QWidget* parent = nullptr);
+        PropertyImageAssetCtrl(QWidget* parent = nullptr);
 
     public Q_SLOTS:
 
@@ -38,7 +38,7 @@ namespace AtomToolsFramework
 
     class ImageAssetPropertyHandler
         : QObject
-        , public AzToolsFramework::PropertyHandler<AZ::Data::Asset<AZ::Data::AssetData>, ImagePropertyAssetCtrl>
+        , public AzToolsFramework::PropertyHandler<AZ::Data::Asset<AZ::Data::AssetData>, PropertyImageAssetCtrl>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
@@ -48,14 +48,14 @@ namespace AtomToolsFramework
 
         AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("ImageAsset"); }
         bool IsDefaultHandler() const override { return false; }
-        QWidget* GetFirstInTabOrder(ImagePropertyAssetCtrl* widget) override { return widget->GetFirstInTabOrder(); }
-        QWidget* GetLastInTabOrder(ImagePropertyAssetCtrl* widget) override { return widget->GetLastInTabOrder(); }
-        void UpdateWidgetInternalTabbing(ImagePropertyAssetCtrl* widget) override { widget->UpdateTabOrder(); }
+        QWidget* GetFirstInTabOrder(PropertyImageAssetCtrl* widget) override { return widget->GetFirstInTabOrder(); }
+        QWidget* GetLastInTabOrder(PropertyImageAssetCtrl* widget) override { return widget->GetLastInTabOrder(); }
+        void UpdateWidgetInternalTabbing(PropertyImageAssetCtrl* widget) override { widget->UpdateTabOrder(); }
 
         QWidget* CreateGUI(QWidget* pParent) override;
-        void ConsumeAttribute(ImagePropertyAssetCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
-        void WriteGUIValuesIntoProperty(size_t index, ImagePropertyAssetCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
-        bool ReadValuesIntoGUI(size_t index, ImagePropertyAssetCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
+        void ConsumeAttribute(PropertyImageAssetCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
+        void WriteGUIValuesIntoProperty(size_t index, PropertyImageAssetCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
+        bool ReadValuesIntoGUI(size_t index, PropertyImageAssetCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
 
         static void Register();
     };

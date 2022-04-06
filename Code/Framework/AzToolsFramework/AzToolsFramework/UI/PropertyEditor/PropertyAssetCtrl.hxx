@@ -188,7 +188,7 @@ namespace AzToolsFramework
         void HandleFieldClear();
         AZStd::string AddDefaultSuffix(const AZStd::string& filename);
 
-        //! wether this property can have the input asset id&type as its value
+        //! Whether this property can have the input asset id&type as its value
         virtual bool CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const;
 
         //////////////////////////////////////////////////////////////////////////

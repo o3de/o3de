@@ -108,8 +108,8 @@ set(FILES
     Source/PreviewRenderer/PreviewRendererState.h
     Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
     Source/PreviewRenderer/PreviewRendererSystemComponent.h
-    Source/PropertyEditor/ImagePropertyAssetCtrl.cpp
-    Source/PropertyEditor/ImagePropertyAssetCtrl.h
+    Source/PropertyEditor/PropertyImageAssetCtrl.cpp
+    Source/PropertyEditor/PropertyImageAssetCtrl.h
 
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h

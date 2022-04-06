@@ -606,12 +606,12 @@ namespace AZ
                 Data::Instance<Image> image = nullptr;
                 if (assetInfo.m_assetType == azrtti_typeid<StreamingImageAsset>())
                 {
-                    Data::Asset<StreamingImageAsset> streamingImageAsset{imageAsset.GetId(), assetInfo.m_assetType};
+                    Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset);
                     image = StreamingImage::FindOrCreate(streamingImageAsset);
                 }
                 else if (assetInfo.m_assetType == azrtti_typeid<AttachmentImageAsset>())
                 {
-                    Data::Asset<AttachmentImageAsset> attachmentImageAsset{imageAsset.GetId(), assetInfo.m_assetType};
+                    Data::Asset<AttachmentImageAsset> attachmentImageAsset = Data::static_pointer_cast<AttachmentImageAsset>(imageAsset);
                     image = AttachmentImage::FindOrCreate(attachmentImageAsset);
                 }
                 else
