@@ -33,6 +33,7 @@ float2 GetCurrentClipmapCenter(uint clipmapLevel)
 }
 
 // Get the world position at the pixel position in a clipmap.
+// Note: clipmap center is dynamic because we are using toroidal addressing. It's not always at the middle.
 float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapLevel)
 {
     float2 normalizedPixelPosition = (pixelPosition.xy + 0.5) / TerrainSrg::m_clipmapData.m_clipmapSize;

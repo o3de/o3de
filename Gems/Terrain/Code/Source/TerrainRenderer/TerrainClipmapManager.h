@@ -75,8 +75,9 @@ namespace Terrain
         static constexpr uint32_t ClipmapSizeWidth = 1024;
         static constexpr uint32_t ClipmapSizeHeight = 1024;
 
-        static_assert(DetailClipmapStackSize > MacroClipmapStackSize,
-            "To avoid seams, macro clipmaps will use a lower resolution, so that it can take advantage of free seam blending.");
+        static_assert(DetailClipmapStackSize >= MacroClipmapStackSize,
+            "Macro clipmaps use lower resolutions. Array construction will use"
+            "max(DetailClipmapStackSize, MacroClipmapStackSize).");
 
         struct ClipmapData
         {
