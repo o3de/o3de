@@ -236,12 +236,13 @@ namespace ScriptCanvasEditor
 
         /////
         EditorGraphUpgradeMachine m_upgradeSM;
+
         enum UpgradeRequest
         {
             IfOutOfDate,
             Forced
         };
-        bool UpgradeGraph(SourceHandle& asset, UpgradeRequest request, bool isVerbose = true);
+bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const UpgradeGraphConfig& upgradeConfig);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////

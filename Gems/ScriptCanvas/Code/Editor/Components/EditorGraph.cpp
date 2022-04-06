@@ -3477,12 +3477,12 @@ namespace ScriptCanvasEditor
         m_focusHelper.SetActiveGraph(GetGraphCanvasGraphId());
     }
 
-    bool EditorGraph::UpgradeGraph(SourceHandle& asset, UpgradeRequest request, bool isVerbose)
+    bool EditorGraph::UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const UpgradeGraphConfig& upgradeConfig)
     {
-        m_upgradeSM.SetAsset(asset);
-        m_upgradeSM.SetVerbose(isVerbose);
+        m_upgradeSM.SetAsset(source);
+        m_upgradeSM.SetConfig(upgradeConfig);
 
-        if (request == UpgradeRequest::Forced || !GetVersion().IsLatest())
+        if (upgradeRequest == UpgradeRequest::Forced || !GetVersion().IsLatest())
         {
             m_upgradeSM.Run(Start::StateID());
             return true;

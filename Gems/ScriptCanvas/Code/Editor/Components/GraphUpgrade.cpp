@@ -520,7 +520,10 @@ namespace ScriptCanvasEditor
 
         if (validationResults.HasErrors())
         {
-            sm->MarkError("Failed to Parse");
+            if (!sm->GetConfig().saveParseErrors)
+            {
+                sm->MarkError("Failed to Parse");
+            }
 
             for (auto& err : validationResults.GetEvents())
             {
@@ -694,9 +697,9 @@ namespace ScriptCanvasEditor
 
     //////////////////////////////////////////////////////////////////////
     // State Machine Internals
-    bool StateMachine::GetVerbose() const
+    const UpgradeGraphConfig& StateMachine::GetConfig() const
     {
-        return m_isVerbose;
+        return m_config;
     }
 
     void StateMachine::OnSystemTick()
@@ -753,9 +756,9 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void StateMachine::SetVerbose(bool isVerbose)
+    void StateMachine::SetConfig(const UpgradeGraphConfig& config)
     {
-        m_isVerbose = isVerbose;
+        m_config = config;
     }
 
     const AZStd::string& StateMachine::GetDebugPrefix() const
