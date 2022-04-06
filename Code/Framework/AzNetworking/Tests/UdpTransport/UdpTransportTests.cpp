@@ -283,11 +283,11 @@ namespace UnitTest
         testClient.m_clientNetworkInterface->SetTimeoutMs(timeoutMs);
         EXPECT_EQ(testClient.m_clientNetworkInterface->GetTimeoutMs(), timeoutMs);
 
-        EXPECT_FALSE(dynamic_cast<UdpNetworkInterface*>(testClient.m_clientNetworkInterface)->IsEncrypted());
+        EXPECT_FALSE(testClient.m_clientNetworkInterface->IsEncrypted());
 
         EXPECT_TRUE(testServer.m_serverNetworkInterface->StopListening());
         EXPECT_FALSE(testServer.m_serverNetworkInterface->StopListening());
-        EXPECT_FALSE(dynamic_cast<UdpNetworkInterface*>(testServer.m_serverNetworkInterface)->IsOpen());
+        EXPECT_FALSE(testServer.m_serverNetworkInterface->IsOpen());
     }
 
     TEST_F(UdpTransportTests, TestMultipleClients)

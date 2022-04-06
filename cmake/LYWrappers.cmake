@@ -59,6 +59,7 @@ define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
 # \arg:STATIC (bool) defines this target to be a static library
 # \arg:GEM_STATIC (bool) defines this target to be a static library while also setting the GEM_MODULE property
 # \arg:SHARED (bool) defines this target to be a dynamic library
+# \arg:GEM_SHARED (bool) defines this target to be a dynamic library while also setting the GEM_MODULE property
 # \arg:MODULE (bool) defines this target to be a module library
 # \arg:GEM_MODULE (bool) defines this target to be a module library while also marking the target as a "Gem" via the GEM_MODULE property
 # \arg:HEADERONLY (bool) defines this target to be a header only library. A ${NAME}_HEADERS project will be created for the IDE

@@ -101,6 +101,8 @@ namespace AzNetworking
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
         void SetTimeoutMs(AZ::TimeMs timeoutMs) override;
         AZ::TimeMs GetTimeoutMs() const override;
+        bool IsEncrypted() const override;
+        bool IsOpen() const override;
         //! @}
 
         //! Queues a new incoming connection for this network interface.

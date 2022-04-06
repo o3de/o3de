@@ -106,15 +106,9 @@ namespace AzNetworking
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
         void SetTimeoutMs(AZ::TimeMs timeoutMs) override;
         AZ::TimeMs GetTimeoutMs() const override;
+        bool IsEncrypted() const override;
+        bool IsOpen() const override;
         //! @}
-
-        //! Returns true if this is an encrypted socket, false if not.
-        //! @return boolean true if this is an encrypted socket, false if not
-        AZNETWORKING_API bool IsEncrypted() const;
-
-        //! Returns true if this connection instance is in an open state, and is capable of actively sending and receiving packets.
-        //! @return boolean true if this connection instance is in an open state
-        AZNETWORKING_API bool IsOpen() const;
 
     private:
 

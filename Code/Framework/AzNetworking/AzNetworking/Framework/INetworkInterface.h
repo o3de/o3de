@@ -119,6 +119,14 @@ namespace AzNetworking
         //! @return reference to the metrics tracked by this network interface
         NetworkInterfaceMetrics& GetMetrics();
 
+        //! Returns true if communications on this network interface are encrypted, false if not.
+        //! @return boolean true if communciations are encrypted, false if not
+        virtual bool IsEncrypted() const = 0;
+
+        //! Returns true if this connection instance is in an open state, and is capable of actively sending and receiving packets.
+        //! @return boolean true if this connection instance is in an open state
+        virtual bool IsOpen() const = 0;
+
     private:
 
         NetworkInterfaceMetrics m_metrics;

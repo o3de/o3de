@@ -19,10 +19,6 @@ namespace AzNetworking
     class TimedThread
     {
     public:
-
-        AZNETWORKING_API TimedThread(const char* name, AZ::TimeMs updateRate);
-        AZNETWORKING_API virtual ~TimedThread();
-
         //! Starts the thread.
         AZNETWORKING_API void Start();
 
@@ -35,6 +31,9 @@ namespace AzNetworking
         //! Returns true if the thread is running.
         //! @return boolean true if the thread is running, false otherwise
         AZNETWORKING_API bool IsRunning() const;
+
+        AZNETWORKING_API TimedThread(const char* name, AZ::TimeMs updateRate);
+        AZNETWORKING_API virtual ~TimedThread() { AZ_Assert(!IsRunning(), "You must stop and join your thread before destructing it"); };
 
     protected:
 

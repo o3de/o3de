@@ -172,6 +172,16 @@ namespace AzNetworking
         return m_timeoutMs;
     }
 
+    bool TcpNetworkInterface::IsEncrypted() const
+    {
+        return net_TcpUseEncryption;
+    }
+
+    bool TcpNetworkInterface::IsOpen() const
+    {
+        return m_listenThread.GetSocketCount() > 0;
+    }
+
     void TcpNetworkInterface::QueueNewConnection(const PendingConnection& pendingConnection)
     {
         m_pendingConnections.PushBackItem(pendingConnection);

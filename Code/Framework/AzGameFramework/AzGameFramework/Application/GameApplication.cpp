@@ -14,7 +14,6 @@
 #include <AzFramework/Archive/Archive.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
-#include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 namespace AzGameFramework
 {
@@ -116,7 +115,6 @@ namespace AzGameFramework
         AZ::ComponentTypeList components = Application::GetRequiredSystemComponents();
 
 #if !defined(_RELEASE)
-        components.emplace_back(azrtti_typeid<AzNetworking::NetworkingSystemComponent>());
         components.emplace_back(azrtti_typeid<AzFramework::TargetManagementComponent>());
 #endif
 
