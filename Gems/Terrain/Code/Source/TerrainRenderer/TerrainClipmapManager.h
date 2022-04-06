@@ -81,12 +81,12 @@ namespace Terrain
         struct ClipmapData
         {
             //! The 2D xy-plane view position where the main camera is.
-            //! 0,1: previous; 2,3: current.
-            AZStd::array<float, 4> m_viewPosition;
+            AZStd::array<float, 2> m_previousViewPosition;
+            AZStd::array<float, 2> m_currentViewPosition;
 
             // 2D xy-plane world bounds defined by the terrain.
-            // 0,1: min; 2,3: max.
-            AZStd::array<float, 4> m_worldBounds;
+            AZStd::array<float, 2> m_worldBoundsMin;
+            AZStd::array<float, 2> m_worldBoundsMax;
 
             //! The max range that the clipmap is covering.
             AZStd::array<float, 2> m_maxRenderSize;

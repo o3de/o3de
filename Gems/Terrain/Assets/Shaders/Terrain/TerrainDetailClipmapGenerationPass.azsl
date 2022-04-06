@@ -34,7 +34,7 @@ void MainCS(
 
         float2 worldPosition = GetCurrentWorldPosition(pixelPosition, clipmapLevel);
 
-        if (any(worldPosition < TerrainSrg::m_clipmapData.m_worldBounds.xy) || any(worldPosition > TerrainSrg::m_clipmapData.m_worldBounds.zw))
+        if (any(worldPosition < TerrainSrg::m_clipmapData.m_worldBoundsMin) || any(worldPosition > TerrainSrg::m_clipmapData.m_worldBoundsMax))
         {
             // alpha represents hasDetailSurface
             PassSrg::m_detailColorClipmaps[texelAddress] = float4(TerrainMaterialSrg::m_baseColor.rgb, 0.0);

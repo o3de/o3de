@@ -81,12 +81,12 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     struct ClipmapData
     {
         // The 2D xy-plane view position where the main camera is.
-        // xy: previous; zw: current.
-        float4 m_viewPosition;
+        float2 m_previousViewPosition;
+        float2 m_currentViewPosition;
 
         // 2D xy-plane world bounds defined by the terrain.
-        // xy: min; zw: max.
-        float4 m_worldBounds;
+        float2 m_worldBoundsMin;
+        float2 m_worldBoundsMax;
 
         // The max range that the clipmap is covering.
         float2 m_maxRenderSize;
@@ -127,6 +127,11 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     
     Texture2D m_textures[]; // bindless array of all textures for detail and macro materials
     float m_detailMaterialIdScale;
+
+    uint2 GetMacroGridResolution()
+    {
+        return uint2(m_macroMaterialGrid.m_resolution >> 16, m_macroMaterialGrid.m_resolution & 0xFFFF);
+    }
 }
 
 static const float MacroMaterialsPerTile = 4;

@@ -100,7 +100,8 @@ namespace Terrain
             clipmapScaleInv /= 2.0f;
         }
 
-        AZ::Vector4::CreateZero().StoreToFloat4(m_clipmapData.m_viewPosition.data());
+        AZ::Vector2::CreateZero().StoreToFloat2(m_clipmapData.m_previousViewPosition.data());
+        AZ::Vector2::CreateZero().StoreToFloat2(m_clipmapData.m_currentViewPosition.data());
 
         m_clipmapData.m_clipmapSize[0] = ClipmapSizeWidth;
         m_clipmapData.m_clipmapSize[1] = ClipmapSizeHeight;
@@ -109,10 +110,10 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             worldBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
 
-        m_clipmapData.m_worldBounds[0] = worldBounds.GetMin().GetX();
-        m_clipmapData.m_worldBounds[1] = worldBounds.GetMin().GetY();
-        m_clipmapData.m_worldBounds[2] = worldBounds.GetMax().GetX();
-        m_clipmapData.m_worldBounds[3] = worldBounds.GetMax().GetY();
+        m_clipmapData.m_worldBoundsMin[0] = worldBounds.GetMin().GetX();
+        m_clipmapData.m_worldBoundsMin[1] = worldBounds.GetMin().GetY();
+        m_clipmapData.m_worldBoundsMax[0] = worldBounds.GetMax().GetX();
+        m_clipmapData.m_worldBoundsMax[1] = worldBounds.GetMax().GetY();
 
         // Use world size for now.
         const AZ::Vector3 worldSize = worldBounds.GetMax() - worldBounds.GetMin();
@@ -167,17 +168,17 @@ namespace Terrain
     void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition)
     {
         // pass current to previous
-        m_clipmapData.m_viewPosition[0] = m_clipmapData.m_viewPosition[2];
-        m_clipmapData.m_viewPosition[1] = m_clipmapData.m_viewPosition[3];
+        m_clipmapData.m_previousViewPosition[0] = m_clipmapData.m_currentViewPosition[0];
+        m_clipmapData.m_previousViewPosition[1] = m_clipmapData.m_currentViewPosition[1];
 
         // set new current
-        m_clipmapData.m_viewPosition[2] = cameraPosition.GetX();
-        m_clipmapData.m_viewPosition[3] = cameraPosition.GetY();
+        m_clipmapData.m_currentViewPosition[0] = cameraPosition.GetX();
+        m_clipmapData.m_currentViewPosition[1] = cameraPosition.GetY();
 
         const AZ::Vector2 maxRenderSize = AZ::Vector2(m_clipmapData.m_maxRenderSize[0], m_clipmapData.m_maxRenderSize[1]);
         const AZ::Vector2 viewTranslation = AZ::Vector2(
-            m_clipmapData.m_viewPosition[2] - m_clipmapData.m_viewPosition[0],
-            m_clipmapData.m_viewPosition[3] - m_clipmapData.m_viewPosition[1]);
+            m_clipmapData.m_currentViewPosition[0] - m_clipmapData.m_previousViewPosition[0],
+            m_clipmapData.m_currentViewPosition[1] - m_clipmapData.m_previousViewPosition[1]);
         const AZ::Vector2 normalizedViewTranslation = viewTranslation / maxRenderSize;
 
         float clipmapScale = 1.0f;
