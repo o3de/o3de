@@ -590,11 +590,15 @@ class AtomComponentProperties:
     def occlusion_culling_plane(property: str = 'name') -> str:
         """
         Occlusion Culling Plane component properties.
+          - 'Show Visualization' Toggles the visual display of the Occlusion Culling Plane in edit and game mode (bool)
+          - 'Transparent Visualization': Toggles the transparency of the Occlusion Culling Plane when visible (bool)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Occlusion Culling Plane',
+            'Show Visualization': 'Controller|Configuration|Settings|Show Visualization',
+            'Transparent Visualization': 'Controller|Configuration|Settings|Transparent Visualization',
         }
         return properties[property]
 
