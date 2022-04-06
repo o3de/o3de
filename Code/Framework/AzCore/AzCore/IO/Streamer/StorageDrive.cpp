@@ -285,7 +285,7 @@ namespace AZ::IO
 
             TIMED_AVERAGE_WINDOW_SCOPE(m_fileOpenCloseTimeAverage);
             AZStd::unique_ptr<SystemFile> newFile = AZStd::make_unique<SystemFile>();
-            bool isOpen = newFile->Open(data->m_path.GetAbsolutePath(), SystemFile::OpenMode::SF_OPEN_READ_ONLY);
+            bool isOpen = newFile->Open(data->m_path.GetAbsolutePathCStr(), SystemFile::OpenMode::SF_OPEN_READ_ONLY);
             if (!isOpen)
             {
                 request->SetStatus(IStreamerTypes::RequestStatus::Failed);
@@ -350,7 +350,7 @@ namespace AZ::IO
         }
         else
         {
-            fileExists.m_found = SystemFile::Exists(fileExists.m_path.GetAbsolutePath());
+            fileExists.m_found = SystemFile::Exists(fileExists.m_path.GetAbsolutePathCStr());
         }
         m_context->MarkRequestAsCompleted(request);
     }
@@ -366,7 +366,7 @@ namespace AZ::IO
         if (cacheIndex != s_fileNotFound)
         {
             AZ_Assert(m_fileHandles[cacheIndex],
-                "File path '%s' doesn't have an associated file handle.", m_filePaths[cacheIndex].GetRelativePath());
+                "File path '%s' doesn't have an associated file handle.", m_filePaths[cacheIndex].GetRelativePathCStr());
             command.m_fileSize = m_fileHandles[cacheIndex]->Length();
             command.m_found = true;
             request->SetStatus(IStreamerTypes::RequestStatus::Completed);
@@ -374,7 +374,7 @@ namespace AZ::IO
         else
         {
             // The file is not open yet, so try to get the file size by name.
-            u64 size = SystemFile::Length(command.m_path.GetAbsolutePath());
+            u64 size = SystemFile::Length(command.m_path.GetAbsolutePathCStr());
             if (size != 0) // SystemFile::Length doesn't allow telling a zero-sized file apart from a invalid path.
             {
                 command.m_fileSize = size;
