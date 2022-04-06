@@ -8,8 +8,13 @@
             "PassClass": "ParentPass",
             "PassRequests": [
                 {
-                    "Name": "TerrainClipmapGenerationPass",
-                    "TemplateName": "TerrainClipmapGenerationPassTemplate",
+                    "Name": "TerrainMacroClipmapGenerationPass",
+                    "TemplateName": "TerrainMacroClipmapGenerationPassTemplate",
+                    "Enabled": false
+                },
+                {
+                    "Name": "TerrainDetailClipmapGenerationPass",
+                    "TemplateName": "TerrainDetailClipmapGenerationPassTemplate",
                     "Enabled": false
                 }
             ]

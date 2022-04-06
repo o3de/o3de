@@ -11,116 +11,45 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <Terrain/Passes/TerrainClipmapComputePass.h>
+#include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
+#include <TerrainRenderer/TerrainClipmapManager.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
 
 namespace Terrain
 {
-    namespace
+    AZ::RPI::Ptr<TerrainMacroClipmapGenerationPass> TerrainMacroClipmapGenerationPass::Create(const AZ::RPI::PassDescriptor& descriptor)
     {
-        [[maybe_unused]] static const char* TerrainClipmapComputePassName = "TerrainClipmapComputePass";
-        constexpr const char* MacroColorClipmapString = "MacroColorClipmaps";
-        constexpr const char* MacroNormalClipmapString = "MacroNormalClipmaps";
-        constexpr const char* DetailColorClipmapString = "DetailColorClipmaps";
-        constexpr const char* DetailNormalClipmapString = "DetailNormalClipmaps";
-        constexpr const char* DetailHeightClipmapString = "DetailHeightClipmaps";
-        // Miscellany clipmap combining:
-        // roughness, specularF0, metalness, occlusion
-        constexpr const char* DetailMiscClipmapString = "DetailMiscClipmaps";
-    } // namespace MacroClipmap
-
-    namespace PassSrgInputs
-    {
-        static constexpr const char* ClipmapData = "m_clipmapData";
-        static constexpr const char* MacroColorClipmaps = "m_macroColorClipmaps";
-        static constexpr const char* MacroNormalClipmaps = "m_macroNormalClipmaps";
-        static constexpr const char* DetailColorClipmaps = "m_detailColorClipmaps";
-        static constexpr const char* DetailNormalClipmaps = "m_detailNormalClipmaps";
-        static constexpr const char* DetailHeightClipmaps = "m_detailHeightClipmaps";
-        static constexpr const char* DetailMiscClipmaps = "m_detailMiscClipmaps";
-    } // namespace TerrainSrgInputs
-
-    AZ::RPI::Ptr<TerrainClipmapGenerationPass> TerrainClipmapGenerationPass::Create(const AZ::RPI::PassDescriptor& descriptor)
-    {
-        AZ::RPI::Ptr<TerrainClipmapGenerationPass> pass = aznew TerrainClipmapGenerationPass(descriptor);
+        AZ::RPI::Ptr<TerrainMacroClipmapGenerationPass> pass = aznew TerrainMacroClipmapGenerationPass(descriptor);
         return pass;
     }
 
-    TerrainClipmapGenerationPass::TerrainClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
+    TerrainMacroClipmapGenerationPass::TerrainMacroClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
         : AZ::RPI::ComputePass(descriptor)
     {
     }
 
-    void TerrainClipmapGenerationPass::SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph)
+    void TerrainMacroClipmapGenerationPass::SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph)
     {
         AZ::RPI::Scene* scene = m_pipeline->GetScene();
         TerrainFeatureProcessor* terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
         if (terrainFeatureProcessor)
         {
             const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
-            auto attachmentDatabase = frameGraph.GetAttachmentDatabase();
+            AZ::RHI::FrameGraphAttachmentInterface attachmentDatabase = frameGraph.GetAttachmentDatabase();
 
-            auto macroColorClipmap = clipmapManager.GetClipmapImage(AZ::Name(MacroColorClipmapString));
-            auto macroNormalClipmap = clipmapManager.GetClipmapImage(AZ::Name(MacroNormalClipmapString));
-            auto detailColorClipmap = clipmapManager.GetClipmapImage(AZ::Name(DetailColorClipmapString));
-            auto detailNormalClipmap = clipmapManager.GetClipmapImage(AZ::Name(DetailNormalClipmapString));
-            auto detailHeightClipmap = clipmapManager.GetClipmapImage(AZ::Name(DetailHeightClipmapString));
-            auto detailMiscClipmap = clipmapManager.GetClipmapImage(AZ::Name(DetailMiscClipmapString));
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::MacroColor, attachmentDatabase);
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::MacroNormal, attachmentDatabase);
 
-            attachmentDatabase.ImportImage(macroColorClipmap->GetAttachmentId(), macroColorClipmap->GetRHIImage());
-            attachmentDatabase.ImportImage(macroNormalClipmap->GetAttachmentId(), macroNormalClipmap->GetRHIImage());
-            attachmentDatabase.ImportImage(detailColorClipmap->GetAttachmentId(), detailColorClipmap->GetRHIImage());
-            attachmentDatabase.ImportImage(detailNormalClipmap->GetAttachmentId(), detailNormalClipmap->GetRHIImage());
-            attachmentDatabase.ImportImage(detailHeightClipmap->GetAttachmentId(), detailHeightClipmap->GetRHIImage());
-            attachmentDatabase.ImportImage(detailMiscClipmap->GetAttachmentId(), detailMiscClipmap->GetRHIImage());
-
-            AZ::RHI::ImageScopeAttachmentDescriptor desc;
-            desc.m_imageViewDescriptor = macroColorClipmap->GetImageView()->GetDescriptor();
-            desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
-
-            desc.m_attachmentId = macroColorClipmap->GetAttachmentId();
-            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::ReadWrite);
-            desc.m_attachmentId = macroNormalClipmap->GetAttachmentId();
-            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::ReadWrite);
-            desc.m_attachmentId = detailColorClipmap->GetAttachmentId();
-            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::ReadWrite);
-            desc.m_attachmentId = detailNormalClipmap->GetAttachmentId();
-            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::ReadWrite);
-            desc.m_attachmentId = detailHeightClipmap->GetAttachmentId();
-            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::ReadWrite);
-            desc.m_attachmentId = detailMiscClipmap->GetAttachmentId();
-            frameGraph.UseShaderAttachment(desc, AZ::RHI::ScopeAttachmentAccess::ReadWrite);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::MacroColor, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::MacroNormal, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
         }
 
         ComputePass::SetupFrameGraphDependencies(frameGraph);
     }
 
-    void TerrainClipmapGenerationPass::InitializeInternal()
-    {
-        ComputePass::InitializeInternal();
-
-        m_macroColorClipmapsIndex = m_shaderResourceGroup->FindShaderInputImageIndex(AZ::Name(PassSrgInputs::MacroColorClipmaps));
-        AZ_Error(TerrainClipmapComputePassName, m_macroColorClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", PassSrgInputs::MacroColorClipmaps);
-        m_macroNormalClipmapsIndex = m_shaderResourceGroup->FindShaderInputImageIndex(AZ::Name(PassSrgInputs::MacroNormalClipmaps));
-        AZ_Error(TerrainClipmapComputePassName, m_macroNormalClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", PassSrgInputs::MacroNormalClipmaps);
-        m_detailColorClipmapsIndex = m_shaderResourceGroup->FindShaderInputImageIndex(AZ::Name(PassSrgInputs::DetailColorClipmaps));
-        AZ_Error(TerrainClipmapComputePassName, m_detailColorClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", PassSrgInputs::DetailColorClipmaps);
-        m_detailNormalClipmapsIndex = m_shaderResourceGroup->FindShaderInputImageIndex(AZ::Name(PassSrgInputs::DetailNormalClipmaps));
-        AZ_Error(TerrainClipmapComputePassName, m_detailNormalClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", PassSrgInputs::DetailNormalClipmaps);
-        m_detailHeightClipmapsIndex = m_shaderResourceGroup->FindShaderInputImageIndex(AZ::Name(PassSrgInputs::DetailHeightClipmaps));
-        AZ_Error(TerrainClipmapComputePassName, m_detailHeightClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", PassSrgInputs::DetailHeightClipmaps);
-        m_detailMiscClipmapsIndex = m_shaderResourceGroup->FindShaderInputImageIndex(AZ::Name(PassSrgInputs::DetailMiscClipmaps));
-        AZ_Error(TerrainClipmapComputePassName, m_detailMiscClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", PassSrgInputs::DetailMiscClipmaps);
-    }
-
-    void TerrainClipmapGenerationPass::FrameBeginInternal(FramePrepareParams params)
-    {
-        ComputePass::FrameBeginInternal(params);
-    }
-
-    void TerrainClipmapGenerationPass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)
+    void TerrainMacroClipmapGenerationPass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)
     {
         AZ::RPI::Scene* scene = m_pipeline->GetScene();
         TerrainFeatureProcessor* terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
@@ -142,19 +71,96 @@ namespace Terrain
             {
                 const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
 
-                auto macroColorClipmap = clipmapManager.GetClipmapImage(AZ::Name(MacroColorClipmapString));
-                auto macroNormalClipmap = clipmapManager.GetClipmapImage(AZ::Name(MacroNormalClipmapString));
-                auto detailColorClipmap = clipmapManager.GetClipmapImage(AZ::Name(DetailColorClipmapString));
-                auto detailNormalClipmap = clipmapManager.GetClipmapImage(AZ::Name(DetailNormalClipmapString));
-                auto detailHeightClipmap = clipmapManager.GetClipmapImage(AZ::Name(DetailHeightClipmapString));
-                auto detailMiscClipmap = clipmapManager.GetClipmapImage(AZ::Name(DetailMiscClipmapString));
+                m_shaderResourceGroup->SetImage(
+                    m_macroColorClipmapsIndex,
+                    clipmapManager.GetClipmapImage(TerrainClipmapManager::ClipmapName::MacroColor)
+                );
 
-                m_shaderResourceGroup->SetImage(m_macroColorClipmapsIndex, macroColorClipmap);
-                m_shaderResourceGroup->SetImage(m_macroNormalClipmapsIndex, macroNormalClipmap);
-                m_shaderResourceGroup->SetImage(m_detailColorClipmapsIndex, detailColorClipmap);
-                m_shaderResourceGroup->SetImage(m_detailNormalClipmapsIndex, detailNormalClipmap);
-                m_shaderResourceGroup->SetImage(m_detailHeightClipmapsIndex, detailHeightClipmap);
-                m_shaderResourceGroup->SetImage(m_detailMiscClipmapsIndex, detailMiscClipmap);
+                m_shaderResourceGroup->SetImage(
+                    m_macroNormalClipmapsIndex,
+                    clipmapManager.GetClipmapImage(TerrainClipmapManager::ClipmapName::MacroNormal)
+                );
+
+                m_needsUpdate = false;
+            }
+        }
+
+        ComputePass::CompileResources(context);
+    }
+
+    AZ::RPI::Ptr<TerrainDetailClipmapGenerationPass> TerrainDetailClipmapGenerationPass::Create(const AZ::RPI::PassDescriptor& descriptor)
+    {
+        AZ::RPI::Ptr<TerrainDetailClipmapGenerationPass> pass = aznew TerrainDetailClipmapGenerationPass(descriptor);
+        return pass;
+    }
+
+    TerrainDetailClipmapGenerationPass::TerrainDetailClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
+        : AZ::RPI::ComputePass(descriptor)
+        , m_clipmapImageIndex{
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::MacroColor]),
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::MacroNormal]),
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailColor]),
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailNormal]),
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailHeight]),
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailMisc]),
+        }
+    {
+    }
+
+    void TerrainDetailClipmapGenerationPass::SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph)
+    {
+        AZ::RPI::Scene* scene = m_pipeline->GetScene();
+        TerrainFeatureProcessor* terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
+        if (terrainFeatureProcessor)
+        {
+            const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
+            AZ::RHI::FrameGraphAttachmentInterface attachmentDatabase = frameGraph.GetAttachmentDatabase();
+
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailColor, attachmentDatabase);
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailNormal, attachmentDatabase);
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailHeight, attachmentDatabase);
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailMisc, attachmentDatabase);
+
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::MacroColor, AZ::RHI::ScopeAttachmentAccess::Read, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::MacroNormal, AZ::RHI::ScopeAttachmentAccess::Read, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailColor, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailNormal, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailHeight, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailMisc, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
+        }
+
+        ComputePass::SetupFrameGraphDependencies(frameGraph);
+    }
+
+    void TerrainDetailClipmapGenerationPass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)
+    {
+        AZ::RPI::Scene* scene = m_pipeline->GetScene();
+        TerrainFeatureProcessor* terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
+        if (terrainFeatureProcessor)
+        {
+            auto terrainSrg = terrainFeatureProcessor->GetTerrainShaderResourceGroup();
+            if (terrainSrg)
+            {
+                BindSrg(terrainFeatureProcessor->GetTerrainShaderResourceGroup()->GetRHIShaderResourceGroup());
+            }
+
+            auto material = terrainFeatureProcessor->GetMaterial();
+            if (material)
+            {
+                BindSrg(material->GetRHIShaderResourceGroup());
+            }
+
+            if (m_needsUpdate)
+            {
+                const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
+
+                for (uint32_t i = TerrainClipmapManager::ClipmapName::MacroColor; i < TerrainClipmapManager::ClipmapName::Count; ++i)
+                {
+                    m_shaderResourceGroup->SetImage(
+                        m_clipmapImageIndex[i],
+                        clipmapManager.GetClipmapImage(static_cast<TerrainClipmapManager::ClipmapName>(i))
+                    );
+                }
 
                 m_needsUpdate = false;
             }

@@ -8,6 +8,7 @@
 
 #include <TerrainRenderer/TerrainClipmapManager.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
 namespace Terrain
@@ -15,25 +16,20 @@ namespace Terrain
     namespace
     {
         [[maybe_unused]] static const char* TerrainClipmapManagerName = "TerrainClipmapManager";
-        static constexpr const char* MacroColorClipmapString = "MacroColorClipmaps";
-        static constexpr const char* MacroNormalClipmapString = "MacroNormalClipmaps";
-        static constexpr const char* DetailColorClipmapString = "DetailColorClipmaps";
-        static constexpr const char* DetailNormalClipmapString = "DetailNormalClipmaps";
-        static constexpr const char* DetailHeightClipmapString = "DetailHeightClipmaps";
-        static constexpr const char* DetailMiscClipmapString = "DetailMiscClipmaps";
     }
 
-    namespace TerrainSrgInputs
+    TerrainClipmapManager::TerrainClipmapManager()
+        : m_terrainSrgClipmapImageIndex{
+            AZ::RHI::ShaderInputNameIndex(ClipmapImageShaderInput[ClipmapName::MacroColor]),
+            AZ::RHI::ShaderInputNameIndex(ClipmapImageShaderInput[ClipmapName::MacroNormal]),
+            AZ::RHI::ShaderInputNameIndex(ClipmapImageShaderInput[ClipmapName::DetailColor]),
+            AZ::RHI::ShaderInputNameIndex(ClipmapImageShaderInput[ClipmapName::DetailNormal]),
+            AZ::RHI::ShaderInputNameIndex(ClipmapImageShaderInput[ClipmapName::DetailHeight]),
+            AZ::RHI::ShaderInputNameIndex(ClipmapImageShaderInput[ClipmapName::DetailMisc])
+        }
     {
-        static constexpr const char* ClipmapData = "m_clipmapData";
-        static constexpr const char* MacroColorClipmaps = "m_macroColorClipmaps";
-        static constexpr const char* MacroNormalClipmaps = "m_macroNormalClipmaps";
-        static constexpr const char* DetailColorClipmaps = "m_detailColorClipmaps";
-        static constexpr const char* DetailNormalClipmaps = "m_detailNormalClipmaps";
-        static constexpr const char* DetailHeightClipmaps = "m_detailHeightClipmaps";
-        static constexpr const char* DetailMiscClipmaps = "m_detailMiscClipmaps";
     }
-    
+
     void TerrainClipmapManager::Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
         AZ_Error(TerrainClipmapManagerName, terrainSrg, "terrainSrg must not be null.");
@@ -52,32 +48,12 @@ namespace Terrain
     
     bool TerrainClipmapManager::UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = terrainSrg->GetLayout();
+        for (uint32_t i = ClipmapName::MacroColor; i < ClipmapName::Count; ++i)
+        {
+            terrainSrg->SetImage(m_terrainSrgClipmapImageIndex[i], m_clipmaps[i]);
+        }
 
-        m_macroColorClipmapsIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::MacroColorClipmaps));
-        AZ_Error(TerrainClipmapManagerName, m_macroColorClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", TerrainSrgInputs::MacroColorClipmaps);
-        m_macroNormalClipmapsIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::MacroNormalClipmaps));
-        AZ_Error(TerrainClipmapManagerName, m_macroNormalClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", TerrainSrgInputs::MacroNormalClipmaps);
-        m_detailColorClipmapsIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::DetailColorClipmaps));
-        AZ_Error(TerrainClipmapManagerName, m_detailColorClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", TerrainSrgInputs::DetailColorClipmaps);
-        m_detailNormalClipmapsIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::DetailNormalClipmaps));
-        AZ_Error(TerrainClipmapManagerName, m_detailNormalClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", TerrainSrgInputs::DetailNormalClipmaps);
-        m_detailHeightClipmapsIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::DetailHeightClipmaps));
-        AZ_Error(TerrainClipmapManagerName, m_detailHeightClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", TerrainSrgInputs::DetailHeightClipmaps);
-        m_detailMiscClipmapsIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::DetailMiscClipmaps));
-        AZ_Error(TerrainClipmapManagerName, m_detailMiscClipmapsIndex.IsValid(), "Failed to find terrain srg input image %s.", TerrainSrgInputs::DetailMiscClipmaps);
-
-        m_clipmapDataIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::ClipmapData));
-        AZ_Error(TerrainClipmapManagerName, m_clipmapDataIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::ClipmapData);
-
-
-        bool IndicesValid = m_macroColorClipmapsIndex.IsValid() && m_macroNormalClipmapsIndex.IsValid() &&
-            m_detailColorClipmapsIndex.IsValid() && m_detailNormalClipmapsIndex.IsValid() && m_detailHeightClipmapsIndex.IsValid() &&
-            m_detailMiscClipmapsIndex.IsValid() && m_clipmapDataIndex.IsValid();
-
-        m_clipmapsNeedUpdate = true;
-
-        return IndicesValid;
+        return true;
     }
 
     bool TerrainClipmapManager::IsInitialized() const
@@ -93,25 +69,31 @@ namespace Terrain
     void TerrainClipmapManager::Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
         UpdateClipmapData(cameraPosition);
-        terrainSrg->SetConstant(m_clipmapDataIndex, m_clipmapData);
-
-        if (m_clipmapsNeedUpdate)
-        {
-            terrainSrg->SetImage(m_macroColorClipmapsIndex, m_clipmaps.at(AZ::Name(MacroColorClipmapString)));
-            terrainSrg->SetImage(m_macroNormalClipmapsIndex, m_clipmaps.at(AZ::Name(MacroNormalClipmapString)));
-            terrainSrg->SetImage(m_detailColorClipmapsIndex, m_clipmaps.at(AZ::Name(DetailColorClipmapString)));
-            terrainSrg->SetImage(m_detailNormalClipmapsIndex, m_clipmaps.at(AZ::Name(DetailNormalClipmapString)));
-            terrainSrg->SetImage(m_detailHeightClipmapsIndex, m_clipmaps.at(AZ::Name(DetailHeightClipmapString)));
-            terrainSrg->SetImage(m_detailMiscClipmapsIndex, m_clipmaps.at(AZ::Name(DetailMiscClipmapString)));
-
-            m_clipmapsNeedUpdate = false;
-        }
+        terrainSrg->SetConstant(m_terrainSrgClipmapDataIndex, m_clipmapData);
     }
+
+    void TerrainClipmapManager::ImportClipmap(ClipmapName clipmapName, AZ::RHI::FrameGraphAttachmentInterface attachmentDatabase) const
+    {
+        auto clipmap = m_clipmaps[clipmapName];
+        attachmentDatabase.ImportImage(clipmap->GetAttachmentId(), clipmap->GetRHIImage());
+    }
+
+    void TerrainClipmapManager::UseClipmap(ClipmapName clipmapName, AZ::RHI::ScopeAttachmentAccess access, AZ::RHI::FrameGraphInterface frameGraph) const
+    {
+        auto clipmap = m_clipmaps[clipmapName];
+
+        AZ::RHI::ImageScopeAttachmentDescriptor desc;
+        desc.m_imageViewDescriptor = clipmap->GetImageView()->GetDescriptor();
+        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+        desc.m_attachmentId = clipmap->GetAttachmentId();
+        frameGraph.UseShaderAttachment(desc, access);
+    }
+
 
     void TerrainClipmapManager::InitializeClipmapData()
     {
         float clipmapScaleInv = 1.0f;
-        for (int32_t clipmapIndex = ClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
+        for (int32_t clipmapIndex = DetailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             AZ::Vector4(0.5f).StoreToFloat4(m_clipmapData.m_clipmapCenters[clipmapIndex].data());
             AZ::Vector4(clipmapScaleInv).StoreToFloat4(m_clipmapData.m_clipmapScaleInv[clipmapIndex].data());
@@ -142,42 +124,44 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::AttachmentImagePool> pool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
 
         AZ::RHI::ImageDescriptor imageDesc;
-        imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
         imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::ShaderReadWrite;
         imageDesc.m_size = AZ::RHI::Size(ClipmapSizeWidth, ClipmapSizeHeight, 1);
-        imageDesc.m_arraySize = ClipmapStackSize;
 
-        AZ::Name macroColorClipmapName = AZ::Name(MacroColorClipmapString);
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> macroColorClipmaps =
+        imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
+        imageDesc.m_arraySize = MacroClipmapStackSize;
+
+        AZ::Name macroColorClipmapName = AZ::Name("MacroColorClipmaps");
+        m_clipmaps[ClipmapName::MacroColor] =
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, macroColorClipmapName, nullptr, nullptr);
-        AZ::Name detailColorClipmapName = AZ::Name(DetailColorClipmapString);
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> detailColorClipmaps =
+
+        imageDesc.m_arraySize = DetailClipmapStackSize;
+
+        AZ::Name detailColorClipmapName = AZ::Name("DetailColorClipmaps");
+        m_clipmaps[ClipmapName::DetailColor] =
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, detailColorClipmapName, nullptr, nullptr);
-        AZ::Name detailMiscClipmapName = AZ::Name(DetailMiscClipmapString);
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> detailMiscClipmaps =
+
+        AZ::Name detailMiscClipmapName = AZ::Name("DetailMiscClipmaps");
+        m_clipmaps[ClipmapName::DetailMisc] =
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, detailMiscClipmapName, nullptr, nullptr);
 
-        imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_SNORM;
+        imageDesc.m_format = AZ::RHI::Format::R16G16_SNORM;
+        imageDesc.m_arraySize = MacroClipmapStackSize;
 
-        AZ::Name macroNormalClipmapName = AZ::Name(MacroNormalClipmapString);
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> macroNormalClipmaps =
+        AZ::Name macroNormalClipmapName = AZ::Name("MacroNormalClipmaps");
+        m_clipmaps[ClipmapName::MacroNormal] =
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, macroNormalClipmapName, nullptr, nullptr);
-        AZ::Name detailNormalClipmapName = AZ::Name(DetailNormalClipmapString);
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> detailNormalClipmaps =
+
+        imageDesc.m_arraySize = DetailClipmapStackSize;
+
+        AZ::Name detailNormalClipmapName = AZ::Name("DetailNormalClipmaps");
+        m_clipmaps[ClipmapName::DetailNormal] =
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, detailNormalClipmapName, nullptr, nullptr);
 
         imageDesc.m_format = AZ::RHI::Format::R32_FLOAT;
 
-        AZ::Name detailHeightClipmapName = AZ::Name(DetailHeightClipmapString);
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> detailHeightClipmaps =
+        AZ::Name detailHeightClipmapName = AZ::Name("DetailHeightClipmaps");
+        m_clipmaps[ClipmapName::DetailHeight] =
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, detailHeightClipmapName, nullptr, nullptr);
-
-        m_clipmaps[macroColorClipmapName] = macroColorClipmaps;
-        m_clipmaps[detailColorClipmapName] = detailColorClipmaps;
-        m_clipmaps[detailMiscClipmapName] = detailMiscClipmaps;
-        m_clipmaps[macroNormalClipmapName] = macroNormalClipmaps;
-        m_clipmaps[detailNormalClipmapName] = detailNormalClipmaps;
-        m_clipmaps[detailHeightClipmapName] = detailHeightClipmaps;
     }
 
     void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition)
@@ -197,7 +181,7 @@ namespace Terrain
         const AZ::Vector2 normalizedViewTranslation = viewTranslation / maxRenderSize;
 
         float clipmapScale = 1.0f;
-        for (int32_t clipmapIndex = ClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
+        for (int32_t clipmapIndex = DetailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             m_clipmapData.m_clipmapCenters[clipmapIndex][0] = m_clipmapData.m_clipmapCenters[clipmapIndex][2];
             m_clipmapData.m_clipmapCenters[clipmapIndex][1] = m_clipmapData.m_clipmapCenters[clipmapIndex][3];
@@ -236,14 +220,10 @@ namespace Terrain
         }
     }
 
-    AZ::Data::Instance<AZ::RPI::AttachmentImage> TerrainClipmapManager::GetClipmapImage(const AZ::Name& clipmapName) const
+    AZ::Data::Instance<AZ::RPI::AttachmentImage> TerrainClipmapManager::GetClipmapImage(ClipmapName clipmapName) const
     {
-        if (!m_clipmaps.contains(clipmapName))
-        {
-            AZ_Error("TerrainClipmapGenerationPass", false, "No clipmap %s is defined.", clipmapName.GetCStr());
-            return nullptr;
-        }
+        AZ_Assert(clipmapName < ClipmapName::Count, "Must be a valid ClipmapName enum.");
 
-        return m_clipmaps.at(clipmapName);
+        return m_clipmaps[clipmapName];
     }
 }

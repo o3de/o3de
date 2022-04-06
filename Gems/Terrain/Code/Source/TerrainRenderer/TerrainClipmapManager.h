@@ -10,6 +10,8 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
+#include <Atom/RHI/FrameGraphAttachmentInterface.h>
+#include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -22,8 +24,33 @@ namespace Terrain
         AZ_RTTI(TerrainClipmapManager, "{5892AEE6-F3FA-4DFC-BBEC-77E1B91506A2}");
         AZ_DISABLE_COPY_MOVE(TerrainClipmapManager);
 
-        TerrainClipmapManager() = default;
+        TerrainClipmapManager();
         virtual ~TerrainClipmapManager() = default;
+
+        enum ClipmapName : uint32_t
+        {
+            MacroColor = 0,
+            MacroNormal,
+            DetailColor,
+            DetailNormal,
+            DetailHeight,
+            // Miscellany clipmap combining:
+            // roughness, specularF0, metalness, occlusion
+            DetailMisc,
+
+            Count
+        };
+
+        // Shader input names
+        static constexpr const char* ClipmapDataShaderInput = "m_clipmapData";
+        static constexpr const char* ClipmapImageShaderInput[ClipmapName::Count] = {
+            "m_macroColorClipmaps",
+            "m_macroNormalClipmaps",
+            "m_detailColorClipmaps",
+            "m_detailNormalClipmaps",
+            "m_detailHeightClipmaps",
+            "m_detailMiscClipmaps"
+        };
 
         void Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         bool IsInitialized() const;
@@ -32,15 +59,24 @@ namespace Terrain
 
         void Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> GetClipmapImage(const AZ::Name& clipmapName) const;
+        // Import the clipmap to the frame graph and set scope attachment access,
+        // so that the compute pass can build dependencies accordingly.
+        void ImportClipmap(ClipmapName clipmapName, AZ::RHI::FrameGraphAttachmentInterface attachmentDatabase) const;
+        void UseClipmap(ClipmapName clipmapName, AZ::RHI::ScopeAttachmentAccess access, AZ::RHI::FrameGraphInterface frameGraph) const;
+
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> GetClipmapImage(ClipmapName clipmapName) const;
     private:
         void UpdateClipmapData(const AZ::Vector3& cameraPosition);
         void InitializeClipmapData();
         void InitializeClipmapImages();
 
-        static constexpr uint32_t ClipmapStackSize = 5;
+        static constexpr uint32_t MacroClipmapStackSize = 3;
+        static constexpr uint32_t DetailClipmapStackSize = 5;
         static constexpr uint32_t ClipmapSizeWidth = 1024;
         static constexpr uint32_t ClipmapSizeHeight = 1024;
+
+        static_assert(DetailClipmapStackSize > MacroClipmapStackSize,
+            "To avoid seams, macro clipmaps will use a lower resolution, so that it can take advantage of free seam blending.");
 
         struct ClipmapData
         {
@@ -62,28 +98,21 @@ namespace Terrain
             // 0,1: previous clipmap centers; 2,3: current clipmap centers.
             // They are used for toroidal addressing and may move each frame based on the view point movement.
             // The move distance is scaled differently in each layer.
-            AZStd::array<AZStd::array<float, 4>, ClipmapStackSize> m_clipmapCenters;
+            AZStd::array<AZStd::array<float, 4>, DetailClipmapStackSize> m_clipmapCenters;
 
             //! A list of reciprocal the clipmap scale [s],
             //! where 1 pixel in the current layer of clipmap represents s meters.
             //! Fast lookup list to avoid redundant calculation in shaders.
-            AZStd::array<AZStd::array<float, 4>, ClipmapStackSize> m_clipmapScaleInv;
+            AZStd::array<AZStd::array<float, 4>, DetailClipmapStackSize> m_clipmapScaleInv;
         };
 
         ClipmapData m_clipmapData;
 
-        AZ::RHI::ShaderInputConstantIndex m_clipmapDataIndex;
-        AZ::RHI::ShaderInputImageIndex m_macroColorClipmapsIndex;
-        AZ::RHI::ShaderInputImageIndex m_macroNormalClipmapsIndex;
-        AZ::RHI::ShaderInputImageIndex m_detailColorClipmapsIndex;
-        AZ::RHI::ShaderInputImageIndex m_detailNormalClipmapsIndex;
-        AZ::RHI::ShaderInputImageIndex m_detailHeightClipmapsIndex;
-        AZ::RHI::ShaderInputImageIndex m_detailMiscClipmapsIndex;
+        AZ::RHI::ShaderInputNameIndex m_terrainSrgClipmapDataIndex = ClipmapDataShaderInput;
+        AZ::RHI::ShaderInputNameIndex m_terrainSrgClipmapImageIndex[ClipmapName::Count];
 
-        AZStd::unordered_map<AZ::Name, AZ::Data::Instance<AZ::RPI::AttachmentImage>> m_clipmaps;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_clipmaps[ClipmapName::Count];
 
         bool m_isInitialized = false;
-
-        bool m_clipmapsNeedUpdate = false;
     };
 }

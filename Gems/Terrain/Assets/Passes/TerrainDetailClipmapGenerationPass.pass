@@ -4,12 +4,12 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "TerrainClipmapGenerationPassTemplate",
-            "PassClass": "TerrainClipmapGenerationPass",
+            "Name": "TerrainDetailClipmapGenerationPassTemplate",
+            "PassClass": "TerrainDetailClipmapGenerationPass",
             "PassData": {
                 "$type": "ComputePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/Terrain/TerrainClipmapGenerationPass.shader"
+                    "FilePath": "Shaders/Terrain/TerrainDetailClipmapGenerationPass.shader"
                 },
                 "PipelineViewTag": "MainCamera",
                 "Target Thread Count X": 1024,

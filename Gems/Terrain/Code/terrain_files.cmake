@@ -9,7 +9,6 @@
 set(FILES
     Include/Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h
     Include/Terrain/TerrainDataConstants.h
-    Include/Terrain/Passes/TerrainClipmapComputePass.h
     Source/Components/TerrainHeightGradientListComponent.cpp
     Source/Components/TerrainHeightGradientListComponent.h
     Source/Components/TerrainLayerSpawnerComponent.cpp
@@ -41,6 +40,7 @@ set(FILES
     Source/TerrainRenderer/ClipmapBounds.cpp
     Source/TerrainRenderer/ClipmapBounds.h
     Source/TerrainRenderer/Passes/TerrainClipmapComputePass.cpp
+    Source/TerrainRenderer/Passes/TerrainClipmapComputePass.h
     Source/TerrainRenderer/TerrainClipmapManager.cpp
     Source/TerrainRenderer/TerrainClipmapManager.h
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp

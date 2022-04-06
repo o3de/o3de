@@ -59,10 +59,9 @@ int2 GetPixelPosition(float2 viewRelativePosition, uint clipmapLevel)
     float2 maxRenderSize = TerrainSrg::m_clipmapData.m_maxRenderSize.xy;
     float2 normalizedDistance = viewRelativePosition / (maxRenderSize * clipmapScale);
     float2 normalizedPixelPosition = GetCurrentClipmapCenter(clipmapLevel) + normalizedDistance;
-    normalizedPixelPosition.x -= normalizedPixelPosition.x > 1.0 ? 1.0 : 0.0;
-    normalizedPixelPosition.y -= normalizedPixelPosition.y > 1.0 ? 1.0 : 0.0;
-    normalizedPixelPosition.x += normalizedPixelPosition.x < 0.0 ? 1.0 : 0.0;
-    normalizedPixelPosition.y += normalizedPixelPosition.y < 0.0 ? 1.0 : 0.0;
+    // By clipmap mechanics, the normalized position can only fall into [-1.0, 2.0].
+    // We can use fraction after shifting 1.0 to get the actual position.
+    normalizedPixelPosition = frac(normalizedPixelPosition + float2(1.0, 1.0));
 
     return int2(normalizedPixelPosition * TerrainSrg::m_clipmapData.m_clipmapSize);
 }
@@ -107,37 +106,52 @@ struct ClipmapSample
     float  m_height;
 };
 
-ClipmapSample SampleClipmap(float2 worldPosition)
+float3 UnpackNormal(float2 packedNormal)
+{
+    float z = sqrt(1.0 - packedNormal.x * packedNormal.x - packedNormal.y * packedNormal.y);
+    return float3(packedNormal.xy, z);
+}
+
+uint3 WorldPositionToClipmapTexelIndex(float2 worldPosition, uint clipmapStackSize)
 {
     float2 currentViewPosition = TerrainSrg::m_clipmapData.m_viewPosition.zw;
     float2 halfMaxRenderSize = TerrainSrg::m_clipmapData.m_maxRenderSize / 2.0;
     // The top clipmap's render distance
-    float2 halfMinRenderSize = halfMaxRenderSize / (float)(1u << (ClipmapStackSize - 1u));
+    float2 halfMinRenderSize = halfMaxRenderSize / (float)(1u << (clipmapStackSize - 1u));
 
     float2 distance = worldPosition - currentViewPosition;
     float2 clampedDistance = clamp(halfMinRenderSize, abs(distance), halfMaxRenderSize);
     float2 distanceRatio = halfMaxRenderSize / clampedDistance;
-    // Due to clamping, the max result of log2 is (ClipmapStackSize - 1u), which falls into the first clipmap
-    uint clipmapLevel = ClipmapStackSize - 1u - uint(floor(log2(min(distanceRatio.x, distanceRatio.y))));
+    // Due to clamping, the max result of log2 is (clipmapStackSize - 1u), which falls into the first clipmap
+    uint clipmapLevel = clipmapStackSize - 1u - uint(floor(log2(min(distanceRatio.x, distanceRatio.y))));
     uint2 pixelPosition = GetPixelPosition(distance, clipmapLevel);
-    uint3 sampleIndex = uint3(pixelPosition, clipmapLevel);
+    
+    return uint3(pixelPosition, clipmapLevel);
+}
 
-    float4 macroColor = TerrainSrg::m_macroColorClipmaps[sampleIndex];
-    float4 macroNormal = TerrainSrg::m_macroNormalClipmaps[sampleIndex];
-    float4 detailColor = TerrainSrg::m_detailColorClipmaps[sampleIndex];
+ClipmapSample SampleClipmap(float2 worldPosition)
+{
+    uint3 macroTexelIndex = WorldPositionToClipmapTexelIndex(worldPosition, MacroClipmapStackSize);
+    uint3 detailTexelIndex = WorldPositionToClipmapTexelIndex(worldPosition, DetailClipmapStackSize);
+
+    float4 macroColor = TerrainSrg::m_macroColorClipmaps[macroTexelIndex];
+    float2 macroNormalPacked = TerrainSrg::m_macroNormalClipmaps[macroTexelIndex];
+    float4 detailColor = TerrainSrg::m_detailColorClipmaps[detailTexelIndex];
 
     ClipmapSample data;
+
     data.m_macroColor = macroColor.rgb;
-    data.m_macroNormal = macroNormal.xyz;
-    data.m_hasDetail = detailColor.a > 0.5;
+    data.m_macroNormal = UnpackNormal(macroNormalPacked);
+    data.m_hasDetail = detailColor.a == 1.0;
+
     if (data.m_hasDetail)
     {
-        float4 detailNormal = TerrainSrg::m_detailNormalClipmaps[sampleIndex];
-        float detailHeight = TerrainSrg::m_detailHeightClipmaps[sampleIndex];
-        float4 detailMisc = TerrainSrg::m_detailMiscClipmaps[sampleIndex];
+        float2 detailNormalPacked = TerrainSrg::m_detailNormalClipmaps[detailTexelIndex];
+        float detailHeight = TerrainSrg::m_detailHeightClipmaps[detailTexelIndex];
+        float4 detailMisc = TerrainSrg::m_detailMiscClipmaps[detailTexelIndex];
 
         data.m_detailColor = detailColor.rgb;
-        data.m_detailNormal = detailNormal.xyz;
+        data.m_detailNormal = UnpackNormal(detailNormalPacked);
         data.m_detailRoughness = detailMisc.x;
         data.m_detailSpecularF0 = detailMisc.y;
         data.m_detailMetalness = detailMisc.z;

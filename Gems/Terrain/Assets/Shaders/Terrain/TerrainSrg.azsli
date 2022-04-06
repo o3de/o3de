@@ -10,7 +10,8 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-static const uint ClipmapStackSize = 5u;
+static const uint MacroClipmapStackSize = 3u;
+static const uint DetailClipmapStackSize = 5u;
 
 ShaderResourceGroupSemantic SRG_Terrain
 {
@@ -98,24 +99,24 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
         // They are used for toroidal addressing and may move each frame based on the view point movement.
         // The move distance is scaled differently in each layer.
-        float4 m_clipmapCenters[ClipmapStackSize];
+        float4 m_clipmapCenters[DetailClipmapStackSize];
 
         // A list of reciprocal the clipmap scale [s],
         // where 1 pixel in the current layer of clipmap represents s meters. 
         // Fast lookup list to avoid redundant calculation in shaders.
-        float4 m_clipmapScaleInv[ClipmapStackSize];
+        float4 m_clipmapScaleInv[DetailClipmapStackSize];
     };
 
     // Clipmap SRG
     ClipmapData m_clipmapData;
 
     Texture2DArray<float4> m_macroColorClipmaps;
-    Texture2DArray<float4> m_macroNormalClipmaps;
+    Texture2DArray<float2> m_macroNormalClipmaps;
     Texture2DArray<float4> m_detailColorClipmaps;
-    Texture2DArray<float4> m_detailNormalClipmaps;
+    Texture2DArray<float2> m_detailNormalClipmaps;
     Texture2DArray<float> m_detailHeightClipmaps;
     // Miscellany clipmap combining:
-    // specularF0, metalness, occlusion, height
+    // roughness, specularF0, metalness, occlusion
     Texture2DArray<float4> m_detailMiscClipmaps;
 
     Texture2D<uint4> m_detailMaterialIdImage;

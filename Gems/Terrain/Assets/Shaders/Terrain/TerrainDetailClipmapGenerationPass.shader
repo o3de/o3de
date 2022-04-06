@@ -1,5 +1,5 @@
 {
-    "Source": "TerrainClipmapGenerationPass.azsl",
+    "Source": "TerrainDetailClipmapGenerationPass.azsl",
 
     "ProgramSettings":
     {
