@@ -12,3 +12,41 @@
 # This is being deprecated.
 /Tools/RemoteConsole/ @o3de/sig-testing-reviewers
 
+# SIG-Core areas of ownership
+/Code/CrashHandler/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Code/Framework/AzCore/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Code/Framework/AzFramework/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Code/Framework/AzGameFramework/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Code/Framework/AzToolsFramework/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Code/LauncherUnified/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/engine.json @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/CrashReporting/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/ImGui/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/LmbrCentral/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/Profiler/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Registry/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/scripts/o3de/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/scripts/o3de.* @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Templates/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Tools/EventLogTool/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+
+# SIG-Core Asset Pipeline ownership area
+/AutomatedTesting/Gem/PythonTests/assetpipeline/ap_fixtures/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/AutomatedTesting/Gem/PythonTests/assetpipeline/asset_processor_tests/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Code/Tools/AssetProcessor/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+
+# SIG-Core deprecated areas of ownership
+/cmake/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Code/Legacy/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Code/Tools/SerializeContextTools/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/SerializeContextAnalysis.bat @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Tools/SerializeContextAnalyzer/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+
+# SIG-Core temporary areas of ownership. Will be moved to SIG-Simulation when that group is created
+/AutomatedTesting/Gem/PythonTests/Blast @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/AutomatedTesting/Gem/PythonTests/NvCloth @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/AutomatedTesting/Gem/PythonTests/Physics @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/Blast/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/NvCloth/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/PhysX/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/PhysXDebug/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
