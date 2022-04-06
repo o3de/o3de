@@ -780,42 +780,6 @@ namespace UnitTest
         EXPECT_STREQ(propertyId.GetCStr(), "otherGroup.bazB");
     }
 
-    TEST_F(MaterialTypeAssetTests, VersionUpdateAlternativeActionConstructor_Rename)
-    {
-        MaterialVersionUpdate::Action action1(
-            AZ::Name{ "rename" },
-            {
-                { Name{ "from" }, AZStd::string("oldName") },
-                { Name{ "to"   }, AZStd::string("newName") }
-            } );
-        MaterialVersionUpdate::Action action2(
-            {
-                { AZStd::string("op"),   AZStd::string("rename") },
-                { AZStd::string("from"), AZStd::string("oldName") },
-                { AZStd::string("to"),   AZStd::string("newName") }
-            } );
-
-        EXPECT_TRUE(action1 == action2);
-    }
-
-    TEST_F(MaterialTypeAssetTests, VersionUpdateAlternativeActionConstructor_SetValue)
-    {
-        MaterialVersionUpdate::Action action1(
-            AZ::Name{ "setValue" },
-            {
-                { Name{ "name"  }, AZStd::string("MyInt") },
-                { Name{ "value" }, 123 }
-            } );
-        MaterialVersionUpdate::Action action2(
-            {
-                { AZStd::string("op"),    AZStd::string("setValue") },
-                { AZStd::string("name"),  AZStd::string("MyInt") },
-                { AZStd::string("value"), 123 }
-            } );
-
-        EXPECT_TRUE(action1 == action2);
-    }
-
     TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_NoOperation)
     {
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
