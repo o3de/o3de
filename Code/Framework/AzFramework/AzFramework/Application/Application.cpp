@@ -71,10 +71,6 @@
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
-#if !defined(_RELEASE)
-#include <AzNetworking/Framework/NetworkingSystemComponent.h>
-#endif
-
 #include "Application.h"
 #include <AzFramework/AzFrameworkModule.h>
 #include <cctype>
@@ -283,7 +279,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>(),
             azrtti_typeid<AzFramework::GameEntityContextComponent>(),
 #if !defined(_RELEASE)
-            azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
             azrtti_typeid<AzFramework::TargetManagementComponent>(),
 #endif
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
