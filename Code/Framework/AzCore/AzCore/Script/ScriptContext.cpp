@@ -101,7 +101,7 @@ namespace AzLsvInternal
 namespace ScriptContextCpp
 {
     // remove Lua packgage.loadlib immediately after loading libraries to prevent use of unsafe function
-    void OpenLibsAndRemoveLoadLibFunction(lua_State* m_lua)
+    void OpenLuaLibraries(lua_State* m_lua)
     {
         // Lua: 
         luaL_openlibs(m_lua);
@@ -4365,7 +4365,7 @@ LUA_API const Node* lua_getDummyNode()
                 }
 
                 lua_atpanic(m_lua, &LuaPanic);
-                OpenLibsAndRemoveLoadLibFunction(m_lua);
+                OpenLuaLibraries(m_lua);
 
                 lua_pushglobaltable(m_lua);       ///< push the _G on the stack
 
