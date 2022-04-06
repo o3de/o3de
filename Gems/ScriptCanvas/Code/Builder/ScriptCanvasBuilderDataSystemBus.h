@@ -40,7 +40,7 @@ namespace ScriptCanvasBuilder
 
     using DataSystemRequestsBus = AZ::EBus<DataSystemRequests>;
 
-    class DataSystemNotifications
+    class DataSystemSourceNotifications
         : public AZ::EBusTraits
     {
     public:
@@ -54,6 +54,18 @@ namespace ScriptCanvasBuilder
         // the file was removed from the tracked system
         virtual void SourceFileRemoved(AZStd::string_view relativePath, AZStd::string_view scanFolder) = 0;
     };
+    using DataSystemSourceNotificationsBus = AZ::EBus<DataSystemSourceNotifications>;
 
-    using DataSystemNotificationsBus = AZ::EBus<DataSystemNotifications>;
+    class DataSystemAssetNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::Uuid;
+        // the asset, possibly due to change, is immediately available
+        virtual void OnReady(ScriptCanvas::RuntimeAssetPtr asset) = 0;
+        // the asset, possibly due to change, is no longer available
+        virtual void OnNotReady(ScriptCanvas::RuntimeAssetPtr asset) = 0;
+    };
+    using DataSystemAssetNotificationsBus = AZ::EBus<DataSystemAssetNotifications>;
 }

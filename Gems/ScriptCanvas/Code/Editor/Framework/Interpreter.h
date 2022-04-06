@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <Builder/ScriptCanvasBuilderDataSystemBus.h>
 #include <Editor/Framework/Configuration.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Execution/Executor.h>
@@ -20,9 +22,20 @@ namespace AZ
 
 namespace ScriptCanvasEditor
 {
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(InterpreterStatus, AZ::u8,
+        Waiting,            // no configuration
+        Misconfigured,      // configuration error
+        Configured,         // configuration is good
+        Pending,            // waiting for asset readiness
+        Ready,              // asset ready
+        Running,            // running
+        Stopped            // (manually) stopped
+       );
+
     // This is an object that execute ScriptCanvas graphs from source and overrides
     // as safely as possible.
     class Interpreter final
+        : public ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler
     {
         using Mutex = AZStd::recursive_mutex;
         using MutexLock = AZStd::lock_guard<Mutex>;
@@ -35,7 +48,15 @@ namespace ScriptCanvasEditor
 
         Interpreter();
 
+        ~Interpreter();
+
         bool Execute();
+
+        AZ::Event<const Interpreter&>& GetOnStatusChanged() const;
+
+        InterpreterStatus GetStatus() const;
+
+        AZStd::string_view GetStatusString() const;
 
         bool IsExecutable() const;
 
@@ -51,25 +72,30 @@ namespace ScriptCanvasEditor
 
     private:
         Mutex m_mutex;
-
         AZ::EventHandler<const Configuration&> m_handlerPropertiesChanged;
-        AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
+        AZ::EventHandler<const Configuration&> m_handlerSourceSucceeded;
         AZ::EventHandler<const Configuration&> m_handlerSourceFailed;
+        mutable AZ::Event<const Interpreter&> m_onStatusChanged;
 
+        bool m_runtimePropertiesDirty = true;
+        InterpreterStatus m_status = InterpreterStatus::Waiting;
         AZStd::any m_userData;
         ScriptCanvas::RuntimeDataOverrides m_runtimeDataOverrides;
         Configuration m_configuration;
-        bool m_runtimePropertiesDirty = true;
         ScriptCanvas::Executor m_executor;
 
         void ConvertPropertiesToRuntime();
 
-        bool InitializeExecution();
+        bool InitializeExecution(ScriptCanvas::RuntimeAssetPtr asset);
+
+        void OnNotReady(ScriptCanvas::RuntimeAssetPtr asset) override;
 
         void OnPropertiesChanged();
 
-        void OnSourceCompiled();
+        void OnReady(ScriptCanvas::RuntimeAssetPtr asset) override;
 
         void OnSourceFailed();
+
+        void SetSatus(InterpreterStatus status);
     };
 }

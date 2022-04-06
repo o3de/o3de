@@ -47,8 +47,5 @@ namespace ScriptCanvas
         ExecutionStateInterpretedPerActivationOnGraphStart(ExecutionStateConfig& config);
 
         void Execute() override;
-
-    private:
-        bool m_deactivationRequired = false;
     };
 } 

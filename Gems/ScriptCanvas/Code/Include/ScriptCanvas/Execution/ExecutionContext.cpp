@@ -168,6 +168,7 @@ namespace ScriptCanvas
             }
 
             // \todo, the stack push functions could be retrieved here
+            // initialize the execution state creation function here!
             IntializeActivationInputs(runtimeData, *behaviorContext);
             IntializeStaticCloners(runtimeData, *behaviorContext);
         }

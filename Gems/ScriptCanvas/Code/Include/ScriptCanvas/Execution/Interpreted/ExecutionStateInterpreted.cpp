@@ -35,7 +35,7 @@ namespace ScriptCanvas
             , config.overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
 #endif
 
-        if (!runtimeAsset->m_runtimeData.m_areStaticsInitialized)
+        if (!runtimeAsset->m_runtimeData.m_areScriptLocalStaticsInitialized)
         {
             Execution::InitializeInterpretedStatics(runtimeAsset->m_runtimeData);
         }

@@ -1766,28 +1766,6 @@ namespace ScriptCanvasEditor
             const bool assetIdHasChanged = assetInfo.m_assetId.m_guid != fileAssetId.Id();
             fileAssetId = SourceHandle(fileAssetId, assetInfo.m_assetId.m_guid, fileAssetId.Path());
 
-            // check for saving a graph over another graph with an open tab
-            for (;;)
-            {
-                auto graph = fileAssetId.Get();
-                int tabIndexByGraph = m_tabBar->FindTab(graph);
-                if (tabIndexByGraph == -1)
-                {
-                    AZ_Warning("ScriptCanvas", false, "unable to find graph just saved");
-                    break;
-                }
-
-                int saveOverMatch = m_tabBar->FindSaveOverMatch(fileAssetId);
-                if (saveOverMatch < 0)
-                {
-                    saveTabIndex = tabIndexByGraph;
-                    currentTabIndex = m_tabBar->currentIndex();
-                    break;
-                }
-
-                m_tabBar->CloseTab(saveOverMatch);
-            }
-
             // this path is questionable, this is a save request that is not the current graph
             // We've saved as over a new graph, so we need to close the old one.
             if (saveTabIndex != currentTabIndex)
@@ -1800,9 +1778,7 @@ namespace ScriptCanvasEditor
 
             AzFramework::StringFunc::Path::GetFileName(memoryAsset.Path().c_str(), tabName);
 
-            // Soft switch the asset id here. We'll do a double scene switch down below to actually switch the active assetid
-            m_activeGraph = fileAssetId;
-
+            
             if (tabName.at(tabName.size() - 1) == '*' || tabName.at(tabName.size() - 1) == '^')
             {
                 tabName = tabName.substr(0, tabName.size() - 2);
@@ -1810,9 +1786,14 @@ namespace ScriptCanvasEditor
 
             auto tabData = m_tabBar->GetTabData(saveTabIndex);
             tabData->m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
+
+            // keep the old data, and take the new ID and path if either have changed.
+            fileAssetId = SourceHandle(tabData->m_assetId, fileAssetId.Id(), fileAssetId.Path());
+
             tabData->m_assetId = fileAssetId;
             m_tabBar->SetTabData(*tabData, saveTabIndex);
             m_tabBar->SetTabText(saveTabIndex, tabName.c_str());
+            m_activeGraph = fileAssetId;
         }
         else
         {
@@ -2442,10 +2423,6 @@ namespace ScriptCanvasEditor
             {
                 QSignalBlocker signalBlocker(m_tabBar);
                 m_tabBar->SelectTab(fileAssetId);
-            }
-            else
-            {
-                AZ_Assert(false, "A graph was opened, but a tab was not created for it.");
             }
         }
 

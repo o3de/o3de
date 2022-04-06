@@ -13,7 +13,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <Editor/Framework/Interpreter.h>
 #include <QtWidgets/QWidget>
 #endif
 
@@ -35,6 +34,8 @@ namespace AZ
 
 namespace ScriptCanvasEditor
 {
+    class Interpreter;
+
     class InterpreterWidget
         : public AzQtComponents::StyledDialog
         , public AzToolsFramework::IPropertyEditorNotify
@@ -50,12 +51,13 @@ namespace ScriptCanvasEditor
         explicit InterpreterWidget(QWidget* parent = nullptr);
 
     private:
+        AZStd::unique_ptr<Interpreter> m_interpreter;
         AZStd::unique_ptr<Ui::InterpreterWidget> m_view;
-        Interpreter m_interpreter;
+        AZ::EventHandler<const Interpreter&> m_onIterpreterStatusChanged;
 
         void OnButtonStartPressed();
         void OnButtonStopPressed();
-        void ToggleStartStopButtonEnabled();
+        void OnInterpreterStatusChanged(const Interpreter&);
 
         // IPropertyEditorNotify ...
         void AfterPropertyModified(AzToolsFramework::InstanceDataNode*) {}

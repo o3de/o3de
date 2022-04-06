@@ -25,6 +25,9 @@ namespace ScriptCanvas
     class RuntimeAsset;
     struct RuntimeVariable;
 
+    constexpr const AZ::u32 RuntimeDataSubId = AZ_CRC_CE("RuntimeData"); // 0x163310ae
+    constexpr const AZ::u32 SubgraphInterfaceSubId = AZ_CRC_CE("SubgraphInterface"); // 0xdfe6dc72
+
     class RuntimeAssetDescription : public AssetDescription
     {
     public:
@@ -77,7 +80,8 @@ namespace ScriptCanvas
         Execution::ActivationInputRange m_activationInputRange;
 
         // used to initialize statics only once, and not necessarily on the loading thread
-        bool m_areStaticsInitialized = false;
+        // the interpreted statics require the Lua context, and so they must be initialized on the main thread
+        bool m_areScriptLocalStaticsInitialized = false;
 
         bool IsPure() const;
 

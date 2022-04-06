@@ -62,7 +62,7 @@ namespace ScriptCanvasEditor
 
     Configuration::~Configuration()
     {
-        ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusDisconnect();
+        ScriptCanvasBuilder::DataSystemSourceNotificationsBus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
@@ -203,7 +203,7 @@ namespace ScriptCanvasEditor
 
     void Configuration::Refresh(const SourceHandle& sourceHandle)
     {
-        ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusDisconnect();
+        ScriptCanvasBuilder::DataSystemSourceNotificationsBus::Handler::BusDisconnect();
         m_sourceHandle = sourceHandle.Describe();
         CompleteDescriptionInPlace(m_sourceHandle);
 
@@ -221,7 +221,7 @@ namespace ScriptCanvasEditor
         
         if (!m_sourceHandle.Id().IsNull())
         {
-            ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
+            ScriptCanvasBuilder::DataSystemSourceNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
 
             if (!m_sourceHandle.Path().empty())
             {

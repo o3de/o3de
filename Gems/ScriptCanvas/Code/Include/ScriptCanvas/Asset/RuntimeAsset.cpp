@@ -59,7 +59,7 @@ namespace ScriptCanvas
             m_script = AZStd::move(other.m_script);
             m_requiredAssets = AZStd::move(other.m_requiredAssets);
             m_requiredScriptEvents = AZStd::move(other.m_requiredScriptEvents);
-            m_areStaticsInitialized = AZStd::move(other.m_areStaticsInitialized);
+            m_areScriptLocalStaticsInitialized = AZStd::move(other.m_areScriptLocalStaticsInitialized);
         }
 
         return *this;

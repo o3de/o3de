@@ -103,11 +103,11 @@ namespace ScriptCanvasBuilder
     void DataSystem::MonitorAsset(AZ::Uuid fileAssetId)
     {
         m_assetsReady.erase(fileAssetId);
-        const auto assetId = AZ::Data::AssetId(fileAssetId, AZ_CRC_CE("Runtime"));
+        const auto assetId = AZ::Data::AssetId(fileAssetId, ScriptCanvas::RuntimeDataSubId);
         AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
-        auto asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvas::RuntimeAsset>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
-        asset.QueueLoad();
-        m_assetsPending.insert({ fileAssetId, AZStd::move(asset) });
+        ScriptCanvas::RuntimeAssetPtr asset(assetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>());
+        auto result = m_assetsPending.insert({ fileAssetId, AZStd::move(asset) });
+        result.first->second.QueueLoad();
     }
 
     void DataSystem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -117,8 +117,13 @@ namespace ScriptCanvasBuilder
             , "DataSystem received OnAssetReady: %s : %s"
             , asset.GetHint().c_str()
             , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
-        m_assetsReady[asset.GetId().m_guid] = AZStd::move(asset);
+        m_assetsReady[asset.GetId().m_guid] = asset;
         m_assetsPending.erase(asset.GetId().m_guid);
+        const auto typedAsset = m_assetsReady[asset.GetId().m_guid];
+        DataSystemAssetNotificationsBus::Event
+            (typedAsset.GetId().m_guid
+            , &DataSystemAssetNotifications::OnReady
+            , typedAsset);
     }
 
     void DataSystem::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -130,6 +135,11 @@ namespace ScriptCanvasBuilder
             , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
         m_assetsReady[asset.GetId().m_guid] = AZStd::move(asset);
         m_assetsPending.erase(asset.GetId().m_guid);
+        const auto typedAsset = m_assetsReady[asset.GetId().m_guid];
+        DataSystemAssetNotificationsBus::Event
+            ( typedAsset.GetId().m_guid
+            , &DataSystemAssetNotifications::OnReady
+            , typedAsset);
     }
 
     void DataSystem::SourceFileChanged(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, AZ::Uuid fileAssetId)
@@ -150,9 +160,9 @@ namespace ScriptCanvasBuilder
         if (auto handle = ScriptCanvasEditor::CompleteDescription(ScriptCanvasEditor::SourceHandle(nullptr, fileAssetId, {})))
         {
             CompileBuilderDataInternal(*handle);
-            DataSystemNotificationsBus::Event
+            DataSystemSourceNotificationsBus::Event
                 ( fileAssetId
-                , &DataSystemNotifications::SourceFileChanged
+                , &DataSystemSourceNotifications::SourceFileChanged
                 , m_buildResultsByHandle[fileAssetId]
                 , relativePath
                 , scanFolder);
@@ -170,9 +180,9 @@ namespace ScriptCanvasBuilder
         BuildResult result;
         result.status = BuilderDataStatus::Removed;
         AddResult(AZStd::move(fileAssetId), AZStd::move(result));
-        DataSystemNotificationsBus::Event
+        DataSystemSourceNotificationsBus::Event
             ( fileAssetId
-            , &DataSystemNotifications::SourceFileRemoved
+            , &DataSystemSourceNotifications::SourceFileRemoved
             , relativePath
             , scanFolder);
     }
@@ -188,9 +198,9 @@ namespace ScriptCanvasBuilder
         BuildResult result;
         result.status = BuilderDataStatus::Failed;
         AddResult(AZStd::move(fileAssetId), AZStd::move(result));
-        DataSystemNotificationsBus::Event
+        DataSystemSourceNotificationsBus::Event
             ( fileAssetId
-            , &DataSystemNotifications::SourceFileFailed
+            , &DataSystemSourceNotifications::SourceFileFailed
             , relativePath
             , scanFolder);
     }

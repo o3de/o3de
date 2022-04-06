@@ -24,7 +24,7 @@ namespace ScriptCanvasEditor
     */
     class Configuration final
         : public AzFramework::AssetCatalogEventBus::Handler
-        , public ScriptCanvasBuilder::DataSystemNotificationsBus::Handler
+        , public ScriptCanvasBuilder::DataSystemSourceNotificationsBus::Handler
     {
         friend class AZ::EditorScriptCanvasComponentSerializer;
         friend class Deprecated::EditorScriptCanvasComponentVersionConverter;
@@ -37,7 +37,7 @@ namespace ScriptCanvasEditor
 
         Configuration();
 
-        Configuration(const SourceHandle& sourceHandle);
+        explicit Configuration(const SourceHandle& sourceHandle);
         
         ~Configuration();
 
@@ -71,12 +71,12 @@ namespace ScriptCanvasEditor
 
         void MergeWithLatestCompilation(const ScriptCanvasBuilder::BuildVariableOverrides& buildData);
 
-        void OpenEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&);
-
         // on RPE source selection changed
         AZ::u32 OnEditorChangeSource();
 
         AZ::u32 OnEditorChangeProperties();
+
+        void OpenEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&);
 
         // if result is good, merge results and update display
         void SourceFileChanged

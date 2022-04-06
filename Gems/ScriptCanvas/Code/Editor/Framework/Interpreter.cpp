@@ -17,18 +17,19 @@
 namespace ScriptCanvasEditor
 {
     using namespace ScriptCanvas;
+    using namespace ScriptCanvasBuilder;
 
     Interpreter::Interpreter()
     {
         m_handlerPropertiesChanged = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnPropertiesChanged(); });
-        m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceCompiled(); });
         m_handlerSourceFailed = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceFailed(); });
         m_configuration.ConnectToPropertiesChanged(m_handlerPropertiesChanged);
-        m_configuration.ConnectToSourceCompiled(m_handlerSourceCompiled);
         m_configuration.ConnectToSourceFailed(m_handlerSourceFailed);
+    }
 
-        // tell the data system about the script in question...and for it to keep the runtime ready for this thing
-        // then for the data system will keep this up to date on what is ready and what is not 
+    Interpreter::~Interpreter()
+    {
+        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusDisconnect();
     }
 
     void Interpreter::ConvertPropertiesToRuntime()
@@ -41,19 +42,26 @@ namespace ScriptCanvasEditor
         }
     }
 
-    // this can outrun the AP, and attempt to execute something before the asset is done, or ready, or about to be reloaded
     bool Interpreter::Execute()
     {
-        MutexLock lock(m_mutex);
-
-        if (m_runtimePropertiesDirty)
-        {
-            InitializeExecution();
-        }
-        
         if (IsExecutable())
-        {
-            AZ::SystemTickBus::QueueFunction([this]() { m_executor.Execute(); });
+        {    
+            AZ::SystemTickBus::QueueFunction([this]()
+            {
+                MutexLock lock(m_mutex);
+
+                if (m_runtimePropertiesDirty)
+                {
+                    InitializeExecution(m_runtimeDataOverrides.m_runtimeAsset);
+                }
+
+                if (IsExecutable())
+                {
+                    SetSatus(InterpreterStatus::Running);
+                    m_executor.Execute();
+                }
+            });
+
             return true;
         }
         else
@@ -62,14 +70,25 @@ namespace ScriptCanvasEditor
         }
     }
 
-    bool Interpreter::InitializeExecution()
+    AZ::Event<const Interpreter&>& Interpreter::GetOnStatusChanged() const
+    {
+        return m_onStatusChanged;
+    }
+
+    InterpreterStatus Interpreter::GetStatus() const
+    {
+        return m_status;
+    }
+
+    AZStd::string_view Interpreter::GetStatusString() const
+    {
+        return ToString(m_status);
+    }
+
+    bool Interpreter::InitializeExecution(ScriptCanvas::RuntimeAssetPtr asset)
     {
         ConvertPropertiesToRuntime();
-
-        m_runtimeDataOverrides.m_runtimeAsset = AZ::Data::AssetManager::Instance().GetAsset<RuntimeAsset>
-            ( m_runtimeDataOverrides.m_runtimeAsset.GetId()
-            , AZ::Data::AssetLoadBehavior::PreLoad);
-        m_runtimeDataOverrides.m_runtimeAsset.BlockUntilLoadComplete();
+        m_runtimeDataOverrides.m_runtimeAsset = asset;
 
         if (m_runtimeDataOverrides.m_runtimeAsset.Get())
         {
@@ -87,15 +106,24 @@ namespace ScriptCanvasEditor
         return m_executor.IsExecutable();
     }
 
+    void Interpreter::OnNotReady(ScriptCanvas::RuntimeAssetPtr asset)
+    {
+        MutexLock lock(m_mutex);
+        m_executor.StopAndClearExecutable();
+        m_runtimePropertiesDirty = true;
+        SetSatus(InterpreterStatus::Pending);
+    }
+
     void Interpreter::OnPropertiesChanged()
     {
         m_runtimePropertiesDirty = true;
     }
 
-    void Interpreter::OnSourceCompiled()
+    void Interpreter::OnReady(ScriptCanvas::RuntimeAssetPtr asset)
     {
         MutexLock lock(m_mutex);
-        InitializeExecution();
+        InitializeExecution(asset);
+        SetSatus(InterpreterStatus::Ready);
     }
 
     void Interpreter::OnSourceFailed()
@@ -103,6 +131,7 @@ namespace ScriptCanvasEditor
         MutexLock lock(m_mutex);
         m_executor.StopAndClearExecutable();
         m_runtimePropertiesDirty = true;
+        SetSatus(InterpreterStatus::Misconfigured);
     }
 
     void Interpreter::Reflect(AZ::ReflectContext* context)
@@ -129,24 +158,39 @@ namespace ScriptCanvasEditor
     {
         MutexLock lock(m_mutex);
         m_configuration.Refresh();
+        m_runtimePropertiesDirty = true;
     }
 
     void Interpreter::ResetUserData()
     {
         MutexLock lock(m_mutex);
         m_userData = Execution::Reference(this, azrtti_typeid(this));
+        m_runtimePropertiesDirty = true;
     }
 
     void Interpreter::SetScript(SourceHandle source)
     {
         MutexLock lock(m_mutex);
+        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusDisconnect();
         m_configuration.Refresh(source);
+        m_runtimePropertiesDirty = true;
+        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusConnect(source.Id());
     }
 
     void Interpreter::SetUserData(AZStd::any&& runtimeUserData)
     {
         MutexLock lock(m_mutex);
         m_userData = runtimeUserData;
+        m_runtimePropertiesDirty = true;
+    }
+
+    void Interpreter::SetSatus(InterpreterStatus status)
+    {
+        if (status != m_status)
+        {
+            m_status = status;
+            m_onStatusChanged.Signal(*this);
+        }
     }
 
     void Interpreter::Stop()
@@ -157,9 +201,22 @@ namespace ScriptCanvasEditor
         {
             AZ::SystemTickBus::QueueFunction([this]()
             {
+                MutexLock lock(m_mutex);
                 m_executor.StopAndKeepExecutable();
                 SystemRequestBus::Broadcast(&SystemRequests::RequestGarbageCollect);
+                if (IsExecutable())
+                {
+                    SetSatus(InterpreterStatus::Ready);
+                }
+                else
+                {
+                    SetSatus(InterpreterStatus::Pending);
+                }
             });
+        }
+        else
+        {
+            SetSatus(InterpreterStatus::Pending);
         }
     }
 }

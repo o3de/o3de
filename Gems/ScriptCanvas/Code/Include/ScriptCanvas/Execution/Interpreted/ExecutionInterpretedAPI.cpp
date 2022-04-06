@@ -399,13 +399,13 @@ namespace ScriptCanvas
 
         void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
-            AZ_Error("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
+            AZ_Error("ScriptCanvas", !runtimeData.m_areScriptLocalStaticsInitialized, "ScriptCanvas runtime data already initialized");
             {
-                runtimeData.m_areStaticsInitialized = true;
+                runtimeData.m_areScriptLocalStaticsInitialized = true;
 
                 for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    if (!dependency.Get()->m_runtimeData.m_areStaticsInitialized)
+                    if (!dependency.Get()->m_runtimeData.m_areScriptLocalStaticsInitialized)
                     {
                         InitializeInterpretedStatics(dependency.Get()->m_runtimeData);
                     }
