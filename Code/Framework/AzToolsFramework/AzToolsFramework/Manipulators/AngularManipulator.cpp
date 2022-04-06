@@ -246,7 +246,9 @@ namespace AzToolsFramework
 
             debugDisplay.CullOn();
             debugDisplay.PushMatrix(worldFromLocalWithOrientation);
-            debugDisplay.SetColor(AZ::Colors::CornflowerBlue);
+            auto color = AZ::Colors::CornflowerBlue;
+            color.SetA(0.25f);
+            debugDisplay.SetColor(color);
 
             const auto totalAngle = AZ::DegToRad(360.0f);
             const auto stepIncrement = totalAngle / 360.0f;
