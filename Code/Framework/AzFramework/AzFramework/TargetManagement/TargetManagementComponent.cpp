@@ -28,6 +28,7 @@
 
 namespace AzFramework
 {
+    // Only localhost is supported presently
     static constexpr const char* TargetServerAddress = "127.0.0.1";
 
     AZ_CVAR(bool, target_autoconnect, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable autoconnecting to target host.");

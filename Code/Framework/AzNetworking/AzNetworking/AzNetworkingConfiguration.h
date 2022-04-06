@@ -10,7 +10,7 @@
 
 #include <AzCore/PlatformDef.h>
 
-#if defined(_LIB)
+#if defined(AZ_MONOLITHIC_BUILD)
     #define AZNETWORKING_API
 #else
     #ifdef AZNETWORKING_EXPORTS
