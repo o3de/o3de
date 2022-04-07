@@ -38,5 +38,41 @@ namespace ScriptCanvas
 
             return sourceString.substr(index, length);
         }
+
+        AZStd::string Join(const AZStd::vector<AZStd::string>& sourceArray, const AZStd::string& separatorString)
+        {
+            AZStd::string result;
+            size_t index = 0;
+            const size_t length = sourceArray.size();
+            for (auto string : sourceArray)
+            {
+                if (index < length - 1)
+                {
+                    result.append(AZStd::string::format("%s%s", string.c_str(), separatorString.c_str()));
+                }
+                else
+                {
+                    result.append(string);
+                }
+                ++index;
+            }
+            return result;
+        }
+
+        AZStd::string ReplaceString(
+            AZStd::string& sourceString, const AZStd::string& replaceString, const AZStd::string& withString, bool caseSensitive)
+        {
+            AzFramework::StringFunc::Replace(sourceString, replaceString.c_str(), withString.c_str(), caseSensitive);
+            return sourceString;
+        }
+
+        AZStd::vector<AZStd::string> Split(const AZStd::string& sourceString, const AZStd::string& delimiterString)
+        {
+            AZStd::vector<AZStd::string> stringArray;
+
+            AzFramework::StringFunc::Tokenize(sourceString.c_str(), stringArray, delimiterString.c_str(), false, false);
+
+            return stringArray;
+        }
     } // namespace StringFunctions
 } // namespace ScriptCanvas

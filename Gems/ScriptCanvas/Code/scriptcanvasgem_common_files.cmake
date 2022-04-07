@@ -117,8 +117,9 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/SendScriptEvent.cpp
     Include/ScriptCanvas/Libraries/Core/SetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.cpp
-    Include/ScriptCanvas/Libraries/Entity/Entity.cpp
-    Include/ScriptCanvas/Libraries/Entity/RotateMethod.cpp
+    Include/ScriptCanvas/Libraries/Entity/Deprecated/Entity.cpp
+    Include/ScriptCanvas/Libraries/Entity/Deprecated/RotateMethod.cpp
+    Include/ScriptCanvas/Libraries/Entity/EntityFunctions.cpp
     Include/ScriptCanvas/Libraries/Logic/Any.cpp
     Include/ScriptCanvas/Libraries/Logic/Break.cpp
     Include/ScriptCanvas/Libraries/Logic/Cycle.cpp
@@ -202,4 +203,5 @@ set(FILES
     Include/ScriptCanvas/Utils/VersionConverters.cpp
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/BehaviorContextUtils.cpp
+    Include/ScriptCanvas/Utils/ReplacementUtils.cpp
 )

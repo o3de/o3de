@@ -11,5 +11,6 @@
 // This header is only meant to include the nodes and should not contain
 // shared code
 
-#include "RotateMethod.h"
+// Deprecated entity nodes
 #include "EntityNodes.h"
+#include "RotateMethod.h"

@@ -178,9 +178,11 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/Start.h
     Include/ScriptCanvas/Libraries/Core/Start.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.h
-    Include/ScriptCanvas/Libraries/Entity/Entity.h
-    Include/ScriptCanvas/Libraries/Entity/EntityNodes.h
-    Include/ScriptCanvas/Libraries/Entity/RotateMethod.h
+    Include/ScriptCanvas/Libraries/Entity/Deprecated/Entity.h
+    Include/ScriptCanvas/Libraries/Entity/Deprecated/EntityNodes.h
+    Include/ScriptCanvas/Libraries/Entity/Deprecated/RotateMethod.h
+    Include/ScriptCanvas/Libraries/Entity/EntityFunctions.h
+    Include/ScriptCanvas/Libraries/Entity/EntityFunctions.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Logic/And.h
     Include/ScriptCanvas/Libraries/Logic/Any.h
     Include/ScriptCanvas/Libraries/Logic/Any.ScriptCanvasGrammar.xml
@@ -366,6 +368,7 @@ set(FILES
     Include/ScriptCanvas/Utils/SerializationUtils.h
     Include/ScriptCanvas/Utils/VersionConverters.h
     Include/ScriptCanvas/Utils/BehaviorContextUtils.h
+    Include/ScriptCanvas/Utils/ReplacementUtils.h
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

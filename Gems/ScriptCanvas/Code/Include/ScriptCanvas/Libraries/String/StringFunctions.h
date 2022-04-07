@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
 namespace ScriptCanvas
@@ -19,5 +20,12 @@ namespace ScriptCanvas
         AZStd::string ToUpper(AZStd::string sourceString);
 
         AZStd::string Substring(AZStd::string sourceString, AZ::u32 index, AZ::u32 length);
+
+        AZStd::string Join(const AZStd::vector<AZStd::string>& sourceArray, const AZStd::string& separatorString);
+
+        AZStd::string ReplaceString(AZStd::string& sourceString, const AZStd::string& replaceString, const AZStd::string& withString, bool caseSensitive);
+
+        AZStd::vector<AZStd::string> Split(const AZStd::string& sourceString, const AZStd::string& delimiterString);
+        
     } // namespace StringFunctions
 } // namespace ScriptCanvas

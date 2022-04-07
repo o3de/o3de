@@ -69,7 +69,8 @@ namespace ScriptCanvas
             {
                 behaviorContext->Class<RotateMethod>("Entity Transform")
                     ->Method("Rotate", &Rotate,
-                        { { {"Entity", "The entity to apply the rotation on."}, {"Euler Angles", "Euler angles, Pitch/Yaw/Roll."} } });
+                        { { {"Entity", "The entity to apply the rotation on."}, {"Euler Angles", "Euler angles, Pitch/Yaw/Roll."} } })
+                    ->Attribute(AZ::Script::Attributes::Deprecated, true);
             }
         }
     }

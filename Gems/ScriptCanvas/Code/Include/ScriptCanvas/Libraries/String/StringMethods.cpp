@@ -122,10 +122,14 @@ namespace ScriptCanvas
                     ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, booleanResultInfo)
                 ->Method("Split", &Split,
                     { { {"Source", "The string to search in."}, {"Delimiters", "The characters that can be used as delimiters."} } })
+                ->Attribute(AZ::Script::Attributes::Deprecated, true)
                 ->Method("Join", &Join,
                     { { {"String Array", "The array of strings to join."}, {"Separator", "Will use this string when concatenating the strings from the array."} } })
+                ->Attribute(AZ::Script::Attributes::Deprecated, true)
                 ->Method("Replace String", &Replace,
-                    { { {"Source", "The string to search in."}, {"Replace", "The substring to search for."}, {"With", "The string to replace the substring with."}, {"Case Sensitive", "Take into account the case of the string when searching."} } });
+                    { { {"Source", "The string to search in."}, {"Replace", "The substring to search for."}, {"With", "The string to replace the substring with."}, {"Case Sensitive", "Take into account the case of the string when searching."} } })
+                ->Attribute(AZ::Script::Attributes::Deprecated, true)
+                ;
         }
     }
 }
