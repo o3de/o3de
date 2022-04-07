@@ -203,7 +203,7 @@ namespace AZ
                 const DecalMapType mapType = aznumeric_cast<DecalMapType>(i);
                 if (!AreAllTextureMapsPresent(mapType))
                 {
-                    AZ_Warning("DecalTextureArray", true, "Missing decal texture maps for %s. Please make sure all maps of this type are present.\n", GetMapName(mapType).GetCStr());
+                    AZ_Warning("DecalTextureArray", false, "Missing decal texture maps for %s. Please make sure all maps of this type are present.\n", GetMapName(mapType).GetCStr());
                     m_textureArrayPacked[i] = nullptr;
                     continue;
                 }
