@@ -33,7 +33,6 @@ namespace AzFramework::Scripts
         SpawnableScriptAssetRef& operator=(SpawnableScriptAssetRef&& rhs);
 
         void SetAsset(const AZ::Data::Asset<Spawnable>& asset);
-
         AZ::Data::Asset<Spawnable> GetAsset() const;
 
     private:

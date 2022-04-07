@@ -114,11 +114,11 @@ namespace AzFramework::Scripts
 
             if (m_asset.GetId().m_subId != spawnableAssetSubId)
             {
-                AZ::Data::AssetId rootAssetId = m_asset.GetId();
-                rootAssetId.m_subId = spawnableAssetSubId;
+                AZ::Data::AssetId spawnableAssetId = m_asset.GetId();
+                spawnableAssetId.m_subId = spawnableAssetSubId;
 
                 m_asset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<Spawnable>(
-                    rootAssetId, AZ::Data::AssetLoadBehavior::Default);
+                    spawnableAssetId, AZ::Data::AssetLoadBehavior::Default);
             }
             else
             {
