@@ -59,6 +59,7 @@ namespace Camera
     protected:
         void EditorDisplay(AzFramework::DebugDisplayRequests& displayInterface, const AZ::Transform& world);
         AZ::Crc32 OnPossessCameraButtonClicked();
+        AZ::Crc32 AlignCameraWithViewClicked();
         AZStd::string GetCameraViewButtonText() const;
 
         float m_frustumViewPercentLength = 1.f;

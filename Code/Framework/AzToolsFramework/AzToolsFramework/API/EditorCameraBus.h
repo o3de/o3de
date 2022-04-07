@@ -59,6 +59,16 @@ namespace Camera
         virtual bool GetActiveCameraPosition(AZ::Vector3& /*cameraPos*/) { return false; }
 
         /**
+         * Gets the transform of the currently active Editor camera.
+         * The Editor can have multiple viewports displayed, though at most only one is active at any point in time.
+         * (Active is not the same as "has focus" - a different editor pane can have focus, but there's still one
+         * active viewport that's updating every frame, and the others are not)
+         * @param cameraTM On return, the current camera transform in the one active Editor viewport.
+         * @return True if the camera transform was successfully retrieved, false if not.
+         */
+        virtual bool GetActiveCameraTM(AZ::Transform& /*cameraTM*/) { return false; }
+
+        /**
          * Gets the position of the currently active Editor camera.
          * The Editor can have multiple viewports displayed, though at most only one is active at any point in time.
          * (Active is not the same as "has focus" - a different editor pane can have focus, but there's still one

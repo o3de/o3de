@@ -117,8 +117,11 @@ namespace Camera
                     ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets the view to this camera")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnPossessCameraButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorCameraComponent::GetCameraViewButtonText)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Debug")
+                    ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets this camera to view")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::AlignCameraWithViewClicked)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText,  "Align camera with view")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Debug")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCameraComponent::m_frustumViewPercentLength, "Frustum length", "Frustum length percent .01 to 100")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.f)
@@ -189,6 +192,18 @@ namespace Camera
         {
             // set the view entity id back to Invalid, thus enabling the editor camera
             EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
+        }
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
+    AZ::Crc32 EditorCameraComponent::AlignCameraWithViewClicked()
+    {
+        bool result = false;
+        AZ::Transform transform = AZ::Transform::CreateIdentity();
+        EditorCameraRequests::Bus::BroadcastResult(result, &EditorCameraRequests::GetActiveCameraTM, transform);
+        if (result)
+        {
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, transform);
         }
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }

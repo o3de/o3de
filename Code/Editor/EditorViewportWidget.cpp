@@ -2100,6 +2100,26 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
     return false;
 }
 
+bool EditorViewportWidget::GetActiveCameraTM(AZ::Transform& cameraTM)
+{
+    if (m_pPrimaryViewport == this)
+    {
+        if (GetIEditor()->IsInGameMode())
+        {
+            cameraTM = m_renderViewport->GetViewportContext()->GetCameraTransform();
+        }
+        else
+        {
+            // Use viewTM, which is synced with the camera and guaranteed to be up-to-date
+            cameraTM = LYTransformToAZTransform(GetViewTM());
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& cameraState)
 {
     if (m_pPrimaryViewport == this)
