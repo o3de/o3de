@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 namespace AZ::Render
 {
@@ -22,6 +23,7 @@ namespace AZ::Render
 
     class StarsFeatureProcessor final
         : public StarsFeatureProcessorInterface
+        , protected RPI::ViewportContextIdNotificationBus::Handler
     {
     public:
         AZ_RTTI(AZ::Render::StarsFeatureProcessor, "{34B9EE52-2893-4D02-AC19-8C5DCAFFE608}", AZ::Render::StarsFeatureProcessorInterface);
@@ -44,9 +46,13 @@ namespace AZ::Render
         void SetOrientation(AZ::Quaternion orientation) override;
         void SetTwinkleRate(float twinkleRate) override;
 
+    protected:
         //! RPI::SceneNotificationBus
         void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
         void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+
+        //! RPI::ViewportContextIdNotificationBus
+        void OnViewportSizeChanged(AzFramework::WindowSize size) override;
 
     private:
         static constexpr const char* FeatureProcessorName = "StarsFeatureProcessor";
@@ -93,6 +99,6 @@ namespace AZ::Render
         StarShaderConstants m_shaderConstants;
         AZStd::vector<StarVertex> m_starsMeshData;
         uint32_t m_numStarsVertices = 0;
-
+        AzFramework::WindowSize m_viewportSize{0,0};
     };
 } // namespace AZ::Render

@@ -50,11 +50,19 @@ namespace AZ::Render
         m_starParamsIndex.Reset();
         m_rotationIndex.Reset();
 
+        auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
+        m_viewportSize = viewportContext->GetViewportSize();
+
         EnableSceneNotification();
+
+        RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
     }
 
     void StarsFeatureProcessor::Deactivate()
     {
+        RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
+
         DisableSceneNotification();
 
         m_shader = nullptr;
@@ -67,18 +75,15 @@ namespace AZ::Render
         if (m_updateShaderConstants)
         {
             m_updateShaderConstants = false;
+
             UpdateShaderConstants();
         }
     }
 
     void StarsFeatureProcessor::UpdateShaderConstants()
     {
-        auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
-        auto viewportSize = viewportContext->GetViewportSize();
-
-        const float width = static_cast<float>(viewportSize.m_width);
-        const float height = static_cast<float>(viewportSize.m_height);
+        const float width = static_cast<float>(m_viewportSize.m_width);
+        const float height = static_cast<float>(m_viewportSize.m_height);
         constexpr float minWidth = 1280.f;
         constexpr float minHeight = 720.f;
         const float size = m_radiusFactor * AZStd::min<float>(1.f, AZStd::min<float>(width / minWidth, height / minHeight));
@@ -216,11 +221,18 @@ namespace AZ::Render
         }
     }
 
+    void StarsFeatureProcessor::OnViewportSizeChanged(AzFramework::WindowSize size)
+    {
+        m_viewportSize = size;
+        m_updateShaderConstants = true;
+    }
+
     void StarsFeatureProcessor::UpdateBackgroundClearColor()
     {
-        // this function is only necessary for now because the default
-        // clear value color is not black, and is set in various .pass files in places
-        // a user is unlikely to find
+        // This function is only necessary for now because the default clear value
+        // color is not black, and is set in various .pass files in places a user
+        // is unlikely to find.  Unfortunately, the viewport will revert to the
+        // grey color when resizing momentarily.
         const RHI::ClearValue blackClearValue = RHI::ClearValue::CreateVector4Float(0.f, 0.f, 0.f, 0.f);
         RPI::PassFilter passFilter;
         AZStd::string slot;
