@@ -23,7 +23,8 @@ namespace AzNetworking
 
         using ValueMap = AZStd::map<AZStd::string, AZStd::string>;
 
-        AZNETWORKING_API StringifySerializer() = default;
+        AZNETWORKING_API StringifySerializer();
+        AZNETWORKING_API ~StringifySerializer() override;
 
         //! After serializing objects, get the serialized values as a map of key/value pairs.
         AZNETWORKING_API const ValueMap& GetValueMap() const;

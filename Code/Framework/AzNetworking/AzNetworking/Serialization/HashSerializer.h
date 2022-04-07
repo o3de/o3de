@@ -22,7 +22,8 @@ namespace AzNetworking
     {
     public:
 
-        AZNETWORKING_API HashSerializer() = default;
+        AZNETWORKING_API HashSerializer();
+        AZNETWORKING_API ~HashSerializer() override;
 
         AZNETWORKING_API AZ::HashValue32 GetHash() const;
 

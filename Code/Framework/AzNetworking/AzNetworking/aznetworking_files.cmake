@@ -59,7 +59,6 @@ set(FILES
     Serialization/ISerializer.inl
     Serialization/NetworkInputSerializer.cpp
     Serialization/NetworkInputSerializer.h
-    Serialization/NetworkInputSerializer.inl
     Serialization/NetworkOutputSerializer.cpp
     Serialization/NetworkOutputSerializer.h
     Serialization/NetworkOutputSerializer.inl

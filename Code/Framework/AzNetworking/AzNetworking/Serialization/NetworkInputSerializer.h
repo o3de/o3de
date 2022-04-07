@@ -74,5 +74,3 @@ namespace AzNetworking
         const uint8_t* m_buffer;
     };
 }
-
-#include <AzNetworking/Serialization/NetworkInputSerializer.inl>

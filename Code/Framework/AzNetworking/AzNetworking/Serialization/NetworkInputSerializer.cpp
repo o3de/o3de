@@ -187,4 +187,9 @@ namespace AzNetworking
         m_bufferSize += count;
         return true;
     }
+
+    bool NetworkInputSerializer::CopyToBuffer(const uint8_t* data, uint32_t dataSize)
+    {
+        return NetworkInputSerializer::SerializeBytes(data, dataSize);
+    }
 }

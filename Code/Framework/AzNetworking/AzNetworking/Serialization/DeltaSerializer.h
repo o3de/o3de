@@ -56,7 +56,7 @@ namespace AzNetworking
     public:
 
         AZNETWORKING_API DeltaSerializerCreate(SerializerDelta& delta);
-        AZNETWORKING_API ~DeltaSerializerCreate();
+        AZNETWORKING_API ~DeltaSerializerCreate() override;
 
         template <typename TYPE>
         bool CreateDelta(TYPE& base, TYPE& current);
@@ -116,6 +116,7 @@ namespace AzNetworking
     public:
 
         AZNETWORKING_API DeltaSerializerApply(SerializerDelta& delta);
+        AZNETWORKING_API ~DeltaSerializerApply() override;
 
         template <typename TYPE>
         bool ApplyDelta(TYPE& output);
