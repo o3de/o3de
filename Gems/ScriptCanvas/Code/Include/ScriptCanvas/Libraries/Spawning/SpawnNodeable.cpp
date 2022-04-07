@@ -14,24 +14,24 @@ namespace ScriptCanvas::Nodeables::Spawning
 {
     SpawnNodeable::SpawnNodeable([[maybe_unused]] const SpawnNodeable& rhs)
     {
-        // this method is required by Script Canvas, left intentionally blank to avoid copying m_spawnableMediator
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_SpawnableScriptMediator
     }
 
     SpawnNodeable& SpawnNodeable::operator=([[maybe_unused]] const SpawnNodeable& rhs)
     {
-        // this method is required by Script Canvas, left intentionally blank to avoid copying m_spawnableMediator
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_SpawnableScriptMediator
         return *this;
     }
     
     void SpawnNodeable::OnDeactivate()
     {
-        m_spawnableMediator.Clear();
-        AzFramework::SpawnableNotificationsBus::Handler::BusDisconnect();
+        m_spawnableScriptMediator.Clear();
+        AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler::BusDisconnect();
     }
 
     void SpawnNodeable::OnSpawn(AzFramework::EntitySpawnTicket spawnTicket, AZStd::vector<AZ::EntityId> entityList)
     {
-        AzFramework::SpawnableNotificationsBus::Handler::BusDisconnect(spawnTicket.GetId());
+        AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler::BusDisconnect(spawnTicket.GetId());
         CallOnSpawnCompleted(spawnTicket, move(entityList));
     }
     
@@ -44,9 +44,9 @@ namespace ScriptCanvas::Nodeables::Spawning
     {
         using namespace AzFramework;
 
-        if (m_spawnableMediator.SpawnParentAndTransform(spawnTicket, parentId, translation, rotation, aznumeric_cast<float>(scale)))
+        if (m_spawnableScriptMediator.SpawnAndParentAndTransform(spawnTicket, parentId, translation, rotation, aznumeric_cast<float>(scale)))
         {
-            SpawnableNotificationsBus::Handler::BusConnect(spawnTicket.GetId());
+            Scripts::SpawnableScriptNotificationsBus::Handler::BusConnect(spawnTicket.GetId());
         }
     }
 } // namespace ScriptCanvas::Nodeables::Spawning

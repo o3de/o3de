@@ -11,10 +11,10 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
-namespace AzFramework
+namespace AzFramework::Scripts
 {
     // Provides spawn notifications from Spawnable API
-    class SpawnableNotifications
+    class SpawnableScriptNotifications
         : public AZ::EBusTraits
     {
     public:
@@ -31,5 +31,5 @@ namespace AzFramework
         virtual void OnDespawn([[maybe_unused]] EntitySpawnTicket spawnTicket) {}
     };
     
-    using SpawnableNotificationsBus = AZ::EBus<SpawnableNotifications>;
+    using SpawnableScriptNotificationsBus = AZ::EBus<SpawnableScriptNotifications>;
 } // namespace AzFramework

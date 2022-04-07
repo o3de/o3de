@@ -8,18 +8,19 @@
 
 #pragma once
 
-#include <AzFramework/Spawnable/SpawnableBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptBus.h>
 
-namespace AzFramework
+namespace AzFramework::Scripts
 {
-    //! Behavior Context forwarder for SpawnableNotificationsBus
-    struct SpawnableNotificationsHandler final
-        : public SpawnableNotificationsBus::Handler
+    //! Behavior Context forwarder for SpawnableScriptNotificationsBus
+    struct SpawnableScriptNotificationsHandler final
+        : public SpawnableScriptNotificationsBus::Handler
         , public AZ::BehaviorEBusHandler
     {
         AZ_EBUS_BEHAVIOR_BINDER(
-            SpawnableNotificationsHandler,
+            SpawnableScriptNotificationsHandler,
             "{3403D10A-9541-46A1-97CD-F994FF9E52C2}",
             AZ::SystemAllocator,
             OnSpawn,

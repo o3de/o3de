@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzFramework/Spawnable/SpawnableAssetRef.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
-#include <AzFramework/Spawnable/SpawnableMediator.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 #include <Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.generated.h>
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -28,6 +28,6 @@ namespace ScriptCanvas::Nodeables::Spawning
         CreateSpawnTicketNodeable& operator=(const CreateSpawnTicketNodeable& rhs);
 
     private:
-        AzFramework::SpawnableMediator m_spawnableMediator;
+        AzFramework::Scripts::SpawnableScriptMediator m_spawnableScriptMediator;
     };
 }

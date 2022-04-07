@@ -9,9 +9,9 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
-#include <AzFramework/Spawnable/SpawnableBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
-#include <AzFramework/Spawnable/SpawnableMediator.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptBus.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 #include <Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.generated.h>
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -22,7 +22,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     //! Node for spawning entities
     class SpawnNodeable
         : public Nodeable
-        , public AzFramework::SpawnableNotificationsBus::Handler
+        , public AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler
     {
         SCRIPTCANVAS_NODE(SpawnNodeable);
     public:
@@ -33,10 +33,10 @@ namespace ScriptCanvas::Nodeables::Spawning
         // ScriptCanvas::Nodeable  overrides ...
         void OnDeactivate() override;
 
-        // AzFramework::SpawnableNotificationsBus::Handler overrides ...
+        // AzFramework::SpawnableScriptNotificationsBus::Handler overrides ...
         void OnSpawn(AzFramework::EntitySpawnTicket spawnTicket, AZStd::vector<AZ::EntityId> entityList) override;
 
     private:
-        AzFramework::SpawnableMediator m_spawnableMediator;
+        AzFramework::Scripts::SpawnableScriptMediator m_spawnableScriptMediator;
     };
 }

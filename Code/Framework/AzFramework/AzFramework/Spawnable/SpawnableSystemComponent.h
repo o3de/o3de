@@ -15,7 +15,6 @@
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
-#include <AzFramework/Spawnable/SpawnableBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
 

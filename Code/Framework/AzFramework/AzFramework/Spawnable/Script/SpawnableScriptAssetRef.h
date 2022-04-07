@@ -14,34 +14,32 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 
-namespace AzFramework
+namespace AzFramework::Scripts
 {
     //! A wrapper around Spawnable asset that can be used by Script Canvas and Lua
-    class SpawnableAssetRef final
+    class SpawnableScriptAssetRef final
         : private AZ::Data::AssetBus::Handler
     {
-        AZ_RTTI(AzFramework::SpawnableAssetRef, "{A96A5037-AD0D-43B6-9948-ED63438C4A52}");
+    public:
+        AZ_RTTI(AzFramework::Scripts::SpawnableScriptAssetRef, "{A96A5037-AD0D-43B6-9948-ED63438C4A52}");
 
         static void Reflect(AZ::ReflectContext* context);
 
-        SpawnableAssetRef();
-        ~SpawnableAssetRef();
-        SpawnableAssetRef(const SpawnableAssetRef& rhs);
-        SpawnableAssetRef& operator=(const SpawnableAssetRef& rhs);
+        SpawnableScriptAssetRef() = default;
+        ~SpawnableScriptAssetRef();
+        SpawnableScriptAssetRef(const SpawnableScriptAssetRef& rhs);
+        SpawnableScriptAssetRef(SpawnableScriptAssetRef&& rhs);
+        SpawnableScriptAssetRef& operator=(const SpawnableScriptAssetRef& rhs);
+        SpawnableScriptAssetRef& operator=(SpawnableScriptAssetRef&& rhs);
 
-        void SetAsset(const AZ::Data::Asset<Spawnable> asset)
-        {
-            m_asset = asset;
-            OnSpawnAssetChanged();
-         }
-        AZ::Data::Asset<Spawnable> GetAsset() const
-        {
-            return m_asset;
-        }
+        void SetAsset(const AZ::Data::Asset<Spawnable>& asset);
+
+        AZ::Data::Asset<Spawnable> GetAsset() const;
+
     private:
         void OnSpawnAssetChanged();
-        AZ::Data::Asset<Spawnable> m_asset;
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+        AZ::Data::Asset<Spawnable> m_asset;
     };
 }

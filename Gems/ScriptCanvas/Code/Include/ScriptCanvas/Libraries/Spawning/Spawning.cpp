@@ -6,8 +6,7 @@
  *
  */
 
-#include <AzFramework/Spawnable/SpawnableAssetRef.h>
-#include <AzFramework/Spawnable/SpawnableEntitiesInterface.cpp>
+#include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Libraries/Core/ContainerTypeReflection.h>
 #include <ScriptCanvas/Libraries/Spawning/Spawning.h>
@@ -64,34 +63,34 @@ namespace ScriptCanvas
                         {
                         });
 
-                // reflecting SpawnableAssetRef to support Map<string, SpawnableAssetRef> and Map<Number, SpawnableAssetRef>
+                // reflecting SpawnableScriptAssetRef to support Map<string, SpawnableScriptAssetRef> and Map<Number, SpawnableScriptAssetRef>
                 // as Script Canvas variable types
                 behaviorContext
-                    ->Class<BehaviorClassReflection<SpawnableAssetRef>>("ReflectOnDemandTargets_SpawnableAssetRef")
+                    ->Class<BehaviorClassReflection<Scripts::SpawnableScriptAssetRef>>("ReflectOnDemandTargets_SpawnableScriptAssetRef")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::Script::Attributes::Ignore, true)
-                    // required to support Array<SpawnableAssetRef> variable type in Script Canvas
+                    // required to support Array<SpawnableScriptAssetRef> variable type in Script Canvas
                     ->Method(
                         "ReflectVector",
-                        [](const AZStd::vector<SpawnableAssetRef>&)
+                        [](const AZStd::vector<Scripts::SpawnableScriptAssetRef>&)
                         {
                         })
-                    // required to support Map<String, SpawnableAssetRef> variable type in Script Canvas
+                    // required to support Map<String, SpawnableScriptAssetRef> variable type in Script Canvas
                     ->Method(
-                        "MapStringToSpawnableAssetRef",
-                        [](const AZStd::unordered_map<Data::StringType, SpawnableAssetRef>&)
+                        "MapStringToSpawnableScriptAssetRef",
+                        [](const AZStd::unordered_map<Data::StringType, Scripts::SpawnableScriptAssetRef>&)
                         {
                         })
-                    // required to support Map<Number, SpawnableAssetRef> variable type in Script Canvas
+                    // required to support Map<Number, SpawnableScriptAssetRef> variable type in Script Canvas
                     ->Method(
-                        "MapNumberToSpawnableAssetRef",
-                        [](const AZStd::unordered_map<Data::NumberType, SpawnableAssetRef>&)
+                        "MapNumberToSpawnableScriptAssetRef",
+                        [](const AZStd::unordered_map<Data::NumberType, Scripts::SpawnableScriptAssetRef>&)
                         {
                         });
             }
 
             HashContainerReflector<EntitySpawnTicket>::Reflect(reflection);
-            HashContainerReflector<SpawnableAssetRef>::Reflect(reflection);
+            HashContainerReflector<Scripts::SpawnableScriptAssetRef>::Reflect(reflection);
         }
 
         void Spawning::InitNodeRegistry(NodeRegistry& nodeRegistry)

@@ -6,8 +6,6 @@
  *
  */
 
-#include "SpawnableMediator.h"
-
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
@@ -15,10 +13,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Spawnable/SpawnableAssetRef.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
-#include <AzFramework/Spawnable/SpawnableNotificationsHandler.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 
 namespace AzFramework
 {
@@ -27,7 +24,7 @@ namespace AzFramework
         Spawnable::Reflect(context);
         SpawnableMetaData::Reflect(context);
         EntitySpawnTicket::Reflect(context);
-        SpawnableMediator::Reflect(context);
+        Scripts::SpawnableScriptMediator::Reflect(context);
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
@@ -151,7 +148,7 @@ namespace AzFramework
     {
         AZ_TracePrintf("Spawnables", "Generation %i of the root spawnable has been released.\n", generation);
     }
-    
+
     void SpawnableSystemComponent::Activate()
     {
         // Register with AssetDatabase

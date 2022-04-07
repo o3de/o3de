@@ -10,30 +10,30 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzFramework/Spawnable/SpawnableAssetRef.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
 
-namespace AzFramework
+namespace AzFramework::Scripts
 {
     //! A helper class for direct calls to SpawnableEntitiesInterface that is
     //! reflected with BehaviorContext for interfacing with Lua API
-    class SpawnableMediator final
+    class SpawnableScriptMediator final
         : public AZ::TickBus::Handler
     {
     public:
-        AZ_TYPE_INFO(AzFramework::SpawnableMediator, "{9C3118FE-2E78-49BE-BE7A-B41F95B3FCF8}");
+        AZ_TYPE_INFO(AzFramework::Scripts::SpawnableScriptMediator, "{9C3118FE-2E78-49BE-BE7A-B41F95B3FCF8}");
 
         inline static constexpr const char* RootSpawnableRegistryKey = "/Amazon/AzCore/Bootstrap/RootSpawnable";
 
-        SpawnableMediator();
-        ~SpawnableMediator();
+        SpawnableScriptMediator() = default;
+        ~SpawnableScriptMediator();
 
         static void Reflect(AZ::ReflectContext* context);
         
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         //! Creates EntitySpawnTicket using provided prefab asset
-        EntitySpawnTicket CreateSpawnTicket(const SpawnableAssetRef& spawnableAsset);
+        EntitySpawnTicket CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset);
 
         //! Spawns a prefab and places it under level entity
         bool Spawn(EntitySpawnTicket spawnTicket);
@@ -43,7 +43,7 @@ namespace AzFramework
 
         //! Spawns a prefab and places it relative to provided parent,
         //! if no parentId is specified then places it in world coordinates
-        bool SpawnParentAndTransform(
+        bool SpawnAndParentAndTransform(
             EntitySpawnTicket spawnTicket,
             const AZ::EntityId& parentId,
             const AZ::Vector3& translation,
@@ -57,18 +57,20 @@ namespace AzFramework
         void Clear();
 
     private:
-        struct SpawnableResult
+        struct SpawnResult
         {
             AZStd::vector<AZ::EntityId> m_entityList;
             EntitySpawnTicket m_spawnTicket;
         };
+        struct DespawnResult
+        {
+            EntitySpawnTicket m_spawnTicket;
+        };
+        
+        void ProcessResults();
 
-        void ProcessSpawnedResults();
-        void ProcessDespawnedResults();
-
-        AZStd::vector<SpawnableResult> m_spawnedResults;
-        AZStd::vector<EntitySpawnTicket> m_despawnedResults;
+        using ResultCommand = AZStd::variant<SpawnResult, DespawnResult>;
+        AZStd::vector<ResultCommand> m_resultCommands;
         AZStd::recursive_mutex m_mutex;
-        SpawnableEntitiesDefinition* m_interface;
     };
 } // namespace AzFramework
