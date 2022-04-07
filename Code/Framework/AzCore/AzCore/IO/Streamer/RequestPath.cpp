@@ -20,7 +20,7 @@ namespace AZ
             if (path.IsRelative())
             {
                 m_relativePathOffset = FindAliasOffset(path.Native());
-                m_absolutePathHash = s_emptyPathHash;
+                ResolvePath();
             }
             else
             {
@@ -37,44 +37,28 @@ namespace AZ
 
         bool RequestPath::operator==(const RequestPath& rhs) const
         {
-            if (m_path.empty() || rhs.m_path.empty())
-            {
-                return m_path.empty() == rhs.m_path.empty();
-            }
-
-            ResolvePath();
-            rhs.ResolvePath();
-            if (m_absolutePathHash != rhs.m_absolutePathHash)
-            {
-                return false;
-            }
-            else
-            {
-                return m_path == rhs.m_path;
-            }
+            return m_absolutePathHash != rhs.m_absolutePathHash ? false : (m_path == rhs.m_path);
         }
 
         bool RequestPath::operator!=(const RequestPath& rhs) const
         {
-            return !operator==(rhs);
+            return m_absolutePathHash != rhs.m_absolutePathHash ? true : (m_path != rhs.m_path);
         }
 
         bool RequestPath::IsValid() const
         {
-            ResolvePath();
-            return m_absolutePathHash != s_invalidPathHash;
+            return m_absolutePathHash != InvalidPathHash;
         }
 
         void RequestPath::Clear()
         {
             m_path.clear();
-            m_absolutePathHash = s_emptyPathHash;
+            m_absolutePathHash = InvalidPathHash;
             m_relativePathOffset = 0;
         }
 
         const char* RequestPath::GetAbsolutePathCStr() const
         {
-            ResolvePath();
             return m_path.c_str();
         }
 
@@ -85,7 +69,6 @@ namespace AZ
 
         PathView RequestPath::GetAbsolutePath() const
         {
-            ResolvePath();
             return m_path;
         }
 
@@ -103,23 +86,20 @@ namespace AZ
 
         void RequestPath::ResolvePath() const
         {
-            if (m_absolutePathHash == s_emptyPathHash)
-            {
-                AZ_Assert(FileIOBase::GetInstance(),
-                    "Trying to resolve a path in RequestPath before the low level file system has been initialized.");
+            AZ_Assert(FileIOBase::GetInstance(),
+                "Trying to resolve a path in RequestPath before the low level file system has been initialized.");
 
-                size_t relativePathLength = m_path.Native().length() - m_relativePathOffset;
-                if (FileIOBase::GetInstance()->ResolvePath(m_path, m_path))
+            size_t relativePathLength = m_path.Native().length() - m_relativePathOffset;
+            if (FileIOBase::GetInstance()->ResolvePath(m_path, m_path))
+            {
+                m_absolutePathHash = AZ::IO::hash_value(m_path);
+                if (m_path.Native().length() >= relativePathLength)
                 {
-                    m_absolutePathHash = AZ::IO::hash_value(m_path);
-                    if (m_path.Native().length() >= relativePathLength)
-                    {
-                        m_relativePathOffset = m_path.Native().length() - relativePathLength;
-                        return;
-                    }
+                    m_relativePathOffset = m_path.Native().length() - relativePathLength;
+                    return;
                 }
-                m_absolutePathHash = s_invalidPathHash;
             }
+            m_absolutePathHash = InvalidPathHash;
         }
 
         size_t RequestPath::FindAliasOffset(AZStd::string_view path) const
