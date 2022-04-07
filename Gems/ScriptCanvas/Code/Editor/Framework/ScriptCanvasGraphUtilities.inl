@@ -274,7 +274,7 @@ namespace ScriptCanvasEditor
                                 dependencyData.m_input = depencyAssetResult.m_runtimeInputs;
                                 dependencyData.m_debugMap = depencyAssetResult.m_debugMap;
                                 dependencyData.m_script = depencyAssetResult.m_scriptAsset;
-                                Execution::Context::InitializeActivationData(dependencyData);
+                                Execution::Context::InitializeStaticActivationData(dependencyData);
                                 Execution::InitializeInterpretedStatics(dependencyData);
                             }
                         }
@@ -287,7 +287,7 @@ namespace ScriptCanvasEditor
                         loadResult.m_runtimeComponent = loadResult.m_entity->CreateComponent<ScriptCanvas::RuntimeComponent>();
                         CopyAssetEntityIdsToOverrides(runtimeDataOverrides);
                         loadResult.m_runtimeComponent->TakeRuntimeDataOverrides(AZStd::move(runtimeDataOverrides));
-                        Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->m_runtimeData);
+                        Execution::Context::InitializeStaticActivationData(loadResult.m_runtimeAsset->m_runtimeData);
                         Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->m_runtimeData);
                     }
                 }

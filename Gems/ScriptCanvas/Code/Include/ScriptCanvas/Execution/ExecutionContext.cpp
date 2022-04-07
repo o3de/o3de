@@ -112,7 +112,23 @@ namespace ScriptCanvas
             return rangeOut;
         }
 
-        void Context::IntializeActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
+        void Context::InitializeStaticActivationData(RuntimeData& runtimeData)
+        {
+            AZ::BehaviorContext* behaviorContext(nullptr);
+            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+            if (!behaviorContext)
+            {
+                AZ_Error("Behavior Context", false, "A behavior context is required!");
+                return;
+            }
+
+            // \todo, the stack push functions could be retrieved here
+            // initialize the execution state creation function here!
+            IntializeStaticActivationInputs(runtimeData, *behaviorContext);
+            IntializeStaticCloners(runtimeData, *behaviorContext);
+        }
+
+        void Context::IntializeStaticActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
         {
             AZStd::vector<AZ::BehaviorValueParameter>& parameters = runtimeData.m_activationInputStorage;
             auto& range = runtimeData.m_activationInputRange;
@@ -155,22 +171,6 @@ namespace ScriptCanvas
             range.variableCount = runtimeData.m_input.m_variables.size();
             range.entityIdCount = runtimeData.m_input.m_entityIds.size();
             range.totalCount = range.nodeableCount + range.variableCount + range.entityIdCount;
-        }
-
-        void Context::InitializeActivationData(RuntimeData& runtimeData)
-        {
-            AZ::BehaviorContext* behaviorContext(nullptr);
-            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
-            if (!behaviorContext)
-            {
-                AZ_Error("Behavior Context", false, "A behavior context is required!");
-                return;
-            }
-
-            // \todo, the stack push functions could be retrieved here
-            // initialize the execution state creation function here!
-            IntializeActivationInputs(runtimeData, *behaviorContext);
-            IntializeStaticCloners(runtimeData, *behaviorContext);
         }
 
         // This does not have to recursively initialize dependent assets, as this is called by asset handler

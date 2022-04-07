@@ -49,11 +49,11 @@ namespace ScriptCanvas
             AZ_CLASS_ALLOCATOR(Context, AZ::SystemAllocator, 0);
 
             static ActivationInputRange CreateActivateInputRange(ActivationData& activationData);
-            static void InitializeActivationData(RuntimeData& runtimeData);
+            static void InitializeStaticActivationData(RuntimeData& runtimeData);
             static void UnloadData(RuntimeData& runtimeData);
 
         private:
-            static void IntializeActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
+            static void IntializeStaticActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
             static void IntializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
         };
 
