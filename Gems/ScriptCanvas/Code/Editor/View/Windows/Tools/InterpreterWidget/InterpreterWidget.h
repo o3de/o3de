@@ -34,9 +34,10 @@ namespace AZ
 
 namespace ScriptCanvasEditor
 {
+    class Configuration;
     class Interpreter;
 
-    class InterpreterWidget
+    class InterpreterWidget final
         : public AzQtComponents::StyledDialog
         , public AzToolsFramework::IPropertyEditorNotify
     {
@@ -54,6 +55,7 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<Interpreter> m_interpreter;
         AZStd::unique_ptr<Ui::InterpreterWidget> m_view;
         AZ::EventHandler<const Interpreter&> m_onIterpreterStatusChanged;
+        AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
 
         void OnButtonStartPressed();
         void OnButtonStopPressed();

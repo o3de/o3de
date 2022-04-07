@@ -72,6 +72,11 @@ namespace ScriptCanvasEditor
         }
     }
 
+    const Configuration& Interpreter::GetConfiguration() const
+    {
+        return m_configuration;
+    }
+
     AZ::Event<const Interpreter&>& Interpreter::GetOnStatusChanged() const
     {
         return m_onStatusChanged;

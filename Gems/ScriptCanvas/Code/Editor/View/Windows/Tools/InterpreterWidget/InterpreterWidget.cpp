@@ -6,8 +6,9 @@
  *
  */
 
-#include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Editor/Framework/Interpreter.h>
+#include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
 #include <Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h>
 #include <Editor/View/Windows/Tools/InterpreterWidget/ui_InterpreterWidget.h>
@@ -67,6 +68,13 @@ namespace ScriptCanvasEditor
                 OnInterpreterStatusChanged(interpreter);
             });
         m_onIterpreterStatusChanged.Connect(m_interpreter->GetOnStatusChanged());
+
+        m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([propertyEditor](const Configuration&)
+        {
+            propertyEditor->QueueInvalidation(AzToolsFramework::Refresh_EntireTree_NewContent);
+        });
+        m_interpreter->GetConfiguration().ConnectToSourceCompiled(m_handlerSourceCompiled);
+
         // initialized status window and enabled setting for buttons
         OnInterpreterStatusChanged(*m_interpreter); 
     }

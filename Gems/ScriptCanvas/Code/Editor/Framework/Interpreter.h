@@ -52,6 +52,8 @@ namespace ScriptCanvasEditor
 
         bool Execute();
 
+        const Configuration& GetConfiguration() const;
+
         AZ::Event<const Interpreter&>& GetOnStatusChanged() const;
 
         InterpreterStatus GetStatus() const;

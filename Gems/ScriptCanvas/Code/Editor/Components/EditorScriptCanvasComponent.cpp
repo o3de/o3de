@@ -54,9 +54,17 @@ namespace ScriptCanvasEditor
     {
         EditorComponentBase::Activate();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        AZ::EntityId entityId = GetEntityId();
+        m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([](const Configuration&)
+            {
+                AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
+                    ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
+                    , AzToolsFramework::Refresh_EntireTree_NewContent);
+            });
+        m_configuration.ConnectToSourceCompiled(m_handlerSourceCompiled);
         m_configuration.Refresh();
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
+            ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
+            , AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
     void EditorScriptCanvasComponent::Deactivate()

@@ -8,13 +8,11 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/IdUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
@@ -216,13 +214,6 @@ namespace ScriptCanvasEditor
             m_sourceName = m_sourceHandle.Path().Filename().Native();
         }
 
-        const OnScopeEnd onScopeEnd([]()
-        {
-            AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
-                ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
-                , AzToolsFramework::Refresh_EntireTree_NewContent);
-        });
-
         m_eventPropertiesChanged.Signal(*this);
 
         if (!m_sourceHandle.Id().IsNull())
@@ -265,9 +256,6 @@ namespace ScriptCanvasEditor
         if (result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
         {
             MergeWithLatestCompilation(*result.data);
-            AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
-                ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
-                , AzToolsFramework::Refresh_EntireTree_NewContent);
             m_eventSourceCompiled.Signal(*this);
         }
         else
@@ -285,10 +273,7 @@ namespace ScriptCanvasEditor
     void Configuration::SourceFileFailed([[maybe_unused]] AZStd::string_view relativePath
         , [[maybe_unused]] AZStd::string_view scanFolder)
     {
-        m_eventSourceFailed.Signal(*this);
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
-            ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
-            , AzToolsFramework::Refresh_EntireTree_NewContent);
+        m_eventSourceFailed.Signal(*this);       
         // display error icon
     }
 
@@ -296,9 +281,6 @@ namespace ScriptCanvasEditor
         , [[maybe_unused]] AZStd::string_view scanFolder)
     {
         m_eventSourceFailed.Signal(*this);
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
-            ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
-            , AzToolsFramework::Refresh_EntireTree_NewContent);
         // display removed icon
     }
 }

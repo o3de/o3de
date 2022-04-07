@@ -20,7 +20,7 @@ namespace ScriptCanvasEditor
     The user facing Editor Component for interacting with ScriptCanvas.
     Per graph instance variables values are stored here and injected into the runtime ScriptCanvas component in BuildGameEntity.
     */
-    class EditorScriptCanvasComponent
+    class EditorScriptCanvasComponent final
         : public AzToolsFramework::Components::EditorComponentBase
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
@@ -64,6 +64,7 @@ namespace ScriptCanvasEditor
         void SetPrimaryAsset(const AZ::Data::AssetId&) override;
 
     private:
-       Configuration m_configuration;
+        Configuration m_configuration;
+        AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
     };
 }
