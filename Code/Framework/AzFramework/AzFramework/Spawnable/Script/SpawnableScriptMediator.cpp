@@ -180,7 +180,6 @@ namespace AzFramework::Scripts
     void SpawnableScriptMediator::Clear()
     {
         m_resultCommands.clear();
-        m_resultCommands.shrink_to_fit();
         AZ::TickBus::Handler::BusDisconnect();
     }
 
