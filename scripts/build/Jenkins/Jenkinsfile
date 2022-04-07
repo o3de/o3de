@@ -679,7 +679,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         // Debugging code do not submit
                         crashDir = GetCrashArtifactDir()
                         echo "GetCrashArtifactDir: ${crashDir}"
-                        if (fileExists(GetCrashArtifactDir()) {
+                        if (fileExists(GetCrashArtifactDir())) {
                             CreateUploadCrashArtifactStage(build_job_name, platform.key).call()
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
