@@ -156,8 +156,27 @@ namespace AtomToolsFramework
 
     bool ValidateDocumentPath(AZStd::string& path)
     {
-        return !path.empty() && AzFramework::StringFunc::Path::Normalize(path) &&
-            !AzFramework::StringFunc::Path::IsRelative(path.c_str()) && IsValidSourceDocumentPath(path);
+        if (path.empty())
+        {
+            return false;
+        }
+
+        if (!AzFramework::StringFunc::Path::Normalize(path))
+        {
+            return false;
+        }
+
+        if (AzFramework::StringFunc::Path::IsRelative(path.c_str()))
+        {
+            return false;
+        }
+
+        if (!IsValidSourceDocumentPath(path))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     bool IsValidSourceDocumentPath(const AZStd::string& path)

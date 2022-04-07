@@ -43,9 +43,9 @@ namespace UnitTest
         void Activate();
         void Deactivate();
 
-        void RegisterSourceInfo(const char* sourcePath, const AZ::Data::AssetId& assetId);
-        void RegisterSourceInfo(const char* sourcePath, const AZ::Data::AssetInfo& assetInfo, const AZStd::string& watchFolder);
-        void RegisterScanFolder(const char* scanFolderPath);
+        void RegisterSourceInfo(const AZStd::string& sourcePath, const AZ::Data::AssetId& assetId);
+        void RegisterSourceInfo(const AZStd::string& sourcePath, const AZ::Data::AssetInfo& assetInfo, const AZStd::string& watchFolder);
+        void RegisterScanFolder(const AZStd::string& scanFolderPath);
 
     private:
         struct SourceInfo
