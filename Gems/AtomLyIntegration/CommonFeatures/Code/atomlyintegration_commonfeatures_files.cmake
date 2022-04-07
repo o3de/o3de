@@ -92,6 +92,11 @@ set(FILES
     Source/PostProcess/Bloom/BloomComponentConfig.cpp
     Source/PostProcess/Bloom/BloomComponentController.cpp
     Source/PostProcess/Bloom/BloomComponentController.h
+    Source/PostProcess/Vignette/VignetteComponent.cpp
+    Source/PostProcess/Vignette/VignetteComponent.h
+    Source/PostProcess/Vignette/VignetteComponentConfig.cpp
+    Source/PostProcess/Vignette/VignetteComponentController.cpp
+    Source/PostProcess/Vignette/VignetteComponentController.h
     Source/PostProcess/ColorGrading/HDRColorGradingComponent.cpp
     Source/PostProcess/ColorGrading/HDRColorGradingComponent.h
     Source/PostProcess/ColorGrading/HDRColorGradingComponentConfig.cpp

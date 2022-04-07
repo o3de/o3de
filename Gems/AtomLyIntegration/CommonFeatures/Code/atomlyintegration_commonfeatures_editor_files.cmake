@@ -66,6 +66,8 @@ set(FILES
     Source/PostProcess/EditorPostFxLayerComponent.h
     Source/PostProcess/Bloom/EditorBloomComponent.cpp
     Source/PostProcess/Bloom/EditorBloomComponent.h
+    Source/PostProcess/Vignette/EditorVignetteComponent.cpp
+    Source/PostProcess/Vignette/EditorVignetteComponent.h
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.cpp
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.h
     Source/PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.cpp
