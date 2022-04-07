@@ -1994,14 +1994,16 @@ namespace AZ::IO
         return memoryBlock;
     }
 
-    void Archive::FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename)
+    void Archive::FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZ::IO::PathView filePath)
     {
         if (!found)
         {
-            auto correctedFilename = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filename);
+            auto correctedFilename = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filePath);
             if (!correctedFilename)
             {
-                AZ_Assert(false, "Unable to resolve path for filepath %.*s", aznumeric_cast<int>(filename.size()), filename.data());
+                AZ_Assert(
+                    false, "Unable to resolve path for file path %.*s", aznumeric_cast<int>(filePath.Native().size()),
+                    filePath.Native().data());
                 return;
             }
 
@@ -2020,7 +2022,7 @@ namespace AZ::IO
             {
                 found = true;
 
-                info.m_archiveFilename.InitFromRelativePath(archive->GetFilePath().Native());
+                info.m_archiveFilename = archive->GetFilePath();
                 info.m_offset = pFileData->GetFileDataOffset();
                 info.m_compressedSize = entry->desc.lSizeCompressed;
                 info.m_uncompressedSize = entry->desc.lSizeUncompressed;
