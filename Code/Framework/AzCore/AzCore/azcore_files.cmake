@@ -138,7 +138,7 @@ set(FILES
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
-    EBus/EBusSharedDispatchMutex.h
+    EBus/EBusSharedDispatchTraits.h
     EBus/Environment.h
     EBus/Event.h
     EBus/Event.inl

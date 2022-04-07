@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/EBus/EBusSharedDispatchMutex.h>
+#include <AzCore/EBus/EBusSharedDispatchTraits.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/parallel/thread.h>
@@ -16,44 +16,19 @@
 
 #include <gtest/gtest.h>
 
-using namespace AZ;
-
 namespace UnitTest
 {
     // Test EBus that uses the EBusSharedDispatchMutex.
-    class SharedDispatchRequests : public AZ::EBusTraits
+    class SharedDispatchRequests : public AZ::EBusSharedDispatchTraits<SharedDispatchRequests>
     {
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        // Make the EBus use the EBusSharedDispatchMutex
-        using MutexType = AZ::EBusSharedDispatchMutex;
-
-        // The EBusSharedDispatchMutex requires the LockGuard definitions to be customized.
-        template<typename MutexType, bool IsLocklessDispatch>
-        using DispatchLockGuard = AZ::EBusSharedDispatchMutexDispatchLockGuard<AZ::EBus<SharedDispatchRequests>>;
-
-        template<typename MutexType>
-        using ConnectLockGuard = AZ::EBusSharedDispatchMutexConnectLockGuard<AZ::EBus<SharedDispatchRequests>>;
-
-        template<typename MutexType>
-        using CallstackTrackerLockGuard = AZ::EBusSharedDispatchMutexCallstackLockGuard<AZ::EBus<SharedDispatchRequests>>;
-
-        // Connection policy that auto-calls OnTerrainDataCreateBegin & OnTerrainDataCreateEnd on connection.
+        // Custom disconnect policy is used here to verify that disconnects do not occur while dispatches are in progress.
         template<class Bus>
         struct ConnectionPolicy : public AZ::EBusConnectionPolicy<Bus>
         {
-            static void Connect(
-                typename Bus::BusPtr& busPtr,
-                typename Bus::Context& context,
-                typename Bus::HandlerNode& handler,
-                typename Bus::Context::ConnectLockGuard& connectLock,
-                const typename Bus::BusIdType& id = 0)
-            {
-                AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
-            }
-
             static void Disconnect(
                 typename Bus::Context& context,
                 typename Bus::HandlerNode& handler,

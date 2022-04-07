@@ -14,8 +14,8 @@
 namespace AZ
 {
     /**
-     * %EBusSharedDispatchMutex is a custom mutex type that can be used with an EBus to allow for parallel dispatch calls, but still
-     * prevents connects / disconnects during a dispatch.
+     * EBusSharedDispatchTraits is a custom mutex type and lock guards that can be used with an EBus to allow for
+     * parallel dispatch calls, but still prevents connects / disconnects during a dispatch.
      *
      * Features:
      *   - Event dispatches can execute in parallel when called on separate threads
@@ -27,7 +27,10 @@ namespace AZ
      *   - Bus connects / disconnects cannot happen within event dispatches on the same bus.
      *
      * Usage:
-     *   Add code like the following to the definition of a specific EBus:
+     *   To use the traits, inherit from EBusSharedDispatchTraits<BusType>:
+     *      class MyBus : public AZ::EBusSharedDispatchTraits<MyBus>
+     * 
+     *   Alternatively, you can directly define the specific traits via the following:
      *      using MutexType = AZ::EBusSharedDispatchMutex;
      *
      *      template <typename MutexType, bool IsLocklessDispatch>
@@ -39,6 +42,7 @@ namespace AZ
      *      template<typename MutexType>
      *      using CallstackTrackerLockGuard = AZ::EBusSharedDispatchMutexCallstackLockGuard<AZ::EBus<MyBus>>;
      */
+
 
     // Simple custom mutex class that contains a shared_mutex for use with connects / disconnects / event dispatches
     // and a separate mutex for callstack tracking thread protection.
@@ -96,41 +100,50 @@ namespace AZ
     class EBusSharedDispatchMutexConnectLockGuard
     {
     public:
-        AZ_FORCE_INLINE EBusSharedDispatchMutexConnectLockGuard(EBusSharedDispatchMutex& mutex, AZStd::adopt_lock_t)
+        EBusSharedDispatchMutexConnectLockGuard(EBusSharedDispatchMutex& mutex, AZStd::adopt_lock_t)
             : m_mutex(mutex)
         {
         }
 
-        AZ_FORCE_INLINE explicit EBusSharedDispatchMutexConnectLockGuard(EBusSharedDispatchMutex& mutex)
+        explicit EBusSharedDispatchMutexConnectLockGuard(EBusSharedDispatchMutex& mutex)
             : m_mutex(mutex)
         {
             AZ_Assert(!EBusType::IsInDispatchThisThread(), "Can't connect/disconnect while inside an event dispatch.");
             m_mutex.EventMutexLockExclusive();
         }
-        AZ_FORCE_INLINE ~EBusSharedDispatchMutexConnectLockGuard()
+
+        ~EBusSharedDispatchMutexConnectLockGuard()
         {
             m_mutex.EventMutexUnlockExclusive();
         }
 
     private:
-        AZ_FORCE_INLINE EBusSharedDispatchMutexConnectLockGuard(EBusSharedDispatchMutexConnectLockGuard const&) = delete;
-        AZ_FORCE_INLINE EBusSharedDispatchMutexConnectLockGuard& operator=(EBusSharedDispatchMutexConnectLockGuard const&) = delete;
+        EBusSharedDispatchMutexConnectLockGuard(EBusSharedDispatchMutexConnectLockGuard const&) = delete;
+        EBusSharedDispatchMutexConnectLockGuard& operator=(EBusSharedDispatchMutexConnectLockGuard const&) = delete;
         EBusSharedDispatchMutex& m_mutex;
     };
 
     // Custom lock guard to handle Dispatch lock management.
     // This will lock/unlock the event mutex with a shared lock. It also allows for recursive shared locks by only holding the
     // shared lock at the top level of the recursion.
+    // Here's how this works:
+    //  - Each thread that has an EBus call ends up creating a lock guard.
+    //  - The lock guard checks (via EBusType::IsInDispatchThisThread) whether or not it is the first EBus call to occur on this thread. 
+    //  - If it is, it sets the boolean and share locks the shared_mutex.
+    //  - If not, it doesn't, and accepts that something higher up the callstack has a share lock on the shared_mutex.
+    //  - If a recursive call to the EBus occurs on the thread, it does _not_ grab the share lock.
+    // This is required because shared_mutex by itself doesn't support recursion. Attempting to call lock_shared() twice in the same
+    // thread will result in a deadlock.
     template<class EBusType>
     class EBusSharedDispatchMutexDispatchLockGuard
     {
     public:
-        AZ_FORCE_INLINE EBusSharedDispatchMutexDispatchLockGuard(EBusSharedDispatchMutex& mutex, AZStd::adopt_lock_t)
+        EBusSharedDispatchMutexDispatchLockGuard(EBusSharedDispatchMutex& mutex, AZStd::adopt_lock_t)
             : m_mutex(mutex)
         {
         }
 
-        AZ_FORCE_INLINE explicit EBusSharedDispatchMutexDispatchLockGuard(EBusSharedDispatchMutex& mutex)
+        explicit EBusSharedDispatchMutexDispatchLockGuard(EBusSharedDispatchMutex& mutex)
             : m_mutex(mutex)
         {
             if (!EBusType::IsInDispatchThisThread())
@@ -139,7 +152,8 @@ namespace AZ
                 m_mutex.EventMutexLockShared();
             }
         }
-        AZ_FORCE_INLINE ~EBusSharedDispatchMutexDispatchLockGuard()
+
+        ~EBusSharedDispatchMutexDispatchLockGuard()
         {
             if (m_ownSharedLockOnThread)
             {
@@ -148,8 +162,8 @@ namespace AZ
         }
 
     private:
-        AZ_FORCE_INLINE EBusSharedDispatchMutexDispatchLockGuard(EBusSharedDispatchMutexDispatchLockGuard const&) = delete;
-        AZ_FORCE_INLINE EBusSharedDispatchMutexDispatchLockGuard& operator=(EBusSharedDispatchMutexDispatchLockGuard const&) = delete;
+        EBusSharedDispatchMutexDispatchLockGuard(EBusSharedDispatchMutexDispatchLockGuard const&) = delete;
+        EBusSharedDispatchMutexDispatchLockGuard& operator=(EBusSharedDispatchMutexDispatchLockGuard const&) = delete;
         EBusSharedDispatchMutex& m_mutex;
         bool m_ownSharedLockOnThread = false;
     };
@@ -161,26 +175,43 @@ namespace AZ
     class EBusSharedDispatchMutexCallstackLockGuard
     {
     public:
-        AZ_FORCE_INLINE EBusSharedDispatchMutexCallstackLockGuard(EBusSharedDispatchMutex& mutex, AZStd::adopt_lock_t)
+        EBusSharedDispatchMutexCallstackLockGuard(EBusSharedDispatchMutex& mutex, AZStd::adopt_lock_t)
             : m_mutex(mutex)
         {
         }
 
-        AZ_FORCE_INLINE explicit EBusSharedDispatchMutexCallstackLockGuard(EBusSharedDispatchMutex& mutex)
+        explicit EBusSharedDispatchMutexCallstackLockGuard(EBusSharedDispatchMutex& mutex)
             : m_mutex(mutex)
         {
             m_mutex.CallstackMutexLock();
         }
-        AZ_FORCE_INLINE ~EBusSharedDispatchMutexCallstackLockGuard()
+
+        ~EBusSharedDispatchMutexCallstackLockGuard()
         {
             m_mutex.CallstackMutexUnlock();
         }
 
     private:
-        AZ_FORCE_INLINE EBusSharedDispatchMutexCallstackLockGuard(EBusSharedDispatchMutexCallstackLockGuard const&) = delete;
-        AZ_FORCE_INLINE EBusSharedDispatchMutexCallstackLockGuard& operator=(EBusSharedDispatchMutexCallstackLockGuard const&) = delete;
+        EBusSharedDispatchMutexCallstackLockGuard(EBusSharedDispatchMutexCallstackLockGuard const&) = delete;
+        EBusSharedDispatchMutexCallstackLockGuard& operator=(EBusSharedDispatchMutexCallstackLockGuard const&) = delete;
         EBusSharedDispatchMutex& m_mutex;
-        bool m_ownSharedLockOnThread = false;
+    };
+
+    // The EBusTraits that can be inherited from to automatically set up the MutexType and LockGuards.
+    // To inherit, use "class MyBus : public AZ::EBusSharedDispatchTraits<MyBus>"
+    template<class BusType>
+    struct EBusSharedDispatchTraits : EBusTraits
+    {
+        using MutexType = AZ::EBusSharedDispatchMutex;
+
+        template<typename MutexType, bool IsLocklessDispatch>
+        using DispatchLockGuard = AZ::EBusSharedDispatchMutexDispatchLockGuard<AZ::EBus<BusType>>;
+
+        template<typename MutexType>
+        using ConnectLockGuard = AZ::EBusSharedDispatchMutexConnectLockGuard<AZ::EBus<BusType>>;
+
+        template<typename MutexType>
+        using CallstackTrackerLockGuard = AZ::EBusSharedDispatchMutexCallstackLockGuard<AZ::EBus<BusType>>;
     };
 
 } // namespace AZ
