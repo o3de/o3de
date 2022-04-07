@@ -347,11 +347,8 @@ namespace AZ
             m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::BufferViewUnboundedArray)] =
                 bufferUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
 
-            if (bufferUnboundedArrayDescs.size())
+            for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& desc : bufferUnboundedArrayDescs)
             {
-                AZ_Assert(bufferUnboundedArrayDescs.size() == 1, "Vulkan descriptor layout can have at most one unbounded array");
-
-                const RHI::ShaderInputBufferUnboundedArrayDescriptor& desc = bufferUnboundedArrayDescs[0];
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
                 m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
@@ -390,10 +387,8 @@ namespace AZ
             m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::ImageViewUnboundedArray)] =
                 imageUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
 
-            if (imageUnboundedArrayDescs.size())
+            for (const RHI::ShaderInputImageUnboundedArrayDescriptor& desc : imageUnboundedArrayDescs)
             {
-                AZ_Assert(m_hasUnboundedArray == false && imageUnboundedArrayDescs.size() == 1, "Vulkan descriptor layout can have at most one unbounded array");
-                const RHI::ShaderInputImageUnboundedArrayDescriptor& desc = imageUnboundedArrayDescs[0];
 
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
