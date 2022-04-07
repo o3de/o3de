@@ -24,7 +24,6 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/EBus/IEventScheduler.h>
 
 
 namespace Multiplayer

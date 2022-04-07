@@ -116,6 +116,6 @@ namespace Multiplayer
 
         ServerAcceptanceReceivedEvent::Handler m_serverAcceptanceReceivedHandler;
         AZ::ScheduledEvent m_connectionEvent = AZ::ScheduledEvent([this]{this->Connect();}, AZ::Name("MultiplayerEditorConnect"));
-        int m_connectionAttempts = 0;
+        uint16_t m_connectionAttempts = 0;
     };
 }
