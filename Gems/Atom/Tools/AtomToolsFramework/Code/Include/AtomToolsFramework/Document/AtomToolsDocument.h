@@ -45,6 +45,7 @@ namespace AtomToolsFramework
         bool SaveAsCopy(const AZStd::string& savePath) override;
         bool SaveAsChild(const AZStd::string& savePath) override;
         bool Close() override;
+        void Clear() override;
         bool IsOpen() const override;
         bool IsModified() const override;
         bool CanSave() const override;
@@ -56,8 +57,6 @@ namespace AtomToolsFramework
         bool EndEdit() override;
 
     protected:
-        virtual void Clear();
-
         virtual bool OpenSucceeded();
         virtual bool OpenFailed();
 
