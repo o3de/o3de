@@ -242,7 +242,8 @@ namespace AZ::IO
         bool hasFinalizedReads = FinalizeReads();
         bool hasWorked = false;
 
-        if (!m_pendingReadRequests.empty())
+        // Queue as many read requests as possible in order to maximize throughput.
+        while (!m_pendingReadRequests.empty())
         {
             FileRequest* request = m_pendingReadRequests.front();
             if (ReadRequest(request))
@@ -250,8 +251,14 @@ namespace AZ::IO
                 m_pendingReadRequests.pop_front();
                 hasWorked = true;
             }
+            else
+            {
+                break;
+            }
         }
-        else if (!m_pendingRequests.empty())
+
+        // Pick up one other synchronous request if no read requests were issued.
+        if (!hasWorked && !m_pendingRequests.empty())
         {
             FileRequest* request = m_pendingRequests.front();
             hasWorked = AZStd::visit(
