@@ -471,7 +471,7 @@ namespace AZ::IO
                 DWORD shareMode = (m_constructionOptions.m_enableSharing || data.m_sharedRead) ? FILE_SHARE_READ: 0;
 
                 AZStd::wstring filenameW;
-                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePath());
+                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePathCStr());
                 file = ::CreateFileW(
                     filenameW.c_str(),              // file name
                     FILE_GENERIC_READ,              // desired access
@@ -812,7 +812,7 @@ namespace AZ::IO
 
         WIN32_FILE_ATTRIBUTE_DATA attributes;
         AZStd::wstring filenameW;
-        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePath());
+        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePathCStr());
         if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes))
         {
             if ((attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) &&
@@ -871,7 +871,7 @@ namespace AZ::IO
         {
             WIN32_FILE_ATTRIBUTE_DATA attributes;
             AZStd::wstring filenameW;
-            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePath());
+            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePathCStr());
             if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes) &&
                 (attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) && ((attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0))
             {
@@ -1108,7 +1108,7 @@ namespace AZ::IO
         return m_metaDataCache_front;
     }
 
-    bool StorageDriveWin::IsServicedByThisDrive(const char* filePath) const
+    bool StorageDriveWin::IsServicedByThisDrive(AZ::IO::PathView filePath) const
     {
         // This approach doesn't allow paths to be resolved to the correct drive when junctions are used or when a drive
         // is mapped as folder of another drive. To do this correctly "GetVolumePathName" should be used, but this takes
@@ -1116,7 +1116,7 @@ namespace AZ::IO
         // multiple disks.
         for (const AZStd::string& drivePath : m_drivePaths)
         {
-            if (azstrnicmp(filePath, drivePath.c_str(), drivePath.length()) == 0)
+            if (filePath.RootName().Compare(drivePath) == 0)
             {
                 return true;
             }
