@@ -79,7 +79,17 @@ namespace AtomToolsFramework
     //! Determines if a file path exists in a valid asset folder for the project or one of its gems
     //! @param path File path to be validated
     //! @returns True if the path is valid, otherwise false
-    bool IsValidSourceDocumentPath(const AZStd::string& path);
+    bool IsDocumentPathInSupportedFolder(const AZStd::string& path);
+
+    //! Compares the specified source asset path to registry settings to determine if it can be opened or edited in a tool
+    //! @param Path Absolute path of the file to be tested
+    //! @returns True if the file can be opened or edited, otherwise false
+    bool IsDocumentPathEditable(const AZStd::string& path);
+
+    //! Compares the specified source asset path to registry settings to determine if it can be used to display thumbnail images
+    //! @param Path Absolute path of the file to be tested
+    //! @returns True if the file can be previewed, otherwise false
+    bool IsDocumentPathPreviewable(const AZStd::string& path);
 
     //! Launches an O3DE application in a detached process
     //! @param baseName Base filename of the application executable that must be in the bin folder
