@@ -1,0 +1,18 @@
+{
+    "O3DE": {
+        "Atom": {
+            "Tools": {
+                "EditablePathSettings": {
+                    "@gemroot:Terrain@/Assets/Materials/Terrain/DefaultPbrTerrain.material": false,
+                    "@gemroot:Terrain@/Assets/Materials/Terrain/PbrTerrain.materialtype": false,
+                    "@gemroot:Terrain@/Assets/Materials/Terrain/TerrainDetailMaterial.materialtype": false
+                },
+                "PreviewablePathSettings": {
+                    "@gemroot:Terrain@/Assets/Materials/Terrain/DefaultPbrTerrain.material": false,
+                    "@gemroot:Terrain@/Assets/Materials/Terrain/PbrTerrain.materialtype": false,
+                    "@gemroot:Terrain@/Assets/Materials/Terrain/TerrainDetailMaterial.materialtype": false
+                }
+            }
+        }
+    }
+}
