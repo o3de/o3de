@@ -188,8 +188,8 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
         Report.info(f"Sphere initial X position {sphere.initial_pos.x} "
                     f"is not close enough to force region initial X position {force_region.initial_pos.x}.")
     if not sphere_damping_x_valid:
-        Report.inf(f"Sphere initial X positoin {sphere.initial_pos.x} "
-                   f"is not close enough to trigger initial X position {trigger.initial_pos.x}.")
+        Report.info(f"Sphere initial X position {sphere.initial_pos.x} "
+                    f"is not close enough to trigger initial X position {trigger.initial_pos.x}.")
     if not setup_entity_priority_valid:
         Report.info(f"Initial level entity expects "
                     f"Initial Sphere Y Pos:{sphere.initial_pos.z} "
