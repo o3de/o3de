@@ -562,136 +562,130 @@
         </widget>
         <widget class="QSplitter" name="assetDetailsDialogSplitter">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="childrenCollapsible">
           <bool>false</bool>
          </property>
-         <widget class="QWidget" name="assetDetailsTopElementsContainer">
-          <layout class="QHBoxLayout" name="assetDetailsHorizontalLayout1" stretch="3,2">
-           <property name="bottomMargin">
-            <number>5</number>
-           </property>
-           <item>
-            <layout class="QVBoxLayout" name="assetDetailsVerticalLayout1">
-             <item>
-              <widget class="AzQtComponents::FilteredSearchWidget" name="assetDataFilteredSearchWidget" native="true">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>24</height>
-                </size>
-               </property>
-               <property name="placeholderText" stdset="0">
-                <string>Search for assets by name or ID</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QTabWidget" name="assetsTabWidget">
-               <property name="currentIndex">
-                <number>0</number>
-               </property>
-               <widget class="QWidget" name="SourceAssetsTab">
-                <attribute name="title">
-                 <string>Source Assets</string>
-                </attribute>
-                <layout class="QVBoxLayout" name="SourceAssetsVerticalLayout" stretch="0">
-                 <item>
-                  <widget class="QTreeView" name="SourceAssetsTreeView">
-                   <property name="editTriggers">
-                    <set>QAbstractItemView::NoEditTriggers</set>
-                   </property>
-                   <property name="sortingEnabled">
-                    <bool>true</bool>
-                   </property>
-                   <attribute name="headerDefaultSectionSize">
-                    <number>300</number>
-                   </attribute>
+          <widget class="QWidget" name="AssetDetailsLeftLayout">
+              <layout class="QVBoxLayout" name="assetDetailsVerticalLayout1">
+                <item>
+                  <widget class="AzQtComponents::FilteredSearchWidget" name="assetDataFilteredSearchWidget" native="true">
+                    <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                      </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                      <size>
+                        <width>0</width>
+                        <height>24</height>
+                      </size>
+                    </property>
+                    <property name="placeholderText" stdset="0">
+                      <string>Search for assets by name or ID</string>
+                    </property>
                   </widget>
-                 </item>
-                </layout>
-               </widget>
-               <widget class="QWidget" name="ProductAssetsTab">
-                <attribute name="title">
-                 <string>Product Assets</string>
-                </attribute>
-                <layout class="QVBoxLayout" name="ProductAssetsVerticalLayout" stretch="0">
-                 <item>
-                  <widget class="QTreeView" name="ProductAssetsTreeView">
-                   <property name="sortingEnabled">
-                    <bool>true</bool>
-                   </property>
-                   <attribute name="headerDefaultSectionSize">
-                    <number>300</number>
-                   </attribute>
+                </item>
+                <item>
+                  <widget class="QTabWidget" name="assetsTabWidget">
+                    <property name="currentIndex">
+                      <number>0</number>
+                    </property>
+                    <widget class="QWidget" name="SourceAssetsTab">
+                      <attribute name="title">
+                        <string>Source Assets</string>
+                      </attribute>
+                      <layout class="QVBoxLayout" name="SourceAssetsVerticalLayout" stretch="0">
+                        <item>
+                          <widget class="QTreeView" name="SourceAssetsTreeView">
+                            <property name="editTriggers">
+                              <set>QAbstractItemView::NoEditTriggers</set>
+                            </property>
+                            <property name="sortingEnabled">
+                              <bool>true</bool>
+                            </property>
+                            <attribute name="headerDefaultSectionSize">
+                              <number>300</number>
+                            </attribute>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
+                    <widget class="QWidget" name="ProductAssetsTab">
+                      <attribute name="title">
+                        <string>Product Assets</string>
+                      </attribute>
+                      <layout class="QVBoxLayout" name="ProductAssetsVerticalLayout" stretch="0">
+                        <item>
+                          <widget class="QTreeView" name="ProductAssetsTreeView">
+                            <property name="sortingEnabled">
+                              <bool>true</bool>
+                            </property>
+                            <attribute name="headerDefaultSectionSize">
+                              <number>300</number>
+                            </attribute>
+                          </widget>
+                        </item>
+                      </layout>
+                    </widget>
                   </widget>
-                 </item>
-                </layout>
-               </widget>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
+                </item>
+              </layout>
+          </widget>
+          <widget class="QWidget" name="AssetDetailsRightLayout">
             <layout class="QVBoxLayout" name="assetDetailsVerticalLayout2">
-             <item>
-              <widget class="AssetProcessor::SourceAssetDetailsPanel" name="sourceAssetDetailsPanel"/>
-             </item>
-             <item>
-              <widget class="AssetProcessor::ProductAssetDetailsPanel" name="productAssetDetailsPanel">
-               <property name="visible">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QListWidget" name="missingDependencyScanResults">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>72</height>
-                </size>
-               </property>
-               <property name="editTriggers">
-                <set>QAbstractItemView::NoEditTriggers</set>
-               </property>
-               <property name="tabKeyNavigation">
-                <bool>true</bool>
-               </property>
-               <property name="showDropIndicator" stdset="0">
-                <bool>false</bool>
-               </property>
-               <property name="defaultDropAction">
-                <enum>Qt::IgnoreAction</enum>
-               </property>
-               <property name="alternatingRowColors">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
+              <item>
+                <widget class="AssetProcessor::SourceAssetDetailsPanel" name="sourceAssetDetailsPanel"/>
+              </item>
+              <item>
+                <widget class="AssetProcessor::ProductAssetDetailsPanel" name="productAssetDetailsPanel">
+                  <property name="visible">
+                    <bool>false</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QListWidget" name="missingDependencyScanResults">
+                  <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                    </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                    <size>
+                      <width>0</width>
+                      <height>0</height>
+                    </size>
+                  </property>
+                  <property name="maximumSize">
+                    <size>
+                      <width>16777215</width>
+                      <height>72</height>
+                    </size>
+                  </property>
+                  <property name="editTriggers">
+                    <set>QAbstractItemView::NoEditTriggers</set>
+                  </property>
+                  <property name="tabKeyNavigation">
+                    <bool>true</bool>
+                  </property>
+                  <property name="showDropIndicator" stdset="0">
+                    <bool>false</bool>
+                  </property>
+                  <property name="defaultDropAction">
+                    <enum>Qt::IgnoreAction</enum>
+                  </property>
+                  <property name="alternatingRowColors">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
             </layout>
-           </item>
-          </layout>
-         </widget>
+          </widget>
+
         </widget>
         <widget class="QWidget" name="LogDialog">
          <layout class="QVBoxLayout" name="verticalLayout_6">

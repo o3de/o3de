@@ -32,6 +32,7 @@ namespace PhysX
     {
     public:
         AZ_RTTI(PhysX::Module, "{160C59B1-FA68-4CDC-8562-D1204AB78FC1}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(PhysX::Module, AZ::SystemAllocator, 0)
 
         Module()
             : AZ::Module()
@@ -41,6 +42,10 @@ namespace PhysX
             , m_physXSystem(new PhysXSettingsRegistryManager(), PxCooking::GetRealTimeCookingParams())
 #endif
         {
+            static_assert(alignof(PhysX::PhysXSystemConfiguration) == 16);
+            static_assert(alignof(PhysX::PhysXSystem) == 16);
+            static_assert(alignof(PhysX::Module) == 16);
+            
             LoadModules();
 
             AZStd::list<AZ::ComponentDescriptor*> descriptorsToAdd = GetDescriptors();

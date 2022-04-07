@@ -355,7 +355,13 @@ namespace Multiplayer
             INetworkInterface* editorNetworkInterface =
                 AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
             AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
-            editorNetworkInterface->Listen(editorsv_port);
+            if (!editorNetworkInterface->Listen(editorsv_port))
+            {
+                AZ_Warning(
+                    "MultiplayerEditor", false, "Launching editor server skipped because editor failed to listen on port: %i.",
+                    static_cast<uint16_t>(editorsv_port));
+                return;
+            }
 
             // Launch the editor-server
             LaunchEditorServer();
