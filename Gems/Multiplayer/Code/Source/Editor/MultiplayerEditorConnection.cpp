@@ -22,14 +22,12 @@
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
-#include <AzCore/EBus/IEventScheduler.h>
 
 namespace Multiplayer
 {
     using namespace AzNetworking;
 
     AZ_CVAR(bool, editorsv_isDedicated, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to init as a server expecting data from an Editor. Do not modify unless you're sure of what you're doing.");
-    AZ_CVAR(bool, editorsv_editorIsListening, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the editor is already listening; connect to the editor as soon as possible. Do not modify unless you're sure of what you're doing.");
     AZ_CVAR(uint16_t, editorsv_port, DefaultServerEditorPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that the multiplayer editor gem will bind to for traffic.");
 
     MultiplayerEditorConnection::MultiplayerEditorConnection()
@@ -64,33 +62,6 @@ namespace Multiplayer
             }
         }
     }
-    
-    void MultiplayerEditorConnection::Connect()
-    {
-        ++m_connectionAttempts;
-        AZ_Printf("MultiplayerEditorConnection", "Editor-server tcp connection attempt #%i.\n", m_connectionAttempts)
-
-        const ConnectionId editorServerToEditorConnectionId = m_networkEditorInterface->Connect(IpAddress(LocalHost.data(), editorsv_port, ProtocolType::Tcp));
-
-        if (editorServerToEditorConnectionId != AzNetworking::InvalidConnectionId)
-        {
-            m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForLevelData());
-            AZ_Printf("MultiplayerEditorConnection", "Editor-server has connected to the editor.\n")
-        }
-        else
-        {
-            // Keep trying to connect every 30 seconds until the port is finally available.
-            constexpr float timeoutSeconds = 30.0f;
-            AZ_Printf("MultiplayerEditorConnection", "Editor-server couldn't connect to editor, will attempt in %f seconds...\n", timeoutSeconds)
-            AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([this]
-                {
-                    this->Connect();
-                }, 
-                AZ::Name("MultiplayerEditorConnection attempt connection"),
-                AZ::SecondsToTimeMs(timeoutSeconds)
-            );
-        }
-    }
 
     void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
     {
@@ -102,18 +73,7 @@ namespace Multiplayer
         
         AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.")
 
-        if (editorsv_editorIsListening)
-        {
-            // An editor is out there waiting to connect
-            m_connectionAttempts = 0;
-            Connect();
-        }
-        else
-        {
-            // If there wasn't an editor waiting for this server to start, then assume this is an editor-server launched by hand... listen
-            // and wait for the editor to request a connection
-            m_networkEditorInterface->Listen(editorsv_port);
-         }
+        m_networkEditorInterface->Listen(editorsv_port);
     }
 
     bool MultiplayerEditorConnection::HandleRequest

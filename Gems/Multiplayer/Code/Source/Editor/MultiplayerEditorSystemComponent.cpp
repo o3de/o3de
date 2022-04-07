@@ -24,7 +24,7 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <DebugDraw/DebugDrawBus.h>
+#include <AzCore/EBus/IEventScheduler.h>
 
 
 namespace Multiplayer
@@ -183,12 +183,16 @@ namespace Multiplayer
             
             if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName)))
             {
-                editorNetworkInterface->StopListening();
-                //editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
+                editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
             if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
             {
-                //console->PerformCommand("disconnect");
+                console->PerformCommand("disconnect");
+            }
+
+            if (m_connectionEvent.IsScheduled())
+            {
+                m_connectionEvent.RemoveFromQueue();
             }
 
             AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
@@ -283,8 +287,6 @@ namespace Multiplayer
 
         if (outProcess)
         {
-            DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawTextOnScreen, "Starting server...", AZ::Colors::White, 3.0f);
-
             // Stop the previous server if one exists
             if (m_serverProcessWatcher)
             {
@@ -342,9 +344,9 @@ namespace Multiplayer
             }
         }
 
-        const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
         if (editorsv_launch)
         {
+            const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
             if (LocalHost != remoteAddress)
             {
                 AZ_Warning(
@@ -355,47 +357,17 @@ namespace Multiplayer
                 return;
             }
 
-            // Begin listening for MPEditor packets before we launch the editor-server.
-            // The editor-server will send us (the editor) an "EditorServerReadyForLevelData" packet to let us know it's ready to receive data.
-            INetworkInterface* editorNetworkInterface =
-                AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
-            AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
-            if (!editorNetworkInterface->Listen(editorsv_port))
-            {
-                AZStd::string warningMessage = AZStd::string::format("Launching editor server skipped because editor failed to listen on port: %i. Try changing editorsv_port or wait until port is available.",
-                    static_cast<uint16_t>(editorsv_port));
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawTextOnScreen, warningMessage, AZ::Colors::Red, 3.0f);
-
-                AZ_Warning("MultiplayerEditor", false, warningMessage.c_str());
-                //return;
-            }
-
             AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
 
             // Launch the editor-server
             LaunchEditorServer();
         }
-        else
-        {
-            // Editorsv_launch=false, so we're expecting an editor-server already exists.
-            // Connect to the editor-server and then send the EditorServerLevelData packet.
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
-            AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
-                
-            m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
-
-            if (m_editorConnId == AzNetworking::InvalidConnectionId)
-            {
-                AZ_Warning(
-                    "MultiplayerEditor", false,
-                    "Could not connect to a server at editorsv_serveraddr(%s) on editorsv_port(%i). Check server is active or use editorsv_launch to auto-launch a server.",
-                    remoteAddress.c_str(),
-                    static_cast<uint16_t>(editorsv_port))
-                return;
-            }
-
-            SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
-        }
+        
+        // Keep trying to connect until the port is finally available.
+        m_connectionAttempts = 0;
+        constexpr float retrySeconds = 1.0f;
+        constexpr bool autoRequeue = true;
+        m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
@@ -498,6 +470,25 @@ namespace Multiplayer
             AZ_Warning(
                 "MultiplayerEditorSystemComponent", false,
                 "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
+        }
+    }
+
+    void MultiplayerEditorSystemComponent::Connect()
+    {
+        ++m_connectionAttempts;
+        AZ_Printf("MultiplayerEditor", "Editor tcp connection attempt #%i.", m_connectionAttempts)
+
+        INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
+        AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
+
+        const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
+        m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
+
+        if (m_editorConnId != AzNetworking::InvalidConnectionId)
+        {
+            AZ_Printf("MultiplayerEditor", "Editor has connected to the editor-server.")
+            m_connectionEvent.RemoveFromQueue();
+            SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
         }
     }
 
