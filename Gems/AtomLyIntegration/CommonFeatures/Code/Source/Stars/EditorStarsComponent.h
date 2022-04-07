@@ -24,13 +24,17 @@ namespace AZ::Render
         static void Reflect(AZ::ReflectContext* context);
 
         EditorStarsComponent() = default;
-        EditorStarsComponent(const StarsComponentConfig& config);
+
+    protected:
+        void Init() override;
 
     private:
         //! EditorRenderComponentAdapter
+        //! we override OnConfigurationChanged to avoid deactivating and activating unnecessarily
         AZ::u32 OnConfigurationChanged() override;
         void OnEntityVisibilityChanged(bool visibility) override;
 
         AZ::Data::AssetId m_prevAssetId;
+        AZStd::string m_defaultAssetPath{ "stars/default.stars" };
     };
 } // namespace AZ::Render

@@ -11,6 +11,19 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 
+ShaderResourceGroup PerDrawSrg : SRG_PerDraw
+{
+    float3x3 m_rotation;
+
+    struct StarShaderConstants
+    {
+        float2 m_scale;
+        float m_exposureFactor;
+        float m_twinkleRate;
+    };
+    StarShaderConstants m_starParams;
+}
+
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -30,16 +43,19 @@ float GetFlickerAmount(in float3 pos)
 {
     const float2 StarShimmerTab[8] = 
     {
-        float2(0.897907815,-0.347608525), float2(0.550299290, 0.273586675), float2(0.823885965, 0.098853070), float2(0.922739035,-0.122108860),
-        float2(0.800630175,-0.088956800), float2(0.711673375, 0.158864420), float2(0.870537795, 0.085484560), float2(0.956022355,-0.058114540)
+        float2(0.897907815,-0.347608525), float2(0.550299290, 0.273586675), 
+        float2(0.823885965, 0.098853070), float2(0.922739035,-0.122108860),
+        float2(0.800630175,-0.088956800), float2(0.711673375, 0.158864420), 
+        float2(0.870537795, 0.085484560), float2(0.956022355,-0.058114540)
     };
 
-    float2 hash = frac(pos.xy * 256);  
-    float index = frac(hash.x + (hash.y + 1) * SceneSrg::m_starParams.w);
+    const float2 hash = frac(pos.xy * 256);
+    const float timeInSeconds = SceneSrg::m_time;
+    float index = frac(hash.x + (hash.y + 1) * PerDrawSrg::m_starParams.m_twinkleRate * timeInSeconds);
     index *= 8;
   
-    float f = frac(index);
-    int i = int(index);
+    const float f = frac(index);
+    const int i = int(index);
     return StarShimmerTab[i].x + f * StarShimmerTab[i].y;
 }
 
@@ -47,10 +63,10 @@ VSOutput MainVS(VSInput IN)
 {
     VSOutput OUT;
     
-    float4 ColAndMag = IN.m_color;
+    const float4 colorAndMagnitude = IN.m_color;
 
     // Set the w component to 0 in order to project the stars out to infinity.
-    float4 pos = float4(mul(SceneSrg::m_starRotationMatrix, IN.m_position), 0.0);
+    const float4 pos = float4(mul(PerDrawSrg::m_rotation, IN.m_position), 0.0);
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, pos);    
 
     // using reverse z, so push depth out to the far plane
@@ -59,25 +75,20 @@ VSOutput MainVS(VSInput IN)
     
     // apparent magnitude is how bright a star appears from earth 
     // magnitude is a logarithmic scale and brighter objects have lower numbers
-    // 1.0 magnitude is the brightest, a star of magnitude 2.0 is 2.512 times as
-    // bright as a star of magnitude of 3.0
+    // a star of magnitude 2.0 is 2.512 times as bright as a star of magnitude of 3.0
     // Sirius has a magnitude of -1.46
     // humans typically see stars with apparent magnitude ranging from -1.44 .. 6.5
     const float humanMinMag = -1.44;
     const float humanMaxMag = 6.5;
 
-    // scale ColAndMag.w from 0..1 to 6.5..-1.44
-    float apparentMagnitude = humanMaxMag + ColAndMag.w * (humanMinMag - humanMaxMag);
-
-    // we want the stars with apparent magnitude of 6.5 to be barely visible
-    // and apparent magnitude of -1.44 to be the brightness of Vega/Sirius
+    // scale colorAndMagnitude.w from 0..1 to 6.5..-1.44
+    const float apparentMagnitude = humanMaxMag + colorAndMagnitude.w * (humanMinMag - humanMaxMag);
 
     // scale the range from 6.5..-1.44 to 0..1 with a logarithmic scale approximation 
     // e.g. 6.5 = 0.006, 1 = 0.2, 0 = 0.39, -1.44 =  1
     // and dim with animated flicker amount
-
-    float brightness = GetFlickerAmount(IN.m_position) * pow(5.0, (-apparentMagnitude + humanMinMag) / 2.5);
-    OUT.m_color = float4(brightness * ColAndMag.xyz, brightness);
+    const float brightness = GetFlickerAmount(IN.m_position) * pow(5.0, (-apparentMagnitude + humanMinMag) / 2.5);
+    OUT.m_color = float4(brightness * colorAndMagnitude.xyz, brightness);
 
     const float2 expansion[6] =
     {
@@ -99,9 +110,9 @@ VSOutput MainVS(VSInput IN)
         float2(0, 1)    
     };
 
-    uint v = uint(IN.m_vertexID) % uint(6);
-    OUT.m_position.xy += expansion[v] * SceneSrg::m_starParams.xy;
-    OUT.m_quadPos = texcoord[v];
+    const uint vertexIndex = uint(IN.m_vertexID) % uint(6);
+    OUT.m_position.xy += expansion[vertexIndex] * PerDrawSrg::m_starParams.m_scale;
+    OUT.m_quadPos = texcoord[vertexIndex];
     return OUT;
 };
 
@@ -114,23 +125,16 @@ PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
 
-    float2 pos = IN.m_quadPos.xy;
+    const float2 pos = IN.m_quadPos.xy;
+    const float2 distCenter = 3.5 * pos.xy - 3.5 * float2(0.5, 0.5);
+    const float scale = exp(-dot(distCenter, distCenter));
 
-    float2 distCenter = 3.5 * pos.xy - 3.5 * float2(0.5, 0.5);
-    float scale = exp(-dot(distCenter, distCenter));
+    const float3 coolColor = IN.m_color.xyz;
+    const float3 hotColor = IN.m_color.www; // always grayscale
 
-    float3 colCool = IN.m_color.xyz;
-    float3 colHot = IN.m_color.www;
+    const float3 color = PerDrawSrg::m_starParams.m_exposureFactor * (coolColor * scale + 5.0 * hotColor * pow(scale, 10.0));
 
-    // ACES crushes the range a bit (1.0 becomes 0.8) so we give users an 
-    // intensity multiplier 
-    float3 colFinal = SceneSrg::m_starParams.z * (colCool * scale + 5.0 * colHot * pow(scale, 10.0));
-
-    OUT.m_diffuse = float4(colFinal, scale);
-
-    // uncomment one of the following lines to more easily debug
-    //OUT.m_diffuse = float4(1.0, 1.0, 1.0, scale); // full bright gradient
-    //OUT.m_diffuse = float4(1.0, 1.0, 1.0, 1.0); // full bright quad 
+    OUT.m_diffuse = float4(color, scale);
 
     return OUT;
 }; 

@@ -11,14 +11,20 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <Atom/Feature/Stars/StarsFeatureProcessorInterface.h>
 #include <AtomLyIntegration/CommonFeatures/Stars/StarsComponentConfig.h>
+
+namespace AZ::RPI
+{
+    class Scene;
+}
 
 namespace AZ::Render
 {
+    class StarsFeatureProcessor;
+
     class StarsComponentController final
-        : public TransformNotificationBus::Handler
-        , Data::AssetBus::MultiHandler
+        : private TransformNotificationBus::Handler
+        , private Data::AssetBus::MultiHandler
     {
     public:
         friend class EditorStarsComponent;
@@ -27,7 +33,7 @@ namespace AZ::Render
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         StarsComponentController() = default;
         StarsComponentController(const StarsComponentConfig& config);
@@ -50,11 +56,23 @@ namespace AZ::Render
         void OnConfigChanged();
         void OnStarsAssetChanged();
         void UpdateStarsFromAsset(Data::Asset<Data::AssetData> asset);
+        void RegisterFeatureProcessor(EntityId entityId);
+        void UnregisterFeatureProcessor();
 
         StarsComponentConfig m_configuration;
 
-        AZ::Render::StarsFeatureProcessorInterface* m_starsFeatureProcessor = nullptr;
+        AZ::Render::StarsFeatureProcessor* m_starsFeatureProcessor = nullptr;
 
-        bool m_visible = true;
+        struct Star
+        {
+            float ascension;
+            float declination;
+            uint8_t red;
+            uint8_t green;
+            uint8_t blue;
+            uint8_t magnitude;
+        };
+
+        RPI::Scene* m_scene;
     };
 } // AZ::Render

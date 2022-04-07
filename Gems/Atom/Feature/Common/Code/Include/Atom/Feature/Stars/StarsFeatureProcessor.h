@@ -38,36 +38,61 @@ namespace AZ::Render
         void Render(const FeatureProcessor::RenderPacket& packet) override;
 
         //! StarsFeatureProcessorInterface
-        void Enable(bool enable) override;
-        bool IsEnabled() override;
         void SetStars(const AZStd::vector<StarVertex>& starVertexData) override;
-        void SetIntensityFactor(float intensityFactor) override;
+        void SetExposure(float exposure) override;
         void SetRadiusFactor(float radius) override;
         void SetOrientation(AZ::Quaternion orientation) override;
+        void SetTwinkleRate(float twinkleRate) override;
+
+        //! RPI::SceneNotificationBus
+        void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
+        void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
 
     private:
         static constexpr const char* FeatureProcessorName = "StarsFeatureProcessor";
 
         StarsFeatureProcessor(const StarsFeatureProcessor&) = delete;
 
+        void UpdateShaderConstants();
+        void UpdateDrawPacket();
+        void UpdateBackgroundClearColor();
+
+        //! build a draw packet to draw the star mesh
+        RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacket(
+            const Data::Instance<RPI::ShaderResourceGroup>& srg,
+            const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
+            const RHI::DrawListTag& drawListTag,
+            const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
+            uint32_t vertexCount);
+
         RPI::Ptr<RPI::PipelineStateForDraw> m_meshPipelineState;
         AZStd::array<AZ::RHI::StreamBufferView, 1> m_meshStreamBufferViews;
 
-        Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg = nullptr;
+        Data::Instance<RPI::ShaderResourceGroup> m_drawSrg = nullptr;
         Data::Instance<RPI::Shader> m_shader = nullptr;
 
-        RHI::ShaderInputNameIndex m_starsDataBufferIndex = "m_starParams";
-        RHI::ShaderInputNameIndex m_starsRotationMatrixIndex = "m_starRotationMatrix";
-        RHI::InputStreamLayout m_starsVertexStreamLayout;
+        RHI::ShaderInputNameIndex m_starParamsIndex = "m_starParams";
+        RHI::ShaderInputNameIndex m_rotationIndex = "m_rotation";
+
         Data::Instance<RPI::Buffer> m_starsVertexBuffer = nullptr;
         RHI::DrawListTag m_drawListTag;
+        RHI::ConstPtr<RHI::DrawPacket> m_drawPacket;
 
-        bool m_enabled = false;
+        bool m_updateShaderConstants = false;
         AZ::Matrix3x3 m_orientation = AZ::Matrix3x3::CreateIdentity();
-        float m_intensityFactor = StarsDefaultIntensityFactor;
+        float m_exposure = StarsDefaultExposure;
         float m_radiusFactor = StarsDefaultRadiusFactor;
-        AZStd::array<float, 4> m_starsData;
+
+        struct StarShaderConstants
+        {
+            float m_scaleX = 1.f;
+            float m_scaleY = 1.f;
+            float m_scaledExposure = StarsDefaultExposure;
+            float m_twinkleRate = StarsDefaultTwinkleRate;
+        };
+        StarShaderConstants m_shaderConstants;
         AZStd::vector<StarVertex> m_starsMeshData;
         uint32_t m_numStarsVertices = 0;
+
     };
 } // namespace AZ::Render

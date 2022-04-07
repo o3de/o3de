@@ -21,13 +21,12 @@ namespace AZ::Render
         static constexpr inline const char* DisplayName = "StarsAsset";
         static constexpr inline const char* Extension = "stars";
         static constexpr inline const char* Group = "Rendering";
-        static constexpr inline const AZ::IO::OffsetType HeaderSize = sizeof(uint32_t) * 3;
+        static constexpr inline const size_t HeaderSize = sizeof(uint32_t) * 3;
 
         AZ_RTTI(StarsAsset, "{211938C1-C54D-417D-977A-9928D7C630B1}", AZ::Data::AssetData)
         AZ_CLASS_ALLOCATOR(StarsAsset, AZ::SystemAllocator, 0);
 
         AZStd::vector<AZ::u8> m_data;
-        uint32_t m_numStars = 0;
     };
 
     class StarsAssetHandler final

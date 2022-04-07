@@ -12,7 +12,8 @@
 
 namespace AZ::Render
 {
-    static const float StarsDefaultIntensityFactor = 3.0f;
+    static const float StarsDefaultExposure = 1.0f;
+    static const float StarsDefaultTwinkleRate = 0.5f;
     static const float StarsDefaultRadiusFactor = 7.0f;
 
     class StarsFeatureProcessorInterface
@@ -27,11 +28,10 @@ namespace AZ::Render
             uint32_t m_color;
         };
 
-        virtual void Enable(bool enable) = 0;
-        virtual bool IsEnabled() = 0;
         virtual void SetStars(const AZStd::vector<StarVertex>& starVertexData) = 0;
-        virtual void SetIntensityFactor(float intensityFactor) = 0;
+        virtual void SetExposure(float exposure) = 0;
         virtual void SetRadiusFactor(float radiusFactor) = 0;
         virtual void SetOrientation(AZ::Quaternion orientation) = 0;
+        virtual void SetTwinkleRate(float rate) = 0;
     };
 }

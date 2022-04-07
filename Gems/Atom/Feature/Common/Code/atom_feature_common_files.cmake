@@ -33,6 +33,7 @@ set(FILES
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
+    Include/Atom/Feature/Stars/StarsFeatureProcessor.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyboxConstants.h
     Include/Atom/Feature/SkyBox/SkyBoxLUT.h
@@ -352,7 +353,6 @@ set(FILES
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
     Source/Stars/StarsFeatureProcessor.cpp
-    Source/Stars/StarsFeatureProcessor.h
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

@@ -25,8 +25,9 @@ namespace AZ::Render
 
         static void Reflect(ReflectContext* context);
 
-        float m_intensityFactor = StarsDefaultIntensityFactor;
+        float m_exposure = StarsDefaultExposure;
         float m_radiusFactor = StarsDefaultRadiusFactor;
+        float m_twinkleRate = StarsDefaultTwinkleRate;
 
         AZ::Data::Asset<StarsAsset> m_starsAsset;
     };

@@ -6,6 +6,8 @@
  *
  */
 
+#include <Atom/Feature/Stars/StarsFeatureProcessor.h>
+#include <Atom/RPI.Public/Scene.h>
 #include "EditorStarsComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 
@@ -27,17 +29,22 @@ namespace AZ::Render
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Game") }))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StarsComponentConfig::m_intensityFactor, "Intensity factor", "Intensity factor")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &StarsComponentConfig::m_exposure, "Exposure", "Exposure")
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 1000.0f) // 1000 nits max for HDR
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StarsComponentConfig::m_radiusFactor, "Radius factor", "Star radius factor")
+                        ->Attribute(AZ::Edit::Attributes::Max, 32.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &StarsComponentConfig::m_radiusFactor, "Radius factor", "Star radius factor")
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 64.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StarsComponentConfig::m_starsAsset, "Stars Asset", "Stars data")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &StarsComponentConfig::m_twinkleRate, "Twinkle rate", "How quickly the stars twinkle")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 3.0f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StarsComponentConfig::m_starsAsset, "Stars Asset", "Stars asset")
                     ;
 
                 editContext->Class<StarsComponentController>(
@@ -59,10 +66,25 @@ namespace AZ::Render
         }
     }
 
-    EditorStarsComponent::EditorStarsComponent(const StarsComponentConfig& config)
-        : BaseClass(config)
+    void EditorStarsComponent::Init()
     {
-        m_controller.m_visible = IsVisible();
+        StarsComponentConfig& config = m_controller.m_configuration;
+
+        // prefill with the default stars asset if no other is specified
+        if (!config.m_starsAsset.GetId().IsValid())
+        {
+            Data::AssetId assetId;
+            const auto type = azrtti_typeid<StarsAsset>();
+            const auto path = m_defaultAssetPath.c_str();
+            Data::AssetCatalogRequestBus::BroadcastResult( assetId, &Data::AssetCatalogRequests::GetAssetIdByPath, path, type, false);
+            if (assetId.IsValid())
+            {
+                config.m_starsAsset = Data::AssetManager::Instance().FindOrCreateAsset<StarsAsset>(assetId, Data::AssetLoadBehavior::Default);
+            }
+        }
+
+        // remember the stars asset id so we can detect when it changes
+        m_prevAssetId = config.m_starsAsset.GetId();
     }
 
     u32 EditorStarsComponent::OnConfigurationChanged()
@@ -80,10 +102,13 @@ namespace AZ::Render
 
     void EditorStarsComponent::OnEntityVisibilityChanged(bool visibility)
     {
-        m_controller.m_visible = visibility;
-        if (m_controller.m_starsFeatureProcessor)
+        if (visibility)
         {
-            m_controller.m_starsFeatureProcessor->Enable(visibility);
+            m_controller.RegisterFeatureProcessor(GetEntityId());
+        }
+        else
+        {
+            m_controller.UnregisterFeatureProcessor();
         }
     }
 }
