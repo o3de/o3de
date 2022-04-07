@@ -137,6 +137,11 @@ namespace UnitTest
         SharedDispatchRequestBus::Broadcast(&SharedDispatchRequestBus::Events::RecursiveQuery, TotalRecursiveQueries);
         EXPECT_EQ(handler.m_totalRecursiveQueriesInProgress, 0);
         EXPECT_EQ(handler.m_totalRecursiveQueriesCompleted, 1);
+
+        // Not strictly needed, but since we're doing a release() in RecursiveQuery, this keeps the semaphore acquire/release calls
+        // balanced for the test.
+        handler.m_syncSemaphore.acquire();
+
         handler.Disconnect();
     }
 
