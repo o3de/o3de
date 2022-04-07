@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/parallel/shared_mutex.h>
@@ -74,8 +75,7 @@ namespace GradientSignal
         AZ::Crc32 GetManualScaleVisibility() const;
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_imageAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
-        float m_tilingX = 1.0f;
-        float m_tilingY = 1.0f;
+        AZ::Vector2 m_tiling = AZ::Vector2::CreateOne();
 
         bool m_advancedMode = false;
         ChannelToUse m_channelToUse = ChannelToUse::Red;

@@ -24,6 +24,33 @@ namespace GradientSignal
         void* outputValue, [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context)
     {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        auto configInstance = reinterpret_cast<ImageGradientConfig*>(outputValue);
+        AZ_Assert(configInstance, "Output value for JsonImageGradientConfigSerializer can't be null.");
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+
+        // The tiling field was moved from individual float values for X/Y to an AZ::Vector2,
+        // so we need to handle migrating these float fields over to the vector field
+        rapidjson::Value::ConstMemberIterator tilingXIter = inputValue.FindMember("TilingX");
+        if (tilingXIter != inputValue.MemberEnd())
+        {
+            AZ::ScopedContextPath subPath(context, "TilingX");
+            float tilingX;
+            result.Combine(ContinueLoading(&tilingX, azrtti_typeid<float>(), tilingXIter->value, context));
+            configInstance->m_tiling.SetX(tilingX);
+        }
+
+        rapidjson::Value::ConstMemberIterator tilingYIter = inputValue.FindMember("TilingY");
+        if (tilingYIter != inputValue.MemberEnd())
+        {
+            AZ::ScopedContextPath subPath(context, "TilingY");
+            float tilingY;
+            result.Combine(ContinueLoading(&tilingY, azrtti_typeid<float>(), tilingYIter->value, context));
+            configInstance->m_tiling.SetY(tilingY);
+        }
+
         // We can distinguish between version 1 and 2 by the presence of the "ImageAsset" field,
         // which is only in version 1.
         // For version 2, we don't need to do any special processing, so just let the base class
@@ -33,19 +60,6 @@ namespace GradientSignal
         {
             return AZ::BaseJsonSerializer::Load(outputValue, outputValueTypeId, inputValue, context);
         }
-
-        namespace JSR = AZ::JsonSerializationResult;
-
-        auto configInstance = reinterpret_cast<ImageGradientConfig*>(outputValue);
-        AZ_Assert(configInstance, "Output value for JsonImageGradientConfigSerializer can't be null.");
-
-        JSR::ResultCode result(JSR::Tasks::ReadField);
-
-        result.Combine(ContinueLoadingFromJsonObjectField(
-            &configInstance->m_tilingX, azrtti_typeid<decltype(configInstance->m_tilingX)>(), inputValue, "TilingX", context));
-
-        result.Combine(ContinueLoadingFromJsonObjectField(
-            &configInstance->m_tilingY, azrtti_typeid<decltype(configInstance->m_tilingY)>(), inputValue, "TilingY", context));
 
         // Version 1 stored a custom GradientSignal::ImageAsset as the image asset.
         // In Version 2, we changed the image asset to use the generic AZ::RPI::StreamingImageAsset,
@@ -151,9 +165,8 @@ namespace GradientSignal
         if (serialize)
         {
             serialize->Class<ImageGradientConfig, AZ::ComponentConfig>()
-                ->Version(4)
-                ->Field("TilingX", &ImageGradientConfig::m_tilingX)
-                ->Field("TilingY", &ImageGradientConfig::m_tilingY)
+                ->Version(5)
+                ->Field("Tiling", &ImageGradientConfig::m_tiling)
                 ->Field("StreamingImageAsset", &ImageGradientConfig::m_imageAsset)
                 ->Field("AdvancedMode", &ImageGradientConfig::m_advancedMode)
                 ->Field("ChannelToUse", &ImageGradientConfig::m_channelToUse)
@@ -173,13 +186,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &ImageGradientConfig::m_imageAsset, "Image Asset", "Image asset whose values will be mapped as gradient output.")
                     ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("GradientSignalStreamingImageAsset"))
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_tilingX, "Tiling X", "Number of times to tile horizontally.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                    ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_tilingY, "Tiling Y", "Number of times to tile vertically.")
+                    ->DataElement(AZ::Edit::UIHandlers::Vector2, &ImageGradientConfig::m_tiling, "Tiling", "Number of times to tile horizontally/vertically.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
@@ -217,8 +224,7 @@ namespace GradientSignal
             behaviorContext->Class<ImageGradientConfig>()
                 ->Constructor()
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
-                ->Property("tilingX", BehaviorValueProperty(&ImageGradientConfig::m_tilingX))
-                ->Property("tilingY", BehaviorValueProperty(&ImageGradientConfig::m_tilingY))
+                ->Property("tiling", BehaviorValueProperty(&ImageGradientConfig::m_tiling))
                 ;
         }
     }
@@ -415,8 +421,8 @@ namespace GradientSignal
                 // A 16x16 pixel image and tilingX = tilingY = 1  maps the uv range of 0-1 to 0-16 pixels.  
                 // A 16x16 pixel image and tilingX = tilingY = 1.5 maps the uv range of 0-1 to 0-24 pixels.
 
-                const AZ::Vector3 tiledDimensions((width * m_configuration.m_tilingX),
-                    (height * m_configuration.m_tilingY),
+                const AZ::Vector3 tiledDimensions((width * GetTilingX()),
+                    (height * GetTilingY()),
                     0.0f);
 
                 // Convert from uv space back to pixel space
@@ -741,7 +747,7 @@ namespace GradientSignal
 
     float ImageGradientComponent::GetTilingX() const
     {
-        return m_configuration.m_tilingX;
+        return m_configuration.m_tiling.GetX();
     }
 
     void ImageGradientComponent::SetTilingX(float tilingX)
@@ -750,14 +756,14 @@ namespace GradientSignal
         // execute an arbitrary amount of logic, including calls back to this component.
         {
             AZStd::unique_lock lock(m_queryMutex);
-            m_configuration.m_tilingX = tilingX;
+        m_configuration.m_tiling.SetX(tilingX);
         }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     float ImageGradientComponent::GetTilingY() const
     {
-        return m_configuration.m_tilingY;
+        return m_configuration.m_tiling.GetY();
     }
 
     void ImageGradientComponent::SetTilingY(float tilingY)
@@ -766,7 +772,7 @@ namespace GradientSignal
         // execute an arbitrary amount of logic, including calls back to this component.
         {
             AZStd::unique_lock lock(m_queryMutex);
-            m_configuration.m_tilingY = tilingY;
+        m_configuration.m_tiling.SetY(tilingY);
         }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
