@@ -128,6 +128,7 @@ namespace Terrain
         imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::ShaderReadWrite;
         imageDesc.m_size = AZ::RHI::Size(ClipmapSizeWidth, ClipmapSizeHeight, 1);
 
+        // TODO: Test and find the most suitable precision for color map.
         imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
         imageDesc.m_arraySize = MacroClipmapStackSize;
 
