@@ -11,13 +11,7 @@
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 
-#include "Interpreted/ExecutionStateInterpreted.h"
-#include "Interpreted/ExecutionStateInterpretedPure.h"
-#include "Interpreted/ExecutionStateInterpretedPerActivation.h"
-#include "Interpreted/ExecutionStateInterpretedSingleton.h"
-
 #include "ExecutionState.h"
-
 
 namespace ExecutionStateCpp
 {
@@ -45,30 +39,6 @@ namespace ScriptCanvas
         , m_overrides(config.overrides)
         , m_userData(AZStd::move(config.userData))
     {}
-
-    ExecutionStatePtr ExecutionState::Create(ExecutionStateConfig& config)
-    {
-        Grammar::ExecutionStateSelection selection = config.runtimeData.m_input.m_executionSelection;
-
-        switch (selection)
-        {
-        case Grammar::ExecutionStateSelection::InterpretedPure:
-            return AZStd::make_shared<ExecutionStateInterpretedPure>(config);
-
-        case Grammar::ExecutionStateSelection::InterpretedPureOnGraphStart:
-            return AZStd::make_shared<ExecutionStateInterpretedPureOnGraphStart>(config);
-
-        case Grammar::ExecutionStateSelection::InterpretedObject:
-            return AZStd::make_shared<ExecutionStateInterpretedPerActivation>(config);
-
-        case Grammar::ExecutionStateSelection::InterpretedObjectOnGraphStart:
-            return AZStd::make_shared<ExecutionStateInterpretedPerActivationOnGraphStart>(config);
-
-        default:
-            AZ_Assert(false, "Unsupported ScriptCanvas execution selection");
-            return nullptr;
-        }
-    }
 
     AZ::Data::AssetId ExecutionState::GetAssetId() const
     {

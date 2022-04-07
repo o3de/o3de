@@ -69,17 +69,30 @@ namespace ScriptCanvas
                 , ToString(isPreloaded));
             return;
         }
+        else if (!overrides.m_runtimeAsset.Get()->m_runtimeData.m_createExecution)
+        {
+            AZ_Error("ScriptCanvas", false
+                , "Execution::Initialize runtime create execution function not set %s-%s loading problem"
+                , overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data()
+                , overrides.m_runtimeAsset.GetHint().c_str());
+            return;
+        };
 #else
         AZ_Assert(IsPreloaded(overrides) == IsPreloadedResult::Yes
             , "Execution::Intialize runtime asset %s-%s loading problem: %s"
             , m_overrides->m_runtimeAsset.GetId().ToString<AZStd::string>().data()
             , m_overrides->m_runtimeAsset.GetHint().c_str()
             , ToString(IsPreloaded(overrides)));
+
+        AZ_Assert(overrides.m_runtimeAsset.Get()->m_runtimeData.m_createExecution
+            , "Execution::Initialize runtime create execution function not set %s-%s loading problem"
+            , overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data()
+            , overrides.m_runtimeAsset.GetHint().c_str());
 #endif // defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
 
         AZ_PROFILE_SCOPE(ScriptCanvas, "Executor::Initialize (%s)", overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         ExecutionStateConfig config(overrides, AZStd::move(userData));
-        m_executionState = ExecutionState::Create(config);
+        m_executionState = overrides.m_runtimeAsset.Get()->m_runtimeData.m_createExecution(config);
 
 #if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
         if (!m_executionState)

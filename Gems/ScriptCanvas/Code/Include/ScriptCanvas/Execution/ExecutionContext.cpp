@@ -15,6 +15,11 @@
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 
+#include "Interpreted/ExecutionStateInterpreted.h"
+#include "Interpreted/ExecutionStateInterpretedPure.h"
+#include "Interpreted/ExecutionStateInterpretedPerActivation.h"
+#include "Interpreted/ExecutionStateInterpretedSingleton.h"
+
 #include "ExecutionContext.h"
 #include "AzCore/Slice/SliceComponent.h"
 #include "AzFramework/Entity/SliceEntityOwnershipServiceBus.h"
@@ -123,12 +128,12 @@ namespace ScriptCanvas
             }
 
             // \todo, the stack push functions could be retrieved here
-            // initialize the execution state creation function here!
-            IntializeStaticActivationInputs(runtimeData, *behaviorContext);
-            IntializeStaticCloners(runtimeData, *behaviorContext);
+            InitializeStaticCreationFunction(runtimeData);
+            InitializeStaticActivationInputs(runtimeData, *behaviorContext);
+            InitializeStaticCloners(runtimeData, *behaviorContext);
         }
 
-        void Context::IntializeStaticActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
+        void Context::InitializeStaticActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
         {
             AZStd::vector<AZ::BehaviorValueParameter>& parameters = runtimeData.m_activationInputStorage;
             auto& range = runtimeData.m_activationInputRange;
@@ -174,7 +179,7 @@ namespace ScriptCanvas
         }
 
         // This does not have to recursively initialize dependent assets, as this is called by asset handler
-        void Context::IntializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
+        void Context::InitializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
         {
             runtimeData.m_cloneSources.reserve(runtimeData.m_input.m_staticVariables.size());
 
@@ -184,6 +189,40 @@ namespace ScriptCanvas
                 auto bcClass = AZ::BehaviorContextHelper::GetClass(&behaviorContext, anySource.type());
                 AZ_Assert(bcClass, "BehaviorContext class for type %s was deleted", anySource.type().ToString<AZStd::string>().c_str());
                 runtimeData.m_cloneSources.emplace_back(*bcClass, AZStd::any_cast<void>(&anySource));
+            }
+        }
+
+        void Context::InitializeStaticCreationFunction(RuntimeData& runtimeData)
+        {
+            const Grammar::ExecutionStateSelection selection = runtimeData.m_input.m_executionSelection;
+
+            switch (selection)
+            {
+            case Grammar::ExecutionStateSelection::InterpretedPure:
+                runtimeData.m_createExecution =
+                    [](ExecutionStateConfig& config) { return AZStd::make_shared<ExecutionStateInterpretedPure>(config); };
+                break;
+
+            case Grammar::ExecutionStateSelection::InterpretedPureOnGraphStart:
+                runtimeData.m_createExecution =
+                    [](ExecutionStateConfig& config) { return AZStd::make_shared<ExecutionStateInterpretedPureOnGraphStart>(config); };
+                break;
+
+            case Grammar::ExecutionStateSelection::InterpretedObject:
+                runtimeData.m_createExecution =
+                    [](ExecutionStateConfig& config) { return AZStd::make_shared<ExecutionStateInterpretedPerActivation>(config); };
+                break;
+
+            case Grammar::ExecutionStateSelection::InterpretedObjectOnGraphStart:
+                runtimeData.m_createExecution =
+                    [](ExecutionStateConfig& config) { return AZStd::make_shared<ExecutionStateInterpretedPerActivationOnGraphStart>(config); };
+                break;
+
+            default:
+                AZ_Assert(false, "Unsupported ScriptCanvas execution selection");
+                runtimeData.m_createExecution =
+                    [](ExecutionStateConfig&) { return nullptr; };
+                break;
             }
         }
 

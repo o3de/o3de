@@ -53,8 +53,9 @@ namespace ScriptCanvas
             static void UnloadData(RuntimeData& runtimeData);
 
         private:
-            static void IntializeStaticActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
-            static void IntializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
+            static void InitializeStaticActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
+            static void InitializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);
+            static void InitializeStaticCreationFunction(RuntimeData& runtimeData);
         };
 
         struct Reference

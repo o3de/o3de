@@ -19,6 +19,7 @@
 #include <ScriptCanvas/Variable/VariableData.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionObjectCloning.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 namespace ScriptCanvas
 {
@@ -75,15 +76,15 @@ namespace ScriptCanvas
         AZStd::vector<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>> m_requiredScriptEvents;
 
         // populate all on initial load at run time
+        AZStd::function<ExecutionStatePtr(ExecutionStateConfig& config)> m_createExecution;
         AZStd::vector<Execution::CloneSource> m_cloneSources;
         AZStd::vector<AZ::BehaviorValueParameter> m_activationInputStorage;
         Execution::ActivationInputRange m_activationInputRange;
 
         // used to initialize statics only once, and not necessarily on the loading thread
         // the interpreted statics require the Lua context, and so they must be initialized on the main thread
+        // this may have a work around with lua_newthread, which could be done on any loading thread
         bool m_areScriptLocalStaticsInitialized = false;
-
-        bool IsPure() const;
 
         bool RequiresStaticInitialization() const;
 
