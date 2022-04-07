@@ -130,7 +130,6 @@ namespace ScriptCanvasBuilder
     void DataSystem::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         const auto assetIdGuid = asset.GetId().m_guid;
-
         AZ_TracePrintf
             ( "ScriptCanvas"
             , "DataSystem received OnAssetError: %s : %s"
@@ -201,7 +200,6 @@ namespace ScriptCanvasBuilder
     void DataSystem::OnAssetUnloaded(const AZ::Data::AssetId assetId, [[maybe_unused]] const AZ::Data::AssetType assetType)
     {
         DataSystemAssetNotificationsBus::Event(assetId.m_guid, &DataSystemAssetNotifications::OnAssetNotReady);
-        // may have to queue this on the tick bus
         MonitorAsset(assetId.m_guid);
     }
 
