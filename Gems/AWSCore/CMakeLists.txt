@@ -11,3 +11,5 @@ set(gem_json ${gem_path}/gem.json)
 o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
 
 add_subdirectory(Code)
+
+ly_install_directory(DIRECTORIES cdk)

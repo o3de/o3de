@@ -29,16 +29,61 @@ class QWidget;
 namespace AtomToolsFramework
 {
     using LoadImageAsyncCallback = AZStd::function<void(const QImage&)>;
+
+    //! Loads an image file asynchronously and invokes the callback with the resulting image after load is complete
+    //! @path Absolute path of image file to be loaded
+    //! @param callback callback that will be triggered once the file is loaded
     void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback);
 
+    //! Get a pointer to the application main window
+    //! @returns a pointer to the application main window 
     QWidget* GetToolMainWindow();
+
+    //! Returns a sanitized display name by removing the path, extension, and replacing special characters in a filename
+    //! @param path File path that will be converted into a display name
+    //! @returns the display name generated from the file path
     AZStd::string GetDisplayNameFromPath(const AZStd::string& path);
+
+    //! Opens a dialog to prompt the user to select a save file path
+    //! @param initialPath File path initially selected in the dialog
+    //! @param title Description of the filetype being opened that's displayed at the top of the dialog
+    //! @returns Absolute path of the selected file, or an empty string if nothing was selected
     AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title = "Document");
+
+    //! Opens a dialog to prompt the user to select one or more files to open 
+    //! @param filter A regular expression filter to determine which files are selectable and displayed in the dialog 
+    //! @param title Description of the filetype being opened that's displayed at the top of the dialog
+    //! @returns Container of selected files matching the filter 
     AZStd::vector<AZStd::string> GetOpenFilePaths(const QRegExp& filter, const AZStd::string& title = "Document");
+
+    //! Converts an input file path to a unique file path by appending a unique number
+    //! @param initialPath The starting path that will be compared to other existing files and modified until it is unique
+    //! @returns A unique file path based on the initial file path
     AZStd::string GetUniqueFilePath(const AZStd::string& initialPath);
+
+    //! Generates a unique, untitled file path in the project asset folder
+    //! @param Extension Extension of the file path to be generated
+    //! @returns Absolute file path with a unique filename
     AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& extension);
+
+    //! Opens a dialog to prompt the user to select a file path where the initial file will be duplicated 
+    //! @param initialPath File path to be duplicated, will be used to generate a unique filename for the new file 
+    //! @returns Absolute path of the selected file, or an empty string if nothing was selected
     AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath);
+
+    //! Verifies that an input file path is not empty, is not relative, can be normalized, and is a valid source file path accessible by the project
+    //! @param path File path to be validated and normalized
+    //! @returns True if the path is valid, otherwise false
     bool ValidateDocumentPath(AZStd::string& path);
+
+    //! Determines if a file path exists in a valid asset folder for the project or one of its gems
+    //! @param path File path to be validated
+    //! @returns True if the path is valid, otherwise false
+    bool IsValidSourceDocumentPath(const AZStd::string& path);
+
+    //! Launches an O3DE application in a detached process
+    //! @param baseName Base filename of the application executable that must be in the bin folder
+    //! @returns True if the process was launched, otherwise false
     bool LaunchTool(const QString& baseName, const QStringList& arguments);
 
     //! Generate a file path that is relative to either the source asset root or the export path

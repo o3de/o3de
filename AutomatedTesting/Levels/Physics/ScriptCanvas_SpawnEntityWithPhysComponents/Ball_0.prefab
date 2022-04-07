@@ -1,0 +1,157 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "Ball_0",
+        "Components": {
+            "Component_[11597380311652008217]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 11597380311652008217
+            },
+            "Component_[12216035465277368076]": {
+                "$type": "SelectionComponent",
+                "Id": 12216035465277368076
+            },
+            "Component_[1431041325411424572]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 1431041325411424572,
+                "Parent Entity": ""
+            },
+            "Component_[17515109442675204307]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 17515109442675204307
+            },
+            "Component_[18279886226820040587]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 18279886226820040587
+            },
+            "Component_[3581519114756775215]": {
+                "$type": "EditorLockComponent",
+                "Id": 3581519114756775215
+            },
+            "Component_[4500984716551934541]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 4500984716551934541
+            },
+            "Component_[4683718550914734202]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 4683718550914734202,
+                "Child Entity Order": [
+                    "Entity_[4204754032953]"
+                ]
+            },
+            "Component_[7408758794302428544]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 7408758794302428544
+            },
+            "Component_[8044134068409636629]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 8044134068409636629
+            },
+            "Component_[9507891014986738240]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 9507891014986738240
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[4204754032953]": {
+            "Id": "Entity_[4204754032953]",
+            "Name": "Ball_0",
+            "Components": {
+                "Component_[10528323386212322224]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 10528323386212322224
+                },
+                "Component_[10799841661811216018]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 10799841661811216018,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[13324879431623682305]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 13324879431623682305
+                },
+                "Component_[14516664121989909349]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 14516664121989909349
+                },
+                "Component_[1468307552800800397]": {
+                    "$type": "EditorColliderComponent",
+                    "Id": 1468307552800800397,
+                    "ColliderConfiguration": {
+                        "MaterialSelection": {
+                            "MaterialIds": [
+                                {}
+                            ]
+                        }
+                    },
+                    "ShapeConfiguration": {
+                        "ShapeType": 0
+                    }
+                },
+                "Component_[15077823605749753784]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 15077823605749753784
+                },
+                "Component_[16211303766470147123]": {
+                    "$type": "EditorRigidBodyComponent",
+                    "Id": 16211303766470147123,
+                    "Configuration": {
+                        "entityId": "",
+                        "Initial linear velocity": [
+                            0.0,
+                            0.0,
+                            -10.0
+                        ],
+                        "CCD Enabled": true,
+                        "Compute Mass": false,
+                        "Inertia tensor": {
+                            "roll": 0.0,
+                            "pitch": 0.0,
+                            "yaw": 0.0,
+                            "scale": 10.0
+                        }
+                    }
+                },
+                "Component_[16885664697240685332]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 16885664697240685332
+                },
+                "Component_[17684915130650225825]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 17684915130650225825
+                },
+                "Component_[6163103491807544914]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 6163103491807544914
+                },
+                "Component_[9447464868155262072]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 9447464868155262072,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 10799841661811216018
+                        },
+                        {
+                            "ComponentId": 9678478086515978020,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 2794039544762226313,
+                            "SortIndex": 2
+                        }
+                    ]
+                },
+                "Component_[9594185172833438811]": {
+                    "$type": "SelectionComponent",
+                    "Id": 9594185172833438811
+                },
+                "Component_[9678478086515978020]": {
+                    "$type": "EditorSphereShapeComponent",
+                    "Id": 9678478086515978020,
+                    "GameView": true
+                }
+            }
+        }
+    }
+}
