@@ -152,10 +152,14 @@ namespace ScriptCanvasEditor
 
                 if (asset.Get())
                 {
+                    UpgradeGraphConfig config;
+                    config.isVerbose = m_view->verbose->isChecked();
+                    config.saveParseErrors = m_view->saveParserFailures->isChecked();
+
                     asset.Mod()->UpgradeGraph
                         ( asset
                         , m_view->forceUpgrade->isChecked() ? EditorGraph::UpgradeRequest::Forced : EditorGraph::UpgradeRequest::IfOutOfDate
-                        , m_view->verbose->isChecked());
+                        , config);
                 }
             };
 

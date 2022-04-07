@@ -41,13 +41,71 @@
 
 #include <QClipboard>
 #include <QDesktopServices>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QUrl>
+#include <QWidgetAction>
 #include <QKeyEvent>
 
 static const char* g_showContextDetailsKey = "ShowContextDetailsTable";
 static const QString g_jobFilteredSearchWidgetState = QStringLiteral("jobFilteredSearchWidget");
 static const qint64 AssetTabFilterUpdateIntervalMs = 5000;
+
+static const int MaxVisiblePopoutMenuRows = 20;
+static const QString productMenuTitle(QObject::tr("View product asset..."));
+
+struct ProductAssetRightClickMenuResult
+{
+    QListWidget* m_listWidget = nullptr;
+    QMenu* m_productMenu = nullptr;
+};
+
+ProductAssetRightClickMenuResult SetupProductAssetRightClickMenu(QMenu* parentMenu)
+{
+    ProductAssetRightClickMenuResult result;
+    if (!parentMenu)
+    {
+        return result;
+    }
+
+    result.m_productMenu = parentMenu->addMenu(productMenuTitle);
+    QWidgetAction* productMenuListAction = new QWidgetAction(result.m_productMenu);
+    productMenuListAction->setToolTip(QObject::tr("Shows this product asset in the Product Assets tab."));
+    result.m_listWidget = new QListWidget(result.m_productMenu);
+    result.m_listWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    result.m_listWidget->setTextElideMode(Qt::ElideLeft);
+    result.m_listWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    result.m_listWidget->setSelectionMode(QAbstractItemView::NoSelection);
+
+    productMenuListAction->setDefaultWidget(result.m_listWidget);
+    result.m_productMenu->addAction(productMenuListAction);
+    return result;
+}
+
+void CreateDisabledProductAssetRightClickMenu(QMenu* parentMenu, QMenu* existingProductMenu, QString tooltip)
+{
+    if (!parentMenu || !existingProductMenu)
+    {
+        return;
+    }
+    // If there were no products, then show a disabled action with a tooltip.
+    // Disabled menus don't support tooltips, so remove the menu first.
+    parentMenu->removeAction(existingProductMenu->menuAction());
+    existingProductMenu->deleteLater();
+
+    QAction* disabledProductTableAction = parentMenu->addAction(productMenuTitle);
+    disabledProductTableAction->setToolTip(tooltip);
+    disabledProductTableAction->setDisabled(true);
+}
+
+void ResizeProductAssetRightClickMenuList(QListWidget* productAssetList, int productCount)
+{
+    // Clamp the max products displayed at once. This is a list view, so it will show a scroll bar for anything over this.
+    productCount = AZStd::min(MaxVisiblePopoutMenuRows, productCount);
+    // Using fixed width and height because the size hints aren't working well within a qmenu popout menu.
+    productAssetList->setFixedHeight(productCount * productAssetList->sizeHintForRow(0));
+    productAssetList->setFixedWidth(productAssetList->sizeHintForColumn(0));
+}
 
 MainWindow::Config MainWindow::loadConfig(QSettings& settings)
 {
@@ -1302,7 +1360,6 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
         ui->sourceAssetDetailsPanel->GoToSource(item->m_elementId.GetInputAssetName().toUtf8().constData());
     });
 
-    QString productMenuTitle(tr("View product asset..."));
     if (item->m_jobState != AzToolsFramework::AssetSystem::JobStatus::Completed)
     {
         QString disabledActionTooltip(tr("Only completed jobs are available in the Assets tab."));
@@ -1318,10 +1375,23 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     {
         assetTabSourceAction->setToolTip(tr("Show the source asset for this job in the Assets tab."));
 
-        QMenu* productMenu = menu.addMenu(productMenuTitle);
-        productMenu->setToolTipsVisible(true);
+        ProductAssetRightClickMenuResult productAssetMenu(SetupProductAssetRightClickMenu(&menu));
 
-        bool anyProductsAvailableForJob = false;
+        auto productMenuItemClicked = [this, &menu](QListWidgetItem* item)
+        {
+            if (item)
+            {
+                ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
+                ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
+                AZStd::string productFromQString(item->text().toUtf8().data());
+                ui->sourceAssetDetailsPanel->GoToProduct(productFromQString);
+                menu.close();
+            }
+        };
+
+        connect(productAssetMenu.m_listWidget, &QListWidget::itemClicked, this, productMenuItemClicked);
+
+        int productCount = 0;
         m_sharedDbConnection->QueryJobByJobRunKey(
             item->m_jobRunKey,
             [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
@@ -1334,30 +1404,21 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
                 {
                     return true;
                 }
-                anyProductsAvailableForJob = true;
-                QAction* assetTabProductAction = productMenu->addAction(productEntry.m_productName.c_str(), this, [&, productEntry]()
-                {
-                    ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
-                    ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
-                    ui->sourceAssetDetailsPanel->GoToProduct(productEntry.m_productName);
-                });
-                assetTabProductAction->setToolTip("Shows this product asset in the Product Assets tab.");
+                ++productCount;
+                productAssetMenu.m_listWidget->addItem(productEntry.m_productName.c_str());
                 return true; // Keep iterating, add all products.
             });
             return false; // Stop iterating, there should only be one job with this run key.
         });
 
-        if (!anyProductsAvailableForJob)
+        if (productCount == 0)
         {
-            // If there were no products, then show a disabled action with a tooltip.
-            // Disabled menus don't support tooltips, so remove the menu first.
-            menu.removeAction(productMenu->menuAction());
-            productMenu->deleteLater();
-            productMenu = nullptr;
-
-            QAction* productMenuAction = menu.addAction(productMenuTitle);
-            productMenuAction->setToolTip(tr("This job created no products."));
-            productMenuAction->setDisabled(true);
+            CreateDisabledProductAssetRightClickMenu(&menu, productAssetMenu.m_productMenu, tr("This job created no products."));
+            productAssetMenu.m_productMenu = nullptr;
+        }
+        else
+        {
+            ResizeProductAssetRightClickMenuList(productAssetMenu.m_listWidget, productCount);
         }
     }
 
@@ -1472,9 +1533,19 @@ void MainWindow::ShowSourceAssetContextMenu(const QPoint& pos)
     {
         QMenu* jobMenu = menu.addMenu(jobMenuText);
         jobMenu->setToolTipsVisible(true);
-        QMenu* productMenu = menu.addMenu(productMenuText);
-        productMenu->setToolTipsVisible(true);
+        ProductAssetRightClickMenuResult productAssetMenu(SetupProductAssetRightClickMenu(&menu));
+        auto productMenuItemClicked = [this, &menu](QListWidgetItem* item)
+        {
+            if (item)
+            {
+                AZStd::string productFromQString(item->text().toUtf8().data());
+                ui->sourceAssetDetailsPanel->GoToProduct(productFromQString);
+                menu.close();
+            }
+        };
+        connect(productAssetMenu.m_listWidget, &QListWidget::itemClicked, this, productMenuItemClicked);
 
+        int productCount = 0;
         m_sharedDbConnection->QueryJobBySourceID(sourceItemData->m_sourceInfo.m_sourceID,
             [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
         {
@@ -1493,15 +1564,21 @@ void MainWindow::ShowSourceAssetContextMenu(const QPoint& pos)
                 {
                     return true;
                 }
-                QAction* productAction = productMenu->addAction(productEntry.m_productName.c_str(), this, [&, productEntry]()
-                {
-                    ui->sourceAssetDetailsPanel->GoToProduct(productEntry.m_productName);
-                });
-                productAction->setToolTip("Show this product in the product assets tab.");
+                ++productCount;
+                productAssetMenu.m_listWidget->addItem(productEntry.m_productName.c_str());
                 return true; // Keep iterating, add all products.
             });
             return true; // Stop iterating, there should only be one job with this run key.
         });
+        if (productCount == 0)
+        {
+            CreateDisabledProductAssetRightClickMenu(&menu, productAssetMenu.m_productMenu, tr("This source asset has no products."));
+            productAssetMenu.m_productMenu = nullptr;
+        }
+        else
+        {
+            ResizeProductAssetRightClickMenuList(productAssetMenu.m_listWidget, productCount);
+        }
     }
 
     QAction* fileBrowserAction = menu.addAction(AzQtComponents::fileBrowserActionName(), this, [&]()
