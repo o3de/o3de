@@ -154,7 +154,7 @@ namespace Terrain
             {
                 const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
 
-                for (uint32_t i = TerrainClipmapManager::ClipmapName::MacroColor; i < TerrainClipmapManager::ClipmapName::Count; ++i)
+                for (uint32_t i = 0; i < TerrainClipmapManager::ClipmapName::Count; ++i)
                 {
                     m_shaderResourceGroup->SetImage(
                         m_clipmapImageIndex[i],

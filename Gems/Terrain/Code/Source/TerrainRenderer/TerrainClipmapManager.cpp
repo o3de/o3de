@@ -48,7 +48,7 @@ namespace Terrain
     
     bool TerrainClipmapManager::UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        for (uint32_t i = ClipmapName::MacroColor; i < ClipmapName::Count; ++i)
+        for (uint32_t i = 0; i < ClipmapName::Count; ++i)
         {
             terrainSrg->SetImage(m_terrainSrgClipmapImageIndex[i], m_clipmaps[i]);
         }
