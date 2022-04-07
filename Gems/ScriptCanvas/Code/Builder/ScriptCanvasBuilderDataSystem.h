@@ -24,8 +24,9 @@ namespace ScriptCanvasEditor
 
 namespace ScriptCanvasBuilder
 {
-    class DataSystem
-        : public DataSystemRequestsBus::Handler
+    class DataSystem final
+        : public DataSystemAssetRequestsBus::Handler
+        , public DataSystemSourceRequestsBus::Handler
         , public AzToolsFramework::AssetSystemBus::Handler
         , public AZ::Data::AssetBus::MultiHandler
     {
@@ -36,27 +37,34 @@ namespace ScriptCanvasBuilder
         DataSystem();
         virtual ~DataSystem();
 
-        BuildResult CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle) override;
+        BuilderSourceResult CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle) override;
 
-    protected:
-        void AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuildResult&& result);
-        void AddResult(AZ::Uuid&& id, BuildResult&& result);
+        BuilderAssetResult LoadAsset(ScriptCanvasEditor::SourceHandle sourceHandle) override;
+
+    private:
+        struct BuilderSourceStorage
+        {
+            BuilderSourceStatus status = BuilderSourceStatus::Failed;
+            BuildVariableOverrides data;
+        };
+
+        using MutexLock = AZStd::lock_guard<AZStd::recursive_mutex>;
+        AZStd::recursive_mutex m_mutex;
+        AZStd::unordered_map<AZ::Uuid, BuilderSourceStorage> m_buildResultsByHandle;
+        AZStd::unordered_map<AZ::Uuid, BuilderAssetResult> m_assets;
+        
+        void AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuilderSourceStorage&& result);
+        void AddResult(AZ::Uuid&& id, BuilderSourceStorage&& result);
         void CompileBuilderDataInternal(ScriptCanvasEditor::SourceHandle sourceHandle);
-        void MonitorAsset(AZ::Uuid fileAssetId);
+        BuilderAssetResult& MonitorAsset(AZ::Uuid fileAssetId);
+        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/, bool /*isSucces/sful*/) {}
-        void OnAssetUnloaded(const AZ::Data::AssetId /*assetId*/, const AZ::Data::AssetType /*assetType*/) {}
-        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/) {}
+        void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/, bool /*isSuccessful*/) {}
+        void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType);
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
-
-    private:
-        using MutexLock = AZStd::lock_guard<AZStd::recursive_mutex>;
-        AZStd::recursive_mutex m_mutex;
-        AZStd::unordered_map<AZ::Uuid, BuildResult> m_buildResultsByHandle;
-        AZStd::unordered_map<AZ::Uuid, ScriptCanvas::RuntimeAssetPtr> m_assetsReady;
-        AZStd::unordered_map<AZ::Uuid, ScriptCanvas::RuntimeAssetPtr> m_assetsPending;
+        void ReportReady(AZ::Data::Asset<AZ::Data::AssetData> asset);
     };
 }

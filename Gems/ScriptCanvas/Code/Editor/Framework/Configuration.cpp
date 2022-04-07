@@ -73,19 +73,23 @@ namespace ScriptCanvasEditor
 
     const ScriptCanvasBuilder::BuildVariableOverrides* Configuration::CompileLatest()
     {
-        ScriptCanvasBuilder::BuildResult result;
-        ScriptCanvasBuilder::DataSystemRequestsBus::BroadcastResult
+        ScriptCanvasBuilder::BuilderSourceResult result;
+        ScriptCanvasBuilder::DataSystemSourceRequestsBus::BroadcastResult
             ( result
-            , &ScriptCanvasBuilder::DataSystemRequests::CompileBuilderData
+            , &ScriptCanvasBuilder::DataSystemSourceRequests::CompileBuilderData
             , m_sourceHandle);
 
-        if (result.status == ScriptCanvasBuilder::BuilderDataStatus::Good)
+        if (result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
         {
-            MergeWithLatestCompilation(result.data);
+            MergeWithLatestCompilation(*result.data);
             return &m_propertyOverrides;
         }
         else
         {
+            AZ_Error
+                ( "ScriptCanvas"
+                , !(result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
+                , "Configuration::CompileLatest received good status with no data");
             return nullptr;
         }
     }
@@ -218,7 +222,9 @@ namespace ScriptCanvasEditor
                 ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
                 , AzToolsFramework::Refresh_EntireTree_NewContent);
         });
-        
+
+        m_eventPropertiesChanged.Signal(*this);
+
         if (!m_sourceHandle.Id().IsNull())
         {
             ScriptCanvasBuilder::DataSystemSourceNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
@@ -252,13 +258,13 @@ namespace ScriptCanvasEditor
     }
 
     void Configuration::SourceFileChanged
-        ( const ScriptCanvasBuilder::BuildResult& result
+        ( const ScriptCanvasBuilder::BuilderSourceResult& result
         , [[maybe_unused]] AZStd::string_view relativePath
         , [[maybe_unused]] AZStd::string_view scanFolder)
     {
-        if (result.status == ScriptCanvasBuilder::BuilderDataStatus::Good)
+        if (result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
         {
-            MergeWithLatestCompilation(result.data);
+            MergeWithLatestCompilation(*result.data);
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
                 ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
                 , AzToolsFramework::Refresh_EntireTree_NewContent);
@@ -266,6 +272,11 @@ namespace ScriptCanvasEditor
         }
         else
         {
+            AZ_Error
+                ( "ScriptCanvas"
+                , !(result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
+                , "Configuration::SourceFileChanged received good status with no data");
+
             m_eventSourceFailed.Signal(*this);
             // display error icon
         }

@@ -80,7 +80,7 @@ namespace ScriptCanvasEditor
 
         // if result is good, merge results and update display
         void SourceFileChanged
-            ( const ScriptCanvasBuilder::BuildResult& result
+            ( const ScriptCanvasBuilder::BuilderSourceResult& result
             , AZStd::string_view relativePath
             , AZStd::string_view scanFolder) override;
 

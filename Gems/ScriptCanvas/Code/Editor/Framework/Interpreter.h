@@ -73,7 +73,7 @@ namespace ScriptCanvasEditor
     private:
         Mutex m_mutex;
         AZ::EventHandler<const Configuration&> m_handlerPropertiesChanged;
-        AZ::EventHandler<const Configuration&> m_handlerSourceSucceeded;
+        AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
         AZ::EventHandler<const Configuration&> m_handlerSourceFailed;
         mutable AZ::Event<const Interpreter&> m_onStatusChanged;
 
@@ -88,11 +88,13 @@ namespace ScriptCanvasEditor
 
         bool InitializeExecution(ScriptCanvas::RuntimeAssetPtr asset);
 
-        void OnNotReady(ScriptCanvas::RuntimeAssetPtr asset) override;
+        void OnAssetNotReady() override;
 
         void OnPropertiesChanged();
 
         void OnReady(ScriptCanvas::RuntimeAssetPtr asset) override;
+
+        void OnSourceCompiled();
 
         void OnSourceFailed();
 

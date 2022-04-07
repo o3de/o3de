@@ -33,29 +33,31 @@ namespace ScriptCanvasBuilder
     DataSystem::DataSystem()
     {
         AzToolsFramework::AssetSystemBus::Handler::BusConnect();
-        DataSystemRequestsBus::Handler::BusConnect();
+        DataSystemSourceRequestsBus::Handler::BusConnect();
+        DataSystemAssetRequestsBus::Handler::BusConnect();
     }
 
     DataSystem::~DataSystem()
     {
-        DataSystemRequestsBus::Handler::BusDisconnect();
+        DataSystemSourceRequestsBus::Handler::BusDisconnect();
+        DataSystemAssetRequestsBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
     }
 
-    void DataSystem::AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuildResult&& result)
+    void DataSystem::AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuilderSourceStorage&& result)
     {
         MutexLock lock(m_mutex);
         m_buildResultsByHandle[handle.Id()] = result;
     }
 
-    void DataSystem::AddResult(AZ::Uuid&& id, BuildResult&& result)
+    void DataSystem::AddResult(AZ::Uuid&& id, BuilderSourceStorage&& result)
     {
         MutexLock lock(m_mutex);
         m_buildResultsByHandle[id] = result;
     }
 
-    BuildResult DataSystem::CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle)
+    BuilderSourceResult DataSystem::CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle)
     {
         MutexLock lock(m_mutex);
 
@@ -64,7 +66,8 @@ namespace ScriptCanvasBuilder
             CompileBuilderDataInternal(sourceHandle);
         }
 
-        return m_buildResultsByHandle[sourceHandle.Id()];
+        BuilderSourceStorage& storage = m_buildResultsByHandle[sourceHandle.Id()];
+        return BuilderSourceResult{ storage.status, &storage.data };
     }
 
     void DataSystem::CompileBuilderDataInternal(ScriptCanvasEditor::SourceHandle sourceHandle)
@@ -72,14 +75,14 @@ namespace ScriptCanvasBuilder
         using namespace ScriptCanvasBuilder;
 
         CompleteDescriptionInPlace(sourceHandle);
-        BuildResult result;
+        BuilderSourceStorage result;
         
         auto assetTreeOutcome = LoadEditorAssetTree(sourceHandle);
         if (!assetTreeOutcome.IsSuccess())
         {
             AZ_Warning("ScriptCanvas", false
                 , "DataSystem::CompileBuilderDataInternal failed: %s", assetTreeOutcome.GetError().c_str());
-            result.status = BuilderDataStatus::Unloadable;
+            result.status = BuilderSourceStatus::Unloadable;
             AddResult(sourceHandle, AZStd::move(result));
             return;
         }
@@ -89,25 +92,57 @@ namespace ScriptCanvasBuilder
         {
             AZ_Warning("ScriptCanvas", false
                 , "DataSystem::CompileBuilderDataInternal failed: %s", parseOutcome.GetError().c_str());
-            result.status = BuilderDataStatus::Failed;
+            result.status = BuilderSourceStatus::Failed;
             AddResult(sourceHandle, AZStd::move(result));
             return;
         }
 
         parseOutcome.GetValue().SetHandlesToDescription();
         result.data = parseOutcome.TakeValue();
-        result.status = BuilderDataStatus::Good;
+        result.status = BuilderSourceStatus::Good;
         AddResult(sourceHandle, AZStd::move(result));
     }
 
-    void DataSystem::MonitorAsset(AZ::Uuid fileAssetId)
+    BuilderAssetResult& DataSystem::MonitorAsset(AZ::Uuid sourceId)
     {
-        m_assetsReady.erase(fileAssetId);
-        const auto assetId = AZ::Data::AssetId(fileAssetId, ScriptCanvas::RuntimeDataSubId);
+        const auto assetId = AZ::Data::AssetId(sourceId, ScriptCanvas::RuntimeDataSubId);
         AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
         ScriptCanvas::RuntimeAssetPtr asset(assetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>());
-        auto result = m_assetsPending.insert({ fileAssetId, AZStd::move(asset) });
-        result.first->second.QueueLoad();
+        asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+        m_assets.insert({ sourceId, BuilderAssetResult{  BuilderAssetStatus::Pending, AZStd::move(asset) } });
+        BuilderAssetResult& result = m_assets[sourceId];
+        result.data.QueueLoad();
+        return result;
+    }
+
+    BuilderAssetResult DataSystem::LoadAsset(ScriptCanvasEditor::SourceHandle sourceHandle)
+    {
+        if (auto iter = m_assets.find(sourceHandle.Id()); iter != m_assets.end())
+        {
+            return iter->second;
+        }
+        else
+        {
+            return MonitorAsset(sourceHandle.Id());
+        }
+    }
+
+    void DataSystem::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        const auto assetIdGuid = asset.GetId().m_guid;
+
+        AZ_TracePrintf
+            ( "ScriptCanvas"
+            , "DataSystem received OnAssetError: %s : %s"
+            , asset.GetHint().c_str()
+            , assetIdGuid.ToString<AZStd::string>().c_str());
+
+        auto& buildResult = m_assets[assetIdGuid];
+        buildResult.data = AZStd::move(asset);
+        buildResult.status = BuilderAssetStatus::Error;
+        DataSystemAssetNotificationsBus::Event
+            ( assetIdGuid
+            , &DataSystemAssetNotifications::OnAssetNotReady);
     }
 
     void DataSystem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -117,13 +152,40 @@ namespace ScriptCanvasBuilder
             , "DataSystem received OnAssetReady: %s : %s"
             , asset.GetHint().c_str()
             , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
-        m_assetsReady[asset.GetId().m_guid] = asset;
-        m_assetsPending.erase(asset.GetId().m_guid);
-        const auto typedAsset = m_assetsReady[asset.GetId().m_guid];
-        DataSystemAssetNotificationsBus::Event
-            (typedAsset.GetId().m_guid
-            , &DataSystemAssetNotifications::OnReady
-            , typedAsset);
+        ReportReady(asset);
+    }
+
+    void DataSystem::ReportReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        using namespace ScriptCanvas;
+        const auto assetIdGuid = asset.GetId().m_guid;
+
+        auto& buildResult = m_assets[assetIdGuid];
+        buildResult.data = AZStd::move(asset);
+        buildResult.data.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+        
+        if (auto result = IsPreloaded(buildResult.data); result != IsPreloadedResult::Yes)
+        {
+            AZ_Error("ScriptCanvas"
+                , false
+                , "DataSystem received ready for asset that was not loaded: %s-%s"
+                , buildResult.data.GetHint().c_str()
+                , buildResult.data.GetId().ToString<AZStd::string>().c_str()
+            );
+
+            buildResult.status = BuilderAssetStatus::Error;
+            DataSystemAssetNotificationsBus::Event
+                ( assetIdGuid
+                , &DataSystemAssetNotifications::OnAssetNotReady);
+        }
+        else
+        {
+            buildResult.status = BuilderAssetStatus::Ready;
+            DataSystemAssetNotificationsBus::Event
+                ( assetIdGuid
+                , &DataSystemAssetNotifications::OnReady
+                , buildResult.data);
+        }
     }
 
     void DataSystem::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -133,16 +195,17 @@ namespace ScriptCanvasBuilder
             , "DataSystem received OnAssetReloaded: %s : %s"
             , asset.GetHint().c_str()
             , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
-        m_assetsReady[asset.GetId().m_guid] = AZStd::move(asset);
-        m_assetsPending.erase(asset.GetId().m_guid);
-        const auto typedAsset = m_assetsReady[asset.GetId().m_guid];
-        DataSystemAssetNotificationsBus::Event
-            ( typedAsset.GetId().m_guid
-            , &DataSystemAssetNotifications::OnReady
-            , typedAsset);
+        ReportReady(asset);
     }
 
-    void DataSystem::SourceFileChanged(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, AZ::Uuid fileAssetId)
+    void DataSystem::OnAssetUnloaded(const AZ::Data::AssetId assetId, [[maybe_unused]] const AZ::Data::AssetType assetType)
+    {
+        DataSystemAssetNotificationsBus::Event(assetId.m_guid, &DataSystemAssetNotifications::OnAssetNotReady);
+        // may have to queue this on the tick bus
+        MonitorAsset(assetId.m_guid);
+    }
+
+    void DataSystem::SourceFileChanged(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, AZ::Uuid sourceId)
     {
         if (!IsScriptCanvasFile(relativePath))
         {
@@ -153,53 +216,53 @@ namespace ScriptCanvasBuilder
             ( "ScriptCanvas"
             , "DataSystem received source file changed: %s : %s"
             , relativePath.c_str()
-            , fileAssetId.ToString<AZStd::string>().c_str());
+            , sourceId.ToString<AZStd::string>().c_str());
 
-        MonitorAsset(fileAssetId);
+        DataSystemAssetNotificationsBus::Event(sourceId, &DataSystemAssetNotifications::OnAssetNotReady);
+        MonitorAsset(sourceId);
 
-        if (auto handle = ScriptCanvasEditor::CompleteDescription(ScriptCanvasEditor::SourceHandle(nullptr, fileAssetId, {})))
+        if (auto handle = ScriptCanvasEditor::CompleteDescription(ScriptCanvasEditor::SourceHandle(nullptr, sourceId, {})))
         {
             CompileBuilderDataInternal(*handle);
+            auto& builderStorage = m_buildResultsByHandle[sourceId];
             DataSystemSourceNotificationsBus::Event
-                ( fileAssetId
+                ( sourceId
                 , &DataSystemSourceNotifications::SourceFileChanged
-                , m_buildResultsByHandle[fileAssetId]
+                , BuilderSourceResult{ builderStorage.status, &builderStorage.data }
                 , relativePath
                 , scanFolder);
         }
     }
 
-    void DataSystem::SourceFileRemoved([[maybe_unused]] AZStd::string relativePath
-        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    void DataSystem::SourceFileRemoved(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, AZ::Uuid sourceId)
     {
         if (!IsScriptCanvasFile(relativePath))
         {
             return;
         }
 
-        BuildResult result;
-        result.status = BuilderDataStatus::Removed;
-        AddResult(AZStd::move(fileAssetId), AZStd::move(result));
+        BuilderSourceStorage result;
+        result.status = BuilderSourceStatus::Removed;
+        AddResult(AZStd::move(sourceId), AZStd::move(result));
         DataSystemSourceNotificationsBus::Event
-            ( fileAssetId
+            ( sourceId
             , &DataSystemSourceNotifications::SourceFileRemoved
             , relativePath
             , scanFolder);
     }
 
-    void DataSystem::SourceFileFailed([[maybe_unused]] AZStd::string relativePath
-        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    void DataSystem::SourceFileFailed(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, AZ::Uuid sourceId)
     {
         if (!IsScriptCanvasFile(relativePath))
         {
             return;
         }
 
-        BuildResult result;
-        result.status = BuilderDataStatus::Failed;
-        AddResult(AZStd::move(fileAssetId), AZStd::move(result));
+        BuilderSourceStorage result;
+        result.status = BuilderSourceStatus::Failed;
+        AddResult(AZStd::move(sourceId), AZStd::move(result));
         DataSystemSourceNotificationsBus::Event
-            ( fileAssetId
+            ( sourceId
             , &DataSystemSourceNotifications::SourceFileFailed
             , relativePath
             , scanFolder);

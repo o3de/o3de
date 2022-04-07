@@ -118,7 +118,7 @@ namespace ScriptCanvas
     };
 
     IsPreloadedResult IsPreloaded(const RuntimeDataOverrides& overrides);
-
+    
     constexpr const char* ToString(IsPreloadedResult result)
     {
         switch (result)
@@ -154,6 +154,8 @@ namespace ScriptCanvas
     };
 
     using RuntimeAssetPtr = AZ::Data::Asset<RuntimeAsset>;
+
+    IsPreloadedResult IsPreloaded(RuntimeAssetPtr asset);
 
     class SubgraphInterfaceAsset;
 

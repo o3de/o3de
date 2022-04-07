@@ -59,18 +59,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="interpreterStatus">
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::RichText</enum>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       <widget class="QLineEdit" name="interpreterStatus">
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

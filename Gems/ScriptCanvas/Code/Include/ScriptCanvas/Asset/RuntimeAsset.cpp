@@ -134,6 +134,29 @@ namespace ScriptCanvas
         return IsPreloadedResult::Yes;
     }
 
+    IsPreloadedResult IsPreloaded(RuntimeAssetPtr asset)
+    {
+        if (asset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+        {
+            return IsPreloadedResult::PreloadBehaviorNotEnforced;
+        }
+
+        if (!asset.Get())
+        {
+            return IsPreloadedResult::DataNotLoaded;
+        }
+
+        for (auto& dependency : asset.Get()->m_runtimeData.m_requiredAssets)
+        {
+            if (const auto dependecyResult = IsPreloaded(dependency); dependecyResult != IsPreloadedResult::Yes)
+            {
+                return dependecyResult;
+            }
+        }
+
+        return IsPreloadedResult::Yes;
+    }
+
     void RuntimeDataOverrides::EnforcePreloadBehavior()
     {
         m_runtimeAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);

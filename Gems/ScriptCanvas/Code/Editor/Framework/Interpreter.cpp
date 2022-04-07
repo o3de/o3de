@@ -22,8 +22,10 @@ namespace ScriptCanvasEditor
     Interpreter::Interpreter()
     {
         m_handlerPropertiesChanged = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnPropertiesChanged(); });
+        m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceCompiled(); });
         m_handlerSourceFailed = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceFailed(); });
         m_configuration.ConnectToPropertiesChanged(m_handlerPropertiesChanged);
+        m_configuration.ConnectToSourceCompiled(m_handlerSourceCompiled);
         m_configuration.ConnectToSourceFailed(m_handlerSourceFailed);
     }
 
@@ -106,7 +108,7 @@ namespace ScriptCanvasEditor
         return m_executor.IsExecutable();
     }
 
-    void Interpreter::OnNotReady(ScriptCanvas::RuntimeAssetPtr asset)
+    void Interpreter::OnAssetNotReady()
     {
         MutexLock lock(m_mutex);
         m_executor.StopAndClearExecutable();
@@ -117,6 +119,8 @@ namespace ScriptCanvasEditor
     void Interpreter::OnPropertiesChanged()
     {
         m_runtimePropertiesDirty = true;
+        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusDisconnect();
+        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusConnect(m_configuration.GetSource().Id());
     }
 
     void Interpreter::OnReady(ScriptCanvas::RuntimeAssetPtr asset)
@@ -124,6 +128,19 @@ namespace ScriptCanvasEditor
         MutexLock lock(m_mutex);
         InitializeExecution(asset);
         SetSatus(InterpreterStatus::Ready);
+    }
+
+    void Interpreter::OnSourceCompiled()
+    {
+        MutexLock lock(m_mutex);
+        m_runtimePropertiesDirty = true;
+        SetSatus(InterpreterStatus::Configured);
+        ScriptCanvasBuilder::BuilderAssetResult assetResult;
+        DataSystemAssetRequestsBus::BroadcastResult(assetResult, &DataSystemAssetRequests::LoadAsset, m_configuration.GetSource());
+        if (assetResult.status == ScriptCanvasBuilder::BuilderAssetStatus::Ready)
+        {
+            OnReady(assetResult.data);
+        }
     }
 
     void Interpreter::OnSourceFailed()
@@ -171,10 +188,7 @@ namespace ScriptCanvasEditor
     void Interpreter::SetScript(SourceHandle source)
     {
         MutexLock lock(m_mutex);
-        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusDisconnect();
         m_configuration.Refresh(source);
-        m_runtimePropertiesDirty = true;
-        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusConnect(source.Id());
     }
 
     void Interpreter::SetUserData(AZStd::any&& runtimeUserData)

@@ -91,7 +91,7 @@ namespace ScriptCanvasEditor
         m_view->buttonStop->setEnabled(startStopButtonEnabled.second);
 
         const auto statusString = interpreter.GetStatusString();
-        m_view->interpreterStatus->setText(AZStd::string::format("<i>%.*s</i>", AZ_STRING_ARG(statusString)).c_str());
+        m_view->interpreterStatus->setText(AZStd::string::format("%.*s", AZ_STRING_ARG(statusString)).c_str());
     }
 
     void InterpreterWidget::Reflect(AZ::ReflectContext* context)

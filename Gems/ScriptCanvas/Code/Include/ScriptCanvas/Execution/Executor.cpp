@@ -63,7 +63,7 @@ namespace ScriptCanvas
         if (auto isPreloaded = IsPreloaded(overrides); isPreloaded != IsPreloadedResult::Yes)
         {
             AZ_Error("ScriptCanvas", false
-                , "Execution::Intialize runtime asset %s-%s loading problem: %s"
+                , "Execution::Initialize runtime asset %s-%s loading problem: %s"
                 , overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data()
                 , overrides.m_runtimeAsset.GetHint().c_str()
                 , ToString(isPreloaded));

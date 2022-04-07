@@ -10,10 +10,12 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <Builder/ScriptCanvasBuilder.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
 namespace ScriptCanvasBuilder
 {
-    enum class BuilderDataStatus
+    // sources...
+    enum class BuilderSourceStatus
     {
         Failed,
         Good,
@@ -21,24 +23,11 @@ namespace ScriptCanvasBuilder
         Unloadable,
     };
 
-    struct BuildResult
+    struct BuilderSourceResult
     {
-        BuilderDataStatus status = BuilderDataStatus::Failed;
-        // make this reusable
-        //const BuildVariableOverrides* data;
-        BuildVariableOverrides data;
+        BuilderSourceStatus status = BuilderSourceStatus::Failed;
+        const BuildVariableOverrides* data = nullptr;
     };
-
-    class DataSystemRequests
-        : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-
-        virtual BuildResult CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle) = 0;
-    };
-
-    using DataSystemRequestsBus = AZ::EBus<DataSystemRequests>;
 
     class DataSystemSourceNotifications
         : public AZ::EBusTraits
@@ -48,7 +37,7 @@ namespace ScriptCanvasBuilder
         using BusIdType = AZ::Uuid;
 
         // the file has been modified
-        virtual void SourceFileChanged(const BuildResult& result, AZStd::string_view relativePath, AZStd::string_view scanFolder) = 0;
+        virtual void SourceFileChanged(const BuilderSourceResult& result, AZStd::string_view relativePath, AZStd::string_view scanFolder) = 0;
         // the file failed to load or process
         virtual void SourceFileFailed(AZStd::string_view relativePath, AZStd::string_view scanFolder) = 0;
         // the file was removed from the tracked system
@@ -56,6 +45,18 @@ namespace ScriptCanvasBuilder
     };
     using DataSystemSourceNotificationsBus = AZ::EBus<DataSystemSourceNotifications>;
 
+    class DataSystemSourceRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+        virtual BuilderSourceResult CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle) = 0;
+    };
+    using DataSystemSourceRequestsBus = AZ::EBus<DataSystemSourceRequests>;
+
+
+    // assets...
     class DataSystemAssetNotifications
         : public AZ::EBusTraits
     {
@@ -65,7 +66,30 @@ namespace ScriptCanvasBuilder
         // the asset, possibly due to change, is immediately available
         virtual void OnReady(ScriptCanvas::RuntimeAssetPtr asset) = 0;
         // the asset, possibly due to change, is no longer available
-        virtual void OnNotReady(ScriptCanvas::RuntimeAssetPtr asset) = 0;
+        virtual void OnAssetNotReady() = 0;
     };
     using DataSystemAssetNotificationsBus = AZ::EBus<DataSystemAssetNotifications>;
+
+    enum class BuilderAssetStatus
+    {
+        Ready,
+        Pending,
+        Error
+    };
+
+    struct BuilderAssetResult
+    {
+        BuilderAssetStatus status = BuilderAssetStatus::Error;
+        ScriptCanvas::RuntimeAssetPtr data;
+    };
+
+    class DataSystemAssetRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+        virtual BuilderAssetResult LoadAsset(ScriptCanvasEditor::SourceHandle sourceHandle) = 0;
+    };
+    using DataSystemAssetRequestsBus = AZ::EBus<DataSystemAssetRequests>;
 }
