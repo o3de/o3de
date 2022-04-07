@@ -47,6 +47,7 @@ namespace GraphCanvas
         delete m_dataInterface;
         delete m_displayLabel;
         delete m_disabledLabel;
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void StringNodePropertyDisplay::RefreshStyle()

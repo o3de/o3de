@@ -188,6 +188,7 @@ namespace ScriptCanvasEditor
     {
         GraphItemCommandNotificationBus::Handler::BusDisconnect();
         ScriptCanvas::GraphRequestBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
         EditorGraphRequestBus::Handler::BusDisconnect();
         SceneCounterRequestBus::Handler::BusDisconnect();
         NodeCreationNotificationBus::Handler::BusDisconnect();
@@ -195,7 +196,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
 
         GraphCanvas::GraphModelRequestBus::Handler::BusDisconnect();
-
+        
         delete m_graphCanvasSceneEntity;
         m_graphCanvasSceneEntity = nullptr;
     }

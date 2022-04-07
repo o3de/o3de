@@ -61,6 +61,7 @@ namespace GraphCanvas
 
     ParticleGraphicsItem::~ParticleGraphicsItem()
     {
+        AZ::TickBus::Handler::BusDisconnect();
         AZ::SystemTickBus::Handler::BusDisconnect();
     }
     

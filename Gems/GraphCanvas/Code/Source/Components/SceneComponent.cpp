@@ -1209,6 +1209,7 @@ namespace GraphCanvas
         SceneMimeDelegateRequestBus::Handler::BusDisconnect();
         SceneRequestBus::Handler::BusDisconnect();
         AssetEditorSettingsNotificationBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
 
         m_activeDelegates.clear();
 

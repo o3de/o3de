@@ -173,6 +173,8 @@ namespace ScriptCanvasDeveloper
         }
 
         m_states.clear();
+
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void EditorAutomationTest::StartTest()

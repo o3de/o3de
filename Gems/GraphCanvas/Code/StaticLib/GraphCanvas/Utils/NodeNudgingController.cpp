@@ -33,6 +33,11 @@ namespace GraphCanvas
         StartNudging(rootElements);
     }
 
+    NodeNudgingController::~NodeNudgingController()
+    {
+        AZ::SystemTickBus::Handler::BusDisconnect();
+    }
+
     void NodeNudgingController::SetGraphId(const GraphId& graphId)
     {
         m_graphId = graphId;
