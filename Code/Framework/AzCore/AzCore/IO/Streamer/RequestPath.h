@@ -29,7 +29,7 @@ namespace AZ
             RequestPath(RequestPath&& rhs) = default;
             // Allow path views to be cast to a request path.
             RequestPath(AZ::IO::PathView path);
-
+            
             RequestPath& operator=(const RequestPath& rhs) = default;
             RequestPath& operator=(RequestPath&& rhs) = default;
             RequestPath& operator=(AZ::IO::PathView path);
@@ -47,14 +47,13 @@ namespace AZ
             size_t GetHash() const;
 
         private:
-            constexpr static const size_t s_invalidPathHash = std::numeric_limits<size_t>::max();
-            constexpr static const size_t s_emptyPathHash = std::numeric_limits<size_t>::min();
-
+            constexpr static const size_t InvalidPathHash = std::numeric_limits<size_t>::max();
+            
             void ResolvePath() const;
             size_t FindAliasOffset(AZStd::string_view path) const;
 
             mutable FixedMaxPath m_path;
-            mutable size_t m_absolutePathHash = s_emptyPathHash;
+            mutable size_t m_absolutePathHash = InvalidPathHash;
             mutable size_t m_relativePathOffset = 0;
         };
     } // namespace IO
