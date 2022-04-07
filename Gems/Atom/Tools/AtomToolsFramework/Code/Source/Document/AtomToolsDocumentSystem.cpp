@@ -135,41 +135,51 @@ namespace AtomToolsFramework
     {
         TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
-        AZStd::string requestedPath = sourcePath;
-        if (!ValidateDocumentPath(requestedPath))
+        AZStd::string openPath = sourcePath;
+        if (!ValidateDocumentPath(openPath))
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
-                QObject::tr("Document path is invalid:\n%1").arg(requestedPath.c_str()));
+                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(openPath.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
-        AZ::Uuid documentId = CreateDocumentFromFileType(requestedPath);
+        AZStd::string savePath = targetPath;
+        if (!savePath.empty() && !ValidateDocumentPath(savePath))
+        {
+            QMessageBox::critical(
+                GetToolMainWindow(),
+                QObject::tr("Document could not be created"),
+                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(savePath.c_str()));
+            return AZ::Uuid::CreateNull();
+        }
+
+        AZ::Uuid documentId = CreateDocumentFromFileType(openPath);
         if (documentId.IsNull())
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
-                QObject::tr("Failed to create: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QObject::tr("Failed to create: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return AZ::Uuid::CreateNull();
         }
 
         bool openResult = false;
-        AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Open, requestedPath);
+        AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Open, openPath);
         if (!openResult)
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be opened"),
-                QObject::tr("Failed to open: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QObject::tr("Failed to open: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             DestroyDocument(documentId);
             return AZ::Uuid::CreateNull();
         }
 
-        if (!targetPath.empty())
+        if (!savePath.empty())
         {
-            if (!SaveDocumentAsChild(documentId, targetPath))
+            if (!SaveDocumentAsChild(documentId, savePath))
             {
                 CloseDocument(documentId);
                 return AZ::Uuid::CreateNull();
@@ -184,7 +194,7 @@ namespace AtomToolsFramework
             QMessageBox::warning(
                 GetToolMainWindow(),
                 QObject::tr("Document opened with warnings"),
-                QObject::tr("Warnings encountered: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QObject::tr("Warnings encountered: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
         }
 
         return documentId;
@@ -197,13 +207,13 @@ namespace AtomToolsFramework
 
     AZ::Uuid AtomToolsDocumentSystem::OpenDocument(const AZStd::string& sourcePath)
     {
-        AZStd::string requestedPath = sourcePath;
-        if (!ValidateDocumentPath(requestedPath))
+        AZStd::string openPath = sourcePath;
+        if (!ValidateDocumentPath(openPath))
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be opened"),
-                QObject::tr("Document path is invalid:\n%1").arg(requestedPath.c_str()));
+                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(openPath.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
@@ -213,7 +223,7 @@ namespace AtomToolsFramework
             AZStd::string openDocumentPath;
             AtomToolsDocumentRequestBus::EventResult(
                 openDocumentPath, documentPair.first, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
-            if (AZ::StringFunc::Equal(openDocumentPath, requestedPath))
+            if (AZ::StringFunc::Equal(openDocumentPath, openPath))
             {
                 AtomToolsDocumentNotificationBus::Event(
                     m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentPair.first);
@@ -221,7 +231,7 @@ namespace AtomToolsFramework
             }
         }
 
-        return CreateDocumentFromFilePath(requestedPath, {});
+        return CreateDocumentFromFilePath(openPath, {});
     }
 
     bool AtomToolsDocumentSystem::CloseDocument(const AZ::Uuid& documentId)
@@ -314,21 +324,25 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentSystem::SaveDocument(const AZ::Uuid& documentId)
     {
-        AZStd::string saveDocumentPath;
-        AtomToolsDocumentRequestBus::EventResult(saveDocumentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string savePath;
+        AtomToolsDocumentRequestBus::EventResult(savePath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
-        if (!ValidateDocumentPath(saveDocumentPath))
+        if (!ValidateDocumentPath(savePath))
         {
+            QMessageBox::critical(
+                GetToolMainWindow(),
+                QObject::tr("Document could not be saved"),
+                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(savePath.c_str()));
             return false;
         }
 
-        const QFileInfo saveInfo(saveDocumentPath.c_str());
+        const QFileInfo saveInfo(savePath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
-                QObject::tr("Document could not be overwritten:\n%1").arg(saveDocumentPath.c_str()));
+                QObject::tr("Document could not be overwritten:\n%1").arg(savePath.c_str()));
             return false;
         }
 
@@ -341,7 +355,7 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
-                QObject::tr("Failed to save: \n%1\n\n%2").arg(saveDocumentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QObject::tr("Failed to save: \n%1\n\n%2").arg(savePath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -350,32 +364,36 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentSystem::SaveDocumentAsCopy(const AZ::Uuid& documentId, const AZStd::string& targetPath)
     {
-        AZStd::string saveDocumentPath = targetPath;
-        if (!ValidateDocumentPath(saveDocumentPath))
+        AZStd::string savePath = targetPath;
+        if (!ValidateDocumentPath(savePath))
         {
+            QMessageBox::critical(
+                GetToolMainWindow(),
+                QObject::tr("Document could not be saved"),
+                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(savePath.c_str()));
             return false;
         }
 
-        const QFileInfo saveInfo(saveDocumentPath.c_str());
+        const QFileInfo saveInfo(savePath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
-                QObject::tr("Document could not be overwritten:\n%1").arg(saveDocumentPath.c_str()));
+                QObject::tr("Document could not be overwritten:\n%1").arg(savePath.c_str()));
             return false;
         }
 
         TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
         bool result = false;
-        AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::SaveAsCopy, saveDocumentPath);
+        AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::SaveAsCopy, savePath);
         if (!result)
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
-                QObject::tr("Failed to save: \n%1\n\n%2").arg(saveDocumentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QObject::tr("Failed to save: \n%1\n\n%2").arg(savePath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -384,32 +402,36 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentSystem::SaveDocumentAsChild(const AZ::Uuid& documentId, const AZStd::string& targetPath)
     {
-        AZStd::string saveDocumentPath = targetPath;
-        if (!ValidateDocumentPath(saveDocumentPath))
+        AZStd::string savePath = targetPath;
+        if (!ValidateDocumentPath(savePath))
         {
+            QMessageBox::critical(
+                GetToolMainWindow(),
+                QObject::tr("Document could not be saved"),
+                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(savePath.c_str()));
             return false;
         }
 
-        const QFileInfo saveInfo(saveDocumentPath.c_str());
+        const QFileInfo saveInfo(savePath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
-                QObject::tr("Document could not be overwritten:\n%1").arg(saveDocumentPath.c_str()));
+                QObject::tr("Document could not be overwritten:\n%1").arg(savePath.c_str()));
             return false;
         }
 
         TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
         bool result = false;
-        AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::SaveAsChild, saveDocumentPath);
+        AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::SaveAsChild, savePath);
         if (!result)
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
-                QObject::tr("Failed to save: \n%1\n\n%2").arg(saveDocumentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QObject::tr("Failed to save: \n%1\n\n%2").arg(savePath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
