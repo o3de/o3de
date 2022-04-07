@@ -12,6 +12,7 @@
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Input/Channels/InputChannelId.h>
 
@@ -107,6 +108,9 @@ namespace SandboxEditor
 
     SANDBOX_API AZ::Vector3 CameraDefaultEditorPosition();
     SANDBOX_API void SetCameraDefaultEditorPosition(const AZ::Vector3& position);
+
+    SANDBOX_API AZ::Vector2 CameraDefaultEditorOrientation();
+    SANDBOX_API void SetCameraDefaultEditorOrientation(const AZ::Vector2& pitchYaw);
 
     SANDBOX_API float CameraDefaultOrbitDistance();
     SANDBOX_API void SetCameraDefaultOrbitDistance(float distance);
