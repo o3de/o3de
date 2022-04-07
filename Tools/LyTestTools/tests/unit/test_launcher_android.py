@@ -97,15 +97,22 @@ class TestLauncherModule:
         assert mock_output.call_count == 2
         assert under_test == '12'
 
-    def test_GenerateMapCommand_HasLoadLevelArg_ReturnsMapCommand(self):
+    def test_GenerateLoadLevelCommand_HasArg_ReturnsLoadLevelCommand(self):
         args_list = ['random_arg', '+LoadLevel', 'map_name', 'another_arg']
 
         under_test = ly_test_tools.launchers.platforms.android.launcher.generate_android_loadlevel_command(args_list)
 
         assert under_test == 'LoadLevel map_name'
 
-    def test_GenerateMapCommand_NoLoadLevelArg_ReturnsEmptyString(self):
+    def test_GenerateLoadLevelCommand_NoArg_ReturnsEmptyString(self):
         args_list = ['random_arg', 'stuff', 'map_name', 'another_arg']
+
+        under_test = ly_test_tools.launchers.platforms.android.launcher.generate_android_loadlevel_command(args_list)
+
+        assert under_test == ''
+
+    def test_GenerateLoadLevelCommand_InvalidArgFormat_ReturnsEmptyString(self):
+        args_list = ['random_arg', 'stuff', 'map_name', 'another_arg', '+LoadLevel']
 
         under_test = ly_test_tools.launchers.platforms.android.launcher.generate_android_loadlevel_command(args_list)
 

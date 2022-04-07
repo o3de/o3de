@@ -103,9 +103,10 @@ def generate_android_loadlevel_command(args_list):
     """
     load_level_cmd = ''
 
-    for arg in args_list:
-        if arg == '+LoadLevel':
-            load_level_cmd = "{}{}".format('LoadLevel ', args_list[args_list.index(arg) + 1])
+    if '+LoadLevel' in args_list:
+        level_name_index = args_list.index('+LoadLevel') + 1
+        if level_name_index < len(args_list):
+            load_level_cmd = f'LoadLevel {args_list[level_name_index]}'
 
     return load_level_cmd
 
