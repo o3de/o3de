@@ -138,6 +138,11 @@ namespace AZ
                 // that all inputs in a given SRG share the same spaceId.
                 // TODO: Verify
                 uint32_t spaceId = bindingInfo.m_constantDataBindingInfo.m_spaceId;
+                if (spaceId == ~0u)
+                {
+                    AZ_Assert(!bindingInfo.m_resourcesRegisterMap.empty(), "SRG Binding Info has neither constant data nor resources bound");
+                    spaceId = bindingInfo.m_resourcesRegisterMap.begin()->second.m_spaceId;
+                }
 
                 srgLayoutsPerSpace[spaceId].push_back(srgLayout);
 
