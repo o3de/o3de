@@ -405,7 +405,7 @@ namespace AZ::IO
     void FileRequest::Reset()
     {
         m_command = AZStd::monostate{};
-        m_onCompletion = &OnCompletionPlaceholder;
+        m_onCompletion = nullptr;
         m_estimatedCompletion = AZStd::chrono::system_clock::time_point();
         m_parent = nullptr;
         m_status = IStreamerTypes::RequestStatus::Pending;
