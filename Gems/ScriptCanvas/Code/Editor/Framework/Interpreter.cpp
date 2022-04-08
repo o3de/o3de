@@ -31,7 +31,7 @@ namespace ScriptCanvasEditor
 
     Interpreter::~Interpreter()
     {
-        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusDisconnect();
+        DataSystemAssetNotificationsBus::Handler::BusDisconnect();
     }
 
     void Interpreter::ConvertPropertiesToRuntime()
@@ -126,8 +126,8 @@ namespace ScriptCanvasEditor
     void Interpreter::OnPropertiesChanged()
     {
         m_runtimePropertiesDirty = true;
-        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusDisconnect();
-        ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler::BusConnect(m_configuration.GetSource().Id());
+        DataSystemAssetNotificationsBus::Handler::BusDisconnect();
+        DataSystemAssetNotificationsBus::Handler::BusConnect(m_configuration.GetSource().Id());
     }
 
     void Interpreter::OnReady(ScriptCanvas::RuntimeAssetPtr asset)
@@ -142,9 +142,9 @@ namespace ScriptCanvasEditor
         MutexLock lock(m_mutex);
         m_runtimePropertiesDirty = true;
         SetSatus(InterpreterStatus::Configured);
-        ScriptCanvasBuilder::BuilderAssetResult assetResult;
+        BuilderAssetResult assetResult;
         DataSystemAssetRequestsBus::BroadcastResult(assetResult, &DataSystemAssetRequests::LoadAsset, m_configuration.GetSource());
-        if (assetResult.status == ScriptCanvasBuilder::BuilderAssetStatus::Ready)
+        if (assetResult.status == BuilderAssetStatus::Ready)
         {
             OnReady(assetResult.data);
         }

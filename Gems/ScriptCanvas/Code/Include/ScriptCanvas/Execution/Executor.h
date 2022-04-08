@@ -10,6 +10,7 @@
 
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Execution/ExecutionStateHandler.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 namespace AZ
 {

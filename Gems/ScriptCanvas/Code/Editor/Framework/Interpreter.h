@@ -14,6 +14,7 @@
 #include <Editor/Framework/Configuration.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Execution/Executor.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 namespace AZ
 {
@@ -71,7 +72,7 @@ namespace ScriptCanvasEditor
 
         void Stop();
 
-        void TakeUserData(ExecutionUserData&& runtimeUserData);
+        void TakeUserData(ScriptCanvas::ExecutionUserData&& runtimeUserData);
 
     private:
         Mutex m_mutex;
