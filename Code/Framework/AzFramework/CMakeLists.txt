@@ -26,12 +26,12 @@ ly_add_target(
             ${pal_dir}
         PRIVATE
             ${common_dir}
-            AZ::AzNetworking
+            AZ::AzNetworking.API
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
         PUBLIC
-            AZ::AzNetworking.API
+            AZ::AzNetworking
             3rdParty::zstd
             3rdParty::lz4
     AUTOGEN_RULES
