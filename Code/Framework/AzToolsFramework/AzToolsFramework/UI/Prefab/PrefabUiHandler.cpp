@@ -316,11 +316,13 @@ namespace AzToolsFramework
             m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_TEMPLATES;
         bool isContainerOpen = m_containerEntityInterface->IsContainerOpen(entityId);
 
+        /*
         QString prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/unchecked.svg";
         if (!isPrefabEditModeNestedTemplates)
         {
             prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/checked.svg";
         }
+        */
 
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing, true);
@@ -355,6 +357,7 @@ namespace AzToolsFramework
                 }
             }
 
+            /*
             if (m_prefabFocusPublicInterface->GetOpenInstanceMode() == 1)
             {
                 // Paint toggle icon
@@ -372,6 +375,7 @@ namespace AzToolsFramework
                     painter->drawPixmap(option.rect.topLeft() + toggleOffset, scopeToggleIcon.pixmap(toggleIconSize));
                 }
             }
+            */
         }
         else
         {
@@ -433,10 +437,10 @@ namespace AzToolsFramework
         const QPoint offset = QPoint(-18, 3);
 
         bool isInFocusHierarchy = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId);
-        bool isFocusedPrefab = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
+        //bool isFocusedPrefab = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
         bool isPrefabEditModeNestedTemplates =
             m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_TEMPLATES;
-
+        /*
         if (isFocusedPrefab && m_prefabFocusPublicInterface->GetOpenInstanceMode() == 1)
         {
             if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle ||
@@ -461,6 +465,7 @@ namespace AzToolsFramework
                 }
             }
         }
+        */
 
         if (isInFocusHierarchy && isPrefabEditModeNestedTemplates)
         {
