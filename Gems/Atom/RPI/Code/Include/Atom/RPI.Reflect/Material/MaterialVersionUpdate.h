@@ -21,7 +21,10 @@ namespace AZ
     {
         class MaterialAsset;
 
-        // This class contains a toVersion and a list of actions to specify what operations were performed to upgrade a materialType.
+        //! A MaterialVersionUpdate contains a list of actions that specify the operations that need
+        //! to be performed on a MaterialAsset when updating it to MaterialType version 'toVersion'
+        //! [cf. @ref MaterialVersionUpdate(uint32_t toVersion) and @ref GetVersion()], given that
+        //! the MaterialAsset was based on a MaterialType one version below.
         class MaterialVersionUpdate
         {
             friend class MaterialVersionUpdates;
@@ -60,14 +63,13 @@ namespace AZ
                 AZ::Name m_nameCache = s_invalidName;
             };
 
-            struct Action
+            class Action
             {
+                friend class MaterialVersionUpdate;
+
+            public:
                 AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate::Action, "{A1FBEB19-EA05-40F0-9700-57D048DF572B}");
                 static void Reflect(ReflectContext* context);
-
-                using ArgsMap = AZStd::unordered_map<AZ::Name, MaterialPropertyValueWrapper>;
-                AZ::Name m_operation;
-                ArgsMap m_argsMap;
 
                 //! Generic structure for arbitrary version update actions that maps nicely to json.
                 //! The operation type is stored as a string under the "op" key.
@@ -117,9 +119,19 @@ namespace AZ
                 size_t GetArgCount() const;
 
                 //! Validates our internal consistency.
-                //! Runs additional checks if @p propertyHelper is provided (e.g. type checking for 'setValue' actions).
-                bool Validate(
-                    const PropertyHelper* propertyHelper = nullptr,
+                bool Validate(AZStd::function<void(const char*)> onError = nullptr) const;
+
+                const AZ::Name& GetOperation() const;
+
+                bool operator==(const Action& other) const;
+
+                static inline const MaterialPropertyValue s_invalidValue = MaterialPropertyValue();
+
+            private:
+                //! Perform more extensive validation check than @ref Validate()
+                //! (e.g. type checking for 'setValue' actions).
+                bool ValidateFully(
+                    const PropertyHelper& propertyHelper,
                     AZStd::function<void(const char*)> onError = nullptr) const;
 
                 bool HasExpectedNumArguments(
@@ -134,10 +146,10 @@ namespace AZ
                 //! of its type.
                 bool HasExpectedArgumentAnyType(
                     const char* expectedArgName, AZStd::function<void(const char*)> onError) const;
+                using ArgsMap = AZStd::unordered_map<AZ::Name, MaterialPropertyValueWrapper>;
 
-                bool operator==(const Action& other) const;
-
-                static inline const MaterialPropertyValue s_invalidValue = MaterialPropertyValue();
+                AZ::Name m_operation;
+                ArgsMap m_argsMap;
             };
 
             explicit MaterialVersionUpdate() = default;
@@ -179,6 +191,13 @@ namespace AZ
                 //! Apply the property renames of all material version updates to the given @p propertyId.
                 bool ApplyAllPropertyRenames(AZ::Name& propertyId) const;
 
+                //! Get a 'friendly' string form of the @p propertyId, which includes its final name
+                //! in case that property has been renamed.
+                //! @param propertyId The property whose description needs to be returned.
+                //! @param finalPropertyId The final property id, in case the property @p propertyId
+                //!        has been renamed. Can be obtained with @ref ApplyAllPropertyRenames().
+                AZStd::string FriendlyPropertyName(const AZ::Name& propertyId, const AZ::Name& finalPropertyId) const;
+
             private:
                 const MaterialPropertiesLayout* m_materialPropertiesLayout;
                 AZStd::function<bool(AZ::Name&)> m_applyAllPropertyRenames;
@@ -206,6 +225,9 @@ namespace AZ
             Actions m_actions;
         };
 
+        //! This class takes old MaterialAssets that were created based on outdated
+        //! MaterialTypeAssets and updates them to align themselves with their latest
+        //! MaterialTypeAsset, using a series of MaterialVersionUpdate steps.
         class MaterialVersionUpdates
         {
         public:
@@ -221,10 +243,8 @@ namespace AZ
 
             const MaterialVersionUpdate& GetVersionUpdate(size_t i) const;
 
-            //! Validate our updates against a MaterialTypeAsset with version @p materialTypeVersion
-            //! and updated properties layout @p materialPropertiesLayout.
-            //! @param materialPropertiesLayout The property layout that was already updated
-            //!        to use the latest property names (e.g. using @ref ApplyPropertyRenames()).
+            //! Validate our updates against the latest material properties layout @p materialPropertiesLayout
+            //! at material type version @p materialTypeVersion.
             bool ValidateUpdates(
                 uint32_t materialTypeVersion,
                 const MaterialPropertiesLayout* materialPropertiesLayout,
@@ -244,6 +264,5 @@ namespace AZ
             using MaterialVersionUpdateList = AZStd::vector<MaterialVersionUpdate>;
             MaterialVersionUpdateList m_versionUpdates;
         };
-
     } // namespace RPI
 } // namespace AZ

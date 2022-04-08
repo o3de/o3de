@@ -2066,11 +2066,11 @@ namespace UnitTest
         auto actions = materialVersionUpdates.GetVersionUpdate(0).GetActions();
         EXPECT_EQ(actions.size(), 2);
 
-        EXPECT_EQ(actions[0].m_operation, Name("setValue"));
+        EXPECT_EQ(actions[0].GetOperation(), Name("setValue"));
         EXPECT_EQ(actions[0].GetArg(Name("name")),  AZStd::string("grp.myEnum"));
         EXPECT_EQ(actions[0].GetArg(Name("value")), 1u);
 
-        EXPECT_EQ(actions[1].m_operation, Name("setValue"));
+        EXPECT_EQ(actions[1].GetOperation(), Name("setValue"));
         EXPECT_EQ(actions[1].GetArg(Name("name")),  AZStd::string("grp.myImage"));
         EXPECT_EQ(actions[1].GetArg(Name("value")), m_testImageAsset2);
     }

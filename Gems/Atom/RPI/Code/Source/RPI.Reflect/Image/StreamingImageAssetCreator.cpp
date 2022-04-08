@@ -124,7 +124,7 @@ namespace AZ
 
             if (m_mipLevels != expectedMipLevels)
             {
-                ReportError("Expected %d mip levels, but %d were added through mip chains.", expectedMipLevels, m_mipLevels);
+                ReportError("Expected %u mip levels, but %u were added through mip chains.", expectedMipLevels, m_mipLevels);
                 return false;
             }
 

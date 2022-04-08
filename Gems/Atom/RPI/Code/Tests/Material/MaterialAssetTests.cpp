@@ -376,19 +376,19 @@ namespace UnitTest
 
         // Expected warning messages
         ErrorMessageFinder warningFinder; 
-        auto ExpectOverwriteMessage = [&warningFinder]( int32_t version, const char *name, const char *finalName)
+        auto ExpectOverwriteMessage = [&warningFinder](uint32_t version, const char *name, const char *finalName)
         {
             if (finalName == nullptr)
             {
                 warningFinder.AddExpectedErrorMessage(AZStd::string::format(
-                    "SetValue operation of update to version %d has detected (and overwritten) a previous value for %s.",
+                    "SetValue operation of update to version %u has detected (and overwritten) a previous value for '%s'.",
                     version, name));
             }
             else
             {
                 warningFinder.AddExpectedErrorMessage(AZStd::string::format(
-                    "SetValue operation of update to version %d has detected (and overwritten) a previous value for %s "
-                    "(final name of this property: %s).",
+                    "SetValue operation of update to version %u has detected (and overwritten) a previous value for '%s' "
+                    "(final name of this property: '%s').",
                     version, name, finalName));
             }
         };

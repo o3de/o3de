@@ -129,7 +129,7 @@ namespace AZ
             }
             else
             {
-                AZ_Warning("Streaming Image", false, "Mip level index (%d) out of bounds, only %d levels available for asset %s",
+                AZ_Warning("Streaming Image", false, "Mip level index (%u) out of bounds, only %u levels available for asset %s",
                     mipLevel, imageDescriptor.m_mipLevels, m_assetId.ToString<AZStd::string>().c_str());
                 return RHI::ImageDescriptor();
             }

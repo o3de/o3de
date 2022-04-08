@@ -1080,7 +1080,7 @@ namespace UnitTest
 
         ErrorMessageFinder errorMessageFinder;
         errorMessageFinder.AddExpectedErrorMessage(
-            "setValue material version update: Could not find property 'InvalidPropertyName' in the material properties layout");
+            "Could not find property 'InvalidPropertyName' in the material properties layout");
 
         EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
 
@@ -1108,7 +1108,7 @@ namespace UnitTest
         materialTypeCreator.AddVersionUpdate(versionUpdate);
 
         ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("Unexpected type for property MyFloat in a setValue version update");
+        errorMessageFinder.AddExpectedErrorMessage("Unexpected type for property 'MyFloat'");
 
         EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
 
