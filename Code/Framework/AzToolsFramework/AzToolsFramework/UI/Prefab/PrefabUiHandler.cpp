@@ -190,7 +190,7 @@ namespace AzToolsFramework
         {
             return;
         }
-        // There is no legal way of opening prefabs in their default state, so default to disabled.
+        
         QColor borderColor = m_prefabCapsuleDisabledColor;
         if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
         {
