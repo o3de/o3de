@@ -298,7 +298,7 @@ namespace EMotionFX
 
             // Keep track of the number of unique jointIds
             AZStd::bitset<AZStd::numeric_limits<uint16>::max()> usedJoints;
-            uint16 highestJointId = 0;
+            uint16 highestJointIndex = 0;
             // Fill in skinning data from atom buffer
             for (uint32 v = 0; v < modelVertexCount; ++v)
             {
@@ -318,13 +318,13 @@ namespace EMotionFX
                         skinningLayer->AddInfluence(v, skeletonJointIndex, weight, 0);
 
                         usedJoints.set(skeletonJointIndex);
-                        highestJointId = AZStd::max(highestJointId, skeletonJointIndex);
+                        highestJointIndex = AZStd::max(highestJointIndex, skeletonJointIndex);
                     }
                 }
             }
 
             mesh->SetNumUniqueJoints(aznumeric_caster(usedJoints.count()));
-            mesh->SetHighestJointId(highestJointId);
+            mesh->SetHighestJointIndex(highestJointIndex);
         }
 
         AZ::u32 vertexOffset = 0;

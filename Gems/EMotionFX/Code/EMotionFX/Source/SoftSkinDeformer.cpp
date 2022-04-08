@@ -202,12 +202,12 @@ namespace EMotionFX
 
 
     // initialize the mesh deformer
-    void SoftSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointId)
+    void SoftSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);
         MCORE_UNUSED(lodLevel);
-        MCORE_UNUSED(highestJointId);
+        MCORE_UNUSED(highestJointIndex);
 
         // clear the bone information array
         m_boneMatrices.clear();
@@ -224,7 +224,7 @@ namespace EMotionFX
         MCORE_ASSERT(skinningLayer);
 
         constexpr uint16 invalidBoneIndex = AZStd::numeric_limits<uint16>::max();
-        AZStd::vector<uint16> localBoneMap(highestJointId + 1, invalidBoneIndex);
+        AZStd::vector<uint16> localBoneMap(highestJointIndex + 1, invalidBoneIndex);
 
         // find out what bones this mesh uses
         const uint32 numOrgVerts = m_mesh->GetNumOrgVertices();

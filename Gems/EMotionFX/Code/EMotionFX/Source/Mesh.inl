@@ -70,12 +70,12 @@ MCORE_INLINE void Mesh::SetNumUniqueJoints(uint16 numUniqueJoints)
     m_numUniqueJoints = numUniqueJoints;
 }
 
-MCORE_INLINE uint16 Mesh::GetHighestJointId() const
+MCORE_INLINE uint16 Mesh::GetHighestJointIndex() const
 {
-    return m_highestJointId;
+    return m_highestJointIndex;
 }
 
-MCORE_INLINE void Mesh::SetHighestJointId(uint16 highestJointId)
+MCORE_INLINE void Mesh::SetHighestJointIndex(uint16 highestJointIndex)
 {
-    m_highestJointId = highestJointId;
+    m_highestJointIndex = highestJointIndex;
 }

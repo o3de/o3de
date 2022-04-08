@@ -292,7 +292,7 @@ namespace EMotionFX
     }
 
     // initialize the mesh deformer
-    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointId)
+    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);
@@ -311,7 +311,7 @@ namespace EMotionFX
         MCORE_ASSERT(skinningLayer);
 
         constexpr uint16 invalidBoneIndex = AZStd::numeric_limits<uint16>::max();
-        AZStd::vector<uint16> localBoneMap(highestJointId + 1, invalidBoneIndex);
+        AZStd::vector<uint16> localBoneMap(highestJointIndex + 1, invalidBoneIndex);
 
         // find out what bones this mesh uses
         const uint32 numOrgVerts = m_mesh->GetNumOrgVertices();

@@ -660,12 +660,12 @@ namespace EMotionFX
         /**
          * Get the highest id of all the jointId's used by this mesh
          */
-        uint16 GetHighestJointId() const;
+        uint16 GetHighestJointIndex() const;
 
         /**
          * Get the highest id of all the jointId's used by this mesh
          */
-        void SetHighestJointId(uint16 highestJointId);
+        void SetHighestJointIndex(uint16 highestJointIndex);
 
         MCORE_INLINE bool GetIsCollisionMesh() const            { return m_isCollisionMesh; }
         void SetIsCollisionMesh(bool isCollisionMesh)           { m_isCollisionMesh = isCollisionMesh; }
@@ -680,7 +680,7 @@ namespace EMotionFX
         uint32                  m_numVertices;       /**< Number of vertices. */
         uint32                  m_numIndices;        /**< Number of indices. */
         uint16                  m_numUniqueJoints;   /**< Number of unique joints*/
-        uint16                  m_highestJointId;    /**< The highest id of all the joints used by this mesh*/
+        uint16                  m_highestJointIndex;    /**< The highest id of all the joints used by this mesh*/
         bool                    m_isCollisionMesh;   /**< Is this mesh a collision mesh? */
 
         /**
