@@ -1,0 +1,77 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+set(FILES
+    AzNetworkingConfiguration.h
+    AzNetworkingModule.h
+    AutoGen/AutoPacketDispatcher_Header.jinja
+    AutoGen/AutoPacketDispatcher_Inline.jinja
+    AutoGen/AutoPackets_Header.jinja
+    AutoGen/AutoPackets_Inline.jinja
+    AutoGen/AutoPackets_Source.jinja
+    AutoGen/CorePackets.AutoPackets.xml
+    ConnectionLayer/ConnectionEnums.h
+    ConnectionLayer/ConnectionMetrics.h
+    ConnectionLayer/IConnection.h
+    ConnectionLayer/IConnectionListener.h
+    ConnectionLayer/IConnectionSet.h
+    ConnectionLayer/SequenceGenerator.h
+    DataStructures/ByteBuffer.h
+    DataStructures/FixedSizeBitset.h
+    DataStructures/FixedSizeBitsetView.h
+    DataStructures/FixedSizeVectorBitset.h
+    DataStructures/IBitset.h
+    DataStructures/RingBufferBitset.h
+    DataStructures/TimeoutQueue.h
+    Framework/ICompressor.h
+    Framework/INetworking.h
+    Framework/INetworkInterface.h
+    Framework/NetworkingSystemComponent.h
+    Framework/NetworkInterfaceMetrics.h
+    PacketLayer/IPacket.h
+    PacketLayer/IPacketHeader.h
+    Serialization/AbstractValue.h
+    Serialization/AzContainerSerializers.h
+    Serialization/DeltaSerializer.h
+    Serialization/HashSerializer.h
+    Serialization/ISerializer.h
+    Serialization/NetworkInputSerializer.h
+    Serialization/NetworkOutputSerializer.h
+    Serialization/StringifySerializer.h
+    Serialization/TrackChangedSerializer.h
+    TcpTransport/TcpConnection.h
+    TcpTransport/TcpConnectionSet.h
+    TcpTransport/TcpPacketHeader.h
+    TcpTransport/TcpRingBuffer.h
+    TcpTransport/TcpRingBufferImpl.h
+    TcpTransport/TcpSocket.h
+    TcpTransport/TcpSocketManager.h
+    TcpTransport/TlsSocket.h
+    TcpTransport/TcpListenThread.h
+    TcpTransport/TcpNetworkInterface.h
+    UdpTransport/DtlsEndpoint.h
+    UdpTransport/DtlsSocket.h
+    UdpTransport/UdpConnection.h
+    UdpTransport/UdpConnectionSet.h
+    UdpTransport/UdpFragmentQueue.h
+    UdpTransport/UdpNetworkInterface.h
+    UdpTransport/UdpPacketHeader.h
+    UdpTransport/UdpPacketIdWindow.h
+    UdpTransport/UdpPacketTracker.h
+    UdpTransport/UdpReaderThread.h
+    UdpTransport/UdpReliableQueue.h
+    UdpTransport/UdpSocket.h
+    Utilities/CidrAddress.h
+    Utilities/EncryptionCommon.h
+    Utilities/Endian.h
+    Utilities/IpAddress.h
+    Utilities/NetworkCommon.h
+    Utilities/NetworkIncludes.h
+    Utilities/QuantizedValues.h
+    Utilities/TimedThread.h
+)

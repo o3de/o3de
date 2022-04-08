@@ -10,9 +10,36 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O
 set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 ly_add_target(
+    NAME AzNetworking.API HEADERONLY
+    NAMESPACE AZ
+    FILES_CMAKE
+        AzNetworking/aznetworking_headers.cmake
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    COMPILE_DEFINITIONS
+        INTERFACE
+            AZNETWORKING_EXPORTS
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            .
+            ${common_dir}
+            ${pal_dir}
+    AUTOGEN_RULES
+        *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
+)
+
+ly_create_alias(NAME AzNetworking.Clients.API NAMESPACE Gem TARGETS AZ::AzNetworking.API)
+ly_create_alias(NAME AzNetworking.Servers.API NAMESPACE Gem TARGETS AZ::AzNetworking.API)
+ly_create_alias(NAME AzNetworking.Tools.API NAMESPACE Gem TARGETS AZ::AzNetworking.API)
+ly_create_alias(NAME AzNetworking.Builders.API NAMESPACE Gem TARGETS AZ::AzNetworking.API)
+
+# Core libraries currently depend on NetworkingSystemComponent so enable by default
+ly_enable_gems(GEMS AzNetworking.API)
+
+ly_add_target(
     NAME AzNetworking ${PAL_TRAIT_MONOLITHIC_DRIVEN_GEM_SHARED_TYPE}
     NAMESPACE AZ
     FILES_CMAKE
+        AzNetworking/aznetworking_headers.cmake
         AzNetworking/aznetworking_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     COMPILE_DEFINITIONS
@@ -31,10 +58,10 @@ ly_add_target(
             3rdParty::zstd
             3rdParty::OpenSSL
         PUBLIC
+            AZ::AzNetworking.API
             3rdParty::RapidJSON
             3rdParty::RapidXML
     AUTOGEN_RULES
-        *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
         *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
         *.AutoPackets.xml,AutoPackets_Source.jinja,$path/$fileprefix.AutoPackets.cpp
 )

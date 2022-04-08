@@ -31,7 +31,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
         PUBLIC
-            AZ::AzNetworking
+            AZ::AzNetworking.API
             3rdParty::zstd
             3rdParty::lz4
     AUTOGEN_RULES

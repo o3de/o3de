@@ -23,7 +23,12 @@ function(ly_add_autogen)
     if(ly_add_autogen_AUTOGEN_RULES)
         set(AZCG_INPUTFILES ${ly_add_autogen_ALLFILES})
         list(FILTER AZCG_INPUTFILES INCLUDE REGEX ".*\.(xml|json|jinja)$")
-        target_include_directories(${ly_add_autogen_NAME} PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated")
+        get_target_property(target_type ${ly_add_autogen_NAME} TYPE)
+        if (target_type STREQUAL INTERFACE_LIBRARY)
+            target_include_directories(${ly_add_autogen_NAME} INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated")
+        else()
+            target_include_directories(${ly_add_autogen_NAME} PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated")
+        endif()
         execute_process(
             COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${AZCG_INPUTFILES}" "${ly_add_autogen_AUTOGEN_RULES}" "-n"
             OUTPUT_VARIABLE AUTOGEN_OUTPUTS
