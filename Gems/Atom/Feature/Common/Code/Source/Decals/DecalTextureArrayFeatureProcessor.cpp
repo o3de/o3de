@@ -256,6 +256,22 @@ namespace AZ
             }
         }
 
+        void DecalTextureArrayFeatureProcessor::SetDecalNormalMapOpacity(const DecalHandle handle, float opacity)
+        {
+            if (handle.IsValid())
+            {
+                m_decalData.GetData(handle.GetIndex()).m_normalMapOpacity = opacity;
+
+                m_deviceBufferNeedsUpdate = true;
+            }
+            else
+            {
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor", false,
+                    "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalOpacity().");
+            }
+        }
+
         void DecalTextureArrayFeatureProcessor::SetDecalSortKey(DecalHandle handle, uint8_t sortKey)
         {
             if (handle.IsValid())

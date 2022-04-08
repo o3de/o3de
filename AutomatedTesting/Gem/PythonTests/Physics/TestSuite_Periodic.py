@@ -31,62 +31,62 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Terrain_NoPhysTerrainComponentNoCollision(self, request, workspace, editor, launcher_platform):
         from .tests.terrain import Terrain_NoPhysTerrainComponentNoCollision as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
         
     @revert_physics_config
     def test_RigidBody_InitialLinearVelocity(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_InitialLinearVelocity as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_StartGravityEnabledWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_StartGravityEnabledWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_KinematicModeWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_KinematicModeWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_LinearDampingForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_LinearDampingForceOnRigidBodies as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_SimpleDragForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_SimpleDragForceOnRigidBodies as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_CapsuleShapedForce(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_CapsuleShapedForce as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ImpulsesCapsuleShapedRigidBody(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ImpulsesCapsuleShapedRigidBody as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_MomentOfInertiaManualSetting(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_MomentOfInertiaManualSetting as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_COM_ManualSettingWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_COM_ManualSettingWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_AddRigidBodyComponent(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_AddRigidBodyComponent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_SplineForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_SplineForceOnRigidBodies as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_RestitutionCombine.setreg_override',
@@ -105,93 +105,93 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Collider_ColliderPositionOffset(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_ColliderPositionOffset as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_AngularDampingAffectsRotation(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_AngularDampingAffectsRotation as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_MultipleForcesInSameComponentCombineForces(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_MultipleForcesInSameComponentCombineForces as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ImpulsesPxMeshShapedRigidBody(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ImpulsesPxMeshShapedRigidBody as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ScriptCanvas_TriggerEvents(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_TriggerEvents as test_module
         # FIXME: expected_lines = test_module.LogLines.expected_lines
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ZeroPointForceDoesNothing(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ZeroPointForceDoesNothing as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ZeroWorldSpaceForceDoesNothing(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ZeroWorldSpaceForceDoesNothing as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ZeroLinearDampingDoesNothing(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ZeroLinearDampingDoesNothing as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_MovingForceRegionChangesNetForce(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_MovingForceRegionChangesNetForce as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ScriptCanvas_CollisionEvents(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_CollisionEvents as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_DirectionHasNoAffectOnTotalForce(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_DirectionHasNoAffectOnTotalForce as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_StartAsleepWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_ForceRegion_SliceFileInstantiates(self, request, workspace, editor, launcher_platform):
-        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+    def test_ForceRegion_PrefabFileInstantiates(self, request, workspace, editor, launcher_platform):
+        from .tests.force_region import ForceRegion_PrefabFileInstantiates as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ZeroLocalSpaceForceDoesNothing(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ZeroLocalSpaceForceDoesNothing as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ZeroSimpleDragForceDoesNothing(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ZeroSimpleDragForceDoesNothing as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_COM_ComputingWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_COM_ComputingWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_MassDifferentValuesWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_MassDifferentValuesWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_RestitutionCombinePriorityOrder.setreg_override',
@@ -203,27 +203,27 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ForceRegion_SplineRegionWithModifiedTransform(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_SplineRegionWithModifiedTransform as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ScriptCanvas_ShapeCast(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_InitialAngularVelocity(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_InitialAngularVelocity as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ZeroSplineForceDoesNothing(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_PositionOffset(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_PositionOffset as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_FrictionCombinePriorityOrder.setreg_override',
@@ -237,12 +237,12 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Ragdoll_LevelSwitchDoesNotCrash(self, request, workspace, editor, launcher_platform):
         from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
     
     @revert_physics_config
     def test_ForceRegion_MultipleComponentsCombineForces(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_MultipleComponentsCombineForces as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     # Marking the test as an expected failure due to sporadic failure on Automated Review: LYN-2580
     # The test still runs, but a failure of the test doesn't result in the test run failing
@@ -260,27 +260,27 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_RigidBody_SleepWhenBelowKineticThreshold(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_COM_NotIncludesTriggerShapes(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_COM_NotIncludesTriggerShapes as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Material_NoEffectIfNoColliderShape(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_TriggerPassThrough(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_TriggerPassThrough as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_SetGravityWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_SetGravityWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_CharacterController.setreg_override',
@@ -292,23 +292,23 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Material_EmptyLibraryUsesDefault(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_EmptyLibraryUsesDefault as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_NoQuiverOnHighLinearDampingForce(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_NoQuiverOnHighLinearDampingForce as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_ComputeInertiaWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_ComputeInertiaWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ScriptCanvas_PostPhysicsUpdate(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
         # Fixme: unexpected_lines = ["Assert"] + test_module.Lines.unexpected
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_NoneCollisionGroupSameLayerNotCollide.setreg_override',
@@ -329,7 +329,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_ScriptCanvas_PostUpdateEvent(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PostUpdateEvent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_Restitution.setreg_override',
@@ -343,12 +343,12 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_ScriptCanvas_PreUpdateEvent(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PreUpdateEvent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_PxMeshShapedForce(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     # Marking the Test  as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
     # The test still runs, but a failure of the test doesn't result in the test run failing
@@ -356,22 +356,22 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_RigidBody_MaxAngularVelocityWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Joints_HingeSoftLimitsConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Joints_BallSoftLimitsConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_BallSoftLimitsConstrained as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Joints_BallLeadFollowerCollide(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_BallLeadFollowerCollide as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_AddingNewGroupWorks.setreg_override',
@@ -417,19 +417,19 @@ class TestAutomation(TestAutomationBase):
 
     def test_ForceRegion_WorldSpaceForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ForceRegion_PointForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_PointForceOnRigidBodies as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ForceRegion_SphereShapedForce(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_SphereShapedForce as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ForceRegion_RotationalOffset(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_RotationalOffset as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Material_LibraryClearingAssignsDefault(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_LibraryClearingAssignsDefault as test_module
@@ -459,7 +459,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_RigidBody_EnablingGravityWorksPoC(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_CollisionGroupsWorkflow.setreg_override',
@@ -471,23 +471,18 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Collider_ColliderRotationOffset(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_ColliderRotationOffset as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ParentChildForcesCombineForces(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
         
     @revert_physics_config
     def test_ShapeCollider_CanBeAddedWitNoWarnings(self, request, workspace, editor, launcher_platform):
         from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
         self._run_test(request, workspace, editor, test_module)
-        
-    @revert_physics_config
-    def test_Physics_UndoRedoWorksOnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
-        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-    
+
     def test_Joints_Fixed2BodiesConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_Fixed2BodiesConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -510,7 +505,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_Joints_BallBreakable(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_BallBreakable as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_HingeNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_HingeNoLimitsConstrained as test_module
@@ -523,6 +518,10 @@ class TestAutomation(TestAutomationBase):
     def test_Joints_GlobalFrameConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_GlobalFrameConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptCanvas_SpawnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
+        from .tests.script_canvas import ScriptCanvas_SpawnEntityWithPhysComponents as test_module
+        self._run_test(request, workspace, editor, test_module)
     
     @revert_physics_config
     def test_Material_DefaultLibraryUpdatedAcrossLevels(self, request, workspace, editor, launcher_platform):
@@ -532,7 +531,7 @@ class TestAutomation(TestAutomationBase):
                           search_subdirs=True)
         def levels_before(self, request, workspace, editor, launcher_platform):
             from .tests.material import Material_DefaultLibraryUpdatedAcrossLevels_before as test_module_0
-            self._run_test(request, workspace, editor, test_module_0, enable_prefab_system=False)
+            self._run_test(request, workspace, editor, test_module_0)
 
         # File override replaces the previous physxconfiguration file with another where the only difference is the default material library
         @fm.file_override("physxsystemconfiguration.setreg",
@@ -541,7 +540,7 @@ class TestAutomation(TestAutomationBase):
                           search_subdirs=True)
         def levels_after(self, request, workspace, editor, launcher_platform):
             from .tests.material import Material_DefaultLibraryUpdatedAcrossLevels_after as test_module_1
-            self._run_test(request, workspace, editor, test_module_1, enable_prefab_system=False)
+            self._run_test(request, workspace, editor, test_module_1)
 
         levels_before(self, request, workspace, editor, launcher_platform)
         levels_after(self, request, workspace, editor, launcher_platform)

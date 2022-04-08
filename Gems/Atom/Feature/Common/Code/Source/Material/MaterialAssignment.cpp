@@ -10,6 +10,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Material/MaterialAssignmentSerializer.h>
@@ -33,9 +34,23 @@ namespace AZ
                 serializeContext->RegisterGenericType<MaterialPropertyOverrideMap>();
 
                 serializeContext->Class<MaterialAssignment>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("MaterialAsset", &MaterialAssignment::m_materialAsset)
-                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides);
+                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides)
+                    ->Field("ModelUvOverrides", &MaterialAssignment::m_matModUvOverrides)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<MaterialAssignment>(
+                        "Material Assignment", "Material Assignment")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_materialAsset, "Material Asset", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_propertyOverrides, "Property Overrides", "")
+                        ;
+                }
             }
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -99,12 +114,18 @@ namespace AZ
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+                return;
             }
-            else if (m_defaultMaterialAsset.IsReady())
+
+            if (m_defaultMaterialAsset.IsReady())
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+                return;
             }
+
+            // Clear the existing material instance if no asset was ready
+            m_materialInstance = nullptr;
         }
 
         void MaterialAssignment::Release()

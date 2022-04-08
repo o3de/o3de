@@ -62,6 +62,7 @@ namespace AtomToolsFramework
         bool m_readOnly = false;
         bool m_showThumbnail = false;
         AZStd::function<AZ::u32(const AZStd::any&)> m_dataChangeCallback;
+        AZ::u32 m_customHandler = 0;
     };
 
     //! Wraps an AZStd::any value and configuration so that it can be displayed and edited in a ReflectedPropertyEditor.

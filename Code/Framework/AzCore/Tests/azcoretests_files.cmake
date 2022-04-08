@@ -61,7 +61,9 @@ set(FILES
     Slice.cpp
     State.cpp
     Statistics.cpp
-    StatisticalProfiler.cpp
+    StatisticalProfilerBenchmarks.cpp
+    StatisticalProfilerHelpers.h
+    StatisticalProfilerTests.cpp
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
@@ -73,6 +75,7 @@ set(FILES
     Debug/Trace.cpp
     Debug/UnhandledExceptions.cpp
     Name/NameJsonSerializerTests.cpp
+    Name/NameBenchmarks.cpp
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Settings/CommandLineTests.cpp

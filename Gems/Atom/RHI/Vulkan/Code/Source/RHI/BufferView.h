@@ -25,7 +25,9 @@ namespace AZ
         public:
             using ResourceType = Buffer;
 
-            AZ_CLASS_ALLOCATOR(BufferView, AZ::ThreadPoolAllocator, 0);
+            //Using SystemAllocator here instead of ThreadPoolAllocator as it gets slower when
+            //we create thousands of buffer views related to SRGs
+            AZ_CLASS_ALLOCATOR(BufferView, AZ::SystemAllocator, 0);
             AZ_RTTI(BufferView, "26BD4514-1D3B-4BDF-A7A5-AC689AEAEC42", Base);
 
             static RHI::Ptr<BufferView> Create();

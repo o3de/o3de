@@ -268,6 +268,40 @@ namespace Multiplayer
         }
     }
 
+    void NetworkEntityManager::MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant)
+    {
+        if (alwaysRelevant)
+        {
+            m_alwaysRelevantToClients.emplace(entityHandle);
+        }
+        else
+        {
+            m_alwaysRelevantToClients.erase(entityHandle);
+        }
+    }
+
+    void NetworkEntityManager::MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant)
+    {
+        if (alwaysRelevant)
+        {
+            m_alwaysRelevantToServers.emplace(entityHandle);
+        }
+        else
+        {
+            m_alwaysRelevantToServers.erase(entityHandle);
+        }
+    }
+
+    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevantToClientsSet() const
+    {
+        return m_alwaysRelevantToClients;
+    }
+
+    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevantToServersSet() const
+    {
+        return m_alwaysRelevantToServers;
+    }
+
     void NetworkEntityManager::SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs)
     {
         m_networkEntityAuthorityTracker.SetTimeoutTimeMs(timeoutTimeMs);
@@ -366,7 +400,7 @@ namespace Multiplayer
     }
 
     INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate(
-        const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, AutoActivate autoActivate)
+        const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, const AZ::Transform& transform, AutoActivate autoActivate)
     {
         INetworkEntityManager::EntityList returnList;
 
@@ -416,6 +450,7 @@ namespace Multiplayer
 
                 const NetEntityId netEntityId = NextId();
                 netBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
+                transformComponent->SetWorldTM(transform);
 
                 if (autoActivate == AutoActivate::DoNotActivate)
                 {
@@ -477,7 +512,7 @@ namespace Multiplayer
 
         if (entityIndex == PrefabEntityId::AllIndices)
         {
-            return CreateEntitiesImmediate(*netSpawnable, netEntityRole, autoActivate);
+            return CreateEntitiesImmediate(*netSpawnable, netEntityRole, transform, autoActivate);
         }
 
         const AzFramework::Spawnable::EntityList& entities = netSpawnable->GetEntities();

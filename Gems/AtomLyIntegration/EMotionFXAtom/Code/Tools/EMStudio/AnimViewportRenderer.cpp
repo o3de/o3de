@@ -13,6 +13,7 @@
 #include <Integration/Components/ActorComponent.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h>
@@ -64,25 +65,12 @@ namespace EMStudio
         // Link our RPI::Scene to the AzFramework::Scene
         m_frameworkScene->SetSubsystem(m_scene);
 
-        const AZ::RPI::RenderPipelineDescriptor renderPipelineDesc =
-            [](const AzFramework::ViewportId& viewportId)
-            {
-                // Load the render pipeline asset
-                const char* pipelineAssetPath = "passes/MainRenderPipeline.azasset";
-                AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-                    pipelineAssetPath, AZ::RPI::AssetUtils::TraceLevel::Error);
-                const AZ::RPI::RenderPipelineDescriptor* assetPipelineDesc = AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
-                AZ_Assert(assetPipelineDesc, "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
-
-                // Use a unique render pipeline name to not conflict with other render pipelines
-                AZ::RPI::RenderPipelineDescriptor pipelineDesc = *assetPipelineDesc;
-                pipelineDesc.m_name += AZStd::string::format("_%i", viewportId);
-
-                pipelineAsset.Release();
-                return pipelineDesc;
-            }(viewportContext->GetId());
+        const char* pipelineAssetPath = "passes/MainRenderPipeline.azasset";
+        AZStd::optional<AZ::RPI::RenderPipelineDescriptor> renderPipelineDesc =
+            AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath, AZStd::string::format("_%i", viewportContext->GetId()));
+        AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
         
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc, *m_windowContext.get());
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *m_windowContext.get());
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_renderPipeline->SetDefaultView(viewportContext->GetDefaultView());
 
@@ -184,6 +172,14 @@ namespace EMStudio
     {
         ReinitActorEntities();
         ResetEnvironment();
+    }
+
+    void AnimViewportRenderer::MoveActorEntitiesToOrigin()
+    {
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateIdentity());
+        }
     }
 
     AZ::Vector3 AnimViewportRenderer::GetCharacterCenter() const
@@ -378,6 +374,6 @@ namespace EMStudio
 
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
-            cameraConfig, m_lightHandles, nullptr, AZ::RPI::MaterialPropertyIndex::Null, false);
+            cameraConfig, m_lightHandles, false);
     }
 } // namespace EMStudio

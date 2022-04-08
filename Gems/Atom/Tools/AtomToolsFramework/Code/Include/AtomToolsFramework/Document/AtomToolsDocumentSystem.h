@@ -18,7 +18,8 @@
 
 namespace AtomToolsFramework
 {
-    //! AtomToolsDocumentSystem Is responsible for creation, management, and requests related to documents
+    //! AtomToolsDocumentSystem manages requests for registering multiple document types and creating, loading, saving multiple documents
+    //! from them. For each operation, it collects all of the warnings and errors and displays them to alert the user.
     class AtomToolsDocumentSystem
         : public AtomToolsDocumentNotificationBus::Handler
         , public AtomToolsDocumentSystemRequestBus::Handler
@@ -35,17 +36,20 @@ namespace AtomToolsFramework
         ~AtomToolsDocumentSystem();
 
         // AtomToolsDocumentSystemRequestBus::Handler overrides...
-        void RegisterDocumentType(const AtomToolsDocumentFactoryCallback& documentCreator) override;
-        AZ::Uuid CreateDocument() override;
+        void RegisterDocumentType(const DocumentTypeInfo& documentType) override;
+        const DocumentTypeInfoVector& GetRegisteredDocumentTypes() const override;
+        AZ::Uuid CreateDocumentFromType(const DocumentTypeInfo& documentType) override;
+        AZ::Uuid CreateDocumentFromTypeName(const AZStd::string& documentTypeName) override;
+        AZ::Uuid CreateDocumentFromFileType(const AZStd::string& path) override;
+        AZ::Uuid CreateDocumentFromFilePath(const AZStd::string& sourcePath, const AZStd::string& targetPath) override;
         bool DestroyDocument(const AZ::Uuid& documentId) override;
-        AZ::Uuid OpenDocument(AZStd::string_view sourcePath) override;
-        AZ::Uuid CreateDocumentFromFile(AZStd::string_view sourcePath, AZStd::string_view targetPath) override;
+        AZ::Uuid OpenDocument(const AZStd::string& sourcePath) override;
         bool CloseDocument(const AZ::Uuid& documentId) override;
         bool CloseAllDocuments() override;
         bool CloseAllDocumentsExcept(const AZ::Uuid& documentId) override;
         bool SaveDocument(const AZ::Uuid& documentId) override;
-        bool SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath) override;
-        bool SaveDocumentAsChild(const AZ::Uuid& documentId, AZStd::string_view targetPath) override;
+        bool SaveDocumentAsCopy(const AZ::Uuid& documentId, const AZStd::string& targetPath) override;
+        bool SaveDocumentAsChild(const AZ::Uuid& documentId, const AZStd::string& targetPath) override;
         bool SaveAllDocuments() override;
         AZ::u32 GetDocumentCount() const override;
 
@@ -57,11 +61,9 @@ namespace AtomToolsFramework
         void QueueReopenDocuments();
         void ReopenDocuments();
 
-        AZ::Uuid OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen);
-
         const AZ::Crc32 m_toolId = {};
-        AtomToolsDocumentFactoryCallback m_documentCreator;
-        AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<AtomToolsDocument>> m_documentMap;
+        DocumentTypeInfoVector m_documentTypes;
+        AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<AtomToolsDocumentRequests>> m_documentMap;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsWithExternalChanges;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsWithDependencyChanges;
         bool m_queueReopenDocuments = false;

@@ -69,7 +69,7 @@ namespace Multiplayer
 
         AZStd::string m_filter;
         AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
-        char m_inputBuffer[AUDIT_SEARCH_BUFFER_SIZE] = {};
+        [[maybe_unused]] char m_inputBuffer[AUDIT_SEARCH_BUFFER_SIZE] = {};
         bool m_canPumpTrail = false;
     };
 }

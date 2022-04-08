@@ -30,11 +30,11 @@ class TestUtils(TestAutomationBase):
 
         expected_lines = []
         unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, physmaterial_editor_test_module, expected_lines, unexpected_lines, enable_prefab_system=False)
-    
+        self._run_test(request, workspace, editor, physmaterial_editor_test_module, expected_lines, unexpected_lines)
+
     def test_UtilTest_Tracer_PicksErrorsAndWarnings(self, request, workspace, launcher_platform, editor):
         from .utils import UtilTest_Tracer_PicksErrorsAndWarnings as testcase_module
-        self._run_test(request, workspace, editor, testcase_module, [], [], enable_prefab_system=False)
+        self._run_test(request, workspace, editor, testcase_module, [], [])
 
     def test_FileManagement_FindingFiles(self, workspace, launcher_platform):
         """
@@ -252,15 +252,3 @@ class TestUtils(TestAutomationBase):
 
         # Clean up back up folder and file
         fs.delete([backup_file_path], True, False)
-
-    # Demo of how to use the managed_files system in your testcase
-    @fm.file_revert_list(
-        ["FindMe.txt", "FindMeToo.txt"], parent_path=r"AutomatedTesting\levels\Utils\Managed_files", search_subdirs=True
-    )
-    @fm.file_override("default.physxconfiguration", "UtilTest_PhysxConfig_Override.physxconfiguration")
-    def test_UtilTest_Managed_Files(self, request, workspace, editor, launcher_platform):
-        from .utils import UtilTest_Managed_Files as test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines, enable_prefab_system=False)

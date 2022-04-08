@@ -273,7 +273,9 @@ set_target_properties(${RUN_TARGET_NAME} PROPERTIES
     FOLDER \"O3DE_SDK\"
     VS_DEBUGGER_COMMAND \$<GENEX_EVAL:\$<TARGET_PROPERTY:${NAME_PLACEHOLDER},IMPORTED_LOCATION>>
     VS_DEBUGGER_COMMAND_ARGUMENTS \"--project-path=\${LY_DEFAULT_PROJECT_PATH}\"
-)"
+)
+set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${RUN_TARGET_NAME})
+"
 )
     endif()
 
@@ -445,10 +447,10 @@ function(ly_setup_cmake_install)
         )
     endforeach()
 
-    # Transform the LY_EXTERNAL_SUBDIRS global property list into a json array
+    # Transform the list of all external subdirectories used by the engine + projects into a json array
     set(indent "        ")
-    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
-    list(REMOVE_DUPLICATES external_subdirs)
+
+    get_external_subdirectories_in_use(external_subdirs)
     foreach(external_subdir ${external_subdirs})
         # If an external subdirectory is not a subdirectory of the engine root, then
         # prepend "External" to its subdirectory root
@@ -668,8 +670,8 @@ function(ly_setup_assets)
     # the install layout from the root directory. Such as <external-subdirectory-root>/Cache.
     # This is also done to avoid globbing thousands of files in subdirectories that shouldn't
     # be processed.
-    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
-    foreach(gem_candidate_dir IN LISTS external_subdirs LY_PROJECTS)
+    get_external_subdirectories_in_use(external_subdirs)
+    foreach(gem_candidate_dir IN LISTS external_subdirs)
         file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
         # Don't recurse immediately in order to exclude transient source artifacts
         file(GLOB

@@ -17,6 +17,7 @@ set(FILES
     DataTypes/DataTypeUtilities.h
     DataTypes/DataTypeUtilities.inl
     DataTypes/DataTypeUtilities.cpp
+    DataTypes/GraphData/ICustomPropertyData.h
     DataTypes/GraphData/IMeshData.h
     DataTypes/GraphData/IMeshVertexColorData.h
     DataTypes/GraphData/IMeshVertexUVData.h

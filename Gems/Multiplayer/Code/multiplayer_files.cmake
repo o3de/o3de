@@ -9,6 +9,7 @@
 set(FILES
     Include/Multiplayer/IMultiplayer.h
     Include/Multiplayer/IMultiplayerDebug.h
+    Include/Multiplayer/IMultiplayerSpawner.h
     Include/Multiplayer/IMultiplayerTools.h
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerDebug.h
@@ -77,7 +78,6 @@ set(FILES
     Source/AutoGen/Multiplayer.AutoPackets.xml
     Source/AutoGen/MultiplayerEditor.AutoPackets.xml
     Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml
-    Source/AutoGen/NetworkConnectionComponent.AutoComponent.xml
     Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml
     Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml

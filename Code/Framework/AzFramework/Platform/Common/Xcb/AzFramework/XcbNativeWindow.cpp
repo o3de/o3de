@@ -19,7 +19,6 @@ namespace AzFramework
     [[maybe_unused]] const char XcbErrorWindow[] = "XcbNativeWindow";
     static constexpr uint8_t s_XcbFormatDataSize = 32; // Format indicator for xcb for client messages
     static constexpr uint16_t s_DefaultXcbWindowBorderWidth = 4; // The default border with in pixels if a border was specified
-    static constexpr uint8_t s_XcbResponseTypeMask = 0x7f; // Mask to extract the specific event type from an xcb event
 
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD 1l

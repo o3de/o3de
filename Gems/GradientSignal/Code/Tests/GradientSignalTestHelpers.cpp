@@ -77,27 +77,30 @@ namespace UnitTest
         return asset;
     }
 
-    AZStd::vector<uint8_t> BuildSpecificPixelImageData(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY)
+    AZStd::vector<uint8_t> BuildSpecificPixelImageData(
+        AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues)
     {
+        AZ_Assert(setPixelValues.size() == pixelSize, "Wrong number of pixel channel values passed in");
         const size_t imageSize = width * height * pixelSize;
 
         AZStd::vector<uint8_t> image;
         image.reserve(imageSize);
-
-        const AZ::u8 pixelValue = 255;
 
         // Image data should be stored inverted on the y axis relative to our engine, so loop backwards through y.
         for (int y = static_cast<int>(height) - 1; y >= 0; --y)
         {
             for (AZ::u32 x = 0; x < width; ++x)
             {
-                if ((x == static_cast<int>(pixelX)) && (y == static_cast<int>(pixelY)))
+                for (AZ::u32 component = 0; component < pixelSize; ++component)
                 {
-                    image.push_back(pixelValue);
-                }
-                else
-                {
-                    image.push_back(0);
+                    if ((x == static_cast<int>(pixelX)) && (y == static_cast<int>(pixelY)))
+                    {
+                        image.push_back(setPixelValues[component]);
+                    }
+                    else
+                    {
+                        image.push_back(0);
+                    }
                 }
             }
         }
@@ -106,7 +109,9 @@ namespace UnitTest
         return image;
     }
 
-    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY)
+    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(
+        AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height,
+        AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues)
     {
         using namespace AZ;
 
@@ -120,7 +125,7 @@ namespace UnitTest
 
         for (AZ::u32 arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex)
         {
-            AZStd::vector<uint8_t> data = BuildSpecificPixelImageData(width, height, pixelSize, pixelX, pixelY);
+            AZStd::vector<uint8_t> data = BuildSpecificPixelImageData(width, height, pixelSize, pixelX, pixelY, setPixelValues);
             assetCreator.AddSubImage(data.data(), data.size());
         }
 
@@ -163,7 +168,8 @@ namespace UnitTest
         return imageAsset;
     }
 
-    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY)
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(
+        AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues)
     {
         auto randomAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
         auto imageAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::RPI::StreamingImageAsset>(
@@ -171,10 +177,11 @@ namespace UnitTest
 
         const AZ::u32 arraySize = 1;
         const AZ::u32 mipCountTotal = 1;
-        const auto format = AZ::RHI::Format::R8_UNORM;
+        const auto format = AZ::RHI::Format::R8G8B8A8_UNORM;
         const AZ::u32 pixelSize = AZ::RHI::GetFormatComponentCount(format);
 
-        AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> mipChain = BuildSpecificPixelMipChainAsset(mipCountTotal, arraySize, width, height, pixelSize, pixelX, pixelY);
+        AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> mipChain = BuildSpecificPixelMipChainAsset(
+            mipCountTotal, arraySize, width, height, pixelSize, pixelX, pixelY, setPixelValues);
 
         AZ::RPI::StreamingImageAssetCreator assetCreator;
         assetCreator.Begin(randomAssetId);

@@ -50,16 +50,21 @@ namespace AZ
             //! Assign a new material override asset
             void SetAsset(const Data::Asset<RPI::MaterialAsset>& asset);
 
-            //! Remove material and prperty overrides
+            //! Remove material and property overrides
             void Clear();
 
-            //! Remove prperty overrides
+            //! Remove material overrides
+            void ClearMaterial();
+
+            //! Remove property overrides
             void ClearOverrides();
 
             void OpenMaterialExporter();
             void OpenMaterialEditor() const;
             void OpenMaterialInspector();
             void OpenUvNameMapInspector();
+
+            void ExportMaterial(const AZStd::string& exportPath, bool overwrite);
 
             AZ::EntityId m_entityId;
             MaterialAssignmentId m_id;

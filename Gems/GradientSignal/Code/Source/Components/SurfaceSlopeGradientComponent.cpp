@@ -218,6 +218,13 @@ namespace GradientSignal
             return;
         }
 
+        if (GradientRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with surface tag references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
+            return;
+        }
+
         SurfaceData::SurfacePointList points;
         SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
             &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,

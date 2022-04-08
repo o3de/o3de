@@ -6,9 +6,6 @@
  *
  */
 
-#include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
-#include <Atom/RPI.Public/Scene.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateEnvironmentBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorControllerInterface.h>
 #include <AzCore/Component/TransformBus.h>
@@ -20,25 +17,15 @@ namespace AtomToolsFramework
     {
     }
 
-    void RotateEnvironmentBehavior::Start()
-    {
-        ViewportInputBehavior::Start();
-
-        m_environmentEntityId = m_controller->GetEnvironmentEntityId();
-        AZ_Assert(m_environmentEntityId.IsValid(), "Failed to find m_environmentEntityId");
-        m_skyBoxFeatureProcessor =
-            AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::SkyBoxFeatureProcessorInterface>(m_environmentEntityId);
-    }
-
     void RotateEnvironmentBehavior::TickInternal(float x, float y, float z)
     {
         ViewportInputBehavior::TickInternal(x, y, z);
 
         m_rotation += x;
-        AZ::Quaternion rotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), m_rotation);
-        AZ::TransformBus::Event(m_environmentEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, rotation);
-        const AZ::Matrix4x4 rotationMatrix = AZ::Matrix4x4::CreateFromQuaternion(rotation);
-        m_skyBoxFeatureProcessor->SetCubemapRotationMatrix(rotationMatrix);
+
+        const auto& entityId = m_controller->GetEnvironmentEntityId();
+        const auto& rotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), m_rotation);
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldRotationQuaternion, rotation);
     }
 
     float RotateEnvironmentBehavior::GetSensitivityX()

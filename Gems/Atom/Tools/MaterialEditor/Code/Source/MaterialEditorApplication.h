@@ -8,15 +8,13 @@
 
 #pragma once
 
-#include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorMainWindow.h>
 
 namespace MaterialEditor
 {
-    class MaterialThumbnailRenderer;
-
     class MaterialEditorApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private AzToolsFramework::EditorWindowRequestBus::Handler
@@ -31,7 +29,6 @@ namespace MaterialEditor
 
         // AzFramework::Application overrides...
         void Reflect(AZ::ReflectContext* context) override;
-        void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
         void Destroy() override;
@@ -42,7 +39,8 @@ namespace MaterialEditor
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         QWidget* GetAppMainWindow() override;
 
-        AZStd::unique_ptr<MaterialEditorWindow> m_window;
-        AZStd::unique_ptr<AtomToolsFramework::AtomToolsAssetBrowserInteractions> m_assetBrowserInteractions;
+    private:
+        AZStd::unique_ptr<MaterialEditorMainWindow> m_window;
+        AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
     };
 } // namespace MaterialEditor
