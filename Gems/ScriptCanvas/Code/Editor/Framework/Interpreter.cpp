@@ -61,7 +61,16 @@ namespace ScriptCanvasEditor
                 if (IsExecutable())
                 {
                     SetSatus(InterpreterStatus::Running);
-                    m_executor.Execute();
+
+                    if (m_executor.IsPure())
+                    {
+                        m_executor.Execute();
+                        SetSatus(InterpreterStatus::Ready);
+                    }
+                    else
+                    {
+                        m_executor.Execute();
+                    }
                 }
             });
 
