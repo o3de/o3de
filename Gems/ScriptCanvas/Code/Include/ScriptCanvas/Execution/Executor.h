@@ -18,6 +18,11 @@ namespace AZ
 namespace ScriptCanvas
 {
     /*
+    * Owns the ExecutionState for ScriptCanvas graphs and executes and stops it, if possible.
+    * \note this is done WITHOUT any safety checks, for example the presence of a good, loaded asset when Execute() is called.
+    * All safety checks are expected be done by systems that own the Executor class. If safety checks are desired, consider
+    * using the Interpreter class instead, which manages the execution stack from source file -> build system -> execution.
+    * 
     * Usage:
     * 1) Initialize()
     * 2) Execute()

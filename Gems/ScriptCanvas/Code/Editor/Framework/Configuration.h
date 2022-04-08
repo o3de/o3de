@@ -19,8 +19,7 @@
 namespace ScriptCanvasEditor
 {
     /*! Configuration
-    The user facing Editor Component for interacting with ScriptCanvas.
-    Per graph instance variables values are stored here and injected into the runtime ScriptCanvas component in BuildGameEntity.
+    The user facing data for selecting ScriptCanvas source and configuration exposed properties.
     */
     class Configuration final
         : public AzFramework::AssetCatalogEventBus::Handler

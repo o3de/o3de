@@ -125,9 +125,9 @@ namespace ScriptCanvas
 
         for (auto& dependency : overrides.m_dependencies)
         {
-            if (const auto dependecyResult = IsPreloaded(dependency); dependecyResult != IsPreloadedResult::Yes)
+            if (const auto dependencyResult = IsPreloaded(dependency); dependencyResult != IsPreloadedResult::Yes)
             {
-                return dependecyResult;
+                return dependencyResult;
             }
         }
 
@@ -148,9 +148,9 @@ namespace ScriptCanvas
 
         for (auto& dependency : asset.Get()->m_runtimeData.m_requiredAssets)
         {
-            if (const auto dependecyResult = IsPreloaded(dependency); dependecyResult != IsPreloadedResult::Yes)
+            if (const auto dependencyResult = IsPreloaded(dependency); dependencyResult != IsPreloadedResult::Yes)
             {
-                return dependecyResult;
+                return dependencyResult;
             }
         }
 
