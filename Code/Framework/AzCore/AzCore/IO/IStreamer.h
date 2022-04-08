@@ -266,9 +266,7 @@ namespace AZ::IO
         //
 
         //! Sets a callback function that will trigger when the provided request completes. The callback will be triggered
-        //! from within the Streamer's stack on a different thread. While in the callback function Streamer can't continue
-        //! processing requests so it's recommended to keep the callback short, for instance by setting an atomic value
-        //! to be picked up by another thread like the main thread or to queue a job (function) to complete the work.
+        //! from within TaskExecutor on a different thread than the caller thread.
         //! Note avoid storing a copy of the owning FileRequestPtr in a lambda provided as the callback. This will result in
         //! the same request storing a copy of itself indirectly, which means the reference counter can never reach zero due
         //! to the circular dependency and results in a resource leak.
