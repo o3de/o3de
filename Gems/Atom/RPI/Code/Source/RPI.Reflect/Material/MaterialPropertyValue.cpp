@@ -125,12 +125,13 @@ namespace AZ
                 }
                 else
                 {
-                    result.m_value = Data::Asset<RPI::ImageAsset>(AZStd::any_cast<Data::AssetId>(value), azrtti_typeid<RPI::StreamingImageAsset>());
+                    result.m_value = Data::Asset<RPI::ImageAsset>(assetId, azrtti_typeid<RPI::StreamingImageAsset>());
                 }
             }
             else if (value.is<Data::Asset<Data::AssetData>>())
             {
-                auto assetId = AZStd::any_cast<Data::Asset<Data::AssetData>>(value).GetId();
+                auto asset = AZStd::any_cast<Data::Asset<Data::AssetData>>(value);
+                auto assetId = asset.GetId();
                 AZ::Data::AssetInfo assetInfo;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
                 if (assetInfo.m_assetId.IsValid())
@@ -138,26 +139,28 @@ namespace AZ
                     result.m_value = Data::Asset<RPI::ImageAsset>(
                         assetId,
                         assetInfo.m_assetType,
-                        AZStd::any_cast<Data::Asset<Data::AssetData>>(value).GetHint());
+                        asset.GetHint());
                 }
                 else
                 {
-                    result.m_value = AZStd::any_cast<Data::Asset<Data::AssetData>>(value);
+                    result.m_value = asset;
                 }
             }
             else if (value.is<Data::Asset<StreamingImageAsset>>())
             {
+                auto asset = AZStd::any_cast<Data::Asset<RPI::StreamingImageAsset>>(value);
                 result.m_value = Data::Asset<RPI::ImageAsset>(
-                    AZStd::any_cast<Data::Asset<StreamingImageAsset>>(value).GetId(),
+                    asset.GetId(),
                     azrtti_typeid<RPI::StreamingImageAsset>(),
-                    AZStd::any_cast<Data::Asset<StreamingImageAsset>>(value).GetHint());
+                    asset.GetHint());
             }
             else if (value.is<Data::Asset<AttachmentImageAsset>>())
             {
+                auto asset = AZStd::any_cast<Data::Asset<RPI::AttachmentImageAsset>>(value);
                 result.m_value = Data::Asset<RPI::ImageAsset>(
-                    AZStd::any_cast<Data::Asset<AttachmentImageAsset>>(value).GetId(),
+                    asset.GetId(),
                     azrtti_typeid<RPI::AttachmentImageAsset>(),
-                    AZStd::any_cast<Data::Asset<AttachmentImageAsset>>(value).GetHint());
+                    asset.GetHint());
             }
             else if (value.is<Data::Asset<ImageAsset>>())
             {
