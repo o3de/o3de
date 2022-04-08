@@ -381,8 +381,6 @@ namespace AZ::IO
         void Reset();
         void SetOptionalParent(FileRequest* parent);
 
-        inline static void OnCompletionPlaceholder(const FileRequest& /*request*/) {}
-
         //! Command and parameters for the request.
         CommandVariant m_command;
 
