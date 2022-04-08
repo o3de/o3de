@@ -175,14 +175,13 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::Deactivate()
     {
-        // Prevent deactivation from happening while any queries are running.
-        AZStd::unique_lock lock(m_queryMutex);
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
+        GradientRequestBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        GradientRequestBus::Handler::BusDisconnect();
         SurfaceAltitudeGradientRequestBus::Handler::BusDisconnect();
         m_dirty = false;
     }
@@ -282,8 +281,29 @@ namespace GradientSignal
     }
 
     void SurfaceAltitudeGradientComponent::OnSurfaceChanged(
-        [[maybe_unused]] const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds)
+        [[maybe_unused]] const AZ::EntityId& entityId,
+        [[maybe_unused]] const AZ::Aabb& oldBounds,
+        [[maybe_unused]] const AZ::Aabb& newBounds)
     {
+        /* The following logic is currently disabled until we can find a safer way to do this.
+           The intent of the logic is to make the SurfaceAltitudeGradient refresh its data if the surface(s) that it depends on changes.
+           However, it's currently possible to get into a refresh feedback loop if a surface provider (like terrain) uses one of these
+           gradients. The loop looks like this:
+           - Surface that the gradient depends on changes, which triggers this OnSurfaceChanged message
+           - Gradient marks itself as dirty, which triggers an OnCompositionChanged message to anything depending on the gradient
+           - Terrain receives message and triggers an OnSurfaceChanged message
+           - OnSurfaceChanged message makes it back to this gradient. Even if this gradient doesn't depend on that specific surface,
+             it doesn't have enough information here to know that, so if the AABB overlaps, it will mark itself as dirty again, even
+             though the actual surfaces we're listening to in that AABB didn't change.
+
+           We can't just query the surface provider itself to see what surfaces it provides, because if there are any surface modifiers,
+           it's *possible* for them to modify the points of the surface provider to add the surface types we're listening for.
+
+           By disabling this code, we end up with stale data on the gradient, but enabling it can cause refreshes on every frame which
+           destroys the framerate.
+        */ 
+
+        /*
         // Create a box that's infinite in the XY direction, but contains our altitude range, so that we can compare against the dirty
         // surface region.
         const AZ::Aabb altitudeBox = AZ::Aabb::CreateFromMinMaxValues(
@@ -295,6 +315,7 @@ namespace GradientSignal
             m_dirty = true;
             m_surfaceDirty = true;
         }
+        */
     }
 
     void SurfaceAltitudeGradientComponent::UpdateFromShape()
