@@ -212,6 +212,15 @@ namespace PhysX
     void EditorHeightfieldColliderComponent::RefreshHeightfield(const AZ::Aabb& dirtyRegion,
         [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
+        if (changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyBegin ||
+            changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyEnd)
+        {
+            // Clear the entire terrain if destroying
+            ClearHeightfield();
+            Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+            return;
+        }
+
         AZ::Aabb heightfieldAabb = GetColliderShapeAabb();
         AZ::Aabb requestRegion = dirtyRegion;
 

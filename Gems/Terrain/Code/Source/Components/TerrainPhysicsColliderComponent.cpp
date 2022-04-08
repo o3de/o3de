@@ -170,24 +170,33 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::OnTerrainDataCreateEnd()
     {
+        m_terrainDataDestroyed = false;
+
         // The terrain system has finished creating itself, so we should now have data for creating a heightfield.
-        NotifyListenersOfHeightfieldDataChange();
+        NotifyListenersOfHeightfieldDataChange(nullptr,
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified);
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataDestroyBegin()
     {
+        m_terrainDataDestroyed = true;
+
         // The terrain system is starting to destroy itself, so notify listeners of a change since the heightfield
         // will no longer have any valid data.
-        NotifyListenersOfHeightfieldDataChange();
+        NotifyListenersOfHeightfieldDataChange(nullptr,
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyBegin);
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataChanged(
         const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
-        Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask
-            = Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified;
+        if (!m_terrainDataDestroyed)
+        {
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask
+                = Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified;
 
-        NotifyListenersOfHeightfieldDataChange(&dirtyRegion, physicsMask);
+            NotifyListenersOfHeightfieldDataChange(&dirtyRegion, physicsMask);
+        }
     }
 
     AZ::Aabb TerrainPhysicsColliderComponent::GetHeightfieldAabb() const
@@ -317,6 +326,11 @@ namespace Terrain
         const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& regionIn) const
     {
         AZ_PROFILE_FUNCTION(Terrain);
+
+        if (m_terrainDataDestroyed)
+        {
+            return;
+        }
 
         AZ::Aabb region = regionIn;
 

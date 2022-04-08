@@ -127,6 +127,8 @@ namespace Physics
             HeightData = (1 << 1),
             MaterialData = (1 << 2),
             SurfaceData = (1 << 3),
+            DestroyBegin = (1 << 4),
+            DestroyEnd = (1 << 5),
             Unspecified = 0xff
         };
 
