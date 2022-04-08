@@ -198,9 +198,11 @@ namespace AzToolsFramework
         AzQtComponents::StyleManager::addSearchPaths("outliner", pathOnDisk, qrcPath.toString(), engineRootPath);
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("outliner:EntityOutliner.qss"));
 
-        auto modeSwitchLayout = new QHBoxLayout();
-        modeSwitchLayout->setObjectName("OutlinerModeSwitchRow");
-        m_gui->verticalLayout_2->insertLayout(1, modeSwitchLayout);
+        auto modeSwitchContainer = new QWidget(this);
+        modeSwitchContainer->setObjectName("OutlinerModeSwitcherContainer");
+        m_gui->verticalLayout_2->insertWidget(1, modeSwitchContainer);
+
+        auto modeSwitchLayout = new QHBoxLayout(modeSwitchContainer);
 
         // Introduce SegmentBar to switch between view modes
         auto segmentBar = new AzQtComponents::SegmentBar(this);
@@ -208,6 +210,16 @@ namespace AzToolsFramework
         segmentBar->addTab("Simple View");
         segmentBar->addTab("Advanced View");
         modeSwitchLayout->addWidget(segmentBar);
+
+        auto modeHelpLabel = new QLabel(this);
+        modeHelpLabel->setObjectName("OutlinerModeSwitcherHelp");
+        modeHelpLabel->setText("?");
+        modeHelpLabel->setToolTip("Toggle between Prefab visualization modes:\n"
+        "Simple Mode: Show nested prefab instances as a single object.\n"
+        "Advanced Mode: Allow selection of entities belonging to nested prefab instances.\n"
+        "In either case, all changes to entities will be stored in the target prefab file.");
+        modeHelpLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        modeSwitchLayout->addWidget(modeHelpLabel);
 
         connect(
             segmentBar, &AzQtComponents::SegmentBar::currentChanged, this,

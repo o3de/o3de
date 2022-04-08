@@ -28,7 +28,10 @@
     <height>29</height>
    </size>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0,0,0,0,0">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0,0,0,0,0,0">
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <property name="leftMargin">
     <number>10</number>
    </property>
@@ -49,6 +52,32 @@
      <property name="icon">
       <iconset>
        <normaloff>:/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg</normaloff>:/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg</iconset>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="prefabTargetLabel">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>20</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <italic>false</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Target:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+     <property name="indent">
+      <number>-2</number>
      </property>
     </widget>
    </item>

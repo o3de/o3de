@@ -262,7 +262,7 @@ namespace AzQtComponents
             imagePath = m_defaultIcon;
         }
 
-        return !imagePath.isEmpty() ? QStringLiteral("<img width=\"16\" height=\"16\" style=\"vertical-align: middle\" src=\"%1\">%2%2")
+        return !imagePath.isEmpty() ? QStringLiteral("<img width=\"16\" height=\"16\" style=\"vertical-align: top\" src=\"%1\">%2%2")
                                           .arg(imagePath)
                                           .arg("&nbsp;")
                                     : "";
