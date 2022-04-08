@@ -145,7 +145,7 @@ namespace GradientSignal
         void SetupDefaultMultiplierAndOffset();
         void SetupAutoScaleMultiplierAndOffset();
         void SetupManualScaleMultiplierAndOffset();
-        void HandleSamplingType(float& value, AZ::u32 x, AZ::u32 y, float pixelX, float pixelY) const;
+        float GetValueForSamplingType(AZ::u32 x, AZ::u32 y, float pixelX, float pixelY) const;
 
         // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;

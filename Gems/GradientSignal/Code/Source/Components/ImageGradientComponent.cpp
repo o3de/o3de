@@ -454,11 +454,8 @@ namespace GradientSignal
                 auto x = aznumeric_cast<AZ::u32>(pixelX) % width;
                 auto y = aznumeric_cast<AZ::u32>(pixelY) % height;
 
-                // Retrieve the pixel value from the image data
-                float value = GetPixelValue(x, y);
-
-                // Handle any additional processing based on our sampling type
-                HandleSamplingType(value, x, y, pixelX, pixelY);
+                // Retrieve our pixel value based on our sampling type
+                const float value = GetValueForSamplingType(x, y, pixelX, pixelY);
 
                 // Scale (inverse lerp) the value into a 0 - 1 range. We also clamp it because manual scale values could cause
                 // the result to fall outside of the expected output range.
@@ -582,10 +579,17 @@ namespace GradientSignal
         SetupMultiplierAndOffset(m_configuration.m_scaleRangeMin, m_configuration.m_scaleRangeMax);
     }
 
-    void ImageGradientComponent::HandleSamplingType(float& value, AZ::u32 x, AZ::u32 y, float pixelX, float pixelY) const
+    float ImageGradientComponent::GetValueForSamplingType(AZ::u32 x, AZ::u32 y, float pixelX, float pixelY) const
     {
+        float value = 0.0f;
+
         switch (m_currentSamplingType)
         {
+        case SamplingType::Point:
+            // Retrieve the pixel value for the single point
+            value = GetPixelValue(x, y);
+            break;
+
         case SamplingType::Bilinear:
             // Bilinear interpolation
             //
@@ -611,15 +615,18 @@ namespace GradientSignal
             AZ::u32 x1 = AZStd::min(x + 1, width - 1);
             AZ::u32 y1 = AZStd::min(y + 1, height - 1);
 
-            // The `value` variable already has the x0,y0 value for us
+            // Retrieve all the points in the grid and then perform the interpolation
+            const float valueX0Y0 = GetPixelValue(x, y);
             const float valueX1Y0 = GetPixelValue(x1, y);
             const float valueX0Y1 = GetPixelValue(x, y1);
             const float valueX1Y1 = GetPixelValue(x1, y1);
-            const float valueXY0 = AZ::Lerp(value, valueX1Y0, deltaX);
+            const float valueXY0 = AZ::Lerp(valueX0Y0, valueX1Y0, deltaX);
             const float valueXY1 = AZ::Lerp(valueX0Y1, valueX1Y1, deltaX);
             value = AZ::Lerp(valueXY0, valueXY1, deltaY);
             break;
         }
+
+        return value;
     }
 
     void ImageGradientComponent::Activate()
