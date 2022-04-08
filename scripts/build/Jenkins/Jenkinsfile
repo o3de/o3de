@@ -515,8 +515,9 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
 }
 
 def ReplaceContent() {
-    // log_file = "${WORKSPACE}".replace('workspace', 'builds/$BUILD_NUMBER/log')
-    log_file = "${ITEM_FULL_NAME}/builds/${BUILD_NUMBER}/log"
+    // Get absolute directory for job metadata. Needs permissions from Jenkins for each upstream classes
+    def base_path = Jenkins.instance.getItemByFullName("${JOB_NAME}").rootDir
+    def log_file = "${base_path}" + "/builds/${env.BUILD_NUMBER}/log"
     contentReplace(
         configs: [
             // Replace .cpp references to github links
