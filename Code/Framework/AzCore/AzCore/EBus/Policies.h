@@ -132,7 +132,7 @@ namespace AZ
         typedef typename Bus::MutexType MutexType;
 
         /**
-        * Lock type used for connecting to the bus.  When NullMutex isn't used as the
+        * Lock type used for connecting / disconnecting to the bus.  When NullMutex isn't used as the
         * default mutex this will be a unique lock to allow for unlocking before connection
         * dispatches which some specialized policies perform
         *

@@ -31,6 +31,8 @@
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Grammar/Primitives.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
+#include <AzCore//std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/functional.h>
 
 #define SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(lambdaInterior)\
     int dummy[]{ 0, ( lambdaInterior , 0)... };\
@@ -60,6 +62,7 @@ namespace ScriptCanvas
         struct CallHelper;
     }
     class Graph;    
+    class Node;
 
     struct BehaviorContextMethodHelper;
 
@@ -384,16 +387,23 @@ namespace ScriptCanvas
         AZStd::string               m_originalName;
     };
 
-    struct NodeConfiguration
+    struct NodeReplacementConfiguration
     {
         AZ::Uuid m_type = AZ::Uuid::CreateNull();
         AZStd::string m_className;
         AZStd::string m_methodName;
         PropertyStatus m_propertyStatus = PropertyStatus::None;
+        AZStd::function<Node*(const Node&)> create;
+
+        bool m_tolerateIndividualSlotUpdateFailures = true;
+        bool m_tolerateNoMatchingPreviousSlot = true;
+        bool m_tolerateFailureToUpdateData = true;
+        bool m_tolerateFailureToReplaceConnections = true;
+        bool m_warnOnToleratedErrors = true;
 
         bool IsValid()
         {
-            return !m_type.IsNull();
+            return !m_type.IsNull() || create != nullptr;
         }
     };
 
@@ -564,7 +574,7 @@ namespace ScriptCanvas
         SlotId FindSlotIdForDescriptor(AZStd::string_view slotName, const SlotDescriptor& descriptor) const override;
 
         const Datum* FindDatum(const SlotId& slotId) const override;
-        void FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView) override;
+        bool FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView) override;
 
         AZStd::vector<SlotId> GetSlotIds(AZStd::string_view slotName) const override;
         const ScriptCanvasId& GetOwningScriptCanvasId() const override { return m_scriptCanvasId; }
@@ -649,7 +659,7 @@ namespace ScriptCanvas
         // Hook here to allow CodeGen to override this
         virtual bool IsDeprecated() const { return false; };
         virtual size_t GenerateFingerprint() const { return 0; }
-        virtual NodeConfiguration GetReplacementNodeConfiguration() const { return {}; };
+        virtual NodeReplacementConfiguration GetReplacementNodeConfiguration() const { return {}; };
         virtual AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const { return {}; };
 
         // Use following function to customize node replacement
@@ -718,6 +728,8 @@ namespace ScriptCanvas
         virtual VariableId GetVariableIdRead(const Slot*) const;
 
         virtual VariableId GetVariableIdWritten(const Slot*) const;
+
+        virtual const Slot* GetVariableInputSlot() const;
 
         virtual const Slot* GetVariableOutputSlot() const;
 

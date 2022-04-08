@@ -77,6 +77,7 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
         ->Field("PanInvertedX", &CameraMovementSettings::m_panInvertedX)
         ->Field("PanInvertedY", &CameraMovementSettings::m_panInvertedY)
         ->Field("DefaultPosition", &CameraMovementSettings::m_defaultPosition)
+        ->Field("DefaultOrientation", &CameraMovementSettings::m_defaultPitchYaw)
         ->Field("DefaultOrbitDistance", &CameraMovementSettings::m_defaultOrbitDistance);
 
     serialize.Class<CameraInputSettings>()
@@ -160,6 +161,9 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
             ->DataElement(
                 AZ::Edit::UIHandlers::Vector3, &CameraMovementSettings::m_defaultPosition, "Default Camera Position",
                 "Default Camera Position when a level is first opened")
+            ->DataElement(
+                AZ::Edit::UIHandlers::Vector2, &CameraMovementSettings::m_defaultPitchYaw, "Default Camera Orientation",
+                "Default Camera Orientation when a level is first opened (X - Pitch value (degrees), Y - Yaw value (degrees)")
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultOrbitDistance, "Default Orbit Distance",
                 "The default distance to orbit about when there is no entity selected")
@@ -282,6 +286,7 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraPanInvertedY(m_cameraMovementSettings.m_panInvertedY);
     SandboxEditor::SetCameraDefaultEditorPosition(m_cameraMovementSettings.m_defaultPosition);
     SandboxEditor::SetCameraDefaultOrbitDistance(m_cameraMovementSettings.m_defaultOrbitDistance);
+    SandboxEditor::SetCameraDefaultEditorOrientation(m_cameraMovementSettings.m_defaultPitchYaw);
 
     SandboxEditor::SetCameraTranslateForwardChannelId(m_cameraInputSettings.m_translateForwardChannelId);
     SandboxEditor::SetCameraTranslateBackwardChannelId(m_cameraInputSettings.m_translateBackwardChannelId);
@@ -320,6 +325,7 @@ void CEditorPreferencesPage_ViewportCamera::InitializeSettings()
     m_cameraMovementSettings.m_panInvertedY = SandboxEditor::CameraPanInvertedY();
     m_cameraMovementSettings.m_defaultPosition = SandboxEditor::CameraDefaultEditorPosition();
     m_cameraMovementSettings.m_defaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
+    m_cameraMovementSettings.m_defaultPitchYaw = SandboxEditor::CameraDefaultEditorOrientation();
 
     m_cameraInputSettings.m_translateForwardChannelId = SandboxEditor::CameraTranslateForwardChannelId().GetName();
     m_cameraInputSettings.m_translateBackwardChannelId = SandboxEditor::CameraTranslateBackwardChannelId().GetName();
