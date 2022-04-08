@@ -250,7 +250,7 @@ namespace ScriptCanvasEditor
         return AZ::Success(result);
     }
 
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path)
+    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool useObjectStreamOnly)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
 
@@ -281,6 +281,11 @@ namespace ScriptCanvasEditor
 
         if (jsonResult.IsSuccess())
         {
+            if (useObjectStreamOnly)
+            {
+                return AZ::Failure(AZStd::string("--converterted--"));
+            }
+
             success.deserializationErrors = jsonResult.TakeValue();
         }
         else

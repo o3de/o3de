@@ -34,7 +34,7 @@ namespace ScriptCanvasEditor
             ScanResult m_result;
 
             void FilterAsset(SourceHandle);
-            SourceHandle LoadAsset();
+            AZStd::pair<SourceHandle, bool> LoadAsset();
             SourceHandle& ModCurrentAsset();
             void OnSystemTick() override;
         };
