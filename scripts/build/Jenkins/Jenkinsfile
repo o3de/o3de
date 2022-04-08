@@ -204,7 +204,7 @@ def GetCrashArtifactDir() {
     if (env.IS_UNIX) {
         return '/var/lib/apport/coredump/'
     } else {
-        return '%LOCALAPPDATA%\\CrashDumps'
+        return "$LOCALAPPDATA\\CrashDumps"
     }
 }
 
@@ -676,9 +676,6 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
                         }
-                        // Debugging code do not submit
-                        crashDir = GetCrashArtifactDir()
-                        echo "GetCrashArtifactDir: ${crashDir}"
                         if (fileExists(GetCrashArtifactDir())) {
                             CreateUploadCrashArtifactStage(build_job_name, platform.key).call()
                         }
