@@ -58,6 +58,9 @@ namespace AtomToolsFramework
         //! Close document and reset its data
         virtual bool Close() = 0;
 
+        //! Clear document of all content
+        virtual void Clear() = 0;
+
         //! Document is loaded
         virtual bool IsOpen() const = 0;
 

@@ -603,6 +603,10 @@
             {
                 "Name": "LutGenerationTemplate",
                 "Path": "Passes/LutGeneration.pass"
+            },
+            {
+                "Name": "ChromaticAberrationTemplate",
+                "Path": "Passes/ChromaticAberration.pass"
             }
         ]
     }

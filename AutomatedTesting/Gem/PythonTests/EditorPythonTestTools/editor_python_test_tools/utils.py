@@ -31,8 +31,6 @@ class TestHelper:
     @staticmethod
     def init_idle():
         general.idle_enable(True)
-        # JIRA: SPEC-2880
-        # general.idle_wait_frames(1)
 
     @staticmethod
     def create_level(level_name: str) -> bool:
