@@ -20,7 +20,6 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 namespace AzNetworking
 {
@@ -94,7 +93,7 @@ namespace Multiplayer
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
         //! @}
         
-        //! GameEntityContextEventBus::Handler overrides
+        //!  GameEntityContextEventBus::Handler overrides
         //! @{
         void OnGameEntitiesStarted() override;
         void OnGameEntitiesReset() override;
@@ -118,6 +117,5 @@ namespace Multiplayer
         ServerAcceptanceReceivedEvent::Handler m_serverAcceptanceReceivedHandler;
         AZ::ScheduledEvent m_connectionEvent = AZ::ScheduledEvent([this]{this->Connect();}, AZ::Name("MultiplayerEditorConnect"));
         uint16_t m_connectionAttempts = 0;
-        AZStd::string m_viewportDebugText = "";
     };
 }
