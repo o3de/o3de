@@ -38,6 +38,11 @@ namespace AzToolsFramework
         QIcon GenerateItemIcon(AZ::EntityId entityId) const override;
         bool CanToggleLockVisibility(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void PaintDescendantBackground(
+            QPainter* painter,
+            const QStyleOptionViewItem& option,
+            const QModelIndex& index,
+            const QModelIndex& descendantIndex) const override;
         void PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintDescendantForeground(
             QPainter* painter,
@@ -56,6 +61,13 @@ namespace AzToolsFramework
         static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child);
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
         static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
+
+        void PaintDescendantBorder(
+            QPainter* painter,
+            const QStyleOptionViewItem& option,
+            const QModelIndex& index,
+            const QModelIndex& descendantIndex,
+            const QColor borderColor) const;
 
         static AzFramework::EntityContextId s_editorEntityContextId;
 

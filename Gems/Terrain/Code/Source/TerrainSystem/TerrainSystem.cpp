@@ -1016,6 +1016,8 @@ void TerrainSystem::ProcessHeightsFromList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1040,6 +1042,8 @@ void TerrainSystem::ProcessNormalsFromList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1064,6 +1068,8 @@ void TerrainSystem::ProcessSurfaceWeightsFromList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1088,6 +1094,8 @@ void TerrainSystem::ProcessSurfacePointsFromList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1121,6 +1129,8 @@ void TerrainSystem::ProcessHeightsFromListOfVector2(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1136,6 +1146,8 @@ void TerrainSystem::ProcessNormalsFromListOfVector2(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1151,6 +1163,8 @@ void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1166,6 +1180,8 @@ void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1210,6 +1226,8 @@ void TerrainSystem::ProcessHeightsFromRegion(
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     // Don't bother processing if we don't have a callback
     if (!perPositionCallback)
     {
@@ -1248,6 +1266,8 @@ void TerrainSystem::ProcessNormalsFromRegion(
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     // Don't bother processing if we don't have a callback
     if (!perPositionCallback)
     {
@@ -1287,6 +1307,8 @@ void TerrainSystem::ProcessSurfaceWeightsFromRegion(
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     // Don't bother processing if we don't have a callback
     if (!perPositionCallback)
     {
@@ -1326,6 +1348,8 @@ void TerrainSystem::ProcessSurfacePointsFromRegion(
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     // Don't bother processing if we don't have a callback
     if (!perPositionCallback)
     {
