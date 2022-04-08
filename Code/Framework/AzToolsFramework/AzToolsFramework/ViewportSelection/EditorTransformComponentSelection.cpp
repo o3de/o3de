@@ -984,15 +984,6 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
     }
 
-    // leaves focus mode by focusing on the parent of the current prefab in the entity outliner
-    static void LeaveFocusMode()
-    {
-        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get())
-        {
-            prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityContextId());
-        }
-    }
-
     static AZ::Vector3 EtcsPickEntity(const AZ::EntityId entityId, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         float distance;
