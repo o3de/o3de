@@ -329,27 +329,4 @@ namespace EMotionFX
 
         return result;
     }
-
-    AZStd::tuple<uint16, uint16> SkinningInfoVertexAttributeLayer::CalcLocalJointIndexCountAndHighestIndex(AZ::u32 numOrgVertices)
-    {
-        AZStd::bitset<AZStd::numeric_limits<uint16>::max()> joints;
-        uint16 highestJoint = 0;
-        for (AZ::u32 i = 0; i < numOrgVertices; i++)
-        {
-            // now we have located the skinning information for this vertex, we can see if our bones array
-            // already contains the bone it uses by traversing all influences for this vertex, and checking
-            // if the bone of that influence already is in the array with used bones
-            const size_t numInfluences = GetNumInfluences(i);
-            for (size_t a = 0; a < numInfluences; ++a)
-            {
-                EMotionFX::SkinInfluence* influence = GetInfluence(i, a);
-                const uint16 jointNr = influence->GetNodeNr();
-
-                joints.set(jointNr);
-                highestJoint = AZStd::max(highestJoint, jointNr);
-            }
-        }
-
-        return AZStd::make_tuple(aznumeric_caster(joints.count()), highestJoint);
-    }
 } // namespace EMotionFX

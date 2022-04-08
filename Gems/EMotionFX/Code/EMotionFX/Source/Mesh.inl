@@ -59,3 +59,23 @@ MCORE_INLINE uint32 Mesh::GetNumOrgVertices() const
 {
     return m_numOrgVerts;
 }
+
+MCORE_INLINE uint16 Mesh::GetNumUniqueJoints() const
+{
+    return m_numUniqueJoints;
+}
+
+MCORE_INLINE void Mesh::SetNumUniqueJoints(uint16 numUniqueJoints)
+{
+    m_numUniqueJoints = numUniqueJoints;
+}
+
+MCORE_INLINE uint16 Mesh::GetHighestJointId() const
+{
+    return m_highestJointId;
+}
+
+MCORE_INLINE void Mesh::SetHighestJointId(uint16 highestJointId)
+{
+    m_highestJointId = highestJointId;
+}

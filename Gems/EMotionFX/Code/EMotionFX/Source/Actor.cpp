@@ -2626,7 +2626,9 @@ namespace EMotionFX
                 EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer =
                     static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(vertexAttributeLayer);
                 const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
-                const auto [numLocalJoints, highestJointId] = skinLayer->CalcLocalJointIndexCountAndHighestIndex(numOrgVerts);
+
+                const uint16 numLocalJoints = mesh->GetNumUniqueJoints();
+                const uint16 highestJointId = mesh->GetHighestJointId();
 
                 // The information about if we want to use dual quat skinning is baked into the mesh chunk and we don't have access to that
                 // anymore. Default to dual quat skinning.

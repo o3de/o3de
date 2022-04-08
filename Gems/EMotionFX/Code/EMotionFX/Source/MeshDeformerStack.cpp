@@ -113,7 +113,8 @@ namespace EMotionFX
         EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer =
             (SkinningInfoVertexAttributeLayer*)m_mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
         const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
-        const auto [numLocalJoints, highestJointId] = skinLayer->CalcLocalJointIndexCountAndHighestIndex(numOrgVerts);
+        
+        const uint16 highestJointId = m_mesh->GetHighestJointId();
 
         // iterate through the deformers and reinitialize them
         for (size_t i = 0; i < numDeformers; ++i)
