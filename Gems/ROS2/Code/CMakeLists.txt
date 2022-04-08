@@ -3,19 +3,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 
-# Currently we are in the Code folder: ${CMAKE_CURRENT_LIST_DIR}
-# Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
-# Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
-#       in which case it will see if that platform is present here or in the restricted folder.
-#       i.e. It could here in our gem : Gems/ROS2/Code/Platform/<platorm_name>  or
-#            <restricted_folder>/<platform_name>/Gems/ROS2/Code
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_name}")
-
-# Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
-# traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
-# is supported by this platform.
-include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-
 # If no ROS2 is found, no targets are valid for this Gem
 find_package(ROS2 MODULE)
 if (NOT ROS2_FOUND)
@@ -30,7 +17,6 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         ros2_files.cmake
-        ${pal_dir}/ros2_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -50,7 +36,6 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         ros2_shared_files.cmake
-        ${pal_dir}/ros2_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
