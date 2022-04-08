@@ -51,6 +51,7 @@ namespace UnitTest
             GradientSignal::CustomScaleType m_customScaleType = GradientSignal::CustomScaleType::None;
             float m_scaleRangeMin = 0.0f;
             float m_scaleRangeMax = 1.0f;
+            GradientSignal::SamplingType m_samplingType = GradientSignal::SamplingType::Point;
 
             static const AZ::Vector2 EndOfList;
         };
@@ -107,6 +108,7 @@ namespace UnitTest
             config.m_customScaleType = test.m_customScaleType;
             config.m_scaleRangeMin = test.m_scaleRangeMin;
             config.m_scaleRangeMax = test.m_scaleRangeMax;
+            config.m_samplingType = test.m_samplingType;
             entity->CreateComponent<GradientSignal::ImageGradientComponent>(config);
 
             // Create the Gradient Transform Component.
@@ -460,6 +462,42 @@ namespace UnitTest
         // Since all of our pixels are set to 0, except one which is set to our specified value, our specified value should get
         // auto-scaled to 1.0 since it's the highest value in the image.
         test.m_expectedSetPixelGradientValue = 1.0f;
+
+        RunPixelTest(test);
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedBilinearSampling)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0, 0), {200, 150, 100, 50},                  // Source image:  4 x 4 with (0, 0) set to different values in each channel
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::None,
+            4, 1.0f, 1.0f,                                              // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Red,                          // Use Red channel (default)
+            GradientSignal::CustomScaleType::None,                      // No custom scale (default)
+            0.0f,                                                       // Min scale (won't be used since None scale type is set)
+            1.0f,                                                       // Max scale (won't be used since None scale type is set)
+            GradientSignal::SamplingType::Bilinear                      // Enable the bilinear sampling type
+        };
+
+        // Compute the delta X/Y for sampling pixel
+        float deltaX = test.m_pixel.GetX() - floor(test.m_pixel.GetX());
+        float deltaY = test.m_pixel.GetY() - floor(test.m_pixel.GetY());
+
+        // Only the 0,0 pixel is set to a specific value, so the other
+        // points in the grid we will lookup will all be 0
+        const float valueX0Y0 = test.m_setPixelValues[0] / 255.0f;
+        const float valueX1Y0 = 0.0f;
+        const float valueX0Y1 = 0.0f;
+        const float valueX1Y1 = 0.0f;
+        const float valueXY0 = AZ::Lerp(valueX0Y0, valueX1Y0, deltaX);
+        const float valueXY1 = AZ::Lerp(valueX0Y1, valueX1Y1, deltaX);
+
+        test.m_expectedSetPixelGradientValue = AZ::Lerp(valueXY0, valueXY1, deltaY);
 
         RunPixelTest(test);
     }
