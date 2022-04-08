@@ -150,6 +150,8 @@ namespace SurfaceData
     void SurfaceDataShapeComponent::GetSurfacePointsFromList(
         AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (!m_shapeBoundsIsValid)
@@ -190,6 +192,8 @@ namespace SurfaceData
         AZStd::span<const AZ::EntityId> creatorEntityIds,
         AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         AZ_Assert(
             (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
             "Sizes of the passed-in spans don't match");
