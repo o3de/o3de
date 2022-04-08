@@ -6,8 +6,6 @@
  *
  */
 
-#include "GraphToLua.h"
-
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <AzCore/ScriptCanvas/ScriptCanvasOnDemandNames.h>
 #include <AzCore/std/sort.h>
@@ -17,14 +15,16 @@
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/ScopedDataConnectionEvent.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/GraphTranslationValidation/GraphTranslationValidations.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ParsingValidation/ParsingValidations.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Grammar/ParsingMetaData.h>
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
 #include <ScriptCanvas/Grammar/Primitives.h>
 #include <ScriptCanvas/Grammar/PrimitivesExecution.h>
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
-#include "GraphToLuaUtility.h"
+#include "GraphToLua.h"
 
 namespace GraphToLuaCpp
 {
