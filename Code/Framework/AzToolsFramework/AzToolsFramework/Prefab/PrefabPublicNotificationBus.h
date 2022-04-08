@@ -35,8 +35,27 @@ namespace AzToolsFramework
             // Does not trigger individual OnTemplateRemoved events
             virtual void OnAllTemplatesRemoved() {}
         };
-
         using PrefabPublicNotificationBus = AZ::EBus<PrefabPublicNotifications>;
+
+        //! Used to notify when a prefab has been saved to disk.
+        class PrefabSaveNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            //////////////////////////////////////////////////////////////////////////
+            // EBusTraits overrides
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+            using BusIdType = TemplateId;
+            //////////////////////////////////////////////////////////////////////////
+
+            //! Triggered when the editor focus is changed to a different prefab.
+            virtual void OnPrefabSaved() = 0;
+
+        protected:
+            ~PrefabSaveNotifications() = default;
+        };
+        using PrefabSaveNotificationBus = AZ::EBus<PrefabSaveNotifications>;
 
     } // namespace Prefab
 } // namespace AzToolsFramework
