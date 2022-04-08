@@ -225,7 +225,6 @@ namespace AZ
                     // Get all information before calling the completion routine as it's technically possible that an external
                     // request is recycled during the callback.
                     IStreamerTypes::RequestStatus status = top->GetStatus();
-                    FileRequest* parent = top->m_parent;
                     bool isInternal = top->m_usage == FileRequest::Usage::Internal;
 
                     if (isInternal)
@@ -235,19 +234,20 @@ namespace AZ
                             TIMED_AVERAGE_WINDOW_SCOPE(m_internalCompletionTimeAverage);
 #endif
                             AZ_PROFILE_SCOPE(AzCore, "Completion callback internal");
-                            top->m_onCompletion(*top);
+                            if (top->m_onCompletion)
+                            {
+                                top->m_onCompletion(*top);
+                            }
                             AZ_PROFILE_INTERVAL_END(AzCore, top);
                         }
-                        if (parent)
+                        if (FileRequest* parent = top->m_parent; parent != nullptr)
                         {
                             AZ_Assert(
                                 parent->m_dependencies > 0,
                                 "A file request with a parent has completed, but the request wasn't registered as a dependency with "
                                 "the parent.");
-                            --parent->m_dependencies;
-
                             parent->SetStatus(status);
-                            if (parent->m_dependencies == 0)
+                            if (parent->m_dependencies-- == 1)
                             {
                                 completed.push(parent);
                             }
@@ -257,32 +257,47 @@ namespace AZ
                     }
                     else
                     {
-                        task.AddTask(
-                            m_taskDescriptor,
-                            [this, top]()
-                            {
-                                top->m_onCompletion(*top);
-                                FileRequest* parent = top->m_parent;
-                                // For external requests the only parent is the reference holder. It's not needed to wake up the
-                                // scheduler because it would only do a bunch of work to collect a few additional internal requests
-                                // that would also be picked up by any regular iteration of the scheduler. Not waking up the scheduler
-                                // in this case will not prevent any important requests from completing.
-                                if (parent)
+                        if (top->m_onCompletion)
+                        {
+                            task.AddTask(
+                                m_taskDescriptor,
+                                [this, top]()
                                 {
-                                    AZ_Assert(
-                                        parent->m_dependencies > 0,
-                                        "A file request with a parent has completed, but the request wasn't registered as a dependency "
-                                        "with the "
-                                        "parent.");
-                                    --parent->m_dependencies;
-
-                                    parent->SetStatus(top->GetStatus());
-                                    if (parent->m_dependencies == 0)
+                                    top->m_onCompletion(*top);
+                                    FileRequest* parent = top->m_parent;
+                                    // For external requests the only parent is the reference holder. It's not needed to wake up the
+                                    // scheduler because it would only do a bunch of work to collect a few additional internal requests
+                                    // that would also be picked up by any regular iteration of the scheduler. Not waking up the scheduler
+                                    // in this case will not prevent any important requests from completing.
+                                    if (parent)
                                     {
-                                        MarkRequestAsCompleted(parent);
+                                        parent->SetStatus(top->GetStatus());
+                                        AZ_Assert(
+                                            parent->m_dependencies > 0,
+                                            "A file request with a parent has completed, but the request wasn't registered as a dependency "
+                                            "with the parent.");
+                                        if (parent->m_dependencies-- == 1)
+                                        {
+                                            MarkRequestAsCompleted(parent);
+                                        }
                                     }
+                                });
+                        }
+                        else
+                        {
+                            if (FileRequest* parent = top->m_parent; parent != nullptr)
+                            {
+                                AZ_Assert(
+                                    parent->m_dependencies > 0,
+                                    "A file request with a parent has completed, but the request wasn't registered as a dependency "
+                                    "with the parent.");
+                                parent->SetStatus(status);
+                                if (parent->m_dependencies-- == 1)
+                                {
+                                    completed.push(parent);
                                 }
-                            });
+                            }
+                        }
                         AZ_PROFILE_INTERVAL_END(AzCore, top);
                     }
 
