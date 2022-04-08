@@ -15,6 +15,12 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Task/TaskDescriptor.h>
+
+namespace AZ
+{
+    class TaskExecutor;
+}
 
 namespace AZ::IO
 {
@@ -23,7 +29,7 @@ namespace AZ::IO
 
     using FileRequestPtr = AZStd::intrusive_ptr<ExternalFileRequest>;
 
-    class StreamerContext
+    class StreamerContext final
     {
     public:
         using PreparedQueue = AZStd::deque<FileRequest*>;
@@ -127,12 +133,13 @@ namespace AZ::IO
 
         //! The average amount of time spend on completing internal completion callbacks.
         TimedAverageWindow<s_statisticsWindowSize> m_internalCompletionTimeAverage;
-        //! The average amount of time spend on completing external completion callbacks.
-        TimedAverageWindow<s_statisticsWindowSize> m_externalCompletionTimeAverage;
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
         //! Platform-specific synchronization object used to suspend the Streamer thread and wake it up to resume procesing.
         AZ::Platform::StreamerContextThreadSync m_threadSync;
+
+        AZ::TaskExecutor& m_taskExecutor;
+        AZ::TaskDescriptor m_taskDescriptor;    
 
         size_t m_pendingIdCounter{ 0 };
     };

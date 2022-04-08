@@ -11,6 +11,8 @@
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
 
 namespace AZ
 {
@@ -23,7 +25,12 @@ namespace AZ
         static constexpr const char* MissedDeadlinesName = "Missed deadlines";
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
-        StreamerContext::StreamerContext() = default;
+        StreamerContext::StreamerContext()
+            : m_taskExecutor(AZ::TaskExecutor::Instance())
+        {
+            m_taskDescriptor.taskName = "Completion callback";
+            m_taskDescriptor.taskGroup = "AZ::IO:Streamer";     
+        }
 
         StreamerContext::~StreamerContext()
         {
@@ -162,6 +169,8 @@ namespace AZ
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
             auto now = AZStd::chrono::system_clock::now();
 #endif
+            TaskGraph task;
+                            
             bool hasCompletedRequests = false;
             while (true)
             {
@@ -172,7 +181,7 @@ namespace AZ
                 }
                 if (completed.empty())
                 {
-                    return hasCompletedRequests;
+                    break;
                 }
 
                 hasCompletedRequests = true;
@@ -219,51 +228,70 @@ namespace AZ
                     FileRequest* parent = top->m_parent;
                     bool isInternal = top->m_usage == FileRequest::Usage::Internal;
 
+                    if (isInternal)
                     {
-#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-                        if (isInternal)
                         {
+#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
                             TIMED_AVERAGE_WINDOW_SCOPE(m_internalCompletionTimeAverage);
+#endif
                             AZ_PROFILE_SCOPE(AzCore, "Completion callback internal");
                             top->m_onCompletion(*top);
                             AZ_PROFILE_INTERVAL_END(AzCore, top);
                         }
-                        else
+                        if (parent)
                         {
-                            TIMED_AVERAGE_WINDOW_SCOPE(m_externalCompletionTimeAverage);
-                            AZ_PROFILE_SCOPE(AzCore, "Completion callback external");
-                            top->m_onCompletion(*top);
-                            AZ_PROFILE_INTERVAL_END(AzCore, top);
+                            AZ_Assert(
+                                parent->m_dependencies > 0,
+                                "A file request with a parent has completed, but the request wasn't registered as a dependency with "
+                                "the parent.");
+                            --parent->m_dependencies;
+
+                            parent->SetStatus(status);
+                            if (parent->m_dependencies == 0)
+                            {
+                                completed.push(parent);
+                            }
                         }
-#else
-                        AZ_PROFILE_SCOPE(AzCore,
-                            isInternal ? "Completion callback internal" : "Completion callback external");
-                        top->m_onCompletion(*top);
-                        AZ_PROFILE_INTERVAL_END(AzCore, top);
-#endif
-                    }
 
-                    if (parent)
-                    {
-                        AZ_Assert(parent->m_dependencies > 0,
-                            "A file request with a parent has completed, but the request wasn't registered as a dependency with the parent.");
-                        --parent->m_dependencies;
-
-                        parent->SetStatus(status);
-                        if (parent->m_dependencies == 0)
-                        {
-                            completed.push(parent);
-                        }
-                    }
-
-                    if (isInternal)
-                    {
                         RecycleRequest(top);
+                    }
+                    else
+                    {
+                        task.AddTask(
+                            m_taskDescriptor,
+                            [this, top]()
+                            {
+                                top->m_onCompletion(*top);
+                                FileRequest* parent = top->m_parent;
+                                // For external requests the only parent is the reference holder. It's not needed to wake up the
+                                // scheduler because it would only do a bunch of work to collect a few additional internal requests
+                                // that would also be picked up by any regular iteration of the scheduler. Not waking up the scheduler
+                                // in this case will not prevent any important requests from completing.
+                                if (parent)
+                                {
+                                    AZ_Assert(
+                                        parent->m_dependencies > 0,
+                                        "A file request with a parent has completed, but the request wasn't registered as a dependency "
+                                        "with the "
+                                        "parent.");
+                                    --parent->m_dependencies;
+
+                                    parent->SetStatus(top->GetStatus());
+                                    if (parent->m_dependencies == 0)
+                                    {
+                                        MarkRequestAsCompleted(parent);
+                                    }
+                                }
+                            });
+                        AZ_PROFILE_INTERVAL_END(AzCore, top);
                     }
 
                     completed.pop();
                 }
             }
+
+            task.Detach();
+            task.SubmitOnExecutor(m_taskExecutor);
             return hasCompletedRequests;
         }
 
@@ -309,12 +337,6 @@ namespace AZ
                 ContextName, "Internal callback duration", m_internalCompletionTimeAverage.CalculateAverage(),
                 m_internalCompletionTimeAverage.GetMinimum(), m_internalCompletionTimeAverage.GetMaximum(),
                 "The average amount of time in microseconds spend on processing internal callbacks."));
-            statistics.push_back(Statistic::CreateTimeRange(
-                ContextName, "External callback duration", m_externalCompletionTimeAverage.CalculateAverage(),
-                m_externalCompletionTimeAverage.GetMinimum(), m_externalCompletionTimeAverage.GetMaximum(),
-                "The average amount of time in microseconds spend on processing external callbacks. If this takes up a long time there may "
-                "be a callback on a request that should be handed off to another thread. While the callback is processing Streamer can not "
-                "schedule or process any other requests."));
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILNG_INFO
             statistics.push_back(Statistic::CreateInteger(
                 ContextName, "Total requests", aznumeric_caster(m_pendingIdCounter), "The total number of requests Streamer has processed.",
