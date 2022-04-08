@@ -220,8 +220,7 @@ namespace AzToolsFramework
             modeHelpLabel->setText("?");
             modeHelpLabel->setToolTip("Toggle between Prefab visualization modes:\n"
                                       "Simple Mode: Show nested prefab instances as a single object.\n"
-                                      "Advanced Mode: Allow selection of entities belonging to nested prefab instances.\n"
-                                      "In either case, all changes to entities will be stored in the target prefab file.");
+                                      "Advanced Mode: Allow selection of entities belonging to nested prefab instances.");
             modeHelpLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             modeSwitchLayout->addWidget(modeHelpLabel);
 
