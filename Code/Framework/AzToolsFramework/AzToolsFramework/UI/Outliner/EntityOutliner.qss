@@ -12,6 +12,20 @@ AzToolsFramework--EntityOutlinerWidget #m_display_options
     qproperty-iconSize: 16px 16px;
 }
 
+
+#OutlinerModeSwitcher
+{
+    background: #363636;
+    margin: 2px 0 0;
+    padding: 6px 0;
+}
+
+#OutlinerModeSwitcher QAbstractButton:checked
+{
+    background-color: #1D72EA;
+    color: #ffffff;
+}
+
 AzToolsFramework--EntityOutlinerWidget QTreeView
 {
     selection-background-color: transparent;

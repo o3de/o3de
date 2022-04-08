@@ -35,8 +35,12 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
 
+// TEMP
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzQtComponents/Components/Widgets/SegmentBar.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 
@@ -44,6 +48,7 @@
 #include <QCheckBox>
 #include <QDir>
 #include <QGraphicsOpacityEffect>
+#include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QMenu>
@@ -192,6 +197,36 @@ namespace AzToolsFramework
         // reloaded.
         AzQtComponents::StyleManager::addSearchPaths("outliner", pathOnDisk, qrcPath.toString(), engineRootPath);
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("outliner:EntityOutliner.qss"));
+
+        auto modeSwitchLayout = new QHBoxLayout();
+        modeSwitchLayout->setObjectName("OutlinerModeSwitchRow");
+        m_gui->verticalLayout_2->insertLayout(1, modeSwitchLayout);
+
+        // Introduce SegmentBar to switch between view modes
+        auto segmentBar = new AzQtComponents::SegmentBar(this);
+        segmentBar->setObjectName("OutlinerModeSwitcher");
+        segmentBar->addTab("Simple View");
+        segmentBar->addTab("Advanced View");
+        modeSwitchLayout->addWidget(segmentBar);
+
+        connect(
+            segmentBar, &AzQtComponents::SegmentBar::currentChanged, this,
+            [&](int index)
+            {
+                auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+                if (prefabFocusPublicInterface)
+                {
+                    if (index == 0)
+                    {
+                        prefabFocusPublicInterface->SetPrefabEditScope(m_editorEntityContextId, Prefab::PrefabEditScope::NESTED_TEMPLATES);
+                    }
+                    else
+                    {
+                        prefabFocusPublicInterface->SetPrefabEditScope(m_editorEntityContextId, Prefab::PrefabEditScope::NESTED_INSTANCES);
+                    }
+                }
+            }
+        );
 
         m_listModel = aznew EntityOutlinerListModel(this);
         m_listModel->SetSortMode(m_sortMode);
