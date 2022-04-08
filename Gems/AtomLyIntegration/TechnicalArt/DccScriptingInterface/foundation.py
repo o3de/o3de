@@ -11,17 +11,17 @@
 
 """! @brief
 Module Documentation:
-    < DCCsi >:: Tools/DCC/Maya/setup.py
+    < DCCsi > / foundation.py
     
-Running this module installs the DCCsi python requirements.txt for Maya.
+Running this module installs the DCCsi python requirements.txt for other python interpreters (like aya)
 
 It installs based on the python version into a location (such as):
 <o3de>/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/3rdParty/Python/Lib/3.x
 
-This is to ensure that we are not modifying the users Maya install directly.
+This is to ensure that we are not modifying the users DCC tools install directly.
 
-For this script to function on windows you will need Administrator privledges.
-^ You only have to start with Admin rights if you are running setup.py or otherwise updating packages
+For this script to function on windows you may need Administrator privledges.
+^ You only have to start with Admin rights if you are running foundation.py or otherwise updating packages
 
 To Do: document usage (how to install for Maya 2020 py2, Maya 2022 py2.7, Maya 2022 py3.7)
 """
@@ -140,7 +140,7 @@ def download_getpip(url=DL_URL, file_store=PIP_DL_LOC):
     
     # ensure what is passed in is a Path object
     file_store = Path(file_store)
-    
+
     try:
         file_store.exists()
     except FileExistsError as e:
@@ -215,7 +215,8 @@ def install_requirements(python_exe=_PYTHON_EXE,
     
     if python_exe.exists():
         ## install required packages
-        inst_cmd = [python_exe.as_posix(), "-m", "pip", "install", "-r", requirements.as_posix(), "-t", target_loc.as_posix()]
+        inst_cmd = [python_exe.as_posix(), "-m", "pip", "install",
+                    "-r", requirements.as_posix(), "-t", target_loc.as_posix()]
         result = subprocess.call( inst_cmd )
         return result
     else:
@@ -235,8 +236,8 @@ def install_pkg(python_exe=_PYTHON_EXE,
     target_loc = Path(target_loc)
     
     if python_exe.exists():
-        python_exe = python_exe.as_posix()
-        inst_cmd = [python_exe, "-m", "pip", "install", pkg_name.as_posix(), "-t", target_loc.as_posix()]
+        inst_cmd = [python_exe.as_posix(), "-m", "pip", "install", pkg_name.as_posix(),
+                    "-t", target_loc.as_posix()]
         result = subprocess.call( inst_cmd )
         return result
     else:
@@ -262,7 +263,6 @@ if __name__ == '__main__':
     #os.environ['PYTHONINSPECT'] = 'True'
     
     STR_CROSSBAR = f"{'-' * 74}"
-    _LOGGER.info(STR_CROSSBAR)
     
     _DCCSI_GDEBUG = False
     _DCCSI_DEV_MODE = False
@@ -283,6 +283,8 @@ if __name__ == '__main__':
                         datefmt='%m-%d %H:%M')
     
     _LOGGER = _logging.getLogger(_MODULENAME)
+
+    _LOGGER.info(STR_CROSSBAR)
     _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
     _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
     _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
@@ -342,29 +344,35 @@ if __name__ == '__main__':
         os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
         
     if not args.python_exe:
-        _LOGGER.info("It is suggested to use '-py' or '--python_exe' to pass in the python exe for the target dcc tool.")
+        _LOGGER.warning("It is suggested to use arg '-py' or '--python_exe' to pass in the python exe for the target dcc tool.")
         
     if args.python_exe:
         _PYTHON_EXE = Path(args.python_exe)
+        _COMMAND = [_PYTHON_EXE.as_posix(), "--version"]
+        _process = subprocess.Popen(_COMMAND, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        _out, _err = _process.communicate()
+        _out = _out.decode("utf-8")  # decodes byte string to string
+        _out = _out.replace("\r\n", "")  # clean
+        _LOGGER.info(f'Python Version is: {_out}')
         
-        # script to run
-        _SYS_VER_SCRIPT = Path(_PATH_DCCSIG, 'return_sys_version.py')
+        _ver = _out.split(" ")[1]  # split by space, take version
+        _ver = _ver.split('.')  # splity by . to list
         
-        _SYS_VER = subprocess.CompletedProcess(args=[_PYTHON_EXE.as_posix(), "-m", _SYS_VER_SCRIPT.as_posix()], returncode=0, stdout='')
-        
-        _SYS_VER = _SYS_VER.split('.')
-        
-        STR_PATH_DCCSI_PYTHON_LIB = str('{0}\\3rdParty\\Python\\Lib\\{1}.x\\{1}.{2}.x\\site-packages')
+        _PATH_DCCSI_PYTHON_LIB = Path(STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
+                                                                       _ver[0],
+                                                                       _ver[1]))
+        if _PATH_DCCSI_PYTHON_LIB.exists():
+            _LOGGER.info(f'Requirements, install target: {_PATH_DCCSI_PYTHON_LIB}')
+        else:
+            _PATH_DCCSI_PYTHON_LIB.touch()
+            _LOGGER.info(f'.touch(): {_PATH_DCCSI_PYTHON_LIB}')
 
-        # need to update the package install location target based on python version
-        _PATH_DCCSI_PYTHON_LIB = Path(STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG, _SYS_VER[0], _SYS_VER[1]))        
-    
     # this will verify pip is installed for the target python interpretter/env
-    if args.check_pip:    
+    if args.check_pip:
         _LOGGER.info(f'calling foundation.check_pip()')
         check_pip(_PYTHON_EXE)
-    
-    if args.ensurepip:    
+
+    if args.ensurepip:
         _LOGGER.info(f'calling foundation.ensurepip()')
         ensurepip(_PYTHON_EXE)
     
@@ -374,7 +382,7 @@ if __name__ == '__main__':
     
     if args.install_requirements:    
         _LOGGER.info(f'calling foundation.install_requirements()')
-        install_requirements(_PYTHON_EXE, target_loc = _PATH_DCCSI_PYTHON_LIB)
+        install_requirements(_PYTHON_EXE, target_loc = _PATH_DCCSI_PYTHON_LIB.as_posix())
         
     # -- DONE ----
     _LOGGER.info(STR_CROSSBAR)

@@ -25,9 +25,6 @@ hashids==1.3.1 \
     --hash=sha256:6c3dc775e65efc2ce2c157a65acb776d634cb814598f406469abef00ae3f635c \
     --hash=sha256:8bddd1acba501bfc9306e7e5a99a1667f4f2cacdc20cbd70bcc5ddfa5147c94c
     # via -r requirements.txt
-pathlib==1.0.1 \
-    --hash=sha256:6940718dfc3eff4258203ad5021090933e5c04707d5ca8cc9e73c94a7894ea9f
-    # via -r requirements.txt
 python-box==5.3.0 \
     --hash=sha256:4ed4ef5d34de505a65c01e3f1911de8cdb29484fcae0c035141dce535c6c194a \
     --hash=sha256:f2a531f9f5bbef078c175fad6abb31e9b59d40d121ea79993197e6bb221c6be6
