@@ -109,7 +109,9 @@ namespace SandboxEditor
     SANDBOX_API AZ::Vector3 CameraDefaultEditorPosition();
     SANDBOX_API void SetCameraDefaultEditorPosition(const AZ::Vector3& position);
 
+    //! @return pitch/yaw value in x/y Vector2 component in degrees.
     SANDBOX_API AZ::Vector2 CameraDefaultEditorOrientation();
+    //! @param pitchYaw pitch/yaw value in x/y Vector2 component in degrees.
     SANDBOX_API void SetCameraDefaultEditorOrientation(const AZ::Vector2& pitchYaw);
 
     SANDBOX_API float CameraDefaultOrbitDistance();

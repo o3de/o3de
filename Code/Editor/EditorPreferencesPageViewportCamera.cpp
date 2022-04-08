@@ -163,7 +163,7 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
                 "Default Camera Position when a level is first opened")
             ->DataElement(
                 AZ::Edit::UIHandlers::Vector2, &CameraMovementSettings::m_defaultPitchYaw, "Default Camera Orientation",
-                "Default Camera Orientation when a level is first opened")
+                "Default Camera Orientation when a level is first opened (X - Pitch value (degrees), Y - Yaw value (degrees)")
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultOrbitDistance, "Default Orbit Distance",
                 "The default distance to orbit about when there is no entity selected")

@@ -1912,12 +1912,11 @@ void EditorViewportWidget::SetDefaultCamera()
         atomViewportRequests->PushView(contextName, m_defaultView);
     }
 
-    const AZ::Vector2 pitchYaw = m_editorViewportSettings.DefaultEditorCameraOrientation();
-
+    const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
     // Set the default Editor Camera position and orientation
     m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
-    m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(
-        AZ::Matrix3x3::CreateFromQuaternion(SandboxEditor::CameraRotation(AZ::DegToRad(pitchYaw.GetX()), AZ::DegToRad(pitchYaw.GetY())))));
+    m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
+        SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
 
     SetViewTM(m_defaultViewTM);
 
