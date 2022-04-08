@@ -809,10 +809,6 @@ try {
     timeout(time: PIPELINE_TIMEOUT, unit: 'MINUTES', activity: true) {
         stage('Setup Pipeline') {
             node('controller') {
-                echo "JENKINS_HOME: ${JENKINS_HOME}"
-                // echo "ITEM_FULL_NAME: ${ITEM_FULL_NAME}"
-                // echo "ITEM_ROOTDIR: ${ITEM_ROOTDIR}"
-                echo "ITEM_FULLNAME: ${ITEM_FULLNAME}"
                 def envVarList = []
                 if(isUnix()) {
                     envVarList.add('IS_UNIX=1')
