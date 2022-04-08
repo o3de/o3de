@@ -92,6 +92,7 @@
     "templates": [
         "Templates/GemRepo",
         "Templates/AssetGem",
+        "Templates/DefaultComponent",
         "Templates/DefaultGem",
         "Templates/DefaultProject",
         "Templates/CppToolGem",

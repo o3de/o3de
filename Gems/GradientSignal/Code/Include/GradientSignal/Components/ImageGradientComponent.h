@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
@@ -73,14 +74,14 @@ namespace GradientSignal
         AZ::Crc32 GetManualScaleVisibility() const;
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_imageAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
-        float m_tilingX = 1.0f;
-        float m_tilingY = 1.0f;
+        AZ::Vector2 m_tiling = AZ::Vector2::CreateOne();
 
         bool m_advancedMode = false;
         ChannelToUse m_channelToUse = ChannelToUse::Red;
         CustomScaleType m_customScaleType = CustomScaleType::None;
         float m_scaleRangeMin = 0.0f;
         float m_scaleRangeMax = 1.0f;
+        AZ::u32 m_mipIndex = 0;
     };
 
     static const AZ::Uuid ImageGradientComponentTypeId = "{4741F079-157F-457E-93E0-D6BA4EAF76FE}";
@@ -130,7 +131,7 @@ namespace GradientSignal
 
         void GetSubImageData();
         float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
-        float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y, AZStd::span<const uint8_t> imageData) const;
+        float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const;
         void SetupMultiplierAndOffset(float min, float max);
         void SetupDefaultMultiplierAndOffset();
         void SetupAutoScaleMultiplierAndOffset();
@@ -153,7 +154,10 @@ namespace GradientSignal
         GradientTransform m_gradientTransform;
         AZStd::span<const uint8_t> m_imageData;
         ChannelToUse m_currentChannel = ChannelToUse::Red;
+        CustomScaleType m_currentScaleType = CustomScaleType::None;
         float m_multiplier = 1.0f;
         float m_offset = 0.0f;
+        AZ::u32 m_currentMipIndex = 0;
+        AZ::RHI::ImageDescriptor m_imageDescriptor;
     };
 }

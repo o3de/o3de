@@ -1,0 +1,134 @@
+{
+    "description": "Material Type tailored for rendering eyes, with support for refraction, iris blending, and other eye-specific properties.",
+    "version": 1,
+    "propertyLayout": {
+        "propertyGroups": [
+            {
+                "name": "iris", 
+                "shaderInputsPrefix": "m_iris_",
+                "shaderOptionsPrefix": "o_iris_",
+                "displayName":  "Iris",
+                "description":  "Material properties for the iris.",
+                "propertyGroups": [
+                    {
+                        "$import": "MaterialInputs/BaseColorPropertyGroup.json"
+                    },
+                    {
+                        "$import": "MaterialInputs/NormalPropertyGroup.json"
+                    },
+                    { 
+                        "$import": "MaterialInputs/RoughnessPropertyGroup.json"
+                    }
+                ]
+            },
+            {
+                "name": "sclera", 
+                "shaderInputsPrefix": "m_sclera_",
+                "shaderOptionsPrefix": "o_sclera_",
+                "displayName":  "Sclera",
+                "description":  "Material properties for the sclera.",
+                "propertyGroups": [
+                    {
+                        "$import": "MaterialInputs/BaseColorPropertyGroup.json"
+                    },
+                    {
+                        "$import": "MaterialInputs/NormalPropertyGroup.json"
+                    },
+                    { 
+                        "$import": "MaterialInputs/RoughnessPropertyGroup.json"
+                    }
+                ]
+            },
+            {
+                "name": "eye",
+                "displayName": "Eye parameters",
+                "description": "Properties to control eye-specific rendering behavior",
+                "properties": [
+                    {
+                        "name": "irisDepth",
+                        "displayName": "Iris Depth",
+                        "description": "Distance from the object origin to the plane (XZ) where the iris lays.",
+                        "type": "float",
+                        "defaultValue": 0.48,
+                        "min": 0.0,
+                        "softMax": 1.0,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_irisDepth"
+                        }
+                    },
+                    {
+                        "name": "irisRadius",
+                        "displayName": "Iris Radius",
+                        "description": "Radius of the iris. It extends the iris/sclera mask to get more samples from one or the other (no UV deformation/stretching).",
+                        "type": "float",
+                        "defaultValue": 0.2,
+                        "min": 0.0,
+                        "softMax": 0.5,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_eyeIrisRadius"
+                        }
+                    },
+                    {
+                        "name": "innerEyeIOR",
+                        "displayName": "IOR Inner Eye",
+                        "description": "Index of Refraction (IOR) of the watery fluid between the cornea and the iris (aqueous humor). Also referred as refraction strength/factor.",
+                        "type": "float",
+                        "defaultValue": 1.336, // http://hyperphysics.phy-astr.gsu.edu/hbase/vision/eyescal.html
+                        "min": 1.0,
+                        "softMax": 2.0,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_innerEyeIOR"
+                        }
+                    },
+                    {
+                        "name": "limbusSize",
+                        "displayName": "Limbus Size",
+                        "description": "Size of the transition region between the iris/sclera layers. The lower this value, the sharper the transition.",
+                        "type": "float",
+                        "defaultValue": 0.03,
+                        "min": 0.0,
+                        "softMax": 1.0,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_limbusSize"
+                        }
+                    }
+                ]
+            },
+            { 
+                "$import": "MaterialInputs/SpecularPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/SubsurfaceAndTransmissionPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
+            }
+        ]
+    },
+    "shaders": [
+        {
+            "file": "./Eye.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "Shaders/Shadow/Shadowmap.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "Shaders/Depth/DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
+        }
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

@@ -122,6 +122,7 @@ namespace Terrain
         m_meshManager.Reset();
         m_macroMaterialManager.Reset();
         m_detailMaterialManager.Reset();
+        m_clipmapManager.Reset();
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -263,6 +264,13 @@ namespace Terrain
             const uint32_t updateWidth = aznumeric_cast<uint32_t>(numSamples.first);
             const uint32_t updateHeight = aznumeric_cast<uint32_t>(numSamples.second);
 
+            // If there aren't any samples in the region, there's nothing to update, so just return.
+            if ((updateWidth == 0) || (updateHeight == 0))
+            {
+                m_dirtyRegion = AZ::Aabb::CreateNull();
+                return;
+            }
+
             AZStd::vector<uint16_t> pixels;
             pixels.reserve(updateWidth * updateHeight);
 
@@ -357,12 +365,22 @@ namespace Terrain
             {
                 m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg, m_materialInstance);
             }
+
+            if (m_clipmapManager.IsInitialized())
+            {
+                m_clipmapManager.UpdateSrgIndices(m_terrainSrg);
+            }
+            else
+            {
+                m_clipmapManager.Initialize(m_terrainSrg);
+            }
         }
         else
         {
             m_imageArrayHandler->Reset();
             m_macroMaterialManager.Reset();
             m_detailMaterialManager.Reset();
+            m_clipmapManager.Reset();
         }
     }
 
@@ -408,6 +426,11 @@ namespace Terrain
                 if (m_detailMaterialManager.IsInitialized())
                 {
                     m_detailMaterialManager.Update(cameraPosition, m_terrainSrg);
+                }
+
+                if (m_clipmapManager.IsInitialized())
+                {
+                    m_clipmapManager.Update(cameraPosition, m_terrainSrg);
                 }
             }
 
@@ -498,13 +521,13 @@ namespace Terrain
         return m_terrainSrg;
     }
 
-    const AZ::Aabb& TerrainFeatureProcessor::GetTerrainBounds() const
-    {
-        return m_terrainBounds;
-    }
-
     const AZ::Data::Instance<AZ::RPI::Material> TerrainFeatureProcessor::GetMaterial() const
     {
         return m_materialInstance;
+    }
+
+    const TerrainClipmapManager& TerrainFeatureProcessor::GetClipmapManager() const
+    {
+        return m_clipmapManager;
     }
 }
