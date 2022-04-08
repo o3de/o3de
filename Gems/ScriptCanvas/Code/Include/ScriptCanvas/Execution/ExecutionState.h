@@ -36,10 +36,10 @@ namespace ScriptCanvas
     {
         const RuntimeData& runtimeData;
         const RuntimeDataOverrides& overrides;
-        AZStd::any&& userData;
+        ExecutionUserData&& userData;
 
         ExecutionStateConfig(const RuntimeDataOverrides& overrides);
-        ExecutionStateConfig(const RuntimeDataOverrides& overrides, AZStd::any&& userData);
+        ExecutionStateConfig(const RuntimeDataOverrides& overrides, ExecutionUserData&& userData);
     };
 
     class ExecutionState
@@ -81,11 +81,13 @@ namespace ScriptCanvas
 
         const RuntimeData& GetRuntimeData() const;
 
-        const AZStd::any& GetUserData() const;
+        const ExecutionUserData& GetUserData() const;
 
         virtual void Initialize() = 0;
 
-        AZStd::any& ModUserData() const;
+        virtual bool IsPure() const { return false; }
+
+        ExecutionUserData& ModUserData() const;
 
         ExecutionStatePtr SharedFromThis();
 
@@ -102,7 +104,7 @@ namespace ScriptCanvas
     private:
         const RuntimeData& m_runtimeData;
         const RuntimeDataOverrides& m_overrides;
-        AZStd::any m_userData;
+        ExecutionUserData m_userData;
     };
 
 }

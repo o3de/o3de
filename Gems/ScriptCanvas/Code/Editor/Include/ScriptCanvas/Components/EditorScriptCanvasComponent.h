@@ -35,6 +35,8 @@ namespace ScriptCanvasEditor
             RefactorAssets,
             RemoveRuntimeData,
             SeparateFromConfiguration,
+            RefactorRuntime,
+
             // add description above
             Current
         };

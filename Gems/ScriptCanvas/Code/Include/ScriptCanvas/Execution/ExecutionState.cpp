@@ -28,7 +28,7 @@ namespace ExecutionStateCpp
 
 namespace ScriptCanvas
 {
-    ExecutionStateConfig::ExecutionStateConfig(const RuntimeDataOverrides& overrides, AZStd::any&& userData)
+    ExecutionStateConfig::ExecutionStateConfig(const RuntimeDataOverrides& overrides, ExecutionUserData&& userData)
         : runtimeData(overrides.m_runtimeAsset.Get()->m_runtimeData)
         , overrides(overrides)
         , userData(AZStd::move(userData))
@@ -115,14 +115,14 @@ namespace ScriptCanvas
         return m_runtimeData;
     }
 
-    const AZStd::any& ExecutionState::GetUserData() const
+    const ExecutionUserData& ExecutionState::GetUserData() const
     {
         return m_userData;
     }
 
-    AZStd::any& ExecutionState::ModUserData() const
+    ExecutionUserData& ExecutionState::ModUserData() const
     {
-        return const_cast<AZStd::any&>(m_userData);
+        return const_cast<ExecutionUserData&>(m_userData);
     }
 
     void ExecutionState::Reflect(AZ::ReflectContext* reflectContext)
@@ -136,8 +136,6 @@ namespace ScriptCanvas
                     ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                 ;
         }
-
-        ReflectExecutionStates(reflectContext);
     }
 
     ExecutionStatePtr ExecutionState::SharedFromThis()

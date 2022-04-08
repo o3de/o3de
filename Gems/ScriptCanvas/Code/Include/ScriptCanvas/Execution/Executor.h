@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Execution/ExecutionStateHandler.h>
 
 namespace AZ
 {
@@ -17,43 +18,54 @@ namespace AZ
 
 namespace ScriptCanvas
 {
-    /*
-    * Owns the ExecutionState for ScriptCanvas graphs and executes and stops it, if possible.
-    * \note this is done WITHOUT any safety checks, for example the presence of a good, loaded asset when Execute() is called.
-    * All safety checks are expected be done by systems that own the Executor class. If safety checks are desired, consider
-    * using the Interpreter class instead, which manages the execution stack from source file -> build system -> execution.
-    * 
-    * Usage:
-    * 1) Initialize()
-    * 2) Execute()
-    * 3) Stop()
-    * 4) Optional (repeat steps 1-3), Stop() and Initialize() may be required to be called before subsequent calls to Execute();
-    */
+    /**
+     * Convenience class for for containing an ExecutionStateHandler, and the RuntimeDataOverrides and Userdata that it will use.
+     * Like the ExecutionState and ExecutionStateHandler it provides no little or not safety checks, and host systems must take
+     * care to properly initialize it.
+     *       
+     * For example usage:
+     * \see Interpreter
+     * \see RuntimeComponents
+     */
     class Executor final
     {
+        enum Version
+        {
+            // This is a strict, runtime-should-be-good class. Do not version it, trigger host systems to rebuild it.
+            DoNotVersionThisClassButMakeHostSystemsRebuildIt = 0,
+        };
+
     public:
-        AZ_TYPE_INFO(Executor, "{02E0EB5F-B28E-4B95-9FF2-DEA42ECC575D}");
+        AZ_TYPE_INFO(Executor, "{0D1E4B9D-1A2C-4B9D-8364-052255BC691F}");
         AZ_CLASS_ALLOCATOR(Executor, AZ::SystemAllocator, 0);
 
-        ~Executor();
-
-        ActivationInfo CreateActivationInfo() const;
+        static void Reflect(AZ::ReflectContext* context);
 
         void Execute();
 
-        ExecutionMode GetExecutionMode() const;
+        void Initialize();
 
-        void Initialize(const RuntimeDataOverrides& overrides, AZStd::any&& userData = AZStd::any());
-
-        void InitializeAndExecute(const RuntimeDataOverrides& overrides, AZStd::any&& userData = AZStd::any());
+        void InitializeAndExecute();
 
         bool IsExecutable() const;
+
+        bool IsPure() const;
+
+        void SetRuntimeOverrides(const RuntimeDataOverrides& overrideData);
+
+        void SetUserData(const ExecutionUserData& userData);
 
         void StopAndClearExecutable();
 
         void StopAndKeepExecutable();
 
-    protected:
-        ExecutionStatePtr m_executionState;
+        void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
+
+        void TakeUserData(ExecutionUserData&& userData);
+
+    private:
+        ExecutionUserData m_userData;
+        ExecutionStateHandler m_execution;
+        RuntimeDataOverrides m_runtimeOverrides;
     };
 }

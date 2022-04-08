@@ -23,13 +23,7 @@ namespace RuntimeComponentCpp
 {
     enum class RuntimeComponentVersion : unsigned int
     {
-        ForceAssetPreloads = 5,
-        AddRuntimeDataOverrides,
-        PrefabSupport,
-        RemoveRuntimeAsset,
-
-        // add description above
-        Current,
+        DoNotVersionRuntimeComponentBumpTheEditorComponentInstead = 11,
     };
 }
 
@@ -44,7 +38,8 @@ namespace ScriptCanvas
     {
         const auto entityId = GetEntityId();
         AZ::EntityBus::Handler::BusConnect(entityId);
-        m_executor.Initialize(m_runtimeOverrides, AZStd::any(RuntimeComponentUserData(*this, entityId)));
+        m_executor.TakeUserData(ExecutionUserData(RuntimeComponentUserData(*this, entityId)));
+        m_executor.Initialize();
     }
 
     void RuntimeComponent::OnEntityActivated(const AZ::EntityId&)
@@ -59,29 +54,21 @@ namespace ScriptCanvas
 
     void RuntimeComponent::Reflect(AZ::ReflectContext* context)
     {
+        using namespace RuntimeComponentCpp;
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeComponent, AZ::Component>()
-                ->Version(static_cast<unsigned int>(RuntimeComponentCpp::RuntimeComponentVersion::Current), &RuntimeComponent::VersionConverter)
-                ->Field("runtimeOverrides", &RuntimeComponent::m_runtimeOverrides)
+                ->Version
+                    ( static_cast<unsigned int>(RuntimeComponentVersion::DoNotVersionRuntimeComponentBumpTheEditorComponentInstead))
+                ->Field("executor", &RuntimeComponent::m_executor)
                 ;
         }
     }
 
     void RuntimeComponent::TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData)
     {
-        m_runtimeOverrides = AZStd::move(overrideData);
-        m_runtimeOverrides.EnforcePreloadBehavior();
-    }
-
-    bool RuntimeComponent::VersionConverter(AZ::SerializeContext&, AZ::SerializeContext::DataElementNode& classElement)
-    {
-        if (classElement.GetVersion() < 3)
-        {
-            classElement.RemoveElementByName(AZ_CRC("m_uniqueId", 0x52157a7a));
-        }
-
-        return true;
+        m_executor.TakeRuntimeDataOverrides(AZStd::move(overrideData));
     }
 }
 

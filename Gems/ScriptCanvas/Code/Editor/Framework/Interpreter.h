@@ -67,11 +67,11 @@ namespace ScriptCanvasEditor
 
         void ResetUserData();
 
-        void SetUserData(AZStd::any&& runtimeUserData);
-
         void SetScript(SourceHandle source);
 
         void Stop();
+
+        void TakeUserData(ExecutionUserData&& runtimeUserData);
 
     private:
         Mutex m_mutex;
@@ -82,8 +82,6 @@ namespace ScriptCanvasEditor
 
         bool m_runtimePropertiesDirty = true;
         InterpreterStatus m_status = InterpreterStatus::Waiting;
-        AZStd::any m_userData;
-        ScriptCanvas::RuntimeDataOverrides m_runtimeDataOverrides;
         Configuration m_configuration;
         ScriptCanvas::Executor m_executor;
 

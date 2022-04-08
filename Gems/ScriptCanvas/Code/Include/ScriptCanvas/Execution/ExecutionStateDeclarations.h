@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/std/any.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -35,4 +36,5 @@ namespace ScriptCanvas
     
     struct ExecutionStateConfig;
 
+    using ExecutionUserData = AZStd::any;
 } 

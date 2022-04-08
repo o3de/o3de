@@ -43,8 +43,6 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* context);
 
-        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
-
         RuntimeComponent() = default;
 
         void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
@@ -64,7 +62,6 @@ namespace ScriptCanvas
         void OnEntityDeactivated(const AZ::EntityId&) override;
 
     private:
-        RuntimeDataOverrides m_runtimeOverrides;
         Executor m_executor;
     };
 }

@@ -39,7 +39,7 @@ namespace ScriptCanvasEditor
         MutexLock lock(m_mutex);
         if (m_runtimePropertiesDirty)
         {
-            m_runtimeDataOverrides = AZStd::move(ConvertToRuntime(m_configuration.GetOverrides()));
+            m_executor.TakeRuntimeDataOverrides(AZStd::move(ConvertToRuntime(m_configuration.GetOverrides())));
             m_runtimePropertiesDirty = false;
         }
     }
@@ -54,7 +54,8 @@ namespace ScriptCanvasEditor
 
                 if (m_runtimePropertiesDirty)
                 {
-                    InitializeExecution(m_runtimeDataOverrides.m_runtimeAsset);
+                    m_executor.Initialize();
+                    m_runtimePropertiesDirty = false;
                 }
 
                 if (IsExecutable())
@@ -94,12 +95,13 @@ namespace ScriptCanvasEditor
 
     bool Interpreter::InitializeExecution(ScriptCanvas::RuntimeAssetPtr asset)
     {
-        ConvertPropertiesToRuntime();
-        m_runtimeDataOverrides.m_runtimeAsset = asset;
-
-        if (m_runtimeDataOverrides.m_runtimeAsset.Get())
+        if (asset.Get())
         {
-            m_executor.Initialize(m_runtimeDataOverrides, AZStd::any(m_userData));
+            auto overrides = ConvertToRuntime(m_configuration.GetOverrides());
+            overrides.m_runtimeAsset = asset;
+            m_executor.TakeRuntimeDataOverrides(AZStd::move(overrides));
+            m_executor.Initialize();
+            m_runtimePropertiesDirty = false;
             return true;
         }
         else
@@ -186,7 +188,7 @@ namespace ScriptCanvasEditor
     void Interpreter::ResetUserData()
     {
         MutexLock lock(m_mutex);
-        m_userData = Execution::Reference(this, azrtti_typeid(this));
+        m_executor.TakeUserData(ExecutionUserData(Execution::Reference(this, azrtti_typeid(this))));
         m_runtimePropertiesDirty = true;
     }
 
@@ -194,13 +196,6 @@ namespace ScriptCanvasEditor
     {
         MutexLock lock(m_mutex);
         m_configuration.Refresh(source);
-    }
-
-    void Interpreter::SetUserData(AZStd::any&& runtimeUserData)
-    {
-        MutexLock lock(m_mutex);
-        m_userData = runtimeUserData;
-        m_runtimePropertiesDirty = true;
     }
 
     void Interpreter::SetSatus(InterpreterStatus status)
@@ -237,6 +232,13 @@ namespace ScriptCanvasEditor
         {
             SetSatus(InterpreterStatus::Pending);
         }
+    }
+
+    void Interpreter::TakeUserData(ExecutionUserData&& runtimeUserData)
+    {
+        MutexLock lock(m_mutex);
+        m_executor.TakeUserData(AZStd::move(runtimeUserData));
+        m_runtimePropertiesDirty = true;
     }
 }
 

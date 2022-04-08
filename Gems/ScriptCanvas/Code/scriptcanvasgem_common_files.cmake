@@ -68,6 +68,7 @@ set(FILES
     Include/ScriptCanvas/Execution/ExecutionObjectCloning.cpp
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.cpp
     Include/ScriptCanvas/Execution/ExecutionState.cpp
+    Include/ScriptCanvas/Execution/ExecutionStateHandler.cpp
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.cpp

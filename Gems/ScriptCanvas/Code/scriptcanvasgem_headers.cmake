@@ -98,6 +98,7 @@ set(FILES
     Include/ScriptCanvas/Execution/ExecutionObjectCloning.h
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.h
     Include/ScriptCanvas/Execution/ExecutionState.h
+    Include/ScriptCanvas/Execution/ExecutionStateHandler.h
     Include/ScriptCanvas/Execution/ExecutionStateDeclarations.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h

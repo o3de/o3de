@@ -27,6 +27,8 @@ namespace ScriptCanvas
 
         void Initialize() override;
 
+        bool IsPure() const override;
+
         void StopExecution() override;
     };
 

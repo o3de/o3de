@@ -26,6 +26,11 @@ namespace ScriptCanvas
     void ExecutionStateInterpretedPure::Initialize()
     {}
 
+    bool ExecutionStateInterpretedPure::IsPure() const
+    {
+        return true;
+    }
+
     void ExecutionStateInterpretedPure::StopExecution()
     {}
 
