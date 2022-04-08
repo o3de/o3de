@@ -24,7 +24,7 @@
 #include <ScriptCanvas/Grammar/PrimitivesExecution.h>
 #include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
-#include "GraphToLua.h"
+#include <ScriptCanvas/Translation/GraphToLua.h>
 
 namespace GraphToLuaCpp
 {
@@ -1248,7 +1248,7 @@ namespace ScriptCanvas
                     case Grammar::VariableConstructionRequirement::InputVariable:
                         m_dotLua.WriteLineIndented("%s%s = %s", leftValue.data(), variable->m_name.data(), variable->m_name.data());
                         break;
-
+                    // #scriptcanvas_component_extension
                     case Grammar::VariableConstructionRequirement::SelfEntityId:
                         if (!isSelfLocalInitialized)
                         {

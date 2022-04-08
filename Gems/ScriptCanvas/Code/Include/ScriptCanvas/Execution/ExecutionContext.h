@@ -60,20 +60,28 @@ namespace ScriptCanvas
             static void InitializeStaticCreationFunction(RuntimeData& runtimeData);
         };
 
-        struct Reference
+        class TypeErasedReference
         {
-            AZ_TYPE_INFO(Reference, "{608FD64B-EA34-45EB-9ADB-265B8A69AE00}");
-            void* const address;
-            const AZ::TypeId type;
-                           
-            Reference(void* address, const AZ::TypeId& type);
+        public:
+            AZ_TYPE_INFO(TypeErasedReference, "{608FD64B-EA34-45EB-9ADB-265B8A69AE00}");
+
+            // asserts the address is NOT nullptr
+            TypeErasedReference(void* validAddress, const AZ::TypeId& type);
+
+            void* Address() const;
 
             template<typename T>
             T* As() const
             {
-                AZ_Assert(azrtti_typeid<T>() == type, "Request to cast type other than that orginally set");
-                return reinterpret_cast<T*>(address);
+                AZ_Assert(azrtti_typeid<T>() == m_type, "Request to cast type other than that originally set");
+                return reinterpret_cast<T*>(m_address);
             }
+
+            const AZ::TypeId& Type() const;
+
+        private:
+            void* const m_address;
+            const AZ::TypeId m_type;
         };
     }
 }

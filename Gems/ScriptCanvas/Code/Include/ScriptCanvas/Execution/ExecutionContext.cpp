@@ -241,11 +241,21 @@ namespace ScriptCanvas
             Execution::InterpretedUnloadData(runtimeData);
         }
 
-        Reference::Reference(void* address, const AZ::TypeId& type)
-            : address(address)
-            , type(type)
+        TypeErasedReference::TypeErasedReference(void* address, const AZ::TypeId& type)
+            : m_address(address)
+            , m_type(type)
         {
             AZ_Assert(address, "Null address is not allowed in type erased Reference object");
+        }
+
+        void* TypeErasedReference::Address() const
+        {
+            return m_address;
+        }
+
+        const AZ::TypeId& TypeErasedReference::Type() const
+        {
+            return m_type;
         }
     }
 }

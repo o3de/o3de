@@ -197,7 +197,7 @@ namespace ScriptCanvasEditor
     void Interpreter::ResetUserData()
     {
         MutexLock lock(m_mutex);
-        m_executor.TakeUserData(ExecutionUserData(Execution::Reference(this, azrtti_typeid(this))));
+        m_executor.TakeUserData(ExecutionUserData(Execution::TypeErasedReference(this, azrtti_typeid(this))));
         m_runtimePropertiesDirty = true;
     }
 
