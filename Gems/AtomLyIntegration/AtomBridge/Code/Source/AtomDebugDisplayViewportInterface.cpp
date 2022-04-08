@@ -330,7 +330,7 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::SetColor(float r, float g, float b, float a)
+    void AtomDebugDisplayViewportInterface::SetColorF(float r, float g, float b, float a)
     {
         m_rendState.m_color = AZ::Color(r, g, b, a);
     }
@@ -340,7 +340,7 @@ namespace AZ::AtomBridge
         m_rendState.m_color = color;
     }
 
-    void AtomDebugDisplayViewportInterface::SetColor(const AZ::Vector4& color)
+    void AtomDebugDisplayViewportInterface::SetColorFromVector4(const AZ::Vector4& color)
     {
         m_rendState.m_color = AZ::Color(color);
     }

@@ -24,11 +24,15 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace Multiplayer
 {
     using namespace AzNetworking;
+    AZ_CVAR(float, editorsv_font_x, 32.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "x");
+    AZ_CVAR(float, editorsv_font_y, 24.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "y");
+    AZ_CVAR(float, editorsv_font_size, 0.7f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "size");
+
 
     AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
@@ -356,13 +360,13 @@ namespace Multiplayer
                 return;
             }
 
-            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
-
             // Launch the editor-server
             LaunchEditorServer();
         }
         
         // Keep trying to connect until the port is finally available.
+        m_viewportDebugText = "Multiplayer Editor attempting server connection...";
+        AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         m_connectionAttempts = 0;
         constexpr float retrySeconds = 1.0f;
         constexpr bool autoRequeue = true;
@@ -392,7 +396,8 @@ namespace Multiplayer
             return;
         }
 
-        AZ_Printf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
+        m_viewportDebugText = "Editor is sending the editor-server the level data packet.";
+        AZ_Printf("MultiplayerEditor", m_viewportDebugText.c_str());
 
         const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
 
@@ -470,6 +475,10 @@ namespace Multiplayer
                 "MultiplayerEditorSystemComponent", false,
                 "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
         }
+
+        AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::White);
+        AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel,
+            editorsv_font_x, editorsv_font_y, editorsv_font_size, m_viewportDebugText.c_str(), false);        
     }
 
     void MultiplayerEditorSystemComponent::Connect()
@@ -490,5 +499,4 @@ namespace Multiplayer
             SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
         }
     }
-
 }
