@@ -6,7 +6,7 @@
  *
  */
 
-#include <limits>
+#include <AzCore/std/limits.h>
 
 namespace AZ::IO
 {
@@ -42,6 +42,6 @@ namespace AZ::IO
     {
         // Leave a bit of room for requests that don't check the available space for dependencies
         // because they only add a small (usually one or two) number of dependencies.
-        return std::numeric_limits<decltype(m_dependencies)>::max() - 255;
+        return AZStd::numeric_limits<typename decltype(m_dependencies)::value_type>::max() - 255;
     }
 } // namespace AZ::IO
