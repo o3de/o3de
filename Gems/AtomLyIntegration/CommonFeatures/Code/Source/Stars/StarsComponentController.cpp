@@ -122,7 +122,7 @@ namespace AZ::Render
         UpdateStarsFromAsset(asset);
     }
 
-    void StarsComponentController::OnAssetReloaded([[maybe_unused]] Data::Asset<Data::AssetData> asset)
+    void StarsComponentController::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
     {
         UpdateStarsFromAsset(asset);
     }

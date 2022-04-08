@@ -24,6 +24,7 @@ namespace AZ::Render
     class StarsFeatureProcessor final
         : public StarsFeatureProcessorInterface
         , protected RPI::ViewportContextIdNotificationBus::Handler
+        , protected Data::AssetBus::Handler
     {
     public:
         AZ_RTTI(AZ::Render::StarsFeatureProcessor, "{34B9EE52-2893-4D02-AC19-8C5DCAFFE608}", AZ::Render::StarsFeatureProcessorInterface);
@@ -53,6 +54,9 @@ namespace AZ::Render
 
         //! RPI::ViewportContextIdNotificationBus
         void OnViewportSizeChanged(AzFramework::WindowSize size) override;
+
+        //! Data::AssetBus
+        void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
     private:
         static constexpr const char* FeatureProcessorName = "StarsFeatureProcessor";

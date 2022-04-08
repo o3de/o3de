@@ -36,6 +36,7 @@ namespace AZ::Render
     {
         const char* shaderFilePath = "Shaders/stars/stars.azshader";
         m_shader = RPI::LoadCriticalShader(shaderFilePath);
+        Data::AssetBus::Handler::BusConnect(m_shader->GetAssetId());
 
         auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
         AZ_Error("StarsFeatureProcessor", drawSrgLayout, "Failed to get the draw shader resource group layout for the stars shader.");
@@ -61,6 +62,8 @@ namespace AZ::Render
 
     void StarsFeatureProcessor::Deactivate()
     {
+        Data::AssetBus::Handler::BusDisconnect(m_shader->GetAssetId());
+
         RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
 
         DisableSceneNotification();
@@ -227,6 +230,11 @@ namespace AZ::Render
         m_updateShaderConstants = true;
     }
 
+    void StarsFeatureProcessor::OnAssetReloaded([[maybe_unused]] Data::Asset<Data::AssetData> asset)
+    {
+        UpdateDrawPacket();
+    }
+
     void StarsFeatureProcessor::UpdateBackgroundClearColor()
     {
         // This function is only necessary for now because the default clear value
@@ -246,7 +254,6 @@ namespace AZ::Render
             }
             return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
         };
-
 
         slot = "SpecularOutput";
         passFilter= RPI::PassFilter::CreateWithTemplateName(Name("ForwardPassTemplate"), GetParentScene());
