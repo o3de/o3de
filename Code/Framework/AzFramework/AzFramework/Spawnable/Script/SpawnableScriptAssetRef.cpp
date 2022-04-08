@@ -60,13 +60,11 @@ namespace AzFramework::Scripts
     SpawnableScriptAssetRef::SpawnableScriptAssetRef(const SpawnableScriptAssetRef& rhs)
         : m_asset(rhs.m_asset)
     {
-        OnSpawnAssetChanged();
     }
 
     SpawnableScriptAssetRef::SpawnableScriptAssetRef(SpawnableScriptAssetRef&& rhs)
         : m_asset(AZStd::move(rhs.m_asset))
     {
-        OnSpawnAssetChanged();
     }
 
     SpawnableScriptAssetRef& SpawnableScriptAssetRef::operator=(const SpawnableScriptAssetRef& rhs)
@@ -74,7 +72,6 @@ namespace AzFramework::Scripts
         if (this != &rhs)
         {
             m_asset = rhs.m_asset;
-            OnSpawnAssetChanged();
         }
         return *this;
     }
@@ -84,7 +81,6 @@ namespace AzFramework::Scripts
         if (this != &rhs)
         {
             m_asset = AZStd::move(rhs.m_asset);
-            OnSpawnAssetChanged();
         }
         return *this;
     }
@@ -92,7 +88,6 @@ namespace AzFramework::Scripts
     void SpawnableScriptAssetRef::SetAsset(const AZ::Data::Asset<Spawnable>& asset)
     {
         m_asset = asset;
-        OnSpawnAssetChanged();
     }
 
     AZ::Data::Asset<Spawnable> SpawnableScriptAssetRef::GetAsset() const
@@ -132,6 +127,5 @@ namespace AzFramework::Scripts
     void SpawnableScriptAssetRef::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         m_asset = asset;
-        OnSpawnAssetChanged();
     }
 }

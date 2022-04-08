@@ -11,6 +11,7 @@
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptNotificationsHandler.h>
 
+#pragma optimize ("", off)
 namespace AzFramework::Scripts
 {
     void SpawnableScriptMediator::Reflect(AZ::ReflectContext* context)
@@ -215,3 +216,4 @@ namespace AzFramework::Scripts
         }
     }
 } // namespace AzFramework::Scripts
+#pragma optimize("", on)
