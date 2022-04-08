@@ -154,11 +154,5 @@ namespace AZ
             va_end(mark);
             AZ::Debug::Platform::OutputToDebugger(nullptr, message);
         }
-
-        AZ::EnvironmentInstance Platform::GetTestRunnerEnvironment()
-        {
-            // Not currently supported
-            return nullptr;
-        }
     } // Test
 } // AZ
