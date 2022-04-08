@@ -137,7 +137,10 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    bool LevelRootUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    bool LevelRootUiHandler::OnOutlinerItemClick(
+        [[maybe_unused]] const QPoint& position,
+        [[maybe_unused]] const QStyleOptionViewItem& option,
+        [[maybe_unused]] const QModelIndex& index) const
     {
         /*
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
