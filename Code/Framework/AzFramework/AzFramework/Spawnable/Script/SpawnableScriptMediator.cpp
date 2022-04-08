@@ -214,4 +214,4 @@ namespace AzFramework::Scripts
             AZStd::visit(visitor, command);
         }
     }
-} // namespace AzFramework
+} // namespace AzFramework::Scripts

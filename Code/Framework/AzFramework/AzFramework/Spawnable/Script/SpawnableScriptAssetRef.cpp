@@ -64,7 +64,7 @@ namespace AzFramework::Scripts
     }
 
     SpawnableScriptAssetRef::SpawnableScriptAssetRef(SpawnableScriptAssetRef&& rhs)
-        : m_asset(rhs.m_asset)
+        : m_asset(AZStd::move(rhs.m_asset))
     {
         OnSpawnAssetChanged();
     }
@@ -83,7 +83,7 @@ namespace AzFramework::Scripts
     {
         if (this != &rhs)
         {
-            m_asset = rhs.m_asset;
+            m_asset = AZStd::move(rhs.m_asset);
             OnSpawnAssetChanged();
         }
         return *this;
