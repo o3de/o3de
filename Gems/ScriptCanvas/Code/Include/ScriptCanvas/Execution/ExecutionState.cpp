@@ -137,12 +137,7 @@ namespace ScriptCanvas
                 ;
         }
 
-        ExecutionStateInterpreted::Reflect(reflectContext);
-        ExecutionStateInterpretedPerActivation::Reflect(reflectContext);
-        ExecutionStateInterpretedPerActivationOnGraphStart::Reflect(reflectContext);
-        ExecutionStateInterpretedPure::Reflect(reflectContext);
-        ExecutionStateInterpretedPureOnGraphStart::Reflect(reflectContext);
-        ExecutionStateInterpretedSingleton::Reflect(reflectContext);
+        ReflectExecutionStates(reflectContext);
     }
 
     ExecutionStatePtr ExecutionState::SharedFromThis()

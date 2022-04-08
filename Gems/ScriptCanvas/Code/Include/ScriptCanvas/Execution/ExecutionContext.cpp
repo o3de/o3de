@@ -42,6 +42,16 @@ namespace ExecutionContextCpp
 
 namespace ScriptCanvas
 {
+    void ReflectExecutionStates(AZ::ReflectContext* reflectContext)
+    {
+        ExecutionStateInterpreted::Reflect(reflectContext);
+        ExecutionStateInterpretedPerActivation::Reflect(reflectContext);
+        ExecutionStateInterpretedPerActivationOnGraphStart::Reflect(reflectContext);
+        ExecutionStateInterpretedPure::Reflect(reflectContext);
+        ExecutionStateInterpretedPureOnGraphStart::Reflect(reflectContext);
+        ExecutionStateInterpretedSingleton::Reflect(reflectContext);
+    }
+
     namespace Execution
     {
         ActivationData::ActivationData(const RuntimeDataOverrides& variableOverrides, ActivationInputArray& storage)

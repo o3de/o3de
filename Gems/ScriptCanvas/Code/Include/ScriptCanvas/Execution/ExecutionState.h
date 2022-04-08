@@ -46,7 +46,7 @@ namespace ScriptCanvas
         : public AZStd::enable_shared_from_this<ExecutionState>
     {
     public:
-        AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}", AZStd::enable_shared_from_this<ExecutionState>);
+        AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}");
         AZ_CLASS_ALLOCATOR(ExecutionState, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
