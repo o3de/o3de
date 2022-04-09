@@ -204,7 +204,7 @@ namespace ScriptCanvasEditor
         // Temporarily disable testing on the Linux build until the file name casing discrepancy
         // is sorted out through the SC build and testing pipeline.
     public:
-        inline MarkLinuxDependencyTestBypass()
+        inline void MarkLinuxDependencyTestBypass()
         {
             m_graphIsCompiled = true;
             m_graphIsActivated = true;
