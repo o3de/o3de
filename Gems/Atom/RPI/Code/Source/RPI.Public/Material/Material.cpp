@@ -607,7 +607,12 @@ namespace AZ
 
                 if (assetInfo.m_assetId.IsValid())
                 {
-                    assetType = assetInfo.m_assetType;
+                    if (assetType != imageAsset.GetType())
+                    {
+                        AZ_Assert(false, "Wrong asset type with input asset");
+                        // Correct the asset type
+                        assetType = assetInfo.m_assetType;
+                    }
                 }
 
                 Data::Instance<Image> image = nullptr;
