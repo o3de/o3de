@@ -1750,13 +1750,11 @@ namespace ScriptCanvasEditor
             ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset;
             int currentTabIndex = m_tabBar->currentIndex();
 
-            AZ::Data::AssetId oldId = fileAssetId.Id();
             AZ::Data::AssetInfo assetInfo;
             assetInfo.m_assetId = fileAssetId.Id();
             AZ_VerifyWarning("ScriptCanvas", AssetHelpers::GetAssetInfo(fileAssetId.Path().c_str(), assetInfo)
                 , "Failed to find asset info for source file just saved: %s", fileAssetId.Path().c_str());
 
-            const bool assetIdHasChanged = assetInfo.m_assetId.m_guid != fileAssetId.Id();
             fileAssetId = SourceHandle(fileAssetId, assetInfo.m_assetId.m_guid, fileAssetId.Path());
 
             // this path is questionable, this is a save request that is not the current graph
@@ -1770,8 +1768,7 @@ namespace ScriptCanvasEditor
             }
 
             AzFramework::StringFunc::Path::GetFileName(memoryAsset.Path().c_str(), tabName);
-
-            
+                        
             if (tabName.at(tabName.size() - 1) == '*' || tabName.at(tabName.size() - 1) == '^')
             {
                 tabName = tabName.substr(0, tabName.size() - 2);

@@ -13,6 +13,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <Editor/Framework/Interpreter.h>
 #include <QtWidgets/QWidget>
 #endif
 
@@ -22,20 +23,19 @@ namespace AzToolsFramework
     class InstanceDataNode;
 }
 
-namespace Ui
-{
-    class InterpreterWidget;
-}
-
 namespace AZ
 {
     class SerializeContext;
 }
 
+namespace Ui
+{
+    class InterpreterWidget;
+}
+
 namespace ScriptCanvasEditor
 {
     class Configuration;
-    class Interpreter;
 
     class InterpreterWidget final
         : public AzQtComponents::StyledDialog
@@ -51,9 +51,11 @@ namespace ScriptCanvasEditor
 
         explicit InterpreterWidget(QWidget* parent = nullptr);
 
+        ~InterpreterWidget() override;
+
     private:
         AZStd::unique_ptr<Interpreter> m_interpreter;
-        AZStd::unique_ptr<Ui::InterpreterWidget> m_view;
+        Ui::InterpreterWidget* m_view = nullptr;
         AZ::EventHandler<const Interpreter&> m_onIterpreterStatusChanged;
         AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
 

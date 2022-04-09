@@ -7,7 +7,6 @@
  */
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <Editor/Framework/Interpreter.h>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
 #include <Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h>
@@ -77,6 +76,11 @@ namespace ScriptCanvasEditor
 
         // initialized status window and enabled setting for buttons
         OnInterpreterStatusChanged(*m_interpreter); 
+    }
+
+    InterpreterWidget::~InterpreterWidget()
+    {
+        delete m_view;
     }
 
     void InterpreterWidget::OnButtonStartPressed()
