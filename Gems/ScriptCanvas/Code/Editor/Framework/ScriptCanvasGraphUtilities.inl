@@ -221,16 +221,9 @@ namespace ScriptCanvasEditor
                         runtimeDataOverrides.m_runtimeAsset.Get()->m_runtimeData.m_script.SetHint("original");
 
 #if defined(LINUX) //////////////////////////////////////////////////////////////////////////
-                        // Temporarily disable testing on the Linux build until the file name casing discrepancy
-                        // is sorted out through the SC build and testing pipeline.
                         if (!luaAssetResult.m_dependencies.source.userSubgraphs.empty())
                         {
-                            auto graphEntityId = AZ::Entity::MakeId();
-                            reporter.SetGraph(graphEntityId);
-                            loadResult.m_entity->Activate();
-                            ScriptCanvas::UnitTesting::EventSender::MarkComplete(graphEntityId, "");
-                            loadResult.m_entity->Deactivate();
-                            reporter.FinishReport();
+                            reporter.MarkLinuxDependencyTestBypass();
                             ScriptCanvas::SystemRequestBus::Broadcast(&ScriptCanvas::SystemRequests::MarkScriptUnitTestEnd);
                             return;
                         }
