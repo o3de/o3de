@@ -28,8 +28,6 @@ namespace ScriptCanvas
         RuntimeData::Reflect(context);
         RuntimeDataOverrides::Reflect(context);
         SubgraphInterfaceData::Reflect(context);
-        ExecutionState::Reflect(context);
-        ReflectExecutionStates(context);
         Executor::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

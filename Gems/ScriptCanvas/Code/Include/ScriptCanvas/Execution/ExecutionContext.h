@@ -17,8 +17,6 @@ namespace ScriptCanvas
     struct RuntimeData;
     struct RuntimeDataOverrides;
 
-    void ReflectExecutionStates(AZ::ReflectContext* reflectContext);
-
     namespace Execution
     {
         using ActivationInputArray = AZStd::array<AZ::BehaviorValueParameter, 128>;

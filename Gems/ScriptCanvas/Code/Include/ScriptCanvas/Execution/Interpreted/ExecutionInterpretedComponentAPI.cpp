@@ -6,25 +6,25 @@
  *
  */
 
-#include "ExecutionInterpretedComponentAPI.h"
 
 #include <AzCore/Script/lua/lua.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
-
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 #include "ExecutionInterpretedDebugAPI.h"
 #include "ExecutionInterpretedEBusAPI.h"
 #include "ExecutionInterpretedOut.h"
+
+#include "ExecutionInterpretedComponentAPI.h"
 
 namespace ScriptCanvas
 {
     namespace Execution
     {
-        // \todo do a sanity check at compile(?) usage time for any graph NOT being used properly (that is, not by a component)
         int GetSelfEntityId(lua_State* lua)
         {
             // Lua: executionState
-            auto executionState = AZ::ScriptValue<ExecutionState*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             auto reference = AZStd::any_cast<const RuntimeComponentUserData>(&executionState->GetUserData());
             AZ::ScriptValue<AZ::EntityId>::StackPush(lua, reference->entity);
             // Lua: executionState, entityId

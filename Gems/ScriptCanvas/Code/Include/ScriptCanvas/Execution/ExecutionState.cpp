@@ -7,11 +7,10 @@
  */
 
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 
-#include "ExecutionState.h"
+#include <ScriptCanvas/Execution/ExecutionState.h>
 
 namespace ExecutionStateCpp
 {
@@ -125,27 +124,14 @@ namespace ScriptCanvas
         return const_cast<ExecutionUserData&>(m_userData);
     }
 
-    void ExecutionState::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
-        {
-            behaviorContext->Class<ExecutionState>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
-                ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
-                ->Method("ToString", &ExecutionState::ToString)
-                    ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
-                ;
-        }
-    }
-
     ExecutionStatePtr ExecutionState::SharedFromThis()
     {
-        return shared_from_this();
+        return this;
     }
 
     ExecutionStateConstPtr ExecutionState::SharedFromThisConst() const
     {
-        return shared_from_this();
+        return this;
     }
 
     AZStd::string ExecutionState::ToString() const
@@ -162,5 +148,4 @@ namespace ScriptCanvas
     {
         return ExecutionStateWeakConstPtr(this);
     }
-
 }

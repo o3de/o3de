@@ -26,7 +26,7 @@ namespace ScriptCanvas
 
     ActivationInfo ExecutionStateHandler::CreateActivationInfo() const
     {
-        return ActivationInfo(GraphInfo(m_executionState.get()));
+        return ActivationInfo(GraphInfo(m_executionState));
     }
 
     void ExecutionStateHandler::Execute()
@@ -43,7 +43,7 @@ namespace ScriptCanvas
         AZ_PROFILE_SCOPE(ScriptCanvas, "ExecutionStateHandler::Execute (%s)"
             , m_executionState->GetRuntimeDataOverrides().m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         SC_EXECUTION_TRACE_GRAPH_ACTIVATED(CreateActivationInfo());
-        SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(m_executionState.get());
+        SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(m_executionState);
         m_executionState->Execute();
     }
 
@@ -101,7 +101,7 @@ namespace ScriptCanvas
             , overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
 #endif // defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
 
-        SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(m_executionState.get());
+        SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(m_executionState);
         m_executionState->Initialize();
     }
 
@@ -126,8 +126,9 @@ namespace ScriptCanvas
         if (m_executionState)
         {
             m_executionState->StopExecution();
-            SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState.get());
+            SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
             SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
+            delete m_executionState;
             m_executionState = nullptr;
         }
     }
@@ -136,7 +137,7 @@ namespace ScriptCanvas
         if (m_executionState)
         {
             m_executionState->StopExecution();
-            SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState.get());
+            SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
             SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
         }
     }

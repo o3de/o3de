@@ -6,14 +6,12 @@
  *
  */
 
-#include "ExecutionStateInterpretedPerActivation.h"
-
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/lua/lua.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPerActivation.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
-
-#include "Execution/Interpreted/ExecutionInterpretedAPI.h"
-#include "Execution/RuntimeComponent.h"
 
 namespace ScriptCanvas
 {
@@ -43,8 +41,8 @@ namespace ScriptCanvas
         // Lua: graph_VM
         lua_getfield(lua, -1, "new");
         // Lua: graph_VM, graph_VM['new']
-        AZ::Internal::LuaClassToStack(lua, this, azrtti_typeid<ExecutionStateInterpretedPerActivation>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::None);
-        // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>
+        Execution::ExecutionStatePush(lua, this);
+        // Lua: graph_VM, graph_VM['new'], executionState
         Execution::ActivationInputArray storage;
         Execution::ActivationData data(GetRuntimeDataOverrides(), storage);
         Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
@@ -53,15 +51,15 @@ namespace ScriptCanvas
         {
             AZ_Assert(!data.variableOverrides.m_dependencies.empty(), "dependencies are empty or null, check the processing of this asset");
             lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&data.variableOverrides.m_dependencies)));
-            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, runtimeDataOverrides
+            // Lua: graph_VM, graph_VM['new'], executionState, runtimeDataOverrides
             Execution::PushActivationArgs(lua, range.inputs, range.totalCount);
-            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, runtimeDataOverrides, args...
+            // Lua: graph_VM, graph_VM['new'], executionState, runtimeDataOverrides, args...
             AZ::Internal::LuaSafeCall(lua, aznumeric_caster(2 + range.totalCount), 1);
         }
         else
         {
             Execution::PushActivationArgs(lua, range.inputs, range.totalCount);
-            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, args...
+            // Lua: graph_VM, graph_VM['new'], executionState, args...
             AZ::Internal::LuaSafeCall(lua, aznumeric_caster(1 + range.totalCount), 1);
         }
 
@@ -90,15 +88,6 @@ namespace ScriptCanvas
         AZ::Internal::azlua_pop(lua, 1);
         // Lua:
         m_deactivationRequired = false;
-    }
-
-    void ExecutionStateInterpretedPerActivation::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
-        {
-            behaviorContext->Class<ExecutionStateInterpretedPerActivation>()
-                ;
-        }
     }
 
     ExecutionStateInterpretedPerActivationOnGraphStart::ExecutionStateInterpretedPerActivationOnGraphStart(ExecutionStateConfig& config)
@@ -131,14 +120,5 @@ namespace ScriptCanvas
         }
         // Lua:
         m_deactivationRequired = true;
-    }
-
-    void ExecutionStateInterpretedPerActivationOnGraphStart::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
-        {
-            behaviorContext->Class<ExecutionStateInterpretedPerActivationOnGraphStart>()
-                ;
-        }
     }
 }

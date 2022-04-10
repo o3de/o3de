@@ -18,6 +18,7 @@
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
 #include "ExecutionInterpretedOut.h"
@@ -56,7 +57,7 @@ namespace ScriptCanvas
         int EBusHandlerCreate(lua_State* lua)
         {
             // Lua: executionState, (event name) string
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             auto ebusName = AZ::ScriptValue<const char*>::StackRead(lua, 2);
             EBusHandler* ebusHandler = aznew EBusHandler(executionState->WeakFromThis(), ebusName, AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext());
             AZ::Internal::LuaClassToStack(lua, ebusHandler, azrtti_typeid<EBusHandler>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::ScriptAcquire);
@@ -67,7 +68,7 @@ namespace ScriptCanvas
         int EBusHandlerCreateAndConnect(lua_State* lua)
         {
             // Lua: executionState, (event name) string,
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             auto ebusName = AZ::ScriptValue<const char*>::StackRead(lua, 2);
             EBusHandler* ebusHandler = aznew EBusHandler(executionState->WeakFromThis(), ebusName, AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext());
             ebusHandler->Connect();
@@ -79,7 +80,7 @@ namespace ScriptCanvas
         int EBusHandlerCreateAndConnectTo(lua_State* lua)
         {
             // Lua: executionState, (ebus name) string, (address aztypeid) string, (address) ?
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             auto ebusName = AZ::ScriptValue<const char*>::StackRead(lua, 2);
             EBusHandler* ebusHandler = aznew EBusHandler(executionState->WeakFromThis(), ebusName, AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext());
             const char* aztypeidStr = AZ::ScriptValue<const char*>::StackRead(lua, 3);

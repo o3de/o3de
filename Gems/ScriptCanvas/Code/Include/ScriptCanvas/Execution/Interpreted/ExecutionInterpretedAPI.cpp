@@ -16,6 +16,7 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
@@ -558,7 +559,7 @@ namespace ScriptCanvas
 
         struct DependencyConstructionPack
         {
-            ExecutionStateInterpreted* executionState;
+            ExecutionState* executionState;
             AZStd::vector<RuntimeDataOverrides>* dependencies;
             const size_t dependenciesIndex;
             RuntimeDataOverrides& runtimeOverrides;
@@ -566,7 +567,7 @@ namespace ScriptCanvas
 
         DependencyConstructionPack UnpackDependencyConstructionArgsSanitize(lua_State* lua)
         {
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             AZ_Assert(executionState, "Error in compiled lua file, 1st argument to UnpackDependencyArgs is not an ExecutionStateInterpreted");
             AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
             auto dependentOverrides = reinterpret_cast<AZStd::vector<RuntimeDataOverrides>*>(lua_touserdata(lua, 2));

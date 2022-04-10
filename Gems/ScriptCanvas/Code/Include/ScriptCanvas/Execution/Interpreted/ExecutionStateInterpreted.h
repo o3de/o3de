@@ -18,18 +18,12 @@ struct lua_State;
 
 namespace ScriptCanvas
 {
-    constexpr const AZ::u32 ExecutionStateInterpretedUserDataMark = AZ_CRC_CE("ExecutionStateInterpretedUserDataMark");
-
     class ExecutionStateInterpreted
         : public ExecutionState
     {
     public:
         AZ_RTTI(ExecutionStateInterpreted, "{824E3CF1-5403-4AF7-AC5F-B69699FFF669}", ExecutionState);
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpreted, AZ::SystemAllocator, 0);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        const AZ::u32 m_lightUserDataMark = ExecutionStateInterpretedUserDataMark;
 
         ExecutionStateInterpreted(ExecutionStateConfig& config);
 
@@ -39,6 +33,8 @@ namespace ScriptCanvas
 
         int GetLuaRegistryIndex() const;
 
+        // \todo rename these...these all refer to the wrong thing now. it's not the execution state,
+        // it's the user object, if one is created, move to the non-pure functionality
         void ReferenceExecutionState();
 
         void ReleaseExecutionState();

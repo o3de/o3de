@@ -59,6 +59,7 @@ namespace ScriptCanvas
         void StopAndKeepExecutable();
 
     protected:
+        // \todo allocate static space under a union of all possible derived types, and pass it into construction call
         ExecutionStatePtr m_executionState;
     };
 }

@@ -8,16 +8,13 @@
 
 #pragma once
 
-#include <AzCore/Component/EntityId.h>
-#include <AzCore/EBus/Event.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Script/ScriptAsset.h>
-
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
+#include <ScriptCanvas/Grammar/DebugMap.h>
 
 #if !defined(_RELEASE)
 #define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
@@ -32,6 +29,11 @@ namespace ScriptCanvas
 {
     class RuntimeComponent;
 
+    struct RuntimeData;
+    struct RuntimeDataOverrides;
+
+    constexpr const AZ::u32 UserDataMark = AZ_CRC_CE("UserDataMark");
+
     struct ExecutionStateConfig
     {
         const RuntimeData& runtimeData;
@@ -43,13 +45,12 @@ namespace ScriptCanvas
     };
 
     class ExecutionState
-        : public AZStd::enable_shared_from_this<ExecutionState>
     {
     public:
         AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}");
         AZ_CLASS_ALLOCATOR(ExecutionState, AZ::SystemAllocator, 0);
 
-        static void Reflect(AZ::ReflectContext* reflectContext);
+        const AZ::u32 m_lightUserDataMark = UserDataMark;
 
         ExecutionState(ExecutionStateConfig& config);
 

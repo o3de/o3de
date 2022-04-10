@@ -77,6 +77,7 @@ set(FILES
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedEBusAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedOut.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.cpp
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPerActivation.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPure.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.cpp

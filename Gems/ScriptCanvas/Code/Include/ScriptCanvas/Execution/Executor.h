@@ -32,7 +32,7 @@ namespace ScriptCanvas
     {
         enum Version
         {
-            // This is a strict, runtime-should-be-good class. Do not version it, trigger host systems to rebuild it.
+            // This is a strict, runtime-should-be-good class. Do not version it; trigger host systems to rebuild it.
             DoNotVersionThisClassButMakeHostSystemsRebuildIt = 0,
         };
 

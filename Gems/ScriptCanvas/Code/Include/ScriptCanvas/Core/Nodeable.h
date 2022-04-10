@@ -9,9 +9,10 @@
 #pragma once
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <ScriptCanvas/Core/Node.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
 
 #include "NodeableOut.h"
-#include <ScriptCanvas/Execution/ExecutionState.h>
 
 namespace AZ
 {

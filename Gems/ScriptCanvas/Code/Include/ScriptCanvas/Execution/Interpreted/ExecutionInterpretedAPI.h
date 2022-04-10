@@ -76,6 +76,5 @@ namespace ScriptCanvas
         // Lua: executionState, dependentAssets, dependentAssetsIndex
         // leaves  all the construction args at the top of the stack
         int UnpackDependencyConstructionArgsLeaf(lua_State* lua);
-    } 
-
-} 
+    }
+}

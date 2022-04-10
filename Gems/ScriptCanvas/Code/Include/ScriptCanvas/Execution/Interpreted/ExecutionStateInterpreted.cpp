@@ -76,17 +76,6 @@ namespace ScriptCanvas
         AZ_Assert(m_luaRegistryIndex != LUA_NOREF, "ExecutionStateInterpreted failed to gain a reference");
     }
 
-    void ExecutionStateInterpreted::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
-        {
-            behaviorContext->Class<ExecutionStateInterpreted>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
-                ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
-                ;
-        }
-    }
-
     void ExecutionStateInterpreted::ReleaseExecutionState()
     {
         if (m_luaRegistryIndex != LUA_NOREF)

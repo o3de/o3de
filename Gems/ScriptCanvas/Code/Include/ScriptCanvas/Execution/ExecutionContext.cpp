@@ -42,16 +42,6 @@ namespace ExecutionContextCpp
 
 namespace ScriptCanvas
 {
-    void ReflectExecutionStates(AZ::ReflectContext* reflectContext)
-    {
-        ExecutionStateInterpreted::Reflect(reflectContext);
-        ExecutionStateInterpretedPerActivation::Reflect(reflectContext);
-        ExecutionStateInterpretedPerActivationOnGraphStart::Reflect(reflectContext);
-        ExecutionStateInterpretedPure::Reflect(reflectContext);
-        ExecutionStateInterpretedPureOnGraphStart::Reflect(reflectContext);
-        ExecutionStateInterpretedSingleton::Reflect(reflectContext);
-    }
-
     namespace Execution
     {
         ActivationData::ActivationData(const RuntimeDataOverrides& variableOverrides, ActivationInputArray& storage)
@@ -210,22 +200,22 @@ namespace ScriptCanvas
             {
             case Grammar::ExecutionStateSelection::InterpretedPure:
                 runtimeData.m_createExecution =
-                    [](ExecutionStateConfig& config) { return AZStd::make_shared<ExecutionStateInterpretedPure>(config); };
+                    [](ExecutionStateConfig& config) { return aznew ExecutionStateInterpretedPure(config); };
                 break;
 
             case Grammar::ExecutionStateSelection::InterpretedPureOnGraphStart:
                 runtimeData.m_createExecution =
-                    [](ExecutionStateConfig& config) { return AZStd::make_shared<ExecutionStateInterpretedPureOnGraphStart>(config); };
+                    [](ExecutionStateConfig& config) { return aznew ExecutionStateInterpretedPureOnGraphStart(config); };
                 break;
 
             case Grammar::ExecutionStateSelection::InterpretedObject:
                 runtimeData.m_createExecution =
-                    [](ExecutionStateConfig& config) { return AZStd::make_shared<ExecutionStateInterpretedPerActivation>(config); };
+                    [](ExecutionStateConfig& config) { return aznew ExecutionStateInterpretedPerActivation(config); };
                 break;
 
             case Grammar::ExecutionStateSelection::InterpretedObjectOnGraphStart:
                 runtimeData.m_createExecution =
-                    [](ExecutionStateConfig& config) { return AZStd::make_shared<ExecutionStateInterpretedPerActivationOnGraphStart>(config); };
+                    [](ExecutionStateConfig& config) { return aznew ExecutionStateInterpretedPerActivationOnGraphStart(config); };
                 break;
 
             default:

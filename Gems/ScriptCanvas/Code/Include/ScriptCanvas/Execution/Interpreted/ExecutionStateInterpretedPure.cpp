@@ -10,6 +10,7 @@
 
 #include <AzCore/Script/ScriptContext.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 
 #include "Execution/Interpreted/ExecutionInterpretedAPI.h"
 #include "Execution/RuntimeComponent.h"
@@ -34,15 +35,6 @@ namespace ScriptCanvas
     void ExecutionStateInterpretedPure::StopExecution()
     {}
 
-    void ExecutionStateInterpretedPure::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
-        {
-            behaviorContext->Class<ExecutionStateInterpretedPure>()
-                ;
-        }
-    }
-
     ExecutionStateInterpretedPureOnGraphStart::ExecutionStateInterpretedPureOnGraphStart(ExecutionStateConfig& config)
         : ExecutionStateInterpretedPure(config)
     {}
@@ -55,13 +47,13 @@ namespace ScriptCanvas
         // Lua: graph_VM
         AZ::Internal::azlua_getfield(lua, -1, Grammar::k_OnGraphStartFunctionName);
         // Lua: graph_VM, graph_VM['k_OnGraphStartFunctionName']
-        AZ::Internal::LuaClassToStack(lua, this, azrtti_typeid<ExecutionStateInterpretedPureOnGraphStart>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::None);
-        // Lua: graph_VM, graph_VM['k_OnGraphStartFunctionName'], userdata<ExecutionState>
+        Execution::ExecutionStatePush(lua, this);
+        // Lua: graph_VM, graph_VM['k_OnGraphStartFunctionName'], executionState
         Execution::ActivationInputArray storage;
         Execution::ActivationData data(GetRuntimeDataOverrides(), storage);
         Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
         Execution::PushActivationArgs(lua, range.inputs, range.totalCount);
-        // Lua: graph_VM, graph_VM['k_OnGraphStartFunctionName'], userdata<ExecutionState>, args...
+        // Lua: graph_VM, graph_VM['k_OnGraphStartFunctionName'], executionState, args...
         const int result = Execution::InterpretedSafeCall(lua, aznumeric_caster(1 + range.totalCount), 0);
         // Lua: graph_VM, ?
         if (result == LUA_OK)
@@ -73,15 +65,6 @@ namespace ScriptCanvas
         {
             // Lua: graph_VM, error
             lua_pop(lua, 2);
-        }
-    }
-
-    void ExecutionStateInterpretedPureOnGraphStart::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
-        {
-            behaviorContext->Class<ExecutionStateInterpretedPureOnGraphStart>()
-                ;
         }
     }
 }

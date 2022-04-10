@@ -18,9 +18,7 @@ namespace ScriptCanvas
     public:
         AZ_RTTI(ExecutionStateInterpretedPerActivation, "{79BFC45F-2487-456A-9599-3D43CFEABD14}", ExecutionStateInterpreted);
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPerActivation, AZ::SystemAllocator, 0);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-        
+                
         ExecutionStateInterpretedPerActivation(ExecutionStateConfig& config);
             
         ~ExecutionStateInterpretedPerActivation() override;
@@ -41,8 +39,6 @@ namespace ScriptCanvas
     public:
         AZ_RTTI(ExecutionStateInterpretedPerActivationOnGraphStart, "{039AA0BF-C179-4F9C-A7CD-248F24453C4B}", ExecutionStateInterpretedPerActivation);
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPerActivation, AZ::SystemAllocator, 0);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
 
         ExecutionStateInterpretedPerActivationOnGraphStart(ExecutionStateConfig& config);
 
