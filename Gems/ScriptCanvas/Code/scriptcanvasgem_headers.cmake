@@ -109,7 +109,7 @@ set(FILES
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedEBusAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedOut.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h
-    Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedApi.h
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPerActivation.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPure.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.h
