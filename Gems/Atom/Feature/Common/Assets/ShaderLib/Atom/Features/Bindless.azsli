@@ -27,6 +27,7 @@ partial ShaderResourceGroup Bindless : SRG_Bindless
     RWTexture2D<float4> m_RWTexture2D[];
     ByteAddressBuffer m_ByteAddressBuffer[];
     RWByteAddressBuffer m_RWByteAddressBuffer[];
+    RaytracingAccelerationStructure m_TLAS[];
 
     Texture2D<float4> GetTexture2D(uint index)
     {
@@ -46,5 +47,10 @@ partial ShaderResourceGroup Bindless : SRG_Bindless
     RWByteAddressBuffer GetRWByteAddressBuffer(uint index)
     {
         return m_RWByteAddressBuffer[index];
+    }
+
+    RaytracingAccelerationStructure GetTLAS(uint index)
+    {
+        return m_TLAS[index];
     }
 };

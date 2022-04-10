@@ -351,7 +351,9 @@ namespace AZ
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
                 m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                // m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                // TODO(BINDLESS): We aren't allowed to let the descriptor count be variable for multiple bindings in a set
+                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
 
                 vbinding.binding = desc.m_registerId;
                 switch (desc.m_access)
@@ -392,7 +394,9 @@ namespace AZ
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
                 m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                // TODO(BINDLESS): We aren't allowed to let the descriptor count be variable for multiple bindings in a set
+                // m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
 
                 vbinding.binding = desc.m_registerId;
                 switch (desc.m_access)

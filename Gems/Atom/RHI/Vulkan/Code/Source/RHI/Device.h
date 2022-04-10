@@ -38,6 +38,8 @@
 #include <RHI/Sampler.h>
 #include <RHI/SemaphoreAllocator.h>
 
+#include "BindlessDescriptorPool.h"
+
 namespace AZ
 {
     namespace Vulkan
@@ -86,6 +88,8 @@ namespace AZ
             const AZStd::vector<VkQueueFamilyProperties>& GetQueueFamilyProperties() const;
 
             AsyncUploadQueue& GetAsyncUploadQueue();
+
+            BindlessDescriptorPool& GetBindlessDescriptorPool();
 
             RHI::Ptr<Buffer> AcquireStagingBuffer(AZStd::size_t byteCount);
 
@@ -187,6 +191,8 @@ namespace AZ
             RHI::ThreadLocalContext<AZStd::lru_cache<uint64_t, VkMemoryRequirements>> m_bufferMemoryRequirementsCache;
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
+
+            BindlessDescriptorPool m_bindlessDescriptorPool;
         };
 
         template<typename ObjectType, typename ...Args>

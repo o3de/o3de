@@ -54,6 +54,11 @@ namespace AZ
                 return 0xffffffff;
             }
 
+            virtual uint32_t GetBindlessTLASIndex() const
+            {
+                return 0xffffffff;
+            }
+
         protected:
             HashValue64 m_hash = HashValue64{ 0 };
 

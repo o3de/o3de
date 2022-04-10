@@ -35,6 +35,10 @@ namespace AZ
             const RHI::ImageSubresourceRange& GetImageSubresourceRange() const;
             const VkImageSubresourceRange& GetVkImageSubresourceRange() const;
 
+            uint32_t GetBindlessReadIndex() const override;
+
+            uint32_t GetBindlessReadWriteIndex() const override;
+
         private:
             ImageView() = default;
 
@@ -57,6 +61,9 @@ namespace AZ
             RHI::Format m_format = RHI::Format::Unknown;
             RHI::ImageSubresourceRange m_imageSubresourceRange;
             VkImageSubresourceRange m_vkImageSubResourceRange;
+
+            uint32_t m_readIndex = ~0u;
+            uint32_t m_readWriteIndex = ~0u;
         };
     }
 }
