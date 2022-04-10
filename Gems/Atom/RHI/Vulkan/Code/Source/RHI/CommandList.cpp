@@ -898,14 +898,19 @@ namespace AZ
                     shaderResourceGroup = shaderResourceGroupList.front();
                 }
                 
-                if (shaderResourceGroup == nullptr)
-                {
-                    AZ_Assert(false, "Shader resource group in descriptor set index %d is null.", index);
-                    continue;
-                }
+                VkDescriptorSet vkDescriptorSet;
 
-                auto& compiledData = shaderResourceGroup->GetCompiledData();
-                VkDescriptorSet vkDescriptorSet = compiledData.GetNativeDescriptorSet();
+                if (shaderResourceGroup)
+                {
+                    AZ_Assert(shaderResourceGroup, "Shader resource group in descriptor set index %d is null.", index);
+                    auto& compiledData = shaderResourceGroup->GetCompiledData();
+                    vkDescriptorSet = compiledData.GetNativeDescriptorSet();
+                }
+                else
+                {
+                    // TODO(BINDLESS): Come up with a better mechanism for this
+                    vkDescriptorSet = m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet();
+                }
 
                 if (bindings.m_descriptorSets[index] != vkDescriptorSet)
                 {
