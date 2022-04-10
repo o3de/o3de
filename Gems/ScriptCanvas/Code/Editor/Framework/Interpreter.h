@@ -26,6 +26,7 @@ namespace ScriptCanvasEditor
     AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(InterpreterStatus, AZ::u8,
         Waiting,            // no configuration
         Misconfigured,      // configuration error
+        Incompatible,       // source is incompatible with with interpreter settings
         Configured,         // configuration is good
         Pending,            // waiting for asset readiness
         Ready,              // asset ready
@@ -64,6 +65,8 @@ namespace ScriptCanvasEditor
 
         bool IsExecutable() const;
 
+        Configuration& ModConfiguration();
+
         void RefreshConfiguration();
 
         void ResetUserData();
@@ -79,6 +82,9 @@ namespace ScriptCanvasEditor
         AZ::EventHandler<const Configuration&> m_handlerPropertiesChanged;
         AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
         AZ::EventHandler<const Configuration&> m_handlerSourceFailed;
+        // #scriptcanvas_component_extension...
+        AZ::EventHandler<const Configuration&> m_handlerUnacceptedComponentScript;
+
         mutable AZ::Event<const Interpreter&> m_onStatusChanged;
 
         bool m_runtimePropertiesDirty = true;
@@ -99,6 +105,8 @@ namespace ScriptCanvasEditor
         void OnSourceCompiled();
 
         void OnSourceFailed();
+
+        void OnSourceIncompatible();
 
         void SetSatus(InterpreterStatus status);
     };

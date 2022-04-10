@@ -18,6 +18,8 @@ struct lua_State;
 
 namespace ScriptCanvas
 {
+    constexpr const AZ::u32 ExecutionStateInterpretedUserDataMark = AZ_CRC_CE("ExecutionStateInterpretedUserDataMark");
+
     class ExecutionStateInterpreted
         : public ExecutionState
     {
@@ -26,6 +28,8 @@ namespace ScriptCanvas
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpreted, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
+
+        const AZ::u32 m_lightUserDataMark = ExecutionStateInterpretedUserDataMark;
 
         ExecutionStateInterpreted(ExecutionStateConfig& config);
 

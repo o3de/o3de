@@ -71,25 +71,24 @@ namespace ScriptCanvasEditor
 
     const ScriptCanvasBuilder::BuildVariableOverrides* Configuration::CompileLatest()
     {
+        return CompileLatestInternal() == BuildStatusValidation::Good ? &m_propertyOverrides : nullptr;
+    }
+
+    Configuration::BuildStatusValidation Configuration::CompileLatestInternal()
+    {
         ScriptCanvasBuilder::BuilderSourceResult result;
         ScriptCanvasBuilder::DataSystemSourceRequestsBus::BroadcastResult
             ( result
             , &ScriptCanvasBuilder::DataSystemSourceRequests::CompileBuilderData
             , m_sourceHandle);
 
-        if (result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
+        const auto validation = ValidateBuildResult(result);
+        if (validation == BuildStatusValidation::Good)
         {
             MergeWithLatestCompilation(*result.data);
-            return &m_propertyOverrides;
         }
-        else
-        {
-            AZ_Error
-                ( "ScriptCanvas"
-                , !(result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
-                , "Configuration::CompileLatest received good status with no data");
-            return nullptr;
-        }
+
+        return validation;
     }
 
     void Configuration::ConnectToPropertiesChanged(AZ::EventHandler<const Configuration&>& handler) const
@@ -222,9 +221,16 @@ namespace ScriptCanvasEditor
 
             if (!m_sourceHandle.Path().empty())
             {
-                if (CompileLatest())
+                const auto validation = CompileLatestInternal();
+                if (validation == BuildStatusValidation::Good)
                 {
                     m_eventSourceCompiled.Signal(*this);
+                    return;
+                }
+                else if (validation == BuildStatusValidation::IncompatibleScript)
+                {
+                    AZ_Error("ScriptCanvas", false, "Selected Script is not compatible with this configuration.");
+                    m_eventIncompatibleScript.Signal(*this);
                     return;
                 }
                 else
@@ -253,20 +259,19 @@ namespace ScriptCanvasEditor
         , [[maybe_unused]] AZStd::string_view relativePath
         , [[maybe_unused]] AZStd::string_view scanFolder)
     {
-        if (result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
+        const auto validation = ValidateBuildResult(result);
+        if (validation == BuildStatusValidation::Good)
         {
             MergeWithLatestCompilation(*result.data);
             m_eventSourceCompiled.Signal(*this);
         }
-        else
+        else if (validation == BuildStatusValidation::Bad)
         {
-            AZ_Error
-                ( "ScriptCanvas"
-                , !(result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
-                , "Configuration::SourceFileChanged received good status with no data");
-
             m_eventSourceFailed.Signal(*this);
-            // display error icon
+        }
+        else if (validation == BuildStatusValidation::IncompatibleScript)
+        {
+            m_eventIncompatibleScript.Signal(*this);
         }
     }
 
@@ -282,5 +287,27 @@ namespace ScriptCanvasEditor
     {
         m_eventSourceFailed.Signal(*this);
         // display removed icon
+    }
+
+    Configuration::BuildStatusValidation Configuration::ValidateBuildResult(const ScriptCanvasBuilder::BuilderSourceResult& result) const
+    {
+        if (result.status != ScriptCanvasBuilder::BuilderSourceStatus::Good || !result.data)
+        {
+            AZ_Error
+                ( "ScriptCanvas"
+                , !(result.status == ScriptCanvasBuilder::BuilderSourceStatus::Good && result.data)
+                , "Configuration::SourceFileChanged received good status with no data");
+
+            return BuildStatusValidation::Bad;
+        }
+        else if (result.data->m_isComponentScript && !m_acceptsComponentScript)
+        {
+            // #scriptcanvas_component_extension
+            return BuildStatusValidation::IncompatibleScript;
+        }
+        else
+        {
+            return BuildStatusValidation::Good;
+        }
     }
 }

@@ -293,6 +293,8 @@ namespace ScriptCanvasBuilder
                 overrideValue.SetAllowSignalOnChange(false);
             }
         }
+
+        m_isComponentScript = abstractCodeModel->GetInterface().RefersToSelfEntityId();
     }
 
     void BuildVariableOverrides::SetHandlesToDescription()

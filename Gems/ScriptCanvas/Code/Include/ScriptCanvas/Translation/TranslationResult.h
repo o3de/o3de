@@ -53,8 +53,9 @@ namespace ScriptCanvas
             static void Reflect(AZ::ReflectContext* reflectContext);
 
             Grammar::ExecutionStateSelection m_executionSelection = Grammar::ExecutionStateSelection::InterpretedPure;
-
+            
             AZStd::vector<Nodeable*> m_nodeables;
+            // \todo Datum should be able to be cut by now, replaced by AZStd::any (and maybe TypedNullPointer if necessary)
             AZStd::vector<AZStd::pair<VariableId, Datum>> m_variables;
 
             // either the entityId was a (member) variable in the source graph, or it got promoted to one during parsing
@@ -75,6 +76,9 @@ namespace ScriptCanvas
 
             RuntimeInputs& operator=(const RuntimeInputs&) = default;
             RuntimeInputs& operator=(RuntimeInputs&&);
+
+            // #scriptcanvas_component_extension
+            bool m_refersToSelfEntityId = false;
         };
 
         struct TargetResult

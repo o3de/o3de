@@ -22,11 +22,16 @@ namespace ScriptCanvasEditor
     Interpreter::Interpreter()
     {
         m_handlerPropertiesChanged = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnPropertiesChanged(); });
-        m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceCompiled(); });
-        m_handlerSourceFailed = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceFailed(); });
         m_configuration.ConnectToPropertiesChanged(m_handlerPropertiesChanged);
+        m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceCompiled(); });
         m_configuration.ConnectToSourceCompiled(m_handlerSourceCompiled);
+        m_handlerSourceFailed = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceFailed(); });
         m_configuration.ConnectToSourceFailed(m_handlerSourceFailed);
+
+        // #scriptcanvas_component_extension
+        m_configuration.SetAcceptsComponentScript(false);
+        m_handlerUnacceptedComponentScript = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceIncompatible(); });
+        m_configuration.ConnectToIncompatilbleScript(m_handlerUnacceptedComponentScript);
     }
 
     Interpreter::~Interpreter()
@@ -124,6 +129,11 @@ namespace ScriptCanvasEditor
         return m_executor.IsExecutable();
     }
 
+    Configuration& Interpreter::ModConfiguration()
+    {
+        return m_configuration;
+    }
+
     void Interpreter::OnAssetNotReady()
     {
         MutexLock lock(m_mutex);
@@ -165,6 +175,14 @@ namespace ScriptCanvasEditor
         m_executor.StopAndClearExecutable();
         m_runtimePropertiesDirty = true;
         SetSatus(InterpreterStatus::Misconfigured);
+    }
+
+    void Interpreter::OnSourceIncompatible()
+    {
+        MutexLock lock(m_mutex);
+        m_executor.StopAndClearExecutable();
+        m_runtimePropertiesDirty = true;
+        SetSatus(InterpreterStatus::Incompatible);
     }
 
     void Interpreter::Reflect(AZ::ReflectContext* context)

@@ -62,6 +62,7 @@ namespace ScriptCanvasBuilder
         SwitchAssetsToBinary,
         ReinforcePreloadBehavior,
         SeparateFromEntityComponentSystem,
+        DistinguishEntityScriptFromScript,
         // add new entries above
         Current,
     };

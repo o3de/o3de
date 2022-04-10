@@ -6,6 +6,8 @@
  *
  */
 
+#include <QMessageBox>
+
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
@@ -28,6 +30,7 @@ namespace InterpreterWidgetCpp
 
         case InterpreterStatus::Waiting:
         case InterpreterStatus::Misconfigured:
+        case InterpreterStatus::Incompatible:
         case InterpreterStatus::Configured:
         case InterpreterStatus::Pending:
         default:
@@ -41,7 +44,6 @@ namespace ScriptCanvasEditor
     InterpreterWidget::InterpreterWidget(QWidget* parent)
         : AzQtComponents::StyledDialog(parent)
         , m_view(new Ui::InterpreterWidget())
-        , m_interpreter(AZStd::make_unique<Interpreter>())
     {
         m_view->setupUi(this);
 
@@ -54,7 +56,7 @@ namespace ScriptCanvasEditor
         propertyEditor->Setup(serializeContext, this, true, 250);
         propertyEditor->show();
         propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        propertyEditor->AddInstance(m_interpreter.get(), azrtti_typeid<Interpreter>());
+        propertyEditor->AddInstance(&m_interpreter, azrtti_typeid<Interpreter>());
         propertyEditor->InvalidateAll();
         propertyEditor->ExpandAll();
         m_view->interpreterLayout->insertWidget(0, propertyEditor, 0);
@@ -66,16 +68,17 @@ namespace ScriptCanvasEditor
             {
                 OnInterpreterStatusChanged(interpreter);
             });
-        m_onIterpreterStatusChanged.Connect(m_interpreter->GetOnStatusChanged());
+        m_onIterpreterStatusChanged.Connect(m_interpreter.GetOnStatusChanged());
 
+        
         m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([propertyEditor](const Configuration&)
         {
             propertyEditor->QueueInvalidation(AzToolsFramework::Refresh_EntireTree_NewContent);
         });
-        m_interpreter->GetConfiguration().ConnectToSourceCompiled(m_handlerSourceCompiled);
+        m_interpreter.GetConfiguration().ConnectToSourceCompiled(m_handlerSourceCompiled);
 
         // initialized status window and enabled setting for buttons
-        OnInterpreterStatusChanged(*m_interpreter); 
+        OnInterpreterStatusChanged(m_interpreter); 
     }
 
     InterpreterWidget::~InterpreterWidget()
@@ -85,12 +88,12 @@ namespace ScriptCanvasEditor
 
     void InterpreterWidget::OnButtonStartPressed()
     {
-        m_interpreter->Execute();
+        m_interpreter.Execute();
     }
 
     void InterpreterWidget::OnButtonStopPressed()
     {
-        m_interpreter->Stop();
+        m_interpreter.Stop();
     }
 
     void InterpreterWidget::OnInterpreterStatusChanged(const Interpreter& interpreter)
@@ -101,6 +104,15 @@ namespace ScriptCanvasEditor
         const auto startStopButtonEnabled = ToStartStopButtonEnabled(status);
         m_view->buttonStart->setEnabled(startStopButtonEnabled.first);
         m_view->buttonStop->setEnabled(startStopButtonEnabled.second);
+
+        if (status == InterpreterStatus::Incompatible)
+        {
+            constexpr const char* message =
+                "The selected script is written to be used with the ScriptCanvas Component attached to an Entity. "
+                "It will not work in another context. Any script that refers to 'Self', that is the Entity that owns the component, "
+                "will not not operate correctly here.";
+            QMessageBox::critical(this, QObject::tr("Entity Script Not Allowed"), QObject::tr(message));
+        }
 
         const auto statusString = interpreter.GetStatusString();
         m_view->interpreterStatus->setText(AZStd::string::format("%.*s", AZ_STRING_ARG(statusString)).c_str());

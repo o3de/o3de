@@ -45,7 +45,7 @@ namespace AbstractCodeModelCpp
     (const AZStd::unordered_multimap<const Nodes::Core::FunctionDefinitionNode*, ExecutionTreePtr>& lhs
         , const AZStd::unordered_set< const Nodes::Core::FunctionDefinitionNode*>& rhs)
     {
-        AZStd::unordered_set< const Nodes::Core::FunctionDefinitionNode*> intersection;
+        AZStd::unordered_set<const Nodes::Core::FunctionDefinitionNode*> intersection;
 
         for (auto candidate : lhs)
         {
@@ -2360,6 +2360,8 @@ namespace ScriptCanvas
             ParseConstructionInputVariables();
             // now that externally initialized data has been identified, associate local, static initializers with individual functions
             ParseFunctionLocalStaticUseage();
+            // #scriptcanvas_component_extension
+            ParseComponentExtension();
 
             // The Order Matters: end
 
@@ -2648,6 +2650,19 @@ namespace ScriptCanvas
             }
 
             execution->SetSymbol(Symbol::Break);
+        }
+
+        void AbstractCodeModel::ParseComponentExtension()
+        {
+            auto roots = GetAllExecutionRoots();
+            for (auto& root : roots)
+            {
+                if (root->RefersToSelfEntityId())
+                {
+                    m_subgraphInterface.MarkRefersToSelfEntityId();
+                    return;
+                }
+            }
         }
 
         VariableConstPtr AbstractCodeModel::ParseConnectedInputData(const Slot& inputSlot, ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode)

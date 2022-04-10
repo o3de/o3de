@@ -59,14 +59,24 @@ namespace ScriptCanvasEditor
         void Refresh(const SourceHandle& sourceHandle);
 
     private:
+        enum class BuildStatusValidation
+        {
+            Good,
+            Bad,
+            IncompatibleScript,
+        };
+
         mutable AZ::Event<const Configuration&> m_eventPropertiesChanged;
         mutable AZ::Event<const Configuration&> m_eventSourceCompiled;
         mutable AZ::Event<const Configuration&> m_eventSourceFailed;
+        
         SourceHandle m_sourceHandle;
         AZStd::string m_sourceName;
         ScriptCanvasBuilder::BuildVariableOverrides m_propertyOverrides;
-
+        
         void ClearVariables();
+
+        BuildStatusValidation CompileLatestInternal();
 
         void MergeWithLatestCompilation(const ScriptCanvasBuilder::BuildVariableOverrides& buildData);
 
@@ -88,5 +98,29 @@ namespace ScriptCanvasEditor
 
         // update the display icon for removal, save the values in the graph
         void SourceFileRemoved(AZStd::string_view relativePath, AZStd::string_view scanFolder) override;
+
+        BuildStatusValidation ValidateBuildResult(const ScriptCanvasBuilder::BuilderSourceResult& result) const;
+
+        // #scriptcanvas_component_extension...
+    public:
+        inline bool AcceptsComponentScript() const
+        {
+            return m_acceptsComponentScript;
+        }
+
+        inline void SetAcceptsComponentScript(bool value)
+        {
+            m_acceptsComponentScript = value;
+        }
+
+        inline void ConnectToIncompatilbleScript(AZ::EventHandler<const Configuration&>& handler) const
+        {
+            handler.Connect(m_eventIncompatibleScript);
+        }
+
+    private:
+        mutable AZ::Event<const Configuration&> m_eventIncompatibleScript;
+
+        bool m_acceptsComponentScript = true;
     };
 }
