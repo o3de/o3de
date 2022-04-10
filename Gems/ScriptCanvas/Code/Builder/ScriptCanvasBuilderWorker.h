@@ -63,6 +63,7 @@ namespace ScriptCanvasBuilder
         ReinforcePreloadBehavior,
         SeparateFromEntityComponentSystem,
         DistinguishEntityScriptFromScript,
+        ExecutionStateAsLightUserdata,
         // add new entries above
         Current,
     };
