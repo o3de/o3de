@@ -61,6 +61,8 @@ namespace AtomToolsFramework
         void Destroy() override;
 
     protected:
+        void OnIdle();
+
         // AtomsToolMainWindowNotificationBus::Handler overrides...
         void OnMainWindowClosing() override;
 
@@ -99,8 +101,6 @@ namespace AtomToolsFramework
 
         //! Are local settings loaded
         bool m_activatedLocalUserSettings = false;
-
-        QTimer m_timer;
 
         AtomToolsFramework::LocalSocket m_socket;
         AtomToolsFramework::LocalServer m_server;

@@ -11,19 +11,13 @@ set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_
 # Launcher targets for a project need to be generated when configuring a project.
 # When building the engine source, this file will be included by LauncherUnified's CMakeLists.txt
 # When using an installed engine, this file will be included by the FindLauncherGenerator.cmake script
-get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
-foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJECTS)
+get_property(O3DE_PROJECTS_NAME GLOBAL PROPERTY O3DE_PROJECTS_NAME)
+foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
     
     # Computes the realpath to the project
     # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
     # Otherwise the the absolute project_path is returned with symlinks resolved
     file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
-    if(NOT project_name)
-        o3de_read_json_key(project_name ${project_real_path}/project.json "project_name")
-        message(WARNING "The project located at path ${project_real_path} has a valid \"project name\" of '${project_name}' read from it's project.json file."
-            " This indicates that the ${project_real_path}/CMakeLists.txt is not properly appending the \"project name\" "
-            "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
-    endif()
 
     ################################################################################
     # Assets
@@ -143,63 +137,56 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     # Server
     ################################################################################
     if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
+        ly_add_target(
+            NAME ${project_name}.ServerLauncher APPLICATION
+            NAMESPACE AZ
+            FILES_CMAKE
+                ${CMAKE_CURRENT_LIST_DIR}/launcher_project_files.cmake
+            PLATFORM_INCLUDE_FILES
+                ${pal_dir}/launcher_project_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+            COMPILE_DEFINITIONS
+                PRIVATE
+                    # Adds the name of the project/game
+                    LY_PROJECT_NAME="${project_name}"
+                    # Adds the ${project_name}_ServerLauncher target as a define so for the Settings Registry to use
+                    # when loading .setreg file specializations
+                    # This is needed so that only gems for the project server launcher are loaded
+                    LY_CMAKE_TARGET="${project_name}_ServerLauncher"
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    .
+                    ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.ServerLauncher/Includes # required for StaticModules.inl
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::Launcher.Static
+                    AZ::Launcher.Server.Static
+                    ${server_build_dependencies}
+            RUNTIME_DEPENDENCIES
+                ${server_runtime_dependencies}
+        )
+        # Needs to be set manually after ly_add_target to prevent the default location overriding it
+        set_target_properties(${project_name}.ServerLauncher
+            PROPERTIES
+                FOLDER ${project_name}
+                LY_PROJECT_NAME ${project_name}
+        )
 
-        get_property(server_projects GLOBAL PROPERTY LY_LAUNCHER_SERVER_PROJECTS)
-        if(${project_name} IN_LIST server_projects)
-
-            ly_add_target(
-                NAME ${project_name}.ServerLauncher APPLICATION
-                NAMESPACE AZ
-                FILES_CMAKE
-                    ${CMAKE_CURRENT_LIST_DIR}/launcher_project_files.cmake
-                PLATFORM_INCLUDE_FILES
-                    ${pal_dir}/launcher_project_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-                COMPILE_DEFINITIONS
-                    PRIVATE
-                        # Adds the name of the project/game
-                        LY_PROJECT_NAME="${project_name}"
-                        # Adds the ${project_name}_ServerLauncher target as a define so for the Settings Registry to use
-                        # when loading .setreg file specializations
-                        # This is needed so that only gems for the project server launcher are loaded
-                        LY_CMAKE_TARGET="${project_name}_ServerLauncher"
-                INCLUDE_DIRECTORIES
-                    PRIVATE
-                        .
-                        ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.ServerLauncher/Includes # required for StaticModules.inl
-                BUILD_DEPENDENCIES
-                    PRIVATE
-                        AZ::Launcher.Static
-                        AZ::Launcher.Server.Static
-                        ${server_build_dependencies}
-                RUNTIME_DEPENDENCIES
-                    ${server_runtime_dependencies}
-            )
-            # Needs to be set manually after ly_add_target to prevent the default location overriding it
-            set_target_properties(${project_name}.ServerLauncher
-                PROPERTIES 
-                    FOLDER ${project_name}
-                    LY_PROJECT_NAME ${project_name}
-            )
-
-            if(LY_DEFAULT_PROJECT_PATH)
-                if (TARGET ${project_name})
-                    get_target_property(project_server_launcher_additional_args ${project_name} SERVERLAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
-                    if (project_server_launcher_additional_args)
-                        # Avoid pushing param-NOTFOUND into the argument in case this property wasn't found
-                        set(additional_server_vs_debugger_args "${project_server_launcher_additional_args}")
-                    endif()
+        if(LY_DEFAULT_PROJECT_PATH)
+            if (TARGET ${project_name})
+                get_target_property(project_server_launcher_additional_args ${project_name} SERVERLAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
+                if (project_server_launcher_additional_args)
+                    # Avoid pushing param-NOTFOUND into the argument in case this property wasn't found
+                    set(additional_server_vs_debugger_args "${project_server_launcher_additional_args}")
                 endif()
-                
-                set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS 
-                    "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${additional_server_vs_debugger_args}")
             endif()
 
-            # Associate the Servers Gem Variant with each projects ServerLauncher
-            ly_set_gem_variant_to_load(TARGETS ${project_name}.ServerLauncher VARIANTS Servers)
+            set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS
+                "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${additional_server_vs_debugger_args}")
         endif()
 
+        # Associate the Servers Gem Variant with each projects ServerLauncher
+        ly_set_gem_variant_to_load(TARGETS ${project_name}.ServerLauncher VARIANTS Servers)
     endif()
-
 endforeach()
 
 #! Defer generation of the StaticModules.inl file needed in monolithic builds until after all the CMake targets are known

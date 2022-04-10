@@ -58,7 +58,7 @@ namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
 namespace ScriptCanvasEditor::Nodes
 {
     // Handles the creation of a node through the node configurations for most nodes.
-    AZ::EntityId DisplayGeneralScriptCanvasNode(AZ::EntityId, const ScriptCanvas::Node* node, const NodeConfiguration& nodeConfiguration)
+    AZ::EntityId DisplayGeneralScriptCanvasNode(AZ::EntityId, const ScriptCanvas::Node* node, const NodeReplacementConfiguration& nodeConfiguration)
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
 
@@ -202,7 +202,7 @@ namespace ScriptCanvasEditor::Nodes
 
     AZ::EntityId DisplayNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Node* node, StyleConfiguration styleConfiguration = StyleConfiguration())
     {
-        NodeConfiguration nodeConfiguration;
+        NodeReplacementConfiguration nodeConfiguration;
 
         nodeConfiguration.PopulateComponentDescriptors<IconComponent, UserDefinedNodeDescriptorComponent>();
 
@@ -939,7 +939,7 @@ namespace ScriptCanvasEditor::Nodes
 
     AZ::EntityId DisplayFunctionDefinitionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* functionDefinitionNode)
     {
-        NodeConfiguration nodeConfiguration;
+        NodeReplacementConfiguration nodeConfiguration;
 
         nodeConfiguration.PopulateComponentDescriptors<IconComponent, FunctionDefinitionNodeDescriptorComponent>();
 
@@ -1009,7 +1009,7 @@ namespace ScriptCanvasEditor::Nodes
 
     AZ::EntityId DisplayNodeling(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::Internal::Nodeling* nodeling)
     {
-        NodeConfiguration nodeConfiguration;
+        NodeReplacementConfiguration nodeConfiguration;
 
         nodeConfiguration.PopulateComponentDescriptors<IconComponent, NodelingDescriptorComponent>();
 
@@ -1058,7 +1058,7 @@ namespace ScriptCanvasEditor::Nodes
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
 
-        NodeConfiguration nodeConfiguration;
+        NodeReplacementConfiguration nodeConfiguration;
         nodeConfiguration.PopulateComponentDescriptors<IconComponent, DynamicSlotComponent, GetVariableNodeDescriptorComponent>();
         nodeConfiguration.m_nodeSubStyle = ".getVariable";
         nodeConfiguration.m_titlePalette = "GetVariableNodeTitlePalette";
@@ -1077,7 +1077,7 @@ namespace ScriptCanvasEditor::Nodes
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
 
-        NodeConfiguration nodeConfiguration;
+        NodeReplacementConfiguration nodeConfiguration;
         nodeConfiguration.PopulateComponentDescriptors<IconComponent, DynamicSlotComponent, SetVariableNodeDescriptorComponent>();
         nodeConfiguration.m_nodeSubStyle = ".setVariable";
         nodeConfiguration.m_titlePalette = "SetVariableNodeTitlePalette";
