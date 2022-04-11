@@ -130,8 +130,6 @@ namespace PhysX
         Physics::HeightfieldProviderNotificationBus::Handler::BusConnect(entityId);
         PhysX::ColliderShapeRequestBus::Handler::BusConnect(entityId);
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
-
-        RefreshHeightfield();
     }
 
     void EditorHeightfieldColliderComponent::Deactivate()
@@ -157,7 +155,7 @@ namespace PhysX
     void EditorHeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
         const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
-        RefreshHeightfield(dirtyRegion, changeMask);
+        RefreshHeightfield(changeMask, dirtyRegion);
     }
 
     void EditorHeightfieldColliderComponent::ClearHeightfield()
@@ -209,8 +207,9 @@ namespace PhysX
         *m_shapeConfig = Utils::CreateHeightfieldShapeConfiguration(GetEntityId());
     }
 
-    void EditorHeightfieldColliderComponent::RefreshHeightfield(const AZ::Aabb& dirtyRegion,
-        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
+    void EditorHeightfieldColliderComponent::RefreshHeightfield(
+        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
+        const AZ::Aabb& dirtyRegion)
     {
         if (changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyBegin ||
             changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyEnd)
@@ -240,7 +239,8 @@ namespace PhysX
 
         // if dirty region invalid, recreate the entire heightfield, otherwise request samples
         bool shouldRecreateHeightfield = (m_shapeConfig == nullptr)
-            || (changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
+            || ((changeMask & Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd)
+                == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
 
         // Check if dirtyRegion covers the entire terrain
         shouldRecreateHeightfield = shouldRecreateHeightfield || (requestRegion == heightfieldAabb);
@@ -288,7 +288,7 @@ namespace PhysX
 
     AZ::u32 EditorHeightfieldColliderComponent::OnConfigurationChanged()
     {
-        RefreshHeightfield();
+        RefreshHeightfield(Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 

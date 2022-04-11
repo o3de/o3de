@@ -96,9 +96,8 @@ namespace PhysX
         void ClearHeightfield();
         void InitHeightfieldShapeConfiguration();
         void InitStaticRigidBody();
-        void RefreshHeightfield(const AZ::Aabb& dirtyRegion = AZ::Aabb::CreateNull(), 
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask =
-                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified);
+        void RefreshHeightfield(Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
+            const AZ::Aabb& dirtyRegion = AZ::Aabb::CreateNull());
 
         AzPhysics::ShapeColliderPair m_shapeConfig;
         AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
