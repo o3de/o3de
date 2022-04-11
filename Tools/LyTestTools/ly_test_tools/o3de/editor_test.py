@@ -425,7 +425,7 @@ class EditorTestSuite:
 
                 def make_test_func(name, test_spec):
                     @set_marks({"run_type": "run_single"})
-                    def single_run(self, request, workspace, editor, editor_test_data, launcher_platform):
+                    def single_run(self, request, workspace, editor, editor_test_data, launcher_platform, execution_number):
                         # only single tests are allowed to have setup/teardown, however we can have shared tests that
                         # were explicitly set as single, for example via cmdline argument override
                         is_single_test = issubclass(test_spec, EditorSingleTest)
@@ -458,7 +458,7 @@ class EditorTestSuite:
 
                 def make_func():
                     @set_marks({"runner": runner, "run_type": "run_shared"})
-                    def shared_run(self, request, workspace, editor, editor_test_data, launcher_platform):
+                    def shared_run(self, request, workspace, editor, editor_test_data, launcher_platform, execution_number):
                         getattr(self, function.__name__)(request, workspace, editor, editor_test_data, runner.tests)
                     return shared_run
                 setattr(self.obj, name, make_func())
