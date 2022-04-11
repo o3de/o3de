@@ -577,7 +577,7 @@ namespace Audio
 
         if (status != EAudioRequestStatus::Success)
         {
-            AZLOG_NOTICE("Audio Request did not succeed!");
+            AZLOG_DEBUG("Audio Request did not succeed!");
         }
     }
 
