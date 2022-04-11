@@ -239,7 +239,8 @@ namespace PhysX
         requestRegion.Clamp(heightfieldAabb);
 
         // if dirty region invalid, recreate the entire heightfield, otherwise request samples
-        bool shouldRecreateHeightfield = m_shapeConfig == nullptr;
+        bool shouldRecreateHeightfield = (m_shapeConfig == nullptr)
+            || (changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
 
         // Check if dirtyRegion covers the entire terrain
         shouldRecreateHeightfield = shouldRecreateHeightfield || (requestRegion == heightfieldAabb);

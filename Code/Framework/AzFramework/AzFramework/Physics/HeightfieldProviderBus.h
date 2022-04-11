@@ -129,6 +129,7 @@ namespace Physics
             SurfaceData = (1 << 3),
             DestroyBegin = (1 << 4),
             DestroyEnd = (1 << 5),
+            CreateEnd = (1 << 6),
             Unspecified = 0xff
         };
 

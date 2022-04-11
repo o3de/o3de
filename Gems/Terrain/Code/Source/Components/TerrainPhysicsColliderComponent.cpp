@@ -170,16 +170,16 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::OnTerrainDataCreateEnd()
     {
-        m_terrainDataDestroyed = false;
+        m_terrainDataActive = true;
 
         // The terrain system has finished creating itself, so we should now have data for creating a heightfield.
         NotifyListenersOfHeightfieldDataChange(nullptr,
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified);
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataDestroyBegin()
     {
-        m_terrainDataDestroyed = true;
+        m_terrainDataActive = false;
 
         // The terrain system is starting to destroy itself, so notify listeners of a change since the heightfield
         // will no longer have any valid data.
@@ -190,7 +190,7 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::OnTerrainDataChanged(
         const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
-        if (!m_terrainDataDestroyed)
+        if (m_terrainDataActive)
         {
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask
                 = Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified;
@@ -327,7 +327,7 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(Terrain);
 
-        if (m_terrainDataDestroyed)
+        if (!m_terrainDataActive)
         {
             return;
         }
