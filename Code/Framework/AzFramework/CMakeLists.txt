@@ -26,7 +26,6 @@ ly_add_target(
             ${pal_dir}
         PRIVATE
             ${common_dir}
-            AZ::AzNetworking
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
