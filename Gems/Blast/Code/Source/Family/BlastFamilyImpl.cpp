@@ -164,9 +164,7 @@ namespace Blast
         BlastActor* parentActor = reinterpret_cast<BlastActor*>(splitEvent->parentData.userData);
         AZ_Assert(parentActor, "TkActor had a null user data instead of a BlastActor.");
 
-        // TODO: Parent body might have or not simulated body??
         AzPhysics::SimulatedBody* parentBody = parentActor->GetSimulatedBody();
-        AZ_Assert(parentActor, "TkActor's BlastActor had a null simulated body.");
 
         const uint32_t newActorsCount = splitEvent->numChildren;
         const bool parentStatic = parentActor->IsStatic();
