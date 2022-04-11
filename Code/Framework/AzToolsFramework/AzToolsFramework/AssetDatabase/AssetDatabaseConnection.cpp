@@ -1368,7 +1368,6 @@ namespace AzToolsFramework
             }
         }
 
-                m_hash = other.m_hash;
         bool ProductDatabaseEntry::operator==(const ProductDatabaseEntry& other) const
         {
             //equivalence is when everything but the id is the same

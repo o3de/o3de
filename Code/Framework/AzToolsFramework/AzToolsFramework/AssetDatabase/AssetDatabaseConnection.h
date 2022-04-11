@@ -240,8 +240,6 @@ namespace AzToolsFramework
 
             bool operator==(const ProductDatabaseEntry& other) const;
 
-            AZ_DEFAULT_COPY(ProductDatabaseEntry);
-
             AZStd::string ToString() const;
             auto GetColumns();
 
