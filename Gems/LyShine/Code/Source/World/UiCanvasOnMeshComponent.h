@@ -12,6 +12,7 @@
 #include <LyShine/Bus/World/UiCanvasOnMeshBus.h>
 #include <LyShine/Bus/UiCanvasManagerBus.h>
 #include <AzCore/Math/Vector3.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 
 struct IPhysicalEntity;
 
@@ -86,6 +87,6 @@ protected: // member functions
 
 protected: // data
 
-    //! Render target name to use (overrides the render target name in the UI canvas)
-    AZStd::string m_renderTargetOverride;
+    //! Render target asset to use (overrides the render target asset in the UI canvas)
+    AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_attachmentImageAssetOverride;
 };
