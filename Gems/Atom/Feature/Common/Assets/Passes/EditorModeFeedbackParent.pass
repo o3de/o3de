@@ -14,30 +14,10 @@
                 },
                 // Existing swapchain data
                 {
-                    "Name": "InputColor",
-                    "SlotType": "Input"
-                },
-                // Swapchain data after feedback effects have been applied
-                {
-                    "Name": "OutputColor",
-                    "SlotType": "Output"
+                    "Name": "InputOutputColor",
+                    "SlotType": "InputOutput"
                 }
-            ],
-            "Connections": [
-                {
-                    "LocalSlot": "OutputColor",
-                    "AttachmentRef": {
-                        "Pass": "EntityOutlinePass",
-                        "Attachment": "OutputColor"
-                    }
-                }
-            ],
-            "FallbackConnections": [
-                {
-                    "Input" : "InputColor",
-                    "Output" : "OutputColor"
-                }
-            ],
+            ], 
             "PassRequests": [
                 // Generates the mask for entities of interest
                 {
@@ -76,7 +56,7 @@
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "InputColor"
+                                "Attachment": "InputOutputColor"
                             }
                         }
                     ]
