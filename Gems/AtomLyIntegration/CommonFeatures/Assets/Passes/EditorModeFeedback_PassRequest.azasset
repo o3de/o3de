@@ -1,0 +1,26 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "EditorModeFeedbackPassParent",
+        "TemplateName": "EditorModeFeedbackParentTemplate",
+        "Enabled": true,
+        "Connections": [
+            {
+                "LocalSlot": "ColorInputOutput",
+                "AttachmentRef": {
+                    "Pass": "PostProcessPass",
+                    "Attachment": "Output"
+                }
+            },
+            {
+                "LocalSlot": "InputDepth",
+                "AttachmentRef": {
+                    "Pass": "DepthPrePass",
+                    "Attachment": "Depth"
+                }
+            }
+        ]
+    }
+}

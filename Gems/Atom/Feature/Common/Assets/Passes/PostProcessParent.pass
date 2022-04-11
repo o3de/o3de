@@ -44,8 +44,8 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "EditorModeFeedbackPassParent",
-                        "Attachment": "ColorInputOutput"
+                        "Pass": "ContrastAdaptiveSharpeningPass",//"EditorModeFeedbackPassParent",
+                        "Attachment": "OutputColor"//"ColorInputOutput"
                     }
                 },
                 {
@@ -202,28 +202,28 @@
                             }
                         }
                     ]
-                },
-                {
-                    "Name": "EditorModeFeedbackPassParent",
-                    "TemplateName": "EditorModeFeedbackParentTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "Depth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "ColorInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "ContrastAdaptiveSharpeningPass",
-                                "Attachment": "OutputColor"
-                            }
-                        }
-                    ]
-                }
+                }//,
+                //{
+                //    "Name": "EditorModeFeedbackPassParent",
+                //    "TemplateName": "EditorModeFeedbackParentTemplate",
+                //    "Enabled": true,
+                //    "Connections": [
+                //        {
+                //            "LocalSlot": "InputDepth",
+                //            "AttachmentRef": {
+                //                "Pass": "Parent",
+                //                "Attachment": "Depth"
+                //            }
+                //        },
+                //        {
+                //            "LocalSlot": "ColorInputOutput",
+                //            "AttachmentRef": {
+                //                "Pass": "ContrastAdaptiveSharpeningPass",
+                //                "Attachment": "OutputColor"
+                //            }
+                //        }
+                //    ]
+                //}
             ]
         }
     }

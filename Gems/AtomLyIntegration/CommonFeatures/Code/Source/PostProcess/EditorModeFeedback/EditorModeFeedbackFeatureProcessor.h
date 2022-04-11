@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
 
 namespace AZ
 {
@@ -43,6 +44,9 @@ namespace AZ
             void InitPasses(RPI::RenderPipeline* renderPipeline);
 
             RPI::FullscreenTrianglePass* m_tintFullscreenTrianglePass = nullptr;
+
+            // Cache the pass request data for creating a hair parent pass
+            AZ::Data::Asset<AZ::RPI::AnyAsset> m_parentPassRequestAsset;
         };
     } // namespace Render
 } // namespace AZ
