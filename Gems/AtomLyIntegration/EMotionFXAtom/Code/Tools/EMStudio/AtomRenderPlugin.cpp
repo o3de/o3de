@@ -60,16 +60,6 @@ namespace EMStudio
         return static_cast<uint32>(AtomRenderPlugin::CLASS_ID);
     }
 
-    const char* AtomRenderPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-    float AtomRenderPlugin::GetVersion() const
-    {
-        return 1.0f;
-    }
-
     bool AtomRenderPlugin::GetIsClosable() const
     {
         return true;
@@ -83,11 +73,6 @@ namespace EMStudio
     bool AtomRenderPlugin::GetIsVertical() const
     {
         return false;
-    }
-
-    EMStudioPlugin* AtomRenderPlugin::Clone()
-    {
-        return new AtomRenderPlugin();
     }
 
     EMStudioPlugin::EPluginType AtomRenderPlugin::GetPluginType() const

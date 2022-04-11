@@ -16,44 +16,52 @@
 #include "DockWidgetPlugin.h"
 
 // include Qt related
-#include <QApplication>
-#include <QDir>
 #include <QMainWindow>
-#include <QRandomGenerator>
+#include <QDir>
 #include <QTime>
 #include <QVariant>
-
+#include <QApplication>
 #include <AzQtComponents/Utilities/RandomNumberGenerator.h>
 
 // include MCore related
 #include <MCore/Source/StringConversions.h>
 #include <MCore/Source/LogManager.h>
 
+// plugins
+#include <EMotionStudio/Plugins/StandardPlugins/Source/LogWindow/LogWindowPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/CommandBar/CommandBarPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/ActionHistory/ActionHistoryPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/Inspector/InspectorWindow.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MorphTargetsWindow/MorphTargetsWindowPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/Attachments/AttachmentsPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/SceneManagerPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeWindowPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventsPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeGroups/NodeGroupsPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
+#include <EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
+#include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
+#include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
+#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
+#include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
+
 namespace EMStudio
 {
-    // constructor
-    PluginManager::PluginManager()
-    {
-        m_activePlugins.reserve(50);
-        m_plugins.reserve(50);
-    }
-
-
-    // destructor
     PluginManager::~PluginManager()
     {
-        MCore::LogInfo("Unloading plugins");
         UnloadPlugins();
     }
 
-
-    // remove a given active plugin
     void PluginManager::RemoveActivePlugin(EMStudioPlugin* plugin)
     {
-        PluginVector::const_iterator itPlugin = AZStd::find(m_activePlugins.begin(), m_activePlugins.end(), plugin);
-        if (itPlugin == m_activePlugins.end())
+        auto iterator = AZStd::find(m_activePlugins.begin(), m_activePlugins.end(), plugin);
+        if (iterator == m_activePlugins.end())
         {
-            MCore::LogWarning("Failed to remove plugin '%s'", plugin->GetName());
+            AZ_Warning("EMotionFX", false, "Failed to remove plugin '%s'", plugin->GetName());
             return;
         }
 
@@ -62,10 +70,9 @@ namespace EMStudio
             activePlugin->OnBeforeRemovePlugin(plugin->GetClassID());
         }
 
-        m_activePlugins.erase(itPlugin);
+        m_activePlugins.erase(iterator);
         delete plugin;
     }
-
 
     // unload the plugin libraries
     void PluginManager::UnloadPlugins()
@@ -73,14 +80,13 @@ namespace EMStudio
         // process any remaining events
         QApplication::processEvents();
 
-        // delete all plugins
-        for (EMStudioPlugin* plugin : m_plugins)
+        for (EMStudioPlugin* plugin : m_registeredPlugins)
         {
             delete plugin;
         }
-        m_plugins.clear();
+        m_registeredPlugins.clear();
 
-        // delete all active plugins
+        // delete all active plugins back to front
         for (auto plugin = m_activePlugins.rbegin(); plugin != m_activePlugins.rend(); ++plugin)
         {
             for (EMStudioPlugin* pluginToNotify : m_activePlugins)
@@ -91,28 +97,22 @@ namespace EMStudio
             delete *plugin;
             m_activePlugins.pop_back();
         }
+
+        m_persistentPlugins.clear();
     }
-
-
-    // register the plugin
-    void PluginManager::RegisterPlugin(EMStudioPlugin* plugin)
-    {
-        m_plugins.push_back(plugin);
-    }
-
 
     // create a new active plugin from a given type
     EMStudioPlugin* PluginManager::CreateWindowOfType(const char* pluginType, const char* objectName)
     {
         // try to locate the plugin type
-        const size_t pluginIndex = FindPluginByTypeString(pluginType);
+        const size_t pluginIndex = FindRegisteredPluginIndex(pluginType);
         if (pluginIndex == InvalidIndex)
         {
             return nullptr;
         }
 
         // create the new plugin of this type
-        EMStudioPlugin* newPlugin = m_plugins[ pluginIndex ]->Clone();
+        EMStudioPlugin* newPlugin = m_registeredPlugins[pluginIndex]->Clone();
 
         // init the plugin
         newPlugin->CreateBaseInterface(objectName);
@@ -127,18 +127,18 @@ namespace EMStudio
         return newPlugin;
     }
 
-
     // find a given plugin by its name (type string)
-    size_t PluginManager::FindPluginByTypeString(const char* pluginType) const
+    size_t PluginManager::FindRegisteredPluginIndex(const char* pluginType) const
     {
-        const auto foundPlugin = AZStd::find_if(begin(m_plugins), end(m_plugins), [pluginType](const EMStudioPlugin* plugin)
+        const auto foundPlugin = AZStd::find_if(begin(m_registeredPlugins), end(m_registeredPlugins), [pluginType](const EMStudioPlugin* plugin)
         {
             return AzFramework::StringFunc::Equal(pluginType, plugin->GetName());
         });
-        return foundPlugin != end(m_plugins) ? AZStd::distance(begin(m_plugins), foundPlugin) : InvalidIndex;
+        return foundPlugin != end(m_registeredPlugins) ? AZStd::distance(begin(m_registeredPlugins), foundPlugin) : InvalidIndex;
+
     }
 
-    EMStudioPlugin* PluginManager::GetActivePluginByTypeString(const char* pluginType) const
+    EMStudioPlugin* PluginManager::FindActivePluginByTypeString(const char* pluginType) const
     {
         const auto foundPlugin = AZStd::find_if(begin(m_activePlugins), end(m_activePlugins), [pluginType](const EMStudioPlugin* plugin)
         {
@@ -179,7 +179,7 @@ namespace EMStudio
     }
 
     // find the number of active plugins of a given type
-    size_t PluginManager::GetNumActivePluginsOfType(const char* pluginType) const
+    size_t PluginManager::CalcNumActivePluginsOfType(const char* pluginType) const
     {
         return AZStd::accumulate(m_activePlugins.begin(), m_activePlugins.end(), size_t{0}, [pluginType](size_t total, const EMStudioPlugin* plugin)
         {
@@ -187,6 +187,19 @@ namespace EMStudio
         });
     }
 
+    void PluginManager::RemovePersistentPlugin(PersistentPlugin* plugin)
+    {
+        const auto iterator = AZStd::find_if(m_persistentPlugins.begin(), m_persistentPlugins.end(), [plugin](const AZStd::unique_ptr<PersistentPlugin>& currentPlugin)
+            {
+                return (currentPlugin.get() == plugin);
+            });
+
+        if (iterator != m_persistentPlugins.end())
+        {
+            m_persistentPlugins.erase(iterator);
+
+        }
+    }
 
     // find the first active plugin of a given type
     EMStudioPlugin* PluginManager::FindActivePlugin(uint32 classID) const
@@ -198,15 +211,39 @@ namespace EMStudio
         return foundPlugin != end(m_activePlugins) ? *foundPlugin : nullptr;
     }
 
-
-
-    // find the number of active plugins of a given type
-    size_t PluginManager::GetNumActivePluginsOfType(uint32 classID) const
+    size_t PluginManager::CalcNumActivePluginsOfType(uint32 classID) const
     {
         return AZStd::accumulate(m_activePlugins.begin(), m_activePlugins.end(), size_t{0}, [classID](size_t total, const EMStudioPlugin* plugin)
         {
             return total + (plugin->GetClassID() == classID);
         });
     }
-}   // namespace EMStudio
 
+    void PluginManager::RegisterDefaultPlugins()
+    {
+        m_registeredPlugins.reserve(32);
+
+        RegisterPlugin(new LogWindowPlugin());
+        RegisterPlugin(new CommandBarPlugin());
+        RegisterPlugin(new ActionHistoryPlugin());
+        RegisterPlugin(new MotionWindowPlugin());
+        RegisterPlugin(new MorphTargetsWindowPlugin());
+        RegisterPlugin(new TimeViewPlugin());
+        RegisterPlugin(new AttachmentsPlugin());
+        RegisterPlugin(new SceneManagerPlugin());
+        RegisterPlugin(new NodeWindowPlugin());
+        RegisterPlugin(new MotionEventsPlugin());
+        RegisterPlugin(new MotionSetsWindowPlugin());
+        RegisterPlugin(new NodeGroupsPlugin());
+        RegisterPlugin(new AnimGraphPlugin());
+        RegisterPlugin(new OpenGLRenderPlugin());
+        RegisterPlugin(new EMotionFX::HitDetectionJointInspectorPlugin());
+        RegisterPlugin(new EMotionFX::SkeletonOutlinerPlugin());
+        RegisterPlugin(new EMotionFX::RagdollNodeInspectorPlugin());
+        RegisterPlugin(new EMotionFX::ClothJointInspectorPlugin());
+        RegisterPlugin(new EMotionFX::SimulatedObjectWidget());
+        RegisterPlugin(new InspectorWindow());
+
+        m_activePlugins.reserve(m_registeredPlugins.size());
+    }
+} // namespace EMStudio
