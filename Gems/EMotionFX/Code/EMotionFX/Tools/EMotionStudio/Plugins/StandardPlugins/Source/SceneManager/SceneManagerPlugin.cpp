@@ -206,14 +206,6 @@ namespace EMStudio
         delete m_dirtyFilesCallback;
     }
 
-
-    // clone the log window
-    EMStudioPlugin* SceneManagerPlugin::Clone()
-    {
-        return new SceneManagerPlugin();
-    }
-
-
     // init after the parent dock window has been created
     bool SceneManagerPlugin::Init()
     {
