@@ -43,12 +43,6 @@ namespace EMotionFX
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    EMStudio::EMStudioPlugin* RagdollNodeInspectorPlugin::Clone()
-    {
-        RagdollNodeInspectorPlugin* newPlugin = new RagdollNodeInspectorPlugin();
-        return newPlugin;
-    }
-
     bool RagdollNodeInspectorPlugin::IsPhysXGemAvailable() const
     {
         AZ::SerializeContext* serializeContext = nullptr;

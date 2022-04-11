@@ -130,6 +130,14 @@ set(FILES
     Source/AnimGraph/ParameterEditor/Vector4ParameterEditor.h
     Source/CommandBar/CommandBarPlugin.cpp
     Source/CommandBar/CommandBarPlugin.h
+    Source/Inspector/ContentWidget.cpp
+    Source/Inspector/ContentWidget.h
+    Source/Inspector/ContentHeaderWidget.cpp
+    Source/Inspector/ContentHeaderWidget.h
+    Source/Inspector/InspectorWindow.cpp
+    Source/Inspector/InspectorWindow.h
+    Source/Inspector/NoSelectionWidget.cpp
+    Source/Inspector/NoSelectionWidget.h
     Source/LogWindow/LogWindowCallback.cpp
     Source/LogWindow/LogWindowCallback.h
     Source/LogWindow/LogWindowPlugin.cpp
