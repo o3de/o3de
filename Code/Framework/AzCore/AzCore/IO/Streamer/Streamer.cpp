@@ -28,12 +28,11 @@ namespace AZ::IO
     FileRequestPtr& Streamer::Read(FileRequestPtr& request, AZStd::string_view relativePath, void* outputBuffer,
         size_t outputBufferSize, size_t readSize, AZStd::chrono::microseconds deadline, IStreamerTypes::Priority priority, size_t offset)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
         AZStd::chrono::system_clock::time_point deadlineTimePoint = (deadline == IStreamerTypes::s_noDeadline)
             ? FileRequest::s_noDeadlineTime
             : AZStd::chrono::system_clock::now() + deadline;
-        request->m_request.CreateReadRequest(AZStd::move(path), outputBuffer, outputBufferSize, offset, readSize, deadlineTimePoint, priority);
+        request->m_request.CreateReadRequest(
+            RequestPath(relativePath), outputBuffer, outputBufferSize, offset, readSize, deadlineTimePoint, priority);
         return request;
     }
 
@@ -48,12 +47,10 @@ namespace AZ::IO
     FileRequestPtr& Streamer::Read(FileRequestPtr& request, AZStd::string_view relativePath, IStreamerTypes::RequestMemoryAllocator& allocator,
         size_t size, AZStd::chrono::microseconds deadline, IStreamerTypes::Priority priority, size_t offset)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
         AZStd::chrono::system_clock::time_point deadlineTimePoint = (deadline == IStreamerTypes::s_noDeadline)
             ? FileRequest::s_noDeadlineTime
             : AZStd::chrono::system_clock::now() + deadline;
-        request->m_request.CreateReadRequest(AZStd::move(path), &allocator, offset, size, deadlineTimePoint, priority);
+        request->m_request.CreateReadRequest(RequestPath(relativePath), &allocator, offset, size, deadlineTimePoint, priority);
         return request;
     }
 
@@ -97,8 +94,7 @@ namespace AZ::IO
 
     FileRequestPtr& Streamer::CreateDedicatedCache(FileRequestPtr& request, AZStd::string_view relativePath)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
+        RequestPath path(relativePath);
         request->m_request.CreateDedicatedCacheCreation(AZStd::move(path));
         return request;
     }
@@ -112,9 +108,7 @@ namespace AZ::IO
 
     FileRequestPtr& Streamer::DestroyDedicatedCache(FileRequestPtr& request, AZStd::string_view relativePath)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
-        request->m_request.CreateDedicatedCacheDestruction(AZStd::move(path));
+        request->m_request.CreateDedicatedCacheDestruction(RequestPath(relativePath));
         return request;
     }
 
@@ -127,9 +121,7 @@ namespace AZ::IO
 
     FileRequestPtr& Streamer::FlushCache(FileRequestPtr& request, AZStd::string_view relativePath)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
-        request->m_request.CreateFlush(AZStd::move(path));
+        request->m_request.CreateFlush(RequestPath(relativePath));
         return request;
     }
 

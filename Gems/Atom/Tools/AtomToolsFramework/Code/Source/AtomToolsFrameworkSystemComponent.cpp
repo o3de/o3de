@@ -17,6 +17,8 @@
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFrameworkSystemComponent.h>
 
+#include <PropertyEditor/PropertyImageAssetCtrl.h>
+
 namespace AtomToolsFramework
 {
     void AtomToolsFrameworkSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -30,6 +32,8 @@ namespace AtomToolsFramework
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serialize->RegisterGenericType<AZStd::unordered_map<AZStd::string, bool>>();
+
             serialize->Class<AtomToolsFrameworkSystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
@@ -71,6 +75,7 @@ namespace AtomToolsFramework
 
     void AtomToolsFrameworkSystemComponent::Activate()
     {
+        ImageAssetPropertyHandler::Register();
     }
 
     void AtomToolsFrameworkSystemComponent::Deactivate()

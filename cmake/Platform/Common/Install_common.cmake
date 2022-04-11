@@ -22,7 +22,7 @@ define_property(TARGET PROPERTY LY_INSTALL_GENERATE_RUN_TARGET
     BRIEF_DOCS "Defines if a \"RUN\" targets should be created when installing this target Gem"
     FULL_DOCS [[
         Property which is set on targets that should generate a "RUN"
-        target when installed. This \"RUN\" target helps to run the 
+        target when installed. This \"RUN\" target helps to run the
         binary from the installed location directly from the IDE.
     ]]
 )
@@ -99,7 +99,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
                 cmake_path(APPEND rel_include_dir "..")
                 cmake_path(NORMAL_PATH rel_include_dir OUTPUT_VARIABLE destination_dir)
-                
+
                 ly_install(DIRECTORY ${include_directory}
                     DESTINATION ${destination_dir}
                     COMPONENT ${include_directory_component}
@@ -207,11 +207,11 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     # We can have private build dependencies that contains direct or indirect runtime dependencies.
     # Since imported targets cannot contain build dependencies, we need another way to propagate the runtime dependencies.
-    # We dont want to put such dependencies in the interface because a user can mistakenly use a symbol that is not available 
-    # when using the engine from source (and that the author of the target didn't want to set public). 
+    # We dont want to put such dependencies in the interface because a user can mistakenly use a symbol that is not available
+    # when using the engine from source (and that the author of the target didn't want to set public).
     # To overcome this, we will actually expose the private build dependencies as runtime dependencies. Our runtime dependency
     # algorithm will walk recursively also through static libraries and will only copy binaries to the output.
-    unset(RUNTIME_DEPENDENCIES_PLACEHOLDER) 
+    unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
     if(interface_build_dependencies_props)
         cmake_parse_arguments(build_deps "" "" "PRIVATE;PUBLIC;INTERFACE" ${interface_build_dependencies_props})
         # Interface and public dependencies should always be exposed
@@ -219,7 +219,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         if(build_deps_PUBLIC)
             set(build_deps_target "${build_deps_target};${build_deps_PUBLIC}")
         endif()
-        # Private dependencies should only be exposed if it is a static library, since in those cases, link 
+        # Private dependencies should only be exposed if it is a static library, since in those cases, link
         # dependencies are transfered to the downstream dependencies
         if("${target_type}" STREQUAL "STATIC_LIBRARY")
             set(build_deps_target "${build_deps_target};${build_deps_PRIVATE}")
@@ -231,7 +231,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 list(APPEND RUNTIME_DEPENDENCIES_PLACEHOLDER "${build_dep_private}")
             endif()
         endforeach()
-        
+
         foreach(build_dependency IN LISTS build_deps_target)
             # Skip wrapping produced when targets are not created in the same directory
             if(build_dependency)
@@ -246,7 +246,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     if(manually_added_dependencies) # not found properties return the name of the variable with a "-NOTFOUND" at the end, here we set it to empty if not found
         list(APPEND RUNTIME_DEPENDENCIES_PLACEHOLDER ${manually_added_dependencies})
     endif()
-    if(RUNTIME_DEPENDENCIES_PLACEHOLDER)   
+    if(RUNTIME_DEPENDENCIES_PLACEHOLDER)
         set(RUNTIME_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
         list(JOIN RUNTIME_DEPENDENCIES_PLACEHOLDER "\n${PLACEHOLDER_INDENT}" RUNTIME_DEPENDENCIES_PLACEHOLDER)
     else()
@@ -269,7 +269,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         endif()
         set(TARGET_RUN_HELPER
 "add_custom_target(${RUN_TARGET_NAME})
-set_target_properties(${RUN_TARGET_NAME} PROPERTIES 
+set_target_properties(${RUN_TARGET_NAME} PROPERTIES
     FOLDER \"O3DE_SDK\"
     VS_DEBUGGER_COMMAND \$<GENEX_EVAL:\$<TARGET_PROPERTY:${NAME_PLACEHOLDER},IMPORTED_LOCATION>>
     VS_DEBUGGER_COMMAND_ARGUMENTS \"--project-path=\${LY_DEFAULT_PROJECT_PATH}\"
@@ -290,15 +290,15 @@ set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${RUN_TARGET_NAME})
         elseif(target_type STREQUAL MODULE_LIBRARY)
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
         elseif(target_type STREQUAL SHARED_LIBRARY)
-            string(APPEND target_file_contents 
-"set_property(TARGET ${NAME_PLACEHOLDER} 
+            string(APPEND target_file_contents
+"set_property(TARGET ${NAME_PLACEHOLDER}
     APPEND_STRING PROPERTY IMPORTED_IMPLIB
         $<$<CONFIG:$<CONFIG>$<ANGLE-R>:\"\${LY_ROOT_FOLDER}/${archive_output_directory}/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"$<ANGLE-R>
 )
 ")
-            string(APPEND target_file_contents 
-"set_property(TARGET ${NAME_PLACEHOLDER} 
-    PROPERTY IMPORTED_IMPLIB_$<UPPER_CASE:$<CONFIG>> 
+            string(APPEND target_file_contents
+"set_property(TARGET ${NAME_PLACEHOLDER}
+    PROPERTY IMPORTED_IMPLIB_$<UPPER_CASE:$<CONFIG>>
         \"\${LY_ROOT_FOLDER}/${archive_output_directory}/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"
 )
 ")
@@ -331,7 +331,7 @@ set_property(TARGET ${NAME_PLACEHOLDER}
             COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             CONFIGURATIONS ${conf}
         )
-    endforeach()  
+    endforeach()
 
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
     ly_file_read(${LY_ROOT_FOLDER}/cmake/install/InstalledTarget.in target_cmakelists_template)
@@ -371,13 +371,13 @@ function(ly_setup_subdirectory absolute_target_source_dir)
 @cmake_copyright_comment@
 include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 ]] @ONLY)
-    
+
     ly_install(FILES "${target_install_source_dir}/CMakeLists.txt"
         DESTINATION ${relative_target_source_dir}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
-    # 2. For this platform file, create a Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake file 
+    # 2. For this platform file, create a Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake file
     #    that will include different configuration permutations (e.g. monolithic vs non-monolithic)
     file(CONFIGURE OUTPUT "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake" CONTENT [[
 @cmake_copyright_comment@
@@ -542,7 +542,7 @@ function(ly_setup_cmake_install)
     endforeach()
     set(permutation_find_subdirectories ${CMAKE_CURRENT_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/o3de_subdirectories_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     file(GENERATE OUTPUT ${permutation_find_subdirectories}
-        CONTENT 
+        CONTENT
 "# Generated by O3DE install\n
 ${find_subdirectories}
 "
@@ -554,7 +554,7 @@ ${find_subdirectories}
 
     set(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     file(GENERATE OUTPUT ${pal_builtin_file}
-        CONTENT 
+        CONTENT
 "# Generated by O3DE install\n
 if(LY_MONOLITHIC_GAME)
     include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Monolithic/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
@@ -569,7 +569,7 @@ endif()
     )
 
     # ${LY_BUILD_PERMUTATION}/BuiltInPackage_<platform>.cmake: since associations could happen in any cmake file across the engine. We collect
-    # all the associations in ly_associate_package and then generate them into BuiltInPackages_<platform>.cmake. This will consolidate all 
+    # all the associations in ly_associate_package and then generate them into BuiltInPackages_<platform>.cmake. This will consolidate all
     # associations in one file
     # Associations are sensitive to platform and build permutation, so we make different files for each.
     get_property(all_package_names GLOBAL PROPERTY LY_PACKAGE_NAMES)
@@ -581,6 +581,12 @@ endif()
         list(REMOVE_DUPLICATES targets)
         string(APPEND builtinpackages "ly_associate_package(PACKAGE_NAME ${package_name} TARGETS ${targets} PACKAGE_HASH ${package_hash})\n")
     endforeach()
+
+    # Allow the BuiltinPackages_<platform>.cmake script to propagate additional cmake code to be executed in the Install layout configure step
+    get_property(builtin_packages_inject_code GLOBAL PROPERTY O3DE_BUILTIN_PACKAGES_INSTALL_CODE)
+    if (builtin_packages_inject_code)
+        string(APPEND builtinpackages "${builtin_packages_inject_code}\n")
+    endif()
 
     set(permutation_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     file(GENERATE OUTPUT ${permutation_builtin_file}
@@ -695,7 +701,7 @@ function(ly_setup_assets)
 
         # Check if the gem is a subdirectory of the engine
         cmake_path(IS_PREFIX LY_ROOT_FOLDER ${gem_candidate_dir} is_gem_subdirectory_of_engine)
-        
+
         # At this point the filtered_assets_paths contains the list of all directories and files
         # that are non-excluded candidates that can be scanned for target directories and files
         # to copy over to the install layout
@@ -745,12 +751,12 @@ function(ly_setup_assets)
             endif()
 
             if(IS_DIRECTORY ${gem_absolute_path})
-                ly_install(DIRECTORY "${gem_absolute_path}" 
+                ly_install(DIRECTORY "${gem_absolute_path}"
                     DESTINATION ${gem_install_dest_dir}
                     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
                 )
             elseif (EXISTS ${gem_absolute_path})
-                ly_install(FILES ${gem_absolute_path} 
+                ly_install(FILES ${gem_absolute_path}
                     DESTINATION ${gem_install_dest_dir}
                     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
                 )
@@ -836,7 +842,7 @@ function(ly_setup_o3de_install)
 
     # Inject other build directories
     foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
-        ly_install(CODE 
+        ly_install(CODE
 "set(LY_CORE_COMPONENT_ALREADY_INCLUDED TRUE)
 include(${external_dir}/cmake_install.cmake)
 set(LY_CORE_COMPONENT_ALREADY_INCLUDED FALSE)"
