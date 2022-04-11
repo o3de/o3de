@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Script/lua/lua.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
 
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 
