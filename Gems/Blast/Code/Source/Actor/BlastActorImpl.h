@@ -11,7 +11,6 @@
 #include <Blast/BlastActor.h>
 #include <Actor/BlastActorDesc.h>
 #include <PhysX/ColliderComponentBus.h>
-#include <PxSmartPtr.h>
 
 namespace Nv::Blast
 {
@@ -61,7 +60,7 @@ namespace Blast
             const Physics::MaterialId& material);
 
         const BlastFamily& m_family;
-        physx::unique_ptr<Nv::Blast::TkActor> m_tkActor;
+        Nv::Blast::TkActor& m_tkActor;
         AZStd::unique_ptr<ShapesProvider> m_shapesProvider;
 
         AZStd::shared_ptr<AZ::Entity> m_entity;

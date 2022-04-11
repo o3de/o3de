@@ -121,9 +121,6 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        AZStd::vector<BlastActorDesc> newActorsDesc;
-        AZStd::unordered_set<BlastActor*> actorsToDelete;
-
         for (uint32_t i = 0; i < eventCount; ++i)
         {
             const Nv::Blast::TkEvent& event = events[i];
@@ -131,16 +128,19 @@ namespace Blast
             {
             case Nv::Blast::TkEvent::Split:
                 {
+                    AZStd::vector<BlastActorDesc> newActorsDesc;
+                    AZStd::unordered_set<BlastActor*> actorsToDelete;
+
                     HandleSplitEvent(event.getPayload<Nv::Blast::TkSplitEvent>(), newActorsDesc, actorsToDelete);
+
+                    DestroyActors(actorsToDelete);
+                    CreateActors(AZStd::move(newActorsDesc));
                     break;
                 }
             default:
                 break;
             }
         }
-
-        DestroyActors(actorsToDelete);
-        CreateActors(AZStd::move(newActorsDesc));
     }
 
     void BlastFamilyImpl::HandleSplitEvent(
