@@ -212,6 +212,16 @@ namespace Multiplayer
         return (m_netEntityRole == NetEntityRole::Client);
     }
 
+    void NetBindComponent::SetAllowEntityMigration(EntityMigration value)
+    {
+        m_netEntityMigration = value;
+    }
+
+    EntityMigration NetBindComponent::GetAllowEntityMigration() const
+    {
+        return m_netEntityMigration;
+    }
+
     bool NetBindComponent::HasController() const
     {
         return (m_netEntityRole == NetEntityRole::Authority)

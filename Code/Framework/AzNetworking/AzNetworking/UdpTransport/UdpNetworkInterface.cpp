@@ -125,8 +125,15 @@ namespace AzNetworking
         }
     }
 
-    ConnectionId UdpNetworkInterface::Connect(const IpAddress& remoteAddress)
+    ConnectionId UdpNetworkInterface::Connect(const IpAddress& remoteAddress, uint16_t localPort)
     {
+        if (m_connectionSet.GetConnection(remoteAddress) != nullptr)
+        {
+            AZLOG_INFO("Attempting to connect to an endpoint that already has a connection");
+            return InvalidConnectionId;
+        }
+
+        m_port = localPort;
         if (!m_socket->IsOpen())
         {
             if (m_socket->Open(m_port, UdpSocket::CanAcceptConnections::False, m_trustZone))
@@ -697,6 +704,14 @@ namespace AzNetworking
         if (connection == nullptr)
         {
             return;
+        }
+        for (RemovedConnection& removedConnection : m_removedConnections)
+        {
+            if (connection == removedConnection.m_connection)
+            {
+                int breakhere = 0;
+                ++breakhere;
+            }
         }
         connection->m_state = ConnectionState::Disconnecting;
         m_removedConnections.emplace_back(RemovedConnection{ connection, reason, endpoint });

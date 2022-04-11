@@ -19,8 +19,11 @@ namespace AzFramework
 namespace Multiplayer
 {
     struct EntityReplicationData;
-    using ReplicationSet = AZStd::map<ConstNetworkEntityHandle, EntityReplicationData>;
     struct MultiplayerAgentDatum;
+
+    // It's important that this be an ordered associative container
+    // as we'll walk corresponding replication sets to compute differences
+    using ReplicationSet = AZStd::map<ConstNetworkEntityHandle, EntityReplicationData>;
 
     //! @class IMultiplayerSpawner
     //! @brief IMultiplayerSpawner routes spawning requests for connecting players from
@@ -31,7 +34,6 @@ namespace Multiplayer
     //! IMultiplayerSpawner is intended to be implemented on games utilizing the
     //! Multiplayer Gem. The Multiplayer Gem then calls the implementation via
     //! AZ::Interface.
-
     class IMultiplayerSpawner
     {
     public:

@@ -72,7 +72,7 @@ namespace AzNetworking
         return m_listenThread.Listen(*this);
     }
 
-    ConnectionId TcpNetworkInterface::Connect(const IpAddress& remoteAddress)
+    ConnectionId TcpNetworkInterface::Connect(const IpAddress& remoteAddress, [[maybe_unused]] uint16_t localPort)
     {
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
         AZStd::unique_ptr<TcpConnection> connection = AZStd::make_unique<TcpConnection>(connectionId, remoteAddress, *this, m_trustZone, net_TcpUseEncryption);

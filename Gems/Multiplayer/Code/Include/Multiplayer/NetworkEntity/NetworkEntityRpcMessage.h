@@ -16,7 +16,7 @@ namespace Multiplayer
 {
     struct IRpcParamStruct;
 
-    // The maximum number of RPC's we can aggregate into a single packet
+    //! The maximum number of RPC's we can aggregate into a single packet
     static constexpr uint32_t MaxAggregateRpcMessages = 1024;
 
     //! @class NetworkEntityRpcMessage

@@ -32,6 +32,12 @@ namespace Multiplayer
     AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint64_t);
     static constexpr NetEntityId InvalidNetEntityId = static_cast<NetEntityId>(-1);
 
+    using NetEntityIdSet = AZStd::unordered_set<NetEntityId>;
+
+    //! The maximum number of netEntityIds we can stuff into a single reset packet
+    static const uint32_t MaxAggregateEntityResets = 2048;
+    using NetEntityIdsForReset = AZStd::fixed_vector<NetEntityId, MaxAggregateEntityResets>;
+
     AZ_TYPE_SAFE_INTEGRAL(NetComponentId, uint16_t);
     static constexpr NetComponentId InvalidNetComponentId = static_cast<NetComponentId>(-1);
 
@@ -86,6 +92,12 @@ namespace Multiplayer
     {
         DoNotActivate,
         Activate
+    };
+
+    enum class EntityMigration
+    {
+        Disabled,
+        Enabled
     };
 
     //! Structure for identifying a specific entity within a spawnable.
