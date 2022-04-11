@@ -31,7 +31,6 @@ namespace Blast
 {
     BlastActorImpl::BlastActorImpl(const BlastActorDesc& desc)
         : m_family(*desc.m_family)
-        , m_tkActor(*desc.m_tkActor)
         , m_entity(desc.m_entity)
         , m_chunkIndices(desc.m_chunkIndices)
         , m_isLeafChunk(desc.m_isLeafChunk)
@@ -42,15 +41,16 @@ namespace Blast
         , m_bodyConfiguration(desc.m_bodyConfiguration)
         , m_scale(desc.m_scale)
     {
+        m_tkActor.reset(desc.m_tkActor);
+
         // Store pointer to ourselves in the blast toolkit actor's userData
-        m_tkActor.userData = this;
+        m_tkActor->userData = this;
 
         m_shapesProvider = AZStd::make_unique<ShapesProvider>(m_entity->GetId(), desc.m_bodyConfiguration);
     }
 
     BlastActorImpl::~BlastActorImpl()
     {
-        m_tkActor.userData = nullptr;
     }
 
     void BlastActorImpl::Spawn()
@@ -166,9 +166,9 @@ namespace Blast
         return m_family;
     }
 
-    Nv::Blast::TkActor& BlastActorImpl::GetTkActor() const
+    const Nv::Blast::TkActor& BlastActorImpl::GetTkActor() const
     {
-        return m_tkActor;
+        return *m_tkActor.get();
     }
 
     AzPhysics::SimulatedBody* BlastActorImpl::GetSimulatedBody()
@@ -204,6 +204,6 @@ namespace Blast
 
     void BlastActorImpl::Damage(const NvBlastDamageProgram& program, NvBlastExtProgramParams* programParams)
     {
-        m_tkActor.damage(program, programParams);
+        m_tkActor->damage(program, programParams);
     }
 } // namespace Blast

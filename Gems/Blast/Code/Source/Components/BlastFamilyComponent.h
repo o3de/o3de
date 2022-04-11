@@ -34,8 +34,8 @@ namespace Blast
     //! Component that handles simulation of the Blast family.
     class BlastFamilyComponent
         : public AZ::Component
-        , public BlastFamilyDamageRequestBus::MultiHandler
-        , public BlastFamilyComponentRequestBus::Handler
+        , protected BlastFamilyDamageRequestBus::MultiHandler
+        , protected BlastFamilyComponentRequestBus::Handler
         , protected BlastListener
     {
     public:
@@ -59,6 +59,7 @@ namespace Blast
         void Activate() override;
         void Deactivate() override;
 
+    protected:
         // Lifecycle
         void Spawn();
         void Despawn();
@@ -83,7 +84,6 @@ namespace Blast
         // BlastFamilyComponentRequestBus
         AZStd::vector<const BlastActor*> GetActors() override;
         AZStd::vector<BlastActorData> GetActorsData() override;
-
         void FillDebugRenderBuffer(DebugRenderBuffer& debugRenderBuffer, DebugRenderMode debugRenderMode) override;
         void ApplyStressDamage() override;
         void SyncMeshes() override;

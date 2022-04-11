@@ -11,6 +11,7 @@
 #include <Blast/BlastActor.h>
 #include <Actor/BlastActorDesc.h>
 #include <PhysX/ColliderComponentBus.h>
+#include <PxSmartPtr.h>
 
 namespace Nv::Blast
 {
@@ -33,7 +34,7 @@ namespace Blast
         void Damage(const NvBlastDamageProgram& program, NvBlastExtProgramParams* programParams) override;
 
         const BlastFamily& GetFamily() const override;
-        Nv::Blast::TkActor& GetTkActor() const override;
+        const Nv::Blast::TkActor& GetTkActor() const override;
         AZ::Transform GetTransform() const override;
 
         const AZ::Entity* GetEntity() const override;
@@ -60,7 +61,7 @@ namespace Blast
             const Physics::MaterialId& material);
 
         const BlastFamily& m_family;
-        Nv::Blast::TkActor& m_tkActor;
+        physx::unique_ptr<Nv::Blast::TkActor> m_tkActor;
         AZStd::unique_ptr<ShapesProvider> m_shapesProvider;
 
         AZStd::shared_ptr<AZ::Entity> m_entity;
