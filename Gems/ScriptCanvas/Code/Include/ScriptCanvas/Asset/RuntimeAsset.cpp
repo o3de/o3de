@@ -123,6 +123,18 @@ namespace ScriptCanvas
             return IsPreloadedResult::DataNotLoaded;
         }
 
+        const auto runtimeData = overrides.m_runtimeAsset.Get()->m_runtimeData;
+
+        if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+        {
+            return IsPreloadedResult::PreloadBehaviorNotEnforced;
+        }
+
+        if (!runtimeData.m_script.Get())
+        {
+            return IsPreloadedResult::DataNotLoaded;
+        }
+
         for (auto& dependency : overrides.m_dependencies)
         {
             if (const auto dependencyResult = IsPreloaded(dependency); dependencyResult != IsPreloadedResult::Yes)
@@ -146,7 +158,19 @@ namespace ScriptCanvas
             return IsPreloadedResult::DataNotLoaded;
         }
 
-        for (auto& dependency : asset.Get()->m_runtimeData.m_requiredAssets)
+        const auto runtimeData = asset.Get()->m_runtimeData;
+
+        if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+        {
+            return IsPreloadedResult::PreloadBehaviorNotEnforced;
+        }
+
+        if (!runtimeData.m_script.Get())
+        {
+            return IsPreloadedResult::DataNotLoaded;
+        }
+
+        for (auto& dependency : runtimeData.m_requiredAssets)
         {
             if (const auto dependencyResult = IsPreloaded(dependency); dependencyResult != IsPreloadedResult::Yes)
             {

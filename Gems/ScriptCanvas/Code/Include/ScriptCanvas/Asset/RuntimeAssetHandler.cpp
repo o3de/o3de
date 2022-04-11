@@ -123,7 +123,7 @@ namespace ScriptCanvas
         {
             AZ::ObjectStream* binaryObjStream = AZ::ObjectStream::Create(stream, *m_serializeContext
                 , g_saveRuntimeAssetsAsPlainTextForDebug
-                    ? AZ::ObjectStream::ST_XML
+                    ? AZ::ObjectStream::ST_JSON
                     : AZ::ObjectStream::ST_BINARY);
             bool graphSaved = binaryObjStream->WriteClass(&runtimeAsset->m_runtimeData);
             binaryObjStream->Finalize();

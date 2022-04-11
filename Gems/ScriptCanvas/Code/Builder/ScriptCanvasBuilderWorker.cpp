@@ -207,6 +207,8 @@ namespace ScriptCanvasBuilder
 
     void Worker::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
     {
+        using namespace ScriptCanvas;
+
         AZ_TracePrintf(s_scriptCanvasBuilder, "Start Processing Job");
         // A runtime script canvas component is generated, which creates a .scriptcanvas_compiled file
         AZStd::string fullPath;
@@ -254,7 +256,7 @@ namespace ScriptCanvasBuilder
         {
             AZ::Entity* buildEntity = sourceHandle.Get()->GetEntity();
             ProcessTranslationJobInput input;
-            input.assetID = AZ::Data::AssetId(request.m_sourceFileUUID, AZ_CRC("RuntimeData", 0x163310ae));
+            input.assetID = AZ::Data::AssetId(request.m_sourceFileUUID, RuntimeDataSubId);
             input.request = &request;
             input.response = &response;
             input.runtimeScriptCanvasOutputPath = runtimeScriptCanvasOutputPath;
