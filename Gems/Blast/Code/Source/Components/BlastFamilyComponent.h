@@ -113,7 +113,6 @@ namespace Blast
         const BlastActorConfiguration m_actorConfiguration{};
 
         bool m_isSpawned = false;
-        bool m_shouldSpawnOnAssetLoad = false;
         DebugRenderMode m_debugRenderMode;
 
         using CollisionHandlersMap = AZStd::unordered_map<AZ::EntityId, AzPhysics::SimulatedBodyEvents::OnCollisionBegin::Handler>;

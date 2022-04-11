@@ -66,7 +66,7 @@ namespace Blast
         AZ_Assert(actor, "TkActor creation failed when creating BlastFamily.");
 
         // The new actor is the first member of a new TkFamily, which will be owned by BlastFamilyImpl.
-        // Family takes care of releasing whatever actor remaining.
+        // Family takes care of releasing whatever actor is remaining.
         m_tkFamily.reset(&actor->getFamily());
 
         // If a TkGroup was passed in the description, add the new TkActor to it.
@@ -81,8 +81,6 @@ namespace Blast
     BlastFamilyImpl::~BlastFamilyImpl()
     {
         Despawn();
-
-        // TODO: Spawn and Despawn are not equals. Spawn assumes that family has 1 actor. Despawn destroys all actors, leaving family empy, so it cannot be called Spawn again.
     }
 
     bool BlastFamilyImpl::Spawn(const AZ::Transform& transform)

@@ -188,7 +188,11 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        AZ_Assert(m_blastAsset.GetId().IsValid(), "BlastFamilyComponent created with invalid blast asset.");
+        if (!m_blastAsset.GetId().IsValid())
+        {
+            AZ_Warning("BlastFamilyComponent", false, "Blast Family Component created with invalid blast asset.");
+            return;
+        }
 
         Spawn();
     }
@@ -211,8 +215,13 @@ namespace Blast
 
         if (!m_blastAsset.IsReady())
         {
-            m_shouldSpawnOnAssetLoad = true;
-            return;
+            m_blastAsset.QueueLoad();
+            m_blastAsset.BlockUntilLoadComplete();
+            if (!m_blastAsset.IsReady())
+            {
+                AZ_Error("BlastFamilyComponent", false, "Failed to load blast asset %s.", m_blastAsset.GetHint().c_str());
+                return;
+            }
         }
 
         auto blastSystem = AZ::Interface<BlastSystemRequests>::Get();
