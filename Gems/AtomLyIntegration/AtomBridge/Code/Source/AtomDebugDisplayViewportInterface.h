@@ -137,7 +137,6 @@ namespace AZ::AtomBridge
         // work tracked in [ATOM-3459]
         void SetColorF(float r, float g, float b, float a = 1.f) override;
         void SetColor(const AZ::Color& color) override;
-        void SetColorFromVector4(const AZ::Vector4& color) override;
         void SetAlpha(float a) override;
         void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
         void DrawQuad(float width, float height) override;
