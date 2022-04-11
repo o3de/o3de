@@ -87,7 +87,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_EmissiveState.lua"
+                "file": "Materials/Types/StandardPBR_EmissiveState.lua"
             }
         }
     ]
