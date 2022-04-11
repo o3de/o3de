@@ -13,6 +13,8 @@
 #include <TerrainSrg.azsli>
 #include <TerrainCommon.azsli>
 #include <TerrainDetailHelpers.azsli>
+#include <TerrainMacroHelpers.azsli>
+#include <ClipmapComputeHelpers.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
@@ -73,84 +75,76 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
     return OUT;
 }
 
+void GatherSurfaceDataFromMaterials(
+    in float2 position,
+    in float detailFactor,
+    inout float3 macroColor,
+    inout float3 macroNormal,
+    inout bool hasDetailSurface,
+    inout DetailSurface detailSurface
+    )
+{
+    // ------- Macro Data -------
+    float2 positionDdx = ddx(position);
+    float2 positionDdy = ddy(position);
+    SampleMacroTexture(position, positionDdx, positionDdy, macroColor, macroNormal);
+
+    // ------- Detail Data -------
+    float2 detailUv = position.xy * TerrainMaterialSrg::m_detailTextureMultiplier;
+    float2 detailUvDdx = ddx(detailUv);
+    float2 detailUvDdy = ddy(detailUv);
+    float2 detailRegionCoord = position.xy * TerrainSrg::m_detailMaterialIdScale;
+
+    // Only sample detail textures if inside where detail materials should be drawn.
+    if (detailFactor < 1.0)
+    {
+        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, detailUvDdx, detailUvDdy, macroColor);
+    }
+}
+
+void GatherSurfaceDataFromClipmaps(
+    in float2 position,
+    in float detailFactor,
+    inout float3 macroColor,
+    inout float3 macroNormal,
+    inout bool hasDetailSurface,
+    inout DetailSurface detailSurface
+    )
+{
+    ClipmapSample clipmapSample = SampleClipmap(position);
+    macroColor = clipmapSample.m_macroColor;
+    macroNormal = clipmapSample.m_macroNormal;
+    hasDetailSurface = clipmapSample.m_hasDetail;
+    if (hasDetailSurface)
+    {
+        detailSurface = clipmapSample.m_detailSurface;
+    }
+}
+
 ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 {
     // ------- Surface -------
     Surface surface;
     surface.position = IN.m_worldPosition.xyz;
     surface.vertexNormal = normalize(IN.m_normal);
-
-    float viewDistance = length(ViewSrg::m_worldPosition - surface.position);
+    float viewDistance = length(ViewSrg::m_worldPosition - IN.m_worldPosition.xyz);
     float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
-    float2 detailUv = IN.m_worldPosition.xy * TerrainMaterialSrg::m_detailTextureMultiplier;
-    
-    // ------- Normal -------
-    float3 macroNormal = normalize(IN.m_normal);
-    
-    // ------- Macro Color / Normal -------
+
+    // Surface data to be gathered from clipmaps or materials.
+    float3 macroNormal = surface.vertexNormal;
     float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-
-    uint2 macroGridResolution = uint2(TerrainSrg::m_macroMaterialGrid.m_resolution >> 16, TerrainSrg::m_macroMaterialGrid.m_resolution & 0xFFFF);
-    float macroTileSize = TerrainSrg::m_macroMaterialGrid.m_tileSize;
-    float2 macroGridOffset = TerrainSrg::m_macroMaterialGrid.m_offset;
-    uint2 macroGridPosition = (surface.position.xy - macroGridOffset) / macroTileSize;
-
-    uint macroTileIndex = macroGridResolution.x * macroGridPosition.y + macroGridPosition.x;
-    static const uint NumMacroMaterialsPerTile = 4;
-    macroTileIndex *= NumMacroMaterialsPerTile;
-
-    [unroll] for (uint i = 0; i < NumMacroMaterialsPerTile; ++i)
-    {
-        TerrainSrg::MacroMaterialData macroMaterialData = TerrainSrg::m_macroMaterialData[macroTileIndex + i];
-        if ((macroMaterialData.m_flags & 1) == 0)
-        {
-            break; // No more macro materials for this tile
-        }
-
-        if (any(surface.position.xy < macroMaterialData.m_boundsMin) || any (surface.position.xy > macroMaterialData.m_boundsMax))
-        {
-            continue; // Macro material exists for this tile but is out of the bounds of this particular position
-        }
-
-        float2 macroUvSize = macroMaterialData.m_boundsMax - macroMaterialData.m_boundsMin;
-        macroUvSize.x = -macroUvSize.x;
-        float2 macroUv = (macroMaterialData.m_boundsMin - surface.position.xy) / macroUvSize;
-
-        // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
-        // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
-        float2 macroUvScale = IN.m_worldPosition.xy / macroUvSize;
-        float2 ddx_macroUv = ddx(macroUvScale);
-        float2 ddy_macroUv = ddy(macroUvScale);
-
-        if (macroMaterialData.m_colorMapId != 0xFFFF)
-        {
-            macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
-            macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-        }
-
-        if (macroMaterialData.m_normalMapId != 0xFFFF)
-        {
-            bool flipX = macroMaterialData.m_flags & 2;
-            bool flipY = macroMaterialData.m_flags & 4;
-            float factor = macroMaterialData.m_normalFactor;
-        
-            float2 sampledValue = SampleNormalXY(TerrainSrg::m_textures[macroMaterialData.m_normalMapId], TerrainMaterialSrg::m_sampler, macroUv, flipX, flipY);
-            macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue, factor));
-        }
-        break;
-    }
-    
-    // ------- Base Color -------
-
-    DetailSurface detailSurface = GetDefaultDetailSurface();
-    float2 detailRegionCoord = surface.position.xy * TerrainSrg::m_detailMaterialIdScale;
     bool hasDetailSurface = false;
+    DetailSurface detailSurface = GetDefaultDetailSurface();
 
-    // Only sample detail textures if inside where detail materials should be drawn.
-    if (detailFactor < 1.0)
+    if (o_useClipmap)
     {
-        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, macroColor);
+        GatherSurfaceDataFromClipmaps(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
+    else
+    {
+        GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
+    }
+
 
     const float macroRoughness = 1.0;
     const float macroSpecularF0 = 0.5;

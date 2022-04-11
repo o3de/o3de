@@ -303,6 +303,7 @@ namespace AZ
         virtual void SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue) = 0;
         virtual BehaviorDefaultValuePtr GetDefaultValue(size_t index) const = 0;
         virtual const BehaviorParameter* GetResult() const = 0;
+        void ProcessAuxiliaryMethods(BehaviorContext* context, BehaviorMethod& method);
 
         bool AddOverload(BehaviorMethod* method);
         bool IsAnOverload(BehaviorMethod* candidate) const;

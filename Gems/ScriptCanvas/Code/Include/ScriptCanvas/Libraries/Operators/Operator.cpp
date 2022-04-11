@@ -517,6 +517,7 @@ namespace ScriptCanvas
                     slotConfiguration.m_displayType = type;
                     slotConfiguration.m_dynamicDataType = DynamicDataType::Any;
                     slotConfiguration.SetConnectionType(ConnectionType::Input);
+                    // consider reverting this
                     slotConfiguration.m_addUniqueSlotByNameAndType = false;
                     slotConfiguration.m_dynamicGroup = GetSourceDynamicTypeGroup();
                     slotConfiguration.m_displayGroup = GetSourceDisplayGroup();

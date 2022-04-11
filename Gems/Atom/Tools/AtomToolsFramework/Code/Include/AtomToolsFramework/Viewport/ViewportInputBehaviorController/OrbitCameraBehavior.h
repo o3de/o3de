@@ -12,8 +12,8 @@
 
 namespace AtomToolsFramework
 {
-    //! Rotates the camera around target position,
-    //! this can either be model center or any position in world
+    //! Rotates the camera around object position,
+    //! this can either be object center or any position in world
     class OrbitCameraBehavior final : public ViewportInputBehavior
     {
     public:

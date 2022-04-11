@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/ConstantGradientRequestBus.h>
 
@@ -72,5 +73,6 @@ namespace GradientSignal
 
     private:
         ConstantGradientConfig m_configuration;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

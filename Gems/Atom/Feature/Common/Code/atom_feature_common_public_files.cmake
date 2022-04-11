@@ -56,6 +56,9 @@ set(FILES
     Include/Atom/Feature/PostProcess/Bloom/BloomConstants.h
     Include/Atom/Feature/PostProcess/Bloom/BloomParams.inl
     Include/Atom/Feature/PostProcess/Bloom/BloomSettingsInterface.h
+    Include/Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h
+    Include/Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl
+    Include/Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h
     Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingParams.inl
     Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldConstants.h

@@ -40,6 +40,7 @@ namespace ScriptCanvas
         constexpr const char* FunctionNodeFailedToReturnUseableName = "FunctionCallNode failed to return a useable name";
         constexpr const char* FunctionDefinitionCannotStart = "Function definition graph has on graph start that can't get called";
         constexpr const char* FunctionDefinitionNodeDidNotReturnSlot = "Function definition node didn't return 1 and only execution in slot";
+        constexpr const char* GetOrSetVariableOutputNotSupplied = "the ACM output data for Get/Set should already have been supplied, but is missing";
         constexpr const char* InactiveGraph = "This graph defines no functions, it is never activated, and will never execute. Add a Start node or connect an event handler or define functions.";
         constexpr const char* InfiniteLoopWritingToVariable = "infinite loop when writing to variable";
         constexpr const char* InfiniteSelfActivationLoop = "infinite loop when activating the entity that owns this graph";
