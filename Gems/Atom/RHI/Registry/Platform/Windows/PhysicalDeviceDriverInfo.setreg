@@ -44,7 +44,7 @@
                                 "$type": "AZ::RHI::PhysicalDeviceDriverInfo",
                                 "vendor": "AMD",
                                 "minVersion": "0.0.0",
-                                "versionWithIssues": [22.2.3]
+                                "versionWithIssues": ["22.2.3"]
                             }
                     }
                 }
