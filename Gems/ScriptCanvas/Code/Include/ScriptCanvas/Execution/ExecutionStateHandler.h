@@ -60,6 +60,6 @@ namespace ScriptCanvas
 
     protected:
         // \todo allocate static space under a union of all possible derived types, and pass it into construction call
-        ExecutionStatePtr m_executionState;
+        ExecutionStatePtr m_executionState = nullptr;
     };
 }
