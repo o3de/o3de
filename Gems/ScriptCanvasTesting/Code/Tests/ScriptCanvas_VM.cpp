@@ -178,6 +178,11 @@ public:
 //     EXPECT_DEATH(CreateIdFromStringFast("0123ABCD4567EFAB0123ABCD4567EFAB0"), "");
 // }
 
+TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
+}
+
 TEST_F(ScriptCanvasTestFixture, TypeInheritance)
 {
     using namespace ScriptCanvas;

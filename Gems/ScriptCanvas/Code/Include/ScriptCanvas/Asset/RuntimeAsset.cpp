@@ -113,27 +113,27 @@ namespace ScriptCanvas
 
     IsPreloadedResult IsPreloaded(const RuntimeDataOverrides& overrides)
     {
-        if (overrides.m_runtimeAsset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
-        {
-            return IsPreloadedResult::PreloadBehaviorNotEnforced;
-        }
-
         if (!overrides.m_runtimeAsset.Get())
         {
+            if (overrides.m_runtimeAsset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                return IsPreloadedResult::PreloadBehaviorNotEnforced;
+            }
+
             return IsPreloadedResult::DataNotLoaded;
         }
 
-        const auto runtimeData = overrides.m_runtimeAsset.Get()->m_runtimeData;
-
-        if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
-        {
-            return IsPreloadedResult::PreloadBehaviorNotEnforced;
-        }
-
-        if (!runtimeData.m_script.Get())
-        {
-            return IsPreloadedResult::DataNotLoaded;
-        }
+//         const auto runtimeData = overrides.m_runtimeAsset.Get()->m_runtimeData;
+// 
+//         if (!runtimeData.m_script.Get())
+//         {
+//             if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+//             {
+//                 return IsPreloadedResult::PreloadBehaviorNotEnforced;
+//             }
+// 
+//             return IsPreloadedResult::DataNotLoaded;
+//         }
 
         for (auto& dependency : overrides.m_dependencies)
         {
@@ -148,25 +148,25 @@ namespace ScriptCanvas
 
     IsPreloadedResult IsPreloaded(RuntimeAssetPtr asset)
     {
-        if (asset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
-        {
-            return IsPreloadedResult::PreloadBehaviorNotEnforced;
-        }
-
         if (!asset.Get())
         {
+            if (asset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                return IsPreloadedResult::PreloadBehaviorNotEnforced;
+            }
+
             return IsPreloadedResult::DataNotLoaded;
         }
 
         const auto runtimeData = asset.Get()->m_runtimeData;
 
-        if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
-        {
-            return IsPreloadedResult::PreloadBehaviorNotEnforced;
-        }
-
         if (!runtimeData.m_script.Get())
         {
+            if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                return IsPreloadedResult::PreloadBehaviorNotEnforced;
+            }
+
             return IsPreloadedResult::DataNotLoaded;
         }
 
