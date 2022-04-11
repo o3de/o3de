@@ -54,78 +54,7 @@ namespace UnitTest
         }
     };
 
-    class TestUdpClient
-    {
-    public:
-        TestUdpClient()
-        {
-            AZStd::string name = AZStd::string::format("UdpClient%d", ++s_numClients);
-            m_name = name;
-            m_clientNetworkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(m_name, ProtocolType::Udp, TrustZone::ExternalClientToServer, m_connectionListener);
-            m_clientNetworkInterface->Connect(IpAddress(127, 0, 0, 1, 12345));
-        }
-
-        ~TestUdpClient()
-        {
-            AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(m_name);
-        }
-
-        AZ::Name m_name;
-        TestUdpConnectionListener m_connectionListener;
-        INetworkInterface* m_clientNetworkInterface;
-        static inline int32_t s_numClients = 0;
-    };
-
-    class TestUdpServer
-    {
-    public:
-        TestUdpServer()
-        {
-            m_serverNetworkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(m_name, ProtocolType::Udp, TrustZone::ExternalClientToServer, m_connectionListener);
-            m_serverNetworkInterface->Listen(12345);
-        }
-
-        ~TestUdpServer()
-        {
-            AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(m_name);
-        }
-
-        AZ::Name m_name = AZ::Name(AZStd::string_view("UdpServer"));
-        TestUdpConnectionListener m_connectionListener;
-        INetworkInterface* m_serverNetworkInterface;
-    };
-
-    class UdpTransportTests
-        : public AllocatorsFixture
-    {
-    public:
-
-        void SetUp() override
-        {
-            SetupAllocator();
-            AZ::NameDictionary::Create();
-
-            m_loggerComponent = AZStd::make_unique<AZ::LoggerSystemComponent>();
-            m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
-            m_networkingSystemComponent = AZStd::make_unique<AzNetworking::NetworkingSystemComponent>();
-        }
-
-        void TearDown() override
-        {
-            m_networkingSystemComponent.reset();
-            m_timeSystem.reset();
-            m_loggerComponent.reset();
-
-            AZ::NameDictionary::Destroy();
-            TeardownAllocator();
-        }
-
-        AZStd::unique_ptr<AZ::LoggerSystemComponent> m_loggerComponent;
-        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
-        AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
-    };
-
-    TEST_F(UdpTransportTests, PacketIdWrap)
+    TEST(UdpTransportTests, PacketIdWrap)
     {
         const uint32_t SEQUENCE_BOUNDARY = 0xFFFF;
         UdpPacketTracker tracker;
@@ -137,7 +66,7 @@ namespace UnitTest
         EXPECT_EQ(tracker.GetNextPacketId(), PacketId(SEQUENCE_BOUNDARY + 1));
     }
 
-    TEST_F(UdpTransportTests, AckReplication)
+    TEST(UdpTransportTests, AckReplication)
     {
         static const SequenceId TestReliableSequenceId = InvalidSequenceId;
         static const PacketType TestPacketId = PacketType{ 0 };
@@ -222,7 +151,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(UdpTransportTests, PacketIdWindow)
+    TEST(UdpTransportTests, PacketIdWindow)
     {
         const PacketType TestPacketType{ 12212 };
 
@@ -254,71 +183,5 @@ namespace UnitTest
 
         PacketAckState ackState = packetWindow.GetPacketAckStatus(PacketId(1007));
         EXPECT_EQ(ackState, PacketAckState::Nacked); // Testing that PacketId is not flagged as acked
-    }
-
-    TEST_F(UdpTransportTests, TestSingleClient)
-    {
-        TestUdpServer testServer;
-        TestUdpClient testClient;
-
-        constexpr AZ::TimeMs TotalIterationTimeMs = AZ::TimeMs{ 5000 };
-        const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
-        for (;;)
-        {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
-            m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
-            bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
-            bool canTerminate = (testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == 1)
-                             && (testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount() == 1);
-            if (canTerminate || timeExpired)
-            {
-                break;
-            }
-        }
-
-        EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
-        EXPECT_EQ(testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
-
-        const AZ::TimeMs timeoutMs = AZ::TimeMs{ 100 };
-        testClient.m_clientNetworkInterface->SetTimeoutMs(timeoutMs);
-        EXPECT_EQ(testClient.m_clientNetworkInterface->GetTimeoutMs(), timeoutMs);
-
-        EXPECT_FALSE(testClient.m_clientNetworkInterface->IsEncrypted());
-
-        EXPECT_TRUE(testServer.m_serverNetworkInterface->StopListening());
-        EXPECT_FALSE(testServer.m_serverNetworkInterface->StopListening());
-        EXPECT_FALSE(testServer.m_serverNetworkInterface->IsOpen());
-    }
-
-    TEST_F(UdpTransportTests, TestMultipleClients)
-    {
-        constexpr uint32_t NumTestClients = 50;
-    
-        TestUdpServer testServer;
-        TestUdpClient testClient[NumTestClients];
-    
-        constexpr AZ::TimeMs TotalIterationTimeMs = AZ::TimeMs{ 5000 };
-        const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
-        for (;;)
-        {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
-            m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
-            bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
-            bool canTerminate = testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == NumTestClients;
-            for (uint32_t i = 0; i < NumTestClients; ++i)
-            {
-                canTerminate &= testClient[i].m_clientNetworkInterface->GetConnectionSet().GetConnectionCount() == 1;
-            }
-            if (canTerminate || timeExpired)
-            {
-                break;
-            }
-        }
-    
-        EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), NumTestClients);
-        for (uint32_t i = 0; i < NumTestClients; ++i)
-        {
-            EXPECT_EQ(testClient[i].m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
-        }
     }
 }

@@ -38,6 +38,7 @@ ly_add_target(
             3rdParty::Qt::Widgets
             AZ::AzFramework
             AZ::AzQtComponents
+            AZ::AzNetworking.API
 )
 
 

@@ -105,21 +105,6 @@ namespace UnitTest
         }
     };
 
-    class DeltaSerializerTests
-        : public UnitTest::AllocatorsTestFixture
-    {
-    public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::AllocatorsTestFixture::TearDown();
-        }
-    };
-
     static constexpr float BLEND_FACTOR_SCALE = 1.1f;
     static constexpr uint32_t TIME_SCALE = 10;
 
@@ -145,7 +130,7 @@ namespace UnitTest
         return testContainer;
     }
 
-    TEST_F(DeltaSerializerTests, DeltaArray)
+    TEST(DeltaSerializerTests, DeltaArray)
     {
         DeltaDataContainer inContainer = TestDeltaContainer();
         AZStd::array<uint8_t, 2048> buffer;
@@ -171,7 +156,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(DeltaSerializerTests, DeltaSerializerCreateUnused)
+    TEST(DeltaSerializerTests, DeltaSerializerCreateUnused)
     {
         // Every function here should return a constant value regardless of inputs
         AzNetworking::SerializerDelta deltaSerializer;
@@ -188,7 +173,7 @@ namespace UnitTest
         EXPECT_TRUE(createSerializer.EndObject("CreateSerializer", "End"));
     }
 
-    TEST_F(DeltaSerializerTests, DeltaArraySize)
+    TEST(DeltaSerializerTests, DeltaArraySize)
     {
         DeltaDataContainer deltaContainer = TestDeltaContainer();
         DeltaDataContainer noDeltaContainer = TestDeltaContainer();
@@ -204,7 +189,7 @@ namespace UnitTest
         EXPECT_FALSE(noDeltaSerializer.IsValid()); // and that it is no longer valid due to lack of space
     }
 
-    TEST_F(DeltaSerializerTests, DeltaSerializerApplyUnused)
+    TEST(DeltaSerializerTests, DeltaSerializerApplyUnused)
     {
         // Every function here should return a constant value regardless of inputs
         AzNetworking::SerializerDelta deltaSerializer;

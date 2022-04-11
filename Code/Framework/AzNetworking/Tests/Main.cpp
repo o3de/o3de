@@ -6,8 +6,18 @@
  *
  */
 
-#include <AzCore/UnitTest/UnitTest.h>
 #include <AzTest/AzTest.h>
+#include <AzTest/GemTestEnvironment.h>
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+class AzNetworkingTestEnvironment : public AZ::Test::GemTestEnvironment
+{
+    void AddGemsAndComponents() override;
+};
+
+void AzNetworkingTestEnvironment::AddGemsAndComponents()
+{
+    AddDynamicModulePaths({ "AzNetworking" });
+}
+
+AZ_UNIT_TEST_HOOK(new AzNetworkingTestEnvironment);
 
