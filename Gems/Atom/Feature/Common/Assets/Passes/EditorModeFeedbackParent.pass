@@ -14,7 +14,7 @@
                 },
                 // Existing swapchain data
                 {
-                    "Name": "InputOutputColor",
+                    "Name": "ColorInputOutput",
                     "SlotType": "InputOutput"
                 }
             ], 
@@ -56,7 +56,7 @@
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "InputOutputColor"
+                                "Attachment": "ColorInputOutput"
                             }
                         }
                     ]

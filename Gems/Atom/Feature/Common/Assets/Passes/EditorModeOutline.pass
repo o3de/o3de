@@ -41,7 +41,7 @@
                     "LocalSlot": "OutputColor",
                     "AttachmentRef": {
                         "Pass": "Parent",
-                        "Attachment": "InputOutputColor"
+                        "Attachment": "ColorInputOutput"
                     }
                 }
             ],

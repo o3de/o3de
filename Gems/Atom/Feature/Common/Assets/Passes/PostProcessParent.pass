@@ -45,7 +45,7 @@
                     "LocalSlot": "Output",
                     "AttachmentRef": {
                         "Pass": "EditorModeFeedbackPassParent",
-                        "Attachment": "InputOutputColor"
+                        "Attachment": "ColorInputOutput"
                     }
                 },
                 {
@@ -216,7 +216,7 @@
                             }
                         },
                         {
-                            "LocalSlot": "InputOutputColor",
+                            "LocalSlot": "ColorInputOutput",
                             "AttachmentRef": {
                                 "Pass": "ContrastAdaptiveSharpeningPass",
                                 "Attachment": "OutputColor"
