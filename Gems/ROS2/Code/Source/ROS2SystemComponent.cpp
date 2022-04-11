@@ -6,10 +6,10 @@
  *
  */
 #include <ROS2SystemComponent.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Time/ITime.h>
 
 namespace ROS2
@@ -72,7 +72,7 @@ namespace ROS2
     {
         rclcpp::init(0, 0);
         m_ros2Node = std::make_shared<rclcpp::Node>("o3de_ros2_node");
-        m_executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+        m_executor = AZStd::make_shared<rclcpp::executors::SingleThreadedExecutor>();
         m_executor->add_node(m_ros2Node);
     }
 

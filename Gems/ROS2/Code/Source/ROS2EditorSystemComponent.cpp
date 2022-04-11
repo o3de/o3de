@@ -48,12 +48,10 @@ namespace ROS2
     void ROS2EditorSystemComponent::Activate()
     {
         ROS2SystemComponent::Activate();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void ROS2EditorSystemComponent::Deactivate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ROS2SystemComponent::Deactivate();
     }
 

@@ -59,7 +59,7 @@ namespace ROS2
     
     private:
         std::shared_ptr<rclcpp::Node> m_ros2Node;
-        std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> m_executor;
+        AZStd::shared_ptr<rclcpp::executors::SingleThreadedExecutor> m_executor;
         SimulationClock m_simulationClock;
     };
 

@@ -16,7 +16,6 @@ namespace ROS2
     /// System component for ROS2 editor
     class ROS2EditorSystemComponent
         : public ROS2SystemComponent
-        , private AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = ROS2SystemComponent;
     public:
