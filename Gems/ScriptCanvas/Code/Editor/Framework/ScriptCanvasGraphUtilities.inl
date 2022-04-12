@@ -152,7 +152,7 @@ namespace ScriptCanvasEditor
     AZ_INLINE void RunEditorAsset(SourceHandle asset, Reporter& reporter, ScriptCanvas::ExecutionMode mode)
     {
         AZ::Data::AssetId assetId = asset.Id();
-        AZ::Data::AssetId runtimeAssetId(assetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
+        AZ::Data::AssetId runtimeAssetId(assetId.m_guid, RuntimeDataSubId);
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
         if (!runtimeAsset.Create(runtimeAssetId, true))
         {

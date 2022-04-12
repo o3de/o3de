@@ -1245,6 +1245,7 @@ namespace ScriptCanvas
                     switch (constructionRequirement)
                     {
                     case Grammar::VariableConstructionRequirement::InputEntityId:
+                        [[fallthrough]];
                     case Grammar::VariableConstructionRequirement::InputVariable:
                         m_dotLua.WriteLineIndented("%s%s = %s", leftValue.data(), variable->m_name.data(), variable->m_name.data());
                         break;
@@ -1254,7 +1255,8 @@ namespace ScriptCanvas
                         {
                             WriteInitializeLocalSelfEntityId();
                             isSelfLocalInitialized = true;
-                        } // fall through to VariableConstructionRequirement::None case
+                        }
+                        [[fallthrough]];
                     case Grammar::VariableConstructionRequirement::None:
                         m_dotLua.WriteLineIndented("%s%s = %s", leftValue.data(), variable->m_name.data(), ToValueString(variable->m_datum, m_configuration).data());
                         break;
@@ -1280,7 +1282,6 @@ namespace ScriptCanvas
                         break;
                     }
 
-                    
                     default:
                         break;
                     }

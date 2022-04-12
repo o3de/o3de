@@ -2729,6 +2729,7 @@ namespace ScriptCanvas
                 switch (constructionRequirement)
                 {
                 case VariableConstructionRequirement::None:
+                    [[fallthrough]];
                 case VariableConstructionRequirement::SelfEntityId:
                     break;
 

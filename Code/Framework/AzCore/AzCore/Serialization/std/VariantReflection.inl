@@ -426,6 +426,17 @@ namespace AZ
             GenericClassVariant()
                 : m_classData{ SerializeContext::ClassData::Create<VariantType>("variant", GetSpecializedTypeId(), &m_variantInstanceFactory, nullptr, &m_variantContainer) }
             {
+                AZ_TracePrintf("SC_DATA_SOURCE", "Creating Generic Class info for variant type: %s."
+                    , GetSpecializedTypeId().ToString<AZStd::string>().c_str()
+                );
+
+                for (size_t i = 0; i < GetNumTemplatedArguments(); ++i)
+                {
+                    AZ_TracePrintf("SC_DATA_SOURCE", "Variant contains type: %s."
+                        , GetTemplatedTypeId(i).ToString<AZStd::string>().c_str()
+                    );
+                }
+
                 m_classData.m_dataConverter = &m_dataConverter;
                 // As the SerializeGenericTypeInfo is created on demand when a variant is reflected(in static memory)
                 // the serialize context dll module allocator has to be used to manage the lifetime of the ClassData attributes within a module
