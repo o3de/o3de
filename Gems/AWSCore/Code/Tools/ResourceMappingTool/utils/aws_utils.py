@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import boto3
 from botocore.paginate import (PageIterator, Paginator)
 from botocore.client import BaseClient
-from botocore.exceptions import (ClientError, ConfigNotFound, CredentialRetrievalError, NoCredentialsError, PartialCredentialsError, ProfileNotFound)
+from botocore.exceptions import (BotoCoreError, ClientError, ConfigNotFound, NoCredentialsError, ProfileNotFound)
 from typing import Dict, List
 
 from model import error_messages
@@ -55,7 +55,7 @@ def _initialize_boto3_aws_client(service: str, region: str = "") -> BaseClient:
             boto3_client: BaseClient = default_session.client(service, region_name=region)
         else:
             boto3_client: BaseClient = default_session.client(service)
-    except (CredentialRetrievalError, PartialCredentialsError) as error:
+    except BotoCoreError as error:
         raise RuntimeError(error)
 
     boto3_client.meta.events.register(
