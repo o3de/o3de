@@ -43,7 +43,6 @@ namespace AzFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        virtual void SetColorF(float r, float g, float b, float a = 1.f) { (void)r; (void)g; (void)b; (void)a; }
         virtual void SetColor(const AZ::Color& color) { (void)color; }
         virtual void SetAlpha(float a) { (void)a; }
         virtual void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) { (void)p1; (void)p2; (void)p3; (void)p4; }
