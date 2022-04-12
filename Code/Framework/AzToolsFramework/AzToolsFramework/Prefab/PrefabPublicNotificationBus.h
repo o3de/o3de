@@ -37,8 +37,8 @@ namespace AzToolsFramework
         };
         using PrefabPublicNotificationBus = AZ::EBus<PrefabPublicNotifications>;
 
-        //! Used to notify when a prefab has been saved to disk.
-        class PrefabSaveNotifications
+        //! Used to notify changes to a prefab template.
+        class PrefabTemplateNotifications
             : public AZ::EBusTraits
         {
         public:
@@ -49,13 +49,13 @@ namespace AzToolsFramework
             using BusIdType = TemplateId;
             //////////////////////////////////////////////////////////////////////////
 
-            //! Triggered when the editor focus is changed to a different prefab.
-            virtual void OnPrefabSaved() = 0;
+            //! Triggered when the prefab template is saved to disk.
+            virtual void OnPrefabTemplateSaved() = 0;
 
         protected:
-            ~PrefabSaveNotifications() = default;
+            ~PrefabTemplateNotifications() = default;
         };
-        using PrefabSaveNotificationBus = AZ::EBus<PrefabSaveNotifications>;
+        using PrefabTemplateNotificationBus = AZ::EBus<PrefabTemplateNotifications>;
 
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -392,7 +392,7 @@ namespace AzToolsFramework
                 return false;
             }
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, false);
-            PrefabSaveNotificationBus::Event(templateId, &PrefabSaveNotifications::OnPrefabSaved);
+            PrefabTemplateNotificationBus::Event(templateId, &PrefabTemplateNotifications::OnPrefabTemplateSaved);
             return true;
         }
 
