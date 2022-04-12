@@ -136,6 +136,16 @@ namespace Camera
         virtual void ToggleCameraAsActiveView() = 0;
 
         /**
+         * Aligns this camera with the active view in the scene, and sets it as an active camera
+         */
+        virtual void AlignCameraWithView() = 0;
+
+        /**
+         * Returns true if this is the active camera
+         */
+        virtual bool IsThisCamera() const = 0;
+
+        /**
         * Gets the camera state associated with this view.
         */
         virtual bool GetCameraState(AzFramework::CameraState& cameraState) = 0;

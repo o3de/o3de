@@ -53,15 +53,16 @@ namespace Camera
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
         /// EditorCameraViewRequestBus::Handler interface
-        void ToggleCameraAsActiveView() override { OnPossessCameraButtonClicked(); }
+        void ToggleCameraAsActiveView() override;
+        void AlignCameraWithView() override;
+        bool IsThisCamera() const override;
         bool GetCameraState(AzFramework::CameraState& cameraState) override;
 
     protected:
         void EditorDisplay(AzFramework::DebugDisplayRequests& displayInterface, const AZ::Transform& world);
         AZ::Crc32 OnPossessCameraButtonClicked();
-        AZ::Crc32 AlignCameraWithViewClicked();
+        AZ::Crc32 OnAlignCameraWithViewClicked();
         AZStd::string GetCameraViewButtonText() const;
-        bool IsThisCamera() const;
 
         float m_frustumViewPercentLength = 1.f;
         AZ::Color m_frustumDrawColor = AzFramework::ViewportColors::HoverColor;

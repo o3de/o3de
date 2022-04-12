@@ -119,7 +119,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnPossessCameraButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorCameraComponent::GetCameraViewButtonText)
                     ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets this camera to view")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::AlignCameraWithViewClicked)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnAlignCameraWithViewClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText,  "Align camera with view")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorCameraComponent::IsThisCamera)
@@ -142,6 +142,8 @@ namespace Camera
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "camera")
                 ->Event("ToggleCameraAsActiveView", &EditorCameraViewRequests::ToggleCameraAsActiveView)
+                ->Event("AlignCameraWithView", &EditorCameraViewRequests::AlignCameraWithView)
+                ->Event("IsThisCamera", &EditorCameraViewRequests::IsThisCamera)
                 ;
         }
     }
@@ -198,8 +200,13 @@ namespace Camera
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
-    AZ::Crc32 EditorCameraComponent::AlignCameraWithViewClicked()
+    AZ::Crc32 EditorCameraComponent::OnAlignCameraWithViewClicked()
     {
+        if (IsThisCamera())
+        {
+            AZ_Warning("EditorCameraComponent", false, "Camera %s is already active.", GetEntity()->GetName().c_str());
+            return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+        }
         AZStd::optional<AZ::Transform> transform = AZStd::nullopt;
         EditorCameraRequests::Bus::BroadcastResult(transform, &EditorCameraRequests::GetActiveCameraTransform);
         if (!transform)
@@ -212,11 +219,9 @@ namespace Camera
         {
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         }
-        AzToolsFramework::ScopedUndoBatch undo("Align Camera with View");
         AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, transform.value());
         CameraRequestBus::Event(GetEntityId(), &CameraComponentRequests::SetFovRadians, fov.value());
         EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, GetEntityId());
-        undo.MarkEntityDirty(GetEntityId());
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
@@ -232,12 +237,6 @@ namespace Camera
         }
     }
 
-    bool EditorCameraComponent::IsThisCamera() const
-    {
-        AZ::EntityId currentViewEntity;
-        EditorCameraRequests::Bus::BroadcastResult(currentViewEntity, &EditorCameraRequests::GetCurrentViewEntityId);
-        return currentViewEntity == GetEntityId();
-    }
 
     void EditorCameraComponent::DisplayEntityViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
@@ -246,6 +245,23 @@ namespace Camera
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
         EditorDisplay(debugDisplay, transform);
+    }
+
+    void EditorCameraComponent::ToggleCameraAsActiveView()
+    {
+        OnPossessCameraButtonClicked();
+    }
+
+    void EditorCameraComponent::AlignCameraWithView()
+    {
+        OnAlignCameraWithViewClicked();
+    }
+
+    bool EditorCameraComponent::IsThisCamera() const
+    {
+        AZ::EntityId currentViewEntity;
+        EditorCameraRequests::Bus::BroadcastResult(currentViewEntity, &EditorCameraRequests::GetCurrentViewEntityId);
+        return currentViewEntity == GetEntityId();
     }
 
     void EditorCameraComponent::EditorDisplay(
