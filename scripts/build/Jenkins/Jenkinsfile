@@ -202,7 +202,13 @@ def GetEnvStringList(Map envVarMap) {
 
 def GetCrashArtifactDir() {
     if (env.IS_UNIX) {
-        return '/var/lib/apport/coredump/'
+        def uname = sh(script: 'uname', returnStdout: true).trim()
+        if (uname.startsWith('Darwin')) {
+            return '~/Library/Logs/DiagnosticReports/' // MacOS
+        }
+        else {
+            return '/var/lib/apport/coredump/'
+        }
     } else {
         return "$LOCALAPPDATA\\CrashDumps"
     }
