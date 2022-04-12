@@ -76,10 +76,10 @@ namespace AzNetworking
         }
     }
 
-    bool TcpConnection::Connect()
+    bool TcpConnection::Connect(uint16_t localPort)
     {
         Disconnect(DisconnectReason::TerminatedByClient, TerminationEndpoint::Local);
-        if (!m_socket->Connect(GetRemoteAddress()))
+        if (!m_socket->Connect(GetRemoteAddress(), localPort))
         {
             m_networkInterface.GetConnectionListener().OnDisconnect(this, DisconnectReason::ConnectionRejected, TerminationEndpoint::Local);
             return false;
