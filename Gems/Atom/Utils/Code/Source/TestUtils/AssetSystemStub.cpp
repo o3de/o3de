@@ -25,7 +25,7 @@ namespace UnitTest
         BusDisconnect();
     }
 
-    void AssetSystemStub::RegisterSourceInfo(const char* sourcePath, const AZ::Data::AssetId& assetId)
+    void AssetSystemStub::RegisterSourceInfo(const AZStd::string& sourcePath, const AZ::Data::AssetId& assetId)
     {
         AZ::Data::AssetInfo assetInfo;
         assetInfo.m_assetId = assetId;
@@ -33,7 +33,7 @@ namespace UnitTest
         RegisterSourceInfo(sourcePath, assetInfo, "");
     }
 
-    void AssetSystemStub::RegisterSourceInfo(const char* sourcePath, const AZ::Data::AssetInfo& assetInfo, const AZStd::string& watchFolder)
+    void AssetSystemStub::RegisterSourceInfo(const AZStd::string& sourcePath, const AZ::Data::AssetInfo& assetInfo, const AZStd::string& watchFolder)
     {
         SourceInfo sourceInfo{ assetInfo, watchFolder };
 
@@ -46,13 +46,19 @@ namespace UnitTest
         m_sourceGuid_sourceInfo_map.emplace(assetInfo.m_assetId.m_guid, sourceInfo);
     }
 
+    void AssetSystemStub::RegisterScanFolder(const AZStd::string& scanFolderPath)
+    {
+        AZStd::string normalizedScanFolderPath = scanFolderPath;
+        AzFramework::StringFunc::Path::Normalize(normalizedScanFolderPath);
+        m_scanFolders.push_back(normalizedScanFolderPath);
+    }
+
     bool AssetSystemStub::GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder)
     {
         AZStd::string normalizedSourcePath = sourcePath;
         AzFramework::StringFunc::Path::Normalize(normalizedSourcePath);
 
         auto iter = m_sourcePath_sourceInfo_map.find(normalizedSourcePath);
-
         if (iter != m_sourcePath_sourceInfo_map.end())
         {
             assetInfo = iter->second.m_assetInfo;
@@ -89,27 +95,26 @@ namespace UnitTest
     bool AssetSystemStub::GetSourceInfoBySourceUUID(const AZ::Uuid& sourceUuid, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder)
     {
         auto iter = m_sourceGuid_sourceInfo_map.find(sourceUuid);
-
         if (iter == m_sourceGuid_sourceInfo_map.end())
         {
             return false;
         }
-        else
-        {
-            assetInfo = iter->second.m_assetInfo;
-            watchFolder = iter->second.m_watchFolder;
-            return true;
-        }
+
+        assetInfo = iter->second.m_assetInfo;
+        watchFolder = iter->second.m_watchFolder;
+        return true;
     }
 
     bool AssetSystemStub::GetScanFolders([[maybe_unused]] AZStd::vector<AZStd::string>& scanFolders)
     {
-        return false;
+        scanFolders = m_scanFolders;
+        return true;
     }
 
     bool AssetSystemStub::GetAssetSafeFolders([[maybe_unused]] AZStd::vector<AZStd::string>& assetSafeFolders)
     {
-        return false;
+        assetSafeFolders = m_scanFolders;
+        return true;
     }
 
     bool AssetSystemStub::IsAssetPlatformEnabled(const char* /*platform*/)

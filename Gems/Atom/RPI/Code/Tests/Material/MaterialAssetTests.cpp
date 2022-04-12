@@ -28,6 +28,7 @@ namespace UnitTest
     protected:
         Data::Asset<MaterialTypeAsset> m_testMaterialTypeAsset;
         Data::Asset<ImageAsset> m_testImageAsset;
+        Data::Asset<ImageAsset> m_testAttachmentImageAsset;
 
         void SetUp() override
         {
@@ -38,6 +39,7 @@ namespace UnitTest
             // Since this test doesn't actually instantiate a Material, it won't need to instantiate this ImageAsset, so all we
             // need is an asset reference with a valid ID.
             m_testImageAsset = Data::Asset<ImageAsset>{ Uuid::CreateRandom(), azrtti_typeid<StreamingImageAsset>() };
+            m_testAttachmentImageAsset = Data::Asset<AttachmentImageAsset>{ Uuid::CreateRandom(), azrtti_typeid<AttachmentImageAsset>() };
 
             auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
 
@@ -55,6 +57,7 @@ namespace UnitTest
             materialTypeCreator.SetPropertyValue(Name{ "MyColor" }, Color{ 0.1f, 0.2f, 0.3f, 0.4f });
             materialTypeCreator.SetPropertyValue(Name{ "MyImage" }, m_testImageAsset);
             materialTypeCreator.SetPropertyValue(Name{ "MyEnum" }, 1u);
+            materialTypeCreator.SetPropertyValue(Name{ "MyAttachmentImage" }, m_testAttachmentImageAsset);
             EXPECT_TRUE(materialTypeCreator.End(m_testMaterialTypeAsset));
         }
 
@@ -76,7 +79,7 @@ namespace UnitTest
         auto validate = [this](Data::Asset<MaterialAsset> materialAsset)
         {
             EXPECT_EQ(m_testMaterialTypeAsset, materialAsset->GetMaterialTypeAsset());
-            EXPECT_EQ(materialAsset->GetPropertyValues().size(), 10);
+            EXPECT_EQ(materialAsset->GetPropertyValues().size(), 11);
             EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
             EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), -2);
             EXPECT_EQ(materialAsset->GetPropertyValues()[2].GetValue<uint32_t>(), 12);
@@ -87,6 +90,7 @@ namespace UnitTest
             EXPECT_EQ(materialAsset->GetPropertyValues()[7].GetValue<Color>(), Color(1.0f, 1.0f, 1.0f, 1.0f));
             EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
             EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
+            EXPECT_EQ(materialAsset->GetPropertyValues()[10].GetValue<Data::Asset<ImageAsset>>(), m_testAttachmentImageAsset);
         };
 
         // Test basic process of creating a valid asset...
@@ -105,6 +109,7 @@ namespace UnitTest
         creator.SetPropertyValue(Name{ "MyBool"   }, true);
         creator.SetPropertyValue(Name{ "MyImage"  }, m_testImageAsset);
         creator.SetPropertyValue(Name{ "MyEnum"   }, 1u);
+        creator.SetPropertyValue(Name{ "MyAttachmentImage"  }, m_testAttachmentImageAsset);
 
         Data::Asset<MaterialAsset> materialAsset;
         EXPECT_TRUE(creator.End(materialAsset));
@@ -146,12 +151,13 @@ namespace UnitTest
         creator.SetPropertyValue(Name{ "MyBool"   }, true);
         creator.SetPropertyValue(Name{ "MyImage"  }, m_testImageAsset);
         creator.SetPropertyValue(Name{ "MyEnum"   }, 1u);
+        creator.SetPropertyValue(Name{ "MyAttachmentImage"  }, m_testAttachmentImageAsset);
 
         Data::Asset<MaterialAsset> materialAsset;
         EXPECT_TRUE(creator.End(materialAsset));
 
         EXPECT_FALSE(materialAsset->WasPreFinalized());
-        EXPECT_EQ(10, materialAsset->GetRawPropertyValues().size());
+        EXPECT_EQ(11, materialAsset->GetRawPropertyValues().size());
 
         // Also test serialization...
 
@@ -163,10 +169,10 @@ namespace UnitTest
         Data::Asset<RPI::MaterialAsset> serializedAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()), noAssets);
         
         EXPECT_FALSE(materialAsset->WasPreFinalized());
-        EXPECT_EQ(10, materialAsset->GetRawPropertyValues().size());
+        EXPECT_EQ(11, materialAsset->GetRawPropertyValues().size());
 
         // GetPropertyValues() will automatically finalize the material asset, so we can go ahead and check the property values.
-        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 10);
+        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 11);
         EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
         EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), -2);
         EXPECT_EQ(materialAsset->GetPropertyValues()[2].GetValue<uint32_t>(), 12);
@@ -177,6 +183,7 @@ namespace UnitTest
         EXPECT_EQ(materialAsset->GetPropertyValues()[7].GetValue<Color>(), Color(1.0f, 1.0f, 1.0f, 1.0f));
         EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
         EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[10].GetValue<Data::Asset<ImageAsset>>(), m_testAttachmentImageAsset);
     }
 
     TEST_F(MaterialAssetTests, PropertyDefaultValuesComeFromParentMaterial)
@@ -201,7 +208,7 @@ namespace UnitTest
         ObjectStream::FilterDescriptor noAssets{ AZ::Data::AssetFilterNoAssetLoading };
         materialAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()), noAssets);
 
-        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 10);
+        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 11);
         EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
         EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), 1);
         EXPECT_EQ(materialAsset->GetPropertyValues()[2].GetValue<uint32_t>(), 2);
@@ -212,6 +219,7 @@ namespace UnitTest
         EXPECT_EQ(materialAsset->GetPropertyValues()[7].GetValue<Color>(), Color(0.1f, 0.2f, 0.3f, 0.4f));
         EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
         EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[10].GetValue<Data::Asset<ImageAsset>>(), m_testAttachmentImageAsset);
     }
 
     TEST_F(MaterialAssetTests, MaterialWithNoSRGOrProperties)

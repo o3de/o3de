@@ -42,7 +42,7 @@ class TestAutomation(EditorTestSuite):
 
     class test_Multiplayer_BasicConnectivity_Connects(EditorSingleTest):
         from .tests import Multiplayer_BasicConnectivity_Connects as test_module
-
+        
         @classmethod
         def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
             save_multiplayer_level_cache_folder_artifact(workspace, "basicconnectivity_connects")
@@ -53,4 +53,3 @@ class TestAutomation(EditorTestSuite):
         @classmethod
         def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
             save_multiplayer_level_cache_folder_artifact(workspace, "simplenetworklevelentity")
-

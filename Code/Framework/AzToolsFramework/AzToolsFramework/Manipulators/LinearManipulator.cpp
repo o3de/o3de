@@ -52,7 +52,6 @@ namespace AzToolsFramework
         start.m_screenPosition = interaction.m_mousePick.m_screenCoordinates;
         start.m_localPosition = localTransform.GetTranslation();
         start.m_localScale = AZ::Vector3(localTransform.GetUniformScale());
-        ;
         start.m_localAxis = axis;
         // sign to determine which side of the linear axis we pressed
         // (useful to know when the visual axis flips to face the camera)

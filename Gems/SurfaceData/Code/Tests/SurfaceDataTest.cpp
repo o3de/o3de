@@ -122,12 +122,12 @@ class MockSurfaceProvider
                     registryEntry.m_maxPointsCreatedPerInput = AZ::GetMax(registryEntry.m_maxPointsCreatedPerInput, entry.second.size());
                 }
 
-                SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, registryEntry);
+                m_providerHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataProvider(registryEntry);
                 SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
             }
             else
             {
-                SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataModifier, registryEntry);
+                m_providerHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataModifier(registryEntry);
                 SurfaceData::SurfaceDataModifierRequestBus::Handler::BusConnect(m_providerHandle);
             }
         }
@@ -137,12 +137,12 @@ class MockSurfaceProvider
             if (m_providerType == ProviderType::SURFACE_PROVIDER)
             {
                 SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
-                SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+                AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             }
             else
             {
                 SurfaceData::SurfaceDataModifierRequestBus::Handler::BusDisconnect();
-                SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataModifier, m_providerHandle);
+                AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataModifier(m_providerHandle);
             }
 
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
@@ -228,8 +228,8 @@ public:
             tempSingleQueryPointList.Clear();
             singleQueryResults.clear();
 
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPositions[inputIndex], testTags, tempSingleQueryPointList);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePoints(
+                queryPositions[inputIndex], testTags, tempSingleQueryPointList);
             tempSingleQueryPointList.EnumeratePoints([&singleQueryResults](
                     [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
                     const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
@@ -496,8 +496,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion)
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f, 0.0f, 16.0f), AZ::Vector3(4.0f, 4.0f, 16.0f));
     SurfaceData::SurfaceTagVector testTags = providerTags;
 
-    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
+    AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
     // We expect every entry in the output list to have two surface points, at heights 0 and 4, sorted in
@@ -533,8 +532,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingMas
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(4.0f));
     SurfaceData::SurfaceTagVector testTags = { SurfaceData::SurfaceTag(m_testSurfaceNoMatchCrc) };
 
-    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
+    AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
     // We expect every entry in the output list to have no surface points, since the requested mask doesn't match
@@ -558,8 +556,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingReg
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(16.0f), AZ::Vector3(20.0f));
     SurfaceData::SurfaceTagVector testTags = providerTags;
 
-    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
+    AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
     // We expect every entry in the output list to have no surface points, since the input points don't overlap with
@@ -605,8 +602,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_ProviderModif
         AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(4.0f));
         SurfaceData::SurfaceTagVector testTags = tagTest;
 
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(
             regionBounds, stepSize, testTags, availablePointsPerPosition);
 
         // We expect every entry in the output list to have two surface points (with heights 0 and 4),
@@ -652,8 +648,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_SimilarPoints
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(4.0f));
     SurfaceData::SurfaceTagVector testTags = { SurfaceData::SurfaceTag(m_testSurface1Crc), SurfaceData::SurfaceTag(m_testSurface2Crc) };
 
-    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
+    AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
     // We expect every entry in the output list to have two surface points, not four.  The two points
@@ -701,8 +696,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_DissimilarPoi
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(4.0f));
     SurfaceData::SurfaceTagVector testTags = { SurfaceData::SurfaceTag(m_testSurface1Crc), SurfaceData::SurfaceTag(m_testSurface2Crc) };
 
-    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
+    AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
     // We expect every entry in the output list to have four surface points with one tag each,
@@ -734,9 +728,8 @@ TEST_F(SurfaceDataTestApp, SurfaceData_VerifyGetSurfacePointsFromRegionAndGetSur
     AZ::Vector2 stepSize(1.0f, 1.0f);
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f, 0.0f, 16.0f), AZ::Vector3(4.0f, 4.0f, 16.0f));
 
-    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion, regionBounds, stepSize, providerTags,
-        availablePointsPerPosition);
+    AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(
+        regionBounds, stepSize, providerTags, availablePointsPerPosition);
 
     // For each point entry returned from GetSurfacePointsFromRegion, call GetSurfacePoints and verify the results match.
     AZStd::vector<AZ::Vector3> queryPositions;
@@ -774,8 +767,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_VerifyGetSurfacePointsFromListAndGetSurfa
         }
     }
 
-    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList,
+    AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(
         queryPositions, providerTags, availablePointsPerPosition);
 
     // For each point entry returned from GetSurfacePointsFromList, call GetSurfacePoints and verify the results match.

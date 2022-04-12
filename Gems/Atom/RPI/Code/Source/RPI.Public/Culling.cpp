@@ -843,9 +843,12 @@ namespace AZ
                     });
             }
 
-            AZ::TaskGraphEvent waitForCompletion;
-            taskGraph.Submit(&waitForCompletion);
-            waitForCompletion.Wait();
+            if (!taskGraph.IsEmpty())
+            {
+                AZ::TaskGraphEvent waitForCompletion;
+                taskGraph.Submit(&waitForCompletion);
+                waitForCompletion.Wait();
+            }
         }
 
         void CullingScene::BeginCullingJobs(const AZStd::vector<ViewPtr>& views)

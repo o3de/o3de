@@ -11,19 +11,16 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentInspector.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h>
-
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <GraphCanvas/Styling/StyleManager.h>
-
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
 #include <GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
-
-#include <Viewport/MaterialCanvasViewportWidget.h>
-#include <Window/ToolBar/MaterialCanvasToolBar.h>
-
 #include <QTranslator>
 #endif
 
@@ -50,6 +47,8 @@ namespace MaterialCanvas
 
         // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
+        void OnDocumentCleared(const AZ::Uuid& documentId) override;
+        void OnDocumentError(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         void OpenSettings() override;
@@ -58,12 +57,13 @@ namespace MaterialCanvas
     private:
         GraphCanvas::GraphCanvasTreeItem* GetNodePaletteRootTreeItem() const;
 
-        QTranslator m_translator;
-        GraphCanvas::StyleManager m_styleManager;
-        GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
-        GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
         AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
-        MaterialCanvasViewportWidget* m_materialViewport = {};
-        MaterialCanvasToolBar* m_toolBar = {};
+        AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
+        AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
+        AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};
+        GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
+        GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
+        GraphCanvas::StyleManager m_styleManager;
+        QTranslator m_translator;
     };
 } // namespace MaterialCanvas
