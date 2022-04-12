@@ -150,7 +150,7 @@
       "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
       "ASSET_PROCESSOR_PLATFORMS": "linux,server"
     }
-  }, 
+  },
   "asset_profile_nounity": {
     "TAGS": [],
     "COMMAND": "build_asset_linux.sh",
