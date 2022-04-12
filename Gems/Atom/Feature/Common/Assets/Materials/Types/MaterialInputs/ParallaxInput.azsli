@@ -32,7 +32,7 @@ void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float hei
     if(o_parallax_feature_enabled)
     {
         float3 dirToCamera;
-        if(ViewSrg::m_projectionMatrix[0].w)
+        if(ViewSrg::m_projectionMatrix[3].w == 1)
         {
             // orthographic projection (directional light)
             // No view position, use light direction
