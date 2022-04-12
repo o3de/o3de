@@ -635,6 +635,7 @@ namespace GradientSignal
                 {
                     y1IsValid = false;
                 }
+                break;
             case WrappingType::Mirror:
                 // On the mirror edge case we are only ever
                 // looking at x+1 or y+1 just out of the image
