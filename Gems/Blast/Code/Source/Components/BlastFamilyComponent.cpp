@@ -57,9 +57,10 @@ namespace Blast
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<BlastFamilyComponent, AZ::Component>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("BlastAsset", &BlastFamilyComponent::m_blastAsset)
                 ->Field("BlastMaterialAsset", &BlastFamilyComponent::m_blastMaterialAsset)
+                ->Field("BlastMaterial", &BlastFamilyComponent::m_legacyBlastMaterialId)
                 ->Field("PhysicsMaterial", &BlastFamilyComponent::m_physicsMaterialId)
                 ->Field("ActorConfiguration", &BlastFamilyComponent::m_actorConfiguration);
         }

@@ -15,6 +15,8 @@ set(FILES
     Source/Editor/EditorBlastChunksAssetHandler.cpp
     Source/Editor/EditorSystemComponent.h
     Source/Editor/EditorSystemComponent.cpp
+    Source/Editor/BlastMaterial/LegacyMaterialAssetConversion.h
+    Source/Editor/BlastMaterial/LegacyMaterialAssetConversion.cpp
     Editor/ConfigurationWidget.h
     Editor/ConfigurationWidget.cpp
     Editor/EditorWindow.h

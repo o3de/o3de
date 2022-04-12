@@ -9,11 +9,26 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Math/Uuid.h>
 
 #include <BlastMaterial/MaterialConfiguration.h>
 
 namespace Blast
 {
+    // O3DE_DEPRECATION
+    // Legacy blast material Id class used to identify the material in the collection of materials.
+    // Used when converting old material asset to new one.
+    class BlastMaterialId
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(BlastMaterialId, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(BlastMaterialId, "{BDB30505-C93E-4A83-BDD7-41027802DE0A}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ::Uuid m_id = AZ::Uuid::CreateNull();
+    };
+
     //! MaterialAsset defines a single material, which includes the configuration to create a Material instance to use at runtime.
     class MaterialAsset
         : public AZ::Data::AssetData
@@ -31,5 +46,10 @@ namespace Blast
 
     protected:
         MaterialConfiguration m_materialConfiguration;
+
+        // Legacy Blast material Id is only used when converting from old blast material asset,
+        // which holds a library of materials, to the new blast material asset.
+        BlastMaterialId m_legacyBlastMaterialId;
+        friend class BlastMaterialFromAssetConfiguration;
     };
 } // namespace Blast

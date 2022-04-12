@@ -15,7 +15,7 @@ namespace Blast
     //! Properties of a blast material.
     struct MaterialConfiguration
     {
-        AZ_TYPE_INFO(Blast::MaterialConfiguration, "{50A5FB6E-99BA-433B-9A6A-618AB4952161}");
+        AZ_TYPE_INFO(Blast::MaterialConfiguration, "{8F643AFB-D024-433B-B9CF-6932A5786DAB}");
 
         static void Reflect(AZ::ReflectContext* context);
 
