@@ -238,6 +238,16 @@ namespace EMotionFX
         {
             return m_configuration.m_playspeed;
         }
+        
+        float EditorSimpleMotionComponent::GetDuration() const
+        {
+            float result = 0.0f;
+            if (m_motionInstance)
+            {
+                result = m_motionInstance->GetDuration();
+            }
+            return result;
+        }
 
         float EditorSimpleMotionComponent::GetAssetDuration(const AZ::Data::AssetId& assetId)
         {
