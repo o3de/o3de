@@ -581,14 +581,12 @@ namespace GradientSignal
 
     float ImageGradientComponent::GetValueForSamplingType(AZ::u32 x, AZ::u32 y, float pixelX, float pixelY) const
     {
-        float value = 0.0f;
-
         switch (m_currentSamplingType)
         {
         case SamplingType::Point:
+        default:
             // Retrieve the pixel value for the single point
-            value = GetPixelValue(x, y);
-            break;
+            return GetPixelValue(x, y);
 
         case SamplingType::Bilinear:
             // Bilinear interpolation
@@ -660,11 +658,8 @@ namespace GradientSignal
             const float valueX1Y1 = (x1IsValid && y1IsValid) ? GetPixelValue(x1, y1) : 0.0f;
             const float valueXY0 = AZ::Lerp(valueX0Y0, valueX1Y0, deltaX);
             const float valueXY1 = AZ::Lerp(valueX0Y1, valueX1Y1, deltaX);
-            value = AZ::Lerp(valueXY0, valueXY1, deltaY);
-            break;
+            return AZ::Lerp(valueXY0, valueXY1, deltaY);
         }
-
-        return value;
     }
 
     void ImageGradientComponent::Activate()
