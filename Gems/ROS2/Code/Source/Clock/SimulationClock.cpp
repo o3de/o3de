@@ -29,7 +29,7 @@ namespace ROS2
         }
         else
         {
-            AZ_Warning("ROS2SystemComponent", false, "No ITime interface available");
+            AZ_Error("SimulationClock", false, "No ITime interface available for ROS2 Gem simulation clock");
             return 0;
         }
     }

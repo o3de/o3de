@@ -16,6 +16,7 @@ ly_add_target(
     NAME ROS2.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        ros2_header_files.cmake
         ros2_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
@@ -29,6 +30,16 @@ ly_add_target(
 )
 
 target_depends_on_ros2_packages(ROS2.Static rclcpp builtin_interfaces std_msgs)
+
+ly_add_target(
+    NAME ROS2.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        ros2_header_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            Include
+)
 
 # Here add ROS2 target, it depends on the ROS2.Static
 ly_add_target(
@@ -94,8 +105,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # active in Tools or Builders by default, delete one of both of the following lines:
     ly_create_alias(NAME ROS2.Tools    NAMESPACE Gem TARGETS Gem::ROS2.Editor)
     ly_create_alias(NAME ROS2.Builders NAMESPACE Gem TARGETS Gem::ROS2.Editor)
-
-
 endif()
 
 ################################################################################
