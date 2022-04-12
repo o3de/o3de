@@ -36,11 +36,24 @@ namespace AzToolsFramework
     QVariant DPEModelNode::getData(int role)
     {
         QVariant returnedData;
-        if (role == Qt::DisplayRole)
+        if (role == Qt::DisplayRole || role == Qt::EditRole)
         {
             returnedData = m_data;
         }
         return returnedData;
+    }
+
+    bool DPEModelNode::setData(int role, const QVariant& value)
+    {
+        bool succeeded = false;
+        if (role == Qt::EditRole)
+        {
+            auto& jsonBackend = getModel()->getBackend();
+            AZStd::string stringBuffer = value.toString().toUtf8().constData();
+            auto writeOutcome = AZ::Dom::Utils::SerializedStringToValue(jsonBackend, stringBuffer, AZ::Dom::Lifetime::Temporary);
+            //AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(currNodeVal, writeOutcome.GetValue());
+        }
+        return succeeded;
     }
 
     Qt::ItemFlags DPEModelNode::getFlags()
@@ -215,6 +228,17 @@ namespace AzToolsFramework
             returnedData = theNode->getData(role);
         }
         return returnedData;
+    }
+
+    bool DPEDebugModel::setData(const QModelIndex& index, const QVariant& value, int role)
+    {
+        bool succeeded = false;
+        auto theNode = getNodeFromIndex(index);
+        if (theNode)
+        {
+            succeeded = theNode->setData(role, value);
+        }
+        return succeeded;
     }
 
     Qt::ItemFlags DPEDebugModel::flags(const QModelIndex& passedIndex) const
