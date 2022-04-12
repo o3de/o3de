@@ -611,15 +611,53 @@ namespace GradientSignal
             float deltaX = pixelX - floor(pixelX);
             float deltaY = pixelY - floor(pixelY);
 
-            // Don't let the x1,y1 point extend beyond the bounds of our width/height
-            AZ::u32 x1 = AZStd::min(x + 1, width - 1);
-            AZ::u32 y1 = AZStd::min(y + 1, height - 1);
+            // Handle the x1,y1 points based on the configured wrapping type
+            AZ::u32 x1;
+            AZ::u32 y1;
+            bool x1IsValid = true;
+            bool y1IsValid = true;
+            switch (m_gradientTransform.GetWrappingType())
+            {
+            case WrappingType::ClampToEdge:
+                x1 = AZStd::min(x + 1, width - 1);
+                y1 = AZStd::min(y + 1, height - 1);
+                break;
+            case WrappingType::ClampToZero:
+                // For ClampToZero, the value will always be 0 outside of the shape
+                // So go ahead and do the calculation here, but if it ends
+                // up being outside of the shape, then it will be considered
+                // invalid and we will use 0 for the value below
+                x1 = x + 1;
+                if (x1 >= width)
+                {
+                    x1IsValid = false;
+                }
+                y1 = y + 1;
+                if (y1 >= height)
+                {
+                    y1IsValid = false;
+                }
+            case WrappingType::Mirror:
+                // On the mirror edge case we are only ever
+                // looking at x+1 or y+1 just out of the image
+                // bounds, so the edge value will be the
+                // mirrored value
+                x1 = AZStd::min(x + 1, width - 1);
+                y1 = AZStd::min(y + 1, height - 1);
+                break;
+            case WrappingType::None:
+            case WrappingType::Repeat:
+            default:
+                x1 = (x + 1) % width;
+                y1 = (y + 1) % width;
+                break;
+            }
 
             // Retrieve all the points in the grid and then perform the interpolation
             const float valueX0Y0 = GetPixelValue(x, y);
-            const float valueX1Y0 = GetPixelValue(x1, y);
-            const float valueX0Y1 = GetPixelValue(x, y1);
-            const float valueX1Y1 = GetPixelValue(x1, y1);
+            const float valueX1Y0 = (x1IsValid) ? GetPixelValue(x1, y) : 0.0f;
+            const float valueX0Y1 = (y1IsValid) ? GetPixelValue(x, y1) : 0.0f;
+            const float valueX1Y1 = (x1IsValid && y1IsValid) ? GetPixelValue(x1, y1) : 0.0f;
             const float valueXY0 = AZ::Lerp(valueX0Y0, valueX1Y0, deltaX);
             const float valueXY1 = AZ::Lerp(valueX0Y1, valueX1Y1, deltaX);
             value = AZ::Lerp(valueXY0, valueXY1, deltaY);

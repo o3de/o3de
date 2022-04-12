@@ -474,14 +474,14 @@ namespace UnitTest
         RunPixelTest(test);
     }
 
-    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedBilinearSampling)
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedBilinearSamplingClampToZero)
     {
         // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
         PixelTestSetup test =
         {
             4, AZ::Vector2(0.25f, 0.25f), {200, 150, 100, 50},          // Source image:  4 x 4 with (0, 0) set to different values in each channel
             4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
-            GradientSignal::WrappingType::None,
+            GradientSignal::WrappingType::ClampToZero,
             4, 0.25f, 1.0f,                                             // Validate that in 4 x 4 range, only 0, 0 is set
             { AZ::Vector2(0.25f, 0.25f), PixelTestSetup::EndOfList },
             true,                                                       // Enabled the advanced mode
@@ -534,6 +534,207 @@ namespace UnitTest
 
                     EXPECT_TRUE(AZ::IsClose(value, expectedValue));
                 }
+            }
+        }
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedBilinearSamplingClampToEdge)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0.25f, 0.25f), {200, 150, 100, 50},          // Source image:  4 x 4 with (0, 0) set to different values in each channel
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::ClampToEdge,
+            4, 0.25f, 1.0f,                                             // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0.25f, 0.25f), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Red,                          // Use Red channel (default)
+            GradientSignal::CustomScaleType::None,                      // No custom scale (default)
+            0.0f,                                                       // Min scale (won't be used since None scale type is set)
+            1.0f,                                                       // Max scale (won't be used since None scale type is set)
+            GradientSignal::SamplingType::Bilinear                      // Enable the bilinear sampling type
+        };
+
+        // Create the gradient entity with the proper configuration
+        auto entity = CreateGradientConfigEntity(test);
+
+        // Create a gradient sampler and run through a series of points to see if they match expectations.
+        GradientSignal::GradientSampler gradientSampler;
+        gradientSampler.m_gradientId = entity->GetId();
+
+        // Iterate over the points with a 0.25 step size so that we can test
+        // fractional values to verify the interpolation is working
+        for (float y = 0.0f; y < static_cast<float>(test.m_validationSize); y += test.m_stepSize)
+        {
+            for (float x = 0.0f; x < static_cast<float>(test.m_validationSize); x += test.m_stepSize)
+            {
+                GradientSignal::GradientSampleParams params;
+                params.m_position = AZ::Vector3(x, y, 0.0f);
+                float value = gradientSampler.GetValue(params);
+
+                // Only the 0,0 point has a non-zero value, so anything out of that bounds
+                // will be 0
+                if (floor(x) > 0 || floor(y) > 0)
+                {
+                    EXPECT_TRUE(value == 0.0f);
+                }
+                // Otherwise, figure out the expected interpolated value
+                else
+                {
+                    // Compute the delta X/Y for sampling pixel
+                    float deltaX = x - floor(x);
+                    float deltaY = y - floor(y);
+
+                    // Only the 0,0 pixel is set to a specific value, so the other
+                    // points in the grid we will lookup will all be 0
+                    const float valueX0Y0 = test.m_setPixelValues[0] / 255.0f;
+                    const float valueX1Y0 = 0.0f;
+                    const float valueX0Y1 = 0.0f;
+                    const float valueX1Y1 = 0.0f;
+                    const float valueXY0 = AZ::Lerp(valueX0Y0, valueX1Y0, deltaX);
+                    const float valueXY1 = AZ::Lerp(valueX0Y1, valueX1Y1, deltaX);
+                    const float expectedValue = AZ::Lerp(valueXY0, valueXY1, deltaY);
+
+                    EXPECT_TRUE(AZ::IsClose(value, expectedValue));
+                }
+            }
+        }
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedBilinearSamplingMirror)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0.25f, 0.25f), {200, 150, 100, 50},          // Source image:  4 x 4 with (0, 0) set to different values in each channel
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::Mirror,
+            4, 0.25f, 1.0f,                                             // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0.25f, 0.25f), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Red,                          // Use Red channel (default)
+            GradientSignal::CustomScaleType::None,                      // No custom scale (default)
+            0.0f,                                                       // Min scale (won't be used since None scale type is set)
+            1.0f,                                                       // Max scale (won't be used since None scale type is set)
+            GradientSignal::SamplingType::Bilinear                      // Enable the bilinear sampling type
+        };
+
+        // Create the gradient entity with the proper configuration
+        auto entity = CreateGradientConfigEntity(test);
+
+        // Create a gradient sampler and run through a series of points to see if they match expectations.
+        GradientSignal::GradientSampler gradientSampler;
+        gradientSampler.m_gradientId = entity->GetId();
+
+        // Iterate over the points with a 0.25 step size so that we can test
+        // fractional values to verify the interpolation is working
+        for (float y = 0.0f; y < static_cast<float>(test.m_validationSize); y += test.m_stepSize)
+        {
+            for (float x = 0.0f; x < static_cast<float>(test.m_validationSize); x += test.m_stepSize)
+            {
+                GradientSignal::GradientSampleParams params;
+                params.m_position = AZ::Vector3(x, y, 0.0f);
+                float value = gradientSampler.GetValue(params);
+
+                // Only the 0,0 point has a non-zero value, so anything out of that bounds
+                // will be 0
+                if (floor(x) > 0 || floor(y) > 0)
+                {
+                    EXPECT_TRUE(value == 0.0f);
+                }
+                // Otherwise, figure out the expected interpolated value
+                else
+                {
+                    // Compute the delta X/Y for sampling pixel
+                    float deltaX = x - floor(x);
+                    float deltaY = y - floor(y);
+
+                    // Only the 0,0 pixel is set to a specific value, so the other
+                    // points in the grid we will lookup will all be 0
+                    const float valueX0Y0 = test.m_setPixelValues[0] / 255.0f;
+                    const float valueX1Y0 = 0.0f;
+                    const float valueX0Y1 = 0.0f;
+                    const float valueX1Y1 = 0.0f;
+                    const float valueXY0 = AZ::Lerp(valueX0Y0, valueX1Y0, deltaX);
+                    const float valueXY1 = AZ::Lerp(valueX0Y1, valueX1Y1, deltaX);
+                    const float expectedValue = AZ::Lerp(valueXY0, valueXY1, deltaY);
+
+                    EXPECT_TRUE(AZ::IsClose(value, expectedValue));
+                }
+            }
+        }
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedBilinearSamplingRepeat)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0.25f, 0.25f), {200, 150, 100, 50},          // Source image:  4 x 4 with (0, 0) set to different values in each channel
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::Repeat,
+            4, 0.25f, 1.0f,                                             // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0.25f, 0.25f), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Red,                          // Use Red channel (default)
+            GradientSignal::CustomScaleType::None,                      // No custom scale (default)
+            0.0f,                                                       // Min scale (won't be used since None scale type is set)
+            1.0f,                                                       // Max scale (won't be used since None scale type is set)
+            GradientSignal::SamplingType::Bilinear                      // Enable the bilinear sampling type
+        };
+
+        // Create the gradient entity with the proper configuration
+        auto entity = CreateGradientConfigEntity(test);
+
+        // Create a gradient sampler and run through a series of points to see if they match expectations.
+        GradientSignal::GradientSampler gradientSampler;
+        gradientSampler.m_gradientId = entity->GetId();
+
+        // Helper method to return the pixel value given x/y coordinate
+        // This helper method will handle the repeating logic for us
+        auto getPixelValue = [test](AZ::u32 pixelX, AZ::u32 pixelY) {
+            pixelX = pixelX % test.m_validationSize;
+            pixelY = pixelY % test.m_validationSize;
+            if (pixelX == 0 && pixelY == 0)
+            {
+                return test.m_setPixelValues[0] / 255.0f;
+            }
+            else
+            {
+                return 0.0f;
+            }
+        };
+
+        // Iterate over the points with a 0.25 step size so that we can test
+        // fractional values to verify the interpolation is working
+        for (float y = 0.0f; y < static_cast<float>(test.m_validationSize); y += test.m_stepSize)
+        {
+            for (float x = 0.0f; x < static_cast<float>(test.m_validationSize); x += test.m_stepSize)
+            {
+                GradientSignal::GradientSampleParams params;
+                params.m_position = AZ::Vector3(x, y, 0.0f);
+                float value = gradientSampler.GetValue(params);
+
+                // Compute the delta X/Y for sampling pixel
+                float deltaX = x - floor(x);
+                float deltaY = y - floor(y);
+
+                // Any x/y pixel value that ends up being 0,0 based on the
+                // Repeat wrapping type has a specific pixel value.
+                // All other pixel values are 0.0f, so we use the getPixelValue
+                // helper method to handle getting the proper pixel value for us.
+                AZ::u32 pixelX = aznumeric_cast<AZ::u32>(floor(x));
+                AZ::u32 pixelY = aznumeric_cast<AZ::u32>(floor(y));
+                const float valueX0Y0 = getPixelValue(pixelX, pixelY);
+                const float valueX1Y0 = getPixelValue(pixelX + 1, pixelY);;
+                const float valueX0Y1 = getPixelValue(pixelX, pixelY + 1);
+                const float valueX1Y1 = getPixelValue(pixelX + 1, pixelY + 1);
+                const float valueXY0 = AZ::Lerp(valueX0Y0, valueX1Y0, deltaX);
+                const float valueXY1 = AZ::Lerp(valueX0Y1, valueX1Y1, deltaX);
+                const float expectedValue = AZ::Lerp(valueXY0, valueXY1, deltaY);
+
+                EXPECT_TRUE(AZ::IsClose(value, expectedValue));
             }
         }
     }
