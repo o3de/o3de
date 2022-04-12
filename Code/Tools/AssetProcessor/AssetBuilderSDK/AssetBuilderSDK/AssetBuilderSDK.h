@@ -629,8 +629,10 @@ namespace AssetBuilderSDK
     // A set of bit flags for a JobProduct
     enum class ProductOutputFlags : AZ::u32
     {
-        ProductAsset = 1, // Indicates this JobProduct is a product asset which should be output to the cache
-        IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermedate asset folder
+        // Indicates this JobProduct is a product asset which should be output to the cache.  This is the default.
+        // Currently it is not supported to use this with IntermediateAsset since the Common platform is required for IntermediateAsset and not yet supported for ProductAsset.
+        ProductAsset = 1,
+        IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the Common platform.
     };
 
     using ProductPathDependencySet = AZStd::unordered_set<AssetBuilderSDK::ProductPathDependency>;
