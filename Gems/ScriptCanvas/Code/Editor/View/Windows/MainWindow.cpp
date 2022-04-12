@@ -136,7 +136,7 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
-#include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
+#include <Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.h>
 
 // Save Format Conversion
 #include <AzCore/Component/EntityUtils.h>
@@ -997,45 +997,38 @@ namespace ScriptCanvasEditor
         return m_variableDockWidget->IsValidVariableType(dataType);
     }
 
-    bool MainWindow::ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, VariablePaletteRequests::SlotSetup& outSetup)
+    VariablePaletteRequests::VariableConfigurationOutput MainWindow::ShowVariableConfigurationWidget
+        ( const VariablePaletteRequests::VariableConfigurationInput& input, const QPoint& scenePosition)
     {
-        AZ_Assert(slot, "A valid slot must be provided");
-        if (slot)
+        VariablePaletteRequests::VariableConfigurationOutput output;
+        m_slotTypeSelector = new VariableConfigurationWidget(GetActiveScriptCanvasId(), input, this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
+        m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
+
+        // Only set the slot name if the user has already configured this slot, so if they are creating
+        // for the first time they will see the placeholder text instead
+        bool isValidVariableType = false;
+        VariablePaletteRequestBus::BroadcastResult(isValidVariableType, &VariablePaletteRequests::IsValidVariableType, input.m_currentType);
+        if (isValidVariableType)
         {
-            m_slotTypeSelector = new SlotTypeSelectorWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
-            m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
-
-            // Only set the slot name if the user has already configured this slot, so if they are creating
-            // for the first time they will see the placeholder text instead
-            bool isValidVariableType = false;
-            VariablePaletteRequestBus::BroadcastResult(isValidVariableType, &VariablePaletteRequests::IsValidVariableType, slot->GetDataType());
-            if (isValidVariableType)
-            {
-                m_slotTypeSelector->SetSlotName(slot->GetName());
-            }
-
-            m_slotTypeSelector->move(scenePosition);
-            m_slotTypeSelector->setEnabled(true);
-            m_slotTypeSelector->update();
-
-            if (m_slotTypeSelector->exec() != QDialog::Rejected)
-            {
-                outSetup.m_name = m_slotTypeSelector->GetSlotName();
-                outSetup.m_type = m_slotTypeSelector->GetSelectedType();
-            }
-            else
-            {
-                delete m_slotTypeSelector;
-
-                return false;
-            }
-
-            delete m_slotTypeSelector;
+            m_slotTypeSelector->SetSlotName(input.m_currentName);
         }
 
-        return true;
-    }
+        m_slotTypeSelector->move(scenePosition);
+        m_slotTypeSelector->setEnabled(true);
+        m_slotTypeSelector->update();
 
+        if (m_slotTypeSelector->exec() != QDialog::Rejected)
+        {
+            output.m_name = m_slotTypeSelector->GetSlotName();
+            output.m_type = Data::FromAZType(m_slotTypeSelector->GetSelectedType());
+            output.m_actionIsValid = true;
+            output.m_nameChanged = input.m_currentName != output.m_name;
+            output.m_typeChanged = input.m_currentType != output.m_type;
+        }
+
+        delete m_slotTypeSelector;
+        return output;
+    }
 
     void MainWindow::OpenValidationPanel()
     {
@@ -2466,10 +2459,6 @@ namespace ScriptCanvasEditor
                 QSignalBlocker signalBlocker(m_tabBar);
                 m_tabBar->SelectTab(fileAssetId);
             }
-            else
-            {
-                AZ_Assert(false, "A graph was opened, but a tab was not created for it.");
-            }
         }
 
         if (m_activeGraph.IsGraphValid())
@@ -3895,10 +3884,6 @@ namespace ScriptCanvasEditor
         contextMenu.AddMenuAction(aznew CreateAzEventHandlerSlotMenuAction(&contextMenu));
 
         auto setSlotTypeAction = aznew SetDataSlotTypeMenuAction(&contextMenu);
-        // Changing slot type is disabled temporarily because now that that user data slots are correctly coordinated with their reference
-        // variables, their type cannot be changed. The next change will allow all variables to change their type post creation, and then
-        // that will allow this action to be enabled.
-        setSlotTypeAction->setEnabled(false);
         contextMenu.AddMenuAction(setSlotTypeAction);
 
         return HandleContextMenu(contextMenu, slotId, screenPoint, scenePoint);

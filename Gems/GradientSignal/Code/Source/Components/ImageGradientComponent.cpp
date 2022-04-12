@@ -24,6 +24,33 @@ namespace GradientSignal
         void* outputValue, [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context)
     {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        auto configInstance = reinterpret_cast<ImageGradientConfig*>(outputValue);
+        AZ_Assert(configInstance, "Output value for JsonImageGradientConfigSerializer can't be null.");
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+
+        // The tiling field was moved from individual float values for X/Y to an AZ::Vector2,
+        // so we need to handle migrating these float fields over to the vector field
+        rapidjson::Value::ConstMemberIterator tilingXIter = inputValue.FindMember("TilingX");
+        if (tilingXIter != inputValue.MemberEnd())
+        {
+            AZ::ScopedContextPath subPath(context, "TilingX");
+            float tilingX;
+            result.Combine(ContinueLoading(&tilingX, azrtti_typeid<float>(), tilingXIter->value, context));
+            configInstance->m_tiling.SetX(tilingX);
+        }
+
+        rapidjson::Value::ConstMemberIterator tilingYIter = inputValue.FindMember("TilingY");
+        if (tilingYIter != inputValue.MemberEnd())
+        {
+            AZ::ScopedContextPath subPath(context, "TilingY");
+            float tilingY;
+            result.Combine(ContinueLoading(&tilingY, azrtti_typeid<float>(), tilingYIter->value, context));
+            configInstance->m_tiling.SetY(tilingY);
+        }
+
         // We can distinguish between version 1 and 2 by the presence of the "ImageAsset" field,
         // which is only in version 1.
         // For version 2, we don't need to do any special processing, so just let the base class
@@ -33,19 +60,6 @@ namespace GradientSignal
         {
             return AZ::BaseJsonSerializer::Load(outputValue, outputValueTypeId, inputValue, context);
         }
-
-        namespace JSR = AZ::JsonSerializationResult;
-
-        auto configInstance = reinterpret_cast<ImageGradientConfig*>(outputValue);
-        AZ_Assert(configInstance, "Output value for JsonImageGradientConfigSerializer can't be null.");
-
-        JSR::ResultCode result(JSR::Tasks::ReadField);
-
-        result.Combine(ContinueLoadingFromJsonObjectField(
-            &configInstance->m_tilingX, azrtti_typeid<decltype(configInstance->m_tilingX)>(), inputValue, "TilingX", context));
-
-        result.Combine(ContinueLoadingFromJsonObjectField(
-            &configInstance->m_tilingY, azrtti_typeid<decltype(configInstance->m_tilingY)>(), inputValue, "TilingY", context));
 
         // Version 1 stored a custom GradientSignal::ImageAsset as the image asset.
         // In Version 2, we changed the image asset to use the generic AZ::RPI::StreamingImageAsset,
@@ -151,15 +165,15 @@ namespace GradientSignal
         if (serialize)
         {
             serialize->Class<ImageGradientConfig, AZ::ComponentConfig>()
-                ->Version(3)
-                ->Field("TilingX", &ImageGradientConfig::m_tilingX)
-                ->Field("TilingY", &ImageGradientConfig::m_tilingY)
+                ->Version(5)
+                ->Field("Tiling", &ImageGradientConfig::m_tiling)
                 ->Field("StreamingImageAsset", &ImageGradientConfig::m_imageAsset)
                 ->Field("AdvancedMode", &ImageGradientConfig::m_advancedMode)
                 ->Field("ChannelToUse", &ImageGradientConfig::m_channelToUse)
                 ->Field("CustomScale", &ImageGradientConfig::m_customScaleType)
                 ->Field("ScaleRangeMin", &ImageGradientConfig::m_scaleRangeMin)
                 ->Field("ScaleRangeMax", &ImageGradientConfig::m_scaleRangeMax)
+                ->Field("MipIndex", &ImageGradientConfig::m_mipIndex)
                 ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -172,13 +186,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &ImageGradientConfig::m_imageAsset, "Image Asset", "Image asset whose values will be mapped as gradient output.")
                     ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("GradientSignalStreamingImageAsset"))
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_tilingX, "Tiling X", "Number of times to tile horizontally.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                    ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_tilingY, "Tiling Y", "Number of times to tile vertically.")
+                    ->DataElement(AZ::Edit::UIHandlers::Vector2, &ImageGradientConfig::m_tiling, "Tiling", "Number of times to tile horizontally/vertically.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
@@ -202,6 +210,11 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMax, "Range Maximum", "The maximum range each value from the image data is scaled against.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_mipIndex, "Mip Index", "Mip index to sample from.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::Min, 0)
+                    ->Attribute(AZ::Edit::Attributes::Max, AZ::RHI::Limits::Image::MipCountMax)
                     ;
             }
         }
@@ -211,8 +224,7 @@ namespace GradientSignal
             behaviorContext->Class<ImageGradientConfig>()
                 ->Constructor()
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
-                ->Property("tilingX", BehaviorValueProperty(&ImageGradientConfig::m_tilingX))
-                ->Property("tilingY", BehaviorValueProperty(&ImageGradientConfig::m_tilingY))
+                ->Property("tiling", BehaviorValueProperty(&ImageGradientConfig::m_tiling))
                 ;
         }
     }
@@ -333,40 +345,58 @@ namespace GradientSignal
             }
 
             m_currentChannel = m_configuration.m_channelToUse;
+            m_currentScaleType = m_configuration.m_customScaleType;
 
-            // Calculate the multiplier and offset based on our custom scale type
-            switch (m_configuration.m_customScaleType)
+            // Make sure the custom mip level doesn't exceed the available mip levels in this
+            // image asset. If so, then just use the lowest available mip level.
+            auto mipLevelCount = m_configuration.m_imageAsset->GetImageDescriptor().m_mipLevels;
+            m_currentMipIndex = m_configuration.m_mipIndex;
+            if (m_currentMipIndex >= mipLevelCount)
             {
-            case CustomScaleType::Auto:
-                SetupAutoScaleMultiplierAndOffset();
-                break;
+                AZ_Warning("GradientSignal", false, "Mip level index (%d) out of bounds, only %d levels available. Using lowest available mip level",
+                    m_currentMipIndex, mipLevelCount);
 
-            case CustomScaleType::Manual:
-                SetupManualScaleMultiplierAndOffset();
-                break;
-
-            case CustomScaleType::None:
-            default:
-                SetupDefaultMultiplierAndOffset();
-                break;
+                m_currentMipIndex = aznumeric_cast<AZ::u32>(mipLevelCount) - 1;
             }
         }
         else
         {
             m_currentChannel = ChannelToUse::Red;
-            SetupDefaultMultiplierAndOffset();
+            m_currentScaleType = CustomScaleType::None;
+            m_currentMipIndex = 0;
         }
 
-        m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
+        // Update our cached image data
+        m_imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptorForMipLevel(m_currentMipIndex);
+        m_imageData = m_configuration.m_imageAsset->GetSubImageData(m_currentMipIndex, 0);
+
+        // Calculate the multiplier and offset based on our scale type
+        // Make sure we do this last, because the calculation might
+        // depend on the image data (e.g. auto scale finds the min/max value
+        // from the image data, which might be different based on the mip level)
+        switch (m_currentScaleType)
+        {
+        case CustomScaleType::Auto:
+            SetupAutoScaleMultiplierAndOffset();
+            break;
+
+        case CustomScaleType::Manual:
+            SetupManualScaleMultiplierAndOffset();
+            break;
+
+        case CustomScaleType::None:
+        default:
+            SetupDefaultMultiplierAndOffset();
+            break;
+        }
     }
 
     float ImageGradientComponent::GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const
     {
         if (!m_imageData.empty())
         {
-            const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
-            auto width = imageDescriptor.m_size.m_width;
-            auto height = imageDescriptor.m_size.m_height;
+            const auto& width = m_imageDescriptor.m_size.m_width;
+            const auto& height = m_imageDescriptor.m_size.m_height;
 
             if (width > 0 && height > 0)
             {
@@ -391,8 +421,8 @@ namespace GradientSignal
                 // A 16x16 pixel image and tilingX = tilingY = 1  maps the uv range of 0-1 to 0-16 pixels.  
                 // A 16x16 pixel image and tilingX = tilingY = 1.5 maps the uv range of 0-1 to 0-24 pixels.
 
-                const AZ::Vector3 tiledDimensions((width * m_configuration.m_tilingX),
-                    (height * m_configuration.m_tilingY),
+                const AZ::Vector3 tiledDimensions((width * GetTilingX()),
+                    (height * GetTilingY()),
                     0.0f);
 
                 // Convert from uv space back to pixel space
@@ -409,9 +439,9 @@ namespace GradientSignal
 
                 // For terrarium, there is a separate algorithm for retrieving the value
                 const float value = (m_currentChannel == ChannelToUse::Terrarium)
-                    ? GetTerrariumPixelValue(x, y, m_imageData)
+                    ? GetTerrariumPixelValue(x, y)
                     : AZ::RPI::GetImageDataPixelValue<float>(
-                        m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+                        m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
 
                 // Scale (inverse lerp) the value into a 0 - 1 range. We also clamp it because manual scale values could cause
                 // the result to fall outside of the expected output range.
@@ -422,13 +452,11 @@ namespace GradientSignal
         return defaultValue;
     }
 
-    float ImageGradientComponent::GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y, AZStd::span<const uint8_t> imageData) const
+    float ImageGradientComponent::GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const
     {
-        const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
-
-        float r = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Red));
-        float g = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
-        float b = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
+        float r = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Red));
+        float g = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
+        float b = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
 
         /*
             "Terrarium" is an image-based terrain file format as defined here:  https://www.mapzen.com/blog/terrain-tile-service/
@@ -465,21 +493,28 @@ namespace GradientSignal
 
     void ImageGradientComponent::SetupAutoScaleMultiplierAndOffset()
     {
-        const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
-        auto width = imageDescriptor.m_size.m_width;
-        auto height = imageDescriptor.m_size.m_height;
+        auto width = m_imageDescriptor.m_size.m_width;
+        auto height = m_imageDescriptor.m_size.m_height;
 
-        // Retrieve all the pixel values from our image data
-        AZStd::vector<float> pixelValues(width * height);
+        float min = AZStd::numeric_limits<float>::max();
+        float max = AZStd::numeric_limits<float>::min();
 
         if (m_currentChannel == ChannelToUse::Terrarium)
         {
-            const auto& imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
             for (uint32_t y = 0; y < height; y++)
             {
                 for (uint32_t x = 0; x < width; x++)
                 {
-                    pixelValues[(y * width) + x] = GetTerrariumPixelValue(x, y, imageData);
+                    float value = GetTerrariumPixelValue(x, y);
+
+                    if (value < min)
+                    {
+                        min = value;
+                    }
+                    if (value > max)
+                    {
+                        max = value;
+                    }
                 }
             }
         }
@@ -489,12 +524,21 @@ namespace GradientSignal
             auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(width, height);
 
             AZ::RPI::GetSubImagePixelValues(
-                m_configuration.m_imageAsset, topLeft, bottomRight, pixelValues, aznumeric_cast<AZ::u8>(m_currentChannel));
+                m_configuration.m_imageAsset, topLeft, bottomRight,
+                [&min, &max]([[maybe_unused]] const AZ::u32& x, [[maybe_unused]] const AZ::u32& y, const float& value) {
+                if (value < min)
+                {
+                    min = value;
+                }
+                if (value > max)
+                {
+                    max = value;
+                }
+            }, aznumeric_cast<AZ::u8>(m_currentChannel));
         }
 
         // Retrieve the min/max values from our image data and set our multiplier and offset based on that
-        auto [min, max] = AZStd::minmax_element(pixelValues.begin(), pixelValues.end());
-        SetupMultiplierAndOffset(*min, *max);
+        SetupMultiplierAndOffset(min, max);
     }
 
     void ImageGradientComponent::SetupManualScaleMultiplierAndOffset()
@@ -514,7 +558,6 @@ namespace GradientSignal
         SetupDependencies();
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
 
         // Invoke the QueueLoad before connecting to the AssetBus, so that
         // if the asset is already ready, then OnAssetReady will be triggered immediately
@@ -522,18 +565,22 @@ namespace GradientSignal
         m_configuration.m_imageAsset.QueueLoad();
 
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ImageGradientComponent::Deactivate()
     {
-        AZ::Data::AssetBus::Handler::BusDisconnect();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        AZ::Data::AssetBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
 
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.Release();
     }
 
@@ -559,7 +606,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
 
         GetSubImageData();
@@ -567,7 +614,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
 
         GetSubImageData();
@@ -575,7 +622,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
 
         GetSubImageData();
@@ -583,7 +630,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> lock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_gradientTransform = newTransform;
     }
 
@@ -592,21 +639,19 @@ namespace GradientSignal
         AZ::Vector3 uvw = sampleParams.m_position;
         bool wasPointRejected = false;
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         // Return immediately if our cached image data hasn't been retrieved yet
         if (m_imageData.empty())
         {
             return 0.0f;
         }
 
+        m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
+
+        if (!wasPointRejected)
         {
-            AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
-
-            m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
-
-            if (!wasPointRejected)
-            {
-                return GetValueFromImageData(uvw, 0.0f);
-            }
+            return GetValueFromImageData(uvw, 0.0f);
         }
 
         return 0.0f;
@@ -620,6 +665,8 @@ namespace GradientSignal
             return;
         }
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         // Return immediately if our cached image data hasn't been retrieved yet
         if (m_imageData.empty())
         {
@@ -628,8 +675,6 @@ namespace GradientSignal
 
         AZ::Vector3 uvw;
         bool wasPointRejected = false;
-
-        AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
 
         for (size_t index = 0; index < positions.size(); index++)
         {
@@ -675,7 +720,10 @@ namespace GradientSignal
             AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
             {
-                AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+                // Only hold the lock during the actual data changes, to ensure that we aren't mid-query when changing it, but also to
+                // minimize the total lock duration. Also, because we've disconnected from the imageAsset Asset bus prior to locking this,
+                // we won't get any OnAsset* notifications while we're changing out the asset.
+                AZStd::unique_lock lock(m_queryMutex);
 
                 // Clear our cached image data
                 m_imageData = AZStd::span<const uint8_t>();
@@ -699,23 +747,33 @@ namespace GradientSignal
 
     float ImageGradientComponent::GetTilingX() const
     {
-        return m_configuration.m_tilingX;
+        return m_configuration.m_tiling.GetX();
     }
 
     void ImageGradientComponent::SetTilingX(float tilingX)
     {
-        m_configuration.m_tilingX = tilingX;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+        m_configuration.m_tiling.SetX(tilingX);
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     float ImageGradientComponent::GetTilingY() const
     {
-        return m_configuration.m_tilingY;
+        return m_configuration.m_tiling.GetY();
     }
 
     void ImageGradientComponent::SetTilingY(float tilingY)
     {
-        m_configuration.m_tilingY = tilingY;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+        m_configuration.m_tiling.SetY(tilingY);
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }

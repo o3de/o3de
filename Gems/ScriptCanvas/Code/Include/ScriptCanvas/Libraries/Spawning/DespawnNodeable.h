@@ -8,20 +8,20 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
+#include <Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.generated.h>
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
-#include <ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h>
-#include <Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
     //! Node for despawning entities
     class DespawnNodeable
-        : public ScriptCanvas::Nodeable
-        , public AZ::TickBus::Handler
+        : public Nodeable
+        , public AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler
     {
         SCRIPTCANVAS_NODE(DespawnNodeable);
     public:
@@ -30,14 +30,12 @@ namespace ScriptCanvas::Nodeables::Spawning
         DespawnNodeable& operator=(const DespawnNodeable& rhs);
 
         // ScriptCanvas::Nodeable  overrides ...
-        void OnInitializeExecutionState() override;
         void OnDeactivate() override;
 
-        // AZ::TickBus::Handler overrides ...
-        void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
-        
+        // AzFramework::SpawnableScriptNotificationsBus::Handler overrides ...
+        void OnDespawn(AzFramework::EntitySpawnTicket spawnTicket) override;
+
     private:
-        AZStd::vector<SpawnTicketInstance> m_despawnedTicketList;
-        AZStd::recursive_mutex m_mutex;
+        AzFramework::Scripts::SpawnableScriptMediator m_spawnableScriptMediator;
     };
 }

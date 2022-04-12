@@ -421,9 +421,9 @@ namespace ScriptCanvas
         return datum;
     }
 
-    void Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
+    bool Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
     {
-        m_node->FindModifiableDatumView(GetId(), datumView);
+        return m_node->FindModifiableDatumView(GetId(), datumView);
     }
 
     bool Slot::IsVariableReference() const
@@ -480,14 +480,14 @@ namespace ScriptCanvas
         return m_isVariableReference;
     }
 
-    void Slot::SetVariableReference(const VariableId& variableId)
+    void Slot::SetVariableReference(const VariableId& variableId, IsVariableTypeChange isTypeChange)
     {
         if (!IsVariableReference() && !ConvertToReference())
         {
             return;
         }
 
-        if (m_variableReference == variableId)
+        if ((m_variableReference == variableId) && (isTypeChange != IsVariableTypeChange::Yes))
         {
             return;
         }
@@ -498,7 +498,7 @@ namespace ScriptCanvas
 
         if (IsDynamicSlot())
         {
-            if (!HasDisplayType())
+            if (!HasDisplayType() || isTypeChange == IsVariableTypeChange::Yes)
             {
                 GraphVariable* variable = m_node->FindGraphVariable(m_variableReference);
 

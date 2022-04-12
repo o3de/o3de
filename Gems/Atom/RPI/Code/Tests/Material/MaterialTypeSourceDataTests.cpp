@@ -17,6 +17,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
@@ -44,9 +45,11 @@ namespace UnitTest
         Data::Asset<ShaderAsset> m_testShaderAsset2;
         Data::Asset<ImageAsset> m_testImageAsset;
         Data::Asset<ImageAsset> m_testImageAsset2; // For relative path testing.
+        Data::Asset<ImageAsset> m_testAttachmentImageAsset;
         static constexpr const char* TestShaderFilename             = "test.shader";
         static constexpr const char* TestShaderFilename2            = "extra.shader";
         static constexpr const char* TestImageFilename              = "test.streamingimage";
+        static constexpr const char* TestAttImageFilename           = "test.attimage";
 
         static constexpr const char* TestImageFilepathAbsolute      = "Folder/test.png";
         static constexpr const char* TestImageFilepathRelative      = "test.png";
@@ -346,6 +349,7 @@ namespace UnitTest
             m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float4" }, 52, 16, 0 });
             m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_bool" }, 68, 1, 0 });
             m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_attachmentImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
             EXPECT_TRUE(m_testMaterialSrgLayout->Finalize());
 
             AZStd::vector<RPI::ShaderOptionValuePair> optionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
@@ -365,6 +369,8 @@ namespace UnitTest
             m_testImageAsset = Data::Asset<ImageAsset>{ Data::AssetId{ Uuid::CreateRandom(), StreamingImageAsset::GetImageAssetSubId() }, azrtti_typeid<AZ::RPI::StreamingImageAsset>() };
             m_testImageAsset2 = Data::Asset<ImageAsset>{ Data::AssetId{ Uuid::CreateRandom(), StreamingImageAsset::GetImageAssetSubId() }, azrtti_typeid<StreamingImageAsset>() };
 
+            m_testAttachmentImageAsset = Data::Asset<ImageAsset>{ Data::AssetId{ Uuid::CreateRandom(), 0 }, azrtti_typeid<AZ::RPI::AttachmentImageAsset>() };
+
             Data::AssetInfo testShaderAssetInfo;
             testShaderAssetInfo.m_assetId = m_testShaderAsset.GetId();
 
@@ -377,10 +383,14 @@ namespace UnitTest
             Data::AssetInfo testImageAssetInfo2;
             testImageAssetInfo2.m_assetId = m_testImageAsset2.GetId();
             testImageAssetInfo2.m_assetType = azrtti_typeid<StreamingImageAsset>();
+                        
+            Data::AssetInfo testAttImageAssetInfo;
+            testAttImageAssetInfo.m_assetId = m_testAttachmentImageAsset.GetId();
 
             m_assetSystemStub.RegisterSourceInfo(TestShaderFilename, testShaderAssetInfo, "");
             m_assetSystemStub.RegisterSourceInfo(TestShaderFilename2, testShaderAssetInfo2, "");
             m_assetSystemStub.RegisterSourceInfo(TestImageFilename, testImageAssetInfo, "");
+            m_assetSystemStub.RegisterSourceInfo(TestAttImageFilename, testAttImageAssetInfo, "");
             // We need to normalize the path because AssetSystemStub uses it as a key to look up.
             AZStd::string testImageFilepathAbsolute(TestImageFilepathAbsolute);
             AzFramework::StringFunc::Path::Normalize(testImageFilepathAbsolute);
@@ -1440,6 +1450,7 @@ namespace UnitTest
         addProperty(MaterialPropertyDataType::Vector4, "general.MyFloat4", "m_float4",  AZ::Vector4{6.6f, 7.7f, 8.8f, 9.9f});
         addProperty(MaterialPropertyDataType::Color,   "general.MyColor",  "m_color",   AZ::Color{0.1f, 0.2f, 0.3f, 0.4f});
         addProperty(MaterialPropertyDataType::Image,   "general.MyImage",  "m_image",   AZStd::string{TestImageFilename});
+        addProperty(MaterialPropertyDataType::Image,   "general.MyAttachmentImage",  "m_attachmentImage",   AZStd::string{TestAttImageFilename});
 
         auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
         EXPECT_TRUE(materialTypeOutcome.IsSuccess());
@@ -1454,6 +1465,7 @@ namespace UnitTest
         CheckPropertyValue<Vector4> (materialTypeAsset,  Name{"general.MyFloat4"}, Vector4{ 6.6f, 7.7f, 8.8f, 9.9f });
         CheckPropertyValue<Color>   (materialTypeAsset,  Name{"general.MyColor"},  Color{ 0.1f, 0.2f, 0.3f, 0.4f });
         CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{"general.MyImage"}, m_testImageAsset);
+        CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{"general.MyAttachmentImage"}, m_testAttachmentImageAsset);
     }
     
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_NestedPropertyGroups)

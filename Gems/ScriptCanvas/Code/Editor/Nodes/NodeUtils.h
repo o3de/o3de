@@ -51,9 +51,9 @@ namespace ScriptCanvasEditor
             GeneralNode
         };
 
-        struct NodeConfiguration
+        struct NodeReplacementConfiguration
         {
-            NodeConfiguration()
+            NodeReplacementConfiguration()
                 : m_nodeType(NodeType::GeneralNode)
             {
             }
