@@ -176,6 +176,8 @@ def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
         # If the default o3de manifest file doesn't exist and the manifest_path parameter was not supplied
         # return the default o3de manifest data
         if not manifest_path.is_file():
+            logger.info(f'A manifest path of None has been supplied and the {manifest_path} does not exist.'
+                        ' The default o3de manifest data dictionary will be returned.')
             return get_default_o3de_manifest_json_data()
 
     with manifest_path.open('r') as f:
