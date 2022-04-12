@@ -102,20 +102,20 @@ namespace UnitTest
         ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath(ResolvePath("@exefolder@/root1/project/assets/objects/upgrades/materials/supercondor.material"), ResolvePath("@exefolder@/root1/project/assets/materials/condor.material"), false), "materials/condor.material");
     }
 
-    TEST_F(AtomToolsFrameworkTest, IsValidSourceDocumentPath_Succeeds)
+    TEST_F(AtomToolsFrameworkTest, IsDocumentPathInSupportedFolder_Succeeds)
     {
-        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root1/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root1/project/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root1/projects/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root1/projects/project1/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root2/projects/project1/assets/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root2/projects/project1/assets/subfolder/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root2/projects/project2/assets/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root2/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json")));
-        ASSERT_TRUE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root1/projects/project1/assets/somerandomasset.json")));
-        ASSERT_TRUE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root1/projects/project1/assets/subfolder/somerandomasset.json")));
-        ASSERT_TRUE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root1/projects/project2/assets/somerandomasset.json")));
-        ASSERT_TRUE(AtomToolsFramework::IsValidSourceDocumentPath(ResolvePath("@exefolder@/root1/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json")));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/somerandomasset.json")));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/project/somerandomasset.json")));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/somerandomasset.json")));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/project1/somerandomasset.json")));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root2/projects/project1/assets/somerandomasset.json")));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root2/projects/project1/assets/subfolder/somerandomasset.json")));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root2/projects/project2/assets/somerandomasset.json")));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root2/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json")));
+        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/project1/assets/somerandomasset.json")));
+        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/project1/assets/subfolder/somerandomasset.json")));
+        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/project2/assets/somerandomasset.json")));
+        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json")));
     }
 
     TEST_F(AtomToolsFrameworkTest, ValidateDocumentPath_Succeeds)

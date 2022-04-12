@@ -44,10 +44,11 @@
 #include <QStatusBar>
 #include <QTextEdit>
 
-// include MCore related
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -1088,37 +1089,27 @@ namespace EMStudio
     // update the items inside the Window->Create menu item
     void MainWindow::UpdateCreateWindowMenu()
     {
-        // get the plugin manager
         PluginManager* pluginManager = GetPluginManager();
 
-        // get the number of plugins
-        const size_t numPlugins = pluginManager->GetNumPlugins();
+        const size_t numRegisteredPlugins = pluginManager->GetNumRegisteredPlugins();
+        const PluginManager::PluginVector& registeredPlugins = pluginManager->GetRegisteredPlugins();
 
-        // add each plugin name in an array to sort them
-        AZStd::vector<AZStd::string> sortedPlugins;
-        sortedPlugins.reserve(numPlugins);
-        for (size_t p = 0; p < numPlugins; ++p)
+        AZStd::vector<AZStd::string> sortedPluginNames;
+        sortedPluginNames.reserve(numRegisteredPlugins);
+        for (const EMStudioPlugin* plugin : registeredPlugins)
         {
-            EMStudioPlugin* plugin = pluginManager->GetPlugin(p);
-            sortedPlugins.emplace_back(plugin->GetName());
+            sortedPluginNames.push_back(plugin->GetName());
         }
-        AZStd::sort(begin(sortedPlugins), end(sortedPlugins));
+        AZStd::sort(sortedPluginNames.begin(), sortedPluginNames.end());
 
         // clear the window menu
         m_createWindowMenu->clear();
 
         // for all registered plugins, create a menu items
-        for (size_t p = 0; p < numPlugins; ++p)
+        for (const AZStd::string& pluginTypeString : sortedPluginNames)
         {
-            // get the plugin
-            const size_t pluginIndex = pluginManager->FindPluginByTypeString(sortedPlugins[p].c_str());
-            EMStudioPlugin* plugin = pluginManager->GetPlugin(pluginIndex);
-
-            // don't add invisible plugins to the list
-            if (plugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_INVISIBLE)
-            {
-                continue;
-            }
+            const size_t pluginIndex = pluginManager->FindRegisteredPluginIndex(pluginTypeString.c_str());
+            EMStudioPlugin* plugin = registeredPlugins[pluginIndex];
 
             // check if multiple instances allowed
             // on this case the plugin is not one action but one submenu
@@ -1177,7 +1168,7 @@ namespace EMStudio
             }
 
             // if we have a dock widget plugin here, making floatable and change its window size
-            if (newPlugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_DOCKWIDGET)
+            if (newPlugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_WINDOW)
             {
                 DockWidgetPlugin* dockPlugin = static_cast<DockWidgetPlugin*>(newPlugin);
                 QRect dockRect;
@@ -1188,7 +1179,7 @@ namespace EMStudio
         }
         else // (checked == false)
         {
-            EMStudioPlugin* plugin = EMStudio::GetPluginManager()->GetActivePluginByTypeString(FromQtString(pluginName).c_str());
+            EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePluginByTypeString(FromQtString(pluginName).c_str());
             AZ_Assert(plugin, "Failed to get plugin, since it was checked it should be active");
             EMStudio::GetPluginManager()->RemoveActivePlugin(plugin);
         }
@@ -1226,17 +1217,24 @@ namespace EMStudio
 
             generalPropertyWidget->AddInstance(&m_options, azrtti_typeid(m_options));
 
-            PluginManager* pluginManager = GetPluginManager();
-            const size_t numPlugins = pluginManager->GetNumActivePlugins();
-            for (size_t i = 0; i < numPlugins; ++i)
+            const PluginManager::PluginVector& activePlugins = GetPluginManager()->GetActivePlugins();
+            for (EMStudioPlugin* plugin : activePlugins)
             {
-                EMStudioPlugin* currentPlugin = pluginManager->GetActivePlugin(i);
-                PluginOptions* pluginOptions = currentPlugin->GetOptions();
-                if (pluginOptions)
+                if (PluginOptions* pluginOptions = plugin->GetOptions())
                 {
                     generalPropertyWidget->AddInstance(pluginOptions, azrtti_typeid(pluginOptions));
                 }
             }
+
+            const PluginManager::PersistentPluginVector& persistentPlugins = GetPluginManager()->GetPersistentPlugins();
+            for (const AZStd::unique_ptr<PersistentPlugin>& plugin : persistentPlugins)
+            {
+                if (PluginOptions* pluginOptions = plugin->GetOptions())
+                {
+                    generalPropertyWidget->AddInstance(pluginOptions, azrtti_typeid(pluginOptions));
+                }
+            }
+
 
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -2283,16 +2281,12 @@ namespace EMStudio
                         // set the workspace not dirty
                         workspace->SetDirtyFlag(false);
 
-                        // for all registered plugins, call the after load workspace callback
-                        PluginManager* pluginManager = GetPluginManager();
-                        const size_t numPlugins = pluginManager->GetNumActivePlugins();
-                        for (size_t p = 0; p < numPlugins; ++p)
+                        const PluginManager::PluginVector& activePlugins = GetPluginManager()->GetActivePlugins();
+                        for (EMStudioPlugin* plugin : activePlugins)
                         {
-                            EMStudioPlugin* plugin = pluginManager->GetActivePlugin(p);
                             plugin->OnAfterLoadProject();
                         }
 
-                        // clear the history
                         GetCommandManager()->ClearHistory();
 
                         // set the window title using the workspace filename
@@ -2469,12 +2463,9 @@ namespace EMStudio
             LoadFiles(m_characterFiles, 0, 0, false, true);
             m_characterFiles.clear();
 
-            // for all registered plugins, call the after load actors callback
-            PluginManager* pluginManager = GetPluginManager();
-            const size_t numPlugins = pluginManager->GetNumActivePlugins();
-            for (size_t p = 0; p < numPlugins; ++p)
+            const PluginManager::PluginVector& activePlugins = GetPluginManager()->GetActivePlugins();
+            for (EMStudioPlugin* plugin : activePlugins)
             {
-                EMStudioPlugin* plugin = pluginManager->GetActivePlugin(p);
                 plugin->OnAfterLoadActors();
             }
         }
@@ -2805,14 +2796,9 @@ namespace EMStudio
 
     void MainWindow::OnUpdateRenderPlugins()
     {
-        // sort the active plugins based on their priority
-        PluginManager* pluginManager = GetPluginManager();
-
-        // get the number of active plugins, iterate through them and call the process frame method
-        const size_t numPlugins = pluginManager->GetNumActivePlugins();
-        for (size_t p = 0; p < numPlugins; ++p)
+        const PluginManager::PluginVector& activePlugins = GetPluginManager()->GetActivePlugins();
+        for (EMStudioPlugin* plugin : activePlugins)
         {
-            EMStudioPlugin* plugin = pluginManager->GetActivePlugin(p);
             if (plugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_RENDERING)
             {
                 plugin->ProcessFrame(0.0f);
@@ -2828,11 +2814,16 @@ namespace EMStudio
             return;
         }
 
-        const size_t numPlugins = pluginManager->GetNumActivePlugins();
-        for (size_t i = 0; i < numPlugins; ++i)
+        const PluginManager::PluginVector& activePlugins = pluginManager->GetActivePlugins();
+        for (EMStudioPlugin* plugin : activePlugins)
         {
-            EMStudio::EMStudioPlugin* plugin = pluginManager->GetActivePlugin(i);
             plugin->ProcessFrame(timeDelta);
+        }
+
+        const PluginManager::PersistentPluginVector& persistentPlugins = pluginManager->GetPersistentPlugins();
+        for (const AZStd::unique_ptr<PersistentPlugin>& plugin : persistentPlugins)
+        {
+            plugin->Update(timeDelta);
         }
     }
 
