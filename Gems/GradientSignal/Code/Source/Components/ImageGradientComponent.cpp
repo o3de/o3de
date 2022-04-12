@@ -616,10 +616,6 @@ namespace GradientSignal
             bool y1IsValid = true;
             switch (m_gradientTransform.GetWrappingType())
             {
-            case WrappingType::ClampToEdge:
-                x1 = AZStd::min(x0 + 1, width - 1);
-                y1 = AZStd::min(y0 + 1, height - 1);
-                break;
             case WrappingType::ClampToZero:
                 // For ClampToZero, the value will always be 0 outside of the shape
                 // So go ahead and do the calculation here, but if it ends
@@ -636,6 +632,7 @@ namespace GradientSignal
                     y1IsValid = false;
                 }
                 break;
+            case WrappingType::ClampToEdge:
             case WrappingType::Mirror:
                 // On the mirror edge case we are only ever
                 // looking at x+1 or y+1 just out of the image
