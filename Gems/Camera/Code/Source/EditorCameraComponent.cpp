@@ -119,8 +119,8 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnPossessCameraButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorCameraComponent::GetCameraViewButtonText)
                     ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets this camera to view")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnAlignCameraWithViewClicked)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText,  "Align camera with view")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnMatchViewportClicked)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText,  "Match Viewport")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorCameraComponent::IsThisCamera)
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Debug")
@@ -142,7 +142,7 @@ namespace Camera
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "camera")
                 ->Event("ToggleCameraAsActiveView", &EditorCameraViewRequests::ToggleCameraAsActiveView)
-                ->Event("AlignCameraWithView", &EditorCameraViewRequests::AlignCameraWithView)
+                ->Event("MatchViewport", &EditorCameraViewRequests::MatchViewport)
                 ->Event("IsThisCamera", &EditorCameraViewRequests::IsThisCamera)
                 ;
         }
@@ -200,7 +200,7 @@ namespace Camera
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
-    AZ::Crc32 EditorCameraComponent::OnAlignCameraWithViewClicked()
+    AZ::Crc32 EditorCameraComponent::OnMatchViewportClicked()
     {
         if (IsThisCamera())
         {
@@ -252,9 +252,9 @@ namespace Camera
         OnPossessCameraButtonClicked();
     }
 
-    void EditorCameraComponent::AlignCameraWithView()
+    void EditorCameraComponent::MatchViewport()
     {
-        OnAlignCameraWithViewClicked();
+        OnMatchViewportClicked();
     }
 
     bool EditorCameraComponent::IsThisCamera() const

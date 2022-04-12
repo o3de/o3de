@@ -54,14 +54,14 @@ namespace Camera
 
         /// EditorCameraViewRequestBus::Handler interface
         void ToggleCameraAsActiveView() override;
-        void AlignCameraWithView() override;
+        void MatchViewport() override;
         bool IsThisCamera() const override;
         bool GetCameraState(AzFramework::CameraState& cameraState) override;
 
     protected:
         void EditorDisplay(AzFramework::DebugDisplayRequests& displayInterface, const AZ::Transform& world);
         AZ::Crc32 OnPossessCameraButtonClicked();
-        AZ::Crc32 OnAlignCameraWithViewClicked();
+        AZ::Crc32 OnMatchViewportClicked();
         AZStd::string GetCameraViewButtonText() const;
 
         float m_frustumViewPercentLength = 1.f;

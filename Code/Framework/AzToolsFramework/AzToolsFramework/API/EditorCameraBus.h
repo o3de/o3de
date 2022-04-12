@@ -136,9 +136,9 @@ namespace Camera
         virtual void ToggleCameraAsActiveView() = 0;
 
         /**
-         * Aligns this camera with the active view in the scene, and sets it as an active camera
+         * Aligns this camera with the active view in the scene and sets it as the active camera
          */
-        virtual void AlignCameraWithView() = 0;
+        virtual void MatchViewport() = 0;
 
         /**
          * Returns true if this is the active camera
