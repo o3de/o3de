@@ -105,12 +105,14 @@ namespace AZ
             {
                 // If module already open, return false, it was not loaded.
                 alreadyLoaded = NULL != GetModuleHandleW(fileNameW);
-                m_handle = LoadLibraryW(fileNameW);
+                m_handle = LoadLibraryExW(fileNameW, nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                if (!m_handle)
+                    m_handle = LoadLibraryW(fileNameW);
             }
             else
             {
                 AZ_Assert(false, "Failed to convert %s to wchar with error %d!", m_fileName.c_str(), wcharResult);
-                m_handle = NULL;
+                m_handle = nullptr;
                 return LoadStatus::LoadFailure;
             }
 
