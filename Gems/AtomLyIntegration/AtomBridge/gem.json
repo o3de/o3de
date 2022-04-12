@@ -26,11 +26,12 @@
         "ImguiAtom",
         "AtomFont",
         "AtomViewportDisplayInfo",
-        "Atom",
         "AtomShader",
         "ImageProcessingAtom",
         "AtomToolsFramework",
         "AtomViewportDisplayIcons",
-        "MaterialEditor"
+        "MaterialCanvas",
+        "MaterialEditor",
+        "ShaderManagementConsole"
     ]
 }

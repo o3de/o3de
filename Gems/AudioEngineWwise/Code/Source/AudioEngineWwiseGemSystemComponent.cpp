@@ -109,7 +109,7 @@ namespace AudioEngineWwiseGem
         bool success = false;
 
         // Check memory-related Wwise Cvars...
-        const AZ::u64 memorySubpartitionSizes = Audio::Wwise::Cvars::s_StreamDeviceMemorySize
+        [[maybe_unused]] const AZ::u64 memorySubpartitionSizes = Audio::Wwise::Cvars::s_StreamDeviceMemorySize
 #if !defined(WWISE_RELEASE)
             + Audio::Wwise::Cvars::s_MonitorQueueMemorySize
 #endif // !WWISE_RELEASE

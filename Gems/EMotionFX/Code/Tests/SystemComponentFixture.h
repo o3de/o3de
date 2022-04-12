@@ -116,6 +116,7 @@ namespace EMotionFX
 
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_createEditContext = true;
+            startupParameters.m_loadAssetCatalog = false;
 
             // Add EMotionFX as an active gem within the Settings Registry for unit test
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)

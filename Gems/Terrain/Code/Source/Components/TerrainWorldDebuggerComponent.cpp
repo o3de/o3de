@@ -21,6 +21,8 @@
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
+AZ_DECLARE_BUDGET(Terrain);
+
 namespace Terrain
 {
     void TerrainWorldDebuggerConfig::Reflect(AZ::ReflectContext* context)
@@ -196,7 +198,7 @@ namespace Terrain
     void TerrainWorldDebuggerComponent::DrawWireframe(
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Terrain);
 
         if (!m_configuration.m_drawWireframe)
         {

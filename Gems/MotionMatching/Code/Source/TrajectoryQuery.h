@@ -45,6 +45,7 @@ namespace EMotionFX::MotionMatching
             EMode mode,
             const AZ::Vector3& targetPos,
             const AZ::Vector3& targetFacingDir,
+            bool useTargetFacingDir,
             float timeDelta,
             float pathRadius,
             float pathSpeed);
@@ -62,7 +63,8 @@ namespace EMotionFX::MotionMatching
         void PredictFutureTrajectory(const ActorInstance& actorInstance,
             const FeatureTrajectory* trajectoryFeature,
             const AZ::Vector3& targetPos,
-            const AZ::Vector3& targetFacingDir);
+            const AZ::Vector3& targetFacingDir,
+            bool useTargetFacingDir);
 
         AZStd::vector<ControlPoint> m_pastControlPoints;
         AZStd::vector<ControlPoint> m_futureControlPoints;

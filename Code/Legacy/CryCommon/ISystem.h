@@ -965,7 +965,7 @@ struct ISystem
     //   Execute command line arguments.
     //   Should be after init game.
     // Example:
-    //   +g_gametype ASSAULT +map "testy"
+    //   +g_gametype ASSAULT +LoadLevel "testy"
     virtual void ExecuteCommandLine(bool deferred=true) = 0;
 
     // Description:
@@ -1053,7 +1053,10 @@ void* GetModuleShutdownISystemSymbol();
 //   Interface of the DLL.
 extern "C"
 {
-    CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
+#if !defined(AZ_MONOLITHIC_BUILD)
+    CRYSYSTEM_API
+#endif
+    ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
 }
 
 // Description:

@@ -17,6 +17,7 @@ import ly_test_tools.environment.waiter as waiter
 
 logger = logging.getLogger(__name__)
 
+
 def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     """
     Kills all common O3DE processes such as the Editor, Game Launchers, and optionally Asset Processor. Defaults to
@@ -36,6 +37,7 @@ def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     else:
         process_utils.kill_processes_named(LY_PROCESSES, ignore_extensions=True)
 
+
 def get_testcase_module_filepath(testcase_module: Module) -> str:
     """
     return the full path of the test module using always '.py' extension
@@ -43,6 +45,7 @@ def get_testcase_module_filepath(testcase_module: Module) -> str:
     :return str: The full path to the testcase module
     """
     return os.path.splitext(testcase_module.__file__)[0] + ".py"
+
 
 def get_module_filename(testcase_module: Module):
     """
@@ -54,6 +57,7 @@ def get_module_filename(testcase_module: Module):
     """
     return os.path.splitext(os.path.basename(testcase_module.__file__))[0]
 
+
 def retrieve_log_path(run_id: int, workspace: AbstractWorkspaceManager) -> str:
     """
     return the log/ project path for this test run.
@@ -62,6 +66,7 @@ def retrieve_log_path(run_id: int, workspace: AbstractWorkspaceManager) -> str:
     :return str: The full path to the given editor the log/ path
     """
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
+
 
 def retrieve_crash_output(run_id: int, workspace: AbstractWorkspaceManager, timeout: float = 10) -> str:
     """
@@ -88,6 +93,7 @@ def retrieve_crash_output(run_id: int, workspace: AbstractWorkspaceManager, time
         crash_info += f"\n{str(ex)}"
     return crash_info
 
+
 def cycle_crash_report(run_id: int, workspace: AbstractWorkspaceManager) -> None:
     """
     Attempts to rename error.log and error.dmp(crash files) into new names with the timestamp on it.
@@ -107,6 +113,7 @@ def cycle_crash_report(run_id: int, workspace: AbstractWorkspaceManager) -> None
                 os.rename(filepath, new_filepath)
             except Exception as ex:
                 logger.warning(f"Couldn't cycle file {filepath}. Error: {str(ex)}")
+
 
 def retrieve_editor_log_content(run_id: int, log_name: str, workspace: AbstractWorkspaceManager, timeout: int = 10) -> str:
     """
@@ -134,6 +141,7 @@ def retrieve_editor_log_content(run_id: int, log_name: str, workspace: AbstractW
         editor_info = f"-- Error reading {log_name}: {str(ex)} --"
     return editor_info
 
+
 def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTestBase], output: str) -> int:
     """
     Finds out what was the last test that was run by inspecting the input.
@@ -153,6 +161,7 @@ def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTestBase
             index += 1
     return index
 
+
 def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
     """
     Checks all asset logs in the JobLogs directory to see if the asset has any warnings or errors. If so, the asset is
@@ -169,7 +178,8 @@ def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
                 try:
                     workspace.artifact_manager.save_artifact(full_log_path)
                 except Exception as e:  # Purposefully broad
-                    logger.warning(f"Error when saving log at path:{full_log_path}\n{e}")
+                    logger.warning(f"Error when saving log at path: {full_log_path}\n{e}")
+
 
 def _check_log_errors_warnings(log_path: str) -> bool:
     """

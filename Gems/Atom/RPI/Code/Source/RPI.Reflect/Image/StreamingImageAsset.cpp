@@ -93,18 +93,61 @@ namespace AZ
         {
             return m_totalImageDataSize;
         }
-        
+
+        RHI::ImageDescriptor StreamingImageAsset::GetImageDescriptorForMipLevel(AZ::u32 mipLevel) const
+        {
+            RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
+
+            // Retrieve the layout for the particular mip level.
+            // The levels get stored in a series of ImageMipChainAssets, which keep a
+            // record of an offset so that you can calculate the sub-image index
+            // based on the actual mip level.
+            const ImageMipChainAsset* mipChainAsset = GetImageMipChainAsset(mipLevel);
+            if (mipChainAsset)
+            {
+                auto mipChainIndex = GetMipChainIndex(mipLevel);
+                auto mipChainOffset = aznumeric_cast<AZ::u32>(GetMipLevel(mipChainIndex));
+                auto layout = mipChainAsset->GetSubImageLayout(mipLevel - mipChainOffset);
+
+                imageDescriptor.m_size = layout.m_size;
+            }
+            else
+            {
+                AZ_Warning("Streaming Image", false, "Mip level index (%d) out of bounds, only %d levels available for asset %s",
+                    mipLevel, imageDescriptor.m_mipLevels, m_assetId.ToString<AZStd::string>().c_str());
+                return RHI::ImageDescriptor();
+            }
+
+            return imageDescriptor;
+        }
+
         AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)
         {
-            if (mip >= m_mipLevelToChainIndex.size())
+            const ImageMipChainAsset* mipChainAsset = GetImageMipChainAsset(mip);
+
+            if (mipChainAsset == nullptr)
             {
+                AZ_Warning("Streaming Image", false, "MipChain asset wasn't loaded for assetId %s",
+                    m_assetId.ToString<AZStd::string>().c_str());
                 return AZStd::span<const uint8_t>();
             }
 
-            size_t mipChainIndex = m_mipLevelToChainIndex[mip];
-            MipChain& mipChain = m_mipChains[mipChainIndex];
+            auto mipChainIndex = GetMipChainIndex(mip);
+            auto mipChainOffset = aznumeric_cast<AZ::u32>(GetMipLevel(mipChainIndex));
+            return mipChainAsset->GetSubImageData(mip - mipChainOffset, slice);
+        }
 
-            ImageMipChainAsset* mipChainAsset = nullptr;
+        const ImageMipChainAsset* StreamingImageAsset::GetImageMipChainAsset(AZ::u32 mipLevel) const
+        {
+            if (mipLevel >= m_mipLevelToChainIndex.size())
+            {
+                return nullptr;
+            }
+
+            size_t mipChainIndex = m_mipLevelToChainIndex[mipLevel];
+            const MipChain& mipChain = m_mipChains[mipChainIndex];
+
+            const ImageMipChainAsset* mipChainAsset = nullptr;
 
             // Use m_tailMipChain if it's the last mip chain
             if (mipChainIndex == m_mipChains.size() - 1)
@@ -116,13 +159,7 @@ namespace AZ
                 mipChainAsset = mipChain.m_asset.Get();
             }
 
-            if (mipChainAsset == nullptr)
-            {
-                AZ_Warning("Streaming Image", false, "MipChain asset wasn't loaded");
-                return AZStd::span<const uint8_t>();
-            }
-
-            return mipChainAsset->GetSubImageData(mip - mipChain.m_mipOffset, slice);
+            return mipChainAsset;
         }
     }
 }

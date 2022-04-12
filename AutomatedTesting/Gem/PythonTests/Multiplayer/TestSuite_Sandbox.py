@@ -6,9 +6,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 """
 
-# This suite consists of all test cases that are under development and have not been verified yet.
-# Once they are verified, please move them to TestSuite_Active.py
-
 import pytest
 import os
 import sys
@@ -26,20 +23,7 @@ import Tools.LyTestTools.ly_test_tools.environment.waiter as waiter
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
-    ## Seems to be flaky, need to investigate
-    class test_Multiplayer_AutoComponent_NetworkInput(EditorSingleTest):
-        from .tests import Multiplayer_AutoComponent_NetworkInput as test_module
-
-    class test_Multiplayer_AutoComponent_RPC(EditorSingleTest):
-        from .tests import Multiplayer_AutoComponent_RPC as test_module
-
-    class test_Multiplayer_BasicConnectivity_Connects(EditorSingleTest):
-        from .tests import Multiplayer_BasicConnectivity_Connects as test_module
-
-    class test_Multiplayer_SimpleNetworkLevelEntity(EditorSingleTest):
-        from .tests import Multiplayer_SimpleNetworkLevelEntity as test_module
-
-    def test_Multiplayer_SimpleGameServerLauncher_ConnectsSuccessfully(self, workspace, launcher_platform):
+    def test_Multiplayer_SimpleGameServerLauncher_ConnectsSuccessfully(self, workspace, launcher_platform, crash_log_watchdog):
         unexpected_lines = []
         expected_lines = ["New outgoing connection to remote address:"]
         halt_on_unexpected = False
@@ -61,3 +45,5 @@ class TestAutomation(EditorTestSuite):
         game_launcher_log_file = os.path.join(game_launcher.workspace.paths.project_log(), 'Game.log')
         game_launcher_log_monitor = LogMonitor(game_launcher, game_launcher_log_file)
         game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected, timeout)
+        process_utils.kill_processes_named("AssetProcessor.exe", ignore_extensions=True)
+

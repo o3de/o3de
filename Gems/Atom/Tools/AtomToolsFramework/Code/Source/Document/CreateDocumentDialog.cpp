@@ -64,7 +64,7 @@ namespace AtomToolsFramework
 
         // Select a default location and unique name for the new document
         UpdateTargetPath(QFileInfo(GetUniqueFilePath(
-            AZStd::string::format("%s/Assets/untitled.%s", m_initialPath.toUtf8().constData(), supportedExtensions.front().toUtf8().constData())).c_str()));
+            AZStd::string::format("%s/untitled.%s", m_initialPath.toUtf8().constData(), supportedExtensions.front().toUtf8().constData())).c_str()));
 
         // When the file selection button is pressed, open a file dialog to select where the document will be saved
         QObject::connect(m_targetSelectionBrowser, &AzQtComponents::BrowseEdit::attachedButtonTriggered, m_targetSelectionBrowser, [this, supportedExtensions]() {
@@ -100,11 +100,17 @@ namespace AtomToolsFramework
               documentType.m_defaultAssetIdToCreate,
               [documentType](const AZ::Data::AssetInfo& assetInfo)
               {
+                  // If any asset types are specified, do early rejection tests to avoid expensive string comparisons
                   const auto& assetTypes = documentType.m_supportedAssetTypesToCreate;
                   if (assetTypes.empty() || assetTypes.find(assetInfo.m_assetType) != assetTypes.end())
                   {
+                      // Additional filtering will be done against the path to the source file for this asset
                       const auto& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-                      return documentType.IsSupportedExtensionToCreate(sourcePath) && !documentType.IsSupportedExtensionToSave(sourcePath);
+
+                      // Only add source files with extensions supported by the document types creation rules
+                      // Ignore any files that are marked as non editable in the registry
+                      return documentType.IsSupportedExtensionToCreate(sourcePath) &&
+                          !documentType.IsSupportedExtensionToSave(sourcePath) && IsDocumentPathEditable(sourcePath);
                   }
                   return false;
               },
@@ -117,7 +123,7 @@ namespace AtomToolsFramework
         if (!fileInfo.absoluteFilePath().isEmpty())
         {
             m_targetPath = fileInfo.absoluteFilePath();
-            m_targetSelectionBrowser->setText(fileInfo.fileName());
+            m_targetSelectionBrowser->setText(m_targetPath);
         }
     }
 } // namespace AtomToolsFramework

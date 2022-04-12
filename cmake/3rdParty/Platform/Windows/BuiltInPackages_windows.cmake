@@ -6,6 +6,8 @@
 #
 #
 
+# this file allows you to specify all 3p packages (provided by O3DE or the operating system) for Windows.
+
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                                 TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                    TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
@@ -35,12 +37,12 @@ ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-windows            
 ly_associate_package(PACKAGE_NAME d3dx12-headers-rev1-windows                           TARGETS d3dx12                      PACKAGE_HASH 088c637159fba4a3e4c0cf08fb4921906fd4cca498939bd239db7c54b5b2f804)
 ly_associate_package(PACKAGE_NAME pyside2-qt-5.15.1-rev2-windows                        TARGETS pyside2                     PACKAGE_HASH c90f3efcc7c10e79b22a33467855ad861f9dbd2e909df27a5cba9db9fa3edd0f)
 ly_associate_package(PACKAGE_NAME openimageio-2.1.16.0-rev2-windows                     TARGETS OpenImageIO                 PACKAGE_HASH 85a2a6cf35cbc4c967c56ca8074babf0955c5b490c90c6e6fd23c78db99fc282)
-ly_associate_package(PACKAGE_NAME qt-5.15.2-rev4-windows                                TARGETS Qt                          PACKAGE_HASH a4634caaf48192cad5c5f408504746e53d338856148285057274f6a0ccdc071d)
-ly_associate_package(PACKAGE_NAME libpng-1.6.37-rev1-windows                            TARGETS libpng                      PACKAGE_HASH aa20c894fbd7cdaea585a54e37620b3454a7e414a58128acd68ccf6fe76c47d6)
+ly_associate_package(PACKAGE_NAME qt-5.15.2-rev7-windows                                TARGETS Qt                          PACKAGE_HASH 4343a04130657e740795e50a25ab5fe6e41100fa3c58a212c86bed612dde7775)
+ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-windows                               TARGETS PNG                         PACKAGE_HASH e16539a0fff26ac9ef80dd11ef0103eca91745519eacd41d41d96911c173589f)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-windows                      TARGETS libsamplerate               PACKAGE_HASH dcf3c11a96f212a52e2c9241abde5c364ee90b0f32fe6eeb6dcdca01d491829f)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-windows                             TARGETS OpenMesh                    PACKAGE_HASH 7a6309323ad03bfc646bd04ecc79c3711de6790e4ff5a72f83a8f5a8f496d684)
 ly_associate_package(PACKAGE_NAME civetweb-1.8-rev1-windows                             TARGETS civetweb                    PACKAGE_HASH 36d0e58a59bcdb4dd70493fb1b177aa0354c945b06c30416348fd326cf323dd4)
-ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-windows                           TARGETS OpenSSL                     PACKAGE_HASH 9af1c50343f89146b4053101a7aeb20513319a3fe2f007e356d7ce25f9241040)
+ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1m-rev1-windows                           TARGETS OpenSSL                     PACKAGE_HASH 7d8d3904c70b7da471f777ee788678614a9b20d3ac926b7c0d60ccf2a17c7959)
 ly_associate_package(PACKAGE_NAME Crashpad-0.8.0-rev1-windows                           TARGETS Crashpad                    PACKAGE_HASH d162aa3070147bc0130a44caab02c5fe58606910252caf7f90472bd48d4e31e2)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-windows                              TARGETS ZLIB                        PACKAGE_HASH 8847112429744eb11d92c44026fc5fc53caa4a06709382b5f13978f3c26c4cbd)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows                       TARGETS squish-ccr                  PACKAGE_HASH 5c3d9fa491e488ccaf802304ad23b932268a2b2846e383f088779962af2bfa84)

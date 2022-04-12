@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
@@ -52,6 +53,7 @@ namespace AzToolsFramework
         : public QAbstractItemModel
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
+        , private FocusModeNotificationBus::Handler
         , private ToolsApplicationEvents::Bus::Handler
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
@@ -123,6 +125,9 @@ namespace AzToolsFramework
         ~EntityOutlinerListModel();
 
         void Initialize();
+
+        // FocusModeNotificationBus overrides ...
+        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
         // Qt overrides.
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;

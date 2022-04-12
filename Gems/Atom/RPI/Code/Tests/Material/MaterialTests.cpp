@@ -35,7 +35,9 @@ namespace UnitTest
         Data::Asset<MaterialTypeAsset> m_testMaterialTypeAsset;
         Data::Asset<MaterialAsset> m_testMaterialAsset;
         Data::Asset<StreamingImageAsset> m_testImageAsset;
+        Data::Asset<AttachmentImageAsset> m_testAttachmentImageAsset;
         Data::Instance<StreamingImage> m_testImage;
+        Data::Instance<AttachmentImage> m_testAttachmentImage;
 
         Data::Asset<StreamingImageAsset> CreateTestImageAsset() const
         {
@@ -55,6 +57,19 @@ namespace UnitTest
             imageCreator.AddMipChainAsset(*mipChainAsset.Get());
             imageCreator.SetFlags(StreamingImageFlags::NotStreamable);
             imageCreator.SetPoolAssetId(ImageSystemInterface::Get()->GetSystemStreamingPool()->GetAssetId());
+            imageCreator.End(testImageAsset);
+
+            return testImageAsset;
+        }
+
+        Data::Asset<AttachmentImageAsset> CreateAttachmentImageAsset() const
+        {
+            Data::Asset<AttachmentImageAsset> testImageAsset;
+
+            AttachmentImageAssetCreator imageCreator;
+            imageCreator.Begin(Uuid::CreateRandom());
+            imageCreator.SetPoolAsset({ImageSystemInterface::Get()->GetSystemAttachmentPool()->GetAssetId(), azrtti_typeid<ResourcePoolAsset>()});
+            imageCreator.SetName(Name("testAttachmentImageAsset"), true);
             imageCreator.End(testImageAsset);
 
             return testImageAsset;
@@ -84,6 +99,9 @@ namespace UnitTest
             m_testImageAsset = CreateTestImageAsset();
             m_testImage = StreamingImage::FindOrCreate(m_testImageAsset);
 
+            m_testAttachmentImageAsset = CreateAttachmentImageAsset();
+            m_testAttachmentImage = AttachmentImage::FindOrCreate(m_testAttachmentImageAsset);
+
             MaterialAssetCreator materialCreator;
             materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
             materialCreator.SetPropertyValue(Name{ "MyFloat2" }, Vector2{ 0.1f, 0.2f });
@@ -96,6 +114,7 @@ namespace UnitTest
             materialCreator.SetPropertyValue(Name{ "MyBool" }, true);
             materialCreator.SetPropertyValue(Name{ "MyImage" }, Data::Asset<ImageAsset>(m_testImageAsset));
             materialCreator.SetPropertyValue(Name{ "MyEnum" }, 2u);
+            materialCreator.SetPropertyValue(Name{ "MyAttachmentImage" }, Data::Asset<ImageAsset>(m_testAttachmentImageAsset));
             materialCreator.End(m_testMaterialAsset);
         }
 
@@ -107,6 +126,8 @@ namespace UnitTest
             m_testMaterialAsset.Reset();
             m_testImageAsset.Reset();
             m_testImage = nullptr;
+            m_testAttachmentImageAsset.Reset();
+            m_testAttachmentImage = nullptr;
 
             RPITestFixture::TearDown();
         }
@@ -145,6 +166,7 @@ namespace UnitTest
 
             EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_image" }), 0), nullptr);
             EXPECT_EQ(srgData.GetConstant<uint32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_enum" })), 1u);
+            EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_attachmentImage" }), 0), nullptr);
         }
 
         void ValidateInitialValuesFromMaterial(Data::Instance<Material> material)
@@ -161,6 +183,7 @@ namespace UnitTest
             EXPECT_EQ(material->GetPropertyValue<Color>(material->FindPropertyIndex(Name{ "MyColor" })), Color(1.0f, 1.0f, 1.0f, 1.0f));
             EXPECT_EQ(material->GetPropertyValue<Data::Instance<Image>>(material->FindPropertyIndex(Name{ "MyImage" })), m_testImage);
             EXPECT_EQ(material->GetPropertyValue<uint32_t>(material->FindPropertyIndex(Name{ "MyEnum" })), 2u);
+            EXPECT_EQ(material->GetPropertyValue<Data::Instance<Image>>(material->FindPropertyIndex(Name{ "MyAttachmentImage" })), m_testAttachmentImage);
 
             // Dig in to the SRG to make sure the values were applied there as well...
 
@@ -181,6 +204,7 @@ namespace UnitTest
 
             EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_image" }), 0), m_testImage->GetImageView());
             EXPECT_EQ(srgData.GetConstant<uint32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_enum" })), 2u);
+            EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_attachmentImage" }), 0), m_testAttachmentImage->GetImageView());
         }
 
         //! Provides write access to private material asset property values, primarily for simulating
@@ -899,11 +923,17 @@ namespace UnitTest
         CheckPropertyValueRoundTrip(Data::Asset<Data::AssetData>{});
         CheckPropertyValueRoundTrip(Data::Asset<ImageAsset>{});
         CheckPropertyValueRoundTrip(Data::Asset<StreamingImageAsset>{});
+        CheckPropertyValueRoundTrip(Data::Asset<AttachmentImageAsset>{});
         CheckPropertyValueRoundTrip(Data::Asset<Data::AssetData>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), "TestAssetPath.png"});
+        CheckPropertyValueRoundTrip(Data::Asset<Data::AssetData>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::AttachmentImageAsset>(), "TestAssetPath.attimage"});
         CheckPropertyValueRoundTrip(Data::Asset<ImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), "TestAssetPath.png"});
+        CheckPropertyValueRoundTrip(Data::Asset<ImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::AttachmentImageAsset>(), "TestAssetPath.attimage"});
         CheckPropertyValueRoundTrip(Data::Asset<StreamingImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), "TestAssetPath.png"});
+        CheckPropertyValueRoundTrip(Data::Asset<AttachmentImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::AttachmentImageAsset>(), "TestAssetPath.attimage"});
         CheckPropertyValueRoundTrip(m_testImageAsset);
+        CheckPropertyValueRoundTrip(m_testAttachmentImageAsset);
         CheckPropertyValueRoundTrip(Data::Instance<Image>{m_testImage});
+        CheckPropertyValueRoundTrip(Data::Instance<Image>{m_testAttachmentImage});
         CheckPropertyValueRoundTrip(AZStd::string{"hello"});
     }
 }

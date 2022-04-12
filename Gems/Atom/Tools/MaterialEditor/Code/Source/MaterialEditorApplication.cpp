@@ -9,10 +9,9 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <MaterialEditorApplication.h>
-#include <MaterialEditor_Traits_Platform.h>
 
 #include <Document/MaterialDocument.h>
-#include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorMainWindow.h>
 
 void InitMaterialEditorResources()
 {
@@ -39,6 +38,7 @@ namespace MaterialEditor
 
         QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Material Editor");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
     }
@@ -53,7 +53,6 @@ namespace MaterialEditor
     {
         Base::Reflect(context);
         MaterialDocument::Reflect(context);
-        MaterialViewportSettingsSystem::Reflect(context);
     }
 
     const char* MaterialEditorApplication::GetCurrentConfigurationName() const
@@ -82,9 +81,9 @@ namespace MaterialEditor
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
-        m_viewportSettingsSystem.reset(aznew MaterialViewportSettingsSystem(m_toolId));
+        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
 
-        m_window.reset(aznew MaterialEditorWindow(m_toolId));
+        m_window.reset(aznew MaterialEditorMainWindow(m_toolId));
         m_window->show();
     }
 
