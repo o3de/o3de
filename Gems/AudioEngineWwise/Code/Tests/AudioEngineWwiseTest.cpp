@@ -164,7 +164,7 @@ namespace UnitTest
         params.m_type = MultiPositionBehaviorType::Blended;
 
         auto result = m_wwiseImpl.SetMultiplePositions(&wwiseObject, params);
-        EXPECT_EQ(result, eARS_SUCCESS);
+        EXPECT_EQ(result, EAudioRequestStatus::Success);
     }
 
 #if AZ_TRAIT_AUDIOENGINEWWISE_DISABLE_MULTIPOSITION_TESTS
@@ -178,7 +178,7 @@ namespace UnitTest
         params.m_type = MultiPositionBehaviorType::Separate;
 
         auto result = m_wwiseImpl.SetMultiplePositions(nullptr, params);
-        EXPECT_EQ(result, eARS_FAILURE);
+        EXPECT_EQ(result, EAudioRequestStatus::Failure);
     }
 
 #if AZ_TRAIT_DISABLE_FAILED_AUDIO_WWISE_TESTS
@@ -190,7 +190,7 @@ namespace UnitTest
         SATLAudioObjectData_wwise wwiseObject(1, true);
         MultiPositionParams params;
         auto result = m_wwiseImpl.SetMultiplePositions(&wwiseObject, params);
-        EXPECT_EQ(result, eARS_SUCCESS);
+        EXPECT_EQ(result, EAudioRequestStatus::Success);
     }
 
 

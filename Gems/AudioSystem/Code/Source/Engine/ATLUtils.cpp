@@ -16,7 +16,7 @@ namespace Audio
         bool result = false;
         result = result || filter.empty();
         result = result || (filter.compare("0") == 0);
-        result = result || (objectName.find(filter) != AZStd::string::npos);
+        result = result || (objectName.find(filter) != AZStd::string_view::npos);
         return result;
     }
 #endif // !AUDIO_RELEASE
