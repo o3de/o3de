@@ -427,13 +427,13 @@ namespace AZ
                 : m_classData{ SerializeContext::ClassData::Create<VariantType>("variant", GetSpecializedTypeId(), &m_variantInstanceFactory, nullptr, &m_variantContainer) }
             {
                 AZ_TracePrintf("SC_DATA_SOURCE", "Creating Generic Class info for variant type: %s."
-                    , GetSpecializedTypeId().ToString<AZStd::string>().c_str()
+                    , GetSpecializedTypeId().template ToString<AZStd::string>().c_str()
                 );
 
                 for (size_t i = 0; i < GetNumTemplatedArguments(); ++i)
                 {
                     AZ_TracePrintf("SC_DATA_SOURCE", "Variant contains type: %s."
-                        , GetTemplatedTypeId(i).ToString<AZStd::string>().c_str()
+                        , GetTemplatedTypeId(i).template ToString<AZStd::string>().c_str()
                     );
                 }
 
