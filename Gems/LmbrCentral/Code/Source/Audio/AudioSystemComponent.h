@@ -73,9 +73,6 @@ namespace LmbrCentral
         // ILevelSystemListener interface implementation
         void OnLoadingStart(const char* levelName) override;
         void OnUnloadComplete(const char* levelName) override;
-
-    private:
-        static void OnAudioEvent(const Audio::SAudioRequestInfo* const);
     };
 
 } // namespace LmbrCentral

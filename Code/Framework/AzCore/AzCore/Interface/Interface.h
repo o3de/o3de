@@ -181,7 +181,7 @@ namespace AZ
         // take the full lock and request it.
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
         s_instance = Environment::FindVariable<T*>(GetVariableName());
-        s_instanceAssigned = true;
+        s_instanceAssigned = s_instance.IsValid();
         return s_instance ? s_instance.Get() : nullptr;
     }
 
