@@ -132,6 +132,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/TargetedSequencer.cpp
     Include/ScriptCanvas/Libraries/Logic/WeightedRandomSequencer.cpp
     Include/ScriptCanvas/Libraries/Logic/While.cpp
+    Include/ScriptCanvas/Libraries/Math/AABB.cpp
     Include/ScriptCanvas/Libraries/Math/Math.cpp
     Include/ScriptCanvas/Libraries/Math/MathExpression.cpp
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.cpp

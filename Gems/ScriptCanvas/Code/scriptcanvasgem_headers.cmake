@@ -213,10 +213,12 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/WeightedRandomSequencer.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Logic/While.h
     Include/ScriptCanvas/Libraries/Logic/While.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Math/AABBNodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/AABBNodes.h
+    Include/ScriptCanvas/Libraries/Math/AABB.h
+    Include/ScriptCanvas/Libraries/Math/AABB.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/ColorNodes.h
     Include/ScriptCanvas/Libraries/Math/CRCNodes.h
-    Include/ScriptCanvas/Libraries/Math/Divide.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Divide.h
     Include/ScriptCanvas/Libraries/Math/Math.h
     Include/ScriptCanvas/Libraries/Math/MathExpression.h
     Include/ScriptCanvas/Libraries/Math/MathExpression.ScriptCanvasGrammar.xml
@@ -225,12 +227,12 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/MathRandom.h
     Include/ScriptCanvas/Libraries/Math/Matrix3x3Nodes.h
     Include/ScriptCanvas/Libraries/Math/Matrix4x4Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Multiply.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Multiply.h
     Include/ScriptCanvas/Libraries/Math/OBBNodes.h
     Include/ScriptCanvas/Libraries/Math/PlaneNodes.h
     Include/ScriptCanvas/Libraries/Math/RotationNodes.h
-    Include/ScriptCanvas/Libraries/Math/Subtract.h
-    Include/ScriptCanvas/Libraries/Math/Sum.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Subtract.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Sum.h
     Include/ScriptCanvas/Libraries/Math/TransformNodes.h
     Include/ScriptCanvas/Libraries/Math/Vector2Nodes.h
     Include/ScriptCanvas/Libraries/Math/Vector3Nodes.h

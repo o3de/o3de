@@ -11,22 +11,24 @@
 // This header is only meant to include the nodes and should not contain
 // shared code
 
-#include "AABBNodes.h"
 #include "ColorNodes.h"
 #include "CRCNodes.h"
-#include "Divide.h"
 #include "MathGenerics.h"
 #include "MathRandom.h"
 #include "Matrix3x3Nodes.h"
 #include "Matrix4x4Nodes.h"
 #include "MathExpression.h"
-#include "Multiply.h"
 #include "OBBNodes.h"
 #include "PlaneNodes.h"
 #include "RotationNodes.h"
-#include "Subtract.h"
-#include "Sum.h"
 #include "TransformNodes.h"
 #include "Vector2Nodes.h"
 #include "Vector3Nodes.h"
 #include "Vector4Nodes.h"
+
+// Deprecated math nodes
+#include "Deprecated/AABBNodes.h"
+#include "Deprecated/Divide.h"
+#include "Deprecated/Multiply.h"
+#include "Deprecated/Subtract.h"
+#include "Deprecated/Sum.h"
