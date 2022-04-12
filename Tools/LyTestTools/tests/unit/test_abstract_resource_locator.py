@@ -36,7 +36,6 @@ class TestFindEngineRoot(object):
 
         assert engine_root == mock_engine_root
         mock_path_exists.assert_called_once()
-        assert False
 
     @mock.patch('ly_test_tools._internal.managers.abstract_resource_locator.os.path.abspath')
     @mock.patch('ly_test_tools._internal.managers.abstract_resource_locator.os.path.exists')
