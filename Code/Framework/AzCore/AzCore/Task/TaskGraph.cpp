@@ -99,7 +99,16 @@ namespace AZ
 
     void TaskGraph::Submit(TaskGraphEvent* waitEvent)
     {
-        AZ_Assert(!IsEmpty(), "Empty task graph submitted");
+        // If this is a new empty task graph (and not a retained taskgraph that was previously run),
+        // return immediately
+        if (IsEmpty() && !m_compiledTaskGraph)
+        {
+            if (waitEvent)
+            {
+                waitEvent->Signal();
+            }
+            return;
+        }
         SubmitOnExecutor(TaskExecutor::Instance(), waitEvent);
     }
 

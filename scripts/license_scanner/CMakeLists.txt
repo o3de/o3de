@@ -6,6 +6,10 @@
 #
 #
 
-set(FILES
-    Source/AudioSystemModule_Stub.cpp
+
+ly_install_files(FILES license_scanner.py PROGRAMS
+    DESTINATION scripts/license_scanner
+)
+ly_install_files(FILES scanner_config.json
+    DESTINATION scripts/license_scanner
 )

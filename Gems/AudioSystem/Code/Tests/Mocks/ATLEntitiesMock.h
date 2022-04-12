@@ -13,37 +13,26 @@
 
 namespace Audio
 {
-    class ATLDebugNameStoreMock
 #if !defined(AUDIO_RELEASE)
+    class ATLDebugNameStoreMock
         : public CATLDebugNameStore
-#endif
     {
     public:
-#if !defined(AUDIO_RELEASE)
-        MOCK_METHOD1(SyncChanges, void(const CATLDebugNameStore&));
-#endif
-        MOCK_METHOD2(AddAudioObject, void(const TAudioObjectID, const char* const));
-        MOCK_METHOD2(AddAudioTrigger, void(const TAudioControlID, const char* const));
-        MOCK_METHOD2(AddAudioRtpc, void(const TAudioControlID, const char* const));
-        MOCK_METHOD2(AddAudioSwitch, void(const TAudioControlID, const char* const));
-        MOCK_METHOD3(AddAudioSwitchState, void(const TAudioControlID, const TAudioSwitchStateID, const char* const));
-        MOCK_METHOD2(AddAudioPreloadRequest, void(const TAudioPreloadRequestID, const char* const));
-        MOCK_METHOD2(AddAudioEnvironment, void(const TAudioEnvironmentID, const char* const));
+        MOCK_METHOD2(AddAudioObject, bool(const TAudioObjectID, const char* const));
+        MOCK_METHOD2(AddAudioTrigger, bool(const TAudioControlID, const char* const));
+        MOCK_METHOD2(AddAudioRtpc, bool(const TAudioControlID, const char* const));
+        MOCK_METHOD2(AddAudioSwitch, bool(const TAudioControlID, const char* const));
+        MOCK_METHOD3(AddAudioSwitchState, bool(const TAudioControlID, const TAudioSwitchStateID, const char* const));
+        MOCK_METHOD2(AddAudioPreloadRequest, bool(const TAudioPreloadRequestID, const char* const));
+        MOCK_METHOD2(AddAudioEnvironment, bool(const TAudioEnvironmentID, const char* const));
 
-        MOCK_METHOD1(RemoveAudioObject, void(const TAudioObjectID));
-        MOCK_METHOD1(RemoveAudioTrigger, void(const TAudioControlID));
-        MOCK_METHOD1(RemoveAudioRtpc, void(const TAudioControlID));
-        MOCK_METHOD1(RemoveAudioSwitch, void(const TAudioControlID));
-        MOCK_METHOD2(RemoveAudioSwitchState, void(const TAudioControlID, const TAudioSwitchStateID));
-        MOCK_METHOD1(RemoveAudioPreloadRequest, void(const TAudioPreloadRequestID));
-        MOCK_METHOD1(RemoveAudioEnvironment, void(const TAudioEnvironmentID));
-
-        MOCK_CONST_METHOD0(AudioObjectsChanged, bool());
-        MOCK_CONST_METHOD0(AudioTriggersChanged, bool());
-        MOCK_CONST_METHOD0(AudioRtpcsChanged, bool());
-        MOCK_CONST_METHOD0(AudioSwitchesChanged, bool());
-        MOCK_CONST_METHOD0(AudioPreloadsChanged, bool());
-        MOCK_CONST_METHOD0(AudioEnvironmentsChanged, bool());
+        MOCK_METHOD1(RemoveAudioObject, bool(const TAudioObjectID));
+        MOCK_METHOD1(RemoveAudioTrigger, bool(const TAudioControlID));
+        MOCK_METHOD1(RemoveAudioRtpc, bool(const TAudioControlID));
+        MOCK_METHOD1(RemoveAudioSwitch, bool(const TAudioControlID));
+        MOCK_METHOD2(RemoveAudioSwitchState, bool(const TAudioControlID, const TAudioSwitchStateID));
+        MOCK_METHOD1(RemoveAudioPreloadRequest, bool(const TAudioPreloadRequestID));
+        MOCK_METHOD1(RemoveAudioEnvironment, bool(const TAudioEnvironmentID));
 
         MOCK_CONST_METHOD1(LookupAudioObjectName, const char*(const TAudioObjectID));
         MOCK_CONST_METHOD1(LookupAudioTriggerName, const char*(const TAudioControlID));
@@ -53,5 +42,6 @@ namespace Audio
         MOCK_CONST_METHOD1(LookupAudioPreloadRequestName, const char*(const TAudioPreloadRequestID));
         MOCK_CONST_METHOD1(LookupAudioEnvironmentName, const char*(const TAudioEnvironmentID));
     };
+#endif // !AUDIO_RELEASE
 
 } // namespace Audio
