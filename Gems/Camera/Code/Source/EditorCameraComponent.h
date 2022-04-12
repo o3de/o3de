@@ -61,6 +61,7 @@ namespace Camera
         AZ::Crc32 OnPossessCameraButtonClicked();
         AZ::Crc32 AlignCameraWithViewClicked();
         AZStd::string GetCameraViewButtonText() const;
+        bool IsThisCamera() const;
 
         float m_frustumViewPercentLength = 1.f;
         AZ::Color m_frustumDrawColor = AzFramework::ViewportColors::HoverColor;

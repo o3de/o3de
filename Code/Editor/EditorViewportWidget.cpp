@@ -2100,24 +2100,30 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
     return false;
 }
 
-bool EditorViewportWidget::GetActiveCameraTM(AZ::Transform& cameraTM)
+AZStd::optional<AZ::Transform> EditorViewportWidget::GetActiveCameraTransform()
 {
     if (m_pPrimaryViewport == this)
     {
         if (GetIEditor()->IsInGameMode())
         {
-            cameraTM = m_renderViewport->GetViewportContext()->GetCameraTransform();
+            return m_renderViewport->GetViewportContext()->GetCameraTransform();
         }
         else
         {
             // Use viewTM, which is synced with the camera and guaranteed to be up-to-date
-            cameraTM = LYTransformToAZTransform(GetViewTM());
+            return GetCurrentAtomView()->GetCameraTransform();
         }
-
-        return true;
     }
+    return AZStd::nullopt;
+}
 
-    return false;
+AZStd::optional<float> EditorViewportWidget::GetCameraFoV()
+{
+    if (m_pPrimaryViewport == this)
+    {
+        return GetFOV();
+    }
+    return AZStd::nullopt;
 }
 
 bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& cameraState)

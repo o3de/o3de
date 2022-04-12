@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Transform.h>
 #include <AzCore/Component/Component.h>
 
 namespace AzFramework
@@ -63,10 +64,18 @@ namespace Camera
          * The Editor can have multiple viewports displayed, though at most only one is active at any point in time.
          * (Active is not the same as "has focus" - a different editor pane can have focus, but there's still one
          * active viewport that's updating every frame, and the others are not)
-         * @param cameraTM On return, the current camera transform in the one active Editor viewport.
-         * @return True if the camera transform was successfully retrieved, false if not.
+         * @return the current camera transform in the one active Editor viewport.
          */
-        virtual bool GetActiveCameraTM(AZ::Transform& /*cameraTM*/) { return false; }
+        virtual AZStd::optional<AZ::Transform> GetActiveCameraTransform() { return AZStd::nullopt; }
+
+        /**
+         * Gets the field of view of the currently active Editor camera.
+         * The Editor can have multiple viewports displayed, though at most only one is active at any point in time.
+         * (Active is not the same as "has focus" - a different editor pane can have focus, but there's still one
+         * active viewport that's updating every frame, and the others are not)
+         * @return the current camera field of view in the one active Editor viewport.
+         */
+        virtual AZStd::optional<float> GetCameraFoV() { return 60.0f; }
 
         /**
          * Gets the position of the currently active Editor camera.

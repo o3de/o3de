@@ -11,6 +11,7 @@
 
 #include "EditorCameraComponent.h"
 #include "ViewportCameraSelectorWindow.h"
+#include "Entity/EditorEntityHelpers.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -121,6 +122,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::AlignCameraWithViewClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText,  "Align camera with view")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorCameraComponent::IsThisCamera)
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Debug")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCameraComponent::m_frustumViewPercentLength, "Frustum length", "Frustum length percent .01 to 100")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
@@ -198,21 +200,29 @@ namespace Camera
 
     AZ::Crc32 EditorCameraComponent::AlignCameraWithViewClicked()
     {
-        bool result = false;
-        AZ::Transform transform = AZ::Transform::CreateIdentity();
-        EditorCameraRequests::Bus::BroadcastResult(result, &EditorCameraRequests::GetActiveCameraTM, transform);
-        if (result)
+        AZStd::optional<AZ::Transform> transform = AZStd::nullopt;
+        EditorCameraRequests::Bus::BroadcastResult(transform, &EditorCameraRequests::GetActiveCameraTransform);
+        if (!transform)
         {
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, transform);
+            return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         }
+        AZStd::optional<float> fov = AZStd::nullopt;
+        EditorCameraRequests::Bus::BroadcastResult(fov, &EditorCameraRequests::GetCameraFoV);
+        if (!fov)
+        {
+            return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+        }
+        AzToolsFramework::ScopedUndoBatch undo("Align Camera with View");
+        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, transform.value());
+        CameraRequestBus::Event(GetEntityId(), &CameraComponentRequests::SetFovRadians, fov.value());
+        EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, GetEntityId());
+        undo.MarkEntityDirty(GetEntityId());
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
     AZStd::string EditorCameraComponent::GetCameraViewButtonText() const
     {
-        AZ::EntityId currentViewEntity;
-        EditorCameraRequests::Bus::BroadcastResult(currentViewEntity, &EditorCameraRequests::GetCurrentViewEntityId);
-        if (currentViewEntity == GetEntityId())
+        if (IsThisCamera())
         {
             return "Return to default editor camera";
         }
@@ -220,6 +230,13 @@ namespace Camera
         {
             return "Be this camera";
         }
+    }
+
+    bool EditorCameraComponent::IsThisCamera() const
+    {
+        AZ::EntityId currentViewEntity;
+        EditorCameraRequests::Bus::BroadcastResult(currentViewEntity, &EditorCameraRequests::GetCurrentViewEntityId);
+        return currentViewEntity == GetEntityId();
     }
 
     void EditorCameraComponent::DisplayEntityViewport(

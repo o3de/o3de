@@ -218,7 +218,8 @@ private:
     void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override;
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
-    bool GetActiveCameraTM(AZ::Transform& cameraTM) override;
+    AZStd::optional<AZ::Transform> GetActiveCameraTransform() override;
+    AZStd::optional<float> GetCameraFoV() override;
     bool GetActiveCameraState(AzFramework::CameraState& cameraState) override;
 
     ////////////////////////////////////////////////////////////////////////
