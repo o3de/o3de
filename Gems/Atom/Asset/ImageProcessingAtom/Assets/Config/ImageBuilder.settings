@@ -116,6 +116,7 @@
             "_hm": [ "Displacement" ],
             "_ht": [ "Displacement" ],
             "_h": [ "Displacement" ],
+            "_thickness": [ "Displacement" ],
             // cubemap
             "_ibldiffusecm": [ "IBLDiffuse" ],
             "_iblskyboxcm": [ "IBLSkybox" ],

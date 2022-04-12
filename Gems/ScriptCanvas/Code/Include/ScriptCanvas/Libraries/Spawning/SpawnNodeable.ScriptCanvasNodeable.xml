@@ -13,7 +13,7 @@
          Description="Spawns a selected prefab">
 
     <Input Name="Request Spawn" OutputName="Spawn Requested">
-        <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance assosiated with spawnable asset."/>
+        <Parameter Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance assosiated with spawnable asset."/>
         <Parameter Name="ParentId" Type="AZ::EntityId" Description="Optional parent to assign spawned container entity to."/>
         <Parameter Name="Local Translation" Type="Data::Vector3Type" Description="Position to spawn."/>
         <Parameter Name="Local Rotation" Type="Data::Vector3Type" Description="Rotation of spawn (in degrees)."/>
@@ -21,7 +21,7 @@
     </Input>
 
     <Output Name="On Spawn Completed" Description="Called when spawning entities is completed.">
-        <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance of the spawn result."/>
+        <Parameter Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance of the spawn result."/>
         <Parameter Name="SpawnedEntitiesList" Type="AZStd::vector&lt;Data::EntityIDType&gt;" Description="List of spawned entities sorted by hierarchy with the root being first"/>
     </Output>/>
   </Class>

@@ -183,14 +183,16 @@ namespace EMStudio
         if (serializeContext)
         {
             // Reflect plugin related data.
-            const size_t numPlugins = m_pluginManager->GetNumPlugins();
-            if (numPlugins)
+            const PluginManager::PluginVector& registeredPlugins = m_pluginManager->GetRegisteredPlugins();
+            for (EMStudioPlugin* plugin : registeredPlugins)
             {
-                for (size_t i = 0; i < numPlugins; ++i)
-                {
-                    EMStudioPlugin* plugin = m_pluginManager->GetPlugin(i);
-                    plugin->Reflect(serializeContext);
-                }
+                plugin->Reflect(serializeContext);
+            }
+
+            const PluginManager::PersistentPluginVector& persistentPlugins = m_pluginManager->GetPersistentPlugins();
+            for (const AZStd::unique_ptr<PersistentPlugin>& plugin : persistentPlugins)
+            {
+                plugin->Reflect(serializeContext);
             }
 
             // Reflect shared data that might be used by multiple plugins.
