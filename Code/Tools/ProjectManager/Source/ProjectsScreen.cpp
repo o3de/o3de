@@ -59,7 +59,6 @@ namespace O3DE::ProjectManager
         m_fileSystemWatcher = new QFileSystemWatcher(this);
         connect(m_fileSystemWatcher, &QFileSystemWatcher::directoryChanged, this, &ProjectsScreen::HandleProjectDirectoryChanged);
 
-
         m_stack = new QStackedWidget(this);
 
         m_firstTimeContent = CreateFirstTimeContent();
