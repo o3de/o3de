@@ -231,9 +231,8 @@ namespace GradientSignal
         AZStd::shared_lock lock(m_queryMutex);
 
         SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
-            points);
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(
+            positions, m_configuration.m_surfaceTagsToSample, points);
 
         // For each position, turn the height into a 0-1 value based on our min/max altitudes.
         for (size_t index = 0; index < positions.size(); index++)

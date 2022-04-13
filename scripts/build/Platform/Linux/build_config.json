@@ -153,6 +153,9 @@
   },
   "asset_profile_nounity": {
     "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
     "COMMAND": "build_asset_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
