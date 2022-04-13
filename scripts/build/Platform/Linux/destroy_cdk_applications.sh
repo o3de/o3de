@@ -12,7 +12,7 @@
 # 2) Node.js version >= 10.13.0, except for versions 13.0.0 - 13.6.0. A version in active long-term support is recommended.
 
 SOURCE_DIRECTORY=$PWD
-PATH=$SOURCE_DIRECTORY/python:$PATH
+PATH=$SOURCE_DIRECTORY/python/runtime/$PYTHON_RUNTIME/python/bin:$PATH
 GEM_DIRECTORY=$SOURCE_DIRECTORY/Gems
 
 DestroyCDKApplication()

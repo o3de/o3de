@@ -9,7 +9,7 @@
 # Deploy the CDK applications for AWS gems (Linux only)
 
 SOURCE_DIRECTORY=$PWD
-PATH=$SOURCE_DIRECTORY/python:$PATH
+PATH=$SOURCE_DIRECTORY/python/runtime/$PYTHON_RUNTIME/python/bin:$PATH
 GEM_DIRECTORY=$SOURCE_DIRECTORY/Gems
 
 DeployCDKApplication()
