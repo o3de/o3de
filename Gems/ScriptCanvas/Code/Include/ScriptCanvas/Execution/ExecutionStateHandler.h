@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Execution/ExecutionStateStorage.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 
 namespace AZ
@@ -59,7 +59,7 @@ namespace ScriptCanvas
         void StopAndKeepExecutable();
 
     protected:
-        // \todo allocate static space under a union of all possible derived types, and pass it into construction call
-        ExecutionStatePtr m_executionState = nullptr;
+        ExecutionStateStorage m_executionStateStorage;
+        ExecutionState* m_executionState = nullptr;
     };
 }

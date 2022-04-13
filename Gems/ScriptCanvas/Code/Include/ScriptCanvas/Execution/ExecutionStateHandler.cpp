@@ -87,7 +87,8 @@ namespace ScriptCanvas
 
         AZ_PROFILE_SCOPE(ScriptCanvas, "ExecutionStateHandler::Initialize (%s)", overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         ExecutionStateConfig config(overrides, AZStd::move(userData));
-        m_executionState = overrides.m_runtimeAsset.Get()->m_runtimeData.m_createExecution(config);
+        overrides.m_runtimeAsset.Get()->m_runtimeData.m_createExecution(m_executionStateStorage, config);
+        m_executionState = m_executionStateStorage.Mod();
 
 #if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
         if (!m_executionState)
@@ -128,7 +129,6 @@ namespace ScriptCanvas
             m_executionState->StopExecution();
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
             SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
-            delete m_executionState;
             m_executionState = nullptr;
         }
     }

@@ -41,52 +41,25 @@ namespace ScriptCanvas
         }
     }
 
-    void ExecutionStateInterpreted::ClearLuaRegistryIndex()
-    {
-        m_luaRegistryIndex = LUA_NOREF;
-    }
-
     ExecutionMode ExecutionStateInterpreted::GetExecutionMode() const
     {
         return ExecutionMode::Interpreted;
     }
 
-    int ExecutionStateInterpreted::GetLuaRegistryIndex() const
-    {
-        return m_luaRegistryIndex;
-    }
-
     lua_State* ExecutionStateInterpreted::LoadLuaScript()
     {
         AZ::ScriptLoadResult result{};
-        AZ::ScriptSystemRequestBus::BroadcastResult(result, &AZ::ScriptSystemRequests::LoadAndGetNativeContext, m_interpretedAsset, AZ::k_scriptLoadBinary, AZ::ScriptContextIds::DefaultScriptContextId);
-        AZ_Assert(result.status != AZ::ScriptLoadResult::Status::Failed, "ExecutionStateInterpreted script asset was valid but failed to load.");
+        AZ::ScriptSystemRequestBus::BroadcastResult
+            ( result
+            , &AZ::ScriptSystemRequests::LoadAndGetNativeContext
+            , m_interpretedAsset
+            , AZ::k_scriptLoadBinary
+            , AZ::ScriptContextIds::DefaultScriptContextId);
+        AZ_Assert(result.status != AZ::ScriptLoadResult::Status::Failed, "ExecutionStateInterpreted script asset failed to load.");
         AZ_Assert(result.lua, "Must have a default script context and a lua_State");
         AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
         m_luaState = result.lua;
         return result.lua;
     }
 
-    void ExecutionStateInterpreted::ReferenceExecutionState()
-    {
-        AZ_Assert(m_luaRegistryIndex == LUA_NOREF, "ExecutionStateInterpreted already in the Lua registry and risks double deletion");
-        // Lua: instance
-        m_luaRegistryIndex = luaL_ref(m_luaState, LUA_REGISTRYINDEX);
-        AZ_Assert(m_luaRegistryIndex != LUA_REFNIL, "ExecutionStateInterpreted was nil when trying to gain a reference");
-        AZ_Assert(m_luaRegistryIndex != LUA_NOREF, "ExecutionStateInterpreted failed to gain a reference");
-    }
-
-    void ExecutionStateInterpreted::ReleaseExecutionState()
-    {
-        if (m_luaRegistryIndex != LUA_NOREF)
-        {
-            ReleaseExecutionStateUnchecked();
-        }
-    }
-
-    void ExecutionStateInterpreted::ReleaseExecutionStateUnchecked()
-    {
-        luaL_unref(m_luaState, LUA_REGISTRYINDEX, m_luaRegistryIndex);
-        m_luaRegistryIndex = LUA_NOREF;
-    }
 }

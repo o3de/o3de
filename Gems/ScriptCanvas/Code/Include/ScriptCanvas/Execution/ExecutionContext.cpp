@@ -6,23 +6,16 @@
  *
  */
 
-#include <AzCore/Component/EntityUtils.h>
-#include <AzCore/Script/ScriptSystemBus.h>
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/Entity/EntityContextBus.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Nodeable.h>
+#include <ScriptCanvas/Execution/ExecutionStateStorage.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
-#include <ScriptCanvas/Execution/RuntimeComponent.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPerActivation.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPure.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.h>
 
-#include "Interpreted/ExecutionStateInterpreted.h"
-#include "Interpreted/ExecutionStateInterpretedPure.h"
-#include "Interpreted/ExecutionStateInterpretedPerActivation.h"
-#include "Interpreted/ExecutionStateInterpretedSingleton.h"
-
-#include "ExecutionContext.h"
-#include "AzCore/Slice/SliceComponent.h"
-#include "AzFramework/Entity/SliceEntityOwnershipServiceBus.h"
+#include <ScriptCanvas/Execution/ExecutionContext.h>
 
 namespace ExecutionContextCpp
 {
@@ -199,29 +192,25 @@ namespace ScriptCanvas
             switch (selection)
             {
             case Grammar::ExecutionStateSelection::InterpretedPure:
-                runtimeData.m_createExecution =
-                    [](ExecutionStateConfig& config) { return aznew ExecutionStateInterpretedPure(config); };
+                runtimeData.m_createExecution = &ExecutionStateStorage::CreatePure;
                 break;
 
             case Grammar::ExecutionStateSelection::InterpretedPureOnGraphStart:
-                runtimeData.m_createExecution =
-                    [](ExecutionStateConfig& config) { return aznew ExecutionStateInterpretedPureOnGraphStart(config); };
+                runtimeData.m_createExecution = &ExecutionStateStorage::CreatePureOnGraphStart;
                 break;
 
             case Grammar::ExecutionStateSelection::InterpretedObject:
-                runtimeData.m_createExecution =
-                    [](ExecutionStateConfig& config) { return aznew ExecutionStateInterpretedPerActivation(config); };
+                runtimeData.m_createExecution = &ExecutionStateStorage::CreatePerActivation;
                 break;
 
             case Grammar::ExecutionStateSelection::InterpretedObjectOnGraphStart:
-                runtimeData.m_createExecution =
-                    [](ExecutionStateConfig& config) { return aznew ExecutionStateInterpretedPerActivationOnGraphStart(config); };
+                runtimeData.m_createExecution = &ExecutionStateStorage::CreatePerActivationOnGraphStart;
                 break;
 
             default:
                 AZ_Assert(false, "Unsupported ScriptCanvas execution selection");
                 runtimeData.m_createExecution =
-                    [](ExecutionStateConfig&) { return nullptr; };
+                    [](ExecutionStateStorage&, ExecutionStateConfig&) {};
                 break;
             }
         }

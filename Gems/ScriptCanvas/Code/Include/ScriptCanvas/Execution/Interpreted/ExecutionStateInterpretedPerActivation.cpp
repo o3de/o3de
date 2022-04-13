@@ -17,6 +17,8 @@ namespace ScriptCanvas
 {
     ExecutionStateInterpretedPerActivation::ExecutionStateInterpretedPerActivation(ExecutionStateConfig& config)
         : ExecutionStateInterpreted(config)
+        , m_deactivationRequired(false)
+        , m_luaRegistryIndex(LUA_NOREF)
     {}
 
     ExecutionStateInterpretedPerActivation::~ExecutionStateInterpretedPerActivation()
@@ -24,16 +26,26 @@ namespace ScriptCanvas
         if (m_deactivationRequired)
         {
             StopExecution();
-            ReleaseExecutionStateUnchecked();
+            ReleaseInterpretedInstanceUnchecked();
         }
         else
         {
-            ReleaseExecutionState();
+            ReleaseInterpretedInstance();
         }
+    }
+
+    void ExecutionStateInterpretedPerActivation::ClearLuaRegistryIndex()
+    {
+        m_luaRegistryIndex = LUA_NOREF;
     }
 
     void ExecutionStateInterpretedPerActivation::Execute()
     {}
+
+    int ExecutionStateInterpretedPerActivation::GetLuaRegistryIndex() const
+    {
+        return m_luaRegistryIndex;
+    }
 
     void ExecutionStateInterpretedPerActivation::Initialize()
     {
@@ -64,7 +76,7 @@ namespace ScriptCanvas
         }
 
         // Lua: graph_VM, instance
-        ReferenceExecutionState();
+        ReferenceInterpretedInstance();
         // Lua: graph_VM,
         lua_pop(lua, 1);
         // Lua:
@@ -88,6 +100,29 @@ namespace ScriptCanvas
         AZ::Internal::azlua_pop(lua, 1);
         // Lua:
         m_deactivationRequired = false;
+    }
+
+    void ExecutionStateInterpretedPerActivation::ReleaseInterpretedInstance()
+    {
+        if (m_luaRegistryIndex != LUA_NOREF)
+        {
+            ReleaseInterpretedInstanceUnchecked();
+        }
+    }
+
+    void ExecutionStateInterpretedPerActivation::ReleaseInterpretedInstanceUnchecked()
+    {
+        luaL_unref(m_luaState, LUA_REGISTRYINDEX, m_luaRegistryIndex);
+        m_luaRegistryIndex = LUA_NOREF;
+    }
+
+    void ExecutionStateInterpretedPerActivation::ReferenceInterpretedInstance()
+    {
+        AZ_Assert(m_luaRegistryIndex == LUA_NOREF, "ExecutionStateInterpreted already in the Lua registry and risks double deletion");
+        // Lua: instance
+        m_luaRegistryIndex = luaL_ref(m_luaState, LUA_REGISTRYINDEX);
+        AZ_Assert(m_luaRegistryIndex != LUA_REFNIL, "ExecutionStateInterpreted was nil when trying to gain a reference");
+        AZ_Assert(m_luaRegistryIndex != LUA_NOREF, "ExecutionStateInterpreted failed to gain a reference");
     }
 
     ExecutionStateInterpretedPerActivationOnGraphStart::ExecutionStateInterpretedPerActivationOnGraphStart(ExecutionStateConfig& config)

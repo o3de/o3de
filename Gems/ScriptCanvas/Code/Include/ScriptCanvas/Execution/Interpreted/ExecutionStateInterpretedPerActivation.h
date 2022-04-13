@@ -30,7 +30,20 @@ namespace ScriptCanvas
         void StopExecution() override;
 
     protected:
-        bool m_deactivationRequired = false;
+        bool m_deactivationRequired;
+
+        void ClearLuaRegistryIndex();
+
+        int GetLuaRegistryIndex() const;
+
+        void ReferenceInterpretedInstance();
+
+        void ReleaseInterpretedInstance();
+
+        void ReleaseInterpretedInstanceUnchecked();
+
+    private:
+        int m_luaRegistryIndex;
     };
 
     class ExecutionStateInterpretedPerActivationOnGraphStart

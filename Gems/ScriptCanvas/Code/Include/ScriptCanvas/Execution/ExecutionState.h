@@ -107,5 +107,4 @@ namespace ScriptCanvas
         const RuntimeDataOverrides& m_overrides;
         ExecutionUserData m_userData;
     };
-
 }

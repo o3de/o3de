@@ -27,19 +27,7 @@ namespace ScriptCanvas
 
         ExecutionStateInterpreted(ExecutionStateConfig& config);
 
-        void ClearLuaRegistryIndex();
-
         ExecutionMode GetExecutionMode() const override;
-
-        int GetLuaRegistryIndex() const;
-
-        // \todo rename these...these all refer to the wrong thing now. it's not the execution state,
-        // it's the user object, if one is created, move to the non-pure functionality
-        void ReferenceExecutionState();
-
-        void ReleaseExecutionState();
-
-        void ReleaseExecutionStateUnchecked();
 
     protected:
         lua_State* m_luaState;
@@ -48,6 +36,5 @@ namespace ScriptCanvas
         
     private:
         const AZ::Data::Asset<AZ::ScriptAsset>& m_interpretedAsset;
-        int m_luaRegistryIndex = LUA_NOREF;
     };
 } 
