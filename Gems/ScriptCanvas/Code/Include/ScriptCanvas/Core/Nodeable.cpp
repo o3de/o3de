@@ -29,7 +29,7 @@ namespace ScriptCanvas
         , m_executionState(executionState)
     {}   
 
-#if !defined(RELEASE) 
+#if defined(SC_RUNTIME_CHECKS_ENABLED) 
     void Nodeable::CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const
     {
         GetExecutionOutChecked(index)(resultBVP, argsBVPs, numArguments);
@@ -39,7 +39,7 @@ namespace ScriptCanvas
     {
         GetExecutionOut(index)(resultBVP, argsBVPs, numArguments);
     }
-#endif // !defined(RELEASE) 
+#endif // defined(SC_RUNTIME_CHECKS_ENABLED) 
 
     void Nodeable::Deactivate()
     {
@@ -81,8 +81,22 @@ namespace ScriptCanvas
 
     void Nodeable::InitializeExecutionState(ExecutionState* executionState)
     {
+#if defined(SC_RUNTIME_CHECKS_ENABLED)
+        if (executionState == nullptr)
+        {
+            AZ_Error("ScriptCanvas", false, "execution state for nodeable must not be nullptr");
+            return;
+        }
+
+        if (m_executionState != nullptr)
+        {
+            AZ_Error("ScriptCanvas", false, "execution state already initialized");
+            return;
+        }
+#else
         AZ_Assert(executionState != nullptr, "execution state for nodeable must not be nullptr");
         AZ_Assert(m_executionState == nullptr, "execution state already initialized");
+#endif
         m_executionState = executionState->WeakFromThis();
         OnInitializeExecutionState();
     }

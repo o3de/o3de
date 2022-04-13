@@ -51,6 +51,8 @@ namespace ScriptCanvas
 
         void RegisterUserObjectAPI(lua_State* lua);
 
+        int ReportError(lua_State* lua, AZStd::string_view message);
+
         // Lua: (ebus handler) userdata, (out name) string, (out implementation) function
         int SetExecutionOut(lua_State* lua);
 

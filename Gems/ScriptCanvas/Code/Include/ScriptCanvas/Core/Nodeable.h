@@ -130,7 +130,7 @@ namespace ScriptCanvas
             AZ::BehaviorValueParameter resultBVP(&result);
             CallOut(index, &resultBVP, nullptr, 0);
 
-#if !defined(RELEASE) 
+#if defined(SC_RUNTIME_CHECKS_ENABLED) 
             if (!resultBVP.GetAsUnsafe<t_Return>())
             {
                 AZ_Error("ScriptCanvas", false, "%s:CallOut(%zu) failed to provide a useable result", TYPEINFO_Name(), index);
@@ -155,7 +155,7 @@ namespace ScriptCanvas
             AZ::BehaviorValueParameter resultBVP(&result);
             CallOut(index, &resultBVP, argsBVPs.data(), sizeof...(t_Args));
 
-#if !defined(RELEASE) 
+#if defined(SC_RUNTIME_CHECKS_ENABLED) 
             if (!resultBVP.GetAsUnsafe<t_Return>())
             {
                 AZ_Error("ScriptCanvas", false, "%s:CallOut(%zu) failed to provide a useable result", TYPEINFO_Name(), index);

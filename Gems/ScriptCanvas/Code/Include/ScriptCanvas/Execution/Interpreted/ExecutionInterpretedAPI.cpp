@@ -398,6 +398,13 @@ namespace ScriptCanvas
                 , "Failed to add ScriptCanvas user object inheritance to ScriptContext!");
         }
 
+        int ReportError(lua_State* lua, AZStd::string_view message)
+        {
+            using namespace ExecutionInterpretedAPICpp;
+            lua_pushlstring(lua, message.data(), message.length());
+            return ErrorHandler(lua);
+        }
+
         void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
             AZ_Error("ScriptCanvas", !runtimeData.m_areScriptLocalStaticsInitialized, "ScriptCanvas runtime data already initialized");

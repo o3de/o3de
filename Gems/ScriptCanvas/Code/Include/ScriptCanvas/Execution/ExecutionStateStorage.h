@@ -16,6 +16,11 @@
 
 namespace ScriptCanvas
 {
+    /*
+    * Holds a dynamic execution state in a static allocation to elimination heap allocation costs
+    * associated with creating the proper execution state against and asset whose type cannot be known
+    * at runtime. Use with RAII class ExecutionStateHandler or you must perform your own saftey checks.
+    */
     class ExecutionStateStorage final
     {
         static constexpr const size_t s_StorageSize
@@ -30,8 +35,6 @@ namespace ScriptCanvas
         AZ_TYPE_INFO(ExecutionStateStorage, "{AD40E734-739A-4784-9842-79D251499B91}");
         AZ_CLASS_ALLOCATOR(ExecutionStateStorage, AZ::SystemAllocator, 0);
 
-        ~ExecutionStateStorage();
-
         static void CreatePerActivation(ExecutionStateStorage& storage, ExecutionStateConfig& config);
 
         static void CreatePerActivationOnGraphStart(ExecutionStateStorage& storage, ExecutionStateConfig& config);
@@ -39,6 +42,8 @@ namespace ScriptCanvas
         static void CreatePure(ExecutionStateStorage& storage, ExecutionStateConfig& config);
 
         static void CreatePureOnGraphStart(ExecutionStateStorage& storage, ExecutionStateConfig& config);
+
+        void Destroy();
 
         const ExecutionState* Get() const;
 

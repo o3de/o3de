@@ -21,7 +21,7 @@ namespace ScriptCanvas
     {
         RuntimeAsset* runtimeAsset = config.overrides.m_runtimeAsset.Get();
 
-#if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
+#if defined(SC_RUNTIME_CHECKS_ENABLED)
         if (!runtimeAsset)
         {
             AZ_Error("ScriptCanvas", false
@@ -55,9 +55,9 @@ namespace ScriptCanvas
             , m_interpretedAsset
             , AZ::k_scriptLoadBinary
             , AZ::ScriptContextIds::DefaultScriptContextId);
-        AZ_Assert(result.status != AZ::ScriptLoadResult::Status::Failed, "ExecutionStateInterpreted script asset failed to load.");
-        AZ_Assert(result.lua, "Must have a default script context and a lua_State");
-        AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
+        SC_RUNTIME_ASSERT(result.status != AZ::ScriptLoadResult::Status::Failed, "ExecutionStateInterpreted script asset failed to load.");
+        SC_RUNTIME_ASSERT(result.lua, "Must have a default script context and a lua_State");
+        SC_RUNTIME_ASSERT(lua_istable(result.lua, -1), "No run-time execution was available for this script");
         m_luaState = result.lua;
         return result.lua;
     }

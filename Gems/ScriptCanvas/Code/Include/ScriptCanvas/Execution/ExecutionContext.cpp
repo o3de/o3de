@@ -208,7 +208,7 @@ namespace ScriptCanvas
                 break;
 
             default:
-                AZ_Assert(false, "Unsupported ScriptCanvas execution selection");
+                SC_RUNTIME_ASSERT(false, "Unsupported ScriptCanvas execution selection");
                 runtimeData.m_createExecution =
                     [](ExecutionStateStorage&, ExecutionStateConfig&) {};
                 break;
@@ -224,7 +224,7 @@ namespace ScriptCanvas
             : m_address(address)
             , m_type(type)
         {
-            AZ_Assert(address, "Null address is not allowed in type erased Reference object");
+            SC_RUNTIME_ASSERT(address, "Null address is not allowed in type erased Reference object");
         }
 
         void* TypeErasedReference::Address() const

@@ -8,6 +8,18 @@
 
 #pragma once
 
+#if !defined(_RELEASE)
+#define SC_RUNTIME_CHECKS_ENABLED
+#endif
+
+#if defined SC_RUNTIME_CHECKS_ENABLED
+#define SC_RUNTIME_ASSERT(expr, ...) AZ_Error("ScriptCanvas", expr, __VA_ARGS__);
+#define SC_RUNTIME_ASSERT_RETURN(expr, ...) if (!(expr)) { AZ_Error("ScriptCanvas", false, __VA_ARGS__); return; }
+#else
+#define SC_RUNTIME_ASSERT(expr, ...) AZ_Assert(expr, __VA_ARGS__);
+#define SC_RUNTIME_ASSERT_RETURN(expr, ...) if (!(expr)) { AZ_Assert(false, __VA_ARGS__); return; }
+#endif
+
 #include <AzCore/std/any.h>
 
 namespace ScriptCanvas

@@ -16,10 +16,6 @@
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Grammar/DebugMap.h>
 
-#if !defined(_RELEASE)
-#define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
-#endif
-
 namespace AZ
 {
     class ReflectContext;

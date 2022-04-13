@@ -10,7 +10,7 @@
 
 namespace ScriptCanvas
 {
-    ExecutionStateStorage::~ExecutionStateStorage()
+    void ExecutionStateStorage::Destroy()
     {
         Mod()->~ExecutionState();
     }

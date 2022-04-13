@@ -31,7 +31,7 @@ namespace ScriptCanvas
 
     void ExecutionStateHandler::Execute()
     {
-#if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
+#if defined(SC_RUNTIME_CHECKS_ENABLED)
         if (!m_executionState)
         {
             AZ_Error("ScriptCanvas", false, "ExecutionStateHandler::Execute called without an execution state");
@@ -39,7 +39,7 @@ namespace ScriptCanvas
         }
 #else
         AZ_Assert(m_executionState, "ExecutionStateHandler::Execute called without an execution state");
-#endif // defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
+#endif // defined(SC_RUNTIME_CHECKS_ENABLED)
         AZ_PROFILE_SCOPE(ScriptCanvas, "ExecutionStateHandler::Execute (%s)"
             , m_executionState->GetRuntimeDataOverrides().m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         SC_EXECUTION_TRACE_GRAPH_ACTIVATED(CreateActivationInfo());
@@ -54,7 +54,7 @@ namespace ScriptCanvas
 
     void ExecutionStateHandler::Initialize(const RuntimeDataOverrides& overrides, ExecutionUserData&& userData)
     {
-#if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
+#if defined(SC_RUNTIME_CHECKS_ENABLED)
         if (auto isPreloaded = IsPreloaded(overrides); isPreloaded != IsPreloadedResult::Yes)
         {
             AZ_Error("ScriptCanvas", false
@@ -75,22 +75,22 @@ namespace ScriptCanvas
 #else
         AZ_Assert(IsPreloaded(overrides) == IsPreloadedResult::Yes
             , "ExecutionStateHandler::Intialize runtime asset %s-%s loading problem: %s"
-            , m_overrides->m_runtimeAsset.GetId().ToString<AZStd::string>().data()
-            , m_overrides->m_runtimeAsset.GetHint().c_str()
+            , overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data()
+            , overrides.m_runtimeAsset.GetHint().c_str()
             , ToString(IsPreloaded(overrides)));
 
         AZ_Assert(overrides.m_runtimeAsset.Get()->m_runtimeData.m_createExecution
             , "ExecutionStateHandler::Initialize runtime create execution function not set %s-%s loading problem"
             , overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data()
             , overrides.m_runtimeAsset.GetHint().c_str());
-#endif // defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
+#endif // defined(SC_RUNTIME_CHECKS_ENABLED)
 
         AZ_PROFILE_SCOPE(ScriptCanvas, "ExecutionStateHandler::Initialize (%s)", overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         ExecutionStateConfig config(overrides, AZStd::move(userData));
         overrides.m_runtimeAsset.Get()->m_runtimeData.m_createExecution(m_executionStateStorage, config);
         m_executionState = m_executionStateStorage.Mod();
 
-#if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
+#if defined(SC_RUNTIME_CHECKS_ENABLED)
         if (!m_executionState)
         {
             AZ_Error("ScriptCanvas", false, "ExecutionStateHandler::m_runtimeAsset AssetId: %s failed to create an execution state, possibly due to missing dependent asset, script will not run"
@@ -100,7 +100,7 @@ namespace ScriptCanvas
 #else
         AZ_Assert(m_executionState, "ExecutionStateHandler::m_runtimeAsset AssetId: %s failed to create an execution state, possibly due to missing dependent asset, script will not run"
             , overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().data());
-#endif // defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
+#endif // defined(SC_RUNTIME_CHECKS_ENABLED)
 
         SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(m_executionState);
         m_executionState->Initialize();
@@ -122,6 +122,8 @@ namespace ScriptCanvas
         return m_executionState != nullptr && m_executionState->IsPure();
     }
 
+    // Add unit tests for the public interface
+
     void ExecutionStateHandler::StopAndClearExecutable()
     {
         if (m_executionState)
@@ -129,6 +131,7 @@ namespace ScriptCanvas
             m_executionState->StopExecution();
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
             SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
+            m_executionStateStorage.Destroy();
             m_executionState = nullptr;
         }
     }
