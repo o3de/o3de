@@ -66,5 +66,7 @@ namespace ScriptCanvasBuilder
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void ReportReady(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        // temporary work-around for the discrepancies between loaded Lua modules and loaded AZ::ScriptAssets.
+        void ReportReadyFilter(AZ::Data::Asset<AZ::Data::AssetData> asset);
     };
 }

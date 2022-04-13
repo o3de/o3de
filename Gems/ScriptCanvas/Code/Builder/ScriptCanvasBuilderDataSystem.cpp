@@ -7,15 +7,16 @@
  */
 
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Script/ScriptSystemBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <Builder/ScriptCanvasBuilder.h>
+#include <Builder/ScriptCanvasBuilderDataSystem.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Components/EditorDeprecationData.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-#include <Builder/ScriptCanvasBuilderDataSystem.h>
 
 namespace ScriptCanvasBuilderDataSystemCpp
 {
@@ -109,7 +110,7 @@ namespace ScriptCanvasBuilder
         AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
         ScriptCanvas::RuntimeAssetPtr asset(assetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>());
         asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-        m_assets.insert({ sourceId, BuilderAssetResult{  BuilderAssetStatus::Pending, AZStd::move(asset) } });
+        m_assets.insert({ sourceId, BuilderAssetResult{  BuilderAssetStatus::Pending, asset } });
         BuilderAssetResult& result = m_assets[sourceId];
         result.data.QueueLoad();
         return result;
@@ -137,7 +138,7 @@ namespace ScriptCanvasBuilder
             , assetIdGuid.ToString<AZStd::string>().c_str());
 
         auto& buildResult = m_assets[assetIdGuid];
-        buildResult.data = AZStd::move(asset);
+        buildResult.data = asset;
         buildResult.status = BuilderAssetStatus::Error;
         DataSystemAssetNotificationsBus::Event
             ( assetIdGuid
@@ -151,7 +152,7 @@ namespace ScriptCanvasBuilder
             , "DataSystem received OnAssetReady: %s : %s"
             , asset.GetHint().c_str()
             , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
-        ReportReady(asset);
+        ReportReadyFilter(asset);     
     }
 
     void DataSystem::ReportReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -160,7 +161,7 @@ namespace ScriptCanvasBuilder
         const auto assetIdGuid = asset.GetId().m_guid;
 
         auto& buildResult = m_assets[assetIdGuid];
-        buildResult.data = AZStd::move(asset);
+        buildResult.data = asset;
         buildResult.data.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         
         if (auto result = IsPreloaded(buildResult.data); result != IsPreloadedResult::Yes)
@@ -187,6 +188,29 @@ namespace ScriptCanvasBuilder
         }
     }
 
+    void DataSystem::ReportReadyFilter(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        using namespace ScriptCanvas;
+
+        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptCanvas", "DataSystem::ReportReadyFilter received a runtime asset, queuing Lua script processing.");
+        AZ::SystemTickBus::QueueFunction([this, asset]()
+        {
+            AZ_TracePrintf("ScriptCanvas", "DataSystem::ReportReadyFilter executing Lua script processing.");
+            const auto assetIdGuid = asset.GetId().m_guid;
+            const auto luaScriptAssetId = AZ::Data::AssetId(assetIdGuid, AZ::ScriptAsset::CompiledAssetSubId);
+            AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::ClearAssetReferences, luaScriptAssetId);
+            auto& buildResult = m_assets[assetIdGuid];
+            buildResult.data = asset;
+            buildResult.data.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+
+            auto& luaAsset = buildResult.data.Get()->m_runtimeData.m_script;
+            luaAsset
+                = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(luaAsset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad, {});
+            luaAsset.QueueLoad();
+            luaAsset.BlockUntilLoadComplete();
+        });
+    }
+
     void DataSystem::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZ_TracePrintf
@@ -194,7 +218,7 @@ namespace ScriptCanvasBuilder
             , "DataSystem received OnAssetReloaded: %s : %s"
             , asset.GetHint().c_str()
             , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
-        ReportReady(asset);
+        ReportReadyFilter(asset);
     }
 
     void DataSystem::OnAssetUnloaded(const AZ::Data::AssetId assetId, [[maybe_unused]] const AZ::Data::AssetType assetType)
@@ -210,7 +234,7 @@ namespace ScriptCanvasBuilder
             return;
         }
 
-        AZ_TracePrintf
+        SCRIPT_SYSTEM_SCRIPT_STATUS
             ( "ScriptCanvas"
             , "DataSystem received source file changed: %s : %s"
             , relativePath.c_str()

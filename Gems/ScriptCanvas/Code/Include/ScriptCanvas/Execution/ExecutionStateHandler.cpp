@@ -122,8 +122,6 @@ namespace ScriptCanvas
         return m_executionState != nullptr && m_executionState->IsPure();
     }
 
-    // Add unit tests for the public interface
-
     void ExecutionStateHandler::StopAndClearExecutable()
     {
         if (m_executionState)

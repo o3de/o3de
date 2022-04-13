@@ -52,7 +52,7 @@ namespace ScriptCanvas
 
         bool IsExecutable() const;
 
-        // if this returns true, the user can reasobaly call execute serially without calling a <stop function>() in between
+        // if this returns true, the user can reasonably call execute serially without calling a <stop function>() in between
         bool IsPure() const;
 
         void StopAndClearExecutable();

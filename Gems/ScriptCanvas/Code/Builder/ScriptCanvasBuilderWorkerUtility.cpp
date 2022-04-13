@@ -31,7 +31,6 @@
 #include <ScriptCanvas/Core/Core.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 
-
 namespace ScriptCanvasBuilder
 {
     AssetHandlers::AssetHandlers(SharedHandlers& source)
