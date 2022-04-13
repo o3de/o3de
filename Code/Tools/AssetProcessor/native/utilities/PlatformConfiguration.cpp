@@ -631,11 +631,6 @@ namespace AssetProcessor
         */
         for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
         {
-            if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
-            {
-                continue;
-            }
-
             AZStd::string_view currentRCParams = assetRecognizer.m_defaultParams;
             // The "/Amazon/AssetProcessor/Settings/RC */<platform>" entry will be queried
             AZ::IO::Path overrideParamsKey = AZ::IO::Path(AZ::IO::PosixPathSeparator);
