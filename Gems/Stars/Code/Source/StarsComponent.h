@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzFramework/Components/ComponentAdapter.h>
-#include <Stars/StarsComponentController.h>
+#include <StarsComponentController.h>
 
 namespace AZ::Render 
 {

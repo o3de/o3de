@@ -156,11 +156,6 @@ set(FILES
     Source/SkyBox/PhysicalSkyComponentController.h
     Source/SkyBox/PhysicalSkyComponent.cpp
     Source/SkyBox/PhysicalSkyComponent.h
-    Source/Stars/StarsComponentController.cpp
-    Source/Stars/StarsComponentController.h
-    Source/Stars/StarsComponent.cpp
-    Source/Stars/StarsComponent.h
-    Source/Stars/StarsAsset.cpp
     Source/CommonFeaturesSystemComponent.h
     Source/CommonFeaturesSystemComponent.cpp
     Source/Scripting/EntityReferenceComponent.cpp

@@ -11,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AtomLyIntegration/CommonFeatures/Stars/StarsComponentConfig.h>
+#include <StarsComponentConfig.h>
 
 namespace AZ::RPI
 {

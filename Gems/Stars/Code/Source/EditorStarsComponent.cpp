@@ -6,10 +6,10 @@
  *
  */
 
-#include <Atom/Feature/Stars/StarsFeatureProcessor.h>
-#include <Atom/RPI.Public/Scene.h>
 #include "EditorStarsComponent.h"
 #include <AzCore/Serialization/EditContext.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <StarsFeatureProcessor.h>
 
 namespace AZ::Render 
 {

@@ -13,8 +13,6 @@ namespace AZ
 {
     namespace Render
     {
-        class StarsAssetHandler;
-
         class AtomLyIntegrationCommonFeaturesSystemComponent
             : public AZ::Component
         {
@@ -36,8 +34,6 @@ namespace AZ
             void Deactivate() override;
             ////////////////////////////////////////////////////////////////////////
 
-        private:
-            AZ::Render::StarsAssetHandler* m_starsAssetHandler;
         };
     } // namespace Render
 } // namespace AZ

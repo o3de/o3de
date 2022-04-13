@@ -62,8 +62,6 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/PhysicalSkyBus.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/PhysicalSkyComponentConfig.h
-    Include/AtomLyIntegration/CommonFeatures/Stars/StarsAsset.h
-    Include/AtomLyIntegration/CommonFeatures/Stars/StarsComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Scripting/EntityReferenceRequestBus.h
     Include/AtomLyIntegration/CommonFeatures/Scripting/EntityReferenceConstants.h
     Include/AtomLyIntegration/CommonFeatures/Scripting/EntityReferenceComponentConfig.h

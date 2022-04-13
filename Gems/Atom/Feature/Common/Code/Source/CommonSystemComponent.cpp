@@ -40,7 +40,6 @@
 #include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <Atom/Feature/Stars/StarsFeatureProcessor.h>
 #include <ColorGrading/LutGenerationPass.h>
 #include <Debug/RenderDebugFeatureProcessor.h> 
 #include <PostProcess/PostProcessFeatureProcessor.h>
@@ -132,7 +131,6 @@ namespace AZ
             ProjectedShadowFeatureProcessor::Reflect(context);
             SkyBoxFeatureProcessor::Reflect(context);
             SkyBoxFogSettings::Reflect(context);
-            StarsFeatureProcessor::Reflect(context);
             UseTextureFunctor::Reflect(context);
             DrawListFunctor::Reflect(context);
             SubsurfaceTransmissionParameterFunctor::Reflect(context);

@@ -100,8 +100,6 @@ set(FILES
     Source/SkyBox/EditorHDRiSkyboxComponent.h
     Source/SkyBox/EditorPhysicalSkyComponent.cpp
     Source/SkyBox/EditorPhysicalSkyComponent.h
-    Source/Stars/EditorStarsComponent.cpp
-    Source/Stars/EditorStarsComponent.h
     Source/SharedPreview/SharedPreviewer.cpp
     Source/SharedPreview/SharedPreviewer.h
     Source/SharedPreview/SharedPreviewer.ui

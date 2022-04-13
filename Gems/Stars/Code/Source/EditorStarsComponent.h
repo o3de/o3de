@@ -8,9 +8,8 @@
 
 #pragma once
 
-
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
-#include <Stars/StarsComponent.h>
+#include <StarsComponent.h>
 
 namespace AZ::Render
 {

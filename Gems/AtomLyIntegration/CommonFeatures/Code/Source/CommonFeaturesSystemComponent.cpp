@@ -16,7 +16,6 @@
 
 #include <AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
-#include <AtomLyIntegration/CommonFeatures/Stars/StarsComponentConfig.h>
 
 namespace AZ
 {
@@ -70,15 +69,10 @@ namespace AZ
         {
             auto modelAssetHandler = azrtti_cast<RPI::ModelAssetHandler*>(Data::AssetManager::Instance().GetHandler(azrtti_typeid<RPI::ModelAsset>()));
             modelAssetHandler->m_componentTypeId = EditorMeshComponentTypeId;
-
-            m_starsAssetHandler = aznew AZ::Render::StarsAssetHandler();
-            m_starsAssetHandler->Register();
         }
 
         void AtomLyIntegrationCommonFeaturesSystemComponent::Deactivate()
         {
-            m_starsAssetHandler->Unregister();
-            delete m_starsAssetHandler;
         }
     } // namespace Render
 } // namespace AZ

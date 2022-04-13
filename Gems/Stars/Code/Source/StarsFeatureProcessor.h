@@ -8,8 +8,7 @@
 
 #pragma once
 
-
-#include <Atom/Feature/Stars/StarsFeatureProcessorInterface.h>
+#include <Stars/StarsFeatureProcessorInterface.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/PipelineState.h>

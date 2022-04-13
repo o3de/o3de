@@ -9,8 +9,8 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AtomLyIntegration/CommonFeatures/Stars/StarsAsset.h>
-#include <Atom/Feature/Stars/StarsFeatureProcessorInterface.h>
+#include <StarsAsset.h>
+#include <Stars/StarsFeatureProcessorInterface.h>
 
 namespace AZ::Render
 {

@@ -8,7 +8,7 @@
 
 #include "StarsComponentController.h"
 #include <Atom/RPI.Public/Scene.h>
-#include <Atom/Feature/Stars/StarsFeatureProcessor.h>
+#include <StarsFeatureProcessor.h>
 
 namespace AZ::Render
 {

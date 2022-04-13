@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Feature/Stars/StarsFeatureProcessor.h>
+#include <StarsFeatureProcessor.h>
 
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
@@ -36,6 +36,11 @@ namespace AZ::Render
     {
         const char* shaderFilePath = "Shaders/stars/stars.azshader";
         m_shader = RPI::LoadCriticalShader(shaderFilePath);
+        if (!m_shader)
+        {
+            AZ_Error("StarsFeatureProcessor", false, "Failed to load required stars shader.");
+            return;
+        }
         Data::AssetBus::Handler::BusConnect(m_shader->GetAssetId());
 
         auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());

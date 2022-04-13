@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AtomLyIntegration/CommonFeatures/Stars/StarsAsset.h>
+#include <StarsAsset.h>
 
 namespace AZ::Render
 {
