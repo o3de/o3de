@@ -119,8 +119,6 @@ namespace AzFramework::Scripts
             [this,
              spawnTicket]([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableConstEntityContainerView view)
         {
-            AZStd::lock_guard lock(m_mutex);
-
             SpawnResult spawnResult;
             // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
             // and to provide easier access to it in OnSpawnCompleted callback
@@ -130,12 +128,7 @@ namespace AzFramework::Scripts
             {
                 spawnResult.m_entityList.emplace_back(entity->GetId());
             }
-            m_resultCommands.push_back(AZStd::move(spawnResult));
-
-            if (!AZ::TickBus::Handler::BusIsConnected())
-            {
-                AZ::TickBus::Handler::BusConnect();
-            }
+            QueueProcessResult(spawnResult);
         };
 
         SpawnAllEntitiesOptionalArgs optionalArgs;
@@ -156,17 +149,11 @@ namespace AzFramework::Scripts
 
         auto despawnCompleteCB = [this, spawnTicket]([[maybe_unused]] EntitySpawnTicket::Id ticketId)
         {
-            AZStd::lock_guard lock(m_mutex);
             // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
             // and to provide easier access to it in OnDespawn callback
             DespawnResult despawnResult;
             despawnResult.m_spawnTicket = spawnTicket;
-            m_resultCommands.push_back(despawnResult);
-
-            if (!AZ::TickBus::Handler::BusIsConnected())
-            {
-                AZ::TickBus::Handler::BusConnect();
-            }
+            QueueProcessResult(despawnResult);
         };
 
         DespawnAllEntitiesOptionalArgs optionalArgs;
@@ -180,6 +167,16 @@ namespace AzFramework::Scripts
     {
         m_resultCommands.clear();
         AZ::TickBus::Handler::BusDisconnect();
+    }
+
+    void SpawnableScriptMediator::QueueProcessResult(const ResultCommand& resultCommand)
+    {
+        AZStd::lock_guard lock(m_mutex);
+        m_resultCommands.push_back(resultCommand);
+        if (!AZ::TickBus::Handler::BusIsConnected())
+        {
+            AZ::TickBus::Handler::BusConnect();
+        }
     }
 
     void SpawnableScriptMediator::ProcessResults()
