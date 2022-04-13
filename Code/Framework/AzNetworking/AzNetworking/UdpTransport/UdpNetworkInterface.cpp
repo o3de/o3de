@@ -705,14 +705,7 @@ namespace AzNetworking
         {
             return;
         }
-        for (RemovedConnection& removedConnection : m_removedConnections)
-        {
-            if (connection == removedConnection.m_connection)
-            {
-                int breakhere = 0;
-                ++breakhere;
-            }
-        }
+
         connection->m_state = ConnectionState::Disconnecting;
         m_removedConnections.emplace_back(RemovedConnection{ connection, reason, endpoint });
     }
