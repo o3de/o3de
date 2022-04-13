@@ -17,7 +17,7 @@
 
 namespace UnitTest
 {
-    TEST_F(AssetScannerUnitTest, VerifyTestWorks)
+    TEST_F(AssetScannerUnitTest, AssetScanner_ScanMultipleFolders_ExpectedFilesAndFoldersFound)
     {
         using namespace AssetProcessor;
         QSharedPointer<QCoreApplication> m_qApp;
