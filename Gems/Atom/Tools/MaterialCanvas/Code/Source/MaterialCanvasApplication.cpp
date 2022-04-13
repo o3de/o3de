@@ -54,7 +54,6 @@ namespace MaterialCanvas
     {
         Base::Reflect(context);
         MaterialCanvasDocument::Reflect(context);
-        MaterialCanvasViewportSettingsSystem::Reflect(context);
     }
 
     const char* MaterialCanvasApplication::GetCurrentConfigurationName() const
@@ -80,7 +79,7 @@ namespace MaterialCanvas
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
-        m_viewportSettingsSystem.reset(aznew MaterialCanvasViewportSettingsSystem(m_toolId));
+        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
 
         m_window.reset(aznew MaterialCanvasMainWindow(m_toolId));
         m_window->show();

@@ -103,11 +103,11 @@ def CloseMaterial(documentId):
 
 def LoadLightingPreset(path):
     assetId = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', path, azlmbr.math.Uuid(), False)
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, 'LoadLightingPresetByAssetId', assetId)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, 'LoadLightingPresetByAssetId', assetId)
     
 def LoadModelPreset(path):
     assetId = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', path, azlmbr.math.Uuid(), False)
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, 'LoadModelPresetByAssetId', assetId)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, 'LoadModelPresetByAssetId', assetId)
 
 def SetCameraDistance(distance):
     azlmbr.render.ArcBallControllerRequestBus(azlmbr.bus.Broadcast, 'SetDistance', distance)

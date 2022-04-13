@@ -175,8 +175,11 @@ def test_create_template(tmpdir,
     template_folder =  engine_root / 'Templates'
     template_folder.mkdir(parents=True, exist_ok=True)
 
-    result = engine_template.create_template(template_source_path, template_folder, source_name='TestTemplate',
-                                             keep_license_text=keep_license_text, force=force)
+    # Prevents writes to the o3de manifest files via these test
+    with patch('o3de.manifest.load_o3de_manifest', return_value={}) as load_o3de_manifest_patch, \
+            patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_o3de_manifest_patch:
+        result = engine_template.create_template(template_source_path, template_folder, source_name='TestTemplate',
+                                                 keep_license_text=keep_license_text, force=force)
 
     if expect_failure:
         assert result != 0
@@ -255,7 +258,10 @@ class TestCreateTemplate:
 
         template_dest_path = engine_root / instantiated_name
         # Skip registration in test
-        with patch('uuid.uuid4', return_value=uuid.uuid5(uuid.NAMESPACE_DNS, instantiated_name)) as uuid4_mock:
+
+        with patch('uuid.uuid4', return_value=uuid.uuid5(uuid.NAMESPACE_DNS, instantiated_name)) as uuid4_mock, \
+                patch('o3de.manifest.load_o3de_manifest', return_value={}) as load_o3de_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_o3de_manifest_patch:
             result = create_from_template_func(template_dest_path,
                                                template_path=template_default_folder,
                                                keep_license_text=keep_license_text,

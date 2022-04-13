@@ -95,12 +95,20 @@ namespace AZ
                 m_asset->m_poolAssetId = poolAssetId;
             }
         }
-        
+
         void StreamingImageAssetCreator::SetFlags(StreamingImageFlags flag)
         {
             if (ValidateIsReady())
             {
                 m_asset->m_flags = flag;
+            }
+        }
+
+        void StreamingImageAssetCreator::SetAverageColor(Color avgColor)
+        {
+            if (ValidateIsReady())
+            {
+                m_asset->m_averageColor = avgColor;
             }
         }
 
@@ -116,7 +124,7 @@ namespace AZ
 
             if (m_mipLevels != expectedMipLevels)
             {
-                ReportError("Expected %d mip levels, but %d were added through mip chains.", expectedMipLevels, m_mipLevels);
+                ReportError("Expected %u mip levels, but %u were added through mip chains.", expectedMipLevels, m_mipLevels);
                 return false;
             }
 

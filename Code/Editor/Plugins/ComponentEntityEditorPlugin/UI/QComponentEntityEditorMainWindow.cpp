@@ -21,6 +21,7 @@ QComponentEntityEditorInspectorWindow::QComponentEntityEditorInspectorWindow(QWi
     : QMainWindow(parent)
     , m_propertyEditor(nullptr)
 {
+    setObjectName("InspectorMainWindow");
     gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
 
     Init();

@@ -156,25 +156,30 @@ def get_default_o3de_manifest_json_data() -> dict:
     return json_data
 
 def get_o3de_manifest() -> pathlib.Path:
-    manifest_path = get_o3de_folder() / 'o3de_manifest.json'
-    if not manifest_path.is_file():
-        json_data = get_default_o3de_manifest_json_data()
-
-        with manifest_path.open('w') as s:
-            s.write(json.dumps(json_data, indent=4) + '\n')
-
-    return manifest_path
+    return get_o3de_folder() / 'o3de_manifest.json'
 
 
 def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
     """
     Loads supplied manifest file or ~/.o3de/o3de_manifest.json if None
+    If the supplied manifest_path is None and  ~/.o3de/o3de_manifest.json doesn't exist default manifest data
+    is instead returned.
+    Note: There is a difference between supplying a manifest_path parameter of None and '~/.o3de/o3de_manifest.json'
+    In the former if the o3de_manifest.json doesn't exist, default o3de manifest data is returned.
+    In the later that the o3de_manifest.json must exist as the caller explicitly specified the manifest path
 
     raises Json.JSONDecodeError if manifest data could not be decoded to JSON
     :param manifest_path: optional path to manifest file to load
     """
     if not manifest_path:
         manifest_path = get_o3de_manifest()
+        # If the default o3de manifest file doesn't exist and the manifest_path parameter was not supplied
+        # return the default o3de manifest data
+        if not manifest_path.is_file():
+            logger.info(f'A manifest path of None has been supplied and the {manifest_path} does not exist.'
+                        ' The default o3de manifest data dictionary will be returned.')
+            return get_default_o3de_manifest_json_data()
+
     with manifest_path.open('r') as f:
         try:
             json_data = json.load(f)
@@ -692,20 +697,40 @@ def get_registered(engine_name: str = None,
 
     elif isinstance(default_folder, str):
         if default_folder == 'engines':
-            default_engines_folder = pathlib.Path(json_data['default_engines_folder']).resolve()
-            return default_engines_folder
+            if 'default_engines_folder' in json_data:
+                default_engines_folder = pathlib.Path(json_data['default_engines_folder'])
+            else:
+                default_engines_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_engines_folder', None))
+            return default_engines_folder.resolve() if default_engines_folder else None
         elif default_folder == 'projects':
-            default_projects_folder = pathlib.Path(json_data['default_projects_folder']).resolve()
-            return default_projects_folder
+            if 'default_projects_folder' in json_data:
+                default_projects_folder = pathlib.Path(json_data['default_projects_folder'])
+            else:
+                default_projects_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_projects_folder', None))
+            return default_projects_folder.resolve() if default_projects_folder else None
         elif default_folder == 'gems':
-            default_gems_folder = pathlib.Path(json_data['default_gems_folder']).resolve()
-            return default_gems_folder
+            if 'default_gems_folder' in json_data:
+                default_gems_folder = pathlib.Path(json_data['default_gems_folder'])
+            else:
+                default_gems_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_gems_folder', None))
+            return default_gems_folder.resolve() if default_gems_folder else None
         elif default_folder == 'templates':
-            default_templates_folder = pathlib.Path(json_data['default_templates_folder']).resolve()
-            return default_templates_folder
+            if 'default_templates_folder' in json_data:
+                default_templates_folder = pathlib.Path(json_data['default_templates_folder'])
+            else:
+                default_templates_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_templates_folder', None))
+            return default_templates_folder.resolve() if default_templates_folder else None
         elif default_folder == 'restricted':
-            default_restricted_folder = pathlib.Path(json_data['default_restricted_folder']).resolve()
-            return default_restricted_folder
+            if 'default_restricted_folder' in json_data:
+                default_restricted_folder = pathlib.Path(json_data['default_restricted_folder'])
+            else:
+                default_restricted_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_restricted_folder', None))
+            return default_restricted_folder.resolve() if default_restricted_folder else None
 
     elif isinstance(repo_name, str):
         cache_folder = get_o3de_cache_folder()
