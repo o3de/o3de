@@ -21,7 +21,7 @@ namespace AzNetworking
     static const bool net_TcpUseEncryption = false;
 #endif
 
-    TcpNetworkInterface::TcpNetworkInterface(AZ::Name name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread)
+    TcpNetworkInterface::TcpNetworkInterface(AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread)
         : m_name(name)
         , m_trustZone(trustZone)
         , m_connectionListener(connectionListener)

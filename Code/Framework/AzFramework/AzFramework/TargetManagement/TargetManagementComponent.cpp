@@ -169,6 +169,7 @@ namespace AzFramework
     TargetManagementComponent::TargetManagementComponent()
         : m_serializeContext(nullptr)
         , m_networkImpl(nullptr)
+        , m_networkInterfaceName("TargetManagement")
     {
         ;
     }
@@ -227,7 +228,7 @@ namespace AzFramework
         m_threadHandle = AZStd::thread(td, AZStd::bind(&TargetManagementComponent::TickThread, this));
 
         m_networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
-                AZ::Name("TargetManagement"), AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
+            m_networkInterfaceName, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
         m_networkInterface->SetTimeoutMs(AZ::TimeMs(0));
         m_targetJoinThread = AZStd::make_unique<TargetJoinThread>(target_autoconnect_interval);
     }
@@ -235,7 +236,7 @@ namespace AzFramework
     void TargetManagementComponent::Deactivate()
     {
         m_targetJoinThread = nullptr;
-        AZ::Interface<AzNetworking::INetworking>::Get()->DestroyNetworkInterface(AZ::Name("TargetManagement"));
+        AZ::Interface<AzNetworking::INetworking>::Get()->DestroyNetworkInterface(m_networkInterfaceName);
 
         m_stopRequested = true;
         m_threadHandle.join();

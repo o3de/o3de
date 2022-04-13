@@ -189,8 +189,6 @@ namespace AzFramework
     void Application::Start(const Descriptor& descriptor, const StartupParameters& startupParameters)
     {
         Descriptor frameworkDescriptor = descriptor;
-        // Ensure AzNetworking is loaded (required for unit tests)
-        frameworkDescriptor.m_modules.push_back(AZ::DynamicModuleDescriptor{ "AzNetworking" });
         AZ::Entity* systemEntity = Create(frameworkDescriptor, startupParameters);
 
         // Sets FileIOAliases again in case the App root was overridden by the

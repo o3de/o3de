@@ -56,7 +56,7 @@ namespace AzNetworking
         outReliability = ((timeoutId & 0x8000000000000000) > 0) ? ReliabilityType::Reliable : ReliabilityType::Unreliable;
     }
 
-    UdpNetworkInterface::UdpNetworkInterface(AZ::Name name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread)
+    UdpNetworkInterface::UdpNetworkInterface(AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread)
         : m_name(name)
         , m_trustZone(trustZone)
         , m_connectionListener(connectionListener)
@@ -65,8 +65,7 @@ namespace AzNetworking
         , m_timeoutMs(net_UdpDefaultTimeoutMs)
     {
         const AZ::CVarFixedString compressor = static_cast<AZ::CVarFixedString>(net_UdpCompressor);
-        const AZ::Name compressorName = AZ::Name(compressor);
-        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressorName);
+        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressor);
     }
 
     UdpNetworkInterface::~UdpNetworkInterface()
