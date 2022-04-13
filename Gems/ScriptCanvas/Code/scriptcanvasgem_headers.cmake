@@ -253,8 +253,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.h
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/Spawning.h
-    Include/ScriptCanvas/Libraries/Spawning/SpawnableAsset.h
-    Include/ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h

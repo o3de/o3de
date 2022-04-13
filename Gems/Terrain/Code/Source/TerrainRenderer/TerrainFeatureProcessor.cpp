@@ -122,6 +122,7 @@ namespace Terrain
         m_meshManager.Reset();
         m_macroMaterialManager.Reset();
         m_detailMaterialManager.Reset();
+        m_clipmapManager.Reset();
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -273,30 +274,21 @@ namespace Terrain
             AZStd::vector<uint16_t> pixels;
             pixels.reserve(updateWidth * updateHeight);
 
+            auto perPositionCallback = [this, &pixels]
+                ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                [[maybe_unused]] bool terrainExists)
             {
+                const float clampedHeight = AZ::GetClamp((surfacePoint.m_position.GetZ() - m_terrainBounds.GetMin().GetZ()) / m_terrainBounds.GetExtents().GetZ(), 0.0f, 1.0f);
+                const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
+                const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
 
-                // Block other threads from accessing the surface data bus while we are in GetHeightFromFloats (which may call into the SurfaceData bus).
-                // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
+                pixels.push_back(uint16Height);
+            };
 
-                auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-                typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
-                auto perPositionCallback = [this, &pixels]
-                    ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                    const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
-                    [[maybe_unused]] bool terrainExists)
-                {
-                    const float clampedHeight = AZ::GetClamp((surfacePoint.m_position.GetZ() - m_terrainBounds.GetMin().GetZ()) / m_terrainBounds.GetExtents().GetZ(), 0.0f, 1.0f);
-                    const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
-                    const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
-
-                    pixels.push_back(uint16Height);
-                };
-
-                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-                    m_dirtyRegion, stepSize, perPositionCallback, samplerType);
-            }
+            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
+                m_dirtyRegion, stepSize, perPositionCallback, samplerType);
 
             constexpr uint32_t BytesPerPixel = sizeof(uint16_t);
             const float left = AZStd::floorf(m_dirtyRegion.GetMin().GetX() / m_sampleSpacing) - AZStd::floorf(m_terrainBounds.GetMin().GetX() / m_sampleSpacing);
@@ -364,12 +356,22 @@ namespace Terrain
             {
                 m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg, m_materialInstance);
             }
+
+            if (m_clipmapManager.IsInitialized())
+            {
+                m_clipmapManager.UpdateSrgIndices(m_terrainSrg);
+            }
+            else
+            {
+                m_clipmapManager.Initialize(m_terrainSrg);
+            }
         }
         else
         {
             m_imageArrayHandler->Reset();
             m_macroMaterialManager.Reset();
             m_detailMaterialManager.Reset();
+            m_clipmapManager.Reset();
         }
     }
 
@@ -415,6 +417,11 @@ namespace Terrain
                 if (m_detailMaterialManager.IsInitialized())
                 {
                     m_detailMaterialManager.Update(cameraPosition, m_terrainSrg);
+                }
+
+                if (m_clipmapManager.IsInitialized())
+                {
+                    m_clipmapManager.Update(cameraPosition, m_terrainSrg);
                 }
             }
 
@@ -505,13 +512,13 @@ namespace Terrain
         return m_terrainSrg;
     }
 
-    const AZ::Aabb& TerrainFeatureProcessor::GetTerrainBounds() const
-    {
-        return m_terrainBounds;
-    }
-
     const AZ::Data::Instance<AZ::RPI::Material> TerrainFeatureProcessor::GetMaterial() const
     {
         return m_materialInstance;
+    }
+
+    const TerrainClipmapManager& TerrainFeatureProcessor::GetClipmapManager() const
+    {
+        return m_clipmapManager;
     }
 }

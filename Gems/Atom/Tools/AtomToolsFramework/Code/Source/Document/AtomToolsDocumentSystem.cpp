@@ -141,7 +141,7 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
-                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(openPath.c_str()));
+                QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(openPath.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
@@ -151,7 +151,7 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
-                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(savePath.c_str()));
+                QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
@@ -213,7 +213,7 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be opened"),
-                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(openPath.c_str()));
+                QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(openPath.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
@@ -332,7 +332,7 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
-                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(savePath.c_str()));
+                QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
             return false;
         }
 
@@ -370,7 +370,7 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
-                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(savePath.c_str()));
+                QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
             return false;
         }
 
@@ -408,7 +408,7 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
-                QObject::tr("Document path must be valid and in a recognized source asset folder:\n%1").arg(savePath.c_str()));
+                QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
             return false;
         }
 

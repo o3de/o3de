@@ -62,7 +62,7 @@ namespace Multiplayer
             }
         }
     }
-    
+
     void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
     {
         if (m_isActivated || !editorsv_isDedicated)
@@ -73,22 +73,7 @@ namespace Multiplayer
         
         AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.")
 
-        // Check if there's already an Editor out there waiting to connect
-        const ConnectionId editorServerToEditorConnectionId =
-            m_networkEditorInterface->Connect(IpAddress(LocalHost.data(), editorsv_port, ProtocolType::Tcp));
-
-        // If there wasn't an Editor waiting for this server to start, then assume this is an editor-server launched by hand... listen
-        // and wait for the editor to request a connection
-        if (editorServerToEditorConnectionId == InvalidConnectionId)
-        {
-            m_networkEditorInterface->Listen(editorsv_port);
-            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation did not find an editor in game-mode willing to connect; we'll instead wait and listen for an editor trying to connect to us.")
-        }
-        else
-        {
-            m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForLevelData());
-            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation has found and connected to the editor.\n")
-        }
+        m_networkEditorInterface->Listen(editorsv_port);
     }
 
     bool MultiplayerEditorConnection::HandleRequest
