@@ -26,8 +26,8 @@ namespace AZ
         {
             if (Validation::IsEnabled())
             {
-                // No need for validation for a null renderer
-                if (IsNullRenderer())
+                // No need for validation for a null rhi
+                if (IsNullRHI())
                 {
                     return;
                 }
@@ -45,8 +45,8 @@ namespace AZ
         {
             if (Validation::IsEnabled())
             {
-                // No need for validation for a null renderer
-                if (IsNullRenderer())
+                // No need for validation for a null rhi
+                if (IsNullRHI())
                 {
                     return true;
                 }
