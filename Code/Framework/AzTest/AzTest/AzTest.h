@@ -448,19 +448,19 @@ int main(int argc, char** argv)                                                 
 
 #define DEFAULT_UNIT_TEST_ENV AZ::Test::DefaultTestEnv()
 
-#define AZ_UNIT_TEST_HOOK_1(_1) \
-    AZ_UNIT_TEST_HOOK_ENV(_1) \
-    AZ_BENCHMARK_HOOK() \
-    IMPLEMENT_TEST_EXECUTABLE_MAIN()
+#define AZ_UNIT_TEST_HOOK_1(_1)                                                                                                            \
+    AZ_UNIT_TEST_HOOK_ENV(_1)                                                                                                              \
+    AZ_BENCHMARK_HOOK()                                                                                                                    \
+    IMPLEMENT_TEST_EXECUTABLE_MAIN()                                                                                                       \
+    AZ_DECLARE_MODULE_INITIALIZATION
 
-#define AZ_UNIT_TEST_HOOK_2(_1, _2) \
-    AZ_UNIT_TEST_HOOK_ENV(_1) \
-    AZ_BENCHMARK_HOOK_ENV(_2) \
-    IMPLEMENT_TEST_EXECUTABLE_MAIN()
+#define AZ_UNIT_TEST_HOOK_2(_1, _2)                                                                                                        \
+    AZ_UNIT_TEST_HOOK_ENV(_1)                                                                                                              \
+    AZ_BENCHMARK_HOOK_ENV(_2)                                                                                                              \
+    IMPLEMENT_TEST_EXECUTABLE_MAIN()                                                                                                       \
+    AZ_DECLARE_MODULE_INITIALIZATION
 
-#define AZ_UNIT_TEST_HOOK(...)           AZ_MACRO_SPECIALIZE(AZ_UNIT_TEST_HOOK_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
-
-
+#define AZ_UNIT_TEST_HOOK(...) AZ_MACRO_SPECIALIZE(AZ_UNIT_TEST_HOOK_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 // Declares a visible external symbol which identifies an executable as containing tests
 #define DECLARE_AZ_UNIT_TEST_MAIN() AZTEST_EXPORT int ContainsAzUnitTestMain() { return 1; }
 

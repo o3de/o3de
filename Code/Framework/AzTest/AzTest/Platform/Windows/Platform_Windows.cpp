@@ -86,6 +86,14 @@ public:
         return (*fn)();
     }
 
+    void operator()(void* arg) override
+    {
+        using Fn = void(void*);
+
+        Fn* fn = reinterpret_cast<Fn*>(m_proc);
+        (*fn)(arg);
+    }
+
     bool IsValid() override { return m_proc != NULL; }
 
 private:
