@@ -13,6 +13,7 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Grammar/DebugMap.h>
 #include <ScriptCanvas/Translation/Configuration.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 
