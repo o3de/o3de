@@ -44,8 +44,8 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "ContrastAdaptiveSharpeningPass",//"EditorModeFeedbackPassParent",
-                        "Attachment": "OutputColor"//"ColorInputOutput"
+                        "Pass": "ContrastAdaptiveSharpeningPass",
+                        "Attachment": "OutputColor"
                     }
                 },
                 {
@@ -112,28 +112,6 @@
                         }
                     ]
                 },
-                // Todo: remove the old depth of field implementation and rename NewDepthOfField -> DepthOfField
-                //{
-                //    "Name": "DepthOfFieldPass",
-                //    "TemplateName": "DepthOfFieldTemplate",
-                //    "Enabled": true,
-                //    "Connections": [
-                //        {
-                //            "LocalSlot": "DoFColorInput",
-                //            "AttachmentRef": {
-                //                "Pass": "TaaPass",
-                //                "Attachment": "OutputColor"
-                //            }
-                //        },
-                //        {
-                //            "LocalSlot": "DoFDepthInput",
-                //            "AttachmentRef": {
-                //                "Pass": "Parent",
-                //                "Attachment": "Depth"
-                //            }
-                //        }
-                //    ]
-                //},
                 {
                     "Name": "DepthOfFieldPass",
                     "TemplateName": "NewDepthOfFieldTemplate",
@@ -202,28 +180,7 @@
                             }
                         }
                     ]
-                }//,
-                //{
-                //    "Name": "EditorModeFeedbackPassParent",
-                //    "TemplateName": "EditorModeFeedbackParentTemplate",
-                //    "Enabled": true,
-                //    "Connections": [
-                //        {
-                //            "LocalSlot": "InputDepth",
-                //            "AttachmentRef": {
-                //                "Pass": "Parent",
-                //                "Attachment": "Depth"
-                //            }
-                //        },
-                //        {
-                //            "LocalSlot": "ColorInputOutput",
-                //            "AttachmentRef": {
-                //                "Pass": "ContrastAdaptiveSharpeningPass",
-                //                "Attachment": "OutputColor"
-                //            }
-                //        }
-                //    ]
-                //}
+                }
             ]
         }
     }

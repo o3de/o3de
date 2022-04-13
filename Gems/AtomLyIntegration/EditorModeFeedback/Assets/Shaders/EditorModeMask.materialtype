@@ -3,7 +3,7 @@
     "version": 1,
     "shaders": [
         {
-            "file": "Shaders/PostProcessing/EditorModeMask.shader"
+            "file": "Shaders/EditorModeMask.shader"
         }
     ]
 }

@@ -6,7 +6,7 @@
  *
  */
  
-#include <PostProcessing/EditorModeBlurPass.h>
+#include <Pass/EditorModeBlurPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>

@@ -7,7 +7,7 @@
  */
 
 #include <PostProcess/PostProcessFeatureProcessor.h>
-#include <PostProcessing/EditorModeFeedbackParentPass.h>
+#include <Pass/EditorModeFeedbackParentPass.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>

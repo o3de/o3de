@@ -32,6 +32,7 @@
         "AtomToolsFramework",
         "AtomViewportDisplayIcons",
         "MaterialEditor",
-        "ShaderManagementConsole"
+        "ShaderManagementConsole",
+        "EditorModeFeedback"
     ]
 }

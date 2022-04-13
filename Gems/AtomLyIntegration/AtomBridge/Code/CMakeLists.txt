@@ -118,6 +118,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomViewportDisplayIcons.Editor
             Gem::MaterialEditor.Builders
             Gem::ShaderManagementConsole.Builders
+            Gem::EditorModeFeedback.Editor
     )
 
 

@@ -69,7 +69,7 @@
                     "PassData": {
                         "$type": "FullscreenTrianglePassData",
                         "ShaderAsset": {
-                            "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
+                            "FilePath": "Shaders/EditorModeBlur.shader"
                         },
                         "PipelineViewTag": "MainCamera",
                         "ShaderDataMappings": {
@@ -112,7 +112,7 @@
                     "PassData": {
                         "$type": "FullscreenTrianglePassData",
                         "ShaderAsset": {
-                            "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
+                            "FilePath": "Shaders/EditorModeBlur.shader"
                         },
                         "PipelineViewTag": "MainCamera",
                         "ShaderDataMappings": {

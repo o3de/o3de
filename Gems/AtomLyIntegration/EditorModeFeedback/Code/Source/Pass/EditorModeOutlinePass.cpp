@@ -6,7 +6,7 @@
  *
  */
  
-#include <PostProcessing/EditorModeOutlinePass.h>
+#include <Pass/EditorModeOutlinePass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>

@@ -45,7 +45,6 @@
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
 #include <EditorCommonFeaturesSystemComponent.h>
 #include <PostProcess/EditorPostFxSystemComponent.h>
-#include <PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.h>
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
 #include <CubeMapCapture/EditorCubeMapCaptureComponent.h>
@@ -131,7 +130,6 @@ namespace AZ
                         EditorAreaLightComponent::CreateDescriptor(),
                         EditorCommonFeaturesSystemComponent::CreateDescriptor(),
                         EditorPostFxSystemComponent::CreateDescriptor(),
-                        EditorEditorModeFeedbackSystemComponent::CreateDescriptor(),
                         EditorDecalComponent::CreateDescriptor(),
                         EditorDirectionalLightComponent::CreateDescriptor(),
                         EditorBloomComponent::CreateDescriptor(),
@@ -176,7 +174,6 @@ namespace AZ
                     azrtti_typeid<EditorMeshSystemComponent>(),
                     azrtti_typeid<EditorCommonFeaturesSystemComponent>(),
                     azrtti_typeid<EditorPostFxSystemComponent>(),
-                    azrtti_typeid<EditorEditorModeFeedbackSystemComponent>()
 #endif
                 };
             }

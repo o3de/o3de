@@ -6,7 +6,7 @@
  *
  */
 
-#include <PostProcess/EditorModeFeedback/EditorModeFeedbackFeatureProcessor.h>
+#include <EditorModeFeedbackFeatureProcessor.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>

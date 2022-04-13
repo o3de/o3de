@@ -1,12 +1,12 @@
 {
-    // Applies a tinting effect as controlled by the tint color and tint amount
+    // Applies a box blur effect in the vertical direction as controlled by the box width
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeTintTemplate",
-            "PassClass": "FullScreenTriangle",
+            "Name": "EditorModeBlurVerticalTemplate",
+            "PassClass": "EditorModeBlurPass",
             "Slots": [
                 {
                     "Name": "InputDepth",
@@ -18,7 +18,8 @@
                     "Name": "InputEntityMask",
                     "SlotType": "Input",
                     "ShaderInputName": "m_entityMask",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_maskDimensions"
                 },
                 {
                     "Name": "InputColor",
@@ -68,9 +69,18 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeTint.shader"
+                    "FilePath": "Shaders/EditorModeBlur.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "PipelineViewTag": "MainCamera",
+                "ShaderDataMappings": {
+                    "UintMappings": [
+                        {
+                            // Vertical blur
+                            "Name": "m_direction",
+                            "Value": 1
+                        }
+                    ]
+                }
             }
         }
     }

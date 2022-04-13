@@ -1,12 +1,12 @@
 {
-    // Applies a desaturation effect as controlled by the saturation amount
+    // Applies an outlining effect as controlled by the line thickness
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeDesaturationTemplate",
-            "PassClass": "EditorModeDesaturationPass",
+            "Name": "EditorModeOutlineTemplate",
+            "PassClass": "EditorModeOutlinePass",
             "Slots": [
                 {
                     "Name": "InputDepth",
@@ -18,7 +18,8 @@
                     "Name": "InputEntityMask",
                     "SlotType": "Input",
                     "ShaderInputName": "m_entityMask",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_maskDimensions"
                 },
                 {
                     "Name": "InputColor",
@@ -35,27 +36,12 @@
                     }
                 }
             ],
-            "ImageAttachments": [
-                {
-                    "Name": "OutputAttachment",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "This",
-                            "Attachment": "InputColor"
-                        }
-                    },
-                    "FormatSource": {
-                        "Pass": "This",
-                        "Attachment": "InputColor"
-                    }
-                }
-            ],
             "Connections": [
                 {
                     "LocalSlot": "OutputColor",
                     "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "OutputAttachment"
+                        "Pass": "Parent",
+                        "Attachment": "ColorInputOutput"
                     }
                 }
             ],
@@ -68,7 +54,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeDesaturation.shader"
+                    "FilePath": "Shaders/EditorModeOutline.shader"
                 },
                 "PipelineViewTag": "MainCamera"
             }

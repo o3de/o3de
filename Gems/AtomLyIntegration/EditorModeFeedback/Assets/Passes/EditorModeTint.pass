@@ -1,12 +1,12 @@
 {
-    // Applies an outlining effect as controlled by the line thickness
+    // Applies a tinting effect as controlled by the tint color and tint amount
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeOutlineTemplate",
-            "PassClass": "EditorModeOutlinePass",
+            "Name": "EditorModeTintTemplate",
+            "PassClass": "FullScreenTriangle",
             "Slots": [
                 {
                     "Name": "InputDepth",
@@ -18,8 +18,7 @@
                     "Name": "InputEntityMask",
                     "SlotType": "Input",
                     "ShaderInputName": "m_entityMask",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ShaderImageDimensionsConstant": "m_maskDimensions"
+                    "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "InputColor",
@@ -36,12 +35,27 @@
                     }
                 }
             ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputColor"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor"
+                    }
+                }
+            ],
             "Connections": [
                 {
                     "LocalSlot": "OutputColor",
                     "AttachmentRef": {
-                        "Pass": "Parent",
-                        "Attachment": "ColorInputOutput"
+                        "Pass": "This",
+                        "Attachment": "OutputAttachment"
                     }
                 }
             ],
@@ -54,7 +68,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeOutline.shader"
+                    "FilePath": "Shaders/EditorModeTint.shader"
                 },
                 "PipelineViewTag": "MainCamera"
             }

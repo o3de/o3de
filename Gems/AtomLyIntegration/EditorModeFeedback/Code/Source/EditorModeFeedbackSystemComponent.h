@@ -30,18 +30,18 @@ namespace AZ
     namespace Render
     {
         //! Component for the editor mode feedback system.
-        class EditorEditorModeFeedbackSystemComponent
+        class EditorModeFeedbackSystemComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorModeFeedbackInterface
             , public AZ::TickBus::Handler
             , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
         {
         public:
-            AZ_EDITOR_COMPONENT(EditorEditorModeFeedbackSystemComponent, "{A88EE29D-4C72-4995-B3BD-41EEDE480487}");
+            AZ_EDITOR_COMPONENT(EditorModeFeedbackSystemComponent, "{A88EE29D-4C72-4995-B3BD-41EEDE480487}");
 
             static void Reflect(AZ::ReflectContext* context);
 
-            ~EditorEditorModeFeedbackSystemComponent();
+            ~EditorModeFeedbackSystemComponent();
 
             // EditorComponentBase overrides ...
             void Activate() override;
@@ -62,6 +62,9 @@ namespace AZ
             // TickBus overrides ...
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
             int GetTickOrder() override;
+
+            //! Loads the pass templates mapping file.
+            void LoadPassTemplateMappings();
 
             //! Flag to specify whether or not the editor feedback effects are active.
             bool m_enabled = false;
@@ -84,6 +87,9 @@ namespace AZ
 
             //! Settings registery override for enabling/disabling editor mode feedback.
             bool m_registeryEnabled = false;
+
+            //! Used for loading the pass templates.
+            RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
         };
     } // namespace Render
 } // namespace AZ

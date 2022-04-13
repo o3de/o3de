@@ -6,7 +6,7 @@
  *
  */
  
-#include <PostProcessing/EditorModeDesaturationPass.h>
+#include <Pass/EditorModeDesaturationPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>

@@ -1,12 +1,12 @@
 {
-    // Applies a box blur effect in the vertical direction as controlled by the box width
+    // Applies a desaturation effect as controlled by the saturation amount
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeBlurVerticalTemplate",
-            "PassClass": "EditorModeBlurPass",
+            "Name": "EditorModeDesaturationTemplate",
+            "PassClass": "EditorModeDesaturationPass",
             "Slots": [
                 {
                     "Name": "InputDepth",
@@ -18,8 +18,7 @@
                     "Name": "InputEntityMask",
                     "SlotType": "Input",
                     "ShaderInputName": "m_entityMask",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ShaderImageDimensionsConstant": "m_maskDimensions"
+                    "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "InputColor",
@@ -69,18 +68,9 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
+                    "FilePath": "Shaders/EditorModeDesaturation.shader"
                 },
-                "PipelineViewTag": "MainCamera",
-                "ShaderDataMappings": {
-                    "UintMappings": [
-                        {
-                            // Vertical blur
-                            "Name": "m_direction",
-                            "Value": 1
-                        }
-                    ]
-                }
+                "PipelineViewTag": "MainCamera"
             }
         }
     }
