@@ -55,7 +55,7 @@ namespace MultiplayerCompression
 
     MultiplayerCompressionSystemComponent::~MultiplayerCompressionSystemComponent()
     {
-        AZ::Interface<AzNetworking::INetworking>::Get()->UnregisterCompressorFactory(m_multiplayerCompressionFactory->GetFactoryName());
+        AZ::Interface<AzNetworking::INetworking>::Get()->UnregisterCompressorFactory(m_multiplayerCompressionFactory->GetFactoryName().GetCStr());
         delete m_multiplayerCompressionFactory;
     }
 }
