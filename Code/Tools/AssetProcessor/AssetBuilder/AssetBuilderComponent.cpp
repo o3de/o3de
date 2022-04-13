@@ -931,7 +931,6 @@ void AssetBuilderComponent::JobThread()
         size_t allocatedBytesBefore = 0;
         size_t capacityBytesBefore = 0;
         AZ::AllocatorManager::Instance().GarbageCollect();
-        AZ::AllocatorManager::Instance().EnterProfilingMode();
         AZ::AllocatorManager::Instance().GetAllocatorStats(allocatedBytesBefore, capacityBytesBefore);
         AZ_TracePrintf("AssetBuilder", "AllocatorManager before: allocatedBytes = %zu capacityBytes = %zu\n", allocatedBytesBefore, capacityBytesBefore);
 
@@ -1008,8 +1007,6 @@ void AssetBuilderComponent::JobThread()
         size_t allocatedBytesAfter = 0;
         size_t capacityBytesAfter = 0;
         AZ::AllocatorManager::Instance().GarbageCollect();
-        AZ::AllocatorManager::Instance().ExitProfilingMode();
-        AZ::AllocatorManager::Instance().DumpAllocators();
         AZ::AllocatorManager::Instance().GetAllocatorStats(allocatedBytesAfter, capacityBytesAfter);
         AZ_TracePrintf("AssetBuilder", "AllocatorManager after: allocatedBytes = %zu capacityBytes = %zu; allocated change = %zd\n",
             allocatedBytesAfter, capacityBytesAfter, allocatedBytesAfter - allocatedBytesBefore);
