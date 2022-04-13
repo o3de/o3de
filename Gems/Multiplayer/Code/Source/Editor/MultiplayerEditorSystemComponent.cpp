@@ -24,7 +24,7 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 namespace Multiplayer
 {
@@ -286,6 +286,8 @@ namespace Multiplayer
 
         if (outProcess)
         {
+            MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::DisplayMessage, "Launching server...");
+
             // Stop the previous server if one exists
             if (m_serverProcessWatcher)
             {
@@ -475,7 +477,10 @@ namespace Multiplayer
     void MultiplayerEditorSystemComponent::Connect()
     {
         ++m_connectionAttempts;
-        AZ_Printf("MultiplayerEditor", "Editor tcp connection attempt #%i.", m_connectionAttempts)
+
+        AZStd::string message = AZStd::string::format("Editor tcp connection attempt #%i.", m_connectionAttempts);
+        MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::DisplayMessage, message.c_str());
+        AZ_Printf("MultiplayerEditor", message.c_str())
 
         INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
         AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")

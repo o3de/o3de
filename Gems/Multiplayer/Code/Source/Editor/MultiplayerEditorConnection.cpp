@@ -22,6 +22,7 @@
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <Multiplayer/MultiplayerEditorConnectionViewportDebugBus.h>
 
 namespace Multiplayer
 {
@@ -199,10 +200,13 @@ namespace Multiplayer
         if (AZ::Interface<IMultiplayer>::Get()->Connect(editorsv_serveraddr.c_str(), sv_port))
         {
             AZ_Printf("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.")
+			MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::StopViewportDebugMessaging);
         }
         else
         {
-            AZ_Warning("MultiplayerEditorConnection", false, "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Connecting to the editor-server's network simulation failed.")
+            AZStd::string connection_fail_message = AZStd::string::format("EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?", sv_port);
+            AZ_Warning("MultiplayerEditorConnection", false, connection_fail_message.c_str())
+			MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::DisplayMessage, connection_fail_message.c_str());
         }
         return true;
     }
