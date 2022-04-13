@@ -60,7 +60,7 @@ namespace O3DE::ProjectManager
 
         void paintEvent(QPaintEvent* event) override;
 
-        void HandleProjectDirectoryChanged(const QString& path);
+        void HandleProjectFilePathChanged(const QString& path);
 
     private:
         QFrame* CreateFirstTimeContent();
