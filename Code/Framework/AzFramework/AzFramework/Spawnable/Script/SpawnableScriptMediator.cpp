@@ -131,17 +131,17 @@ namespace AzFramework::Scripts
                 spawnResult.m_entityList.emplace_back(entity->GetId());
             }
             m_resultCommands.push_back(AZStd::move(spawnResult));
+
+            if (!AZ::TickBus::Handler::BusIsConnected())
+            {
+                AZ::TickBus::Handler::BusConnect();
+            }
         };
 
         SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_preInsertionCallback = AZStd::move(preSpawnCB);
         optionalArgs.m_completionCallback = AZStd::move(spawnCompleteCB);
         SpawnableEntitiesInterface::Get()->SpawnAllEntities(spawnTicket, AZStd::move(optionalArgs));
-
-        if (!AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusConnect();
-        }
 
         return true;
     }
@@ -162,17 +162,16 @@ namespace AzFramework::Scripts
             DespawnResult despawnResult;
             despawnResult.m_spawnTicket = spawnTicket;
             m_resultCommands.push_back(despawnResult);
+
+            if (!AZ::TickBus::Handler::BusIsConnected())
+            {
+                AZ::TickBus::Handler::BusConnect();
+            }
         };
 
         DespawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(despawnCompleteCB);
         SpawnableEntitiesInterface::Get()->DespawnAllEntities(spawnTicket, AZStd::move(optionalArgs));
-
-        
-        if (!AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusConnect();
-        }
 
         return true;
     }
