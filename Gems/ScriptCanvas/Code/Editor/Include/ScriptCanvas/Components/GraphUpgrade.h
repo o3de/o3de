@@ -30,6 +30,12 @@ namespace ScriptCanvasEditor
         static int StateID() { return Id; }
     };
 
+    struct UpgradeGraphConfig
+    {
+        bool isVerbose = true;
+        bool saveParseErrors = false;
+    };
+
     //! State interface, provides the framework for any given state that may run through the state machine
     class IState
     {
@@ -128,11 +134,11 @@ namespace ScriptCanvasEditor
 
         void OnSystemTick() override;
 
-        bool GetVerbose() const;
+        const UpgradeGraphConfig& GetConfig() const;
 
         const AZStd::string GetError() const { return m_error; }
 
-        void SetVerbose(bool isVerbose);
+        void SetConfig(const UpgradeGraphConfig& config);
 
         const AZStd::string& GetDebugPrefix() const;
 
@@ -144,7 +150,7 @@ namespace ScriptCanvasEditor
         AZStd::vector<AZStd::shared_ptr<IState>> m_states;
 
     private:
-        bool m_isVerbose = true;
+        UpgradeGraphConfig m_config;
         AZStd::string m_debugPrefix;
         AZStd::string m_error;
     };
@@ -360,7 +366,7 @@ namespace ScriptCanvasEditor
     template <typename Traits>
     void ScriptCanvasEditor::State<Traits>::Log(const char* format, ...)
     {
-        if (m_stateMachine->GetVerbose())
+        if (m_stateMachine->GetConfig().isVerbose)
         {
             char sBuffer[2048];
             va_list ArgList;

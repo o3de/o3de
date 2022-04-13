@@ -1041,7 +1041,7 @@ void CSystem::ExecuteCommandLine(bool deferred)
 
     m_executedCommandLine = true;
 
-    // execute command line arguments e.g. +g_gametype ASSAULT +map "testy"
+    // execute command line arguments e.g. +g_gametype ASSAULT +LoadLevel "testy"
 
     ICmdLine* pCmdLine = GetICmdLine();
     assert(pCmdLine);

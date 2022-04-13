@@ -35,6 +35,10 @@ class LightingData
     // Attenuation applied to hide artifacts due to low-res shadow maps 
     float distanceAttenuation;
 
+    // Delete post merge resolve?
+    // // Direction light shadow coordinates
+    // float3 shadowCoords[ViewSrg::MaxCascadeCount];
+
     // Normalized direction from surface to camera
     float3 dirToCamera;
     

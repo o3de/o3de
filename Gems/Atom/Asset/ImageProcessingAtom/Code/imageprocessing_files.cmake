@@ -14,10 +14,6 @@ set(FILES
     Include/Atom/ImageProcessing/PixelFormats.h
     Include/Atom/ImageProcessing/ImageObject.h
     Include/Atom/ImageProcessing/ImageProcessingDefines.h
-    ../Assets/Editor/Resources.qrc
-    ../Assets/Editor/Backward.png
-    ../Assets/Editor/Forward.png
-    ../Assets/Editor/reset.png
     Source/ImageBuilderBaseType.h
     Source/ImageBuilderComponent.cpp
     Source/ImageBuilderComponent.h
@@ -70,6 +66,7 @@ set(FILES
     Source/Editor/ImagePopup.cpp
     Source/Editor/ImagePopup.h
     Source/Editor/ImagePopup.ui
+    Source/Editor/ImageProcessing.qrc
     Source/Editor/MipmapSettingWidget.cpp
     Source/Editor/MipmapSettingWidget.h
     Source/Editor/MipmapSettingWidget.ui

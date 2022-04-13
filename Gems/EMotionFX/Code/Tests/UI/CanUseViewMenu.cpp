@@ -106,18 +106,11 @@ namespace EMotionFX
         QList<QAction*> actions = viewMenu->findChildren<QAction*>();
         int numActions = actions.size() - 1;// -1 as we don't want to include the view menu action itself.
 
-        const size_t numPlugins = pluginManager->GetNumPlugins();
-
         int visiblePlugins = 0;
 
-        for (AZ::u32 pluginIndex = 0; pluginIndex < numPlugins; pluginIndex++)
+        const EMStudio::PluginManager::PluginVector& registeredPlugins = pluginManager->GetRegisteredPlugins();
+        for (EMStudio::EMStudioPlugin* plugin : registeredPlugins)
         {
-            EMStudio::EMStudioPlugin* plugin = pluginManager->GetPlugin(pluginIndex);
-
-            if (plugin->GetPluginType() == EMStudio::EMStudioPlugin::PLUGINTYPE_INVISIBLE)
-            {
-                continue;
-            }
 
             TestViewMenuItem(viewMenu, plugin->GetName());
             visiblePlugins++;

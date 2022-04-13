@@ -100,11 +100,17 @@ namespace AtomToolsFramework
               documentType.m_defaultAssetIdToCreate,
               [documentType](const AZ::Data::AssetInfo& assetInfo)
               {
+                  // If any asset types are specified, do early rejection tests to avoid expensive string comparisons
                   const auto& assetTypes = documentType.m_supportedAssetTypesToCreate;
                   if (assetTypes.empty() || assetTypes.find(assetInfo.m_assetType) != assetTypes.end())
                   {
+                      // Additional filtering will be done against the path to the source file for this asset
                       const auto& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-                      return documentType.IsSupportedExtensionToCreate(sourcePath) && !documentType.IsSupportedExtensionToSave(sourcePath);
+
+                      // Only add source files with extensions supported by the document types creation rules
+                      // Ignore any files that are marked as non editable in the registry
+                      return documentType.IsSupportedExtensionToCreate(sourcePath) &&
+                          !documentType.IsSupportedExtensionToSave(sourcePath) && IsDocumentPathEditable(sourcePath);
                   }
                   return false;
               },
