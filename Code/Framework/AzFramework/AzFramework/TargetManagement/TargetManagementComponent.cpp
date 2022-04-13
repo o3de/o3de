@@ -19,7 +19,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
@@ -76,19 +75,6 @@ namespace AzFramework
         return m_persistentId == other.m_persistentId;
     }
 
-    struct TargetManagementSettings : public AZ::UserSettings
-    {
-        AZ_CLASS_ALLOCATOR(TargetManagementSettings, AZ::OSAllocator, 0);
-        AZ_RTTI(TargetManagementSettings, "{AB1B14BB-C0E3-484A-B498-98F44A58C161}", AZ::UserSettings);
-
-        TargetManagementSettings() = default;
-        ~TargetManagementSettings() override = default;
-
-        AZStd::string m_neighborhoodName; // this is the neighborhood session (hub) we want to connect to
-        AZStd::string m_persistentName; // this string is used as the persistent name for this target
-        TargetInfo m_lastTarget; // this is the target we will automatically connect to
-    };
-
     class TargetManagementNetworkImpl
         : public Neighborhood::NeighborhoodBus::Handler
     {
@@ -132,12 +118,12 @@ namespace AzFramework
             EBUS_QUEUE_EVENT(TargetManagerClient::Bus, TargetJoinedNetwork, ti);
 
             // If our desired target has just come online, flag it and notify listeners
-            if (persistentId == m_component->m_settings->m_lastTarget.m_persistentId &&
-                (m_component->m_settings->m_lastTarget.m_flags & TF_ONLINE) == 0)
+            if (persistentId == m_component->m_settings.m_lastTarget.m_persistentId &&
+                (m_component->m_settings.m_lastTarget.m_flags & TF_ONLINE) == 0)
             {
-                m_component->m_settings->m_lastTarget.m_flags |= TF_ONLINE;
-                m_component->m_settings->m_lastTarget.m_networkId = networkId;
-                m_component->m_settings->m_lastTarget.m_lastSeen = ti.m_lastSeen;
+                m_component->m_settings.m_lastTarget.m_flags |= TF_ONLINE;
+                m_component->m_settings.m_lastTarget.m_networkId = networkId;
+                m_component->m_settings.m_lastTarget.m_lastSeen = ti.m_lastSeen;
                 EBUS_QUEUE_EVENT(TargetManagerClient::Bus, DesiredTargetConnected, true);
             }
         }
@@ -145,14 +131,14 @@ namespace AzFramework
         void OnNodeLeft(const AZ::u32 networkId) override
         {
             // If our desired target has left the network, flag it and notify listeners
-            if (networkId == m_component->m_settings->m_lastTarget.m_networkId)
+            if (networkId == m_component->m_settings.m_lastTarget.m_networkId)
             {
-                m_component->m_settings->m_lastTarget.m_flags &= ~TF_ONLINE;
+                m_component->m_settings.m_lastTarget.m_flags &= ~TF_ONLINE;
                 EBUS_QUEUE_EVENT(TargetManagerClient::Bus, DesiredTargetConnected, false);
             }
 
             TargetContainer::iterator it =
-                m_component->m_availableTargets.find(m_component->m_settings->m_lastTarget.m_persistentId);
+                m_component->m_availableTargets.find(m_component->m_settings.m_lastTarget.m_persistentId);
             if (it != m_component->m_availableTargets.end())
             {
                 TargetInfo ti = it->second;
@@ -185,33 +171,29 @@ namespace AzFramework
         {
             AZStd::string persistentName = Platform::GetPersistentName();
 
-            AZStd::string targetManagementSettingsKey = AZStd::string::format("TargetManagementSettings::%s", persistentName.c_str());
-            m_settings = AZ::UserSettings::CreateFind<TargetManagementSettings>(
-                AZ::Crc32(targetManagementSettingsKey.c_str()), AZ::UserSettings::CT_GLOBAL);
-
-            if (m_settings->m_persistentName.empty())
+            if (m_settings.m_persistentName.empty())
             {
-                m_settings->m_persistentName = persistentName;
+                m_settings.m_persistentName = persistentName;
             }
         }
 
         m_tmpInboundBufferPos = 0;
 
-        if (m_settings->m_neighborhoodName.empty())
+        if (m_settings.m_neighborhoodName.empty())
         {
-            m_settings->m_neighborhoodName = Platform::GetNeighborhoodName();
+            m_settings.m_neighborhoodName = Platform::GetNeighborhoodName();
         }
 
         // Always set our desired target to be initially offline
-        m_settings->m_lastTarget.m_flags &= ~TF_ONLINE;
+        m_settings.m_lastTarget.m_flags &= ~TF_ONLINE;
 
          // Add a target for the local application.
-        const AZ::u32 persistentId = AZ::Crc32(m_settings->m_persistentName.c_str());
+        const AZ::u32 persistentId = AZ::Crc32(m_settings.m_persistentName.c_str());
         TargetContainer::pair_iter_bool ret = m_availableTargets.insert_key(persistentId);
 
         TargetInfo& ti = ret.first->second;
         ti.m_lastSeen = time(nullptr);
-        ti.m_displayName = m_settings->m_persistentName;
+        ti.m_displayName = m_settings.m_persistentName;
         ti.m_persistentId = persistentId;
         ti.m_networkId = k_selfNetworkId;
         ti.m_flags |= TF_ONLINE | TF_DEBUGGABLE | TF_RUNNABLE | TF_SELF;
@@ -254,9 +236,6 @@ namespace AzFramework
 
         m_tmpInboundBuffer.clear();
         m_tmpInboundBufferPos = 0;
-
-        // Release the user settings
-        m_settings = nullptr;
     }
 
     void TargetManagementComponent::Reflect(AZ::ReflectContext* context)
@@ -269,11 +248,6 @@ namespace AzFramework
                 ->Field("m_persistentId", &TargetInfo::m_persistentId)
                 ->Field("m_flags", &TargetInfo::m_flags)
                 ;
-
-            serializeContext->Class<TargetManagementSettings>()
-                ->Field("Hub", &TargetManagementSettings::m_neighborhoodName)
-                ->Field("Name", &TargetManagementSettings::m_persistentName)
-                ->Field("LastConnectedTarget", &TargetManagementSettings::m_lastTarget);
 
             serializeContext->Class<TmMsg>()
                 ->Field("MsgId", &TmMsg::m_msgId)
@@ -303,7 +277,6 @@ namespace AzFramework
 
     void TargetManagementComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UserSettingsService", 0xa0eadff5));
         required.push_back(AZ_CRC_CE("NetworkingService"));
     }
 
@@ -368,7 +341,7 @@ namespace AzFramework
     {
         // Receive
         if (connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor &&
-            static_cast<uint32_t>(connection->GetConnectionId()) != m_settings->m_lastTarget.m_networkId)
+            static_cast<uint32_t>(connection->GetConnectionId()) != m_settings.m_lastTarget.m_networkId)
         {
             // Listener should route traffic based on selected target
             return true;
@@ -391,7 +364,7 @@ namespace AzFramework
                 // last target can be loaded in with a persistent id but no network, correct here
                 if (GetDesiredTarget().GetPersistentId() == packet.GetPersistentId())
                 {
-                    m_settings->m_lastTarget.m_networkId = ti.m_networkId;
+                    m_settings.m_lastTarget.m_networkId = ti.m_networkId;
                 }
 
                 EBUS_QUEUE_EVENT(TargetManagerClient::Bus, TargetJoinedNetwork, ti);
@@ -507,11 +480,11 @@ namespace AzFramework
     {
         AZ_TracePrintf("TargetManagementComponent", "Set Target - %u", desiredTargetID);
 
-        if (desiredTargetID != m_settings->m_lastTarget.m_persistentId)
+        if (desiredTargetID != m_settings.m_lastTarget.m_persistentId)
         {
             TargetInfo ti = GetTargetInfo(desiredTargetID);
-            AZ::u32 oldTargetID = m_settings->m_lastTarget.m_persistentId;
-            m_settings->m_lastTarget = ti;
+            AZ::u32 oldTargetID = m_settings.m_lastTarget.m_persistentId;
+            m_settings.m_lastTarget = ti;
             m_tmpInboundBuffer.clear();
             m_tmpInboundBufferPos = 0;
 
@@ -550,7 +523,7 @@ namespace AzFramework
     // retrieve what it was set to.
     TargetInfo TargetManagementComponent::GetDesiredTarget()
     {
-        return m_settings->m_lastTarget;
+        return m_settings.m_lastTarget;
     }
 
     // given id, get info.
@@ -585,17 +558,17 @@ namespace AzFramework
 
     void TargetManagementComponent::SetMyPersistentName(const char* name)
     {
-        m_settings->m_persistentName = name;
+        m_settings.m_persistentName = name;
     }
 
     const char* TargetManagementComponent::GetMyPersistentName()
     {
-        return m_settings->m_persistentName.c_str();
+        return m_settings.m_persistentName.c_str();
     }
 
     TargetInfo TargetManagementComponent::GetMyTargetInfo() const
     {
-        auto mapIter = m_availableTargets.find(AZ::Crc32(m_settings->m_persistentName.c_str()));
+        auto mapIter = m_availableTargets.find(AZ::Crc32(m_settings.m_persistentName.c_str()));
 
         if (mapIter != m_availableTargets.end())
         {
@@ -607,12 +580,12 @@ namespace AzFramework
 
     void TargetManagementComponent::SetNeighborhood(const char* name)
     {
-        m_settings->m_neighborhoodName = name;
+        m_settings.m_neighborhoodName = name;
     }
 
     const char* TargetManagementComponent::GetNeighborhood()
     {
-        return m_settings->m_neighborhoodName.c_str();
+        return m_settings.m_neighborhoodName.c_str();
     }
 
     void TargetManagementComponent::SendTmMessage(const TargetInfo& target, const TmMsg& msg)
@@ -733,7 +706,7 @@ namespace AzFramework
                         outSize -= bufferSize;
 
                         m_networkInterface->SendReliablePacket(
-                            static_cast<AzNetworking::ConnectionId>(m_settings->m_lastTarget.GetNetworkId()), tmPacket);
+                            static_cast<AzNetworking::ConnectionId>(m_settings.m_lastTarget.GetNetworkId()), tmPacket);
                     }
 
                     m_outbox.pop_front();

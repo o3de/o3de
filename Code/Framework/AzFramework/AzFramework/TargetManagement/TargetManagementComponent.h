@@ -39,7 +39,13 @@ namespace AzFramework
     constexpr uint16_t DefaultTargetPort = 6777;
 
     class TargetManagementNetworkImpl;
-    struct TargetManagementSettings;
+
+    struct TargetManagementSettings
+    {
+        AZStd::string m_neighborhoodName; // this is the neighborhood session (hub) we want to connect to
+        AZStd::string m_persistentName; // this string is used as the persistent name for this target
+        TargetInfo m_lastTarget; // this is the target we will automatically connect to
+    };
 
     //! @class TargetJoinThread
     //! @brief A class for polling a connection to the host target
@@ -148,7 +154,7 @@ namespace AzFramework
         void TickThread();
 
         TargetInfo                                      m_targetInfo;
-        AZStd::intrusive_ptr<TargetManagementSettings>  m_settings;
+        TargetManagementSettings                        m_settings;
         TargetContainer                                 m_availableTargets;
         AZStd::unique_ptr<TargetJoinThread>             m_targetJoinThread;
         bool m_isTargetHost = false;

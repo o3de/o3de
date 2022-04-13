@@ -57,12 +57,8 @@ namespace StandaloneTools
 
     void BaseApplication::CreateApplicationComponents()
     {
-        LegacyFramework::Application::CreateApplicationComponents();
-
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
-        EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
-        EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
         EnsureComponentCreated(LegacyFramework::IPCComponent::RTTI_Type());
 
         // Check for user settings components already added (added by the app descriptor
@@ -74,12 +70,22 @@ namespace StandaloneTools
             {
                 userSettingsAdded[userSettings->GetProviderId()] = true;
             }
-
-            if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
-            {
-                targetManagement->SetTargetAsHost(true);
-            }
         }
+
+        AZ::ModuleManagerRequestBus::Broadcast(
+            &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
+            [](const AZ::ModuleData& moduleData)
+            {
+                AZ::Entity* moduleEntity = moduleData.GetEntity();
+                for (const auto& component : moduleEntity->GetComponents())
+                {
+                    if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
+                    {
+                        targetManagement->SetTargetAsHost(true);
+                    }
+                }
+                return true;
+            });
 
         // For each provider not already added, add it.
         for (AZ::u32 providerId = 0; providerId < userSettingsAdded.size(); ++providerId)
