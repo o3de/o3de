@@ -109,57 +109,6 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             ${testTargets}
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/EmptyControl.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MissingPreloads.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MissingWwiseFileNode.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MultiplePreloadsMultipleBanks.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MultiplePreloadsOneBank.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/OnePreloadMultipleBanks.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/OnePreloadOneBank.xml
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/AudioEngineWwise/AudioControls
-    )
-
-    ly_add_target_files(
-        TARGETS
-            ${testTargets}
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingAtlPlatformsNode.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingConfigGroupNameAttribute.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingPlatformNameAttributeOnePreload.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingPlatformNode.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingWwiseFileNode.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MultiplePreloadsMultipleBanks.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MultiplePreloadsOneBank.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/NoConfigGroups.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/OnePreloadMultipleBanks.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/OnePreloadOneBank.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/WrongConfigGroup.xml
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/AudioEngineWwise/AudioControls/Legacy
-    )
-
-    ly_add_target_files(
-        TARGETS
-            ${testTargets}
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank1.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank2.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank3.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank4.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank5.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank6.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank7.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank8.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank9.bankdeps
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/AudioEngineWwise/sounds/wwise
-    )
-
-    ly_add_target_files(
-        TARGETS
-            ${testTargets}
-        FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/soundbanks/init.bnk
         OUTPUT_SUBDIRECTORY
             Test.Assets/Gems/AudioEngineWwise/sounds/wwise/soundbanks
@@ -240,5 +189,59 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_googletest(
             NAME Gem::AudioEngineWwise.Editor.Tests
         )
+
+        list(APPEND editorTestTargets AudioEngineWwise.Editor.Tests)
+
+        ly_add_target_files(
+            TARGETS
+                ${editorTestTargets}
+            FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/EmptyControl.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MissingPreloads.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MissingWwiseFileNode.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MultiplePreloadsMultipleBanks.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MultiplePreloadsOneBank.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/OnePreloadMultipleBanks.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/OnePreloadOneBank.xml
+            OUTPUT_SUBDIRECTORY
+                Test.Assets/Gems/AudioEngineWwise/AudioControls
+        )
+
+        ly_add_target_files(
+            TARGETS
+                ${editorTestTargets}
+            FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingAtlPlatformsNode.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingConfigGroupNameAttribute.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingPlatformNameAttributeOnePreload.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingPlatformNode.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingWwiseFileNode.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MultiplePreloadsMultipleBanks.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MultiplePreloadsOneBank.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/NoConfigGroups.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/OnePreloadMultipleBanks.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/OnePreloadOneBank.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/WrongConfigGroup.xml
+            OUTPUT_SUBDIRECTORY
+                Test.Assets/Gems/AudioEngineWwise/AudioControls/Legacy
+        )
+
+        ly_add_target_files(
+            TARGETS
+                ${editorTestTargets}
+            FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank1.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank2.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank3.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank4.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank5.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank6.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank7.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank8.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank9.bankdeps
+            OUTPUT_SUBDIRECTORY
+                Test.Assets/Gems/AudioEngineWwise/sounds/wwise
+        )
+
     endif()
 endif()
