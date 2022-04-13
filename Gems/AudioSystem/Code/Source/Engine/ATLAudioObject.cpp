@@ -10,191 +10,112 @@
 #include <ATLAudioObject.h>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/std/chrono/clocks.h>
-
-#if !defined(AUDIO_RELEASE)
-    #include <AzCore/std/string/conversions.h>
-#endif // !AUDIO_RELEASE
 
 #include <MathConversion.h>
 
-#include <AudioInternalInterfaces.h>
 #include <SoundCVars.h>
 #include <ATLUtils.h>
 
-#include <IRenderer.h>
-#include <IRenderAuxGeom.h>
+#if !defined(AUDIO_RELEASE)
+    // Debug Draw
+    #include <AzCore/std/string/conversions.h>
+    #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+    #include <AzFramework/Viewport/ViewportBus.h>
+    #include <AzFramework/Viewport/ViewportScreen.h>
+    #include <Atom/RPI.Public/View.h>
+    #include <Atom/RPI.Public/ViewportContext.h>
+    #include <Atom/RPI.Public/ViewportContextBus.h>
+    #include <Atom/RPI.Public/WindowContext.h>
+#endif // !AUDIO_RELEASE
+
 
 namespace Audio
 {
-    extern CAudioLogger g_audioLogger;
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportStartingTriggerInstance(const TAudioTriggerInstanceID audioTriggerInstanceID, const TAudioControlID audioControlID)
+    void CATLAudioObjectBase::TriggerInstanceStarting(TAudioTriggerInstanceID triggerInstanceId, TAudioControlID audioControlId)
     {
-        SATLTriggerInstanceState& rTriggerInstState = m_cTriggers.emplace(audioTriggerInstanceID, SATLTriggerInstanceState()).first->second;
-        rTriggerInstState.nTriggerID = audioControlID;
-        rTriggerInstState.nFlags |= eATS_STARTING;
+        SATLTriggerInstanceState& triggerInstState = m_cTriggers.emplace(triggerInstanceId, SATLTriggerInstanceState()).first->second;
+        triggerInstState.nTriggerID = audioControlId;
+        triggerInstState.nFlags |= eATS_STARTING;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportStartedTriggerInstance(
-        const TAudioTriggerInstanceID audioTriggerInstanceID,
-        void* const pOwnerOverride,
-        void* const pUserData,
-        void* const pUserDataOwner,
-        const TATLEnumFlagsType nFlags)
+    void CATLAudioObjectBase::TriggerInstanceStarted(TAudioTriggerInstanceID triggerInstanceId, void* owner)
     {
-        TObjectTriggerStates::iterator Iter(m_cTriggers.find(audioTriggerInstanceID));
-
-        if (Iter != m_cTriggers.end())
+        auto iter = m_cTriggers.find(triggerInstanceId);
+        if (iter != m_cTriggers.end())
         {
-            SATLTriggerInstanceState& rTriggerInstState = Iter->second;
-            if (rTriggerInstState.numPlayingEvents > 0 || rTriggerInstState.numLoadingEvents > 0)
+            SATLTriggerInstanceState& instState = iter->second;
+            if (instState.numPlayingEvents > 0)
             {
-                rTriggerInstState.pOwnerOverride = pOwnerOverride;
-                rTriggerInstState.pUserData = pUserData;
-                rTriggerInstState.pUserDataOwner = pUserDataOwner;
-                rTriggerInstState.nFlags &= ~eATS_STARTING;
+                instState.nFlags &= ~eATS_STARTING;
+                instState.pOwner = owner;
 
-                if ((nFlags & eARF_SYNC_FINISHED_CALLBACK) == 0)
+                if (instState.pOwner)
                 {
-                    rTriggerInstState.nFlags |= eATS_CALLBACK_ON_AUDIO_THREAD;
+                    AudioTriggerNotificationBus::QueueEvent(
+                        TriggerNotificationIdType{ instState.pOwner },
+                        &AudioTriggerNotificationBus::Events::ReportTriggerStarted,
+                        iter->second.nTriggerID);
                 }
             }
             else
             {
-                // All of the events have either finished before we got here or never started.
-                // So we report this trigger as finished immediately.
-                ReportFinishedTriggerInstance(Iter);
+                TriggerInstanceFinished(iter);
             }
-        }
-        else
-        {
-            g_audioLogger.Log(eALT_WARNING, "Reported a started instance %u that couldn't be found on an object %u",
-                audioTriggerInstanceID, GetID());
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportStartedEvent(const CATLEvent* const pEvent)
-    {
-        m_cActiveEvents.insert(pEvent->GetID());
-        m_cTriggerImpls.emplace(pEvent->m_nTriggerImplID, SATLTriggerImplState());
-
-        const TObjectTriggerStates::iterator Iter(m_cTriggers.find(pEvent->m_nTriggerInstanceID));
-
-        if (Iter != m_cTriggers.end())
-        {
-            SATLTriggerInstanceState& rTriggerInstState = Iter->second;
-
-            switch (pEvent->m_audioEventState)
-            {
-                case eAES_PLAYING:
-                {
-                    ++(rTriggerInstState.numPlayingEvents);
-                    break;
-                }
-                case eAES_PLAYING_DELAYED:
-                {
-                    AZ_Assert(rTriggerInstState.numLoadingEvents > 0, "Event state is PLAYING_DELAYED but there are no loading events!");
-                    --(rTriggerInstState.numLoadingEvents);
-                    ++(rTriggerInstState.numPlayingEvents);
-                    break;
-                }
-                case eAES_LOADING:
-                {
-                    ++(rTriggerInstState.numLoadingEvents);
-                    break;
-                }
-                case eAES_UNLOADING:
-                {
-                    // not handled currently
-                    break;
-                }
-                default:
-                {
-                    AZ_Assert(false, "Unknown event state in ReportStartedEvent (%d)", pEvent->m_audioEventState);
-                    break;
-                }
-            }
-        }
-        else
-        {
-            AZ_Assert(false, "ATL Event must exist and was not found in ReportStartedEvent!");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportFinishedEvent(const CATLEvent* const pEvent, const bool bSuccess)
+    void CATLAudioObjectBase::TriggerInstanceFinished(TObjectTriggerStates::const_iterator iter)
     {
-        m_cActiveEvents.erase(pEvent->GetID());
-
-        TObjectTriggerStates::iterator Iter(m_cTriggers.begin());
-
-        if (FindPlace(m_cTriggers, pEvent->m_nTriggerInstanceID, Iter))
+        if (iter->second.pOwner)
         {
-            switch (pEvent->m_audioEventState)
-            {
-                case eAES_PLAYING:
-                case eAES_PLAYING_DELAYED: // intentional fall-through
-                {
-                    SATLTriggerInstanceState& rTriggerInstState = Iter->second;
-                    AZ_Assert(rTriggerInstState.numPlayingEvents > 0, "ReportFinishedEvent - Trigger instances being decremented too many times!");
-
-                    if (--(rTriggerInstState.numPlayingEvents) == 0 &&
-                        rTriggerInstState.numLoadingEvents == 0 &&
-                        (rTriggerInstState.nFlags & eATS_STARTING) == 0)
-                    {
-                        ReportFinishedTriggerInstance(Iter);
-                    }
-
-                    DecrementRefCount();
-                    break;
-                }
-                case eAES_LOADING:
-                {
-                    if (bSuccess)
-                    {
-                        ReportPrepUnprepTriggerImpl(pEvent->m_nTriggerImplID, true);
-                    }
-
-                    DecrementRefCount();
-                    break;
-                }
-                case eAES_UNLOADING:
-                {
-                    if (bSuccess)
-                    {
-                        ReportPrepUnprepTriggerImpl(pEvent->m_nTriggerImplID, false);
-                    }
-
-                    DecrementRefCount();
-                    break;
-                }
-                default:
-                {
-                    AZ_Assert(false, "Unknown event state in ReportFinishedEvent (%d)", pEvent->m_audioEventState);
-                    break;
-                }
-            }
+            AudioTriggerNotificationBus::QueueEvent(
+                TriggerNotificationIdType{ iter->second.pOwner },
+                &AudioTriggerNotificationBus::Events::ReportTriggerFinished,
+                iter->second.nTriggerID);
         }
-        else
+        m_cTriggers.erase(iter);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CATLAudioObjectBase::EventStarted(const CATLEvent* const atlEvent)
+    {
+        m_cActiveEvents.insert(atlEvent->GetID());
+        m_cTriggerImpls.emplace(atlEvent->m_nTriggerImplID, SATLTriggerImplState());
+
+        auto iter = m_cTriggers.find(atlEvent->m_nTriggerInstanceID);
+        if (iter != m_cTriggers.end())
         {
-            g_audioLogger.Log(eALT_WARNING, "Reported finished event %u on an inactive trigger %u", pEvent->GetID(), pEvent->m_nTriggerID);
+            if (atlEvent->m_audioEventState == eAES_PLAYING)
+            {
+                ++(iter->second.numPlayingEvents);
+            }
+
+            IncrementRefCount();
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportPrepUnprepTriggerImpl(const TAudioTriggerImplID nTriggerImplID, const bool bPrepared)
+    void CATLAudioObjectBase::EventFinished(const CATLEvent* const atlEvent)
     {
-        if (bPrepared)
+        m_cActiveEvents.erase(atlEvent->GetID());
+        auto iter = m_cTriggers.find(atlEvent->m_nTriggerInstanceID);
+        if (iter != m_cTriggers.end())
         {
-            m_cTriggerImpls[nTriggerImplID].nFlags |= eATS_PREPARED;
-        }
-        else
-        {
-            m_cTriggerImpls[nTriggerImplID].nFlags &= ~eATS_PREPARED;
+            SATLTriggerInstanceState& instState = iter->second;
+            AZ_Assert(instState.numPlayingEvents > 0, "EventFinished - Trigger instances being decremented too many times!");
+
+            if (--instState.numPlayingEvents == 0
+                && (instState.nFlags & eATS_STARTING) == 0)
+            {
+                TriggerInstanceFinished(iter);
+            }
+
+            DecrementRefCount();
         }
     }
 
@@ -275,7 +196,7 @@ namespace Audio
 
         for (auto& triggerInstanceState : m_cTriggers)
         {
-            if (triggerInstanceState.second.pOwnerOverride == owner)
+            if (triggerInstanceState.second.pOwner == owner)
             {
                 filteredTriggers.insert(triggerInstanceState.first);
             }
@@ -302,39 +223,6 @@ namespace Audio
 
         m_nRefCounter = 0;
     }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportFinishedTriggerInstance(TObjectTriggerStates::iterator& iTriggerEntry)
-    {
-        SATLTriggerInstanceState& rTriggerInstState = iTriggerEntry->second;
-        SAudioRequest oRequest;
-        SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE> oRequestData(rTriggerInstState.nTriggerID);
-        oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_THREAD_SAFE_PUSH | eARF_SYNC_CALLBACK);
-        oRequest.nAudioObjectID = GetID();
-        oRequest.pData = &oRequestData;
-        oRequest.pOwner = rTriggerInstState.pOwnerOverride;
-        oRequest.pUserData = rTriggerInstState.pUserData;
-        oRequest.pUserDataOwner = rTriggerInstState.pUserDataOwner;
-
-        if ((rTriggerInstState.nFlags & eATS_CALLBACK_ON_AUDIO_THREAD) != 0)
-        {
-            oRequest.nFlags &= ~eARF_SYNC_CALLBACK;
-        }
-
-        AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
-
-        if ((rTriggerInstState.nFlags & eATS_PREPARED) != 0)
-        {
-            // if the trigger instance was manually prepared -- keep it
-            rTriggerInstState.nFlags &= ~eATS_PLAYING;
-        }
-        else
-        {
-            //if the trigger instance wasn't prepared -- kill it
-            m_cTriggers.erase(iTriggerEntry);
-        }
-    }
-
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -386,31 +274,29 @@ namespace Audio
         if (AZ::GetAbs(fCurrentVelocity - m_fPreviousVelocity) > Audio::CVars::s_VelocityTrackingThreshold)
         {
             m_fPreviousVelocity = fCurrentVelocity;
-            SAudioRequest oRequest;
-            SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> oRequestData(ATLInternalControlIDs::ObjectSpeedRtpcID, fCurrentVelocity);
 
-            oRequest.nAudioObjectID = GetID();
-            oRequest.nFlags = eARF_THREAD_SAFE_PUSH;
-            oRequest.pData = &oRequestData;
-            AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
+            Audio::ObjectRequest::SetParameterValue setParameter;
+            setParameter.m_audioObjectId = GetID();
+            setParameter.m_parameterId = ATLInternalControlIDs::ObjectSpeedRtpcID;
+            setParameter.m_value = fCurrentVelocity;
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setParameter));
         }
 
         m_oPreviousPosition = m_oPosition;
     }
 
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObject::SetRaycastCalcType(const EAudioObjectObstructionCalcType calcType)
+    void CATLAudioObject::SetRaycastCalcType(const ObstructionType calcType)
     {
         m_raycastProcessor.SetType(calcType);
         switch (calcType)
         {
-        case eAOOCT_IGNORE:
+        case ObstructionType::Ignore:
             AudioRaycastNotificationBus::Handler::BusDisconnect();
             break;
-        case eAOOCT_SINGLE_RAY:
+        case ObstructionType::SingleRay:
             [[fallthrough]];
-        case eAOOCT_MULTI_RAY:
+        case ObstructionType::MultiRay:
             AudioRaycastNotificationBus::Handler::BusConnect(GetID());
             break;
         default:
@@ -526,19 +412,19 @@ namespace Audio
         , m_obstructionValue(Audio::CVars::s_RaycastSmoothFactor, s_epsilon)
         , m_occlusionValue(Audio::CVars::s_RaycastSmoothFactor, s_epsilon)
         , m_audioObjectId(objectId)
-        , m_obstOccType(eAOOCT_IGNORE)
+        , m_obstOccType(ObstructionType::Ignore)
     {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void RaycastProcessor::Update(float elapsedMs)
     {
-        if (m_obstOccType == eAOOCT_SINGLE_RAY || m_obstOccType == eAOOCT_MULTI_RAY)
+        if (m_obstOccType == ObstructionType::SingleRay || m_obstOccType == ObstructionType::MultiRay)
         {
             // First ray is direct-path obstruction value...
             m_obstructionValue.SetNewTarget(m_rayInfos[0].GetDistanceScaledContribution());
 
-            if (m_obstOccType == eAOOCT_MULTI_RAY)
+            if (m_obstOccType == ObstructionType::MultiRay)
             {
                 float occlusion = 0.f;
                 for (size_t i = 1; i < s_maxRaysPerObject; ++i)
@@ -580,7 +466,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void RaycastProcessor::SetType(EAudioObjectObstructionCalcType calcType)
+    void RaycastProcessor::SetType(ObstructionType calcType)
     {
         if (calcType == m_obstOccType)
         {
@@ -588,7 +474,7 @@ namespace Audio
             return;
         }
 
-        if (calcType == eAOOCT_IGNORE)
+        if (calcType == ObstructionType::Ignore)
         {
             // Reset the target values when turning off raycasts (set to IGNORE).
             m_obstructionValue.Reset();
@@ -610,7 +496,7 @@ namespace Audio
     bool RaycastProcessor::CanRun() const
     {
         return s_raycastsEnabled    // This enable/disable is set via ISystem events.
-            && m_obstOccType != eAOOCT_IGNORE;
+            && m_obstOccType != ObstructionType::Ignore;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -646,7 +532,7 @@ namespace Audio
         // Cast ray 0, the direct obstruction ray.
         CastRay(listener, source, 0);
 
-        if (m_obstOccType == eAOOCT_MULTI_RAY)
+        if (m_obstOccType == ObstructionType::MultiRay)
         {
             // Cast ray 1, an indirect occlusion ray.
             CastRay(listener, source + up, 1);
@@ -709,13 +595,17 @@ namespace Audio
         if (!m_cActiveEvents.empty())
         {
             const char* const sEventString = GetEventIDs("; ").c_str();
-            g_audioLogger.Log(eALT_WARNING, "Active events on an object (ID: %u) being released!  #Events: %u   EventIDs: %s", GetID(), m_cActiveEvents.size(), sEventString);
+            AZLOG_NOTICE(
+                "Events are active on an object (ID: %llu) being released!  #Events: %zu   EventIDs: %s", GetID(), m_cActiveEvents.size(),
+                sEventString);
         }
 
         if (!m_cTriggers.empty())
         {
             const char* const sTriggerString = GetTriggerNames("; ", pDebugNameStore).c_str();
-            g_audioLogger.Log(eALT_WARNING, "Active triggers on an object (ID: %u) being released!  #Triggers: %u   TriggerNames: %s", GetID(), m_cTriggers.size(), sTriggerString);
+            AZLOG_NOTICE(
+                "Triggers are active on an object (ID: %llu) being released!  #Triggers: %zu   TriggerNames: %s", GetID(),
+                m_cTriggers.size(), sTriggerString);
         }
     }
 
@@ -800,16 +690,43 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObject::DrawDebugInfo(IRenderAuxGeom& auxGeom, const AZ::Vector3& vListenerPos, const CATLDebugNameStore* const pDebugNameStore) const
+    bool ConvertOjbectWorldPosToScreenCoords(AZ::Vector3& position)
     {
-        m_raycastProcessor.DrawObstructionRays(auxGeom);
+        auto viewportContextMgr = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        if (!viewportContextMgr)
+        {
+            return false;
+        }
+        AZ::RPI::ViewportContextPtr viewportContext = viewportContextMgr->GetDefaultViewportContext();
+        if (!viewportContext)
+        {
+            return false;
+        }
+        AZ::RPI::ViewPtr view = viewportContext->GetDefaultView();
+        if (!view)
+        {
+            return false;
+        }
+        const AZ::RHI::Viewport& viewport = viewportContext->GetWindowContext()->GetViewport();
 
+        position = AzFramework::WorldToScreenNdc(position, view->GetWorldToViewMatrixAsMatrix3x4(), view->GetViewToClipMatrix());
+        position.SetX(position.GetX() * viewport.GetWidth());
+        position.SetY((1.f - position.GetY()) * viewport.GetHeight());
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CATLAudioObject::DrawDebugInfo(
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        [[maybe_unused]] const AZ::Vector3& vListenerPos,
+        [[maybe_unused]] const CATLDebugNameStore* const pDebugNameStore) const
+    {
         if (!m_cTriggers.empty())
         {
             // Inspect triggers and apply filter (if set)...
-            TTriggerCountMap cTriggerCounts;
+            TTriggerCountMap triggerCounts;
 
-            auto triggerFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioTriggersDebugFilter);
+            auto triggerFilter = static_cast<AZ::CVarFixedString>(CVars::s_AudioTriggersDebugFilter);
             AZStd::to_lower(triggerFilter.begin(), triggerFilter.end());
 
             for (auto& trigger : m_cTriggers)
@@ -819,209 +736,151 @@ namespace Audio
 
                 if (AudioDebugDrawFilter(triggerName, triggerFilter))
                 {
-                    ++cTriggerCounts[trigger.second.nTriggerID];
+                    ++triggerCounts[trigger.second.nTriggerID];
                 }
             }
 
             // Early out for this object if all trigger names were filtered out.
-            if (cTriggerCounts.empty())
+            if (triggerCounts.empty())
             {
                 return;
             }
 
-            const AZ::Vector3 vPos(m_oPosition.GetPositionVec());
-            AZ::Vector3 vScreenPos(0.f);
-
-            // ToDo: Update to work with Atom? LYN-3677
-            /*{
-                float screenProj[3];
-                ???->ProjectToScreen(vPos.GetX(), vPos.GetY(), vPos.GetZ(), &screenProj[0], &screenProj[1], &screenProj[2]);
-
-                screenProj[0] *= 0.01f * static_cast<float>(???->GetWidth());
-                screenProj[1] *= 0.01f * static_cast<float>(???->GetHeight());
-                vScreenPos.Set(screenProj);
-            }
-            else*/
+            const AZ::Vector3 pos3d(m_oPosition.GetPositionVec());
+            AZ::Vector3 screenPos{ pos3d };
+            if (!ConvertOjbectWorldPosToScreenCoords(screenPos))
             {
-                vScreenPos.SetZ(-1.0f);
+                return;
             }
 
-            if ((0.0f <= vScreenPos.GetZ()) && (vScreenPos.GetZ() <= 1.0f))
+            if (screenPos.GetZ() < 0.5f)
             {
-                const float fDist = vPos.GetDistance(vListenerPos);
+                return;
+            }
 
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawObjects))
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::DrawObjects)))
+            {
+                const float radius = 0.05f;
+                const AZ::Color sphereColor{ 1.f, 0.1f, 0.1f, 1.f };
+                debugDisplay.SetColor(sphereColor);
+                debugDisplay.DrawWireSphere(pos3d, radius);
+            }
+
+            AZStd::string str;
+            const AZ::Color brightColor{ 0.9f, 0.9f, 0.9f, 1.f };
+            const AZ::Color normalColor(0.75f, 0.75f, 0.75f, 1.f);
+            const AZ::Color dimmedColor(0.5f, 0.5f, 0.5f, 1.f);
+            const float distance = pos3d.GetDistance(vListenerPos);
+            const float fontSize = 0.75f;
+            const float lineHeight = 15.f;
+            float posX = screenPos.GetX();
+            float posY = screenPos.GetY();
+
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectLabels)))
+            {
+                SATLSoundPropagationData obstOccData;
+                GetObstOccData(obstOccData);
+                str = AZStd::string::format(
+                    "%s  ID: %llu  RefCnt: %2zu  Dist: %4.1f m", pDebugNameStore->LookupAudioObjectName(GetID()), GetID(), GetRefCount(),
+                    distance);
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
+
+                posY += lineHeight;
+                str = AZStd::string::format("  Obst: %.3f  Occl: %.3f", obstOccData.fObstruction, obstOccData.fOcclusion);
+                debugDisplay.SetColor(normalColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
+            }
+
+
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectTriggers)))
+            {
+                posY += lineHeight;
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, "Triggers:");
+                debugDisplay.SetColor(normalColor);
+
+                for (auto& triggerCount : triggerCounts)
                 {
-                    const SAuxGeomRenderFlags nPreviousRenderFlags = auxGeom.GetRenderFlags();
-                    SAuxGeomRenderFlags nNewRenderFlags(e_Def3DPublicRenderflags | e_AlphaBlended);
-                    nNewRenderFlags.SetCullMode(e_CullModeNone);
-                    auxGeom.SetRenderFlags(nNewRenderFlags);
-                    const float fRadius = 0.15f;
-                    const AZ::Color sphereColor(1.f, 0.1f, 0.1f, 1.f);
-                    auxGeom.DrawSphere(AZVec3ToLYVec3(vPos), fRadius, AZColorToLYColorB(sphereColor));
-                    auxGeom.SetRenderFlags(nPreviousRenderFlags);
-                }
-
-                const float fFontSize = 1.3f;
-                const float fLineHeight = 12.0f;
-
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectStates))
-                {
-                    AZ::Vector3 vSwitchPos(vScreenPos);
-
-                    for (auto& switchState : m_cSwitchStates)
+                    auto triggerName = pDebugNameStore->LookupAudioTriggerName(triggerCount.first);
+                    if (triggerName)
                     {
-                        const TAudioControlID nSwitchID = switchState.first;
-                        const TAudioSwitchStateID nStateID = switchState.second;
-
-                        const char* const pSwitchName = pDebugNameStore->LookupAudioSwitchName(nSwitchID);
-                        const char* const pStateName = pDebugNameStore->LookupAudioSwitchStateName(nSwitchID, nStateID);
-
-                        if (pSwitchName && pStateName)
-                        {
-                            CStateDebugDrawData& oDrawData = m_cStateDrawInfoMap[nSwitchID];
-                            oDrawData.Update(nStateID);
-                            const AZ::Color switchTextColor(0.8f, 0.8f, 0.8f, oDrawData.fCurrentAlpha);
-
-                            vSwitchPos -= AZ::Vector3(0.f, fLineHeight, 0.f);
-                            auxGeom.Draw2dLabel(
-                                vSwitchPos.GetX(),
-                                vSwitchPos.GetY(),
-                                fFontSize,
-                                AZColorToLYColorF(switchTextColor),
-                                false,
-                                "%s: %s\n",
-                                pSwitchName,
-                                pStateName);
-                        }
+                        posY += lineHeight;
+                        str = AZStd::string::format("  %s  (count = %zu)", triggerName, triggerCount.second);
+                        debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
                     }
                 }
+            }
 
-                const AZ::Color brightTextColor(0.9f, 0.9f, 0.9f, 1.f);
-                const AZ::Color normalTextColor(0.75f, 0.75f, 0.75f, 1.f);
-                const AZ::Color dimmedTextColor(0.5f, 0.5f, 0.5f, 1.f);
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectStates)))
+            {
+                posY += lineHeight;
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, "Switches:");
 
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectLabels))
+                for (auto& switchState : m_cSwitchStates)
                 {
-                    const TAudioObjectID nObjectID = GetID();
-                    auxGeom.Draw2dLabel(
-                        vScreenPos.GetX(),
-                        vScreenPos.GetY(),
-                        fFontSize,
-                        AZColorToLYColorF(brightTextColor),
-                        false,
-                        "%s  ID: %llu  RefCnt: %2zu  Dist: %4.1fm",
-                        pDebugNameStore->LookupAudioObjectName(nObjectID),
-                        nObjectID,
-                        GetRefCount(),
-                        fDist);
-
-                    SATLSoundPropagationData obstOccData;
-                    GetObstOccData(obstOccData);
-
-                    auxGeom.Draw2dLabel(
-                        vScreenPos.GetX(),
-                        vScreenPos.GetY() + fLineHeight,
-                        fFontSize,
-                        AZColorToLYColorF(brightTextColor),
-                        false,
-                        "Obst: %.3f  Occl: %.3f",
-                        obstOccData.fObstruction,
-                        obstOccData.fOcclusion
-                    );
-                }
-
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectTriggers))
-                {
-                    AZStd::string triggerStringFormatted;
-
-                    for (auto& triggerCount : cTriggerCounts)
+                    const auto switchId = switchState.first;
+                    const auto stateId = switchState.second;
+                    auto switchName = pDebugNameStore->LookupAudioSwitchName(switchId);
+                    auto stateName = pDebugNameStore->LookupAudioSwitchStateName(switchId, stateId);
+                    if (switchName && stateName)
                     {
-                        const char* const pName = pDebugNameStore->LookupAudioTriggerName(triggerCount.first);
-                        if (pName)
-                        {
-                            const size_t nInstances = triggerCount.second;
-                            if (nInstances == 1)
-                            {
-                                triggerStringFormatted += pName;
-                                triggerStringFormatted += "\n";
-                            }
-                            else
-                            {
-                                triggerStringFormatted += AZStd::string::format("%s: %zu\n", pName, nInstances);
-                            }
-                        }
-                    }
-
-                    auxGeom.Draw2dLabel(
-                        vScreenPos.GetX(),
-                        vScreenPos.GetY() + (2.0f * fLineHeight),
-                        fFontSize,
-                        AZColorToLYColorF(normalTextColor),
-                        false,
-                        "%s",
-                        triggerStringFormatted.c_str());
-                }
-
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectRtpcs))
-                {
-                    AZ::Vector3 vRtpcPos(vScreenPos);
-
-                    for (auto& rtpc : m_cRtpcs)
-                    {
-                        const float fRtpcValue = rtpc.second;
-                        const char* const pRtpcName = pDebugNameStore->LookupAudioRtpcName(rtpc.first);
-
-                        if (pRtpcName)
-                        {
-                            const float xOffset = 5.f;
-
-                            vRtpcPos -= AZ::Vector3(0.f, fLineHeight, 0.f);     // list grows up
-                            auxGeom.Draw2dLabelCustom(
-                                vRtpcPos.GetX() - xOffset,
-                                vRtpcPos.GetY(),
-                                fFontSize,
-                                AZColorToLYColorF(normalTextColor),
-                                eDrawText_Right,        // right-justified
-                                "%s: %2.2f\n",
-                                pRtpcName,
-                                fRtpcValue);
-                        }
+                        CStateDebugDrawData& stateDrawData = m_cStateDrawInfoMap[switchId];
+                        stateDrawData.Update(stateId);
+                        AZ::Color switchColor{ 0.8f, 0.8f, 0.8f, stateDrawData.fCurrentAlpha };
+                        posY += lineHeight;
+                        str = AZStd::string::format("  %s : %s", switchName, stateName);
+                        debugDisplay.SetColor(switchColor);
+                        debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
                     }
                 }
+            }
 
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectEnvironments))
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectRtpcs)))
+            {
+                posY += lineHeight;
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, "Parameters:");
+                debugDisplay.SetColor(normalColor);
+
+                for (auto& param : m_cRtpcs)
                 {
-                    AZ::Vector3 vEnvPos(vScreenPos);
-
-                    for (auto& environment : m_cEnvironments)
+                    const float value = param.second;
+                    auto paramName = pDebugNameStore->LookupAudioRtpcName(param.first);
+                    if (paramName)
                     {
-                        const float fEnvValue = environment.second;
-                        const char* const pEnvName = pDebugNameStore->LookupAudioEnvironmentName(environment.first);
+                        posY += lineHeight;
+                        str = AZStd::string::format("  %s = %4.2f", paramName, value);
+                        debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
+                    }
+                }
+            }
 
-                        if (pEnvName)
-                        {
-                            const float xOffset = 5.f;
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::ObjectEnvironments)))
+            {
+                posY += lineHeight;
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, "Environments:");
+                debugDisplay.SetColor(normalColor);
 
-                            vEnvPos += AZ::Vector3(0.f, fLineHeight, 0.f);      // list grows down
-                            auxGeom.Draw2dLabelCustom(
-                                vEnvPos.GetX() - xOffset,
-                                vEnvPos.GetY(),
-                                fFontSize,
-                                AZColorToLYColorF(normalTextColor),
-                                eDrawText_Right,        // right-justified
-                                "%s: %.2f\n",
-                                pEnvName,
-                                fEnvValue);
-                        }
+                for (auto& environment : m_cEnvironments)
+                {
+                    const float value = environment.second;
+                    auto envName = pDebugNameStore->LookupAudioEnvironmentName(environment.first);
+                    if (envName)
+                    {
+                        posY += lineHeight;
+                        str = AZStd::string::format("  %s = %.3f", envName, value);
+                        debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
                     }
                 }
             }
         }
     }
 
-
-    void RaycastProcessor::DrawObstructionRays(IRenderAuxGeom& auxGeom) const
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void RaycastProcessor::DrawObstructionRays(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         static const AZ::Color obstructedRayColor(0.8f, 0.08f, 0.f, 1.f);
         static const AZ::Color freeRayColor(0.08f, 0.8f, 0.f, 1.f);
@@ -1036,20 +895,15 @@ namespace Audio
             return;
         }
 
-        const SAuxGeomRenderFlags previousRenderFlags = auxGeom.GetRenderFlags();
-        SAuxGeomRenderFlags newRenderFlags(e_Def3DPublicRenderflags | e_AlphaBlended);
-        newRenderFlags.SetCullMode(e_CullModeNone);
-        auxGeom.SetRenderFlags(newRenderFlags);
+        AZStd::string str;
+        const float textSize = 0.7f;
+        const bool drawRays = CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::DrawRays));
+        const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::RayLabels));
 
-        const bool drawRays = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawRays);
-        // ToDo: Update to work with Atom? LYN-3677
-        //const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::RayLabels);
-
-        size_t numRays = m_obstOccType == eAOOCT_SINGLE_RAY ? 1 : s_maxRaysPerObject;
+        size_t numRays = m_obstOccType == ObstructionType::SingleRay ? 1 : s_maxRaysPerObject;
         for (size_t rayIndex = 0; rayIndex < numRays; ++rayIndex)
         {
             const RaycastInfo& rayInfo = m_rayInfos[rayIndex];
-
             const AZ::Vector3 rayEnd = rayInfo.m_raycastRequest.m_start + rayInfo.m_raycastRequest.m_direction * rayInfo.GetNearestHitDistance();
 
             if (drawRays)
@@ -1059,53 +913,27 @@ namespace Audio
 
                 if (rayObstructed)
                 {
-                    auxGeom.DrawSphere(
-                        AZVec3ToLYVec3(rayEnd),
-                        hitSphereRadius,
-                        AZColorToLYColorB(hitSphereColor)
-                    );
+                    debugDisplay.SetColor(hitSphereColor);
+                    debugDisplay.DrawWireSphere(rayEnd, hitSphereRadius);
                 }
 
-                auxGeom.DrawLine(
-                    AZVec3ToLYVec3(rayInfo.m_raycastRequest.m_start),
-                    AZColorToLYColorB(freeRayColor),
-                    AZVec3ToLYVec3(rayEnd),
-                    AZColorToLYColorB(rayColor),
-                    1.f
-                );
+                debugDisplay.DrawLine(rayInfo.m_raycastRequest.m_start, rayEnd, freeRayColor.GetAsVector4(), rayColor.GetAsVector4());
             }
 
-            // ToDo: Update to work with Atom? LYN-3677
-            /*if (drawLabels)
+            if (drawLabels)
             {
-                float screenProj[3];
-                renderer->ProjectToScreen(rayEnd.GetX(), rayEnd.GetY(), rayEnd.GetZ(),
-                    &screenProj[0], &screenProj[1], &screenProj[2]);
-
-                screenProj[0] *= 0.01f * aznumeric_cast<float>(renderer->GetWidth());
-                screenProj[1] *= 0.01f * aznumeric_cast<float>(renderer->GetHeight());
-
-                AZ::Vector3 screenPos = AZ::Vector3::CreateFromFloat3(screenProj);
-
-                if ((0.f <= screenPos.GetZ()) && (screenPos.GetZ() <= 1.f))
+                AZ::Vector3 screenPos{ rayEnd };
+                if (ConvertOjbectWorldPosToScreenCoords(screenPos) && screenPos.GetZ() >= 0.5f)
                 {
                     float lerpValue = rayInfo.m_contribution;
                     AZ::Color labelColor = freeRayLabelColor.Lerp(obstructedRayLabelColor, lerpValue);
 
-                    auxGeom.Draw2dLabel(
-                        screenPos.GetX(),
-                        screenPos.GetY() - 12.f,
-                        1.6f,
-                        AZColorToLYColorF(labelColor),
-                        true,
-                        (rayIndex == 0) ? "OBST: %.2f" : "OCCL: %.2f",
-                        rayInfo.GetDistanceScaledContribution()
-                    );
+                    str = AZStd::string::format((rayIndex == 0) ? "Obst: %.2f" : "Occl: %.2f", rayInfo.GetDistanceScaledContribution());
+                    debugDisplay.SetColor(labelColor);
+                    debugDisplay.Draw2dTextLabel(screenPos.GetX(), screenPos.GetY() - 12.0f, textSize, str.c_str());
                 }
-            }*/
+            }
         }
-
-        auxGeom.SetRenderFlags(previousRenderFlags);
     }
 
 #endif // !AUDIO_RELEASE

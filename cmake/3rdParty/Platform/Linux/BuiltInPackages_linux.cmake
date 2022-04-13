@@ -36,7 +36,7 @@ ly_associate_package(PACKAGE_NAME qt-5.15.2-rev8-linux                          
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-linux                             TARGETS PNG                         PACKAGE_HASH 5c82945a1648905a5c4c5cee30dfb53a01618da1bf58d489610636c7ade5adf5)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-linux                    TARGETS libsamplerate               PACKAGE_HASH 41643c31bc6b7d037f895f89d8d8d6369e906b92eff42b0fe05ee6a100f06261)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-linux                           TARGETS OpenMesh                    PACKAGE_HASH 805bd0b24911bb00c7f575b8c3f10d7ea16548a5014c40811894a9445f17a126)
-ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev2-linux                          TARGETS OpenEXR                     PACKAGE_HASH d6f5fb9b40ccd636537fe69154f4737742eb9e14edf11218644d0a55df87b046)
+ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev4-linux                          TARGETS OpenEXR Imath               PACKAGE_HASH fcbac68cfb4e3b694580bc3741443e111aced5f08fde21a92e0c768e8803c7af)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2112-o3de-rev1-linux TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH ac9f98e0e3b07fde0f9bbe1e6daa386da37699819cde06dcc8d3235421f6e977)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-linux                  TARGETS SPIRVCross                  PACKAGE_HASH 7889ee5460a688e9b910c0168b31445c0079d363affa07b25d4c8aeb608a0b80)
 ly_associate_package(PACKAGE_NAME azslc-1.7.35-rev1-linux                           TARGETS azslc                       PACKAGE_HASH 273484be06dfc25e8da6a6e17937ae69a2efdb0b4c5f105efa83d6ad54d756e5)

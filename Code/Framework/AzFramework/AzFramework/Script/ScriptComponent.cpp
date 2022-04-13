@@ -564,6 +564,13 @@ namespace AzFramework
         // if we have valid asset listen for script asset events, like reload
         if (m_script.GetId().IsValid())
         {
+            // there's currently a bug within asset system which releases m_script asset meanwhile keeping it cached on prefab.
+            // This is a temporary fix to make sure asset is properly loaded on spawned prefab every time.
+            AZ::Data::AssetLoadParameters loadParams;
+            m_script = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(
+                    m_script.GetId(),
+                    m_script.GetAutoLoadBehavior(),
+                    loadParams);
             AZ::Data::AssetBus::Handler::BusConnect(m_script.GetId());
             m_script.QueueLoad();
         }
