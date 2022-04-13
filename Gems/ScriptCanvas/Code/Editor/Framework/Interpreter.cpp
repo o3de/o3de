@@ -21,22 +21,25 @@ namespace ScriptCanvasEditor
 
     Interpreter::Interpreter()
     {
-        m_handlerPropertiesChanged = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnPropertiesChanged(); });
-        m_configuration.ConnectToPropertiesChanged(m_handlerPropertiesChanged);
-        m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceCompiled(); });
-        m_configuration.ConnectToSourceCompiled(m_handlerSourceCompiled);
-        m_handlerSourceFailed = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceFailed(); });
-        m_configuration.ConnectToSourceFailed(m_handlerSourceFailed);
+        m_handlerPropertiesChanged = m_configuration.ConnectToPropertiesChanged([this](const Configuration&) { OnPropertiesChanged(); });
+        m_handlerSourceCompiled = m_configuration.ConnectToSourceCompiled([this](const Configuration&) { OnSourceCompiled(); });
+        m_handlerSourceFailed = m_configuration.ConnectToSourceFailed([this](const Configuration&) { OnSourceFailed(); });
 
         // #scriptcanvas_component_extension
         m_configuration.SetAcceptsComponentScript(false);
-        m_handlerUnacceptedComponentScript = AZ::EventHandler<const Configuration&>([this](const Configuration&) { OnSourceIncompatible(); });
-        m_configuration.ConnectToIncompatilbleScript(m_handlerUnacceptedComponentScript);
+        m_handlerUnacceptedComponentScript = m_configuration.ConnectToIncompatilbleScript([this](const Configuration&) { OnSourceIncompatible(); });
     }
 
     Interpreter::~Interpreter()
     {
         DataSystemAssetNotificationsBus::Handler::BusDisconnect();
+    }
+
+    AZ::EventHandler<const Interpreter&> Interpreter::ConnectOnStatusChanged(AZStd::function<void(const Interpreter&)>&& function) const
+    {
+        AZ::EventHandler<const Interpreter&> handler(function);
+        handler.Connect(m_onStatusChanged);
+        return handler;
     }
 
     void Interpreter::ConvertPropertiesToRuntime()
@@ -90,11 +93,6 @@ namespace ScriptCanvasEditor
     const Configuration& Interpreter::GetConfiguration() const
     {
         return m_configuration;
-    }
-
-    AZ::Event<const Interpreter&>& Interpreter::GetOnStatusChanged() const
-    {
-        return m_onStatusChanged;
     }
 
     InterpreterStatus Interpreter::GetStatus() const

@@ -91,19 +91,25 @@ namespace ScriptCanvasEditor
         return validation;
     }
 
-    void Configuration::ConnectToPropertiesChanged(AZ::EventHandler<const Configuration&>& handler) const
+    AZ::EventHandler<const Configuration&> Configuration::ConnectToPropertiesChanged(AZStd::function<void(const Configuration&)>&& function) const
     {
+        AZ::EventHandler<const Configuration&> handler(function);
         handler.Connect(m_eventPropertiesChanged);
+        return handler;
     }
 
-    void Configuration::ConnectToSourceCompiled(AZ::EventHandler<const Configuration&>& handler) const
+    AZ::EventHandler<const Configuration&> Configuration::ConnectToSourceCompiled(AZStd::function<void(const Configuration&)>&& function) const
     {
+        AZ::EventHandler<const Configuration&> handler(function);
         handler.Connect(m_eventSourceCompiled);
+        return handler;
     }
 
-    void Configuration::ConnectToSourceFailed(AZ::EventHandler<const Configuration&>& handler) const
+    AZ::EventHandler<const Configuration&> Configuration::ConnectToSourceFailed(AZStd::function<void(const Configuration&)>&& function) const
     {
+        AZ::EventHandler<const Configuration&> handler(function);
         handler.Connect(m_eventSourceFailed);
+        return handler;
     }
 
     const ScriptCanvasBuilder::BuildVariableOverrides& Configuration::GetOverrides() const
@@ -310,4 +316,24 @@ namespace ScriptCanvasEditor
             return BuildStatusValidation::Good;
         }
     }
+
+    // #scriptcanvas_component_extension ...
+    bool Configuration::AcceptsComponentScript() const
+    {
+        return m_acceptsComponentScript;
+    }
+
+    void Configuration::SetAcceptsComponentScript(bool value)
+    {
+        m_acceptsComponentScript = value;
+    }
+
+    AZ::EventHandler<const Configuration&> Configuration::ConnectToIncompatilbleScript(AZStd::function<void(const Configuration&)>&& function) const
+    {
+        AZ::EventHandler<const Configuration&> handler(function);
+        handler.Connect(m_eventIncompatibleScript);
+        return handler;
+    }
+    // ... #scriptcanvas_component_extension
+
 }

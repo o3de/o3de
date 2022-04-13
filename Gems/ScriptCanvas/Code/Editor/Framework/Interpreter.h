@@ -53,11 +53,11 @@ namespace ScriptCanvasEditor
 
         ~Interpreter();
 
+        AZ::EventHandler<const Interpreter&> ConnectOnStatusChanged(AZStd::function<void(const Interpreter&)>&& function) const;
+
         bool Execute();
 
         const Configuration& GetConfiguration() const;
-
-        AZ::Event<const Interpreter&>& GetOnStatusChanged() const;
 
         InterpreterStatus GetStatus() const;
 

@@ -50,8 +50,8 @@ namespace ScriptCanvasEditor
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(serializeContext, "InterpreterWidget::InterpreterWidget Failed to retrieve serialize context.");
-        AzToolsFramework::ReflectedPropertyEditor* propertyEditor = nullptr;
-        propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
+
+        auto propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
         propertyEditor->setObjectName("InterpreterWidget::ReflectedPropertyEditor");
         propertyEditor->Setup(serializeContext, this, true, 250);
         propertyEditor->show();
@@ -60,22 +60,21 @@ namespace ScriptCanvasEditor
         propertyEditor->InvalidateAll();
         propertyEditor->ExpandAll();
         m_view->interpreterLayout->insertWidget(0, propertyEditor, 0);
+
         connect(m_view->buttonStart, &QPushButton::pressed, this, &InterpreterWidget::OnButtonStartPressed);
         connect(m_view->buttonStop, &QPushButton::pressed, this, &InterpreterWidget::OnButtonStopPressed);
 
-        m_onIterpreterStatusChanged = AZ::EventHandler<const Interpreter&>
+        m_onIterpreterStatusChanged = m_interpreter.ConnectOnStatusChanged
             ([this](const Interpreter& interpreter)
-            {
+            { 
                 OnInterpreterStatusChanged(interpreter);
             });
-        m_onIterpreterStatusChanged.Connect(m_interpreter.GetOnStatusChanged());
 
-        
-        m_handlerSourceCompiled = AZ::EventHandler<const Configuration&>([propertyEditor](const Configuration&)
-        {
-            propertyEditor->QueueInvalidation(AzToolsFramework::Refresh_EntireTree_NewContent);
-        });
-        m_interpreter.GetConfiguration().ConnectToSourceCompiled(m_handlerSourceCompiled);
+        m_handlerSourceCompiled = m_interpreter.GetConfiguration().ConnectToSourceCompiled
+            ([propertyEditor](const Configuration&)
+            {
+                propertyEditor->QueueInvalidation(AzToolsFramework::Refresh_EntireTree_NewContent);
+            });
 
         // initialized status window and enabled setting for buttons
         OnInterpreterStatusChanged(m_interpreter); 

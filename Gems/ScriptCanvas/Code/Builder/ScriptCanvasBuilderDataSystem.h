@@ -24,6 +24,9 @@ namespace ScriptCanvasEditor
 
 namespace ScriptCanvasBuilder
 {
+// #define DATA_SYSTEM_STATUS(window, msg, ...) AZ_TracePrintf(window, msg, __VA_ARGS__);
+#define DATA_SYSTEM_STATUS(window, msg, ...)
+
     class DataSystem final
         : public DataSystemAssetRequestsBus::Handler
         , public DataSystemSourceRequestsBus::Handler

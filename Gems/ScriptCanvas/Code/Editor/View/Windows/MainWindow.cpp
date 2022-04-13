@@ -597,10 +597,7 @@ namespace ScriptCanvasEditor
         m_propertyGrid->setObjectName("NodeInspector");
 
         m_bookmarkDockWidget = aznew GraphCanvas::BookmarkDockWidget(ScriptCanvasEditor::AssetEditorId, this);
-
-        m_variableDockWidget = new VariableDockWidget(this);
-        m_variableDockWidget->setObjectName("VariableManager");
-
+                
         QObject::connect(m_variableDockWidget, &VariableDockWidget::OnVariableSelectionChanged, this, &MainWindow::OnVariableSelectionChanged);
 
         // This needs to happen after the node palette is created, because we scrape for the variable data from inside
@@ -610,9 +607,6 @@ namespace ScriptCanvasEditor
         m_validationDockWidget = aznew GraphValidationDockWidget(this);
         m_validationDockWidget->setObjectName("ValidationDockWidget");
         // End Construction list
-
-        m_loggingWindow = aznew LoggingWindow(this);
-        m_loggingWindow->setObjectName("LoggingWindow");
 
         m_ebusHandlerActionMenu = aznew EBusHandlerActionMenu();
 
@@ -792,9 +786,13 @@ namespace ScriptCanvasEditor
         connect(ui->action_ViewProperties, &QAction::triggered, this, &MainWindow::OnViewProperties);
         connect(ui->action_ViewBookmarks, &QAction::triggered, this, &MainWindow::OnBookmarks);
 
+        m_variableDockWidget = new VariableDockWidget(this);
+        m_variableDockWidget->setObjectName("VariableManager");
         connect(ui->action_ViewVariableManager, &QAction::triggered, this, &MainWindow::OnVariableManager);
         connect(m_variableDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
 
+        m_loggingWindow = aznew LoggingWindow(this);
+        m_loggingWindow->setObjectName("LoggingWindow");
         connect(ui->action_ViewLogWindow, &QAction::triggered, this, &MainWindow::OnViewLogWindow);
         connect(m_loggingWindow, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
 

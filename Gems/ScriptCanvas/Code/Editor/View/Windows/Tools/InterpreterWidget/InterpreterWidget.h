@@ -58,7 +58,7 @@ namespace ScriptCanvasEditor
         Ui::InterpreterWidget* m_view = nullptr;
         AZ::EventHandler<const Interpreter&> m_onIterpreterStatusChanged;
         AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
-        
+
         void OnButtonStartPressed();
         void OnButtonStopPressed();
         void OnInterpreterStatusChanged(const Interpreter&);

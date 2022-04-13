@@ -42,11 +42,11 @@ namespace ScriptCanvasEditor
 
         const ScriptCanvasBuilder::BuildVariableOverrides* CompileLatest();
 
-        void ConnectToPropertiesChanged(AZ::EventHandler<const Configuration&>& handler) const;
+        AZ::EventHandler<const Configuration&> ConnectToPropertiesChanged(AZStd::function<void(const Configuration&)>&& function) const;
 
-        void ConnectToSourceCompiled(AZ::EventHandler<const Configuration&>& handler) const;
+        AZ::EventHandler<const Configuration&> ConnectToSourceCompiled(AZStd::function<void(const Configuration&)>&& function) const;
 
-        void ConnectToSourceFailed(AZ::EventHandler<const Configuration&>& handler) const;
+        AZ::EventHandler<const Configuration&> ConnectToSourceFailed(AZStd::function<void(const Configuration&)>&& function) const;
 
         const ScriptCanvasBuilder::BuildVariableOverrides& GetOverrides() const;
 
@@ -101,26 +101,18 @@ namespace ScriptCanvasEditor
 
         BuildStatusValidation ValidateBuildResult(const ScriptCanvasBuilder::BuilderSourceResult& result) const;
 
-        // #scriptcanvas_component_extension...
+        // #scriptcanvas_component_extension ...
     public:
-        inline bool AcceptsComponentScript() const
-        {
-            return m_acceptsComponentScript;
-        }
+        bool AcceptsComponentScript() const;
 
-        inline void SetAcceptsComponentScript(bool value)
-        {
-            m_acceptsComponentScript = value;
-        }
+        void SetAcceptsComponentScript(bool value);
 
-        inline void ConnectToIncompatilbleScript(AZ::EventHandler<const Configuration&>& handler) const
-        {
-            handler.Connect(m_eventIncompatibleScript);
-        }
+        AZ::EventHandler<const Configuration&> ConnectToIncompatilbleScript(AZStd::function<void(const Configuration&)>&& function) const;
 
     private:
         mutable AZ::Event<const Configuration&> m_eventIncompatibleScript;
 
         bool m_acceptsComponentScript = true;
-    };
+        // ... #scriptcanvas_component_extension
+        };
 }

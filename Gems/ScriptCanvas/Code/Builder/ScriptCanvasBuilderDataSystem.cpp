@@ -131,7 +131,7 @@ namespace ScriptCanvasBuilder
     void DataSystem::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         const auto assetIdGuid = asset.GetId().m_guid;
-        AZ_TracePrintf
+        DATA_SYSTEM_STATUS
             ( "ScriptCanvas"
             , "DataSystem received OnAssetError: %s : %s"
             , asset.GetHint().c_str()
@@ -147,7 +147,7 @@ namespace ScriptCanvasBuilder
 
     void DataSystem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ_TracePrintf
+        DATA_SYSTEM_STATUS
             ( "ScriptCanvas"
             , "DataSystem received OnAssetReady: %s : %s"
             , asset.GetHint().c_str()
@@ -195,7 +195,7 @@ namespace ScriptCanvasBuilder
         SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptCanvas", "DataSystem::ReportReadyFilter received a runtime asset, queuing Lua script processing.");
         AZ::SystemTickBus::QueueFunction([this, asset]()
         {
-            AZ_TracePrintf("ScriptCanvas", "DataSystem::ReportReadyFilter executing Lua script processing.");
+            SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptCanvas", "DataSystem::ReportReadyFilter executing Lua script processing.");
             const auto assetIdGuid = asset.GetId().m_guid;
             const auto luaScriptAssetId = AZ::Data::AssetId(assetIdGuid, AZ::ScriptAsset::CompiledAssetSubId);
             AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::ClearAssetReferences, luaScriptAssetId);
@@ -208,12 +208,13 @@ namespace ScriptCanvasBuilder
                 = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(luaAsset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad, {});
             luaAsset.QueueLoad();
             luaAsset.BlockUntilLoadComplete();
+            ReportReady(asset);
         });
     }
 
     void DataSystem::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ_TracePrintf
+        DATA_SYSTEM_STATUS
             ( "ScriptCanvas"
             , "DataSystem received OnAssetReloaded: %s : %s"
             , asset.GetHint().c_str()
