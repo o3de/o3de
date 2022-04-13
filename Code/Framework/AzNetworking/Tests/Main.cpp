@@ -19,5 +19,5 @@ void AzNetworkingTestEnvironment::AddGemsAndComponents()
     AddDynamicModulePaths({ "AzNetworking" });
 }
 
-AZ_UNIT_TEST_HOOK(new AzNetworkingTestEnvironment);
+AZ_UNIT_TEST_HOOK_DYNAMIC(new AzNetworkingTestEnvironment);
 
