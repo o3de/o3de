@@ -25,40 +25,44 @@ namespace AzToolsFramework
         Q_OBJECT;
 
     public:
-        enum NodeType
+        enum class NodeType
         {
-            kRootNode = 0,
-            KRowNode,
-            kLabelNode,
-            kPropertyEditorNode
+            RootNode,
+            RowNode,
+            LabelNode,
+            PropertyEditorNode
         };
 
-        DPEModelNode(NodeType nodeType, QObject* theModel);
+        DPEModelNode(NodeType nodeType, size_t domValueIndex, QObject* theModel);
+        ~DPEModelNode();
 
-        int getNumChildren();
-        int getNumChildColumns();
-        DPEModelNode* getParentNode();
-        QVariant getData(int role);
-        bool setData(int role, const QVariant& value);
-        Qt::ItemFlags getFlags();
-        DPEModelNode* getChildNode(int childIndex);
-        DPEModelNode* getColumnNode(int columnIndex);
+        int GetChildCount() const;
+        int GetColumnChildCount() const;
+        int GetMaxChildColumns() const;
+        DPEModelNode* GetParentNode() const;
+        QVariant GetData(int role) const;
+        bool SetData(int role, const QVariant& value);
+        Qt::ItemFlags GetFlags() const;
+        DPEModelNode* GetChildNode(int childIndex);
+        DPEModelNode* GetColumnNode(int columnIndex);
 
-        int rowOfChild(DPEModelNode* const childNode);
-        DPEModelNode* takeChildNode(int childIndex);
-        void populate(const AZ::Dom::Value& domVal);
+        int RowOfChild(DPEModelNode* const childNode) const;
+        void Populate(const AZ::Dom::Value& domVal);
 
     private:
-        DPEDebugModel* getModel();
-        DPEModelNode* addChild(NodeType childType, bool isColumn, const QString& value);
+        DPEDebugModel* GetModel() const;
+        DPEModelNode* AddChild(NodeType childType, size_t domValueIndex, bool isColumn, const QString& value);
+        AZ::Dom::Value GetValue() const;
 
-        NodeType m_type = kRootNode;
+        NodeType m_type = NodeType::RootNode;
         DPEModelNode* m_parent = nullptr;
+        DPEModelNode* m_columnParent = nullptr;
         QVector<DPEModelNode*> m_children;
         QVector<DPEModelNode*> m_columnChildren;
         int m_maxChildColumns = 1;
+        size_t m_domValueIndex = 0;
 
-        QString m_data;
+        QString m_displayString;
     }; // DPEModelNode
 
     class DPEDebugModel : public QAbstractItemModel
@@ -67,14 +71,19 @@ namespace AzToolsFramework
 
     public:
         DPEDebugModel(QObject* parent);
-        void setAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
-        auto& getBackend()
+        void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
+        auto* GetAdapter()
+        {
+            return m_adapter;
+        }
+
+        auto& GetBackend()
         {
             return m_jsonBackend;
         }
 
     protected:
-        DPEModelNode* getNodeFromIndex(const QModelIndex& theIndex) const;
+        DPEModelNode* GetNodeFromIndex(const QModelIndex& theIndex) const;
 
         // QAbstractItemModel overrides
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -86,8 +95,9 @@ namespace AzToolsFramework
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     private:
-        DPEModelNode* m_rootNode;
+        AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter = nullptr;
+        DPEModelNode* m_rootNode = nullptr;
         bool m_isResetting = false;
         AZ::Dom::JsonBackend<AZ::Dom::Json::ParseFlags::ParseComments, AZ::Dom::Json::OutputFormatting::MinifiedJson> m_jsonBackend;
     };
-} // namespace AzQtComponents
+} // namespace AzToolsFramework

@@ -27,8 +27,8 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
-#include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
+#include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 
 namespace DPEDebugView
 {
@@ -36,8 +36,6 @@ namespace DPEDebugView
         : public QMainWindow
         , public Ui::DPEDebugWindow
     {
-        // Q_OBJECT;
-
     public:
         DPEDebugWindow(QWidget* parentWidget)
             : QMainWindow(parentWidget)
@@ -52,10 +50,15 @@ namespace DPEDebugView
         DPEDebugApplication(int* argc = nullptr, char*** argv = nullptr)
             : AzToolsFramework::ToolsApplication(argc, argv)
         {
+            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
+        }
+
+        virtual ~DPEDebugApplication()
+        {
+            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
         }
     };
 } // namespace DPEDebugView
-
 
 int main(int argc, char** argv)
 {
@@ -75,11 +78,11 @@ int main(int argc, char** argv)
     styleManager.initialize(&qtApp, engineRootPath);
 
     app.Start(AzFramework::Application::Descriptor());
-    AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
 
+    // create a default cvar adapter to expose the local CVar settings to edit
     AZ::DocumentPropertyEditor::CvarAdapter cvarAdapter;
     AzToolsFramework::DPEDebugModel adapterModel(nullptr);
-    adapterModel.setAdapter(&cvarAdapter);
+    adapterModel.SetAdapter(&cvarAdapter);
 
     QPointer<DPEDebugView::DPEDebugWindow> theWindow = new DPEDebugView::DPEDebugWindow(nullptr);
     theWindow->m_treeView->setModel(&adapterModel);

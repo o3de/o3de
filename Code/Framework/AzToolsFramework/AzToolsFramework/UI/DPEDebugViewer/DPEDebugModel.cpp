@@ -6,61 +6,81 @@
  *
  */
 
+#include "DPEDebugModel.h"
 #include <AZFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzCore/DOM/DomUtils.h>
-#include "DPEDebugModel.h"
 
 namespace AzToolsFramework
 {
-    DPEModelNode::DPEModelNode(DPEModelNode::NodeType nodeType, QObject* theModel)
-        : QObject(theModel) // all nodes are owned (and destroyed by the model)
+    DPEModelNode::DPEModelNode(DPEModelNode::NodeType nodeType, size_t domValueIndex, QObject* theModel)
+        : QObject(theModel) // all nodes are owned (and cannot outlive)
         , m_type(nodeType)
+        , m_domValueIndex(domValueIndex)
     {
     }
 
-    int DPEModelNode::getNumChildren()
+    DPEModelNode::~DPEModelNode()
+    {
+        for (auto iter = m_children.begin(); iter != m_children.end(); ++iter)
+        {
+            (*iter)->deleteLater();
+        }
+        for (auto iter = m_columnChildren.begin(); iter != m_columnChildren.end(); ++iter)
+        {
+            (*iter)->deleteLater();
+        }
+    }
+
+    int DPEModelNode::GetChildCount() const
     {
         return m_children.size();
     }
 
-    int DPEModelNode::getNumChildColumns()
+    int DPEModelNode::GetColumnChildCount() const
+    {
+        return m_columnChildren.size();
+    }
+
+    int DPEModelNode::GetMaxChildColumns() const
     {
         return m_maxChildColumns;
     }
 
-    DPEModelNode* DPEModelNode::getParentNode()
+    DPEModelNode* DPEModelNode::GetParentNode() const
     {
         return m_parent;
     }
 
-    QVariant DPEModelNode::getData(int role)
+    QVariant DPEModelNode::GetData(int role) const
     {
         QVariant returnedData;
         if (role == Qt::DisplayRole || role == Qt::EditRole)
         {
-            returnedData = m_data;
+            returnedData = m_displayString;
         }
         return returnedData;
     }
 
-    bool DPEModelNode::setData(int role, const QVariant& value)
+    bool DPEModelNode::SetData(int role, const QVariant& value)
     {
         bool succeeded = false;
         if (role == Qt::EditRole)
         {
-            auto& jsonBackend = getModel()->getBackend();
+            auto& jsonBackend = GetModel()->GetBackend();
             AZStd::string stringBuffer = value.toString().toUtf8().constData();
             auto writeOutcome = AZ::Dom::Utils::SerializedStringToValue(jsonBackend, stringBuffer, AZ::Dom::Lifetime::Temporary);
-            //AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(currNodeVal, writeOutcome.GetValue());
+            
+            // invoke the actual change on the Dom, it will come back to us as an update
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(GetValue(), writeOutcome.GetValue());
         }
         return succeeded;
     }
 
-    Qt::ItemFlags DPEModelNode::getFlags()
+    Qt::ItemFlags DPEModelNode::GetFlags() const
     {
         Qt::ItemFlags returnedFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
-        if (m_type == kPropertyEditorNode)
+        if (m_type == NodeType::PropertyEditorNode)
         {
             returnedFlags |= Qt::ItemIsEditable;
         }
@@ -68,18 +88,19 @@ namespace AzToolsFramework
         return returnedFlags;
     }
 
-    DPEModelNode* DPEModelNode::getChildNode(int childIndex)
+    DPEModelNode* DPEModelNode::GetChildNode(int childIndex)
     {
         DPEModelNode* childNode = nullptr;
-        if (childIndex >= 0 && childIndex < getNumChildren())
+        if (childIndex >= 0 && childIndex < GetChildCount())
         {
             childNode = m_children[childIndex];
         }
         return childNode;
     }
 
-    DPEModelNode* DPEModelNode::getColumnNode(int columnIndex)
+    DPEModelNode* DPEModelNode::GetColumnNode(int columnIndex)
     {
+        // column 0 is this node itself, subsequent columns are kept in m_columnChildren
         DPEModelNode* returnedNode = nullptr;
         if (columnIndex == 0)
         {
@@ -92,62 +113,61 @@ namespace AzToolsFramework
         return returnedNode;
     }
 
-    int DPEModelNode::rowOfChild(DPEModelNode* const childNode)
+    int DPEModelNode::RowOfChild(DPEModelNode* const childNode) const
     {
         return m_children.indexOf(childNode);
     }
 
-    DPEModelNode* DPEModelNode::takeChildNode(int childIndex)
+    void DPEModelNode::Populate(const AZ::Dom::Value& domVal)
     {
-        return m_children.takeAt(childIndex);
-    }
-
-    void DPEModelNode::populate(const AZ::Dom::Value& domVal)
-    {
-        auto& jsonBackend = getModel()->getBackend();
-        for (auto iter = domVal.ArrayBegin(); iter != domVal.ArrayEnd(); ++iter)
+        auto& jsonBackend = GetModel()->GetBackend();
+        for (size_t arrayIndex = 0, numIndices = domVal.ArraySize(); arrayIndex < numIndices; ++arrayIndex)
         {
-            auto& currValue = *iter;
-            AZStd::string theName = currValue.GetNodeName().GetCStr();
+            auto& currentValue = domVal[arrayIndex];
+            AZStd::string currentName = currentValue.GetNodeName().GetCStr();
 
-            if (theName == AZ::DocumentPropertyEditor::Nodes::Row::Name)
+            // "Row" children start new rows, and are themselves populated, other node types are additional colu
+            if (currentName == AZ::DocumentPropertyEditor::Nodes::Row::Name)
             {
-                DPEModelNode* newRow = addChild(KRowNode, false, QString::number(m_children.count()));
-                newRow->populate(currValue);
+                DPEModelNode* newRow = AddChild(NodeType::RowNode, arrayIndex, false, QString::number(m_children.count()));
+                newRow->Populate(currentValue);
             }
-            else if (theName == AZ::DocumentPropertyEditor::Nodes::Label::Name)
+            else if (currentName == AZ::DocumentPropertyEditor::Nodes::Label::Name)
             {
                 AZStd::string stringBuffer;
-                AZ::Dom::Utils::ValueToSerializedString(jsonBackend, currValue, stringBuffer);
-                addChild(kLabelNode, true, QString::fromUtf8(stringBuffer.c_str()));
+                AZ::Dom::Utils::ValueToSerializedString(jsonBackend, currentValue, stringBuffer);
+                AddChild(NodeType::LabelNode, arrayIndex, true, QString::fromUtf8(stringBuffer.c_str()));
             }
-            else if (theName == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name)
+            else if (currentName == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name)
             {
                 AZStd::string stringBuffer;
-                AZ::Dom::Utils::ValueToSerializedString(jsonBackend, currValue.GetNodeValue(), stringBuffer);
-                addChild(kPropertyEditorNode, true, QString::fromUtf8(stringBuffer.c_str()));
+                AZ::Dom::Utils::ValueToSerializedString(jsonBackend, currentValue.GetNodeValue(), stringBuffer);
+                AddChild(NodeType::PropertyEditorNode, arrayIndex, true, QString::fromUtf8(stringBuffer.c_str()));
             }
         }
     }
 
-    DPEDebugModel* DPEModelNode::getModel()
+    DPEDebugModel* DPEModelNode::GetModel() const
     {
         // the creating model is the owner of all model nodes in the QObject hierarchy
         return static_cast<DPEDebugModel*>(parent());
     }
 
-    DPEModelNode* DPEModelNode::addChild(NodeType childType, bool isColumn, const QString& value)
+    DPEModelNode* DPEModelNode::AddChild(NodeType childType, size_t domValueIndex, bool isColumn, const QString& value)
     {
-        DPEModelNode* newChild = new DPEModelNode(childType, parent());
-        DPEModelNode* assignedParent = (isColumn ? getParentNode() : this);
+        DPEModelNode* newChild = new DPEModelNode(childType, domValueIndex, parent());
+        
+        // new actual children have this node as a parent, new columns share the same parent as this node
+        DPEModelNode* assignedParent = (isColumn ? GetParentNode() : this);
         newChild->m_parent = assignedParent;
-        newChild->m_data = value;
+        newChild->m_displayString = value;
 
         if (isColumn)
         {
+            newChild->m_columnParent = this;
             m_columnChildren.push_back(newChild);
             const int numCols = m_columnChildren.size() + 1;
-            if (assignedParent->getNumChildColumns() < numCols)
+            if (assignedParent->GetMaxChildColumns() < numCols)
             {
                 assignedParent->m_maxChildColumns = numCols;
             }
@@ -160,27 +180,59 @@ namespace AzToolsFramework
         return newChild;
     }
 
+    AZ::Dom::Value DPEModelNode::GetValue() const
+    {
+        QVector<size_t> reversePath;
+        const DPEModelNode* currNode = this;
+
+        // traverse upwards to the root determine the path to the current node
+        bool traversingUpwards = true;
+        while (traversingUpwards)
+        {
+            if (currNode->m_columnParent)
+            {
+                reversePath << currNode->m_domValueIndex;
+                currNode = currNode->m_columnParent;
+            }
+            else if (currNode->m_parent)
+            {
+                reversePath << currNode->m_domValueIndex;
+                currNode = currNode->m_parent;
+            }
+            else
+            {
+                traversingUpwards = false;
+            }
+        }
+        // start at the top of the adapter and move down the inverse of the path we took traversing upwards
+        auto returnValue = GetModel()->GetAdapter()->GetContents();
+        for (auto reverseIter = reversePath.rbegin(); reverseIter != reversePath.rend(); ++reverseIter)
+        {
+            returnValue = returnValue[*reverseIter];
+        }
+
+        return returnValue;
+    }
+
     DPEDebugModel::DPEDebugModel(QObject* parent)
         : QAbstractItemModel(parent)
     {
-        m_rootNode = new DPEModelNode(DPEModelNode::kRootNode, this);
     }
 
-    void DPEDebugModel::setAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter)
+    void DPEDebugModel::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter)
     {
-        const int numExistingChildren = m_rootNode->getNumChildren();
-        m_isResetting = (numExistingChildren > 0);
+        m_adapter = theAdapter;
+        m_isResetting = (m_rootNode != nullptr);
         if (m_isResetting)
         {
             beginResetModel();
-            for (int index = numExistingChildren - 1; index >= 0; ++index)
-            {
-                m_rootNode->takeChildNode(index)->deleteLater();
-            }
+            m_rootNode->deleteLater(); // recursively destroys the existing tree
         }
 
+        // recursively populate the node tree with the new adapter information
         auto theContents = theAdapter->GetContents();
-        m_rootNode->populate(theAdapter->GetContents());
+        m_rootNode = new DPEModelNode(DPEModelNode::NodeType::RootNode, 0, this);
+        m_rootNode->Populate(theAdapter->GetContents());
 
         if (m_isResetting)
         {
@@ -189,7 +241,9 @@ namespace AzToolsFramework
         }
         else
         {
-            const int numRootChildren = m_rootNode->getNumChildren();
+            // inform any listening views that top-level rows have been added,
+            // they will automatically traverse the child nodes
+            const int numRootChildren = m_rootNode->GetChildCount();
             if (numRootChildren)
             {
                 beginInsertRows(QModelIndex(), 0, numRootChildren - 1);
@@ -198,7 +252,7 @@ namespace AzToolsFramework
         }
     }
 
-    DPEModelNode* DPEDebugModel::getNodeFromIndex(const QModelIndex& theIndex) const
+    DPEModelNode* DPEDebugModel::GetNodeFromIndex(const QModelIndex& theIndex) const
     {
         DPEModelNode* returnedNode = nullptr;
         if (!theIndex.isValid())
@@ -210,7 +264,7 @@ namespace AzToolsFramework
             // only return the internally addressed node if it's the correct node for the column,
             // otherwise fall through to returning null
             DPEModelNode* addressedNode = static_cast<DPEModelNode*>(theIndex.internalPointer());
-            if (addressedNode->getParentNode()->getChildNode(theIndex.row())->getColumnNode(theIndex.column()) == addressedNode)
+            if (addressedNode->GetParentNode()->GetChildNode(theIndex.row())->GetColumnNode(theIndex.column()) == addressedNode)
             {
                 return addressedNode;
             }
@@ -221,11 +275,11 @@ namespace AzToolsFramework
     QVariant DPEDebugModel::data(const QModelIndex& index, int role) const
     {
         QVariant returnedData;
-        auto theNode = getNodeFromIndex(index);
+        auto theNode = GetNodeFromIndex(index);
 
         if (theNode)
         {
-            returnedData = theNode->getData(role);
+            returnedData = theNode->GetData(role);
         }
         return returnedData;
     }
@@ -233,10 +287,10 @@ namespace AzToolsFramework
     bool DPEDebugModel::setData(const QModelIndex& index, const QVariant& value, int role)
     {
         bool succeeded = false;
-        auto theNode = getNodeFromIndex(index);
+        auto theNode = GetNodeFromIndex(index);
         if (theNode)
         {
-            succeeded = theNode->setData(role, value);
+            succeeded = theNode->SetData(role, value);
         }
         return succeeded;
     }
@@ -244,10 +298,10 @@ namespace AzToolsFramework
     Qt::ItemFlags DPEDebugModel::flags(const QModelIndex& passedIndex) const
     {
         Qt::ItemFlags returnedFlags = Qt::NoItemFlags;
-        auto* theNode = getNodeFromIndex(passedIndex);
+        auto* theNode = GetNodeFromIndex(passedIndex);
         if (theNode)
         {
-            returnedFlags = theNode->getFlags();
+            returnedFlags = theNode->GetFlags();
         }
         return returnedFlags;
     }
@@ -255,17 +309,17 @@ namespace AzToolsFramework
     QModelIndex DPEDebugModel::index(int row, int column, const QModelIndex& parentIndex) const
     {
         QModelIndex returnedIndex;
-        auto* parentNode = getNodeFromIndex(parentIndex);
+        auto* parentNode = GetNodeFromIndex(parentIndex);
 
-        if (parentNode && row < parentNode->getNumChildren())
+        if (parentNode && row < parentNode->GetChildCount())
         {
-            auto* rowNode = parentNode->getChildNode(row);
-            auto* colNode = rowNode->getColumnNode(column);
+            auto* rowNode = parentNode->GetChildNode(row);
+            auto* columnNode = rowNode->GetColumnNode(column);
 
             // if there's no actual node for the given column, still give the index an internal pointer of the row node,
             // so that the QModelIndex has enough info for functions like parent() to function properly. This does complicate
             // getNodeFromIndex though, which now needs to verify that the internal pointer is the actual node at that column
-            returnedIndex = createIndex(row, column, static_cast<void*>(colNode ? colNode : rowNode));
+            returnedIndex = createIndex(row, column, static_cast<void*>(columnNode ? columnNode : rowNode));
         }
         return returnedIndex;
     }
@@ -277,14 +331,14 @@ namespace AzToolsFramework
         if (passedIndex.isValid())
         {
             auto* theNode = static_cast<DPEModelNode*>(passedIndex.internalPointer());
-            auto* parentNode = theNode->getParentNode();
+            auto* parentNode = theNode->GetParentNode();
 
             if (parentNode != m_rootNode) // if the parent is root, parentIndex is already correctly set as invalid
             {
-                auto* grandParent = parentNode->getParentNode();
-                if (grandParent)
+                auto* grandparent = parentNode->GetParentNode();
+                if (grandparent)
                 {
-                    parentIndex = createIndex(grandParent->rowOfChild(parentNode), 0, parentNode);
+                    parentIndex = createIndex(grandparent->RowOfChild(parentNode), 0, parentNode);
                 }
             }
         }
@@ -294,26 +348,26 @@ namespace AzToolsFramework
 
     int DPEDebugModel::columnCount(const QModelIndex& parent) const
     {
-        int numColumns = 0;
+        int columnCount = 0;
 
-        DPEModelNode* theNode = (parent.isValid() ? getNodeFromIndex(parent) : m_rootNode);
+        DPEModelNode* theNode = (parent.isValid() ? GetNodeFromIndex(parent) : m_rootNode);
         if (theNode)
         {
-            numColumns = theNode->getNumChildColumns();
+            columnCount = theNode->GetMaxChildColumns();
         }
-        return numColumns;
+        return columnCount;
     }
 
     int DPEDebugModel::rowCount(const QModelIndex& parent) const
     {
-        int numRows = 0;
+        int rowCount = 0;
 
-        DPEModelNode* theNode = (parent.isValid() ? getNodeFromIndex(parent) : m_rootNode);
+        DPEModelNode* theNode = (parent.isValid() ? GetNodeFromIndex(parent) : m_rootNode);
         if (theNode)
         {
-            numRows = theNode->getNumChildren();
+            rowCount = theNode->GetChildCount();
         }
-        return numRows;
+        return rowCount;
     }
 } // namespace AzToolsFramework
 
