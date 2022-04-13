@@ -33,8 +33,9 @@ namespace Multiplayer
     MultiplayerEditorConnection::MultiplayerEditorConnection()
         : m_byteStream(&m_buffer)
     {
+        AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
-            AZ::Name(MpEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
+            editorInterfaceName, ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
         m_networkEditorInterface->SetTimeoutMs(AZ::Time::ZeroTimeMs); // Disable timeouts on this network interface
 
         // Wait to activate the editor-server until LegacySystemInterfaceCreated so that the logging system is ready
@@ -141,7 +142,8 @@ namespace Multiplayer
 
             // Setup the normal multiplayer connection
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-            INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
+            AZ::Name mpNetworkInterfaceName = AZ::Name(MpNetworkInterfaceName);
+            INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(mpNetworkInterfaceName);
 
             uint16_t sv_port = DefaultServerPort;
             if (console->GetCvarValue("sv_port", sv_port) != AZ::GetValueResult::Success)

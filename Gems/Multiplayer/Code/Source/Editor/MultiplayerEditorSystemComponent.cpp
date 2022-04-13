@@ -179,8 +179,9 @@ namespace Multiplayer
                 m_serverProcessWatcher = nullptr;
                 m_serverProcessTracePrinter = nullptr;
             }
-            
-            if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName)))
+
+            AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
+            if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(editorInterfaceName))
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
@@ -477,7 +478,8 @@ namespace Multiplayer
         ++m_connectionAttempts;
         AZ_Printf("MultiplayerEditor", "Editor tcp connection attempt #%i.", m_connectionAttempts)
 
-        INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
+        AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
+        INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(editorInterfaceName));
         AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
 
         const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
