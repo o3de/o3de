@@ -300,7 +300,9 @@ namespace Multiplayer
         }
         else
         {
-            AZ_Error("MultiplayerEditor", outProcess, "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.");
+            const char* fail_message = "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.";
+            MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::DisplayMessage, fail_message);
+            AZ_Error("MultiplayerEditor", outProcess, fail_message);
         }
     }
 
@@ -393,8 +395,10 @@ namespace Multiplayer
             AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
             return;
         }
-
-        AZ_Printf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
+        
+        const char* sending_leveldata_message = "Editor is sending the editor-server the level data packet.";
+        MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::DisplayMessage, sending_leveldata_message);
+        AZ_Printf("MultiplayerEditor", sending_leveldata_message)
 
         const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
 
