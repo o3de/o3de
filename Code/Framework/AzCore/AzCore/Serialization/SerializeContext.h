@@ -60,6 +60,21 @@ namespace AZ
         class ObjectStreamImpl;
     }
 
+    namespace SerializeContextAttributes
+    {
+        // Attribute used to set an override function on a SerializeContext::ClassData attribute array
+        // which can be used to override the ObjectStream WriteElement call to write out reflected data differently
+        static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f);
+    }
+
+    enum class ObjectStreamWriteOverrideResponse
+    {
+        CompletedWrite,
+        FallbackToDefaultWrite,
+        AbortWrite
+    };
+    AZ_TYPE_INFO_SPECIALIZE(ObjectStreamWriteOverrideResponse, "{BDF960A8-0F18-4E9D-96DA-F800A122C42D}");
+
     namespace Edit
     {
         struct ElementData;

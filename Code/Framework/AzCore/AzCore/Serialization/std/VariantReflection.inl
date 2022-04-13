@@ -12,8 +12,6 @@
 
 namespace AZ
 {
-    enum class ObjectStreamWriteOverrideResponse;
-
     namespace VariantSerializationInternal
     {
         template <class ValueType>
@@ -426,17 +424,6 @@ namespace AZ
             GenericClassVariant()
                 : m_classData{ SerializeContext::ClassData::Create<VariantType>("variant", GetSpecializedTypeId(), &m_variantInstanceFactory, nullptr, &m_variantContainer) }
             {
-                AZ_TracePrintf("SC_DATA_SOURCE", "Creating Generic Class info for variant type: %s."
-                    , GetSpecializedTypeId().template ToString<AZStd::string>().c_str()
-                );
-
-                for (size_t i = 0; i < GetNumTemplatedArguments(); ++i)
-                {
-                    AZ_TracePrintf("SC_DATA_SOURCE", "Variant contains type: %s."
-                        , GetTemplatedTypeId(i).template ToString<AZStd::string>().c_str()
-                    );
-                }
-
                 m_classData.m_dataConverter = &m_dataConverter;
                 // As the SerializeGenericTypeInfo is created on demand when a variant is reflected(in static memory)
                 // the serialize context dll module allocator has to be used to manage the lifetime of the ClassData attributes within a module
@@ -516,9 +503,7 @@ namespace AZ
                 };
 
                 AZStd::visit(AZStd::move(alternativeVisitor), *reinterpret_cast<const VariantType*>(variantPtr));
-                // To avoid including ObjectStream.h into this file, we static cast the value of 0
-                // to an AZ::ObjectStreamWriteElemntResponse which corresponds to the CompletedWrite enum value
-                return static_cast<AZ::ObjectStreamWriteOverrideResponse>(0);
+                return AZ::ObjectStreamWriteOverrideResponse::CompletedWrite;
             }
 
             VariantSerializationInternal::AZStdVariantContainer<Types...> m_variantContainer;
