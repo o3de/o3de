@@ -30,12 +30,13 @@ namespace AZ
                     ;
 
                 serializeContext->Class<StreamingImageAsset, ImageAsset>()
-                    ->Version(1)
+                    ->Version(2) // Added m_averageColor field
                     ->Field("m_mipLevelToChainIndex", &StreamingImageAsset::m_mipLevelToChainIndex)
                     ->Field("m_mipChains", &StreamingImageAsset::m_mipChains)
                     ->Field("m_flags", &StreamingImageAsset::m_flags)
                     ->Field("m_tailMipChain", &StreamingImageAsset::m_tailMipChain)
                     ->Field("m_totalImageDataSize", &StreamingImageAsset::m_totalImageDataSize)
+                    ->Field("m_averageColor", &StreamingImageAsset::m_averageColor)
                     ;
             }
         }
@@ -94,6 +95,21 @@ namespace AZ
             return m_totalImageDataSize;
         }
 
+        Color StreamingImageAsset::GetAverageColor() const
+        {
+            if (m_averageColor.IsFinite())
+            {
+                return m_averageColor;
+            }
+            else
+            {
+                AZ_Warning(
+                    "Streaming Image", false,
+                    "Non-finite average color, it probably was never initialized. Returning black.");
+                return Color(0.0f);
+            }
+        }
+
         RHI::ImageDescriptor StreamingImageAsset::GetImageDescriptorForMipLevel(AZ::u32 mipLevel) const
         {
             RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
@@ -113,7 +129,7 @@ namespace AZ
             }
             else
             {
-                AZ_Warning("Streaming Image", false, "Mip level index (%d) out of bounds, only %d levels available for asset %s",
+                AZ_Warning("Streaming Image", false, "Mip level index (%u) out of bounds, only %u levels available for asset %s",
                     mipLevel, imageDescriptor.m_mipLevels, m_assetId.ToString<AZStd::string>().c_str());
                 return RHI::ImageDescriptor();
             }

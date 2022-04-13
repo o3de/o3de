@@ -1,6 +1,6 @@
 {
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "propertyValues": {
         "metallic.factor": 1.0,
         "normal.flipY": true,

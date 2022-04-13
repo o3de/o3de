@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "Materials/Presets/PBR/metal_brass.material",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "color": [

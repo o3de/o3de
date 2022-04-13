@@ -1554,7 +1554,9 @@ namespace UnitTest
         // MaterialPropertySerializerTests, so the sample property data used here is cursory.
         // We also don't cover fields related to providing name contexts for nested property groups, like
         // "shaderInputsPrefix" and "shaderOptionsPrefix" as those are covered in CreateMaterialTypeAsset_NestedGroups*.
-
+        //
+        // NOTE: The keys in the actions lists of versionUpdates need to be given in alphabetical
+        // order to ensure exact json string match after serialization + deserialization.
         const AZStd::string inputJson = R"(
             {
                 "description": "This is a general description about the material",
@@ -1563,7 +1565,8 @@ namespace UnitTest
                     {
                         "toVersion": 2,
                         "actions": [
-                            { "op": "rename", "from": "groupA.fooPrev", "to": "groupA.foo" }
+                            { "from": "groupA.fooPrev", "op": "rename", "to": "groupA.foo" },
+                            { "name": "groupB.bar", "op": "setValue", "value": [0.0, 0.5, 1.0] }
                         ]
                     }
                 ],
@@ -1692,10 +1695,38 @@ namespace UnitTest
         EXPECT_EQ(material.m_version, 2);
         EXPECT_EQ(material.m_versionUpdates.size(), 1);
         EXPECT_EQ(material.m_versionUpdates[0].m_toVersion, 2);
-        EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_operation, "rename");
-        EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_renameFrom, "groupA.fooPrev");
-        EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_renameTo, "groupA.foo");
+        EXPECT_EQ(material.m_versionUpdates[0].m_actions.size(), 2);
 
+        {
+            const auto opIt   = material.m_versionUpdates[0].m_actions[0].find("op");
+            const auto fromIt = material.m_versionUpdates[0].m_actions[0].find("from");
+            const auto toIt   = material.m_versionUpdates[0].m_actions[0].find("to");
+            EXPECT_FALSE(opIt   == material.m_versionUpdates[0].m_actions[0].end());
+            EXPECT_FALSE(fromIt == material.m_versionUpdates[0].m_actions[0].end());
+            EXPECT_FALSE(toIt   == material.m_versionUpdates[0].m_actions[0].end());
+            EXPECT_EQ(opIt->first,    AZStd::string("op"));
+            EXPECT_EQ(fromIt->first,  AZStd::string("from"));
+            EXPECT_EQ(toIt->first,    AZStd::string("to"));
+            EXPECT_EQ(opIt->second,   AZStd::string("rename"));
+            EXPECT_EQ(fromIt->second, AZStd::string("groupA.fooPrev"));
+            EXPECT_EQ(toIt->second,   AZStd::string("groupA.foo"));
+        }
+
+        {
+            const auto opIt    = material.m_versionUpdates[0].m_actions[1].find("op");
+            const auto nameIt  = material.m_versionUpdates[0].m_actions[1].find("name");
+            const auto valueIt = material.m_versionUpdates[0].m_actions[1].find("value");
+            EXPECT_FALSE(opIt    == material.m_versionUpdates[0].m_actions[1].end());
+            EXPECT_FALSE(nameIt  == material.m_versionUpdates[0].m_actions[1].end());
+            EXPECT_FALSE(valueIt == material.m_versionUpdates[0].m_actions[1].end());
+            EXPECT_EQ(opIt->first,     AZStd::string("op"));
+            EXPECT_EQ(nameIt->first,   AZStd::string("name"));
+            EXPECT_EQ(valueIt->first,  AZStd::string("value"));
+            EXPECT_EQ(opIt->second,    AZStd::string("setValue"));
+            EXPECT_EQ(nameIt->second,  AZStd::string("groupB.bar"));
+            const Color colorValue = valueIt->second.CastToType(azrtti_typeid<Color>()).GetValue<Color>();
+            EXPECT_EQ(colorValue, Color(0.0f, 0.5f, 1.0f, 1.0f));
+        }
 
         EXPECT_EQ(material.GetPropertyLayout().m_propertyGroups.size(), 3);
         EXPECT_TRUE(material.FindPropertyGroup("groupA") != nullptr);
@@ -1991,40 +2022,77 @@ namespace UnitTest
         CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{ "general.relative" }, m_testImageAsset2);
     }
 
-
-    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_UnsupportedVersionUpdate)
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_ResolveSetValueVersionUpdates)
     {
-        MaterialTypeSourceData sourceData;
+        char inputJson[2048];
+        azsprintf(inputJson,
+        R"(
+            {
+                "description": "",
+                "version": 2,
+                "versionUpdates": [
+                    {
+                        "toVersion": 2,
+                        "actions": [
+                            { "op": "setValue", "name": "grp.myEnum", "value": "Enum1" },
+                            { "op": "setValue", "name": "grp.myImage", "value": "%s" }
+                        ]
+                    }
+                ],
+                "propertyLayout": {
+                    "propertyGroups": [
+                        {
+                            "name": "grp",
+                            "displayName": "",
+                            "description": "",
+                            "properties": [
 
-        MaterialTypeSourceData::PropertyDefinition* propertySource = sourceData.AddPropertyGroup("general")->AddProperty("a");
-        propertySource->m_dataType = MaterialPropertyDataType::Int;
-        propertySource->m_value = 0;
+                                {
+                                    "name": "myEnum",
+                                    "type": "Enum",
+                                    "enumValues": [ "Enum0", "Enum1", "Enum2", "Enum3"],
+                                    "defaultValue": "Enum3"
+                                },
+                                {
+                                    "name": "myImage",
+                                    "type": "Image"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+            )",
+            MaterialTypeSourceDataTests::TestImageFilepathAbsolute);
 
-        sourceData.m_version = 2;
+        MaterialTypeSourceData material;
+        LoadTestDataFromJson(material, inputJson);
 
-        MaterialTypeSourceData::VersionUpdateDefinition versionUpdate;
-        versionUpdate.m_toVersion = 2;
-        MaterialTypeSourceData::VersionUpdatesRenameOperationDefinition updateAction;
-        updateAction.m_operation = "operationNotKnown";
-        versionUpdate.m_actions.push_back(updateAction);
-        sourceData.m_versionUpdates.push_back(versionUpdate);
+        Outcome<Data::Asset<MaterialTypeAsset>> materialTypeOutcome = material.CreateMaterialTypeAsset(Uuid::CreateRandom(), MaterialTypeSourceDataTests::TestMaterialFilepathAbsolute);
+        EXPECT_TRUE(materialTypeOutcome.IsSuccess());
 
-        ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("Unsupported material version update operation 'operationNotKnown'");
-        errorMessageFinder.AddIgnoredErrorMessage("Failed to build MaterialTypeAsset", true);
+        Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
 
-        auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
-        EXPECT_FALSE(materialTypeOutcome.IsSuccess());
+        auto materialVersionUpdates = materialTypeAsset->GetMaterialVersionUpdates();
+        EXPECT_EQ(materialVersionUpdates.GetVersionUpdateCount(), 1);
+        auto actions = materialVersionUpdates.GetVersionUpdate(0).GetActions();
+        EXPECT_EQ(actions.size(), 2);
 
-        errorMessageFinder.CheckExpectedErrorsFound();
+        EXPECT_EQ(actions[0].GetOperation(), Name("setValue"));
+        EXPECT_EQ(actions[0].GetArg(Name("name")),  AZStd::string("grp.myEnum"));
+        EXPECT_EQ(actions[0].GetArg(Name("value")), 1u);
+
+        EXPECT_EQ(actions[1].GetOperation(), Name("setValue"));
+        EXPECT_EQ(actions[1].GetArg(Name("name")),  AZStd::string("grp.myImage"));
+        EXPECT_EQ(actions[1].GetArg(Name("value")), m_testImageAsset2);
     }
-    
+
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_VersionInWrongLocation)
     {
         // The version field used to be under the propertyLayout section, but it has been moved up to the top level.
         // If any users have their own custom .materialtype with an older format that has the version in the wrong place
         // then we will report an error with instructions to move it to the correct location.
-        
+
         ErrorMessageFinder errorMessageFinder;
         errorMessageFinder.AddExpectedErrorMessage("The field '/propertyLayout/version' is deprecated and moved to '/version'. Please edit this material type source file and move the '\"version\": 4' setting up one level");
 
@@ -2044,7 +2112,7 @@ namespace UnitTest
 
         errorMessageFinder.CheckExpectedErrorsFound();
     }
-    
+
     TEST_F(MaterialTypeSourceDataTests, LoadWithImportedJson)
     {
         const AZStd::string propertyGroupJson = R"(
