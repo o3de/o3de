@@ -187,7 +187,7 @@ namespace Multiplayer
     {
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
-        AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
+        const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(interfaceName, sv_protocol, TrustZone::ExternalClientToServer, *this);
         if (AZ::Interface<AZ::IConsole>::Get())
         {
@@ -203,7 +203,7 @@ namespace Multiplayer
     {
         AZ::Interface<ISessionHandlingClientRequests>::Unregister(this);
         m_consoleCommandHandler.Disconnect();
-        AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
+        const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(interfaceName);
         SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();

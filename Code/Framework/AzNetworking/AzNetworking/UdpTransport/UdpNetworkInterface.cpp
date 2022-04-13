@@ -56,7 +56,7 @@ namespace AzNetworking
         outReliability = ((timeoutId & 0x8000000000000000) > 0) ? ReliabilityType::Reliable : ReliabilityType::Unreliable;
     }
 
-    UdpNetworkInterface::UdpNetworkInterface(AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread)
+    UdpNetworkInterface::UdpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread)
         : m_name(name)
         , m_trustZone(trustZone)
         , m_connectionListener(connectionListener)

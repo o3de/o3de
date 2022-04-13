@@ -54,9 +54,9 @@ namespace AzNetworking
 
         //! INetworking overrides.
         //! @{
-        INetworkInterface* CreateNetworkInterface(AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) override;
-        INetworkInterface* RetrieveNetworkInterface(AZ::Name& name) override;
-        bool DestroyNetworkInterface(AZ::Name& name) override;
+        INetworkInterface* CreateNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) override;
+        INetworkInterface* RetrieveNetworkInterface(const AZ::Name& name) override;
+        bool DestroyNetworkInterface(const AZ::Name& name) override;
         void RegisterCompressorFactory(ICompressorFactory* factory) override;
         AZStd::unique_ptr<ICompressor> CreateCompressor(const AZStd::string_view name) override;
         bool UnregisterCompressorFactory(const AZStd::string_view name) override;

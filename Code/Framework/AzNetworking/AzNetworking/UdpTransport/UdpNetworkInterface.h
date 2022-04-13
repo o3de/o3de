@@ -85,7 +85,7 @@ namespace AzNetworking
         //! @param connectionListener reference to the connection listener responsible for handling all connection events
         //! @param trustZone          the trust level assigned to this network interface, server to server or client to server
         //! @param readerThread       pointer to the reader thread to be bound to this network interface
-        UdpNetworkInterface(AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread);
+        UdpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread);
         ~UdpNetworkInterface() override;
 
         //! INetworkInterface interface.

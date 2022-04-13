@@ -188,8 +188,7 @@ namespace AzFramework
 
     void Application::Start(const Descriptor& descriptor, const StartupParameters& startupParameters)
     {
-        Descriptor frameworkDescriptor = descriptor;
-        AZ::Entity* systemEntity = Create(frameworkDescriptor, startupParameters);
+        AZ::Entity* systemEntity = Create(descriptor, startupParameters);
 
         // Sets FileIOAliases again in case the App root was overridden by the
         // startupParameters in ComponentApplication::Create

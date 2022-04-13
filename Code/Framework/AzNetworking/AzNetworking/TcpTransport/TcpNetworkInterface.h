@@ -80,7 +80,7 @@ namespace AzNetworking
         //! @param connectionListener reference to the connection listener responsible for handling all connection events
         //! @param trustZone          the trust level assigned to this network interface, server to server or client to server
         //! @param listenThread       the listen thread to bind to this network interface
-        TcpNetworkInterface(AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread);
+        TcpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread);
         ~TcpNetworkInterface() override;
 
         //! INetworkInterface interface.

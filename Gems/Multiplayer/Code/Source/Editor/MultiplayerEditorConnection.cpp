@@ -33,7 +33,7 @@ namespace Multiplayer
     MultiplayerEditorConnection::MultiplayerEditorConnection()
         : m_byteStream(&m_buffer)
     {
-        AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
+        const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
             editorInterfaceName, ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
         m_networkEditorInterface->SetTimeoutMs(AZ::Time::ZeroTimeMs); // Disable timeouts on this network interface
@@ -142,7 +142,7 @@ namespace Multiplayer
 
             // Setup the normal multiplayer connection
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-            AZ::Name mpNetworkInterfaceName = AZ::Name(MpNetworkInterfaceName);
+            const AZ::Name mpNetworkInterfaceName = AZ::Name(MpNetworkInterfaceName);
             INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(mpNetworkInterfaceName);
 
             uint16_t sv_port = DefaultServerPort;
