@@ -479,7 +479,7 @@ namespace Multiplayer
         AZ_Printf("MultiplayerEditor", "Editor tcp connection attempt #%i.", m_connectionAttempts)
 
         AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
-        INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(editorInterfaceName));
+        INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(editorInterfaceName);
         AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
 
         const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
