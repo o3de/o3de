@@ -86,7 +86,7 @@ set(FILES
 )
 if (LY_TEST_PROJECT)
     ly_add_source_properties(
-        SOURCES AzCore/Android/Utils.cpp
+        SOURCES Platform/Android/AzCore/Android/Utils.cpp
         PROPERTY COMPILE_DEFINITIONS
         VALUES LY_NO_ASSETS
     )
