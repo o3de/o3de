@@ -10,7 +10,6 @@ set(FILES
     Include/Engine/ATLEntityData.h
     Include/Engine/AudioAllocators.h
     Include/Engine/AudioFileUtils.h
-    Include/Engine/AudioLogger.h
     Include/Engine/AudioRingBuffer.h
     Include/Engine/ATLCommon.h
     Include/Engine/IAudioSystemImplementation.h
@@ -19,7 +18,6 @@ set(FILES
     Source/Engine/ATLComponents.h
     Source/Engine/ATLEntities.h
     Source/Engine/ATLUtils.h
-    Source/Engine/AudioInternalInterfaces.h
     Source/Engine/AudioProxy.h
     Source/Engine/AudioSystem.h
     Source/Engine/FileCacheManager.h
@@ -30,7 +28,6 @@ set(FILES
     Source/Engine/ATLEntities.cpp
     Source/Engine/ATLUtils.cpp
     Source/Engine/AudioProxy.cpp
-    Source/Engine/AudioRequests.cpp
     Source/Engine/AudioSystem.cpp
     Source/Engine/FileCacheManager.cpp
     Source/Engine/SoundCVars.cpp
