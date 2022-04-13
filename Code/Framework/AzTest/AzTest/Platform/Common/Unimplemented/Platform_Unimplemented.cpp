@@ -52,6 +52,11 @@ public:
         return -1;
     }
 
+    void operator()(void* arg) override
+    {
+        ;
+    }
+
     bool IsValid() override { return false; }
 };
 
