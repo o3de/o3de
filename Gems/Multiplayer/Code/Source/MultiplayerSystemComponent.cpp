@@ -248,6 +248,10 @@ namespace Multiplayer
             m_networkInterface->StopListening();
             m_shutdownEvent.Signal(m_networkInterface);
         }
+
+        // Clear out all the registered network entities
+        GetNetworkEntityManager()->ClearAllEntities();
+
         InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
 
         // Signal session management, do this after uninitializing state
