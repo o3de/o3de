@@ -135,7 +135,10 @@ namespace ScriptCanvasEditor
     void Interpreter::OnAssetNotReady()
     {
         MutexLock lock(m_mutex);
-        m_executor.StopAndClearExecutable();
+        if (IsExecutable())
+        {
+            m_executor.StopAndClearExecutable();
+        }
         m_runtimePropertiesDirty = true;
         SetSatus(InterpreterStatus::Pending);
     }
@@ -170,7 +173,10 @@ namespace ScriptCanvasEditor
     void Interpreter::OnSourceFailed()
     {
         MutexLock lock(m_mutex);
-        m_executor.StopAndClearExecutable();
+        if (m_executor.IsExecutable())
+        {
+            m_executor.StopAndClearExecutable();
+        }
         m_runtimePropertiesDirty = true;
         SetSatus(InterpreterStatus::Misconfigured);
     }
@@ -178,7 +184,10 @@ namespace ScriptCanvasEditor
     void Interpreter::OnSourceIncompatible()
     {
         MutexLock lock(m_mutex);
-        m_executor.StopAndClearExecutable();
+        if (m_executor.IsExecutable())
+        {
+            m_executor.StopAndClearExecutable();
+        }
         m_runtimePropertiesDirty = true;
         SetSatus(InterpreterStatus::Incompatible);
     }
@@ -241,8 +250,14 @@ namespace ScriptCanvasEditor
             AZ::SystemTickBus::QueueFunction([this]()
             {
                 MutexLock lock(m_mutex);
-                m_executor.StopAndKeepExecutable();
+
+                if (IsExecutable())
+                {
+                    m_executor.StopAndKeepExecutable();
+                }
+
                 SystemRequestBus::Broadcast(&SystemRequests::RequestGarbageCollect);
+
                 if (IsExecutable())
                 {
                     SetSatus(InterpreterStatus::Ready);

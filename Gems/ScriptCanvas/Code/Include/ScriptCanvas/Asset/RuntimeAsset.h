@@ -23,7 +23,11 @@
 
 namespace ScriptCanvas
 {
-    class ExecutionStateStorage;
+    namespace Execution
+    {
+        struct StateStorage;
+    }
+
     class RuntimeAsset;
     struct RuntimeVariable;
 
@@ -77,7 +81,7 @@ namespace ScriptCanvas
         AZStd::vector<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>> m_requiredScriptEvents;
 
         // populate all on initial load at run time
-        AZStd::function<void(ExecutionStateStorage& storage, ExecutionStateConfig& config)> m_createExecution;
+        AZStd::function<ExecutionState*(Execution::StateStorage&, ExecutionStateConfig&)> m_createExecution;
         AZStd::vector<Execution::CloneSource> m_cloneSources;
         AZStd::vector<AZ::BehaviorValueParameter> m_activationInputStorage;
         Execution::ActivationInputRange m_activationInputRange;

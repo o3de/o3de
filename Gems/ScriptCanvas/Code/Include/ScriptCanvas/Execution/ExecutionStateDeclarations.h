@@ -8,6 +8,9 @@
 
 #pragma once
 
+// SC_RUNTIME_CHECKS are only for use against machine generated code, or interactions with it.
+// It is recommended to leave them as asserts whenever possible. 
+
 // #define SC_RUNTIME_CHECKS_AS_ERRORS 
 
 #if !defined(_RELEASE)

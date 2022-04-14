@@ -10,38 +10,45 @@
 
 namespace ScriptCanvas
 {
-    void ExecutionStateStorage::Destroy()
+    namespace Execution
     {
-        Mod()->~ExecutionState();
-    }
+        ExecutionState* CreatePerActivation(StateStorage& storage, ExecutionStateConfig& config)
+        {
+            new (&storage.data) ExecutionStateInterpretedPerActivation(config);
+            return reinterpret_cast<ExecutionState*>(&storage.data);
+        }
 
-    void ExecutionStateStorage::CreatePerActivation(ExecutionStateStorage& storage, ExecutionStateConfig& config)
-    {
-        new (&storage.m_storage) ExecutionStateInterpretedPerActivation(config);
-    }
+        ExecutionState* CreatePerActivationOnGraphStart(StateStorage& storage, ExecutionStateConfig& config)
+        {
+            new (&storage.data) ExecutionStateInterpretedPerActivationOnGraphStart(config);
+            return reinterpret_cast<ExecutionState*>(&storage.data);
+        }
 
-    void ExecutionStateStorage::CreatePerActivationOnGraphStart(ExecutionStateStorage& storage, ExecutionStateConfig& config)
-    {
-        new (&storage.m_storage) ExecutionStateInterpretedPerActivationOnGraphStart(config);
-    }
+        ExecutionState* CreatePure(StateStorage& storage, ExecutionStateConfig& config)
+        {
+            new (&storage.data) ExecutionStateInterpretedPure(config);
+            return reinterpret_cast<ExecutionState*>(&storage.data);
+        }
 
-    void ExecutionStateStorage::CreatePure(ExecutionStateStorage& storage, ExecutionStateConfig& config)
-    {
-        new (&storage.m_storage) ExecutionStateInterpretedPure(config);
-    }
+        ExecutionState* CreatePureOnGraphStart(StateStorage& storage, ExecutionStateConfig& config)
+        {
+            new (&storage.data) ExecutionStateInterpretedPureOnGraphStart(config);
+            return reinterpret_cast<ExecutionState*>(&storage.data);
+        }
 
-    void ExecutionStateStorage::CreatePureOnGraphStart(ExecutionStateStorage& storage, ExecutionStateConfig& config)
-    {
-        new (&storage.m_storage) ExecutionStateInterpretedPureOnGraphStart(config);
-    }
+        void Destruct(StateStorage& storage)
+        {
+            Mod(storage)->~ExecutionState();
+        }
 
-    const ExecutionState* ExecutionStateStorage::Get() const
-    {
-        return reinterpret_cast<const ExecutionState*>(&m_storage);
-    }
+        const ExecutionState* Get(const StateStorage& storage)
+        {
+            return reinterpret_cast<const ExecutionState*>(&storage.data);
+        }
 
-    ExecutionState* ExecutionStateStorage::Mod()
-    {
-        return reinterpret_cast<ExecutionState*>(&m_storage);
+        ExecutionState* Mod(StateStorage& storage)
+        {
+            return reinterpret_cast<ExecutionState*>(&storage.data);
+        }
     }
 }

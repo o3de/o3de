@@ -76,9 +76,6 @@ namespace ScriptCanvas
 
             RuntimeInputs& operator=(const RuntimeInputs&) = default;
             RuntimeInputs& operator=(RuntimeInputs&&);
-
-            // #scriptcanvas_component_extension
-            bool m_refersToSelfEntityId = false;
         };
 
         struct TargetResult

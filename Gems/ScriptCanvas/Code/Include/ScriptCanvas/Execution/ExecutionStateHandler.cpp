@@ -21,7 +21,10 @@ namespace ScriptCanvas
 {
     ExecutionStateHandler::~ExecutionStateHandler()
     {
-        StopAndClearExecutable();
+        if (IsExecutable())
+        {
+            StopAndClearExecutable();
+        }
     }
 
     ActivationInfo ExecutionStateHandler::CreateActivationInfo() const
@@ -86,9 +89,9 @@ namespace ScriptCanvas
 #endif // defined(SC_RUNTIME_CHECKS_ENABLED)
 
         AZ_PROFILE_SCOPE(ScriptCanvas, "ExecutionStateHandler::Initialize (%s)", overrides.m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
+
         ExecutionStateConfig config(overrides, AZStd::move(userData));
-        overrides.m_runtimeAsset.Get()->m_runtimeData.m_createExecution(m_executionStateStorage, config);
-        m_executionState = m_executionStateStorage.Mod();
+        m_executionState = overrides.m_runtimeAsset.Get()->m_runtimeData.m_createExecution(m_executionStateStorage, config);
 
 #if defined(SC_RUNTIME_CHECKS_ENABLED)
         if (!m_executionState)
@@ -127,9 +130,9 @@ namespace ScriptCanvas
         if (m_executionState)
         {
             m_executionState->StopExecution();
+            Execution::Destruct(m_executionStateStorage);
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
             SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
-            m_executionStateStorage.Destroy();
             m_executionState = nullptr;
         }
     }

@@ -27,32 +27,27 @@ namespace ScriptCanvas
 #if defined(SC_RUNTIME_CHECKS_ENABLED)
             if (!lua_islightuserdata(lua, index))
             {
-                ReportError(lua, AZStd::string::format("ExecutionStateRead: no lightuserdata at index: %d", index).c_str());
+                SC_RUNTIME_CHECK(false, "ExecutionStateRead: no lightuserdata at index: %d", index);
                 return nullptr;
             }
 
             void* lightuserdata = lua_touserdata(lua, index);
             if (!lightuserdata)
             {
-                ReportError(lua, AZStd::string::format("ExecutionStateRead: null lightuserdata at index: %d", index).c_str());
+                SC_RUNTIME_CHECK(false, "ExecutionStateRead: null lightuserdata at index: %d", index);
                 return nullptr;
             }
 
             ExecutionStateWeakPtr executionState = reinterpret_cast<ExecutionStateWeakPtr>(lightuserdata);
             if (executionState->m_lightUserDataMark != UserDataMark)
             {
-                ReportError(lua, AZStd::string::format("ExecutionStateRead: invalid state at index : % d", index).c_str());
+                SC_RUNTIME_CHECK(false, "ExecutionStateRead: invalid state at index : % d", index);
                 return nullptr;
             }
 
             return executionState;
 #else
-            AZ_Assert(lua_islightuserdata(lua, index), "ExecutionStateRead: no lightuserdata at index: %d", index);
-            void* lightuserdata = lua_touserdata(lua, index);
-            AZ_Assert(lightuserdata != nullptr, "ExecutionStateRead: null lightuserdata at index: %d", index);
-            ExecutionStateWeakPtr executionState = reinterpret_cast<ExecutionStateWeakPtr>(lightuserdata);
-            AZ_Assert(executionState->m_lightUserDataMark == UserDataMark, "ExecutionStateRead: invalid state at index: %d", index);
-            return executionState;
+            return reinterpret_cast<ExecutionStateWeakPtr>(lua_touserdata(lua, index));
 #endif
         }
     }

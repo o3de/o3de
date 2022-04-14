@@ -192,25 +192,25 @@ namespace ScriptCanvas
             switch (selection)
             {
             case Grammar::ExecutionStateSelection::InterpretedPure:
-                runtimeData.m_createExecution = &ExecutionStateStorage::CreatePure;
+                runtimeData.m_createExecution = &Execution::CreatePure;
                 break;
 
             case Grammar::ExecutionStateSelection::InterpretedPureOnGraphStart:
-                runtimeData.m_createExecution = &ExecutionStateStorage::CreatePureOnGraphStart;
+                runtimeData.m_createExecution = &Execution::CreatePureOnGraphStart;
                 break;
 
             case Grammar::ExecutionStateSelection::InterpretedObject:
-                runtimeData.m_createExecution = &ExecutionStateStorage::CreatePerActivation;
+                runtimeData.m_createExecution = &Execution::CreatePerActivation;
                 break;
 
             case Grammar::ExecutionStateSelection::InterpretedObjectOnGraphStart:
-                runtimeData.m_createExecution = &ExecutionStateStorage::CreatePerActivationOnGraphStart;
+                runtimeData.m_createExecution = &Execution::CreatePerActivationOnGraphStart;
                 break;
 
             default:
                 SC_RUNTIME_CHECK(false, "Unsupported ScriptCanvas execution selection");
                 runtimeData.m_createExecution =
-                    [](ExecutionStateStorage&, ExecutionStateConfig&) {};
+                    [](Execution::StateStorage&, ExecutionStateConfig&)->ExecutionState* { return nullptr; };
                 break;
             }
         }

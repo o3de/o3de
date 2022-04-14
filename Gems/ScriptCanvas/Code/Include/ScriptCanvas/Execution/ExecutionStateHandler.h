@@ -21,8 +21,8 @@ namespace ScriptCanvas
     /*
     * RAII semantics interface for the ExecutionStateStorage for ScriptCanvas graphs and executes and stops it, if possible.
     * \note this is done WITHOUT any safety checks. For example, the the presence of a good, loaded asset is required when Execute()
-    * is called. If SC_RUNTIME_CHECKS_ENABLED is defined, the class will error and return on a bad asset, otherwise it asserts and
-    * for a message, but in general attempts to eliminate any branching done in the interest of safety checks.
+    * is called. If SC_RUNTIME_CHECKS_ENABLED is defined, the class will error on a bad asset, and early return if possible.
+    * In this class general attempts to eliminate any branching done in the interest of safety checks.
     * All safety checks are expected be done by systems that own the Executor class. If safety checks are desired, consider
     * using the Interpreter class instead, which manages the execution stack from source file -> build system -> execution.
     *
@@ -60,7 +60,7 @@ namespace ScriptCanvas
         void StopAndKeepExecutable();
 
     protected:
-        ExecutionStateStorage m_executionStateStorage;
+        Execution::StateStorage m_executionStateStorage;
         ExecutionState* m_executionState = nullptr;
     };
 }

@@ -130,7 +130,6 @@ namespace ScriptCanvas
             m_variables = rhs.m_variables;
             m_entityIds = rhs.m_entityIds;
             m_staticVariables = rhs.m_staticVariables;
-            m_refersToSelfEntityId = rhs.m_refersToSelfEntityId;
         }
 
         size_t RuntimeInputs::GetConstructorParameterCount() const
@@ -147,7 +146,6 @@ namespace ScriptCanvas
                 m_variables = AZStd::move(rhs.m_variables);
                 m_entityIds = AZStd::move(rhs.m_entityIds);
                 m_staticVariables = AZStd::move(rhs.m_staticVariables);
-                m_refersToSelfEntityId = AZStd::move(rhs.m_refersToSelfEntityId);
             }
 
             return *this;
@@ -166,7 +164,6 @@ namespace ScriptCanvas
                     ->Field("variables", &RuntimeInputs::m_variables)
                     ->Field("entityIds", &RuntimeInputs::m_entityIds)
                     ->Field("staticVariables", &RuntimeInputs::m_staticVariables)
-                    ->Field("refersToSelfEntityId", &RuntimeInputs::m_refersToSelfEntityId)
                     ;
             }
         }

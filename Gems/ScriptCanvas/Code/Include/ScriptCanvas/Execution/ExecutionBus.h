@@ -25,11 +25,14 @@
 #define SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(executionState) ScriptCanvas::Execution::PerformanceScopeInitialization initializationScope(executionState);
 #define SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(executionState) ScriptCanvas::Execution::PerformanceScopeExecution executionScope(executionState);
 #define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(executionState) ScriptCanvas::Execution::PerformanceScopeLatent latentScope(executionState);
+// use this to protect nodeables from implementation changes
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT_NODEABLE ScriptCanvas::Execution::PerformanceScopeLatent latentScope(GetExecutionState());
 #else
 #define SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(executionState)
 #define SCRIPT_CANVAS_PERFORMANCE_SCOPE_INITIALIZATION(executionState)
 #define SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(executionState)
 #define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(executionState)
+#define SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT_NODEABLE
 #endif
 
 namespace ScriptCanvas

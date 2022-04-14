@@ -20,8 +20,9 @@ namespace AZ
 namespace ScriptCanvas
 {
     /**
-     * Convenience class for for containing an ExecutionStateHandler, and the RuntimeDataOverrides and Userdata that it will use.
-     * Like the ExecutionState and ExecutionStateHandler it provides no little or not safety checks, and host systems must take
+     * Convenience class for for containing an ExecutionStateHandler, and the RuntimeDataOverrides and ExecutionUserData that the
+     * ExecutionStateHandler requires to run properly.
+     * Like the ExecutionState and ExecutionStateHandler it provides no little or no safety checks, and host systems must take
      * care to properly initialize it.
      *       
      * For example usage:
