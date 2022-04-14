@@ -215,16 +215,17 @@ namespace AZ
 
     void AssetCollectionAsyncLoader::OnAssetIsValid(AZStd::string_view assetPath, const Data::AssetId& assetId, const Data::AssetType& assetType)
     {
+        // Kick off asset loading.
+        auto asset = Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::QueueLoad);
+
         const auto assetIdStr = assetId.ToString<AZStd::string>();
 
         {
             AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
             m_assetIdStrToAssetPath[assetIdStr] = assetPath;
+            m_notReadyAssets[assetPath] = asset;
         }
 
-        // Kick off asset loading.
-        auto asset = Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::QueueLoad);
-        m_notReadyAssets[assetPath] = asset;
         Data::AssetBus::MultiHandler::BusConnect(assetId);
     }
 
