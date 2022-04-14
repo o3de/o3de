@@ -161,7 +161,7 @@ namespace Blast
             return;
         }
 
-        BlastActor* parentActor = reinterpret_cast<BlastActor*>(splitEvent->parentData.userData);
+        BlastActor* parentActor = static_cast<BlastActor*>(splitEvent->parentData.userData);
         AZ_Assert(parentActor, "TkActor had a null user data instead of a BlastActor.");
 
         AzPhysics::SimulatedBody* parentBody = parentActor->GetSimulatedBody();

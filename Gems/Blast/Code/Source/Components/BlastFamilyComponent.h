@@ -54,7 +54,7 @@ namespace Blast
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        // AZ::Component interface implementation
+        // AZ::Component overrides ...
         void Init() override;
         void Activate() override;
         void Deactivate() override;
@@ -64,7 +64,7 @@ namespace Blast
         void Spawn();
         void Despawn();
 
-        // BlastFamilyDamageRequestBus
+        // BlastFamilyDamageRequestBus overrides ...
         AZ::EntityId GetFamilyId() override;
         void RadialDamage(const AZ::Vector3& position, float minRadius, float maxRadius, float damage) override;
         void CapsuleDamage(
@@ -81,7 +81,7 @@ namespace Blast
         void StressDamage(const BlastActor& blastActor, const AZ::Vector3& position, const AZ::Vector3& force) override;
         void DestroyActor() override;
 
-        // BlastFamilyComponentRequestBus
+        // BlastFamilyComponentRequestBus overrides ...
         AZStd::vector<const BlastActor*> GetActors() override;
         AZStd::vector<BlastActorData> GetActorsData() override;
         void FillDebugRenderBuffer(DebugRenderBuffer& debugRenderBuffer, DebugRenderMode debugRenderMode) override;
@@ -89,8 +89,8 @@ namespace Blast
         void SyncMeshes() override;
 
     private:
-        // BlastListener interface implementation. These methods trigger notifications on
-        // BlastFamilyComponentNotificationBus.
+        // BlastListener overrides ...
+        // These methods trigger notifications on BlastFamilyComponentNotificationBus.
         void OnActorCreated(const BlastFamily& family, const BlastActor& actor) override;
         void OnActorDestroyed(const BlastFamily& family, const BlastActor& actor) override;
 

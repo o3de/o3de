@@ -306,13 +306,13 @@ namespace Blast
         }
 
         // Despawn family before reseting members so all the events are properly called
-        // and all data is available to be cleaned up accordingly.
+        // and all data is available to be cleaned up accordingly
         m_family->Despawn();
 
-        // collision handlers should have been cleaned up when the family was despawn
+        // collision handlers should have been cleaned up when the family was despawned
         AZ_Assert(m_collisionHandlers.empty(), "%d collision handlers were missing to be deactivated when its blast actors were destroyed", m_collisionHandlers.size());
 
-        // Disconnect from buses before destroying everything.
+        // Disconnect from buses before destroying everything
         BlastFamilyDamageRequestBus::MultiHandler::BusDisconnect();
         BlastFamilyComponentRequestBus::Handler::BusDisconnect();
 
