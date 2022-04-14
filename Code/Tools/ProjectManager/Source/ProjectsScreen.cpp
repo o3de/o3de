@@ -329,14 +329,19 @@ namespace O3DE::ProjectManager
                 auto projectIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
                 if (projectIter != m_projectButtons.end())
                 {
-                    if (project.m_buildFailed)
+                    // If project is not currently or about to build
+                    if (!m_currentBuilder || m_currentBuilder->GetProjectInfo() != project)
                     {
-                        projectIter.value()->SetBuildLogsLink(project.m_logUrl);
-                        projectIter.value()->SetState(ProjectButtonState::BuildFailed);
-                    }
-                    else
-                    {
-                        projectIter.value()->SetState(ProjectButtonState::NeedsToBuild);
+
+                        if (project.m_buildFailed)
+                        {
+                            projectIter.value()->SetBuildLogsLink(project.m_logUrl);
+                            projectIter.value()->SetState(ProjectButtonState::BuildFailed);
+                        }
+                        else
+                        {
+                            projectIter.value()->SetState(ProjectButtonState::NeedsToBuild);
+                        }
                     }
                 }
             }

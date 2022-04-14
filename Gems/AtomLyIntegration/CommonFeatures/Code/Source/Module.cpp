@@ -14,6 +14,7 @@
 #include <CoreLights/AreaLightComponent.h>
 #include <CoreLights/DirectionalLightComponent.h>
 #include <CubeMapCapture/CubeMapCaptureComponent.h>
+#include <Debug/RenderDebugComponent.h>
 #include <Decals/DecalComponent.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridComponent.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h>
@@ -34,6 +35,7 @@
 #include <PostProcess/RadiusWeightModifier/RadiusWeightModifierComponent.h>
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponent.h>
 #include <PostProcess/GradientWeightModifier/GradientWeightModifierComponent.h>
+#include <PostProcess/ChromaticAberration/ChromaticAberrationComponent.h>
 #include <ScreenSpace/DeferredFogComponent.h>
 #include <SkyBox/HDRiSkyboxComponent.h>
 #include <SkyBox/PhysicalSkyComponent.h>
@@ -48,6 +50,7 @@
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
 #include <CubeMapCapture/EditorCubeMapCaptureComponent.h>
+#include <Debug/RenderDebugEditorComponent.h>
 #include <Decals/EditorDecalComponent.h>
 #include <DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h>
 #include <DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h>
@@ -70,6 +73,7 @@
 #include <PostProcess/RadiusWeightModifier/EditorRadiusWeightModifierComponent.h>
 #include <PostProcess/ShapeWeightModifier/EditorShapeWeightModifierComponent.h>
 #include <PostProcess/GradientWeightModifier/EditorGradientWeightModifierComponent.h>
+#include <PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h>
 #include <ScreenSpace/EditorDeferredFogComponent.h>
 #include <SkyBox/EditorHDRiSkyboxComponent.h>
 #include <SkyBox/EditorPhysicalSkyComponent.h>
@@ -112,6 +116,7 @@ namespace AZ
                         PhysicalSkyComponent::CreateDescriptor(),
                         PostFxLayerComponent::CreateDescriptor(),
                         ReflectionProbeComponent::CreateDescriptor(),
+                        RenderDebugComponent::CreateDescriptor(),
                         RadiusWeightModifierComponent::CreateDescriptor(),
                         ShapeWeightModifierComponent::CreateDescriptor(),
                         EntityReferenceComponent::CreateDescriptor(),
@@ -122,6 +127,7 @@ namespace AZ
                         SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
                         AttachmentComponent::CreateDescriptor(),
                         OcclusionCullingPlaneComponent::CreateDescriptor(),
+                        ChromaticAberrationComponent::CreateDescriptor(),
                         CubeMapCaptureComponent::CreateDescriptor(),
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
@@ -148,6 +154,7 @@ namespace AZ
                         EditorPhysicalSkyComponent::CreateDescriptor(),
                         EditorPostFxLayerComponent::CreateDescriptor(),
                         EditorReflectionProbeComponent::CreateDescriptor(),
+                        RenderDebugEditorComponent::CreateDescriptor(),
                         EditorRadiusWeightModifierComponent::CreateDescriptor(),
                         EditorShapeWeightModifierComponent::CreateDescriptor(),
                         EditorEntityReferenceComponent::CreateDescriptor(),
@@ -158,6 +165,7 @@ namespace AZ
                         SurfaceData::EditorSurfaceDataMeshComponent::CreateDescriptor(),
                         EditorAttachmentComponent::CreateDescriptor(),
                         EditorOcclusionCullingPlaneComponent::CreateDescriptor(),
+                        EditorChromaticAberrationComponent::CreateDescriptor(),
                         EditorCubeMapCaptureComponent::CreateDescriptor(),
 #endif
                     });

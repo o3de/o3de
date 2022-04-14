@@ -136,6 +136,7 @@ namespace AtomToolsFramework
 
     private:
         void SendWindowResizeEvent();
+        void SendWindowCloseEvent();
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;

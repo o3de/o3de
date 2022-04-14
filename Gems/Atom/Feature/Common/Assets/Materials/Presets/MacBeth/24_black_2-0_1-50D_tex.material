@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "24_black_2-0_1-50D.material",
     "materialType": "../../Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "color": [

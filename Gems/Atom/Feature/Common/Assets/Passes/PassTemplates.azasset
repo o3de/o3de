@@ -589,6 +589,10 @@
                 "Path": "Passes/EditorModeTint.pass"
             },
             {
+                "Name": "EditorModeBlurParentTemplate",
+                "Path": "Passes/EditorModeBlurParent.pass"
+            },
+            {
                 "Name": "EditorModeBlurTemplate",
                 "Path": "Passes/EditorModeBlur.pass"
             },
@@ -599,6 +603,10 @@
             {
                 "Name": "LutGenerationTemplate",
                 "Path": "Passes/LutGeneration.pass"
+            },
+            {
+                "Name": "ChromaticAberrationTemplate",
+                "Path": "Passes/ChromaticAberration.pass"
             }
         ]
     }

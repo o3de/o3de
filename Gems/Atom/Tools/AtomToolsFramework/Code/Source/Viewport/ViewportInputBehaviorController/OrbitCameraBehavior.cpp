@@ -28,15 +28,15 @@ namespace AtomToolsFramework
         }
 
         AZ::Transform transform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetLocalTM);
+        AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTM);
         AZ::Quaternion rotation = transform.GetRotation();
         AZ::Vector3 right = transform.GetBasisX();
         rotation =
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), -x) * AZ::Quaternion::CreateFromAxisAngle(right, -y) * rotation;
         rotation.Normalize();
-        AZ::Vector3 position = rotation.TransformVector(AZ::Vector3(0, -m_distanceToTarget, 0)) + m_targetPosition;
+        AZ::Vector3 position = rotation.TransformVector(AZ::Vector3(0, -m_distanceToObject, 0)) + m_objectPosition;
         transform = AZ::Transform::CreateFromQuaternionAndTranslation(rotation, position);
-        AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalTM, transform);
+        AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
     }
 
     float OrbitCameraBehavior::GetSensitivityX()
@@ -52,10 +52,10 @@ namespace AtomToolsFramework
     void OrbitCameraBehavior::Align()
     {
         AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
-        AZ::TransformBus::EventResult(cameraPosition, m_cameraEntityId, &AZ::TransformBus::Events::GetLocalTranslation);
-        const AZ::Vector3 delta = m_targetPosition - cameraPosition;
-        AZ::Quaternion targetRotation = LookRotation(delta);
-        AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, targetRotation);
+        AZ::TransformBus::EventResult(cameraPosition, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
+        const AZ::Vector3 delta = m_objectPosition - cameraPosition;
+        AZ::Quaternion objectRotation = LookRotation(delta);
+        AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetWorldRotationQuaternion, objectRotation);
         m_aligned = true;
     }
 } // namespace AtomToolsFramework

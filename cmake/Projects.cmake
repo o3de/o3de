@@ -115,7 +115,7 @@ function(ly_generate_project_build_path_setreg project_real_path)
     set(project_bin_path ${CMAKE_BINARY_DIR})
     string(CONFIGURE ${project_build_path_template} project_build_path_setreg_content @ONLY)
     set(project_user_build_path_setreg_file ${project_real_path}/user/Registry/Platform/${PAL_PLATFORM_NAME}/build_path.setreg)
-    file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT ${project_build_path_setreg_content})
+    file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT "${project_build_path_setreg_content}")
 endfunction()
 
 function(install_project_asset_artifacts project_real_path)
@@ -190,11 +190,17 @@ foreach(project ${LY_PROJECTS})
 
     cmake_path(GET project FILENAME project_folder_name )
     list(APPEND LY_PROJECTS_FOLDER_NAME ${project_folder_name})
-    add_subdirectory(${project} "${project_folder_name}-${full_directory_hash}")
+    # Generate a setreg file with the path to cmake binary directory
+    # into <project-path>/user/Registry/Platform/<Platform> directory
     ly_generate_project_build_path_setreg(${full_directory_path})
 
     # Get project name
     o3de_read_json_key(project_name ${full_directory_path}/project.json "project_name")
+
+    # Set the project name into the global O3DE_PROJECTS_NAME property
+    set_property(GLOBAL APPEND PROPERTY O3DE_PROJECTS_NAME ${project_name})
+
+    # Append the project external directory to LY_EXTERNAL_SUBDIR_${project_name} property
     add_project_json_external_subdirectories(${full_directory_path} "${project_name}")
 
     install_project_asset_artifacts(${full_directory_path})

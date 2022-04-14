@@ -11,18 +11,21 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/std/containers/span.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <AzCore/EBus/EBusSharedDispatchTraits.h>
 
 namespace Terrain
 {
 
     //! This bus provides retrieval of information from Terrain Surfaces.
-    class TerrainAreaSurfaceRequests
-        : public AZ::ComponentBus
+    //! This bus uses shared dispatches, which means that all requests on the bus can run in parallel,
+    //! but will NOT run in parallel with bus connections / disconnections.
+    class TerrainAreaSurfaceRequests : public AZ::EBusSharedDispatchTraits<TerrainAreaSurfaceRequests>
     {
     public:
         ////////////////////////////////////////////////////////////////////////
         // EBusTraits
-        using MutexType = AZStd::recursive_mutex;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::EntityId BusIdType;
         ////////////////////////////////////////////////////////////////////////
 
         virtual ~TerrainAreaSurfaceRequests() = default;

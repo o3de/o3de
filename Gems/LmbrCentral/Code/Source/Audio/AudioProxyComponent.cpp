@@ -49,13 +49,16 @@ namespace LmbrCentral
     void AudioProxyComponent::Activate()
     {
         AZ_Assert(!m_audioProxy, "AudioProxyComponent::Activate - Audio Proxy has been set already!");
-        Audio::AudioSystemRequestBus::BroadcastResult(m_audioProxy, &Audio::AudioSystemRequestBus::Events::GetFreeAudioProxy);
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            m_audioProxy = audioSystem->GetAudioProxy();
+        }
 
         if (m_audioProxy)
         {
             AZStd::string proxyName = AZStd::string::format("%s_audioproxy", GetEntity()->GetName().c_str());
-            m_audioProxy->Initialize(proxyName.c_str());
-            m_audioProxy->SetObstructionCalcType(Audio::eAOOCT_IGNORE);
+            m_audioProxy->Initialize(proxyName.c_str(), reinterpret_cast<void*>(static_cast<uintptr_t>(static_cast<AZ::u64>(GetEntityId()))));
+            m_audioProxy->SetObstructionCalcType(Audio::ObstructionType::Ignore);
 
             // don't need to set position on the proxy now, but initialize the transform from the entity.
             AZ::TransformBus::EventResult(m_transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
@@ -90,7 +93,7 @@ namespace LmbrCentral
     }
 
     //=========================================================================
-    bool AudioProxyComponent::ExecuteSourceTrigger(const Audio::TAudioControlID triggerID, const Audio::SAudioCallBackInfos& callbackInfo, const Audio::SAudioSourceInfo& sourceInfo)
+    bool AudioProxyComponent::ExecuteTrigger(const Audio::TAudioControlID triggerID)
     {
         if (triggerID != INVALID_AUDIO_CONTROL_ID)
         {
@@ -99,7 +102,7 @@ namespace LmbrCentral
             m_audioProxy->SetPosition(m_transform);
 
             // ...and kick it off...
-            m_audioProxy->ExecuteSourceTrigger(triggerID, sourceInfo, callbackInfo);
+            m_audioProxy->ExecuteTrigger(triggerID);
             return true;
         }
 
@@ -107,7 +110,7 @@ namespace LmbrCentral
     }
 
     //=========================================================================
-    bool AudioProxyComponent::ExecuteTrigger(const Audio::TAudioControlID triggerID, const Audio::SAudioCallBackInfos& callbackInfo)
+    bool AudioProxyComponent::ExecuteSourceTrigger(const Audio::TAudioControlID triggerID, const Audio::SAudioSourceInfo& sourceInfo)
     {
         if (triggerID != INVALID_AUDIO_CONTROL_ID)
         {
@@ -116,7 +119,7 @@ namespace LmbrCentral
             m_audioProxy->SetPosition(m_transform);
 
             // ...and kick it off...
-            m_audioProxy->ExecuteTrigger(triggerID, callbackInfo);
+            m_audioProxy->ExecuteSourceTrigger(triggerID, sourceInfo);
             return true;
         }
 
@@ -154,7 +157,7 @@ namespace LmbrCentral
     }
 
     //=========================================================================
-    void AudioProxyComponent::SetObstructionCalcType(const Audio::EAudioObjectObstructionCalcType type)
+    void AudioProxyComponent::SetObstructionCalcType(const Audio::ObstructionType type)
     {
         m_audioProxy->SetObstructionCalcType(type);
     }
