@@ -64,6 +64,12 @@ namespace Multiplayer
         }
     }
 
+    MultiplayerEditorConnection::~MultiplayerEditorConnection()
+    {
+        const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
+        AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(editorInterfaceName);
+    }
+
     void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
     {
         if (m_isActivated || !editorsv_isDedicated)

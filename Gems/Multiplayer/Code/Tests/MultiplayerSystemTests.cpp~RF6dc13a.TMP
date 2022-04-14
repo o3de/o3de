@@ -30,6 +30,10 @@ namespace UnitTest
         void SetUp() override
         {
             SetupAllocator();
+            AZ::NameDictionary::Create();
+
+            m_mockComponentApplicationRequests = AZStd::make_unique<testing::NiceMock<MockComponentApplicationRequests>>();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(m_mockComponentApplicationRequests.get());
 
             m_mpComponent = new Multiplayer::MultiplayerSystemComponent();
 
@@ -46,6 +50,9 @@ namespace UnitTest
         {
             m_mpComponent->Deactivate();
             delete m_mpComponent;
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
+            m_mockComponentApplicationRequests.reset();
+            AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
 
@@ -73,6 +80,8 @@ namespace UnitTest
         Multiplayer::ConnectionAcquiredEvent::Handler m_connAcquiredHandler;
 
         Multiplayer::MultiplayerSystemComponent* m_mpComponent = nullptr;
+
+        AZStd::unique_ptr<testing::NiceMock<MockComponentApplicationRequests>> m_mockComponentApplicationRequests;
 
         IMultiplayerSpawnerMock m_mpSpawnerMock;
     };

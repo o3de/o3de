@@ -70,13 +70,6 @@ namespace Multiplayer
         void SetUp() override
         {
             SetupAllocator();
-            AZ::NameDictionary::Create();
-
-            m_mockComponentApplicationRequests = AZStd::make_unique<NiceMock<MockComponentApplicationRequests>>();
-            AZ::Interface<AZ::ComponentApplicationRequests>::Register(m_mockComponentApplicationRequests.get());
-
-            ON_CALL(*m_mockComponentApplicationRequests, AddEntity(_)).WillByDefault(Invoke(this, &HierarchyTests::AddEntity));
-            ON_CALL(*m_mockComponentApplicationRequests, FindEntity(_)).WillByDefault(Invoke(this, &HierarchyTests::FindEntity));
 
             // register components involved in testing
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
@@ -118,10 +111,6 @@ namespace Multiplayer
             ON_CALL(*m_mockNetworkEntityManager, GetEntity(_)).WillByDefault(Invoke(this, &HierarchyTests::GetEntity));
             ON_CALL(*m_mockNetworkEntityManager, GetNetEntityIdById(_)).WillByDefault(Invoke(this, &HierarchyTests::GetNetEntityIdById));
 
-            m_mockTime = AZStd::make_unique<AZ::NiceTimeSystemMock>();
-
-            m_eventScheduler = AZStd::make_unique<AZ::EventSchedulerSystemComponent>();
-
             m_mockNetworkTime = AZStd::make_unique<NiceMock<MockNetworkTime>>();
             AZ::Interface<INetworkTime>::Register(m_mockNetworkTime.get());
 
@@ -140,10 +129,6 @@ namespace Multiplayer
 
             m_entityReplicationManager = AZStd::make_unique<EntityReplicationManager>(*m_mockConnection, *m_mockConnectionListener, EntityReplicationManager::Mode::LocalClientToRemoteServer);
 
-            m_console.reset(aznew AZ::Console());
-            AZ::Interface<AZ::IConsole>::Register(m_console.get());
-            m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
-
             m_multiplayerComponentRegistry = AZStd::make_unique<MultiplayerComponentRegistry>();
             ON_CALL(*m_mockNetworkEntityManager, GetMultiplayerComponentRegistry()).WillByDefault(Return(m_multiplayerComponentRegistry.get()));
             RegisterMultiplayerComponents();
@@ -153,9 +138,6 @@ namespace Multiplayer
         void TearDown() override
         {
             m_multiplayerComponentRegistry.reset();
-
-            AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
-            m_console.reset();
 
             m_networkEntityMap.clear();
             m_entities.clear();
@@ -170,10 +152,6 @@ namespace Multiplayer
             AZ::Interface<INetworkTime>::Unregister(m_mockNetworkTime.get());
             AZ::Interface<INetworkEntityManager>::Unregister(m_mockNetworkEntityManager.get());
             AZ::Interface<IMultiplayer>::Unregister(m_mockMultiplayer.get());
-            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
-
-            m_eventScheduler.reset();
-            m_mockTime.reset();
 
             m_mockNetworkEntityManager.reset();
             m_mockMultiplayer.reset();
@@ -186,15 +164,10 @@ namespace Multiplayer
             m_hierarchyChildDescriptor.reset();
             m_netBindDescriptor.reset();
             m_serializeContext.reset();
-            m_mockComponentApplicationRequests.reset();
 
-            AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
 
-        AZStd::unique_ptr<AZ::IConsole> m_console;
-
-        AZStd::unique_ptr<NiceMock<MockComponentApplicationRequests>> m_mockComponentApplicationRequests;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_netBindDescriptor;
@@ -206,8 +179,6 @@ namespace Multiplayer
 
         AZStd::unique_ptr<NiceMock<MockMultiplayer>> m_mockMultiplayer;
         AZStd::unique_ptr<MockNetworkEntityManager> m_mockNetworkEntityManager;
-        AZStd::unique_ptr<AZ::EventSchedulerSystemComponent> m_eventScheduler;
-        AZStd::unique_ptr<AZ::NiceTimeSystemMock> m_mockTime;
         AZStd::unique_ptr<NiceMock<MockNetworkTime>> m_mockNetworkTime;
 
         AZStd::unique_ptr<NiceMock<IMultiplayerConnectionMock>> m_mockConnection;

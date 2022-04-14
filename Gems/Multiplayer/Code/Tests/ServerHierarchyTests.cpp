@@ -433,8 +433,9 @@ namespace Multiplayer
     TEST_F(ServerDeepHierarchyTests, Testing_Limiting_Hierarchy_Maximum_Size)
     {
         uint32_t currentMaxLimit = 0;
-        m_console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
-        m_console->PerformCommand("bg_hierarchyEntityMaxLimit 2");
+        auto console = AZ::Interface<AZ::IConsole>::Get();
+        console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
+        console->PerformCommand("bg_hierarchyEntityMaxLimit 2");
 
         // remake the hierarchy
         m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
@@ -445,8 +446,8 @@ namespace Multiplayer
             2
         );
 
-        m_console->PerformCommand((AZStd::string("bg_hierarchyEntityMaxLimit ") + AZStd::to_string(currentMaxLimit)).c_str());
-        m_console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
+        console->PerformCommand((AZStd::string("bg_hierarchyEntityMaxLimit ") + AZStd::to_string(currentMaxLimit)).c_str());
+        console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
     }
 
     TEST_F(ServerDeepHierarchyTests, ReattachMiddleChildRebuildInvokedTwice)
@@ -1041,8 +1042,9 @@ namespace Multiplayer
     TEST_F(ServerHierarchyOfHierarchyTests, Testing_Limiting_Hierarchy_Maximum_Size)
     {
         uint32_t currentMaxLimit = 0;
-        m_console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
-        m_console->PerformCommand("bg_hierarchyEntityMaxLimit 2");
+        auto console = AZ::Interface<AZ::IConsole>::Get();
+        console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
+        console->PerformCommand("bg_hierarchyEntityMaxLimit 2");
 
         // remake the top level hierarchy
         m_root->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
@@ -1060,8 +1062,8 @@ namespace Multiplayer
             2
         );
 
-        m_console->PerformCommand((AZStd::string("bg_hierarchyEntityMaxLimit ") + AZStd::to_string(currentMaxLimit)).c_str());
-        m_console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
+        console->PerformCommand((AZStd::string("bg_hierarchyEntityMaxLimit ") + AZStd::to_string(currentMaxLimit)).c_str());
+        console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
     }
 
     TEST_F(ServerHierarchyOfHierarchyTests, InnerRootAndItsChildrenHaveOwningConnectionIdOfTopRoot)

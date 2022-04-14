@@ -8,6 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzTest/GemTestEnvironment.h>
+#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 
 class AzNetworkingTestEnvironment : public AZ::Test::GemTestEnvironment
 {
@@ -16,6 +17,10 @@ class AzNetworkingTestEnvironment : public AZ::Test::GemTestEnvironment
 
 void AzNetworkingTestEnvironment::AddGemsAndComponents()
 {
+    // Forcibly inject TargetManagement's descriptor since AzNetworking presently requires it
+    AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors;
+    componentDescriptors.push_back(AzFramework::TargetManagementComponent::CreateDescriptor());
+    AddComponentDescriptors(componentDescriptors);
     AddDynamicModulePaths({ "AzNetworking" });
 }
 

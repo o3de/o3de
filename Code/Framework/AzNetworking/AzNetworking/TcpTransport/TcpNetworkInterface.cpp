@@ -33,7 +33,7 @@ namespace AzNetworking
     TcpNetworkInterface::~TcpNetworkInterface()
     {
         FlushQueuedRemoves();
-        m_listenThread.StopListening(*this);
+        StopListening();
     }
 
     AZ::Name TcpNetworkInterface::GetName() const

@@ -24,49 +24,6 @@
 
 namespace Multiplayer
 {
-    class BenchmarkComponentApplicationRequests : public AZ::ComponentApplicationRequests
-    {
-    public:
-        void RegisterComponentDescriptor([[maybe_unused]] const AZ::ComponentDescriptor* descriptor) override {}
-        void UnregisterComponentDescriptor([[maybe_unused]] const AZ::ComponentDescriptor* descriptor) override {}
-        AZ::ComponentApplication* GetApplication() override { return {}; }
-        void RegisterEntityAddedEventHandler([[maybe_unused]] AZ::Event<AZ::Entity*>::Handler& handler) override {}
-        void RegisterEntityRemovedEventHandler([[maybe_unused]] AZ::Event<AZ::Entity*>::Handler& handler) override {}
-        void RegisterEntityActivatedEventHandler([[maybe_unused]] AZ::Event<AZ::Entity*>::Handler& handler) override {}
-        void RegisterEntityDeactivatedEventHandler([[maybe_unused]] AZ::Event<AZ::Entity*>::Handler& handler) override {}
-        void SignalEntityActivated([[maybe_unused]] AZ::Entity* entity) override {}
-        void SignalEntityDeactivated([[maybe_unused]] AZ::Entity* entity) override {}
-        bool RemoveEntity([[maybe_unused]] AZ::Entity* entity) override { return {}; }
-        bool DeleteEntity([[maybe_unused]] const AZ::EntityId& id) override { return {}; }
-        void EnumerateEntities([[maybe_unused]] const EntityCallback& callback) override {}
-        AZ::SerializeContext* GetSerializeContext() override { return {}; }
-        AZ::BehaviorContext* GetBehaviorContext() override { return {}; }
-        AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return {}; }
-        const char* GetEngineRoot() const override { return {}; }
-        const char* GetExecutableFolder() const override { return {}; }
-        void QueryApplicationType([[maybe_unused]] AZ::ApplicationTypeQuery& appType) const override {}
-
-        AZStd::map<AZ::EntityId, AZ::Entity*> m_entities;
-
-        bool AddEntity(AZ::Entity* entity) override
-        {
-            m_entities[entity->GetId()] = entity;
-            return true;
-        }
-
-        AZ::Entity* FindEntity(const AZ::EntityId& id) override
-        {
-            const auto iterator = m_entities.find(id);
-            if (iterator != m_entities.end())
-            {
-                return iterator->second;
-            }
-
-            return nullptr;
-        }
-    };
-
-
     class BenchmarkConnectionListener : public AzNetworking::IConnectionListener
     {
     public:
@@ -354,10 +311,6 @@ namespace Multiplayer
         virtual void internalSetUp()
         {
             SetupAllocator();
-            AZ::NameDictionary::Create();
-
-            m_ComponentApplicationRequests = AZStd::make_unique<BenchmarkComponentApplicationRequests>();
-            AZ::Interface<AZ::ComponentApplicationRequests>::Register(m_ComponentApplicationRequests.get());
 
             // register components involved in testing
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
@@ -386,8 +339,6 @@ namespace Multiplayer
             // Without Multiplayer::RegisterMultiplayerComponents() the stats go to invalid id, which is fine for unit tests
             GetMultiplayer()->GetStats().ReserveComponentStats(Multiplayer::InvalidNetComponentId, 50, 0);
 
-            m_Time = AZStd::make_unique<AZ::StubTimeSystem>();
-
             m_NetworkTime = AZStd::make_unique<BenchmarkNetworkTime>();
             AZ::Interface<INetworkTime>::Register(m_NetworkTime.get());
 
@@ -399,18 +350,11 @@ namespace Multiplayer
 
             m_entityReplicationManager = AZStd::make_unique<EntityReplicationManager>(*m_Connection, *m_ConnectionListener, EntityReplicationManager::Mode::LocalClientToRemoteServer);
 
-            m_console.reset(aznew AZ::Console());
-            AZ::Interface<AZ::IConsole>::Register(m_console.get());
-            m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
-
             RegisterMultiplayerComponents();
         }
 
         virtual void internalTearDown()
         {
-            AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
-            m_console.reset();
-
             m_entityReplicationManager.reset();
 
             m_Connection.reset();
@@ -418,10 +362,6 @@ namespace Multiplayer
 
             AZ::Interface<INetworkTime>::Unregister(m_NetworkTime.get());
             AZ::Interface<IMultiplayer>::Unregister(m_Multiplayer.get());
-            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_ComponentApplicationRequests.get());
-
-            m_Time.reset();
-
             m_NetworkEntityManager.reset();
             m_Multiplayer.reset();
 
@@ -431,15 +371,11 @@ namespace Multiplayer
             m_hierarchyChildDescriptor.reset();
             m_netBindDescriptor.reset();
             m_serializeContext.reset();
-            m_ComponentApplicationRequests.reset();
 
             AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
 
-        AZStd::unique_ptr<AZ::IConsole> m_console;
-
-        AZStd::unique_ptr<BenchmarkComponentApplicationRequests> m_ComponentApplicationRequests;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_netBindDescriptor;
@@ -449,7 +385,6 @@ namespace Multiplayer
 
         AZStd::unique_ptr<BenchmarkMultiplayer> m_Multiplayer;
         AZStd::unique_ptr<BenchmarkNetworkEntityManager> m_NetworkEntityManager;
-        AZStd::unique_ptr<AZ::StubTimeSystem> m_Time;
         AZStd::unique_ptr<BenchmarkNetworkTime> m_NetworkTime;
 
         AZStd::unique_ptr<BenchmarkMultiplayerConnection> m_Connection;

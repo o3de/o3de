@@ -11,6 +11,8 @@
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Time/TimeSystem.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -50,4 +52,147 @@ namespace UnitTest
 
         }
     };
+
+    class TestTcpClient
+    {
+    public:
+        TestTcpClient()
+        {
+            AZStd::string name = AZStd::string::format("TcpClient%d", ++s_numClients);
+            m_name = name;
+            m_clientNetworkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
+                m_name, ProtocolType::Tcp, TrustZone::ExternalClientToServer, m_connectionListener);
+            m_connectionId = m_clientNetworkInterface->Connect(IpAddress(127, 0, 0, 1, 12345));
+        }
+
+        ~TestTcpClient()
+        {
+            m_clientNetworkInterface->Disconnect(m_connectionId, AzNetworking::DisconnectReason::TerminatedByClient);
+            AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(m_name);
+        }
+
+        AZ::Name m_name;
+        AzNetworking::ConnectionId m_connectionId = AzNetworking::InvalidConnectionId;
+        TestTcpConnectionListener m_connectionListener;
+        INetworkInterface* m_clientNetworkInterface;
+        static inline int32_t s_numClients = 0;
+    };
+
+    class TestTcpServer
+    {
+    public:
+        TestTcpServer()
+        {
+            m_serverNetworkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
+                m_name, ProtocolType::Tcp, TrustZone::ExternalClientToServer, m_connectionListener);
+            m_serverNetworkInterface->Listen(12345);
+        }
+
+        ~TestTcpServer()
+        {
+            AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(m_name);
+        }
+
+        AZ::Name m_name = AZ::Name(AZStd::string_view("TcpServer"));
+        TestTcpConnectionListener m_connectionListener;
+        INetworkInterface* m_serverNetworkInterface;
+    };
+
+    class TcpTransportTests : public AllocatorsFixture
+    {
+    public:
+        void SetUp() override
+        {
+            SetupAllocator();
+            AZ::ModuleManagerRequestBus::Broadcast(
+                &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
+                [this](const AZ::ModuleData& moduleData)
+                {
+                    AZ::Entity* moduleEntity = moduleData.GetEntity();
+                    for (const auto& component : moduleEntity->GetComponents())
+                    {
+                        if (auto netSysComponent = azrtti_cast<NetworkingSystemComponent*>(component))
+                        {
+                            this->m_networkingSystemComponent = netSysComponent;
+                        }
+                    }
+                    return true;
+                });
+        }
+
+        void TearDown() override
+        {
+            m_networkingSystemComponent = nullptr;
+            TeardownAllocator();
+        }
+
+        AzNetworking::NetworkingSystemComponent* m_networkingSystemComponent;
+    };
+
+#if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
+    TEST_F(TcpTransportTests, DISABLED_TestSingleClient)
+#else
+    TEST_F(TcpTransportTests, SUITE_sandbox_TestSingleClient)
+#endif // AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
+    {
+        TestTcpServer testServer;
+        TestTcpClient testClient;
+
+        constexpr AZ::TimeMs TotalIterationTimeMs = AZ::TimeMs{ 5000 };
+        const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
+        for (;;)
+        {
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
+            m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
+            bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
+            bool canTerminate = (testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == 1) &&
+                (testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount() == 1);
+            if (canTerminate || timeExpired)
+            {
+                break;
+            }
+        }
+
+        EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
+        EXPECT_EQ(testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
+
+        const AZ::TimeMs timeoutMs = AZ::TimeMs{ 100 };
+        testClient.m_clientNetworkInterface->SetTimeoutMs(timeoutMs);
+        EXPECT_EQ(testClient.m_clientNetworkInterface->GetTimeoutMs(), timeoutMs);
+    }
+
+#if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
+    TEST_F(TcpTransportTests, DISABLED_TestMultipleClients)
+#else
+    TEST_F(TcpTransportTests, SUITE_sandbox_TestMultipleClients)
+#endif // AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
+    {
+        constexpr uint32_t NumTestClients = 50;
+
+        TestTcpServer testServer;
+        TestTcpClient testClient[NumTestClients];
+
+        constexpr AZ::TimeMs TotalIterationTimeMs = AZ::TimeMs{ 5000 };
+        const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
+        for (;;)
+        {
+            m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
+            bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
+            bool canTerminate = testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == NumTestClients;
+            for (uint32_t i = 0; i < NumTestClients; ++i)
+            {
+                canTerminate &= testClient[i].m_clientNetworkInterface->GetConnectionSet().GetConnectionCount() == 1;
+            }
+            if (canTerminate || timeExpired)
+            {
+                break;
+            }
+        }
+
+        EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), NumTestClients);
+        for (uint32_t i = 0; i < NumTestClients; ++i)
+        {
+            EXPECT_EQ(testClient[i].m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
+        }
+    }
 }
