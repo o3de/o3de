@@ -121,7 +121,7 @@ namespace AZ
             if (useCount == 0)
             {
                 // Entries that had resolved hash collisions are allowed to remain in the dictionary until shutdown.
-                AZ_Assert(hadCollision, "Only colliding names are allowed to remain in the dictionary");
+                AZ_Assert(hadCollision, "Only colliding names are allowed to remain in the dictionary. Found '%.*s'", AZ_STRING_ARG(keyValue.second->GetName()));
                 delete nameData;
             }
             else

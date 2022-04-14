@@ -122,8 +122,6 @@ set(FILES
     Source/Debug/RenderDebugFeatureProcessor.cpp
     Source/Debug/RenderDebugSettings.h
     Source/Debug/RenderDebugSettings.cpp
-    Source/Decals/DecalFeatureProcessor.h
-    Source/Decals/DecalFeatureProcessor.cpp
     Source/Decals/DecalTextureArray.h
     Source/Decals/DecalTextureArray.cpp
     Source/Decals/AsyncLoadTracker.h

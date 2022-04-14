@@ -91,7 +91,7 @@ namespace AZ
         {
             m_entityId = entityId;
             m_featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<DecalFeatureProcessorInterface>(entityId);
-            AZ_Assert(m_featureProcessor, "DecalRenderProxy was unable to find a DecalFeatureProcessor on the entityId provided.");
+            AZ_Assert(m_featureProcessor, "DecalRenderProxy was unable to find a decal FeatureProcessor on the entityId provided.");
             if (m_featureProcessor)
             {
                 m_handle = m_featureProcessor->AcquireDecal();
