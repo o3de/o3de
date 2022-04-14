@@ -14,8 +14,6 @@ namespace AZ::Render
 {
     void EditorStarsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        //BaseSystemComponent::Reflect();
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorStarsSystemComponent, StarsSystemComponent>()
