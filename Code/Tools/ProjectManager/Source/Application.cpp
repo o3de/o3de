@@ -145,8 +145,6 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
 
-        m_pythonBindings->GetGemInfo("Aaa");
-
         // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
         QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
 
