@@ -60,10 +60,10 @@ namespace Multiplayer
         {            
             const AZ::RPI::ViewportContextPtr viewport = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetDefaultViewportContext();
             AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
-            const int center_screenposition_x = viewportSize.m_width/2;
-            const int center_screenposition_y = viewportSize.m_height/2;
-            const int screenposition_title_y = center_screenposition_y-9;
-            const int screenposition_debugtext_y = screenposition_title_y+18;
+            const float center_screenposition_x = 0.5f*viewportSize.m_width;
+            const float center_screenposition_y = 0.5f*viewportSize.m_height;
+            const float screenposition_title_y = center_screenposition_y-9;
+            const float screenposition_debugtext_y = screenposition_title_y+18;
 
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::Yellow);
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
