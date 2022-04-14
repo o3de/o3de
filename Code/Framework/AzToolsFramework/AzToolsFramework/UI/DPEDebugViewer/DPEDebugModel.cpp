@@ -230,7 +230,6 @@ namespace AzToolsFramework
         }
 
         // recursively populate the node tree with the new adapter information
-        auto theContents = theAdapter->GetContents();
         m_rootNode = new DPEModelNode(DPEModelNode::NodeType::RootNode, 0, this);
         m_rootNode->Populate(theAdapter->GetContents());
 

@@ -9,7 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AZFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
