@@ -6,7 +6,6 @@
  *
  */
 
-#pragma optimize( "", off )
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Sfmt.h>
@@ -198,4 +197,3 @@ namespace AzToolsFramework
     }
 }
 
-#pragma optimize( "", on )

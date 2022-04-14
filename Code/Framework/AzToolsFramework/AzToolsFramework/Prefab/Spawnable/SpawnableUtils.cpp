@@ -23,7 +23,6 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
 
-#pragma optimize( "", off )
 
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
@@ -422,4 +421,3 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
     template void SortEntitiesByTransformHierarchy(AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& entities);
 } // namespace AzToolsFramework::Prefab::SpawnableUtils
 
-#pragma optimize( "", on )
