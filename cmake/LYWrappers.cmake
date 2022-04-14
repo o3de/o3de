@@ -383,6 +383,7 @@ function(ly_add_target)
             INCLUDE_DIRECTORIES ${ly_add_target_INCLUDE_DIRECTORIES}
             AUTOGEN_RULES ${ly_add_target_AUTOGEN_RULES}
             ALLFILES ${ALLFILES}
+            FILES_CMAKE ${ly_add_target_FILES_CMAKE}
         )
     endif()
 
