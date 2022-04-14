@@ -8,23 +8,20 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 
 namespace Multiplayer
 {
-    //! Request bus for displaying useful debug information in the editor viewport while the editor is making its connection to the editor-server.
+    //! Interface class for displaying useful debug information in the editor viewport while the editor is making its connection to the editor-server.
     //! Note: This isn't used once the Editor has connected to the Multiplayer simulation itself.
-    class MultiplayerEditorConnectionViewportDebugRequests : public AZ::EBusTraits
+    class IMultiplayerEditorConnectionViewportMessage
     {
-    public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        
+    public:        
+        AZ_RTTI(IMultiplayerEditorConnectionViewportMessage, "{83ca783b-4e99-46c9-a133-7d1e4bacdbb4}");
+
         //! Displays multiplayer editor debug messaging in the viewport.
         virtual void DisplayMessage(const char* text) = 0;
 
         //! Turns off viewport debug messaging.
         virtual void StopViewportDebugMessaging() = 0;
     };
-    using MultiplayerEditorConnectionViewportDebugRequestBus = AZ::EBus<MultiplayerEditorConnectionViewportDebugRequests>;
 } // namespace Multiplayer

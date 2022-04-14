@@ -10,25 +10,25 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <Multiplayer/MultiplayerEditorConnectionViewportDebugBus.h>
+#include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
 
 namespace Multiplayer
 {
-    //! Multiplayer system component wraps the bridging logic between the game and transport layer.
-    class MultiplayerEditorConnectionViewportDebugSystemComponent final
+    //! System component that draws viewport messaging as the editor attempts connection to the editor-server while starting up game-mode.
+    class MultiplayerEditorConnectionViewportMessageSystemComponent final
         : public AZ::Component
-        , private MultiplayerEditorConnectionViewportDebugRequestBus::Handler
+        , public IMultiplayerEditorConnectionViewportMessage
         , private AZ::TickBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private IEditorNotifyListener
     {
     public:
-        AZ_COMPONENT(MultiplayerEditorConnectionViewportDebugSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
+        AZ_COMPONENT(MultiplayerEditorConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}", IMultiplayerEditorConnectionViewportMessage);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        MultiplayerEditorConnectionViewportDebugSystemComponent() = default;
-        ~MultiplayerEditorConnectionViewportDebugSystemComponent() override = default;
+        MultiplayerEditorConnectionViewportMessageSystemComponent();
+        ~MultiplayerEditorConnectionViewportMessageSystemComponent() override;
 
         //! AZ::Component overrides.
         //! @{
@@ -52,7 +52,7 @@ namespace Multiplayer
         void OnTick(float, AZ::ScriptTimePoint) override;
         //! @}
 
-        //! MultiplayerEditorConnectionViewportDebugRequestBus::Handler overrides.
+        //! IMultiplayerEditorConnectionViewportMessage overrides.
         //! @{
         void DisplayMessage(const char* text) override;
         void StopViewportDebugMessaging() override;

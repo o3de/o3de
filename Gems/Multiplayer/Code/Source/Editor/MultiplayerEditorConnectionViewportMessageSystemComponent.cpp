@@ -7,7 +7,7 @@
  */
 
 
-#include "MultiplayerEditorConnectionViewportDebugSystemComponent.h"
+#include "MultiplayerEditorConnectionViewportMessageSystemComponent.h"
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 
@@ -15,28 +15,36 @@ namespace Multiplayer
 {
     AZ_CVAR(float, editorsv_connection_debug_fontsize, 0.7, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
 
-    void MultiplayerEditorConnectionViewportDebugSystemComponent::Reflect(AZ::ReflectContext* context)
+    void MultiplayerEditorConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<MultiplayerEditorConnectionViewportDebugSystemComponent, AZ::Component>()
+            serializeContext->Class<MultiplayerEditorConnectionViewportMessageSystemComponent, AZ::Component>()
                 ->Version(1);
         }
     }
+    
+    MultiplayerEditorConnectionViewportMessageSystemComponent::MultiplayerEditorConnectionViewportMessageSystemComponent()
+    {
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Register(this);
+    }
 
-    void MultiplayerEditorConnectionViewportDebugSystemComponent::Activate()
+    MultiplayerEditorConnectionViewportMessageSystemComponent::~MultiplayerEditorConnectionViewportMessageSystemComponent()
+    {
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Unregister(this);
+    };
+
+    void MultiplayerEditorConnectionViewportMessageSystemComponent::Activate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-        MultiplayerEditorConnectionViewportDebugRequestBus::Handler::BusConnect();
     }
 
-    void MultiplayerEditorConnectionViewportDebugSystemComponent::Deactivate()
+    void MultiplayerEditorConnectionViewportMessageSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        MultiplayerEditorConnectionViewportDebugRequestBus::Handler::BusDisconnect();
     }
 
-    void MultiplayerEditorConnectionViewportDebugSystemComponent::NotifyRegisterViews()
+    void MultiplayerEditorConnectionViewportMessageSystemComponent::NotifyRegisterViews()
     {
         IEditor* editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
@@ -46,7 +54,7 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerEditorConnectionViewportDebugSystemComponent::OnTick(float, AZ::ScriptTimePoint)
+    void MultiplayerEditorConnectionViewportMessageSystemComponent::OnTick(float, AZ::ScriptTimePoint)
     {
         if (!m_debugText.empty())
         {            
@@ -67,7 +75,7 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerEditorConnectionViewportDebugSystemComponent::DisplayMessage(const char* text)
+    void MultiplayerEditorConnectionViewportMessageSystemComponent::DisplayMessage(const char* text)
     {
         if (strlen(text) == 0)
         {
@@ -82,13 +90,13 @@ namespace Multiplayer
         }
     }
     
-    void MultiplayerEditorConnectionViewportDebugSystemComponent::StopViewportDebugMessaging()
+    void MultiplayerEditorConnectionViewportMessageSystemComponent::StopViewportDebugMessaging()
     {
         m_debugText = "";
         AZ::TickBus::Handler::BusDisconnect();
     }
 
-    void MultiplayerEditorConnectionViewportDebugSystemComponent::OnEditorNotifyEvent(EEditorNotifyEvent event)
+    void MultiplayerEditorConnectionViewportMessageSystemComponent::OnEditorNotifyEvent(EEditorNotifyEvent event)
     {
         switch (event)
         {

@@ -286,7 +286,7 @@ namespace Multiplayer
 
         if (outProcess)
         {
-            MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::DisplayMessage, "Launching server...");
+            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage("Launching server...");
 
             // Stop the previous server if one exists
             if (m_serverProcessWatcher)
@@ -301,7 +301,7 @@ namespace Multiplayer
         else
         {
             const char* fail_message = "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.";
-            MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::DisplayMessage, fail_message);
+            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(fail_message);
             AZ_Error("MultiplayerEditor", outProcess, fail_message);
         }
     }
@@ -397,7 +397,7 @@ namespace Multiplayer
         }
         
         const char* sending_leveldata_message = "Editor is sending the editor-server the level data packet.";
-        MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::DisplayMessage, sending_leveldata_message);
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(sending_leveldata_message);
         AZ_Printf("MultiplayerEditor", sending_leveldata_message)
 
         const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
@@ -483,7 +483,7 @@ namespace Multiplayer
         ++m_connectionAttempts;
 
         AZStd::string message = AZStd::string::format("Editor tcp connection attempt #%i.", m_connectionAttempts);
-        MultiplayerEditorConnectionViewportDebugRequestBus::Broadcast(&MultiplayerEditorConnectionViewportDebugRequestBus::Events::DisplayMessage, message.c_str());
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(message.c_str());
         AZ_Printf("MultiplayerEditor", message.c_str())
 
         INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
