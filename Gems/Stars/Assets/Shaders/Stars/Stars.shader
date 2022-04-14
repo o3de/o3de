@@ -9,7 +9,7 @@
   "BlendState" : {
       "Enable" : true,
       "BlendSource" : "AlphaSource",
-      "BlendDest" : "AlphaSourceInverse",
+      "BlendDest" : "One",
       "BlendOp" : "Add"
   },
   "DrawList": "forward",
