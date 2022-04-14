@@ -1,6 +1,5 @@
 
 set(FILES
-    Include/Stars/StarsFeatureProcessorInterface.h
     Source/StarsAsset.cpp
     Source/StarsAsset.h
     Source/StarsComponent.cpp

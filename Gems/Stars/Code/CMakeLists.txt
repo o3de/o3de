@@ -26,6 +26,16 @@ ly_add_target(
 )
 
 ly_add_target(
+    NAME Stars.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        stars_headers_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            include
+)
+
+ly_add_target(
     NAME Stars ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
