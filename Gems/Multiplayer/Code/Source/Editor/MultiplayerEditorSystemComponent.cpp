@@ -286,7 +286,7 @@ namespace Multiplayer
 
         if (outProcess)
         {
-            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage("Launching server...");
+            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage("(1/3) Launching server...");
 
             // Stop the previous server if one exists
             if (m_serverProcessWatcher)
@@ -396,7 +396,7 @@ namespace Multiplayer
             return;
         }
         
-        const char* sending_leveldata_message = "Editor is sending the editor-server the level data packet.";
+        const char* sending_leveldata_message = "(3/3) Editor is sending the editor-server the level data packet.";
         AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(sending_leveldata_message);
         AZ_Printf("MultiplayerEditor", sending_leveldata_message)
 
@@ -482,7 +482,7 @@ namespace Multiplayer
     {
         ++m_connectionAttempts;
 
-        AZStd::string message = AZStd::string::format("Editor tcp connection attempt #%i.", m_connectionAttempts);
+        AZStd::string message = AZStd::string::format("(2/3) Editor tcp connection attempt #%i.", m_connectionAttempts);
         AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(message.c_str());
         AZ_Printf("MultiplayerEditor", message.c_str())
 
