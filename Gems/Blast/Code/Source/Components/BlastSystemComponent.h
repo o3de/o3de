@@ -76,7 +76,7 @@ namespace Blast
         // Getters for physx/NvBlast structures
         Nv::Blast::TkFramework* GetTkFramework() const override;
         Nv::Blast::ExtSerialization* GetExtSerialization() const override;
-        Nv::Blast::TkGroup* GetTkGroup() override;
+        Nv::Blast::TkGroup* CreateTkGroup() override;
 
         void AddDamageDesc(AZStd::unique_ptr<NvBlastExtRadialDamageDesc> desc) override;
         void AddDamageDesc(AZStd::unique_ptr<NvBlastExtCapsuleRadialDamageDesc> desc) override;

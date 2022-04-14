@@ -62,6 +62,7 @@
 // Editor
 #include "Util/fastlib.h"
 #include "CryEditDoc.h"
+#include "CryCommon/MathConversion.h"
 #include "GameEngine.h"
 #include "ViewManager.h"
 #include "Objects/DisplayContext.h"
@@ -73,6 +74,7 @@
 #include "EditorPreferencesPageGeneral.h"
 #include "ViewportManipulatorController.h"
 #include "EditorViewportSettings.h"
+#include "EditorViewportCamera.h"
 
 #include "ViewPane.h"
 #include "CustomResolutionDlg.h"
@@ -598,13 +600,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndNewScene:
         {
             PopDisableRendering();
-
-            Matrix34 viewTM;
-            viewTM.SetIdentity();
-
-            viewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
-            SetViewTM(viewTM);
-
             UpdateScene();
         }
         break;
@@ -614,15 +609,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
 
     case eNotify_OnEndTerrainCreate:
-        {
-            PopDisableRendering();
-
-            Matrix34 viewTM;
-            viewTM.SetIdentity();
-
-            viewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
-            SetViewTM(viewTM);
-        }
+        PopDisableRendering();
         break;
 
     case eNotify_OnBeginLayerExport:
@@ -780,7 +767,7 @@ void EditorViewportWidget::RenderSafeFrame()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::RenderSafeFrame(const QRect& frame, float r, float g, float b, float a)
 {
-    m_debugDisplay->SetColor(r, g, b, a);
+    m_debugDisplay->SetColor(AZ::Color(r, g, b, a));
 
     const int LINE_WIDTH = 2;
     for (int i = 0; i < LINE_WIDTH; i++)
@@ -1925,8 +1912,12 @@ void EditorViewportWidget::SetDefaultCamera()
         atomViewportRequests->PushView(contextName, m_defaultView);
     }
 
-    // Set the default Editor Camera position.
+    const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
+    // Set the default Editor Camera position and orientation
     m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
+    m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
+        SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
+
     SetViewTM(m_defaultViewTM);
 
     PostCameraSet();
@@ -2435,6 +2426,11 @@ bool EditorViewportSettings::StickySelectEnabled() const
 AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
 {
     return SandboxEditor::CameraDefaultEditorPosition();
+}
+
+AZ::Vector2 EditorViewportSettings::DefaultEditorCameraOrientation() const
+{
+    return SandboxEditor::CameraDefaultEditorOrientation();
 }
 
 bool EditorViewportSettings::IconsVisible() const

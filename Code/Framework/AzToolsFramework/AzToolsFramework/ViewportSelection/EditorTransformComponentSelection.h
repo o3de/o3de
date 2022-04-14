@@ -17,8 +17,8 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
-#include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+#include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
@@ -64,24 +64,9 @@ namespace AzToolsFramework
     //! Temporary manipulator frame used during selection.
     struct OptionalFrame
     {
-        //! What part of the transform did we pick (when using ditto on
-        //! the manipulator). This will depend on the transform mode we're in.
-        struct PickType
-        {
-            enum : AZ::u8
-            {
-                None = 0,
-                Orientation = 1 << 0,
-                Translation = 1 << 1
-            };
-        };
-
         bool HasTranslationOverride() const;
         bool HasOrientationOverride() const;
         bool HasTransformOverride() const;
-        bool HasEntityOverride() const;
-        bool PickedTranslation() const;
-        bool PickedOrientation() const;
 
         //! Clear all state associated with the frame.
         void Reset();
@@ -90,10 +75,8 @@ namespace AzToolsFramework
         //! Clear only picked orientation state.
         void ResetPickedOrientation();
 
-        AZ::EntityId m_pickedEntityIdOverride; //!< 'Picked' Entity - frame and parent space relative to this if active.
         AZStd::optional<AZ::Vector3> m_translationOverride; //!< Translation override, if set, reset when selection is empty.
         AZStd::optional<AZ::Quaternion> m_orientationOverride; //!< Orientation override, if set, reset when selection is empty.
-        AZ::u8 m_pickTypes = PickType::None; //!< What mode(s) were we in when picking an EntityId override.
     };
 
     //! How a manipulator should treat an adjustment.
@@ -261,7 +244,7 @@ namespace AzToolsFramework
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
 
         // EditorManipulatorCommandUndoRedoRequestBus overrides ...
-        void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) override;
+        void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;
 
         // EditorContextMenuBus overrides ...
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
@@ -301,17 +284,24 @@ namespace AzToolsFramework
         // ReadOnlyEntityPublicNotificationBus overrides ...
         void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
 
-        // Helpers to safely interact with the TransformBus (requests).
+        //!@{
+        //! Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform);
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation);
+        //!@}
 
+        // Note: 'Ditto' is an immediate copy (it updates part of one entity transform to perfectly match
+        // another depending on the transform mode - translate/rotate/scale).
         bool PerformGroupDitto(AZ::EntityId entityId);
         bool PerformIndividualDitto(AZ::EntityId entityId);
-        void PerformManipulatorDitto(AZ::EntityId entityId);
+        //! ManipulatorTranslationFn returns the position to use when 'dittoing' the manipulator.
+        //! @note: signature - AZ::Vector3(void).
+        template<typename ManipulatorTranslationFn>
+        void PerformManipulatorDitto(AZ::EntityId entityId, ManipulatorTranslationFn&& manipulatorTranslationFn);
         void PerformSnapToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for keeping the space cluster in sync with the current reference frame.
@@ -325,7 +315,7 @@ namespace AzToolsFramework
         AZ::EntityId m_editorCameraComponentEntityId; //!< The EditorCameraComponent EntityId if it is set.
         EntityIdSet m_selectedEntityIds; //!< Represents the current entities in the selection.
         //! A cache of packed EntityData that can be iterated over efficiently without the need to make individual EBus calls.
-        const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr; 
+        const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr;
         AZStd::unique_ptr<EditorHelpers> m_editorHelpers; //!< Editor visualization of entities (icons, shapes, debug visuals etc).
         EntityIdManipulators m_entityIdManipulators; //!< Mapping from a Manipulator to potentially many EntityIds.
 
@@ -376,10 +366,10 @@ namespace AzToolsFramework
         ViewportInteraction::MouseButtons mouseButtons,
         const AZStd::function<void(AZ::EntityId, bool)>& setEntityAccentedFn);
 
-    //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
+    //! The Etcs (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
     //! the EditorTransformComponentSelection type. Functions in this namespace are exposed to facilitate testing
     //! and should not be used outside of EditorTransformComponentSelection or EditorTransformComponentSelectionTests.
-    namespace ETCS
+    namespace Etcs
     {
         //! The result from calculating the entity (transform component) orientation.
         //! Does the entity have a parent or not, and what orientation should the manipulator have when
@@ -410,5 +400,5 @@ namespace AzToolsFramework
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal);
-    } // namespace ETCS
+    } // namespace Etcs
 } // namespace AzToolsFramework

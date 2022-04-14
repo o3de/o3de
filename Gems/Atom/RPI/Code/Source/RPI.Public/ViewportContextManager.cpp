@@ -319,7 +319,7 @@ namespace AZ
 
             ViewportContextNotificationBus::Event(
                 context,
-                &ViewportContextIdNotificationBus::Events::OnViewportDefaultViewChanged,
+                &ViewportContextNotificationBus::Events::OnViewportDefaultViewChanged,
                 currentView);
         }
     } // namespace RPI

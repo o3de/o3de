@@ -97,12 +97,12 @@ namespace SurfaceData
     {
         if (m_providerHandle != InvalidSurfaceDataRegistryHandle)
         {
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             m_providerHandle = InvalidSurfaceDataRegistryHandle;
         }
         if (m_modifierHandle != InvalidSurfaceDataRegistryHandle)
         {
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataModifier, m_modifierHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataModifier(m_modifierHandle);
             m_modifierHandle = InvalidSurfaceDataRegistryHandle;
 
         }
@@ -150,6 +150,8 @@ namespace SurfaceData
     void SurfaceDataShapeComponent::GetSurfacePointsFromList(
         AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (!m_shapeBoundsIsValid)
@@ -190,6 +192,8 @@ namespace SurfaceData
         AZStd::span<const AZ::EntityId> creatorEntityIds,
         AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         AZ_Assert(
             (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
             "Sizes of the passed-in spans don't match");
@@ -284,16 +288,16 @@ namespace SurfaceData
             // Our shape was valid before and after, it just changed in some way, so update our registry entries
             AZ_Assert((m_providerHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
             AZ_Assert((m_modifierHandle != InvalidSurfaceDataRegistryHandle), "Invalid modifier data handle");
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UpdateSurfaceDataProvider, m_providerHandle, providerRegistryEntry);
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UpdateSurfaceDataModifier, m_modifierHandle, modifierRegistryEntry);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UpdateSurfaceDataProvider(m_providerHandle, providerRegistryEntry);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UpdateSurfaceDataModifier(m_modifierHandle, modifierRegistryEntry);
         }
         else if (!shapeValidBeforeUpdate && shapeValidAfterUpdate)
         {
             // Our shape has become valid, so register as a provider and save off the registry handles
             AZ_Assert((m_providerHandle == InvalidSurfaceDataRegistryHandle), "Surface Provider data handle is initialized before our shape became valid");
             AZ_Assert((m_modifierHandle == InvalidSurfaceDataRegistryHandle), "Surface Modifier data handle is initialized before our shape became valid");
-            SurfaceDataSystemRequestBus::BroadcastResult(m_providerHandle, &SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, providerRegistryEntry);
-            SurfaceDataSystemRequestBus::BroadcastResult(m_modifierHandle, &SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataModifier, modifierRegistryEntry);
+            m_providerHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataProvider(providerRegistryEntry);
+            m_modifierHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataModifier(modifierRegistryEntry);
 
             // Start listening for surface data events
             AZ_Assert((m_providerHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
@@ -306,8 +310,8 @@ namespace SurfaceData
             // Our shape has stopped being valid, so unregister and stop listening for surface data events
             AZ_Assert((m_providerHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
             AZ_Assert((m_modifierHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataModifier, m_modifierHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataModifier(m_modifierHandle);
             m_providerHandle = InvalidSurfaceDataRegistryHandle;
             m_modifierHandle = InvalidSurfaceDataRegistryHandle;
 

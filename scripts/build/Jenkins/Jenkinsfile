@@ -200,6 +200,20 @@ def GetEnvStringList(Map envVarMap) {
     return strList
 }
 
+def GetCrashArtifactDir() {
+    if (env.IS_UNIX) {
+        def uname = sh(script: 'uname', returnStdout: true).trim()
+        if (uname.startsWith('Darwin')) {
+            return '~/Library/Logs/DiagnosticReports/' // MacOS
+        }
+        else {
+            return '/var/lib/apport/coredump/'
+        }
+    } else {
+        return "$LOCALAPPDATA\\CrashDumps"
+    }
+}
+
 def CheckoutBootstrapScripts(String branchName) {
     checkout([$class: 'GitSCM',
         branches: [[name: "*/${branchName}"]],
@@ -472,6 +486,13 @@ def UploadTestArtifacts(String workspace, String outputDirectory) {
         ArchiveArtifactsOnS3("${cmakeBuildDir}/Testing", "test_artifacts", true)
     }
 }
+def UploadCrashArtifacts(String platform) {
+    catchError(message: "Error archiving crash artifacts (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        def crashArtifactDir = GetCrashArtifactDir()
+        echo "Uploading Crash Artifacts: ${crashArtifactDir}"
+        ArchiveArtifactsOnS3("${crashArtifactDir}", "${platform}_crash_artifacts", true)
+    }
+}
 
 def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
     echo 'Starting post-build common steps...'
@@ -574,6 +595,14 @@ def CreateUploadTestArtifactStage(String jobName, String workspace, String outpu
     }
 }
 
+def CreateUploadCrashArtifactStage(String jobName, String platform) {
+    return {
+        stage("${jobName}_upload_crash_artifacts") {
+            UploadCrashArtifacts(platform)
+        }
+    }
+}
+
 def CreateTeardownStage(Map environmentVars, Map params) {
     return {
         stage('Teardown') {
@@ -647,12 +676,14 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         currentException = e.toString()
                     }
                     finally {
-
                         if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
                             CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, params.OUTPUT_DIRECTORY, params.CONFIGURATION).call()
                         }
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
+                        }
+                        if (fileExists(GetCrashArtifactDir())) {
+                            CreateUploadCrashArtifactStage(build_job_name, platform.key).call()
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
