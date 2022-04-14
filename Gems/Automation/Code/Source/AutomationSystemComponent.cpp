@@ -25,6 +25,42 @@
 
 namespace Automation
 {
+    namespace
+    {
+        AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const char* productPath)
+        {
+            AZ::Data::AssetId assetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetId,
+                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                productPath,
+                AZ::Data::s_invalidAssetType,
+                false
+            );
+
+            if (assetId.IsValid())
+            {
+                AZ::Data::Asset<AZ::ScriptAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(
+                    assetId, AZ::Data::AssetLoadBehavior::PreLoad
+                );
+                asset.BlockUntilLoadComplete();
+
+                if (!asset.IsReady())
+                {
+                    AZ_Assert(false, "Could not load '%s'", productPath);
+                    return {};
+                }
+
+                return asset;
+            }
+            else
+            {
+                AZ_Assert(false, "Unable to find product asset '%s'. Has the source asset finished building?", productPath);
+                return {};
+            }
+        }
+    } // namespace
+
     void AutomationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -206,50 +242,9 @@ namespace Automation
         m_scriptOperations.push(AZStd::move(operation));
     }
 
-    namespace TEMP
-    {
-        AZ::Data::AssetId GetAssetIdForProductPath(const char* productPath, AZ::Data::AssetType assetType = AZ::Data::s_invalidAssetType, bool autoGenerateId = false)
-        {
-            AZ::Data::AssetId assetId;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                assetId,
-                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                productPath,
-                assetType,
-                autoGenerateId);
-
-            AZ_Assert(assetId.IsValid(), "Unable to find product asset '%s'. Has the source asset finished building?", productPath);
-            return assetId;
-        }
-
-        template<typename AssetDataT>
-        AZ::Data::Asset<AssetDataT> LoadAssetByProductPath(const char* productPath)
-        {
-            AZ::Data::AssetId assetId = GetAssetIdForProductPath(productPath);
-            if (assetId.IsValid())
-            {
-                AZ::Data::Asset<AssetDataT> asset = AZ::Data::AssetManager::Instance().GetAsset<AssetDataT>(
-                    assetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                asset.BlockUntilLoadComplete();
-
-                if (!asset.IsReady())
-                {
-                    AZ_Assert(false, "Could not load '%s'", productPath);
-                    return {};
-                }
-
-                return asset;
-            }
-            else
-            {
-                return {};
-            }
-        }
-    } // namespace TEMP
-
     void AutomationSystemComponent::ExecuteScript(const AZStd::string& scriptFilePath)
     {
-        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = TEMP::LoadAssetByProductPath<AZ::ScriptAsset>(scriptFilePath.c_str());
+        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath.c_str());
         if (!scriptAsset)
         {
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
