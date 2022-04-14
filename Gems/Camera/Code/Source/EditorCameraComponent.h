@@ -55,7 +55,7 @@ namespace Camera
         /// EditorCameraViewRequestBus::Handler interface
         void ToggleCameraAsActiveView() override;
         void MatchViewport() override;
-        bool IsThisCamera() const override;
+        bool IsActiveCamera() const override;
         bool GetCameraState(AzFramework::CameraState& cameraState) override;
 
     protected:

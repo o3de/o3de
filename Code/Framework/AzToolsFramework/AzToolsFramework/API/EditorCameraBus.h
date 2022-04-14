@@ -141,9 +141,9 @@ namespace Camera
         virtual void MatchViewport() = 0;
 
         /**
-         * Returns true if this is the active camera
+         * Returns true if this is the active camera.
          */
-        virtual bool IsThisCamera() const = 0;
+        virtual bool IsActiveCamera() const = 0;
 
         /**
         * Gets the camera state associated with this view.
