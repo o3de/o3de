@@ -56,7 +56,6 @@ namespace AZ
                 invocable->operator()(AZStd::forward<InstType>(instance), AZStd::forward<Args>(args)...);
                 return true;
             }
-
             return false;
         }
 
