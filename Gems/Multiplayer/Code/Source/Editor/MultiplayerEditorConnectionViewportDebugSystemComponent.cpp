@@ -8,7 +8,8 @@
 
 
 #include "MultiplayerEditorConnectionViewportDebugSystemComponent.h"
-
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/ViewportContext.h>
 
 namespace Multiplayer
 {
@@ -46,18 +47,22 @@ namespace Multiplayer
     void MultiplayerEditorConnectionViewportDebugSystemComponent::OnTick(float, AZ::ScriptTimePoint)
     {
         if (!m_debugText.empty())
-        {
-            constexpr int screenposition_x = 32;
-            constexpr float fontsize = 0.7f;
-            constexpr int screenposition_title_y = 24;
+        {            
+            const AZ::RPI::ViewportContextPtr viewport = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetDefaultViewportContext();
+            AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
+            const int center_screenposition_x = viewportSize.m_width/2;
+            const int center_screenposition_y = viewportSize.m_height/2;
+            const float fontsize = 0.7f;
+            const int screenposition_title_y = center_screenposition_y-9;
+            const int screenposition_debugtext_y = screenposition_title_y+18;
+
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::Yellow);
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                screenposition_x, screenposition_title_y, fontsize, "Multiplayer Editor", false);
+                center_screenposition_x, screenposition_title_y, fontsize, "Multiplayer Editor", true);
 
-            constexpr int screenposition_debugtext_y = 42;
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::White);
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                screenposition_x, screenposition_debugtext_y, fontsize, m_debugText.c_str(), false);
+                center_screenposition_x, screenposition_debugtext_y, fontsize, m_debugText.c_str(), true);
         }
     }
 
