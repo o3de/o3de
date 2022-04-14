@@ -1759,7 +1759,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        AZ_VerifyWarning("ScriptCanvas", saveTabIndex >= 0, "MainWindow::OnSaveCallback failed to find saved graph in tab. Data has been saved, but the ScriptCanvas Editor needs to be closed an re-opened.s")
+        AZ_VerifyWarning("ScriptCanvas", saveTabIndex >= 0, "MainWindow::OnSaveCallback failed to find saved graph in tab. Data has been saved, but the ScriptCanvas Editor needs to be closed and re-opened.s")
 
         AZStd::string tabName = saveTabIndex >= 0 ? m_tabBar->tabText(saveTabIndex).toUtf8().data() : "";
 
