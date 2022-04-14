@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "textureMap": "Textures/_Primitives/Middle_Gray_Checker.tif"

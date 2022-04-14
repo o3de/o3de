@@ -409,7 +409,7 @@ void CLyShine::Update(float deltaTimeInSeconds)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::Render()
 {
-    if (AZ::RHI::IsNullRenderer())
+    if (AZ::RHI::IsNullRHI())
     {
         return;
     }
