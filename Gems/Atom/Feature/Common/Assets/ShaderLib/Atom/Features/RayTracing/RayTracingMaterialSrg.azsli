@@ -32,12 +32,24 @@ ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
     
     // hit shaders can retrieve the MaterialInfo for a mesh hit using: RayTracingMaterialSrg::m_materialInfo[InstanceIndex()]   
     StructuredBuffer<MaterialInfo> m_materialInfo;
-      
+
+    // indirection buffer containing indices into the material textures unbounded array
+    // Note 1: the index list for a particular mesh begins at MaterialInfo::m_textureStartIndex
+    // Note 2: the indirection buffer entries for multiple MaterialInfos will refer to the same texture in m_materialTextures when they are the same material
+    Buffer<uint> m_materialTextureIndices;
+    
+    // texture array index offsets from MaterialInfo::m_textureStartIndex
+    // Note: every material has all four entries in the index list, but the flag bits must be checked to determine if the texture is valid
+    #define MATERIAL_BASECOLOR_TEXTURE_OFFSET   0
+    #define MATERIAL_NORMAL_TEXTURE_OFFSET      1
+    #define MATERIAL_METALLIC_TEXTURE_OFFSET    2   
+    #define MATERIAL_ROUGHNESS_TEXTURE_OFFSET   3
+
     // texture flag bits indicating if optional textures are present
-    #define TEXTURE_FLAG_BASECOLOR      1
-    #define TEXTURE_FLAG_NORMAL         2
-    #define TEXTURE_FLAG_METALLIC       4
-    #define TEXTURE_FLAG_ROUGHNESS      8
+    #define TEXTURE_FLAG_BASECOLOR      (1 << 0)
+    #define TEXTURE_FLAG_NORMAL         (1 << 1)
+    #define TEXTURE_FLAG_METALLIC       (1 << 2)
+    #define TEXTURE_FLAG_ROUGHNESS      (1 << 3)
 
     // unbounded array of Material textures
     Texture2D m_materialTextures[];
