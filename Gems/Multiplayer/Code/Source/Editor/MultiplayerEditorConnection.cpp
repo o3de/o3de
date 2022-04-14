@@ -205,7 +205,7 @@ namespace Multiplayer
         else
         {
             AZStd::string connection_fail_message = AZStd::string::format("EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?", sv_port);
-            AZ_Warning("MultiplayerEditorConnection", false, connection_fail_message.c_str())
+            AZLOG_WARN("%s", connection_fail_message.c_str())
 			AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(connection_fail_message.c_str());
         }
         return true;
