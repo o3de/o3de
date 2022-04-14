@@ -78,5 +78,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_create_alias(NAME Stars.Tools    NAMESPACE Gem TARGETS Gem::Stars.Editor)
-    ly_create_alias(NAME Stars.Builders NAMESPACE Gem)
+    # A Builders alias must exist for Gem Assets to be seen by the Asset Processor.
+    # A Builders alias target must exist for the Prefab .spawnable builder to be able to
+    # load the .dll so the builder can serialize StarComponents to .spawnable files 
+    # which are needed in the game launcher.
+    ly_create_alias(NAME Stars.Builders NAMESPACE Gem TARGETS Gem::Stars.Editor)
 endif()
