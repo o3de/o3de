@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "16_yellow.material",
     "materialType": "../../Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "color": [

@@ -237,6 +237,32 @@ float3 DecodedNormalSphereMap(float2 encodedNormal)
     return (encodedNormal.x + encodedNormal.y) > EPSILON ? normal : float3(0.0, 0.0, -1.0);
 }
 
+// ---------- Unorm 2-bit Encoding -----------
+
+// The four possible values in a UNORM 2-bit channel are encoded as: 0/3, 1/3, 2/3, 3/3
+static const float UNORM_2BIT_FLAG1ONLY = 1.0f / 3.0f;
+static const float UNORM_2BIT_FLAG2ONLY = 2.0f / 3.0f;
+static const float UNORM_2BIT_BOTHFLAGS = 3.0f / 3.0f;
+static const float UNORM_2BIT_EPSILON = 10e-3f;
+
+// Encode two flags into a UNORM 2-bit channel
+float EncodeUnorm2BitFlags(bool flag1, bool flag2)
+{
+    return (flag1 + (flag2 * 2)) / 3.0f;
+}
+
+// Decode flag1 from a UNORM 2-bit channel
+bool DecodeUnorm2BitFlag1(float value)
+{
+    return (abs(value - UNORM_2BIT_FLAG1ONLY) < UNORM_2BIT_EPSILON) || (value == UNORM_2BIT_BOTHFLAGS);
+}
+
+// Decode flag2 from a UNORM 2-bit channel
+bool DecodeUnorm2BitFlag2(float value)
+{
+    return (abs(value - UNORM_2BIT_FLAG2ONLY) < UNORM_2BIT_EPSILON) || (value == UNORM_2BIT_BOTHFLAGS);
+}
+
 // ---------- Quaternion -----------
 
 float3 MultiplyVectorQuaternion(float3 v, float4 q)
