@@ -116,6 +116,15 @@ namespace AZ
                 return m_value != other.m_value;
             }
 
+            //! Attempt to cast the value to another type, handling numerical types (e.g. int to
+            //! float, bool to int), vector types (e.g. Vector2 to Vector3) and color<->vector types
+            //! (e.g. Vector[3-4] to Color). In conversions between vector based types of different
+            //! dimension, the result gets truncated or padded with zeroes as needed. Conversions
+            //! between color and vector types are only supported for 3 and 4 dimensional vectors.
+            //! In case of incompatible types (e.g. string to float, Vector2 to Color), the current
+            //! object is returned as-is.
+            MaterialPropertyValue CastToType(TypeId requestedType) const;
+
         private:
 
             ValueType m_value;

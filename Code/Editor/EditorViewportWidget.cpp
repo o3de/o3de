@@ -767,7 +767,7 @@ void EditorViewportWidget::RenderSafeFrame()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::RenderSafeFrame(const QRect& frame, float r, float g, float b, float a)
 {
-    m_debugDisplay->SetColor(r, g, b, a);
+    m_debugDisplay->SetColor(AZ::Color(r, g, b, a));
 
     const int LINE_WIDTH = 2;
     for (int i = 0; i < LINE_WIDTH; i++)
