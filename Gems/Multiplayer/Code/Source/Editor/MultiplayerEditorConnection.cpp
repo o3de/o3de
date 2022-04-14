@@ -203,10 +203,11 @@ namespace Multiplayer
 			AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->StopViewportDebugMessaging();
         }
         else
-        {
-            AZStd::string connection_fail_message = AZStd::string::format("EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?", sv_port);
-            AZLOG_WARN("%s", connection_fail_message.c_str())
-			AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(connection_fail_message.c_str());
+        {   
+            char connection_fail_message[256];
+            azsnprintf(connection_fail_message, 256, "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?", sv_port);
+            AZLOG_WARN("%s", connection_fail_message)
+			AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(connection_fail_message);
         }
         return true;
     }

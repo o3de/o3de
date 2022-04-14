@@ -482,9 +482,10 @@ namespace Multiplayer
     {
         ++m_connectionAttempts;
 
-        AZStd::string message = AZStd::string::format("(2/3) Editor tcp connection attempt #%i.", m_connectionAttempts);
-        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(message.c_str());
-        AZ_Printf("MultiplayerEditor", message.c_str())
+        char message[64];
+        azsnprintf(message, 64, "(2/3) Editor tcp connection attempt #%i.", m_connectionAttempts);
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(message);
+        AZ_Printf("MultiplayerEditor", message)
 
         INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
         AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
