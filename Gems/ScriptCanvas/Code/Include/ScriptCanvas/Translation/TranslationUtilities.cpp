@@ -123,13 +123,9 @@ namespace ScriptCanvas
             }
             else
             {
-                return EntityIdToU64String(entityId);
+                // return the invalid id constructor, the only viable remaining option, since direct references are not supported
+                return "EntityId()";
             }
-        }
-
-        AZStd::string EntityIdToU64String(const AZ::EntityId& entityId)
-        {
-            return AZStd::string::format("%llu", AZ::u64(entityId));
         }
 
         AZStd::string_view GetAutoNativeNamespace()
