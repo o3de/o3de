@@ -539,48 +539,32 @@ def ReplaceContent() {
     // Get absolute directory for job metadata. Needs permissions from Jenkins for each upstream classes
     def base_path = Jenkins.instance.getItemByFullName("${JOB_NAME}").rootDir
     def log_file = "${base_path}" + "/builds/${env.BUILD_NUMBER}/log"
+    def config_list = []
+    def regex_replace_map = {
+        '( .*o3de)(.*\\.cpp)\\((\\d+)\\)': ' ' + GITHUB_URL + '$2#L$3', // .cpp files
+        '( .*o3de)(.*\\.h)\\((\\d+)\\)': ' ' + GITHUB_URL + '$2#L$3', // .h files
+        ' .*(\\.\\.\\\\)+(.*\\.py):(\\d+): ': ' ' + GITHUB_URL + '$2#L$3 ', // .py files
+    }
+    for (regex_replace in regex_replace_map) {
+        config_list.add(fileContentReplaceConfig(
+            configs: [
+                fileContentReplaceConfig(
+                configs: [
+                    fileContentReplaceItemConfig(
+                    search: regex_replace.key,
+                    replace: regex_replace_map[regex_replace.key],
+                    matchCount: 0,
+                    verbose: false,
+                    )
+                ],
+                fileEncoding: 'UTF-8',
+                filePath:"${log_file}"
+                ),
+            ]
+        ))
+    }
     contentReplace(
-        configs: [
-            // Replace .cpp references to github links
-            fileContentReplaceConfig(
-            configs: [
-                fileContentReplaceItemConfig(
-                search: '( .*o3de)(.*\\.cpp)\\((\\d+)\\)',
-                replace: ' ' + GITHUB_URL + '$2#L$3',
-                matchCount: 0,
-                verbose: false,
-                )
-            ],
-            fileEncoding: 'UTF-8',
-            filePath:"${log_file}"
-            ),
-            // Replace .h references to github links
-            fileContentReplaceConfig(
-            configs: [
-                fileContentReplaceItemConfig(
-                search: '( .*o3de)(.*\\.h)\\((\\d+)\\)',
-                replace: ' ' + GITHUB_URL + '$2#L$3',
-                matchCount: 0,
-                verbose: false,
-                )
-            ],
-            fileEncoding: 'UTF-8',
-            filePath:"${log_file}"
-            ),
-            // Replace .py references github links
-            fileContentReplaceConfig(
-            configs: [
-                fileContentReplaceItemConfig(
-                search: ' .*(\\.\\.\\\\)+(.*\\.py):(\\d+): ',
-                replace: ' ' + GITHUB_URL + '$2#L$3 ',
-                matchCount: 0,
-                verbose: false,
-                )
-            ],
-            fileEncoding: 'UTF-8',
-            filePath:"${log_file}"
-            )
-        ]
+        config_list
     )
 }
 
@@ -983,14 +967,13 @@ catch(Exception e) {
 finally {
     try {
         node('controller') {
-            ReplaceContent()
             if("${currentBuild.currentResult}" == "SUCCESS") {
                 buildFailure = ""
                 emailBody = "${BUILD_URL}\nSuccess!"
             } else {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
-
+                ReplaceContent()
             }
             if(env.POST_AR_BUILD_SNS_TOPIC) {
                 message_json = [
