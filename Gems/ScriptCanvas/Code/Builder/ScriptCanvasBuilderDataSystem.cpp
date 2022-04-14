@@ -135,7 +135,7 @@ namespace ScriptCanvasBuilder
             ( "ScriptCanvas"
             , "DataSystem received OnAssetError: %s : %s"
             , asset.GetHint().c_str()
-            , assetIdGuid.ToString<AZStd::string>().c_str());
+            , assetIdGuid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
 
         auto& buildResult = m_assets[assetIdGuid];
         buildResult.data = asset;
@@ -151,7 +151,7 @@ namespace ScriptCanvasBuilder
             ( "ScriptCanvas"
             , "DataSystem received OnAssetReady: %s : %s"
             , asset.GetHint().c_str()
-            , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
+            , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
         ReportReadyFilter(asset);     
     }
 
@@ -170,7 +170,7 @@ namespace ScriptCanvasBuilder
                 , false
                 , "DataSystem received ready for asset that was not loaded: %s-%s"
                 , buildResult.data.GetHint().c_str()
-                , buildResult.data.GetId().ToString<AZStd::string>().c_str()
+                , assetIdGuid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str()
             );
 
             buildResult.status = BuilderAssetStatus::Error;
@@ -218,7 +218,7 @@ namespace ScriptCanvasBuilder
             ( "ScriptCanvas"
             , "DataSystem received OnAssetReloaded: %s : %s"
             , asset.GetHint().c_str()
-            , asset.GetId().m_guid.ToString<AZStd::string>().c_str());
+            , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
         ReportReadyFilter(asset);
     }
 
@@ -239,7 +239,7 @@ namespace ScriptCanvasBuilder
             ( "ScriptCanvas"
             , "DataSystem received source file changed: %s : %s"
             , relativePath.c_str()
-            , sourceId.ToString<AZStd::string>().c_str());
+            , sourceId.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
 
         DataSystemAssetNotificationsBus::Event(sourceId, &DataSystemAssetNotifications::OnAssetNotReady);
         MonitorAsset(sourceId);
