@@ -24,11 +24,11 @@ from xml.sax.saxutils import escape, unescape, quoteattr
 MAX_ERRORS = 100
 errorCount = 0
 
-def ParseCmakeFiles(inputFileList):
+def ParseCmakeFiles(sourceDir, inputFileList):
     result = []
     for cmakeFile in inputFileList:
         if cmakeFile:
-            sourceCmakeFile = os.path.join(projectDir, cmakeFile).strip()
+            sourceCmakeFile = os.path.join(sourceDir, cmakeFile).strip()
             with open(sourceCmakeFile, 'r') as file:
                 rawCmakeFileContent = file.readlines()
                 for line in rawCmakeFileContent:
@@ -366,7 +366,7 @@ if __name__ == '__main__':
     cacheDir  = args.cacheDir
     outputDir = args.outputDir
     projectDir = args.projectDir
-    inputFiles = ParseCmakeFiles(args.inputCmakeFiles.split(";"))
+    inputFiles = ParseCmakeFiles(projectDir, args.inputCmakeFiles.split(";"))
     expansionRules = args.expansionRules.split(";")
     dryrun = args.dryrun
     verbose = args.verbose
