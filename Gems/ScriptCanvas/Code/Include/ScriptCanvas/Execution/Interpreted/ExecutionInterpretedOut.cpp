@@ -122,7 +122,7 @@ namespace ScriptCanvas
 
         void OutInterpretedResult::operator()(AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments)
         {
-            SC_RUNTIME_ASSERT(resultBVP && resultBVP->m_value, "This function is only expected for BehaviorConext bound event handling, and must always have a location for a return value");
+            SC_RUNTIME_CHECK(resultBVP && resultBVP->m_value, "This function is only expected for BehaviorConext bound event handling, and must always have a location for a return value");
 
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
             // Lua:

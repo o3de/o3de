@@ -8,16 +8,23 @@
 
 #pragma once
 
+// #define SC_RUNTIME_CHECKS_AS_ERRORS 
+
 #if !defined(_RELEASE)
 #define SC_RUNTIME_CHECKS_ENABLED
 #endif
 
 #if defined SC_RUNTIME_CHECKS_ENABLED
-#define SC_RUNTIME_ASSERT(expr, ...) AZ_Error("ScriptCanvas", expr, __VA_ARGS__);
-#define SC_RUNTIME_ASSERT_RETURN(expr, ...) if (!(expr)) { AZ_Error("ScriptCanvas", false, __VA_ARGS__); return; }
+    #if defined SC_RUNTIME_CHECKS_AS_ERRORS
+    #define SC_RUNTIME_CHECK(expr, ...) AZ_Error("ScriptCanvas", expr, __VA_ARGS__);
+    #define SC_RUNTIME_CHECK_RETURN(expr, ...) if (!(expr)) { AZ_Error("ScriptCanvas", false, __VA_ARGS__); return; }
+    #else
+    #define SC_RUNTIME_CHECK(expr, ...) AZ_Assert(expr, __VA_ARGS__);
+    #define SC_RUNTIME_CHECK_RETURN(expr, ...) if (!(expr)) { AZ_Assert(false, __VA_ARGS__); return; }
+    #endif
 #else
-#define SC_RUNTIME_ASSERT(expr, ...) AZ_Assert(expr, __VA_ARGS__);
-#define SC_RUNTIME_ASSERT_RETURN(expr, ...) if (!(expr)) { AZ_Assert(false, __VA_ARGS__); return; }
+#define SC_RUNTIME_CHECK(expr, ...) 
+#define SC_RUNTIME_CHECK_RETURN(expr, ...) 
 #endif
 
 #include <AzCore/std/any.h>

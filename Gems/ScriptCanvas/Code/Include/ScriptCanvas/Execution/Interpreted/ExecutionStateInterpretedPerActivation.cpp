@@ -61,7 +61,7 @@ namespace ScriptCanvas
 
         if (range.requiresDependencyConstructionParameters)
         {
-            SC_RUNTIME_ASSERT_RETURN(!data.variableOverrides.m_dependencies.empty()
+            SC_RUNTIME_CHECK_RETURN(!data.variableOverrides.m_dependencies.empty()
                 , "ExecutionStateInterpretedPerActivation::Initialize dependencies are empty or null, check the processing of this asset");
             lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&data.variableOverrides.m_dependencies)));
             // Lua: graph_VM, graph_VM['new'], executionState, runtimeDataOverrides
@@ -87,7 +87,7 @@ namespace ScriptCanvas
     void ExecutionStateInterpretedPerActivation::StopExecution()
     {
         const auto registryIndex = GetLuaRegistryIndex();
-        SC_RUNTIME_ASSERT_RETURN(registryIndex != LUA_NOREF
+        SC_RUNTIME_CHECK_RETURN(registryIndex != LUA_NOREF
             , "ExecutionStateInterpretedPerActivation::StopExecution called but Initialize is was never called");
         auto& lua = m_luaState;
         // Lua:
@@ -120,11 +120,11 @@ namespace ScriptCanvas
 
     void ExecutionStateInterpretedPerActivation::ReferenceInterpretedInstance()
     {
-        SC_RUNTIME_ASSERT(m_luaRegistryIndex == LUA_NOREF, "ExecutionStateInterpreted already in the Lua registry and risks double deletion");
+        SC_RUNTIME_CHECK(m_luaRegistryIndex == LUA_NOREF, "ExecutionStateInterpreted already in the Lua registry and risks double deletion");
         // Lua: instance
         m_luaRegistryIndex = luaL_ref(m_luaState, LUA_REGISTRYINDEX);
-        SC_RUNTIME_ASSERT(m_luaRegistryIndex != LUA_REFNIL, "ExecutionStateInterpreted was nil when trying to gain a reference");
-        SC_RUNTIME_ASSERT(m_luaRegistryIndex != LUA_NOREF, "ExecutionStateInterpreted failed to gain a reference");
+        SC_RUNTIME_CHECK(m_luaRegistryIndex != LUA_REFNIL, "ExecutionStateInterpreted was nil when trying to gain a reference");
+        SC_RUNTIME_CHECK(m_luaRegistryIndex != LUA_NOREF, "ExecutionStateInterpreted failed to gain a reference");
     }
 
     ExecutionStateInterpretedPerActivationOnGraphStart::ExecutionStateInterpretedPerActivationOnGraphStart(ExecutionStateConfig& config)
@@ -134,7 +134,7 @@ namespace ScriptCanvas
     void ExecutionStateInterpretedPerActivationOnGraphStart::Execute()
     {
         const auto registryIndex = GetLuaRegistryIndex();
-        SC_RUNTIME_ASSERT_RETURN(registryIndex != LUA_NOREF,
+        SC_RUNTIME_CHECK_RETURN(registryIndex != LUA_NOREF,
             "ExecutionStateInterpretedPerActivationOnGraphStart::Execute called but Initialize is was never called");
         auto& lua = m_luaState;
         // Lua:

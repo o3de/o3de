@@ -55,9 +55,9 @@ namespace ScriptCanvas
             , m_interpretedAsset
             , AZ::k_scriptLoadBinary
             , AZ::ScriptContextIds::DefaultScriptContextId);
-        SC_RUNTIME_ASSERT(result.status != AZ::ScriptLoadResult::Status::Failed, "ExecutionStateInterpreted script asset failed to load.");
-        SC_RUNTIME_ASSERT(result.lua, "Must have a default script context and a lua_State");
-        SC_RUNTIME_ASSERT(lua_istable(result.lua, -1), "No run-time execution was available for this script");
+        SC_RUNTIME_CHECK(result.status != AZ::ScriptLoadResult::Status::Failed, "ExecutionStateInterpreted script asset failed to load.");
+        SC_RUNTIME_CHECK(result.lua, "Must have a default script context and a lua_State");
+        SC_RUNTIME_CHECK(lua_istable(result.lua, -1), "No run-time execution was available for this script");
         m_luaState = result.lua;
         return result.lua;
     }

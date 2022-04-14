@@ -32,7 +32,7 @@ namespace ExecutionStateInterpretedUtilityCpp
                 AZ::BehaviorParameter param;
                 param.m_typeId = debugDataSource.m_slotDatumType.GetAZType();
                 debugDataSource.m_fromStack = FromLuaStack(behaviorContext, &param, behaviorClassUnused);
-                SC_RUNTIME_ASSERT(debugDataSource.m_fromStack, "LuaLoadFromStack function not found")
+                SC_RUNTIME_CHECK(debugDataSource.m_fromStack, "LuaLoadFromStack function not found")
             }            
         }
     }
@@ -54,7 +54,7 @@ namespace ScriptCanvas
         {
             AZ::ScriptContext* scriptContext{};
             AZ::ScriptSystemRequestBus::BroadcastResult(scriptContext, &AZ::ScriptSystemRequests::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
-            SC_RUNTIME_ASSERT_RETURN(scriptContext, "Must have a default script context");
+            SC_RUNTIME_CHECK_RETURN(scriptContext, "Must have a default script context");
             auto behaviorContext = scriptContext->GetBoundContext();
 
             ExecutionStateInterpretedUtilityCpp::InitializeFromLuaStackFunctions(behaviorContext, debugMap.m_ins);
@@ -91,7 +91,7 @@ namespace ScriptCanvas
 
             case ScriptCanvas::Data::eType::Invalid:
             default:
-                SC_RUNTIME_ASSERT(false, "Invalid type in ScriptCanvas runtime");
+                SC_RUNTIME_CHECK(false, "Invalid type in ScriptCanvas runtime");
                 return false;
             }
         }
@@ -153,7 +153,7 @@ namespace ScriptCanvas
 
             case ScriptCanvas::Data::eType::Invalid:
             default:
-                SC_RUNTIME_ASSERT(false, "Invalid type in ScriptCanvas");
+                SC_RUNTIME_CHECK(false, "Invalid type in ScriptCanvas");
                 return AZ::Failure(AZStd::string("Invalid type in ScriptCanvas"));
             }
 
