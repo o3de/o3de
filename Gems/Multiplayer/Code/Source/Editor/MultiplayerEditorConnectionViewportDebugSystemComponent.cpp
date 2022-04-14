@@ -13,6 +13,8 @@
 
 namespace Multiplayer
 {
+    AZ_CVAR(float, editorsv_connection_debug_fontsize, 0.7, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
+
     void MultiplayerEditorConnectionViewportDebugSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -52,17 +54,16 @@ namespace Multiplayer
             AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
             const int center_screenposition_x = viewportSize.m_width/2;
             const int center_screenposition_y = viewportSize.m_height/2;
-            const float fontsize = 0.7f;
             const int screenposition_title_y = center_screenposition_y-9;
             const int screenposition_debugtext_y = screenposition_title_y+18;
 
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::Yellow);
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                center_screenposition_x, screenposition_title_y, fontsize, "Multiplayer Editor", true);
+                center_screenposition_x, screenposition_title_y, editorsv_connection_debug_fontsize, "Multiplayer Editor", true);
 
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::White);
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                center_screenposition_x, screenposition_debugtext_y, fontsize, m_debugText.c_str(), true);
+                center_screenposition_x, screenposition_debugtext_y, editorsv_connection_debug_fontsize, m_debugText.c_str(), true);
         }
     }
 
