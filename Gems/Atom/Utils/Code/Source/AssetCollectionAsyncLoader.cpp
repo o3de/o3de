@@ -222,10 +222,10 @@ namespace AZ
             m_assetIdStrToAssetPath[assetIdStr] = assetPath;
         }
 
-        Data::AssetBus::MultiHandler::BusConnect(assetId);
         // Kick off asset loading.
         auto asset = Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::QueueLoad);
         m_notReadyAssets[assetPath] = asset;
+        Data::AssetBus::MultiHandler::BusConnect(assetId);
     }
 
     ///////////////////////////////////////////////////////////////////////
