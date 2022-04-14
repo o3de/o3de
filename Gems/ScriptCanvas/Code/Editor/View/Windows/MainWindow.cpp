@@ -1737,10 +1737,30 @@ namespace ScriptCanvasEditor
     
     void MainWindow::OnSaveCallBack(const VersionExplorer::FileSaveResult& result)
     {
-        const bool saveSuccess = result.fileSaveError.empty();
-        auto completeDescription = CompleteDescription(m_fileSaver->GetSource());
-        auto memoryAsset = completeDescription ? *completeDescription : m_fileSaver->GetSource();
-        int saveTabIndex = m_tabBar->FindTab(memoryAsset);
+        const bool saveSuccess = result.IsSuccess();
+
+        int saveTabIndex = -1;
+        ScriptCanvasEditor::SourceHandle memoryAsset;
+        {
+            int saverIndex = m_tabBar->FindTab(m_fileSaver->GetSource());
+            if (saverIndex >= 0)
+            {
+                saveTabIndex = saverIndex;
+                memoryAsset = m_fileSaver->GetSource();
+            }
+            else
+            {
+                auto completeDescription = CompleteDescription(m_fileSaver->GetSource());
+                if (completeDescription)
+                {
+                    memoryAsset = *completeDescription;
+                    saveTabIndex = m_tabBar->FindTab(memoryAsset);
+                }
+            }
+        }
+
+        AZ_VerifyWarning("ScriptCanvas", saveTabIndex >= 0, "MainWindow::OnSaveCallback failed to find saved graph in tab. Data has been saved, but the ScriptCanvas Editor needs to be closed an re-opened.s")
+
         AZStd::string tabName = saveTabIndex >= 0 ? m_tabBar->tabText(saveTabIndex).toUtf8().data() : "";
 
         if (saveSuccess)
@@ -1789,7 +1809,7 @@ namespace ScriptCanvasEditor
             QMessageBox::critical(this, QString(), QObject::tr(failureMessage.data()));
         }
 
-        if (m_tabBar->currentIndex() != saveTabIndex)
+        if (m_tabBar->currentIndex() != saveTabIndex && saveTabIndex >= 0)
         {
             m_tabBar->setCurrentIndex(saveTabIndex);
         }
