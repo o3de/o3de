@@ -42,3 +42,24 @@ ly_create_alias(NAME Automation.Builders NAMESPACE Gem TARGETS Gem::Automation)
 ly_create_alias(NAME Automation.Clients NAMESPACE Gem TARGETS Gem::Automation)
 ly_create_alias(NAME Automation.Tools NAMESPACE Gem TARGETS Gem::Automation)
 
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_add_target(
+        NAME Automation.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            automation_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Tests
+                Source
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                AZ::AzFramework
+                Gem::Automation.Static
+    )
+
+    ly_add_googletest(
+        NAME Gem::Automation.Tests
+    )
+endif()
