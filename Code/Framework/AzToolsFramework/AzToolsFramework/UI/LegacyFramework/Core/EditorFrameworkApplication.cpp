@@ -475,7 +475,7 @@ namespace LegacyFramework
 
     void Application::CreateApplicationComponents()
     {
-        EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
+        ;
     }
 
     void Application::CreateSystemComponents()
