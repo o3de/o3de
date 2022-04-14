@@ -33,6 +33,7 @@
 #include <MCore/Source/StringIdPool.h>
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
 #include <Editor/AnimGraphEditorBus.h>
+#include <Editor/InspectorBus.h>
 
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
     #include "GameControllerWindow.h"
@@ -180,7 +181,6 @@ namespace EMStudio
     {
         m_graphWidget                    = nullptr;
         m_navigateWidget                 = nullptr;
-        m_attributeDock                  = nullptr;
         m_nodeGroupDock                  = nullptr;
         m_paletteWidget                  = nullptr;
         m_nodePaletteDock                = nullptr;
@@ -236,11 +236,10 @@ namespace EMStudio
             delete m_parameterDock;
         }
 
-        // remove the attribute dock widget
-        if (m_attributeDock)
+        if (m_attributesWindow)
         {
-            EMStudio::GetMainWindow()->removeDockWidget(m_attributeDock);
-            delete m_attributeDock;
+            delete m_attributesWindow;
+            m_attributesWindow = nullptr;
         }
 
         // remove the node group dock widget
@@ -295,12 +294,10 @@ namespace EMStudio
     {
         // Only create menu items if this plugin has been initialized
         // During startup, plugins can be constructed more than once, so don't add connections for those items
-        if (GetAttributeDock() != nullptr)
+        if (GetParameterDock() != nullptr)
         {
             m_dockWindowActions[WINDOWS_PARAMETERWINDOW] = parent->addAction("Parameter Window");
             m_dockWindowActions[WINDOWS_PARAMETERWINDOW]->setCheckable(true);
-            m_dockWindowActions[WINDOWS_ATTRIBUTEWINDOW] = parent->addAction("Attribute Window");
-            m_dockWindowActions[WINDOWS_ATTRIBUTEWINDOW]->setCheckable(true);
             m_dockWindowActions[WINDOWS_NODEGROUPWINDOW] = parent->addAction("Node Group Window");
             m_dockWindowActions[WINDOWS_NODEGROUPWINDOW]->setCheckable(true);
             m_dockWindowActions[WINDOWS_PALETTEWINDOW] = parent->addAction("Palette Window");
@@ -311,9 +308,6 @@ namespace EMStudio
 #endif
             connect(m_dockWindowActions[WINDOWS_PARAMETERWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_PARAMETERWINDOW, checked);
-            });
-            connect(m_dockWindowActions[WINDOWS_ATTRIBUTEWINDOW], &QAction::triggered, this, [this](bool checked) {
-                UpdateWindowVisibility(WINDOWS_ATTRIBUTEWINDOW, checked);
             });
             connect(m_dockWindowActions[WINDOWS_NODEGROUPWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_NODEGROUPWINDOW, checked);
@@ -341,9 +335,6 @@ namespace EMStudio
         {
         case WINDOWS_PARAMETERWINDOW:
             dockWidget = GetParameterDock();
-            break;
-        case WINDOWS_ATTRIBUTEWINDOW:
-            dockWidget = GetAttributeDock();
             break;
         case WINDOWS_NODEGROUPWINDOW:
             dockWidget = GetNodeGroupDock();
@@ -392,7 +383,6 @@ namespace EMStudio
     void AnimGraphPlugin::UpdateWindowActionsCheckState()
     {
         SetOptionFlag(WINDOWS_PARAMETERWINDOW, GetParameterDock()->isVisible());
-        SetOptionFlag(WINDOWS_ATTRIBUTEWINDOW, GetAttributeDock()->isVisible());
         SetOptionFlag(WINDOWS_PALETTEWINDOW, GetNodePaletteDock()->isVisible());
         SetOptionFlag(WINDOWS_NODEGROUPWINDOW, GetNodeGroupDock()->isVisible());
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
@@ -516,22 +506,14 @@ namespace EMStudio
         // get the main window
         QMainWindow* mainWindow = GetMainWindow();
 
-        // create the attribute dock window
-        m_attributeDock = new AzQtComponents::StyledDockWidget("Attributes", mainWindow);
-        mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_attributeDock);
-        QDockWidget::DockWidgetFeatures features = QDockWidget::NoDockWidgetFeatures;
-        //features |= QDockWidget::DockWidgetClosable;
-        features |= QDockWidget::DockWidgetFloatable;
-        features |= QDockWidget::DockWidgetMovable;
-        m_attributeDock->setFeatures(features);
-        m_attributeDock->setObjectName("AnimGraphPlugin::m_attributeDock");
+        // Create the attribute window used as content widget for the inspector.
         m_attributesWindow = new AttributesWindow(this);
-        m_attributeDock->setWidget(m_attributesWindow);
+        m_attributesWindow->hide();
 
         // create the node group dock window
         m_nodeGroupDock = new AzQtComponents::StyledDockWidget("Node Groups", mainWindow);
         mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_nodeGroupDock);
-        features = QDockWidget::NoDockWidgetFeatures;
+        QDockWidget::DockWidgetFeatures features = QDockWidget::NoDockWidgetFeatures;
         //features |= QDockWidget::DockWidgetClosable;
         features |= QDockWidget::DockWidgetFloatable;
         features |= QDockWidget::DockWidgetMovable;
@@ -650,7 +632,6 @@ namespace EMStudio
         }
 
         SetOptionFlag(WINDOWS_PARAMETERWINDOW, GetParameterDock()->isVisible());
-        SetOptionFlag(WINDOWS_ATTRIBUTEWINDOW, GetAttributeDock()->isVisible());
         SetOptionFlag(WINDOWS_PALETTEWINDOW, GetNodePaletteDock()->isVisible());
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
         SetOptionFlag(WINDOWS_GAMECONTROLLERWINDOW, GetGameControllerDock()->isVisible());
@@ -665,6 +646,8 @@ namespace EMStudio
         AZ_UNUSED(setup);
         m_attributesWindow->Unlock();
         m_attributesWindow->Init(QModelIndex(), true); // Force update
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, m_attributesWindow);
+
         m_parameterWindow->Reinit();
         m_nodeGroupWindow->Init();
         m_viewWidget->UpdateAnimGraphOptions();
