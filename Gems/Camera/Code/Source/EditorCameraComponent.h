@@ -42,17 +42,17 @@ namespace Camera
 
         static void Reflect(AZ::ReflectContext* reflection);
 
-        // AZ::Component interface
+        // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
         AZ::u32 OnConfigurationChanged() override;
 
-        // AzFramework::DebugDisplayRequestBus::Handler interface
+        // AzFramework::DebugDisplayRequestBus::Handler overrides ...
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        /// EditorCameraViewRequestBus::Handler interface
+        /// EditorCameraViewRequestBus::Handler overrides ...
         void ToggleCameraAsActiveView() override;
         void MatchViewport() override;
         bool IsActiveCamera() const override;
