@@ -9,6 +9,9 @@
 #include <Application.h>
 #include <ProjectUtils.h>
 
+#include <DbgHelp.h>
+#include <errorrep.h>
+
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -23,6 +26,73 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QIcon>
+
+#if defined(AZ_PLATFORM_WINDOWS)
+LONG WINAPI CreateMiniDump(struct _EXCEPTION_POINTERS* exceptionPointers)
+{
+    AZ::IO::FixedMaxPath dumpPath{ "@log@/O3DEDump.dmp" };
+    if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+    {
+        dumpPath = fileIoBase->ResolvePath(dumpPath, "@log@/O3DEDump.dmp");
+    }
+
+    // FixedMaxPath appends '\x1' to the end of the path string which causes CreateFileW to fail, remove it
+    AZStd::string dumpPathStr = dumpPath.String();
+    dumpPathStr = dumpPathStr.substr(0, dumpPathStr.length() - 1);
+    const char* dumpPathRaw = dumpPathStr.c_str();
+
+    MINIDUMP_TYPE dumpType = MINIDUMP_TYPE::MiniDumpNormal;
+
+    fflush(nullptr);
+    HMODULE hndDBGHelpDLL = LoadLibraryA("DBGHELP.DLL");
+
+    if (!hndDBGHelpDLL)
+    {
+        AZ_Warning("ProjectManager", false, "Failed to record DMP file: Could not open DBGHELP.DLL");
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    typedef BOOL(WINAPI * MiniDumpWriteDump)(
+        HANDLE hProcess, DWORD dwPid, HANDLE hFile, MINIDUMP_TYPE dumpType, CONST PMINIDUMP_EXCEPTION_INFORMATION exceptionParam,
+        CONST PMINIDUMP_USER_STREAM_INFORMATION userStreamParam, CONST PMINIDUMP_CALLBACK_INFORMATION callbackParam);
+
+    MiniDumpWriteDump dumpFnPtr = reinterpret_cast<MiniDumpWriteDump>(GetProcAddress(hndDBGHelpDLL, "MiniDumpWriteDump"));
+    if (!dumpFnPtr)
+    {
+        AZ_Warning("ProjectManager", false, "Failed to record DMP file: Unable to find MiniDumpWriteDump in DBGHELP.DLL");
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    AZStd::wstring dumpPathWStr;
+    AZStd::to_wstring(dumpPathWStr, dumpPathRaw);
+    HANDLE fileHandle = CreateFileW(dumpPathWStr.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        AZ_Warning("ProjectManager", false, "Failed to record DMP file: could not open file '%s' for writing - error code: %d", dumpPathRaw, GetLastError());
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    _MINIDUMP_EXCEPTION_INFORMATION exceptionInfo;
+    exceptionInfo.ThreadId = GetCurrentThreadId();
+    exceptionInfo.ExceptionPointers = exceptionPointers;
+    exceptionInfo.ClientPointers = NULL;
+
+    BOOL dumpSuccessful = dumpFnPtr(GetCurrentProcess(), GetCurrentProcessId(), fileHandle, dumpType, &exceptionInfo, NULL, NULL);
+    CloseHandle(fileHandle);
+
+    if (dumpSuccessful)
+    {
+        AZ_Warning("ProjectManager", false, "Successfully recorded DMP file:  '%s'", dumpPathRaw);
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+    else
+    {
+        AZ_Warning("ProjectManager", false, "Failed to record DMP file: '%s' - error code: %d", dumpPathRaw, GetLastError());
+    }
+
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+#endif
 
 namespace O3DE::ProjectManager
 {
@@ -40,6 +110,11 @@ namespace O3DE::ProjectManager
 
         QCoreApplication::setApplicationName(applicationName);
         QCoreApplication::setApplicationVersion("1.0");
+
+        // Enable minidumps for unhandled exceptions if on Windows
+#if defined(AZ_PLATFORM_WINDOWS)
+        SetUnhandledExceptionFilter(CreateMiniDump);
+#endif
 
         // Use the LogComponent for non-dev logging log
         RegisterComponentDescriptor(AzFramework::LogComponent::CreateDescriptor());
@@ -69,6 +144,8 @@ namespace O3DE::ProjectManager
         {
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
+
+        m_pythonBindings->GetGemInfo("Aaa");
 
         // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
         QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
