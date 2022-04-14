@@ -14,6 +14,7 @@
         "Gems/AtomTressFX",
         "Gems/AudioEngineWwise",
         "Gems/AudioSystem",
+        "Gems/Automation",
         "Gems/AWSClientAuth",
         "Gems/AWSCore",
         "Gems/AWSGameLift",
