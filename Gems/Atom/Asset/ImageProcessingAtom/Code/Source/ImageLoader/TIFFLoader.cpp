@@ -380,6 +380,7 @@ namespace ImageProcessingAtom
                         TIFFReadScanline(tif, buf.data(), imageY);
 
                     // non-fatal error, only print the warning
+                    // For details: https://github.com/o3de/o3de/pull/8929
                     AZ_Warning("TIFFLoader", !(result == -1), "Read tiff image data from %s error at row %d", TIFFFileName(tif), imageY);
 
                     // Convert each pixel in the scanline / tile buffer.
