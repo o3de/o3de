@@ -1,11 +1,18 @@
 {
     "description": "Material Type with properties used to define Standard PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
-    "version": 4,
+    "version": 5,
     "versionUpdates": [
         {
             "toVersion": 4,
             "actions": [
                 {"op": "rename", "from": "opacity.doubleSided", "to": "general.doubleSided"}
+            ]
+        },
+        {
+            "toVersion": 5,
+            "actions": [
+                {"op": "rename", "from": "irradiance.color", "to": "irradiance.manualColor"},
+                {"op": "setValue", "name": "irradiance.irradianceColorSource", "value": "Manual"}
             ]
         }
     ],
