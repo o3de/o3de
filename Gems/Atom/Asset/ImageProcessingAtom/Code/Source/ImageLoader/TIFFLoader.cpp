@@ -375,7 +375,7 @@ namespace ImageProcessingAtom
                 for (uint32 imageX = 0; imageX < inputImageWidth; imageX += tileWidth)
                 {
                     // Either read in a tile or a scanline
-                    auto result = isTiled?
+                    [[maybe_unused]] auto result = isTiled?
                         TIFFReadTile(tif, buf.data(), imageX, imageY, 0, 0):
                         TIFFReadScanline(tif, buf.data(), imageY);
 
