@@ -22,7 +22,7 @@ namespace AZ::Dom::Utils
         return backend.ReadFromBufferInPlace(string.data(), string.size(), visitor);
     }
 
-    AZ::Outcome<Value, AZStd::string> AZ::Dom::Utils::SerializedStringToValue(
+    AZ::Outcome<Value, AZStd::string> SerializedStringToValue(
         Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime)
     {
         return WriteToValue(
@@ -32,7 +32,7 @@ namespace AZ::Dom::Utils
             });
     }
 
-    AZ::Outcome<void, AZStd::string> AZ::Dom::Utils::ValueToSerializedString(Backend& backend, Dom::Value value, AZStd::string& buffer)
+    AZ::Outcome<void, AZStd::string> ValueToSerializedString(Backend& backend, Dom::Value value, AZStd::string& buffer)
     {
         Dom::Visitor::Result result = backend.WriteToBuffer(
             buffer,
