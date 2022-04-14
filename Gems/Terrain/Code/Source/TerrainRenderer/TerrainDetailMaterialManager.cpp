@@ -18,6 +18,7 @@
 #include <Atom/Utils/MaterialUtils.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
+#include <SurfaceData/Utility/SurfaceDataUtility.h>
 
 namespace Terrain
 {
@@ -954,16 +955,9 @@ namespace Terrain
         AZ::Vector2 stepSize(m_detailTextureScale);
         AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(m_detailTextureScale * 0.5f)); // offset by half a pixel
 
-        {
-            // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
-            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
-            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, offsetWorldAabb, stepSize, perPositionCallback,
-                AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
-        }
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, offsetWorldAabb, stepSize, perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
 
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;
@@ -999,7 +993,7 @@ namespace Terrain
     {
         for (const auto& materialRegion : m_detailMaterialRegions.GetDataVector())
         {
-            if (materialRegion.m_region.Contains(AZ::Vector3(position.GetX(), position.GetY(), 0.0f)))
+            if (SurfaceData::AabbContains2D(materialRegion.m_region, position))
             {
                 return &materialRegion;
             }

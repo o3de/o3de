@@ -1016,6 +1016,8 @@ void TerrainSystem::ProcessHeightsFromList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1040,6 +1042,8 @@ void TerrainSystem::ProcessNormalsFromList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1064,6 +1068,8 @@ void TerrainSystem::ProcessSurfaceWeightsFromList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1088,6 +1094,8 @@ void TerrainSystem::ProcessSurfacePointsFromList(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1121,6 +1129,8 @@ void TerrainSystem::ProcessHeightsFromListOfVector2(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1136,6 +1146,8 @@ void TerrainSystem::ProcessNormalsFromListOfVector2(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1151,6 +1163,8 @@ void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1166,6 +1180,8 @@ void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (!perPositionCallback)
     {
         return;
@@ -1210,6 +1226,8 @@ void TerrainSystem::ProcessHeightsFromRegion(
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     // Don't bother processing if we don't have a callback
     if (!perPositionCallback)
     {
@@ -1219,6 +1237,11 @@ void TerrainSystem::ProcessHeightsFromRegion(
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
 
     AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize, sampler);
+
+    if (inPositions.empty())
+    {
+        return;
+    }
 
     AZStd::vector<bool> terrainExists(inPositions.size());
     AZStd::vector<float> heights(inPositions.size());
@@ -1243,6 +1266,8 @@ void TerrainSystem::ProcessNormalsFromRegion(
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     // Don't bother processing if we don't have a callback
     if (!perPositionCallback)
     {
@@ -1252,6 +1277,11 @@ void TerrainSystem::ProcessNormalsFromRegion(
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
 
     AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize, sampler);
+
+    if (inPositions.empty())
+    {
+        return;
+    }
 
     AZStd::vector<bool> terrainExists(inPositions.size());
     AZStd::vector<AZ::Vector3> normals(inPositions.size());
@@ -1277,6 +1307,8 @@ void TerrainSystem::ProcessSurfaceWeightsFromRegion(
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     // Don't bother processing if we don't have a callback
     if (!perPositionCallback)
     {
@@ -1286,6 +1318,11 @@ void TerrainSystem::ProcessSurfaceWeightsFromRegion(
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
 
     AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize, sampler);
+
+    if (inPositions.empty())
+    {
+        return;
+    }
 
     AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList(inPositions.size());
     AZStd::vector<bool> terrainExists(inPositions.size());
@@ -1311,6 +1348,8 @@ void TerrainSystem::ProcessSurfacePointsFromRegion(
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     // Don't bother processing if we don't have a callback
     if (!perPositionCallback)
     {
@@ -1320,6 +1359,11 @@ void TerrainSystem::ProcessSurfacePointsFromRegion(
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
 
     AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize, sampler);
+
+    if (inPositions.empty())
+    {
+        return;
+    }
 
     AZStd::vector<float> heights(inPositions.size());
     AZStd::vector<AZ::Vector3> normals(inPositions.size());
@@ -1451,11 +1495,6 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
     if (terrainSettingsChanged || m_terrainHeightDirty || m_terrainSurfacesDirty)
     {
-        // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-        // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
-        auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-        typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
         Terrain::TerrainDataChangedMask changeMask = Terrain::TerrainDataChangedMask::None;
 
         if (terrainSettingsChanged)

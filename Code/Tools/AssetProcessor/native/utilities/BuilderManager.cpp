@@ -296,7 +296,7 @@ namespace AssetProcessor
         }
         else if (jobCancelListener && jobCancelListener->IsCancelled())
         {
-            AZ_Error("Builder", false, "Job request was cancelled");
+            AZ_Error("Builder", false, "Job request was canceled");
             TerminateProcess(AZ::u32(-1)); // Terminate the builder. Even if it isn't deadlocked, we can't put it back in the pool while it's busy.
             return BuilderRunJobOutcome::JobCancelled;
         }

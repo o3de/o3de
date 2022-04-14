@@ -1,6 +1,6 @@
 {
     "materialType": "Materials/Types/EnhancedPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 6,
     "parentMaterial": "TestData/Materials/StandardPbrTestCases/103_DetailMaps_BaseColor.material",
     "propertyValues": {
         "detailLayerGroup.baseColorDetailBlend": 1.0,

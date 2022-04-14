@@ -37,10 +37,10 @@ ly_add_target(
             External
     BUILD_DEPENDENCIES
         PRIVATE
-            AZ::AtomCore
             AZ::AzCore
             AZ::AzFramework
         PUBLIC
+            AZ::AtomCore
             Gem::Atom_RHI.Public
 )
 

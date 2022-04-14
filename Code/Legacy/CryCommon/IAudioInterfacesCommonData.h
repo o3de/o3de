@@ -10,6 +10,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -63,29 +64,36 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // <title EAudioRequestStatus>
     // Summary:
-    //      An enum that lists possible statuses of an AudioRequest.
-    //      Used as a return type for many function used by the AudioSystem internally,
+    //      An enum that lists possible statuses of an in-progress AudioRequest.
+    //      Used as a return type for many function used by the AudioSystem/ATL internally,
     //      and also for most of the IAudioSystemImplementation calls.
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioRequestStatus : TATLEnumFlagsType
+    enum class EAudioRequestStatus
     {
-        eARS_NONE = 0,
-        eARS_SUCCESS = 1,
-        eARS_PARTIAL_SUCCESS = 2,
-        eARS_FAILURE = 3,
-        eARS_PENDING = 4,
-        eARS_FAILURE_INVALID_OBJECT_ID = 5,
-        eARS_FAILURE_INVALID_CONTROL_ID = 6,
-        eARS_FAILURE_INVALID_REQUEST = 7,
+        None,
+        Success,
+        Failure,
+        PartialSuccess,
+        Pending,
+        FailureInvalidObjectId,
+        FailureInvalidControlId,
+        FailureInvalidRequest,
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    enum class EAudioRequestResult
+    {
+        Success,
+        Failure,
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //! Converts a boolean value to an EAudioRequestStatus.
     //! @param result The boolean value to convert.
-    //! @return eARS_SUCCESS if result is true, eARS_FAILURE otherwise.
+    //! @return Success if result is true, Failure otherwise.
     inline EAudioRequestStatus BoolToARS(bool result)
     {
-        return result ? eARS_SUCCESS : eARS_FAILURE;
+        return result ? EAudioRequestStatus::Success : EAudioRequestStatus::Failure;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,32 +193,12 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     enum EAudioRequestFlags : TATLEnumFlagsType
     {
-        eARF_NONE                   = 0,                // assumes Lowest priority
-        eARF_PRIORITY_NORMAL        = AUDIO_BIT(0),    // will be processed if no high priority requests are pending
-        eARF_PRIORITY_HIGH          = AUDIO_BIT(1),    // will be processed first
-        eARF_EXECUTE_BLOCKING       = AUDIO_BIT(2),    // blocks main thread until the request has been fully handled
-        eARF_SYNC_CALLBACK          = AUDIO_BIT(3),    // callback (ATL's NotifyListener) will happen on the main thread
-        eARF_SYNC_FINISHED_CALLBACK = AUDIO_BIT(4),    // "finished trigger instance" callback will happen on the main thread
-        eARF_THREAD_SAFE_PUSH       = AUDIO_BIT(5),    // use when pushing a request from a non-main thread, e.g. AK::EventManager or AudioThread
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioRequestType : TATLEnumFlagsType
-    {
-        eART_NONE                           = 0,
-        eART_AUDIO_MANAGER_REQUEST          = 1,
-        eART_AUDIO_CALLBACK_MANAGER_REQUEST = 2,
-        eART_AUDIO_OBJECT_REQUEST           = 3,
-        eART_AUDIO_LISTENER_REQUEST         = 4,
-        eART_AUDIO_ALL_REQUESTS             = static_cast<TATLEnumFlagsType>(-1),
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioRequestResult : TATLEnumFlagsType
-    {
-        eARR_NONE       = 0,
-        eARR_SUCCESS    = 1,
-        eARR_FAILURE    = 2,
+        eARF_NONE           = 0,
+        eARF_SYNC_CALLBACK  = AUDIO_BIT(0), // Indicates the callback will be called on the audio
+                                            // thread immediately after the request has been handled.
+                                            // If it's a blocking request, this means the callback is
+                                            // executed before main thread is unblocked.
+                                            // Care should be taken to avoid any data races.
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,9 +206,19 @@ namespace Audio
     {
         eAES_NONE               = 0,
         eAES_PLAYING            = 1,
-        eAES_PLAYING_DELAYED    = 2,
         eAES_LOADING            = 3,
         eAES_UNLOADING          = 4,
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    enum EATLTriggerStatus : TATLEnumFlagsType
+    {
+        eATS_NONE                       = 0,
+        eATS_PLAYING                    = AUDIO_BIT(0),
+        eATS_PREPARED                   = AUDIO_BIT(1),
+        eATS_LOADING                    = AUDIO_BIT(2),
+        eATS_UNLOADING                  = AUDIO_BIT(3),
+        eATS_STARTING                   = AUDIO_BIT(4),
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -281,24 +279,10 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioInputConfig
     {
-        SAudioInputConfig()
-            : m_sourceId(INVALID_AUDIO_SOURCE_ID)
-            , m_sampleRate(0)
-            , m_numChannels(0)
-            , m_bitsPerSample(0)
-            , m_bufferSize(0)
-            , m_sampleType(AudioInputSampleType::Unsupported)
-            , m_autoUnloadFile(false)
-        {}
+        SAudioInputConfig() = default;
 
         SAudioInputConfig(AudioInputSourceType sourceType, const char* filename, bool autoUnloadFile = true)
-            : m_sourceId(INVALID_AUDIO_SOURCE_ID)
-            , m_sampleRate(0)
-            , m_numChannels(0)
-            , m_bitsPerSample(0)
-            , m_bufferSize(0)
-            , m_sourceType(sourceType)
-            , m_sampleType(AudioInputSampleType::Unsupported)
+            : m_sourceType(sourceType)
             , m_sourceFilename(filename)
             , m_autoUnloadFile(autoUnloadFile)
         {}
@@ -309,13 +293,11 @@ namespace Audio
             AZ::u32 numChannels,
             AZ::u32 bitsPerSample,
             AudioInputSampleType sampleType)
-            : m_sourceId(INVALID_AUDIO_SOURCE_ID)
-            , m_sampleRate(sampleRate)
+            : m_sampleRate(sampleRate)
             , m_numChannels(numChannels)
             , m_bitsPerSample(bitsPerSample)
             , m_sourceType(sourceType)
             , m_sampleType(sampleType)
-            , m_autoUnloadFile(false)
         {}
 
         void SetBufferSizeFromFrameCount(AZ::u32 frameCount)
@@ -329,15 +311,24 @@ namespace Audio
             return m_bufferSize / (m_bitsPerSample >> 3);
         }
 
-        TAudioSourceId m_sourceId;          // This is set later after the source is created
-        AZ::u32 m_sampleRate;               // 44100, 48000, ...
-        AZ::u32 m_numChannels;              // 1 = Mono, 2 = Stereo
-        AZ::u32 m_bitsPerSample;            // e.g. 16, 32
-        AZ::u32 m_bufferSize;               // Size in bytes
-        AudioInputSourceType m_sourceType;  // File, Synthesis, Microphone, ...
-        AudioInputSampleType m_sampleType;  // Int, Float
-        AZStd::string m_sourceFilename;
-        bool m_autoUnloadFile;              // For file types, specifies whether file should unload after playback finishes
+        //! Source Id, this is set after the source is created with the manager
+        TAudioSourceId m_sourceId{ INVALID_AUDIO_SOURCE_ID };
+        //! Sample rate of the source, e.g. 44100, 48000
+        AZ::u32 m_sampleRate{ 0 };
+        //! Number of channels, e.g. 1 = Mono, 2 = Stereo
+        AZ::u32 m_numChannels{ 0 };
+        //! Number of bits per sample, e.g. 16, 32
+        AZ::u32 m_bitsPerSample{ 0 };
+        //! Size of the buffer in bytes
+        AZ::u32 m_bufferSize{ 0 };
+        //! The type of the source, e.g. File, Synthesis, Microphone
+        AudioInputSourceType m_sourceType{ AudioInputSourceType::Unsupported };
+        //! The sample format, e.g. Int, Float
+        AudioInputSampleType m_sampleType{ AudioInputSampleType::Unsupported };
+        //! The filename of the source (if any)
+        AZStd::string m_sourceFilename{};
+        //! For files, whether the file should unload after playback completes
+        bool m_autoUnloadFile{ false };
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -374,40 +365,18 @@ namespace Audio
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct SAudioRequestDataBase
-    {
-        explicit SAudioRequestDataBase(const EAudioRequestType eType = eART_NONE)
-            : eRequestType(eType)
-        {}
-
-        virtual ~SAudioRequestDataBase() {}
-
-        const EAudioRequestType eRequestType;
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioSourceInfo
     {
-        TAudioSourceId m_sourceId;
-        TAudioFileId m_fileId;
-        TAudioFileCollectionId m_languageId;
-        TAudioFileLanguageId m_collectionId;
-        EAudioCodecType m_codecType;
+        TAudioSourceId m_sourceId{ INVALID_AUDIO_SOURCE_ID };
+        TAudioFileId m_fileId{ INVALID_AUDIO_FILE_ID };
+        TAudioFileCollectionId m_languageId{ INVALID_AUDIO_FILE_LANGUAGE_ID };
+        TAudioFileLanguageId m_collectionId{ INVALID_AUDIO_FILE_COLLECTION_ID };
+        EAudioCodecType m_codecType{ eACT_STREAM_PCM };
 
-        SAudioSourceInfo()
-            : m_sourceId(INVALID_AUDIO_SOURCE_ID)
-            , m_fileId(INVALID_AUDIO_FILE_ID)
-            , m_languageId(INVALID_AUDIO_FILE_LANGUAGE_ID)
-            , m_collectionId(INVALID_AUDIO_FILE_COLLECTION_ID)
-            , m_codecType(eACT_STREAM_PCM)
-        {}
+        SAudioSourceInfo() = default;
 
         SAudioSourceInfo(TAudioSourceId sourceId)
             : m_sourceId(sourceId)
-            , m_fileId(INVALID_AUDIO_FILE_ID)
-            , m_languageId(INVALID_AUDIO_FILE_LANGUAGE_ID)
-            , m_collectionId(INVALID_AUDIO_FILE_COLLECTION_ID)
-            , m_codecType(eACT_STREAM_PCM)
         {}
 
         SAudioSourceInfo(
@@ -425,151 +394,49 @@ namespace Audio
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct SAudioCallBackInfos
+    struct TriggerNotificationIdType
     {
-        struct UserData
+        AZ_TYPE_INFO(TriggerNotificationIdType, "{E355AC15-8C88-4BDD-8CCE-9999EC32F970}");
+        uintptr_t m_owner{ 0 };
+
+        TriggerNotificationIdType() = default;
+        ~TriggerNotificationIdType() = default;
+
+        TriggerNotificationIdType(void* owner)
+            : m_owner(reinterpret_cast<uintptr_t>(owner))
         {
-            UserData(void* userData)
-                : m_pUserData(userData)
-            {}
-
-            UserData(uint64_t userData)
-                : m_userData(userData)
-            {}
-
-            UserData& operator=(void* userData)
-            {
-                m_pUserData = userData;
-                return *this;
-            }
-
-            UserData& operator=(uint64_t userData)
-            {
-                m_userData = userData;
-                return *this;
-            }
-
-            operator void*() const
-            {
-                return m_pUserData;
-            }
-
-            operator uint64_t() const
-            {
-                return m_userData;
-            }
-
-            bool operator==(void* const userData)
-            {
-                return this->m_pUserData == userData;
-            }
-
-            bool operator==(uint64_t userData)
-            {
-                return this->m_userData == userData;
-            }
-
-            union
-            {
-                void* m_pUserData;
-                uint64_t m_userData;
-            };
-        };
-
-        SAudioCallBackInfos(const SAudioCallBackInfos& rOther)
-            : pObjectToNotify(rOther.pObjectToNotify)
-            , pUserData(rOther.pUserData)
-            , pUserDataOwner(rOther.pUserDataOwner)
-            , nRequestFlags(rOther.nRequestFlags)
+        }
+        TriggerNotificationIdType(AZ::EntityId owner)
+            : m_owner(static_cast<uintptr_t>(static_cast<AZ::u64>(owner)))
         {
         }
 
-        explicit SAudioCallBackInfos(
-            void* const pPassedObjectToNotify = nullptr,
-            UserData pPassedUserData = nullptr,
-            void* const pPassedUserDataOwner = nullptr,
-            const TATLEnumFlagsType nPassedRequestFlags = eARF_PRIORITY_NORMAL)
-            : pObjectToNotify(pPassedObjectToNotify)
-            , pUserData(pPassedUserData)
-            , pUserDataOwner(pPassedUserDataOwner)
-            , nRequestFlags(nPassedRequestFlags)
+        inline bool operator==(const TriggerNotificationIdType& rhs) const
         {
+            return (m_owner == rhs.m_owner);
         }
 
-        static const SAudioCallBackInfos& GetEmptyObject()
+        inline bool operator!=(const TriggerNotificationIdType& rhs) const
         {
-            static SAudioCallBackInfos emptyInstance;
-            return emptyInstance;
+            return !(*this == rhs); 
         }
-
-        void* const pObjectToNotify;
-        UserData pUserData;
-        void* const pUserDataOwner;
-        const TATLEnumFlagsType nRequestFlags;
     };
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct SAudioRequest
-    {
-        SAudioRequest()
-            : nFlags(eARF_NONE)
-            , nAudioObjectID(INVALID_AUDIO_OBJECT_ID)
-            , pOwner(nullptr)
-            , pUserData(nullptr)
-            , pUserDataOwner(nullptr)
-            , pData(nullptr)
-        {}
-
-        ~SAudioRequest() {}
-
-        SAudioRequest(const SAudioRequest& other) = delete;
-        SAudioRequest& operator=(const SAudioRequest& other) = delete;
-
-        TATLEnumFlagsType nFlags;
-        TAudioObjectID nAudioObjectID;
-        void* pOwner;
-        void* pUserData;
-        void* pUserDataOwner;
-        SAudioRequestDataBase* pData;
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct SAudioRequestInfo
-    {
-        explicit SAudioRequestInfo(
-            const EAudioRequestResult ePassedResult,
-            void* const pPassedOwner,
-            void* const pPassedUserData,
-            void* const pPassedUserDataOwner,
-            const EAudioRequestType ePassedAudioRequestType,
-            const TATLEnumFlagsType nPassedSpecificAudioRequest,
-            const TAudioControlID nPassedAudioControlID,
-            const TAudioObjectID nPassedAudioObjectID,
-            const TAudioEventID passedAudioEventID)
-            : eResult(ePassedResult)
-            , pOwner(pPassedOwner)
-            , pUserData(pPassedUserData)
-            , pUserDataOwner(pPassedUserDataOwner)
-            , eAudioRequestType(ePassedAudioRequestType)
-            , nSpecificAudioRequest(nPassedSpecificAudioRequest)
-            , nAudioControlID(nPassedAudioControlID)
-            , nAudioObjectID(nPassedAudioObjectID)
-            , audioEventID(passedAudioEventID)
-        {}
-
-        const EAudioRequestResult eResult;
-        void* const pOwner;
-        void* const pUserData;
-        void* const pUserDataOwner;
-        const EAudioRequestType eAudioRequestType;
-        const TATLEnumFlagsType nSpecificAudioRequest;
-        const TAudioControlID nAudioControlID;
-        const TAudioObjectID nAudioObjectID;
-        const TAudioEventID audioEventID;
-    };
 
 } // namespace Audio
 
+namespace AZStd
+{
+    template<>
+    struct hash<Audio::TriggerNotificationIdType>
+    {
+        constexpr size_t operator()(const Audio::TriggerNotificationIdType& id) const
+        {
+            AZStd::hash<uintptr_t> hasher;
+            return hasher(id.m_owner);
+        }
+    };
+} // namespace AZStd
 
 namespace AZ
 {

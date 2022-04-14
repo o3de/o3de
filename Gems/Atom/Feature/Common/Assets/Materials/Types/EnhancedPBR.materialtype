@@ -1,6 +1,6 @@
 {
     "description": "Material Type with properties used to define Enhanced PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model, with advanced features like subsurface scattering, transmission, and anisotropy.",
-    "version": 5,
+    "version": 6,
     "versionUpdates": [
         {
             "toVersion": 4,
@@ -18,6 +18,13 @@
                 {"op": "rename", "from": "detailUV.offsetV", "to": "detailLayerGroup.detailUV.offsetV"},
                 {"op": "rename", "from": "detailUV.rotateDegrees", "to": "detailLayerGroup.detailUV.rotateDegrees"},
                 {"op": "rename", "from": "detailUV.scale", "to": "detailLayerGroup.detailUV.scale"}
+            ]
+        },
+        {
+            "toVersion": 6,
+            "actions": [
+                {"op": "rename", "from": "irradiance.color", "to": "irradiance.manualColor"},
+                {"op": "setValue", "name": "irradiance.irradianceColorSource", "value": "Manual"}
             ]
         }
     ],

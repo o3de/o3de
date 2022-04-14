@@ -31,7 +31,7 @@ namespace ScriptCanvas
                 }
                 else
                 {
-                    AZStd::string_view argumentTypeName = replaceTypeName;
+                    AZStd::string argumentTypeName = replaceTypeName;
                     if (argumentTypeName.empty())
                     {
                         if (AZ::BehaviorContextHelper::IsStringParameter(*argument))
@@ -52,7 +52,7 @@ namespace ScriptCanvas
                     }
                     else
                     {
-                        return AZStd::string::format("%s:%2zu", argumentTypeName.data(), argIndex);
+                        return AZStd::string::format("%s:%2zu", argumentTypeName.c_str(), argIndex);
                     }
                 }
             }

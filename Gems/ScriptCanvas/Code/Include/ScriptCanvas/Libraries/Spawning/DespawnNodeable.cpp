@@ -6,67 +6,41 @@
  *
  */
 
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 #include <ScriptCanvas/Libraries/Spawning/DespawnNodeable.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
     DespawnNodeable::DespawnNodeable([[maybe_unused]] const DespawnNodeable& rhs)
     {
-        // this method is required by Script Canvas, left intentionally blank to avoid copying m_despawnedTicketList
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_SpawnableScriptMediator
     }
 
     DespawnNodeable& DespawnNodeable::operator=([[maybe_unused]] const DespawnNodeable& rhs)
     {
-        // this method is required by Script Canvas, left intentionally blank to avoid copying m_despawnedTicketList
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_SpawnableScriptMediator
         return *this;
     }
-
-    void DespawnNodeable::OnInitializeExecutionState()
-    {
-        if (!AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusConnect();
-        }
-    }
-
+    
     void DespawnNodeable::OnDeactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
-        m_despawnedTicketList.clear(); // clears any cached SpawnTickets that may remain so everything despawns
-        m_despawnedTicketList.shrink_to_fit();
+        m_spawnableScriptMediator.Clear();
+        AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler::BusDisconnect();
     }
 
-    void DespawnNodeable::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+    void DespawnNodeable::OnDespawn(AzFramework::EntitySpawnTicket spawnTicket)
     {
-        AZStd::vector<SpawnTicketInstance> swappedDespawnedTicketList;
-        {
-            AZStd::lock_guard lock(m_mutex);
-            swappedDespawnedTicketList.swap(m_despawnedTicketList);
-        }
-
-        for (const auto& spawnTicket : swappedDespawnedTicketList)
-        {
-            CallOnDespawn(spawnTicket);
-        }
+        AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler::BusDisconnect(spawnTicket.GetId());
+        CallOnDespawn(spawnTicket);
     }
 
-    void DespawnNodeable::RequestDespawn(SpawnTicketInstance spawnTicket)
+    void DespawnNodeable::RequestDespawn(AzFramework::EntitySpawnTicket spawnTicket)
     {
-        if (!spawnTicket.m_ticket)
+        using namespace AzFramework;
+
+        if (m_spawnableScriptMediator.Despawn(spawnTicket))
         {
-            return;
+            Scripts::SpawnableScriptNotificationsBus::Handler::BusConnect(spawnTicket.GetId());
         }
-
-        auto despawnCompleteCB = [this, spawnTicket]([[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId)
-        {
-            AZStd::lock_guard lock(m_mutex);
-            // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
-            // and to provide easier access to it in OnDespawn callback
-            m_despawnedTicketList.push_back(spawnTicket);
-        };
-
-        AzFramework::DespawnAllEntitiesOptionalArgs optionalArgs;
-        optionalArgs.m_completionCallback = AZStd::move(despawnCompleteCB);
-        AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(*spawnTicket.m_ticket, AZStd::move(optionalArgs));
     }
 } // namespace ScriptCanvas::Nodeables::Spawning

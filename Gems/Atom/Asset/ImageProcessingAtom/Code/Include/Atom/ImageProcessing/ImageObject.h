@@ -122,6 +122,8 @@ namespace ImageProcessingAtom
         virtual void SetNumPersistentMips(AZ::u32 nMips) = 0;
         virtual float GetAverageBrightness() const = 0;
         virtual void SetAverageBrightness(float avgBrightness) = 0;
+        virtual AZ::Color GetAverageColor() const = 0;
+        virtual void SetAverageColor(const AZ::Color& averageColor) = 0;
 
         // Derive new roughness from normal variance to preserve the bumpiness of normal map mips and to reduce specular aliasing.
         // The derived roughness is combined with the artist authored roughness stored in the alpha channel of the normal map.

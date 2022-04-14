@@ -113,14 +113,6 @@ namespace EMStudio
         }
     }
 
-
-    // get the compile date
-    const char* TimeViewPlugin::GetCompileDate() const
-    {
-        return MCORE_DATE;
-    }
-
-
     // get the name
     const char* TimeViewPlugin::GetName() const
     {
@@ -133,29 +125,6 @@ namespace EMStudio
     {
         return TimeViewPlugin::CLASS_ID;
     }
-
-
-    // get the creator name
-    const char* TimeViewPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-
-    // get the version
-    float TimeViewPlugin::GetVersion() const
-    {
-        return 1.0f;
-    }
-
-
-    // clone the log window
-    EMStudioPlugin* TimeViewPlugin::Clone()
-    {
-        TimeViewPlugin* newPlugin = new TimeViewPlugin();
-        return newPlugin;
-    }
-
 
     // on before remove plugin
     void TimeViewPlugin::OnBeforeRemovePlugin(uint32 classID)

@@ -107,11 +107,6 @@ namespace GradientSignal
         float output = 0.0f;
 
         {
-            // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
-            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
             if (GradientRequestBus::HasReentrantEBusUseThisThread())
             {
                 AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references on entity id %s",
@@ -172,11 +167,6 @@ namespace GradientSignal
         }
 
         {
-            // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
-            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
             if (GradientRequestBus::HasReentrantEBusUseThisThread())
             {
                 AZ_ErrorOnce(

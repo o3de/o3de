@@ -141,12 +141,6 @@ namespace EMStudio
         delete m_dirtyFilesCallback;
     }
 
-    EMStudioPlugin* MotionSetsWindowPlugin::Clone()
-    {
-        MotionSetsWindowPlugin* newPlugin = new MotionSetsWindowPlugin();
-        return newPlugin;
-    }
-
     // init after the parent dock window has been created
     bool MotionSetsWindowPlugin::Init()
     {

@@ -241,7 +241,7 @@ def _launcher(request, workspace, launcher_platform, level=""):
             workspace, launcher_platform)
     else:
         launcher = ly_test_tools.launchers.launcher_helper.create_game_launcher(
-            workspace, launcher_platform, ['+map', level])
+            workspace, launcher_platform, ['+LoadLevel', level])
 
     def teardown():
         launcher.stop()
@@ -274,7 +274,7 @@ def _dedicated_launcher(request, workspace, launcher_platform, level=""):
             workspace, launcher_platform)
     else:
         launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
-            workspace, launcher_platform, ['+map', level])
+            workspace, launcher_platform, ['+LoadLevel', level])
 
     def teardown():
         launcher.stop()
