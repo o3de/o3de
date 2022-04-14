@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Quaternion.h>
 #include <SandboxAPI.h>
 
 namespace AZ
@@ -34,4 +35,12 @@ namespace SandboxEditor
 
     //! Get the default viewport camera transform.
     SANDBOX_API AZ::Transform GetDefaultViewportCameraTransform();
+
+    //! Returns a quaternion representing a pitch/yaw rotation for a camera.
+    //! @param pitch Amount of pitch in radians.
+    //! @param yaw Amount of yaw in radians.
+    inline AZ::Quaternion CameraRotation(const float pitch, const float yaw)
+    {
+        return AZ::Quaternion::CreateRotationZ(yaw) * AZ::Quaternion::CreateRotationX(pitch);
+    }
 } // namespace SandboxEditor

@@ -103,8 +103,7 @@ namespace UnitTest
 
             // Get our registered modifier handle (and verify that it's valid)
             SurfaceData::SurfaceDataRegistryHandle modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
-            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
-                modifierHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle, entity->GetId());
+            modifierHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfaceDataModifierHandle(entity->GetId());
             EXPECT_TRUE(modifierHandle != SurfaceData::InvalidSurfaceDataRegistryHandle);
 
             // Call ModifySurfacePoints and verify the results

@@ -27,8 +27,8 @@ namespace AZ
             //! Creates a EditorModeBlurPass
             static RPI::Ptr<EditorModeBlurPass> Create(const RPI::PassDescriptor& descriptor);
 
-            //! Sets the width of kernal to apply box blur effect.
-            void SetKernalWidth(float width);
+            //! Sets the half width of kernel to apply box blur effect.
+            void SetKernelHalfWidth(float width);
 
         protected:
             EditorModeBlurPass(const RPI::PassDescriptor& descriptor);
@@ -41,8 +41,8 @@ namespace AZ
             //! Sets the shader constant values for the blur effect.
             void SetSrgConstants();
 
-            RHI::ShaderInputNameIndex m_kernalWidthIndex = "m_kernalWidth";
-            float m_kernalWidth = 5.0f; //!< Default kernal width for the blur effect.
+            RHI::ShaderInputNameIndex m_kernelHalfWidthIndex = "m_kernelHalfWidth";
+            float m_kernelHalfWidth = 5.0f; //!< Default kernel half width for the blur effect.
         };
     }   // namespace Render
 }   // namespace AZ

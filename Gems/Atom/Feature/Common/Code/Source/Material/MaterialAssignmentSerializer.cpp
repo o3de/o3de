@@ -9,6 +9,8 @@
 #include <Material/MaterialAssignmentSerializer.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
 
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+
 namespace AZ
 {
     namespace Render
@@ -36,6 +38,20 @@ namespace AZ
                 result.Combine(ContinueLoadingFromJsonObjectField(
                     &materialAssignment->m_materialAsset, azrtti_typeid<decltype(materialAssignment->m_materialAsset)>(), inputValue,
                     "MaterialAsset", context));
+            }
+
+            if (inputValue.HasMember("ModelUvOverrides"))
+            {
+                AZStd::unordered_map<AZStd::string, AZStd::string> uvOverrideMap;
+                result.Combine(ContinueLoadingFromJsonObjectField(
+                    &uvOverrideMap, azrtti_typeid<decltype(uvOverrideMap)>(), inputValue, "ModelUvOverrides", context));
+
+                materialAssignment->m_matModUvOverrides.clear();
+                for (const auto& uvOverride : uvOverrideMap)
+                {
+                    const AZ::RHI::ShaderSemantic semantic(AZ::RHI::ShaderSemantic::Parse(uvOverride.first));
+                    materialAssignment->m_matModUvOverrides[semantic] = AZ::Name(uvOverride.second);
+                }
             }
 
             if (inputValue.HasMember("PropertyOverrides") && inputValue["PropertyOverrides"].IsObject())
@@ -66,6 +82,7 @@ namespace AZ
                             LoadAny<AZ::Data::AssetId>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::Data::AssetData>>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, inputPropertyPair.value, context, result) ||
+                            LoadAny<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(propertyValue, inputPropertyPair.value, context, result))
                         {
                             materialAssignment->m_propertyOverrides[propertyName] = propertyValue;
@@ -113,6 +130,24 @@ namespace AZ
             }
 
             {
+                AZ::ScopedContextPath subPathPropertyOverrides(context, "m_matModUvOverrides");
+                if (!materialAssignment->m_matModUvOverrides.empty())
+                {
+                    // Convert the model material UV overrides to a map of strings for simple serialization
+                    AZStd::unordered_map<AZStd::string, AZStd::string> uvOverrideMap;
+                    AZStd::unordered_map<AZStd::string, AZStd::string> uvOverrideMapDefault;
+                    for (const auto& matModUvOverride : materialAssignment->m_matModUvOverrides)
+                    {
+                        uvOverrideMap[matModUvOverride.first.ToString()] = matModUvOverride.second.GetStringView();
+                    }
+
+                    result.Combine(ContinueStoringToJsonObjectField(
+                        outputValue, "ModelUvOverrides", &uvOverrideMap, &uvOverrideMapDefault, azrtti_typeid<decltype(uvOverrideMap)>(),
+                        context));
+                }
+            }
+
+            {
                 AZ::ScopedContextPath subPathPropertyOverrides(context, "m_propertyOverrides");
                 if (!materialAssignment->m_propertyOverrides.empty())
                 {
@@ -146,7 +181,9 @@ namespace AZ
                                 StoreAny<AZ::Data::AssetId>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::Data::AssetData>>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(propertyValue, outputPropertyValue, context, result))
+                                StoreAny<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(propertyValue, outputPropertyValue, context, result) ||
+                                StoreAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(
+                                    propertyValue, outputPropertyValue, context, result))
                             {
                                 outputPropertyValueContainer.AddMember(
                                     rapidjson::Value::StringRefType(propertyName.GetCStr()), outputPropertyValue,
@@ -218,3 +255,4 @@ namespace AZ
         }
     } // namespace Render
 } // namespace AZ
+

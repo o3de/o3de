@@ -121,9 +121,9 @@ namespace AzFramework
             case XCB_BUTTON_INDEX_1:
                 return &InputDeviceMouse::Button::Left;
             case XCB_BUTTON_INDEX_2:
-                return &InputDeviceMouse::Button::Right;
-            case XCB_BUTTON_INDEX_3:
                 return &InputDeviceMouse::Button::Middle;
+            case XCB_BUTTON_INDEX_3:
+                return &InputDeviceMouse::Button::Right;
             case XCB_BUTTON_INDEX_4:
                 isWheel = true;
                 direction = 1.0f;

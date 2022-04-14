@@ -407,7 +407,8 @@ namespace EMotionFX::MotionMatching
 
                 // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
                 PoseDataJointVelocities* velocityPoseData = m_queryPose.GetAndPreparePoseData<PoseDataJointVelocities>(m_actorInstance);
-                velocityPoseData->CalculateVelocity(m_actorInstance, m_motionInstance->GetMotion(), newMotionTime, m_cachedTrajectoryFeature->GetRelativeToNodeIndex());
+                AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(m_actorInstance->GetThreadIndex())->GetPosePool();
+                velocityPoseData->CalculateVelocity(m_actorInstance, posePool, m_motionInstance->GetMotion(), newMotionTime, m_cachedTrajectoryFeature->GetRelativeToNodeIndex());
             }
 
             const FeatureMatrix& featureMatrix = m_data->GetFeatureMatrix();

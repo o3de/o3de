@@ -77,12 +77,8 @@ namespace AzToolsFramework
         virtual bool SaveBookmark(const ViewBookmark& bookmark) = 0;
         virtual bool ModifyBookmarkAtIndex(const ViewBookmark& bookmark, int index) = 0;
         virtual bool SaveLastKnownLocation(const ViewBookmark& bookmark) = 0;
-        virtual bool LoadViewBookmarks() = 0;
         virtual AZStd::optional<ViewBookmark> LoadBookmarkAtIndex(int index) = 0;
         virtual AZStd::optional<ViewBookmark> LoadLastKnownLocation() const = 0;
         virtual bool RemoveBookmarkAtIndex(int index) = 0;
-
-    private:
-        virtual void SaveBookmarkSettingsFile() = 0;
     };
 } // namespace AzToolsFramework

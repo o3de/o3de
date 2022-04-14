@@ -28,6 +28,7 @@ set(FILES
     Tests/Common/ShaderAssetTestUtils.h
     Tests/Image/StreamingImageTests.cpp
     Tests/Material/LuaMaterialFunctorTests.cpp
+    Tests/Material/MaterialVersionUpdateTests.cpp
     Tests/Material/MaterialTypeAssetTests.cpp
     Tests/Material/MaterialTypeSourceDataTests.cpp
     Tests/Material/MaterialAssetTestUtils.cpp

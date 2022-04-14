@@ -74,26 +74,6 @@
 #include <QApplication>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
-// EMStudio plugins
-#include <EMotionStudio/Plugins/StandardPlugins/Source/LogWindow/LogWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/CommandBar/CommandBarPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/ActionHistory/ActionHistoryPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MorphTargetsWindow/MorphTargetsWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/Attachments/AttachmentsPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/SceneManagerPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventsPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeGroups/NodeGroupsPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
-#include <EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
-#include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
-#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Source/Editor/PropertyWidgets/PropertyTypes.h>
 #include <EMotionFX_Traits_Platform.h>
 
@@ -795,34 +775,6 @@ namespace EMotionFX
 #if defined (EMOTIONFXANIMATION_EDITOR)
 
         //////////////////////////////////////////////////////////////////////////
-        void InitializeEMStudioPlugins()
-        {
-            // Register EMFX plugins.
-            EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
-            pluginManager->RegisterPlugin(new EMStudio::LogWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::CommandBarPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::ActionHistoryPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::MotionWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::MorphTargetsWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::TimeViewPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::AttachmentsPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::SceneManagerPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::NodeWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::MotionEventsPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::MotionSetsWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::NodeGroupsPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::AnimGraphPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::OpenGLRenderPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::HitDetectionJointInspectorPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::SkeletonOutlinerPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::RagdollNodeInspectorPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::ClothJointInspectorPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::SimulatedObjectWidget());
-
-            SystemNotificationBus::Broadcast(&SystemNotificationBus::Events::OnRegisterPlugin);
-        }
-
-        //////////////////////////////////////////////////////////////////////////
         void SystemComponent::NotifyRegisterViews()
         {
             using namespace AzToolsFramework;
@@ -845,7 +797,13 @@ namespace EMotionFX
             MysticQt::Initializer::Init("", editorAssetsPath.c_str());
             m_emstudioManager = AZStd::make_unique<EMStudio::EMStudioManager>(qApp, argc, argv);
 
-            InitializeEMStudioPlugins();
+            // Register default plugins
+            EMStudio::PluginManager* pluginManager = EMStudio::GetManager()->GetPluginManager();
+            AZ_Assert(pluginManager, "The plugin manager should be initialized at the time the plugins get registered.");
+            pluginManager->RegisterDefaultPlugins();
+
+            // Let external gems register their plugins
+            SystemNotificationBus::Broadcast(&SystemNotificationBus::Events::OnRegisterPlugin);
 
             // Get the MainWindow the first time so it is constructed
             EMStudio::GetManager()->GetMainWindow();

@@ -539,6 +539,8 @@ set(FILES
     ComponentModes/BoxComponentMode.cpp
     ComponentModes/BoxViewportEdit.h
     ComponentModes/BoxViewportEdit.cpp
+    ComponentModes/CapsuleViewportEdit.h
+    ComponentModes/CapsuleViewportEdit.cpp
     ViewportSelection/EditorBoxSelect.h
     ViewportSelection/EditorBoxSelect.cpp
     ViewportSelection/EditorDefaultSelection.h
