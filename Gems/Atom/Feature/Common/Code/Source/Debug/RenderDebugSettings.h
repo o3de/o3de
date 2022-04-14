@@ -19,7 +19,6 @@ namespace AZ::Render
     class RenderDebugSettings final
         : public RenderDebugSettingsInterface
     {
-        friend class RenderDebugSettings;
         friend class RenderDebugFeatureProcessor;
 
     public:
