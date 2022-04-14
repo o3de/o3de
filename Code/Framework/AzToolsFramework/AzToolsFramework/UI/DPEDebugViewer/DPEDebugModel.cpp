@@ -7,7 +7,7 @@
  */
 
 #include "DPEDebugModel.h"
-#include <AZFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzCore/DOM/DomUtils.h>
 
 namespace AzToolsFramework
