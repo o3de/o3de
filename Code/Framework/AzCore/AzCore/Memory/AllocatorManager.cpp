@@ -264,6 +264,7 @@ AllocatorManager::GarbageCollect()
     {
         m_allocators[i]->GetSchema()->GarbageCollect();
     }
+    AZ_MALLOC_TRIM(0);
 }
 
 //=========================================================================
