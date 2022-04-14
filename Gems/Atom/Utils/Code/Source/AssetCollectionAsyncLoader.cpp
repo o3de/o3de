@@ -170,6 +170,7 @@ namespace AZ
         m_assetsToNotify.clear();
         m_assetIdStrToAssetPath.clear();
         m_readyAssets.clear();
+        m_notReadyAssets.clear();
     }
 
     void AssetCollectionAsyncLoader::PostNotifyReadyAssetsCB(Data::Asset<Data::AssetData> asset, bool success)
@@ -187,6 +188,7 @@ namespace AZ
 
             AZ_Assert(m_assetsToLoad.count(assetPath), "Asset with path %s, hint %s was not scheduled to load\n", assetPath.c_str(), asset.GetHint().c_str());
 
+            m_notReadyAssets.erase(assetPath);
             m_assetsToLoad.erase(assetPath);
             m_readyAssets[assetPath] = asset;
             m_assetsToNotify[assetPath] = success;
@@ -222,8 +224,8 @@ namespace AZ
 
         Data::AssetBus::MultiHandler::BusConnect(assetId);
         // Kick off asset loading.
-        auto asset = Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::PreLoad);
-        asset.BlockUntilLoadComplete();
+        auto asset = Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::QueueLoad);
+        m_notReadyAssets[assetPath] = asset;
     }
 
     ///////////////////////////////////////////////////////////////////////
