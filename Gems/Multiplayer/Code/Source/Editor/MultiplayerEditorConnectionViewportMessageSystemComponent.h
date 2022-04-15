@@ -10,6 +10,8 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <IEditor.h>
 #include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
 
 namespace Multiplayer
