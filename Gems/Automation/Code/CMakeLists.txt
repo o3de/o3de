@@ -50,13 +50,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             automation_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                Include
                 Tests
-                Source
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
                 AZ::AzFramework
                 Gem::Automation.Static
+        RUNTIME_DEPENDENCIES
+            Gem::Automation
     )
 
     ly_add_googletest(

@@ -8,33 +8,18 @@
 
 #include <AutomationApplicationFixture.h>
 
-#include <AutomationSystemComponent.h>
+#include <Automation/AutomationBus.h>
 
-#include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/IO/Streamer/StreamerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+
+#include <AzFramework/IO/LocalFileIO.h>
 
 
 namespace UnitTest
 {
-    namespace
-    {
-        // Helper function to avoid having duplicate components
-        template<typename T>
-        void AddComponentIfNotPresent(AZ::Entity* entity)
-        {
-            if (entity->FindComponent<T>() == nullptr)
-            {
-                entity->AddComponent(aznew T());
-            }
-        }
-    }
-
     void AutomationApplicationFixture::SetUp()
     {
         AllocatorsFixture::SetUp();
-        m_automationComponentDescriptor = Automation::AutomationSystemComponent::CreateDescriptor();
     }
 
     void AutomationApplicationFixture::TearDown()
@@ -47,42 +32,42 @@ namespace UnitTest
         AllocatorsFixture::TearDown();
     }
 
-    AZ::ComponentApplication* AutomationApplicationFixture::CreateApplication(AZStd::vector<const char*>&& args)
+    AzFramework::Application* AutomationApplicationFixture::CreateApplication(const char* scriptPath, bool exitOnFinish)
     {
-        // Create the application.
-        m_args = AZStd::move(args);
-        m_application = aznew AZ::ComponentApplication(
-            aznumeric_cast<int>(m_args.size()),
-            const_cast<char**>(m_args.data())
-        );
+        if (scriptPath)
+        {
+            m_args.push_back("--run-automation-suite");
+            m_args.push_back(scriptPath);
 
-        // Create a system entity.
+            if (exitOnFinish)
+            {
+                m_args.push_back("--exit-on-automation-end");
+            }
+        }
+
+        int argc = aznumeric_cast<int>(m_args.size());
+        char** argv = const_cast<char**>(m_args.data());
+
+        m_application = aznew AzFramework::Application(&argc, &argv);
+
+        // ensure the Automation gem is active
+        AZ::Test::AddActiveGem("Automation", *AZ::SettingsRegistry::Get(), AZ::IO::FileIOBase::GetInstance());
+
         AZ::ComponentApplication::Descriptor appDesc;
         appDesc.m_useExistingAllocator = true;
 
-        m_systemEntity = m_application->Create(appDesc);
+        AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
+        dynamicModuleDescriptor.m_dynamicLibraryPath = "Automation";
+        appDesc.m_modules.push_back(dynamicModuleDescriptor);
 
-        m_application->RegisterComponentDescriptor(m_automationComponentDescriptor);
-
-        // Ensure some core components are included on the system entity
-        AddComponentIfNotPresent<AZ::MemoryComponent>(m_systemEntity);
-        AddComponentIfNotPresent<AZ::AssetManagerComponent>(m_systemEntity);
-        AddComponentIfNotPresent<AZ::JobManagerComponent>(m_systemEntity);
-        AddComponentIfNotPresent<AZ::StreamerComponent>(m_systemEntity);
-
-        AddComponentIfNotPresent<Automation::AutomationSystemComponent>(m_systemEntity);
-
-        m_systemEntity->Init();
-        m_systemEntity->Activate();
+        m_application->Start(appDesc);
 
         return m_application;
     }
 
     void AutomationApplicationFixture::DestroyApplication()
     {
-        m_application->UnregisterComponentDescriptor(m_automationComponentDescriptor);
-
-        m_application->Destroy();
+        m_application->Stop();
         delete m_application;
         m_application = nullptr;
     }

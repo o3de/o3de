@@ -10,9 +10,10 @@
 
 #include <AzTest/AzTest.h>
 
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/fixed_vector.h>
+
+#include <AzFramework/Application/Application.h>
 
 
 namespace UnitTest
@@ -25,15 +26,15 @@ namespace UnitTest
         void TearDown() override;
 
     protected:
-        AZ::ComponentApplication* CreateApplication(AZStd::vector<const char*>&& args);
+        AzFramework::Application* CreateApplication(const char* scriptPath = nullptr, bool exitOnFinish = true);
         void DestroyApplication();
 
     private:
-        AZStd::vector<const char*> m_args;
+        using ArgumentContainer = AZStd::fixed_vector<const char*, 8>;
 
-        AZ::ComponentDescriptor* m_automationComponentDescriptor = nullptr;
-        AZ::ComponentApplication* m_application = nullptr;
+        ArgumentContainer m_args = { nullptr };
+        AZStd::string m_enginePath;
 
-        AZ::Entity* m_systemEntity = nullptr;
+        AzFramework::Application* m_application = nullptr;
     };
 } // namespace UnitTest

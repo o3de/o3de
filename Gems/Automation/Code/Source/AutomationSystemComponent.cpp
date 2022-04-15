@@ -13,6 +13,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
@@ -29,13 +30,16 @@ namespace Automation
     {
         AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const char* productPath)
         {
+            char resolvedPath[AZ_MAX_PATH_LEN] = {0};
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(productPath, resolvedPath, AZ_MAX_PATH_LEN);
+
             AZ::Data::AssetId assetId;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                 assetId,
                 &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                productPath,
-                AZ::Data::s_invalidAssetType,
-                false
+                resolvedPath,
+                AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid(),
+                true
             );
 
             if (assetId.IsValid())
@@ -47,7 +51,7 @@ namespace Automation
 
                 if (!asset.IsReady())
                 {
-                    AZ_Assert(false, "Could not load '%s'", productPath);
+                    AZ_Assert(false, "Could not load '%s'", resolvedPath);
                     return {};
                 }
 
