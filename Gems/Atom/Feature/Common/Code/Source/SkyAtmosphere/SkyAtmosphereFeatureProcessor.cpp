@@ -142,6 +142,20 @@ namespace AZ::Render
         m_passNeedsUpdate = true;
     }
 
+    void SkyAtmosphereFeatureProcessor::SetOriginAtSurface(AtmosphereId id, bool originAtSurface)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_originAtSurface = originAtSurface;
+        m_passNeedsUpdate = true;
+    }
+
+    void SkyAtmosphereFeatureProcessor::SetPlanetOrigin(AtmosphereId id, const AZ::Vector3& planetOrigin)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_planetOrigin = planetOrigin;
+        m_passNeedsUpdate = true;
+    }
+
     void SkyAtmosphereFeatureProcessor::SetPlanetRadius(AtmosphereId id, float radius)
     {
         auto& params = m_params.GetElement(id.GetIndex());

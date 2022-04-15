@@ -44,6 +44,8 @@ namespace AZ::Render
         void SetSunDirection(AtmosphereId id, const Vector3& direction) override;
         void SetSunIlluminance(AtmosphereId id, float illuminance) override;
         void SetMinMaxSamples(AtmosphereId id, uint32_t minSamples, uint32_t maxSamples) override;
+        void SetOriginAtSurface(AtmosphereId id, bool originAtSurface) override;
+        void SetPlanetOrigin(AtmosphereId id, const AZ::Vector3& planetOrigin) override;
         void SetRaleighScattering(AtmosphereId id, const AZ::Vector3& scattering) override;
         void SetMieScattering(AtmosphereId id, const AZ::Vector3& scattering) override;
         void SetAbsorptionExtinction(AtmosphereId id, const AZ::Vector3& extinction) override;

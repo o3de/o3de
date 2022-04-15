@@ -28,6 +28,7 @@ namespace AZ::Render
                 ->Field("MieScattering", &SkyAtmosphereComponentConfig::m_mieScattering)
                 ->Field("AbsorptionExtinction", &SkyAtmosphereComponentConfig::m_absorptionExtinction)
                 ->Field("RaleighScattering", &SkyAtmosphereComponentConfig::m_rayleighScattering)
+                ->Field("OriginAtSurface", &SkyAtmosphereComponentConfig::m_originAtSurface)
                 ;
         }
     }

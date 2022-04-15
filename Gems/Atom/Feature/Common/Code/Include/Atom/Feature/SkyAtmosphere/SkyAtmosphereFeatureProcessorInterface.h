@@ -29,6 +29,8 @@ namespace AZ::Render
         virtual void SetSunDirection(AtmosphereId id, const Vector3& direction) = 0;
         virtual void SetSunIlluminance(AtmosphereId id, float illuminance) = 0;
         virtual void SetMinMaxSamples(AtmosphereId id, uint32_t minSamples, uint32_t maxSamples) = 0;
+        virtual void SetOriginAtSurface(AtmosphereId id, bool originAtSurface) = 0;
+        virtual void SetPlanetOrigin(AtmosphereId id, const AZ::Vector3& planetOrigin) = 0;
         virtual void SetRaleighScattering(AtmosphereId id, const AZ::Vector3& scattering) = 0;
         virtual void SetMieScattering(AtmosphereId id, const AZ::Vector3& scattering) = 0;
         virtual void SetAbsorptionExtinction(AtmosphereId id, const AZ::Vector3& extinction) = 0;

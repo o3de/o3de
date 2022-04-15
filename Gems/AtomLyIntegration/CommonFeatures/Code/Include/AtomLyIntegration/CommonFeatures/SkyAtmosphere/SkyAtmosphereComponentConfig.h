@@ -33,5 +33,6 @@ namespace AZ::Render
         AZ::Vector3 m_absorptionExtinction = AZ::Vector3(0.000650f, 0.001881f, 0.000085f);
         AZ::Vector3 m_mieExtinction = AZ::Vector3(0.004440f, 0.004440f, 0.004440f);
         AZ::Vector3 m_groundAlbedo = AZ::Vector3(0.0f, 0.0f, 0.0f);
+        bool m_originAtSurface = true;
     };
 } // namespace AZ::Render
