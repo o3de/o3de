@@ -13,6 +13,8 @@ set(FILES
     
     Source/Components/RecastNavigationMeshComponent.cpp
     Source/Components/RecastNavigationMeshComponent.h
+    Source/Components/RecastNavigationMeshConfig.cpp
+    Source/Components/RecastNavigationMeshConfig.h
     Source/Components/RecastSmartPointer.h
     Source/Components/RecastHelpers.h
 )

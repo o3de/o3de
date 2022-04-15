@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "RecastNavigationMeshConfig.h"
+
 #include <DebugDraw.h>
 #include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
@@ -87,46 +89,7 @@ namespace RecastNavigation
 
         AZStd::unique_ptr<rcContext> m_context;
 
-        rcConfig m_config = {};
-
-        float m_cellSize = 0.3F;
-        float m_cellHeight = 0.2F;
-
-        float m_agentMaxSlope = 45;
-        float m_agentHeight = 2.0F;
-        float m_agentRadius = 0.75F;
-        float m_agentMaxClimb = 0.9F;
-
-        float m_edgeMaxError = 1.3F;
-        float m_edgeMaxLen = 12.0F;
-
-        float m_maxVertsPerPoly = 6;
-        float m_detailSampleDist = 6.0F;
-        float m_detailSampleMaxError = 1.0F;
-
-        float m_regionMinSize = 8;
-        float m_regionMergeSize = 20;
-
-        RecastPointer<rcHeightfield> m_solid;
-
-        AZStd::vector<AZ::u8> m_trianglesAreas;
-
-        bool m_keepInterResults = false;
-
-        bool m_filterLowHangingObstacles = true;
-        bool m_filterLedgeSpans = true;
-        bool m_filterWalkableLowHeightSpans = true;
-
-        RecastPointer<rcCompactHeightfield> m_chf;
-
-        RecastPointer<rcContourSet> m_contourSet;
-
-        RecastPointer<rcPolyMesh> m_pmesh;
-
-        RecastPointer<rcPolyMeshDetail> m_detailMesh;
-
-        RecastPointer<dtNavMesh> m_navMesh;
-        RecastPointer<dtNavMeshQuery> m_navQuery;
+        RecastNavigationMeshConfig m_meshConfig;
 
         class CustomDebugDraw final : public duDebugDraw
         {
