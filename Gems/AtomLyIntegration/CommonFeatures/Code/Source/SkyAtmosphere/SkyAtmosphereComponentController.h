@@ -10,13 +10,15 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/EntityBus.h>
 #include <Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h>
 #include <AtomLyIntegration/CommonFeatures/SkyAtmosphere/SkyAtmosphereComponentConfig.h>
 
 namespace AZ::Render
 {
     class SkyAtmosphereComponentController final
-        : public TransformNotificationBus::Handler
+        : public TransformNotificationBus::MultiHandler
+        , public EntityBus::Handler
     {
     public:
         friend class EditorSkyAtmosphereComponent;
@@ -40,6 +42,8 @@ namespace AZ::Render
 
         // TransformNotificationBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+
+        void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         TransformInterface* m_transformInterface = nullptr;
         SkyAtmosphereFeatureProcessorInterface* m_featureProcessorInterface = nullptr;

@@ -62,7 +62,7 @@ ShaderResourceGroup AtmosParamsSRG : SRG_PerPass
         float	top_radius; /////////////////
 
         float3	mie_absorption; ////////////
-        float	pad00;  // not used
+        float	pad1;  // not used
 
         float3	ground_albedo; ///////////
         float   pad0; //not used
@@ -79,6 +79,9 @@ ShaderResourceGroup AtmosParamsSRG : SRG_PerPass
 
         float2 RayMarchMinMaxSPP;
         float2  pad8;
+
+        float3	planet_origin; ///////////
+        float   origin_at_surface; 
 
         uint2 gResolution;
 		uint2 pad6;
@@ -124,6 +127,9 @@ struct AtmosphereParameters
 
 	// The albedo of the ground.
 	float3 GroundAlbedo;
+
+	float3 PlanetOrigin;
+	float OriginAtSurface;
 };
 
 AtmosphereParameters GetAtmosphereParameters()
@@ -148,6 +154,8 @@ AtmosphereParameters GetAtmosphereParameters()
 	Parameters.GroundAlbedo = AtmosParamsSRG::m_constants.ground_albedo;
 	Parameters.BottomRadius = AtmosParamsSRG::m_constants.bottom_radius;
 	Parameters.TopRadius = AtmosParamsSRG::m_constants.top_radius;
+	Parameters.PlanetOrigin = AtmosParamsSRG::m_constants.planet_origin;
+	Parameters.OriginAtSurface = AtmosParamsSRG::m_constants.origin_at_surface;
 
 	return Parameters;
 }

@@ -36,6 +36,8 @@ namespace AZ::Render
         struct AtmosphereParams 
         {
             bool m_enabled = true;
+            bool m_originAtSurface = true;
+            AZ::Vector3 m_planetOrigin = AZ::Vector3(0,0,0);
             AZ::Vector3 m_sunDirection = AZ::Vector3(0,0,-1);
             float m_sunIlluminance = 1.0f;
             float m_planetRadius = 6360.0f;
@@ -98,6 +100,9 @@ namespace AZ::Render
 
             float RayMarchMinMaxSPP[2]; // x = min, y = max
             float pad4[2];
+
+            float planet_origin[3];
+            float origin_at_surface;
 
             uint32_t gResolution[2];
             uint32_t pad5[2];

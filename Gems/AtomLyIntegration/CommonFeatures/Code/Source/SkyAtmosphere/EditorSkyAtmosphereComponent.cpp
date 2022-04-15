@@ -74,6 +74,7 @@ namespace AZ::Render
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieExtinction, "Mie extinction", "Mie extinction")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_absorptionExtinction, "Absorption extinction", "Absorption extinction. Useful for thi")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_groundAlbedo, "Ground albedo", "Additional light from the surface of the ground")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_originAtSurface, "Origin at surface", "True to use the world origin as the planet surface of the atmosphere")
                     ;
             }
         }
