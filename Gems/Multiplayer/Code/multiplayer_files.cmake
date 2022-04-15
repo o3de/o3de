@@ -17,6 +17,7 @@ set(FILES
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/MultiplayerEditorServerBus.h
+    Include/Multiplayer/IMultiplayerEditorConnectionViewportMessage.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h

@@ -68,6 +68,7 @@ namespace AZ
             // RPISystemInterface overrides...
             bool IsInitialized() const override;
             void InitializeSystemAssets() override;
+            bool IsNullRenderer() const override;
             void RegisterScene(ScenePtr scene) override;
             void UnregisterScene(ScenePtr scene) override;
             Scene* GetScene(const SceneId& sceneId) const override;
