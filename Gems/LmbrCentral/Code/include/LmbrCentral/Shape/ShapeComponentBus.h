@@ -117,7 +117,7 @@ namespace LmbrCentral
     class ShapeComponentRequests : public AZ::EBusSharedDispatchTraits<ShapeComponentRequests>
     {
     public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::EntityId BusIdType;
 
         /// @brief Returns the type of shape that this component holds

@@ -118,7 +118,7 @@ namespace LmbrCentral
         class PolygonPrismSharedLockGuard
         {
         public:
-            explicit PolygonPrismSharedLockGuard(AZStd::shared_mutex& mutex, AZStd::thread::id& uniqueLockThreadId)
+            PolygonPrismSharedLockGuard(AZStd::shared_mutex& mutex, AZStd::thread::id& uniqueLockThreadId)
                 : m_mutex(mutex)
             {
                 if (uniqueLockThreadId != AZStd::this_thread::get_id())
@@ -147,7 +147,7 @@ namespace LmbrCentral
         class PolygonPrismUniqueLockGuard
         {
         public:
-            explicit PolygonPrismUniqueLockGuard(AZStd::shared_mutex& mutex, AZStd::thread::id& uniqueLockThreadId)
+            PolygonPrismUniqueLockGuard(AZStd::shared_mutex& mutex, AZStd::thread::id& uniqueLockThreadId)
                 : m_mutex(mutex)
                 , m_uniqueLockThreadId(uniqueLockThreadId)
             {
