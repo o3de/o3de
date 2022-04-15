@@ -14,7 +14,7 @@
 
 namespace Multiplayer
 {
-    AZ_CVAR(float, editorsv_connection_debug_fontsize, 0.7f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
+    AZ_CVAR(float, editorsv_connection_debug_fontsize, 0.7f, nullptr, AZ::ConsoleFunctorFlags::Null, "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
 
     void MultiplayerEditorConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
