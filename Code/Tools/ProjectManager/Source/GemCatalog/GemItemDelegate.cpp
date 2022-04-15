@@ -322,7 +322,14 @@ namespace O3DE::ProjectManager
 
     QPair<int, int> GemItemDelegate::CalcColumnXBounds(HeaderOrder header) const
     {
-        return m_headerWidget->CalcColumnXBounds(static_cast<int>(header));
+        if (m_headerWidget)
+        {
+            return m_headerWidget->CalcColumnXBounds(static_cast<int>(header));
+        }
+        else
+        {
+            return QPair<int, int>(0, 0);
+        }
     }
 
     QRect GemItemDelegate::CalcButtonRect(const QRect& contentRect) const
