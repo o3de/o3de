@@ -118,4 +118,4 @@ namespace UnitTest
     }
 } // namespace UnitTest
 
-AZ_UNIT_TEST_HOOK(new UnitTest::NvClothEditorTestEnvironment);
+AZ_UNIT_TEST_HOOK_DYNAMIC(new UnitTest::NvClothEditorTestEnvironment);

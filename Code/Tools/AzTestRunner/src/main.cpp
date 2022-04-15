@@ -137,9 +137,6 @@ namespace AzTestRunner
         {
             std::cout << "OKAY Library loaded: " << lib << std::endl;
 
-            initDynamicModuleFunc = module->GetFunction("InitializeDynamicModule");
-            uninitDynamicModuleFunc = module->GetFunction("UninitializeDynamicModule");
-
             testMainFunction = module->GetFunction(symbol);
             if (!testMainFunction->IsValid())
             {
@@ -169,6 +166,10 @@ namespace AzTestRunner
         // run the test main function.
         if (testMainFunction->IsValid())
         {
+            // init and uninit dynamic module are optionally specified, failure to find is acceptable
+            initDynamicModuleFunc = module->GetFunction("InitializeDynamicModule");
+            uninitDynamicModuleFunc = module->GetFunction("UninitializeDynamicModule");
+
             if (initDynamicModuleFunc->IsValid())
             {
                 (*initDynamicModuleFunc)(AZ::Environment::GetInstance());

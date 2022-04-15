@@ -26,4 +26,4 @@ protected:
     }
 };
 
-AZ_UNIT_TEST_HOOK(new SceneUITestEnvironment);
+AZ_UNIT_TEST_HOOK_DYNAMIC(new SceneUITestEnvironment);

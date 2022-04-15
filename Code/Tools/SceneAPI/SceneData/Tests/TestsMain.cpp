@@ -47,4 +47,4 @@ private:
     AZStd::unique_ptr<AZ::DynamicModuleHandle> sceneCoreModule;
 };
 
-AZ_UNIT_TEST_HOOK(new SceneDataTestEnvironment);
+AZ_UNIT_TEST_HOOK_DYNAMIC(new SceneDataTestEnvironment);
