@@ -11,10 +11,13 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzCore/Console/IConsole.h>
 
 namespace Multiplayer
 {
-    AZ_CVAR(float, editorsv_connection_debug_fontsize, 0.7f, nullptr, AZ::ConsoleFunctorFlags::Null, "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
+    const float defaultConnectionMessageFontSize = 0.7f;
+    AZ_CVAR_SCOPED(float, editorsv_connectionMessageFontSize, defaultConnectionMessageFontSize, nullptr, AZ::ConsoleFunctorFlags::Null, 
+        "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
 
     void MultiplayerEditorConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -68,11 +71,11 @@ namespace Multiplayer
 
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::Yellow);
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                center_screenposition_x, screenposition_title_y, editorsv_connection_debug_fontsize, "Multiplayer Editor", true);
+                center_screenposition_x, screenposition_title_y, editorsv_connectionMessageFontSize, "Multiplayer Editor", true);
 
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::White);
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                center_screenposition_x, screenposition_debugtext_y, editorsv_connection_debug_fontsize, m_debugText.c_str(), true);
+                center_screenposition_x, screenposition_debugtext_y, editorsv_connectionMessageFontSize, m_debugText.c_str(), true);
         }
     }
 
