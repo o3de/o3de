@@ -12,9 +12,10 @@
 #include <UserManagement/UserManagementNotificationBusBehaviorHandler.h>
 #include <Authorization/AWSCognitoAuthorizationNotificationBusBehaviorHandler.h>
 #include <Authorization/AWSCognitoAuthorizationController.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AWSClientAuthResourceMappingConstants.h>
 #include <ResourceMapping/AWSResourceMappingBus.h>
 #include <Framework/AWSApiJobConfig.h>
+#include <ResourceMapping/AWSResourceMappingBus.h>
 
 #include <aws/cognito-identity/CognitoIdentityClient.h>
 #include <aws/cognito-idp/CognitoIdentityProviderClient.h>
@@ -169,10 +170,29 @@ namespace AWSClientAuth
         AZ::Interface<IAWSClientAuthRequests>::Register(this);
         AWSClientAuthRequestBus::Handler::BusConnect();
 
-        // Objects below depend on bus above.
         m_authenticationProviderManager = AZStd::make_unique<AuthenticationProviderManager>();
-        m_awsCognitoUserManagementController = AZStd::make_unique<AWSCognitoUserManagementController>();
-        m_awsCognitoAuthorizationController = AZStd::make_unique<AWSCognitoAuthorizationController>();
+
+        // Sanity check if code should setup cognito credential providers.
+        // Only set up if cognito settings appear to be provided in resource mapping file.
+        AZStd::string userPoolId;
+        AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            userPoolId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoUserPoolIdResourceMappingKey);
+
+        AZStd::string cognitoIdentityPoolId;
+         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            cognitoIdentityPoolId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoIdentityPoolIdResourceMappingKey);
+
+        if (userPoolId.empty() && cognitoIdentityPoolId.empty())
+        {
+            AZ_Warning("AWSClientAuthSystemComponent",  false,
+                "Missing Cognito settings in resource mappings. Skipping settup of Cognito controllers.");
+        }
+        else
+        {
+            // Objects below depend on bus above.
+            m_awsCognitoUserManagementController = AZStd::make_unique<AWSCognitoUserManagementController>();
+            m_awsCognitoAuthorizationController = AZStd::make_unique<AWSCognitoAuthorizationController>();
+        }
 
         AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSClientAuthEnabled);
     }
@@ -182,7 +202,7 @@ namespace AWSClientAuth
         m_authenticationProviderManager.reset();
         m_awsCognitoUserManagementController.reset();
         m_awsCognitoAuthorizationController.reset();
-
+        
         AWSClientAuthRequestBus::Handler::BusDisconnect();
         AWSCore::AWSCoreNotificationsBus::Handler::BusDisconnect();
         AZ::Interface<IAWSClientAuthRequests>::Unregister(this);
