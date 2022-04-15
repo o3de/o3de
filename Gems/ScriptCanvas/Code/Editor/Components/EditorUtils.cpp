@@ -51,7 +51,7 @@ namespace ScriptCanvasEditor
                             , "SourceHandle completion produced conflicting AssetIds.");
                         AZ::IO::Path watchPath(watchFolderPath);
                         AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
-                        return SourceHandle(nullptr, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
+                        return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
                     }
                 }
             }
@@ -63,7 +63,7 @@ namespace ScriptCanvasEditor
                 {
                     AZ::IO::Path watchPath(watchFolderPath);
                     AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
-                    return SourceHandle(nullptr, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
+                    return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
                 }
             }
         }

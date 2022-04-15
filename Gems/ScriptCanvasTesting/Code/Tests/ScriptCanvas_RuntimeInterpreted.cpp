@@ -85,7 +85,7 @@ public:
 
 TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
+    ExpectParseError("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
 }
 
 TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)

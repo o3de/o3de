@@ -1174,11 +1174,6 @@ namespace ScriptCanvasEditor
             return AZ::Failure(AZStd::string("Unable to open asset with invalid asset id"));
         }
 
-        if (!m_isRestoringWorkspace)
-        {
-            SetActiveAsset(scriptCanvasAsset);
-        }
-
         if (!scriptCanvasAsset.IsDescriptionValid())
         {
             if (!m_isRestoringWorkspace)
@@ -1205,21 +1200,21 @@ namespace ScriptCanvasEditor
 
         if (outTabIndex >= 0)
         {
-            if (!m_isRestoringWorkspace)
-            {
-                m_tabBar->SelectTab(fileAssetId);
-            }
-
+            m_tabBar->setCurrentIndex(outTabIndex);
+            SetActiveAsset(scriptCanvasAsset);
             return AZ::Success(outTabIndex);
         }
 
         outTabIndex = CreateAssetTab(fileAssetId, fileState, tabIndex);
+        SetActiveAsset(scriptCanvasAsset);
 
         if (outTabIndex == -1)
         {
             return AZ::Failure(AZStd::string::format("Unable to open existing Script Canvas Asset with id %s in the Script Canvas Editor"
                 , fileAssetId.ToString().c_str()));
         }
+
+        m_tabBar->setCurrentIndex(outTabIndex);
 
         AZStd::string assetPath = scriptCanvasAsset.Path().c_str();
         if (!assetPath.empty() && !m_loadingNewlySavedFile)

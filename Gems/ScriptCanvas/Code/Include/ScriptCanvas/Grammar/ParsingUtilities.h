@@ -87,8 +87,6 @@ namespace ScriptCanvas
 
         bool IsDetectableSelfDeactivation(const ExecutionTreeConstPtr& execution);
 
-        bool IsEntityIdThatRequiresRuntimeRemap(const VariableConstPtr& variable);
-
         bool IsEventConnectCall(const ExecutionTreeConstPtr& execution);
 
         bool IsEventDisconnectCall(const ExecutionTreeConstPtr& execution);
@@ -202,8 +200,6 @@ namespace ScriptCanvas
 
         OutputAssignmentPtr RemoveOutput(ExecutionChild& execution, const SlotId& slotId);
 
-        bool RequiresRuntimeRemap(const AZ::EntityId& entityId);
-
         AZStd::string SlotNameToIndexString(const Slot& slot);
 
         AZStd::string ToIdentifier(AZStd::string_view name);
@@ -213,5 +209,10 @@ namespace ScriptCanvas
         void TraverseTree(const AbstractCodeModel& execution, ExecutionTreeTraversalListener& listener);
 
         void TraverseTree(const ExecutionTreeConstPtr& execution, ExecutionTreeTraversalListener& listener);
+
+        // #scriptcanvas_component_extension
+        bool EntityIdValueIsNotUseable(const AZ::EntityId& entityId);
+
+        bool IsEntityIdAndValueIsNotUseable(const VariableConstPtr& variable);
     }
 }

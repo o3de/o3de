@@ -374,7 +374,7 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
                 SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
                     , "ScriptSystemComponent::LoadAndGetNativeContext returning pre-loaded script: %s-%s"
                     , asset.GetHint().c_str()
-                    , asset.GetId().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+                    , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
 
 
                 return { ScriptLoadResult::Status::OnStack, lua };
@@ -413,7 +413,7 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
     SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
         , "ScriptSystemComponent::LoadAndGetNativeContext loaded from asset script: %s-%s"
         , asset.GetHint().c_str()
-        , asset.GetId().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+        , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
 
     {
         // Lock access to the loaded scripts map

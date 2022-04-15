@@ -320,6 +320,7 @@ namespace ScriptCanvas
 
             void ParseDependenciesAssetIndicies();
 
+            // #scriptcanvas_component_extension
             void ParseEntityIdInput(ExecutionTreePtr execution);
 
             void ParseExecutionBreak(ExecutionTreePtr execution);

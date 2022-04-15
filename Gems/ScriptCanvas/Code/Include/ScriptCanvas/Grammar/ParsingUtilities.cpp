@@ -593,22 +593,6 @@ namespace ScriptCanvas
             return false;
         }
 
-        bool IsEntityIdThatRequiresRuntimeRemap(const VariableConstPtr& variable)
-        {
-            if (auto candidate = variable->m_datum.GetAs<Data::EntityIDType>())
-            {
-                return variable->m_isExposedToConstruction || RequiresRuntimeRemap(*candidate);
-            }
-            else if (auto candidate2 = variable->m_datum.GetAs<Data::NamedEntityIDType>())
-            {
-                return variable->m_isExposedToConstruction || RequiresRuntimeRemap(*candidate2);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         bool IsEventConnectCall(const ExecutionTreeConstPtr& execution)
         {
             return execution->GetSymbol() == Symbol::FunctionCall
@@ -1155,7 +1139,7 @@ namespace ScriptCanvas
 
         VariableConstructionRequirement ParseConstructionRequirement(VariableConstPtr variable)
         {
-            if (IsEntityIdThatRequiresRuntimeRemap(variable))
+            if (IsEntityIdAndValueIsNotUseable(variable))
             {
                 return VariableConstructionRequirement::InputEntityId;
             }
@@ -1294,13 +1278,6 @@ namespace ScriptCanvas
             {
                 return nullptr;
             }
-        }
-
-        bool RequiresRuntimeRemap(const AZ::EntityId& entityId)
-        {
-            return entityId.IsValid()
-                && entityId != UniqueId
-                && entityId != GraphOwnerId;
         }
 
         AZStd::string SlotNameToIndexString(const Slot& slot)
@@ -1480,6 +1457,29 @@ namespace ScriptCanvas
                         listener.EvaluateNullChildLeaf(execution, childIter.m_slot, i, level + 1);
                     }
                 }
+            }
+        }
+
+        bool EntityIdValueIsNotUseable(const AZ::EntityId& entityId)
+        {
+            return entityId.IsValid()
+                && entityId != UniqueId
+                && entityId != GraphOwnerId;
+        }
+
+        bool IsEntityIdAndValueIsNotUseable(const VariableConstPtr& variable)
+        {
+            if (auto candidate = variable->m_datum.GetAs<Data::EntityIDType>())
+            {
+                return (!variable->m_isExposedToConstruction) && EntityIdValueIsNotUseable(*candidate);
+            }
+            else if (auto candidate2 = variable->m_datum.GetAs<Data::NamedEntityIDType>())
+            {
+                return (!variable->m_isExposedToConstruction) && EntityIdValueIsNotUseable(*candidate2);
+            }
+            else
+            {
+                return false;
             }
         }
     }

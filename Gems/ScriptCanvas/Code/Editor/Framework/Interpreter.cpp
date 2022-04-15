@@ -42,16 +42,6 @@ namespace ScriptCanvasEditor
         return handler;
     }
 
-    void Interpreter::ConvertPropertiesToRuntime()
-    {
-        MutexLock lock(m_mutex);
-        if (m_runtimePropertiesDirty)
-        {
-            m_executor.TakeRuntimeDataOverrides(AZStd::move(ConvertToRuntime(m_configuration.GetOverrides())));
-            m_runtimePropertiesDirty = false;
-        }
-    }
-
     bool Interpreter::Execute()
     {
         if (IsExecutable())
@@ -62,6 +52,11 @@ namespace ScriptCanvasEditor
 
                 if (m_runtimePropertiesDirty)
                 {
+                    if (IsExecutable())
+                    {
+                        m_executor.StopAndClearExecutable();
+                    }
+                    
                     m_executor.Initialize();
                     m_runtimePropertiesDirty = false;
                 }
@@ -109,6 +104,11 @@ namespace ScriptCanvasEditor
     {
         if (asset.Get())
         {
+            if (m_executor.IsExecutable())
+            {
+                m_executor.StopAndClearExecutable();
+            }
+
             auto overrides = ConvertToRuntime(m_configuration.GetOverrides());
             overrides.m_runtimeAsset = asset;
             m_executor.TakeRuntimeDataOverrides(AZStd::move(overrides));

@@ -254,7 +254,13 @@ namespace ScriptCanvas
 
                 variable->m_isExposedToConstruction = sourceVariable->IsComponentProperty();
                 // also, all nodeables with !empty editor data have to be exposed
-                // \todo future optimizations will involve checking equality against a default constructed object   
+                // \todo future optimizations will involve checking equality against a default constructed object
+
+                if (IsEntityIdAndValueIsNotUseable(variable))
+                {
+                    AddError(AZ::EntityId(), nullptr, ParseErrors::DirectEntityReferencesNotAllowed);
+                }
+                // \todo add warning on invalid entity id, it's probably never useful
             }
         }
 
@@ -3014,36 +3020,12 @@ namespace ScriptCanvas
 
                 if (auto& input = slotAndVariable.m_value)
                 {
-                    if (!input->m_sourceVariableId.IsValid() && IsEntityIdThatRequiresRuntimeRemap(input))
+                    if (IsEntityIdAndValueIsNotUseable(input))
                     {
-                        input->m_sourceVariableId = MakeParserGeneratedId(m_generatedIdCount++);
-                        input->m_source = nullptr;
-                        // promote to member variable for at this stage, optimizations on data flow will occur later
-                        input->m_isMember = true;
-
-                        AZStd::string entityVariableName;
-
-                        if (slotAndVariable.m_slot)
-                        {
-                            if (execution->GetId().m_node)
-                            {
-                                entityVariableName.append(execution->GetId().m_node->GetNodeName());
-                                entityVariableName.append(".");
-                                entityVariableName.append(slotAndVariable.m_slot->GetName());
-                            }
-                            else
-                            {
-                                entityVariableName.append(slotAndVariable.m_slot->GetName());
-                            }
-                        }
-                        else
-                        {
-                            entityVariableName = input->m_name;
-                        }
-
-                        input->m_name = m_graphScope->AddVariableName(entityVariableName);
-                        AddVariable(input);
+                        AddError(execution->GetId().m_node ?  execution->GetId().m_node->GetEntityId() : AZ::EntityId()
+                            , nullptr, ParseErrors::DirectEntityReferencesNotAllowed);
                     }
+                    // \todo add warning on invalid entity id, it's probably never useful
                 }
                 else
                 {

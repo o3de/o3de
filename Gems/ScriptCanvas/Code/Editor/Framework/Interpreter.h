@@ -92,8 +92,6 @@ namespace ScriptCanvasEditor
         Configuration m_configuration;
         ScriptCanvas::Executor m_executor;
 
-        void ConvertPropertiesToRuntime();
-
         bool InitializeExecution(ScriptCanvas::RuntimeAssetPtr asset);
 
         void OnAssetNotReady() override;
