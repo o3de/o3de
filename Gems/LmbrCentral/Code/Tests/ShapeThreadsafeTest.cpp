@@ -29,12 +29,12 @@ namespace UnitTest
         // The expected distance from the test point to the shape.
         // Since we're setting it above the shape and keeping the height constant, the expected distance will
         // always be 10.  (The shape extends 10 above and 10 below the origin, so 20 above origin is 10 above the shape)
-        const float ExpectedDistance = 10.0f;
+        constexpr float ExpectedDistance = 10.0f;
 
         AZ::EntityId shapeEntityId = shapeEntity.GetId();
 
         // Pick an arbitrary number of threads and iterations that are large enough to demonstrate thread safety problems.
-        const int NumQueryThreads = 4;
+        constexpr int NumQueryThreads = 4;
         AZStd::thread queryThreads[NumQueryThreads];
 
         AZStd::semaphore syncThreads;
@@ -43,7 +43,7 @@ namespace UnitTest
         for (auto& queryThread : queryThreads)
         {
             queryThread = AZStd::thread(
-                [shapeEntityId, TestPoint, ExpectedDistance, numIterations, &syncThreads]()
+                [shapeEntityId, TestPoint, ExpectedDistance = ExpectedDistance, numIterations, &syncThreads]()
                 {
                     // Block until all the threads are created, so that we can run them 100% in parallel.
                     syncThreads.acquire();
@@ -74,7 +74,7 @@ namespace UnitTest
         // until all our query threads have finished their iterations.
         AZStd::atomic_bool stopSetThread = false;
         AZStd::thread setThread = AZStd::thread(
-            [shapeEntityId, &shapeSetFn, &syncThreads, &stopSetThread]()
+            [shapeEntityId, NumQueryThreads = NumQueryThreads, &shapeSetFn, &syncThreads, &stopSetThread]()
             {
                 // Now that all threads are created, signal everything to start running in parallel.
                 syncThreads.release(NumQueryThreads);
