@@ -1555,8 +1555,37 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
-                } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
-                         retryCount <= AssetProcessor::RetriesForJobNetworkError);
+
+                    // If a lost connection occured, prepare for a retry using an exponential backoff policy
+                    if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+                         result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
+                    {
+                        int delay = aznumeric_cast<int>(pow(2.0, aznumeric_cast<double>(retryCount-1)));
+
+                        // Check if we need a new builder, and if so, request a new one
+                        if (!builderRef->IsValid())
+                        {
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d with %d second delay)",
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount,
+                                            delay);
+
+                            builderRef.release();
+                            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+                        } 
+                        else
+                        {
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new Builder (Attempt %d  with %d second delay)",
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount,
+                                            delay);
+                        }
+                        AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
+                    }
+
+                } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
+                          retryCount <= AssetProcessor::RetriesForJobLostConnection);
             }
             else
             {
@@ -1583,8 +1612,38 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
-                } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
-                         retryCount <= AssetProcessor::RetriesForJobNetworkError);
+                    
+                    // If a lost connection occured, prepare for a retry using an exponential backoff policy
+                    if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+                         result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
+                    {
+                        int delay = aznumeric_cast<int>(pow(2.0, aznumeric_cast<double>(retryCount-1)));
+
+                        // Check if we need a new builder, and if so, request a new one
+                        if (!builderRef->IsValid())
+                        {
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d with %d second delay)",
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount,
+                                            delay);
+
+                            builderRef.release();
+                            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+                        } 
+                        else
+                        {
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new Builder (Attempt %d  with %d second delay)",
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount,
+                                            delay);
+                        }
+                        AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
+
+                    }
+                    
+                } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
+                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
+                          retryCount <= AssetProcessor::RetriesForJobLostConnection);
             }
             else
             {
