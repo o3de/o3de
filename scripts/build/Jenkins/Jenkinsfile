@@ -534,9 +534,9 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
     }
 }
 
-def ReplaceContent(String githubUrl, String branchName) {
+def ReplaceContent(String githubUrl) {
     // Get absolute directory for job metadata. Needs permissions from Jenkins for each upstream classes
-    def github_url = "https://github.com/${githubUrl}/tree/${branchName}"
+    def github_url = "https://github.com/${githubUrl}/tree/${${env.CHANGE_ID}}"
     def base_path = Jenkins.instance.getItemByFullName("${JOB_NAME}").rootDir
     def log_file = "${base_path}" + "/builds/${env.BUILD_NUMBER}/log"
     def config_list = []
@@ -971,7 +971,7 @@ finally {
             } else {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
-                ReplaceContent(env.REPOSITORY_NAME, env.BRANCH_NAME)
+                ReplaceContent(env.REPOSITORY_NAME)
             }
             if(env.POST_AR_BUILD_SNS_TOPIC) {
                 message_json = [
