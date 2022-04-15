@@ -24,11 +24,9 @@ namespace RecastNavigation
     class RecastNavigationMeshConfig final
     {
     public:
-        AZ_RTTI(RecastNavigationMeshConfig, "{BFFAD108-56ED-40D7-B44F-A44803968DA5}");
+        AZ_RTTI(RecastNavigationMeshConfig, "{472141BB-7C36-4D2C-A508-78DB0D3C07F2}");
 
         static void Reflect(AZ::ReflectContext* context);
-
-        rcConfig m_config = {};
 
         float m_cellSize = 0.3F;
         float m_cellHeight = 0.2F;
@@ -48,26 +46,9 @@ namespace RecastNavigation
         float m_regionMinSize = 8;
         float m_regionMergeSize = 20;
 
-        RecastPointer<rcHeightfield> m_solid;
-
-        AZStd::vector<AZ::u8> m_trianglesAreas;
-
-        bool m_keepInterResults = false;
-
         bool m_filterLowHangingObstacles = true;
         bool m_filterLedgeSpans = true;
         bool m_filterWalkableLowHeightSpans = true;
-
-        RecastPointer<rcCompactHeightfield> m_chf;
-
-        RecastPointer<rcContourSet> m_contourSet;
-
-        RecastPointer<rcPolyMesh> m_pmesh;
-
-        RecastPointer<rcPolyMeshDetail> m_detailMesh;
-
-        RecastPointer<dtNavMesh> m_navMesh;
-        RecastPointer<dtNavMeshQuery> m_navQuery;
     };
 
 } // namespace RecastNavigation

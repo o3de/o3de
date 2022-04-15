@@ -10,6 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 #include <Components/RecastNavigationMeshComponent.h>
+#include <Components/RecastNavigationSurveyorComponent.h>
 
 namespace RecastNavigation
 {
@@ -28,6 +29,7 @@ namespace RecastNavigation
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
                 RecastNavigationMeshComponent::CreateDescriptor(),
+                RecastNavigationSurveyorComponent::CreateDescriptor(),
                 });
         }
     };

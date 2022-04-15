@@ -23,7 +23,6 @@ namespace RecastNavigation
     public:
 
         virtual bool UpdateNavigationMesh() = 0;
-        virtual void SetWorldBounds( const AZ::Aabb& worldBounds ) = 0;
 
         virtual AZStd::vector<AZ::Vector3> FindPathToEntity( AZ::EntityId fromEntity, AZ::EntityId toEntity ) = 0;
         virtual AZStd::vector<AZ::Vector3> FindPathToPosition( const AZ::Vector3& fromWorldPosition, const AZ::Vector3& targetWorldPosition ) = 0;
@@ -36,7 +35,7 @@ namespace RecastNavigation
     {
     public:
 
-        virtual void OnNavigationMeshUpdated( dtNavMesh* updatedNavMesh, dtNavMeshQuery* updatedNavMeshQuery ) = 0;
+        virtual void OnNavigationMeshUpdated() = 0;
     };
 
     using RecastNavigationMeshNotificationBus = AZ::EBus<RecastNavigationMeshNotifications>;

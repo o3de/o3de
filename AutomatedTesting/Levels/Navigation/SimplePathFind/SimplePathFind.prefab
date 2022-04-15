@@ -708,6 +708,26 @@
                     "$type": "EditorEntitySortComponent",
                     "Id": 16579119585935569508
                 },
+                "Component_[18213539476955925626]": {
+                    "$type": "EditorAxisAlignedBoxShapeComponent",
+                    "Id": 18213539476955925626,
+                    "AxisAlignedBoxShape": {
+                        "Configuration": {
+                            "Dimensions": [
+                                20.52689552307129,
+                                12.297130584716797,
+                                20.0
+                            ]
+                        }
+                    }
+                },
+                "Component_[1832561805637078977]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 1832561805637078977,
+                    "m_template": {
+                        "$type": "RecastNavigationSurveyorComponent"
+                    }
+                },
                 "Component_[18389148463105412893]": {
                     "$type": "GenericComponentWrapper",
                     "Id": 18389148463105412893,
