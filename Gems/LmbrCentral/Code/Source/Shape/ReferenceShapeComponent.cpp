@@ -116,15 +116,25 @@ namespace LmbrCentral
         // Only connect to these after we've finished initializing everything else.
         ReferenceShapeRequestBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentRequestsBus::Handler::BusConnect(GetEntityId());
+
+        // Finally, after everything is set up, broadcast out a "ShapeChanged" event. This is needed because the Editor version
+        // of ReferenceShapeComponent will internally deactivate/activate a runtime version of this component on ShapeEntityId
+        // changes instead of going through SetShapeEntityId. Other components may rely on knowing about shape changes, so the
+        // activation needs to send out this event.
+        LmbrCentral::ShapeComponentNotificationsBus::Event(
+            GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
     void ReferenceShapeComponent::Deactivate()
     {
+        // Disconnect from these first so that the component stops accepting new requests.
+        LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
+        ReferenceShapeRequestBus::Handler::BusDisconnect();
+
         AZ::EntityBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-        LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
-        ReferenceShapeRequestBus::Handler::BusDisconnect();
     }
 
     bool ReferenceShapeComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
