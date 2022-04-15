@@ -13,5 +13,7 @@ set(FILES
     Source/Editor/MultiplayerEditorGem.h
     Source/Editor/MultiplayerEditorSystemComponent.cpp
     Source/Editor/MultiplayerEditorSystemComponent.h
+    Source/Editor/MultiplayerEditorConnectionViewportMessageSystemComponent.h
+    Source/Editor/MultiplayerEditorConnectionViewportMessageSystemComponent.cpp
     Include/Multiplayer/Editor/MultiplayerPythonEditorEventsBus.h
 )
