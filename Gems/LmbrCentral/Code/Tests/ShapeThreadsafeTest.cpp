@@ -29,12 +29,12 @@ namespace UnitTest
         // The expected distance from the test point to the shape.
         // Since we're setting it above the shape and keeping the height constant, the expected distance will
         // always be 10.  (The shape extends 10 above and 10 below the origin, so 20 above origin is 10 above the shape)
-        constexpr float ExpectedDistance = 10.0f;
+        const float ExpectedDistance = 10.0f;
 
         AZ::EntityId shapeEntityId = shapeEntity.GetId();
 
         // Pick an arbitrary number of threads and iterations that are large enough to demonstrate thread safety problems.
-        constexpr int NumQueryThreads = 4;
+        const int NumQueryThreads = 4;
         AZStd::thread queryThreads[NumQueryThreads];
 
         AZStd::semaphore syncThreads;
