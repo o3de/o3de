@@ -59,6 +59,7 @@ namespace AZ
                     }
                     
                     imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath};
+                    imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
                     return GetImageAssetResult::Found;
                 }
             }

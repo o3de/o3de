@@ -400,8 +400,7 @@ namespace AZ
                                 "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
                                 propertyValue.GetValue<AZStd::string>().data());
                         }
-                                    
-                        imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
+
                         materialAssetCreator.SetPropertyValue(propertyId, imageAsset);
                     }
                     else

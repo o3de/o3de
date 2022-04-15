@@ -547,12 +547,6 @@ namespace AZ
                     return;
                 }
 
-                for (auto& dependency : jobProduct.m_dependencies)
-                {
-                    // Set the load behavior to PreLoad, without clearing any other product dependency flags
-                    Data::ProductDependencyInfo::SetAssetLoadBehavior(dependency.m_flags, Data::AssetLoadBehavior::PreLoad);
-                }
-
                 response.m_outputProducts.push_back(AZStd::move(jobProduct));
 
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
