@@ -43,7 +43,7 @@ namespace UnitTest
         for (auto& queryThread : queryThreads)
         {
             queryThread = AZStd::thread(
-                [shapeEntityId, TestPoint, numIterations, &syncThreads]()
+                [shapeEntityId, TestPoint, ExpectedDistance, numIterations, &syncThreads]()
                 {
                     // Block until all the threads are created, so that we can run them 100% in parallel.
                     syncThreads.acquire();
