@@ -16,6 +16,7 @@
 #include <Shape/PolygonPrismShapeComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <ShapeThreadsafeTest.h>
 
 namespace UnitTest
 {
@@ -847,4 +848,47 @@ namespace UnitTest
         // then
         EXPECT_TRUE(polygonPrismMesh.m_triangles.empty());
     }
+
+    TEST_F(PolygonPrismShapeTest, ShapeHasThreadsafeGetSetCalls)
+    {
+        // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
+        // correct, consistent results.
+
+        // Create our polygon prism centered at 0 with our height and a starting radius.
+        AZ::Entity entity;
+
+        const AZ::Vector2 baseVertices[] = { AZ::Vector2(-1.0f, -1.0f),
+                                             AZ::Vector2( 1.0f, -1.0f),
+                                             AZ::Vector2( 1.0f,  1.0f),
+                                             AZ::Vector2(-1.0f,  1.0f)};
+
+        CreatePolygonPrism(
+            AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()), ShapeThreadsafeTest::ShapeHeight / 2.0f,
+            AZStd::vector<AZ::Vector2>({ baseVertices[0] * ShapeThreadsafeTest::MinDimension,
+                                         baseVertices[1] * ShapeThreadsafeTest::MinDimension,
+                                         baseVertices[2] * ShapeThreadsafeTest::MinDimension,
+                                         baseVertices[3] * ShapeThreadsafeTest::MinDimension }),
+            entity);
+
+        // Define the function for setting unimportant dimensions on the shape while queries take place.
+        auto setDimensionFn = [baseVertices](AZ::EntityId shapeEntityId, float minDimension, uint32_t dimensionVariance, float height)
+        {
+            LmbrCentral::PolygonPrismShapeComponentRequestBus::Event(
+                shapeEntityId, &LmbrCentral::PolygonPrismShapeComponentRequestBus::Events::SetHeight, height / 2.0f);
+
+            AZ::PolygonPrismPtr polygonPrism;
+            LmbrCentral::PolygonPrismShapeComponentRequestBus::EventResult(
+                polygonPrism, shapeEntityId, &LmbrCentral::PolygonPrismShapeComponentRequestBus::Events::GetPolygonPrism);
+            for (size_t index = 0; index < 4; index++)
+            {
+                float vertexScale = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+                polygonPrism->m_vertexContainer.UpdateVertex(index, baseVertices[index] * vertexScale);
+            }
+        };
+
+        // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
+        const int numIterations = 100000;
+        ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
+    }
+
 }

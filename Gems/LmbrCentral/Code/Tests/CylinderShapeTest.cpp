@@ -14,6 +14,7 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <Shape/CylinderShapeComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <ShapeThreadsafeTest.h>
 
 namespace UnitTest
 {
@@ -544,4 +545,28 @@ namespace UnitTest
         CylinderShapeDistanceFromPointTest,
         ::testing::ValuesIn(CylinderShapeDistanceFromPointTest::ShouldPass)
     );
-}
+
+    TEST_F(CylinderShapeDistanceFromPointTest, ShapeHasThreadsafeGetSetCalls)
+    {
+        // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
+        // correct, consistent results.
+
+        // Create our cylinder centered at 0 with our height and a starting radius.
+        AZ::Entity entity;
+        CreateCylinder(
+            AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()), ShapeThreadsafeTest::MinDimension,
+            ShapeThreadsafeTest::ShapeHeight, entity);
+
+        // Define the function for setting unimportant dimensions on the shape while queries take place.
+        auto setDimensionFn = [](AZ::EntityId shapeEntityId, float minDimension, uint32_t dimensionVariance, [[maybe_unused]] float height)
+        {
+            float radius = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+            LmbrCentral::CylinderShapeComponentRequestsBus::Event(
+                shapeEntityId, &LmbrCentral::CylinderShapeComponentRequestsBus::Events::SetRadius, radius);
+        };
+
+        // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
+        const int numIterations = 100000;
+        ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
+    }
+} // namespace UnitTest
