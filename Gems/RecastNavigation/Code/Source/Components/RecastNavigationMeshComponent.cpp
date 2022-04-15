@@ -8,16 +8,18 @@
 
 #include "RecastNavigationMeshComponent.h"
 
+#include <DetourDebugDraw.h>
+#include <DetourNavMeshBuilder.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <DebugDraw/DebugDrawBus.h>
 
 AZ_CVAR(bool, cl_navmesh_debug, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, draw debug visual information about Navigation Mesh");
@@ -80,12 +82,12 @@ namespace RecastNavigation
             {
                 AZ::EntityId hitEntityId = overlapHit.m_entityId;
 
-                bool isWalkable = false;
-                RecastWalkableRequestBus::EventResult(isWalkable, hitEntityId, &RecastWalkableRequestBus::Events::IsWalkable, GetEntityId());
-                if (isWalkable == false)
-                {
-                    continue;
-                }
+                //bool isWalkable = false;
+                //RecastWalkableRequestBus::EventResult(isWalkable, hitEntityId, &RecastWalkableRequestBus::Events::IsWalkable, GetEntityId());
+                //if (isWalkable == false)
+                //{
+                //    continue;
+                //}
 
                 // most physics bodies just have world transforms, but some also have local transforms including terrain.
                 // we are not applying the local orientation because it causes terrain geometry to be oriented incorrectly
@@ -143,7 +145,14 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponent::CustomDebugDraw::end()
     {
-        constexpr float drawTime = 30.F;
+        constexpr AZ::Crc32 ViewportId = AzFramework::g_defaultSceneEntityDebugDisplayId;
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, ViewportId);
+        AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        if (!debugDisplay)
+        {
+            return;
+        }
 
         switch (m_currentPrim)
         {
@@ -152,9 +161,9 @@ namespace RecastNavigation
             {
                 AZ::Color color = AZ::Color::CreateZero();
                 color.FromU32(i.second);
+                debugDisplay->SetColor(color);
 
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawSphereAtLocation,
-                    i.first, 0.1F, color, drawTime);
+                debugDisplay->DrawPoint(i.first, 1);
             }
             break;
         case DU_DRAW_TRIS:
@@ -163,14 +172,12 @@ namespace RecastNavigation
                 AZ::Color color = AZ::Color::CreateZero();
                 color.FromU32(m_verticesToDraw[i].second);
 
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                    m_verticesToDraw[i - 2].first, m_verticesToDraw[i - 1].first, color, drawTime);
-
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                    m_verticesToDraw[i - 1].first, m_verticesToDraw[i - 0].first, color, drawTime);
-
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                    m_verticesToDraw[i - 0].first, m_verticesToDraw[i - 2].first, color, drawTime);
+                debugDisplay->DrawTriangles(
+                    {
+                    m_verticesToDraw[i - 2].first,
+                    m_verticesToDraw[i - 1].first,
+                    m_verticesToDraw[i - 0].first
+                    }, color);
             }
             break;
         case DU_DRAW_QUADS:
@@ -178,28 +185,24 @@ namespace RecastNavigation
             {
                 AZ::Color color = AZ::Color::CreateZero();
                 color.FromU32(m_verticesToDraw[i].second);
+                debugDisplay->SetColor(color);
 
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                    m_verticesToDraw[i - 3].first, m_verticesToDraw[i - 2].first, color, drawTime);
-
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                    m_verticesToDraw[i - 2].first, m_verticesToDraw[i - 1].first, color, drawTime);
-
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                    m_verticesToDraw[i - 1].first, m_verticesToDraw[i - 0].first, color, drawTime);
-
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                    m_verticesToDraw[i - 0].first, m_verticesToDraw[i - 3].first, color, drawTime);
+                debugDisplay->DrawQuad(
+                    m_verticesToDraw[i - 3].first, m_verticesToDraw[i - 2].first,
+                    m_verticesToDraw[i - 1].first, m_verticesToDraw[i - 0].first);
             }
             break;
         case DU_DRAW_LINES:
             for (size_t i = 1; i < m_verticesToDraw.size(); i++)
             {
-                AZ::Color color = AZ::Color::CreateZero();
-                color.FromU32(m_verticesToDraw[i].second);
+                AZ::Color color0 = AZ::Color::CreateZero();
+                color0.FromU32(m_verticesToDraw[i].second);
 
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                    m_verticesToDraw[i - 1].first, m_verticesToDraw[i].first, color, drawTime);
+                AZ::Color color1 = AZ::Color::CreateZero();
+                color1.FromU32(m_verticesToDraw[i].second);
+
+                debugDisplay->DrawLine(m_verticesToDraw[i - 1].first, m_verticesToDraw[i].first,
+                    color0.GetAsVector4(), color1.GetAsVector4());
             }
             break;
         }
@@ -207,8 +210,8 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponent::CustomDebugDraw::AddVertex(float x, float y, float z, unsigned color)
     {
-        const float temp[3] = {x, y, z};
-        const RecastVector3 v( temp );
+        const float temp[3] = { x, y, z };
+        const RecastVector3 v(temp);
         //AZ_Printf("NavMesh", "vertex %s", AZ::ToString(v.AsVector3()).c_str());
         m_verticesToDraw.push_back(AZStd::make_pair(v.AsVector3(), color));
     }
@@ -729,13 +732,23 @@ namespace RecastNavigation
                 //        approximatePath[pathIndex - 1].AsVector3(), approximatePath[pathIndex].AsVector3(), AZ::Color(1.F, 0, 0, 1), 30.F);
                 //}
 
-                for (size_t detailedIndex = 1; detailedIndex < approximatePath.size(); ++detailedIndex)
+                constexpr AZ::Crc32 ViewportId = AzFramework::g_defaultSceneEntityDebugDisplayId;
+                AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+                AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, ViewportId);
+                AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+                if (debugDisplay)
                 {
-                    if (detailedPath[detailedIndex].AsVector3().IsZero())
-                        break;
+                    for (size_t detailedIndex = 1; detailedIndex < approximatePath.size(); ++detailedIndex)
+                    {
+                        if (detailedPath[detailedIndex].AsVector3().IsZero())
+                            break;
 
-                    DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                        detailedPath[detailedIndex - 1].AsVector3(), detailedPath[detailedIndex].AsVector3(), AZ::Color(0.F, 1, 0, 1), 30.F);
+                        const AZ::Vector4 colorVector4 = AZ::Color(0.F, 1, 0, 1).GetAsVector4();
+
+                        debugDisplay->DrawLine(
+                            detailedPath[detailedIndex - 1].AsVector3(),
+                            detailedPath[detailedIndex].AsVector3(), colorVector4, colorVector4);
+                    }
                 }
             }
 
@@ -806,6 +819,11 @@ namespace RecastNavigation
                 m_waitingOnNavMeshRebuild = false;
                 RecastNavigationMeshNotificationBus::Event(GetEntityId(), &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshUpdated, m_navMesh.get(), m_navQuery.get());
             }
+        }
+        else if (m_navMeshReady && cl_navmesh_debug)
+        {
+            m_customDebugDraw.SetColor(AZ::Color(0.F, 0.9f, 0, 1));
+            duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);
         }
     }
 } // namespace RecastNavigation

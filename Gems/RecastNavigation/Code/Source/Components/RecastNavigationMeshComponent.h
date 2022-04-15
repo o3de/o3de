@@ -19,16 +19,14 @@
 #include <AzCore/Math/Color.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
-
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-
 #include <Components/RecastHelpers.h>
 #include <Components/RecastSmartPointer.h>
 #include <RecastNavigation/RecastNavigationMeshBus.h>
 
 namespace RecastNavigation
 {
-    class RecastNavigationMeshComponent
+    class RecastNavigationMeshComponent final
         : public AZ::Component
         , protected RecastNavigationMeshRequestBus::Handler
         , protected AzFramework::GameEntityContextEventBus::Handler

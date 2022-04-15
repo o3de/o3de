@@ -8,13 +8,9 @@
 
 #pragma once
 
-#include <DebugDraw.h>
-#include <DetourDebugDraw.h>
 #include <DetourNavMesh.h>
-#include <DetourNavMeshBuilder.h>
 #include <DetourNavMeshQuery.h>
 #include <Recast.h>
-
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace RecastNavigation

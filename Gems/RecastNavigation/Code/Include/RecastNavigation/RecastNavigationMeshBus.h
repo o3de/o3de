@@ -41,15 +41,4 @@ namespace RecastNavigation
 
     using RecastNavigationMeshNotificationBus = AZ::EBus<RecastNavigationMeshNotifications>;
 
-    class RecastWalkableRequests
-        : public AZ::ComponentBus
-    {
-    public:
-
-        virtual bool IsWalkable( AZ::EntityId navigationMeshEntity ) = 0;
-    };
-
-    // Use to mark objects as walkable
-    using RecastWalkableRequestBus = AZ::EBus<RecastWalkableRequests>;
-
 } // namespace RecastNavigation

@@ -15,7 +15,7 @@
 
 namespace RecastNavigation
 {
-    class RecastNavigationAgentComponent
+    class RecastNavigationAgentComponent final
         : public AZ::Component
         , public RecastNavigationAgentRequestBus::Handler
         , public AZ::TransformNotificationBus::Handler
