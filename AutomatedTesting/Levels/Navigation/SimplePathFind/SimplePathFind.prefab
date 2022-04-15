@@ -21,7 +21,9 @@
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
                     "Entity_[689399540125]",
-                    "Entity_[693694507421]"
+                    "Entity_[693694507421]",
+                    "Entity_[450911616725]",
+                    "Entity_[561843407855]"
                 ]
             },
             "Component_[15230859088967841193]": {
@@ -140,7 +142,24 @@
                 },
                 "Component_[13711420870643673468]": {
                     "$type": "EditorDisabledCompositionComponent",
-                    "Id": 13711420870643673468
+                    "Id": 13711420870643673468,
+                    "DisabledComponents": [
+                        {
+                            "$type": "AZ::Render::EditorMeshComponent",
+                            "Id": 5675108321710651991,
+                            "Controller": {
+                                "Configuration": {
+                                    "ModelAsset": {
+                                        "assetId": {
+                                            "guid": "{0CD745C0-6AA8-569A-A68A-73A3270986C4}",
+                                            "subId": 277889906
+                                        },
+                                        "assetHint": "objects/groudplane/groundplane_512x512m.azmodel"
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 },
                 "Component_[138002849734991713]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -155,32 +174,19 @@
                     "$type": "EditorInspectorComponent",
                     "Id": 16919232076966545697
                 },
-                "Component_[5182430712893438093]": {
-                    "$type": "EditorMaterialComponent",
-                    "Id": 5182430712893438093
-                },
-                "Component_[5675108321710651991]": {
-                    "$type": "AZ::Render::EditorMeshComponent",
-                    "Id": 5675108321710651991,
-                    "Controller": {
-                        "Configuration": {
-                            "ModelAsset": {
-                                "assetId": {
-                                    "guid": "{0CD745C0-6AA8-569A-A68A-73A3270986C4}",
-                                    "subId": 277889906
-                                },
-                                "assetHint": "objects/groudplane/groundplane_512x512m.azmodel"
-                            }
-                        }
-                    }
-                },
                 "Component_[5681893399601237518]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 5681893399601237518
                 },
                 "Component_[592692962543397545]": {
                     "$type": "EditorPendingCompositionComponent",
-                    "Id": 592692962543397545
+                    "Id": 592692962543397545,
+                    "PendingComponents": [
+                        {
+                            "$type": "EditorMaterialComponent",
+                            "Id": 5182430712893438093
+                        }
+                    ]
                 },
                 "Component_[7090012899106946164]": {
                     "$type": "EditorLockComponent",
@@ -206,7 +212,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 6499354303325780703
+                            "EditorEntityId": 6920109702438769333
                         }
                     }
                 },
@@ -284,29 +290,31 @@
                     "$type": "EditorInspectorComponent",
                     "Id": 14249419413039427459
                 },
-                "Component_[15448581635946161318]": {
-                    "$type": "AZ::Render::EditorGridComponent",
-                    "Id": 15448581635946161318,
-                    "Controller": {
-                        "Configuration": {
-                            "primarySpacing": 4.0,
-                            "primaryColor": [
-                                0.501960813999176,
-                                0.501960813999176,
-                                0.501960813999176
-                            ],
-                            "secondarySpacing": 0.5,
-                            "secondaryColor": [
-                                0.250980406999588,
-                                0.250980406999588,
-                                0.250980406999588
-                            ]
-                        }
-                    }
-                },
                 "Component_[1843303322527297409]": {
                     "$type": "EditorDisabledCompositionComponent",
-                    "Id": 1843303322527297409
+                    "Id": 1843303322527297409,
+                    "DisabledComponents": [
+                        {
+                            "$type": "AZ::Render::EditorGridComponent",
+                            "Id": 15448581635946161318,
+                            "Controller": {
+                                "Configuration": {
+                                    "primarySpacing": 4.0,
+                                    "primaryColor": [
+                                        0.501960813999176,
+                                        0.501960813999176,
+                                        0.501960813999176
+                                    ],
+                                    "secondarySpacing": 0.5,
+                                    "secondaryColor": [
+                                        0.250980406999588,
+                                        0.250980406999588,
+                                        0.250980406999588
+                                    ]
+                                }
+                            }
+                        }
+                    ]
                 },
                 "Component_[380249072065273654]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
@@ -332,75 +340,6 @@
                 "Component_[9189909764215270515]": {
                     "$type": "EditorLockComponent",
                     "Id": 9189909764215270515
-                }
-            }
-        },
-        "Entity_[1172344194419]": {
-            "Id": "Entity_[1172344194419]",
-            "Name": "Shader Ball",
-            "Components": {
-                "Component_[10789351944715265527]": {
-                    "$type": "EditorOnlyEntityComponent",
-                    "Id": 10789351944715265527
-                },
-                "Component_[12037033284781049225]": {
-                    "$type": "EditorEntitySortComponent",
-                    "Id": 12037033284781049225
-                },
-                "Component_[13759153306105970079]": {
-                    "$type": "EditorPendingCompositionComponent",
-                    "Id": 13759153306105970079
-                },
-                "Component_[14135560884830586279]": {
-                    "$type": "EditorInspectorComponent",
-                    "Id": 14135560884830586279
-                },
-                "Component_[16247165675903986673]": {
-                    "$type": "EditorVisibilityComponent",
-                    "Id": 16247165675903986673
-                },
-                "Component_[18082433625958885247]": {
-                    "$type": "EditorDisabledCompositionComponent",
-                    "Id": 18082433625958885247
-                },
-                "Component_[6472623349872972660]": {
-                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "Id": 6472623349872972660,
-                    "Parent Entity": "Entity_[1176639161715]",
-                    "Transform Data": {
-                        "Rotate": [
-                            0.0,
-                            0.10000000149011612,
-                            180.0
-                        ]
-                    }
-                },
-                "Component_[6495255223970673916]": {
-                    "$type": "AZ::Render::EditorMeshComponent",
-                    "Id": 6495255223970673916,
-                    "Controller": {
-                        "Configuration": {
-                            "ModelAsset": {
-                                "assetId": {
-                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
-                                    "subId": 281415304
-                                },
-                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
-                            }
-                        }
-                    }
-                },
-                "Component_[8056625192494070973]": {
-                    "$type": "SelectionComponent",
-                    "Id": 8056625192494070973
-                },
-                "Component_[8550141614185782969]": {
-                    "$type": "EditorEntityIconComponent",
-                    "Id": 8550141614185782969
-                },
-                "Component_[9439770997198325425]": {
-                    "$type": "EditorLockComponent",
-                    "Id": 9439770997198325425
                 }
             }
         },
@@ -452,7 +391,6 @@
                     "Child Entity Order": [
                         "Entity_[1155164325235]",
                         "Entity_[1180934129011]",
-                        "Entity_[1172344194419]",
                         "Entity_[1168049227123]",
                         "Entity_[1163754259827]",
                         "Entity_[1159459292531]"
@@ -548,6 +486,212 @@
                 }
             }
         },
+        "Entity_[450911616725]": {
+            "Id": "Entity_[450911616725]",
+            "Name": "Walkable Ground",
+            "Components": {
+                "Component_[11292043037594988550]": {
+                    "$type": "SelectionComponent",
+                    "Id": 11292043037594988550
+                },
+                "Component_[12609543496009019220]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 12609543496009019220
+                },
+                "Component_[12633702391359586668]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 12633702391359586668
+                },
+                "Component_[15218674107800691520]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 15218674107800691520,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{C15CD465-9589-56ED-945F-8416FA4798A3}",
+                                    "subId": 284301017
+                                },
+                                "assetHint": "objects/_primitives/_box_1x1.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[15452482044783842847]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15452482044783842847
+                },
+                "Component_[15824416766761593319]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 15824416766761593319
+                },
+                "Component_[16025874304388479904]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 16025874304388479904
+                },
+                "Component_[168254914237457004]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 168254914237457004,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            8.8519926071167,
+                            -1.6495599746704102,
+                            -3.037001609802246
+                        ],
+                        "Rotate": [
+                            0.0,
+                            65.64250183105469,
+                            0.0
+                        ],
+                        "UniformScale": 10.0
+                    }
+                },
+                "Component_[17891477845271769815]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 17891477845271769815
+                },
+                "Component_[3100900185066405258]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 3100900185066405258
+                },
+                "Component_[7883161033135576251]": {
+                    "$type": "EditorColliderComponent",
+                    "Id": 7883161033135576251,
+                    "ColliderConfiguration": {
+                        "MaterialSelection": {
+                            "MaterialIds": [
+                                {}
+                            ]
+                        }
+                    },
+                    "ShapeConfiguration": {
+                        "ShapeType": 1,
+                        "Box": {
+                            "Scale": [
+                                10.0,
+                                10.0,
+                                10.0
+                            ]
+                        }
+                    }
+                },
+                "Component_[969952627813668729]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 969952627813668729
+                }
+            }
+        },
+        "Entity_[561843407855]": {
+            "Id": "Entity_[561843407855]",
+            "Name": "Press F to Build NavMesh",
+            "Components": {
+                "Component_[11096366121174680202]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 11096366121174680202,
+                    "m_template": {
+                        "$type": "InputConfigurationComponent",
+                        "Input Event Bindings": {
+                            "assetId": {
+                                "guid": "{FA7A06A5-6E4E-5D6B-912D-546A5D524C0D}"
+                            },
+                            "assetHint": "levels/navigation/navigation_helper_input.inputbindings"
+                        }
+                    }
+                },
+                "Component_[11825398747210189015]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 11825398747210189015
+                },
+                "Component_[1566828625472401165]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 1566828625472401165
+                },
+                "Component_[16289018766372136570]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 16289018766372136570
+                },
+                "Component_[2008841985879124726]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 2008841985879124726,
+                    "m_name": "update_nav_mesh_on_key_released.scriptcanvas",
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "id": "{061917A8-B0EF-5888-8BE0-D576152A2BDE}",
+                            "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/update_nav_mesh_on_key_released.scriptcanvas"
+                        },
+                        "entityId": [
+                            [
+                                {
+                                    "m_id": "{FECF3F3A-A839-4763-831D-6D6A56B77DC1}"
+                                },
+                                ""
+                            ]
+                        ],
+                        "overrides": [
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 1
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "EntityId",
+                                    "value": "Entity_[689399540125]"
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{FECF3F3A-A839-4763-831D-6D6A56B77DC1}"
+                                },
+                                "VariableName": "Nav Mesh Entity",
+                                "InitialValueSource": 1
+                            }
+                        ]
+                    },
+                    "sourceHandle": {
+                        "id": "{061917A8-B0EF-5888-8BE0-D576152A2BDE}",
+                        "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/update_nav_mesh_on_key_released.scriptcanvas"
+                    }
+                },
+                "Component_[3118050914568994311]": {
+                    "$type": "SelectionComponent",
+                    "Id": 3118050914568994311
+                },
+                "Component_[3523426327564853705]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 3523426327564853705
+                },
+                "Component_[5808529766338088185]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 5808529766338088185,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            -0.00806535966694355,
+                            0.09999656677246094,
+                            4.007946491241455
+                        ]
+                    }
+                },
+                "Component_[7952795046611982726]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 7952795046611982726
+                },
+                "Component_[8785998902614766370]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 8785998902614766370
+                },
+                "Component_[8865896940175584767]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 8865896940175584767
+                },
+                "Component_[9616388374514273052]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 9616388374514273052
+                }
+            }
+        },
         "Entity_[689399540125]": {
             "Id": "Entity_[689399540125]",
             "Name": "Navigation Mesh",
@@ -632,10 +776,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{C15CD465-9589-56ED-945F-8416FA4798A3}",
-                                    "subId": 284301017
+                                    "guid": "{1EE46427-D1C2-5698-B30D-B4CCF46B15CD}",
+                                    "subId": 274434668
                                 },
-                                "assetHint": "objects/_primitives/_box_1x1.azmodel"
+                                "assetHint": "objects/_primitives/_sphere_1x1.azmodel"
                             }
                         }
                     }
@@ -684,7 +828,14 @@
                         }
                     },
                     "ShapeConfiguration": {
-                        "ShapeType": 1,
+                        "ShapeType": 0,
+                        "Sphere": {
+                            "Scale": [
+                                10.0,
+                                10.0,
+                                10.0
+                            ]
+                        },
                         "Box": {
                             "Scale": [
                                 10.0,

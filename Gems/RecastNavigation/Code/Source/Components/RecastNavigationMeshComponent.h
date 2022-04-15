@@ -29,8 +29,6 @@ namespace RecastNavigation
     class RecastNavigationMeshComponent final
         : public AZ::Component
         , protected RecastNavigationMeshRequestBus::Handler
-        , protected AzFramework::GameEntityContextEventBus::Handler
-        , protected AzFramework::InputChannelEventListener
         , public AZ::TickBus::Handler
     {
     public:
@@ -40,21 +38,13 @@ namespace RecastNavigation
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         // RecastNavigationRequestBus interface implementation
         bool UpdateNavigationMesh() override;
         void SetWorldBounds(const AZ::Aabb& worldBounds) override;
         AZStd::vector<AZ::Vector3> FindPathToEntity(AZ::EntityId fromEntity, AZ::EntityId toEntity) override;
         AZStd::vector<AZ::Vector3> FindPathToPosition(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& targetWorldPosition) override;
-
-        // GameEntityContextEventBus
-        void OnGameEntitiesStarted() override;
-
-        // InputChannelEventListener
-        bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
-
+        
         // AZ::Component interface implementation
         void Activate() override;
         void Deactivate() override;

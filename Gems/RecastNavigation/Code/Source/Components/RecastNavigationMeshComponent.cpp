@@ -20,6 +20,7 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzCore/Script/ScriptContextAttributes.h>
 
 AZ_CVAR(bool, cl_navmesh_debug, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, draw debug visual information about Navigation Mesh");
@@ -33,7 +34,7 @@ namespace RecastNavigation
         if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<RecastNavigationMeshComponent, AZ::Component>()
-                ->Version(3)
+                ->Version(1)
                 ;
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
@@ -45,27 +46,34 @@ namespace RecastNavigation
                     ;
             }
         }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<RecastNavigationMeshRequestBus>("RecastNavigationMeshRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "navigation")
+                ->Attribute(AZ::Script::Attributes::Category, "Navigation")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Event("UpdateNavigationMesh", &RecastNavigationMeshRequests::UpdateNavigationMesh)
+                ;
+
+            behaviorContext->Class<RecastNavigationMeshComponent>()->RequestBus("RecastNavigationMeshRequestBus");
+        }
     }
 
-    void RecastNavigationMeshComponent::GetProvidedServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void RecastNavigationMeshComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
+        provided.push_back(AZ_CRC_CE("RecastNavigationMeshComponent"));
     }
 
-    void RecastNavigationMeshComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void RecastNavigationMeshComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-    }
-
-    void RecastNavigationMeshComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-    }
-
-    void RecastNavigationMeshComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
+        incompatible.push_back(AZ_CRC_CE("RecastNavigationMeshComponent"));
     }
 
     RecastNavigationMeshComponent::Geometry RecastNavigationMeshComponent::GetColliderGeometry(
-        [[maybe_unused]] const AZ::Aabb& aabb,
-        [[maybe_unused]] const AzPhysics::SceneQueryHits& overlapHits)
+        const AZ::Aabb& aabb,
+        const AzPhysics::SceneQueryHits& overlapHits)
     {
         Geometry geom;
 
@@ -82,52 +90,39 @@ namespace RecastNavigation
             {
                 AZ::EntityId hitEntityId = overlapHit.m_entityId;
 
-                //bool isWalkable = false;
-                //RecastWalkableRequestBus::EventResult(isWalkable, hitEntityId, &RecastWalkableRequestBus::Events::IsWalkable, GetEntityId());
-                //if (isWalkable == false)
-                //{
-                //    continue;
-                //}
+                // TODO filter out based on a Tag component value
 
                 // most physics bodies just have world transforms, but some also have local transforms including terrain.
                 // we are not applying the local orientation because it causes terrain geometry to be oriented incorrectly
 
                 AZ::Transform t = AZ::Transform::CreateIdentity();
                 AZ::TransformBus::EventResult(t, hitEntityId, &AZ::TransformBus::Events::GetWorldTM);
-
-                const AZStd::pair<AZ::Vector3, AZ::Quaternion> pose = overlapHit.m_shape->GetLocalPose();
-
-                const AZ::Transform worldTransform = t; // * AZ::Transform::CreateTranslation(overlapHit.m_shape->GetLocalPose().first);
+                t.SetUniformScale(1.0f);
 
                 /*AZ_Printf("NavMesh", "world %s, local %s & %s = %s", AZ::ToString(t).c_str(),
                     AZ::ToString(pose.first).c_str(), AZ::ToString(pose.second).c_str(), AZ::ToString(worldTransform).c_str());*/
 
                 overlapHit.m_shape->GetGeometry(vertices, indices, &volumeAabb);
-                if (!vertices.empty())
+                if (!vertices.empty() && !indices.empty())
                 {
-                    if (!indices.empty())
+                    for (const AZ::Vector3& vertex : vertices)
                     {
-                        for (const AZ::Vector3& vertex : vertices)
-                        {
-                            const AZ::Vector3 translated = worldTransform.GetTranslation() + vertex;
-                            //AZ_Printf("NavMesh", "physx vertex %s -> %s", AZ::ToString(vertex).c_str(), AZ::ToString(translated).c_str());
+                        const AZ::Vector3 translated = t.TransformPoint(vertex);
+                        //AZ_Printf("NavMesh", "physx vertex %s -> %s", AZ::ToString(vertex).c_str(), AZ::ToString(translated).c_str());
 
-                            geom.m_verts.push_back(RecastVector3(translated));
-                        }
-
-                        for (size_t i = 2; i < indices.size(); i += 3)
-                        {
-                            geom.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + indices[i]));
-                            geom.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + indices[i - 1]));
-                            geom.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + indices[i - 2]));
-                        }
-
-                        indicesCount += vertices.size();
+                        geom.m_verts.push_back(RecastVector3(translated));
                     }
-                    else
+
+                    for (size_t i = 2; i < indices.size(); i += 3)
                     {
-                        AZ_Assert(false, "Not implemented");
+                        geom.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + indices[i]));
+                        geom.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + indices[i - 1]));
+                        geom.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + indices[i - 2]));
                     }
+
+                    indicesCount += vertices.size();
+                    vertices.clear();
+                    indices.clear();
                 }
             }
         }
@@ -137,8 +132,6 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponent::CustomDebugDraw::begin(duDebugDrawPrimitives prim, [[maybe_unused]] float size)
     {
-        //AZ_Printf("RecastNavigationMeshComponent", "duDebugDrawPrimitives = %d", static_cast<int>(prim));
-
         m_currentPrim = prim;
         m_verticesToDraw.clear();
     }
@@ -761,27 +754,6 @@ namespace RecastNavigation
         return pathPoints;
     }
 
-    void RecastNavigationMeshComponent::OnGameEntitiesStarted()
-    {
-        UpdateNavigationMesh();
-    }
-
-    bool RecastNavigationMeshComponent::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
-    {
-        const AzFramework::InputChannelId& inputChannelId = inputChannel.GetInputChannelId();
-
-        const AzFramework::InputDeviceId& device = inputChannel.GetInputDevice().GetInputDeviceId();
-        if (AzFramework::InputDeviceKeyboard::IsKeyboardDevice(device))
-        {
-            if (inputChannelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericF)
-            {
-                UpdateNavigationMesh();
-            }
-        }
-
-        return false;
-    }
-
     void RecastNavigationMeshComponent::Activate()
     {
         m_context = AZStd::make_unique<CustomContext>();
@@ -791,12 +763,7 @@ namespace RecastNavigation
         m_worldBounds = AZ::Aabb::CreateCenterRadius(position, 100.F);
 
         RecastNavigationMeshRequestBus::Handler::BusConnect(GetEntityId());
-
-        AzFramework::GameEntityContextEventBus::Handler::BusConnect();
-        AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
-
-        //UpdateNavigationMesh();
     }
 
     void RecastNavigationMeshComponent::Deactivate()
@@ -805,8 +772,6 @@ namespace RecastNavigation
         m_navMesh = {};
 
         RecastNavigationMeshRequestBus::Handler::BusDisconnect();
-        AzFramework::GameEntityContextEventBus::Handler::BusDisconnect();
-        AzFramework::InputChannelEventListener::Disconnect();
         AZ::TickBus::Handler::BusDisconnect();
     }
 
