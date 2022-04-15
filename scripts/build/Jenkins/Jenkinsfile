@@ -11,7 +11,6 @@ PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
 EBS_SNAPSHOT_SCRIPT_PATH = 'scripts/build/tools/ebs_snapshot.py'
 PIPELINE_RETRY_ATTEMPTS = 3
-GITHUB_URL = "https://github.com/aws-lumberyard-dev/o3de/blob/development/"
 
 // Number of minutes of inactivity in all stages of the pipeline to reach the timeout
 PIPELINE_TIMEOUT = 60
@@ -535,36 +534,35 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
     }
 }
 
-def ReplaceContent() {
+def ReplaceContent(String githubUrl, String branchName) {
     // Get absolute directory for job metadata. Needs permissions from Jenkins for each upstream classes
+    def github_url = "https://github.com/${githubUrl}/tree/${branchName}"
     def base_path = Jenkins.instance.getItemByFullName("${JOB_NAME}").rootDir
     def log_file = "${base_path}" + "/builds/${env.BUILD_NUMBER}/log"
     def config_list = []
     def regex_replace_map = {
-        '( .*o3de)(.*\\.cpp)\\((\\d+)\\)': ' ' + GITHUB_URL + '$2#L$3', // .cpp files
-        '( .*o3de)(.*\\.h)\\((\\d+)\\)': ' ' + GITHUB_URL + '$2#L$3', // .h files
-        ' .*(\\.\\.\\\\)+(.*\\.py):(\\d+): ': ' ' + GITHUB_URL + '$2#L$3 ', // .py files
+        '( .*o3de)(.*\\.cpp)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .cpp files
+        '( .*o3de)(.*\\.h)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .h files
+        ' .*(\\.\\.\\\\)+(.*\\.py):(\\d+): ': ' ' + github_url + '$2#L$3 ', // .py files
     }
-    for (regex_replace in regex_replace_map) {
-        config_list.add(fileContentReplaceConfig(
-            configs: [
-                fileContentReplaceConfig(
+    regex_replace_map.each { regex_replace ->
+        config_list.add(
+            fileContentReplaceConfig(
                 configs: [
                     fileContentReplaceItemConfig(
-                    search: regex_replace.key,
-                    replace: regex_replace_map[regex_replace.key],
+                    search: "${regex_replace.key}",
+                    replace: "${regex_replace_map[regex_replace.key]}",
                     matchCount: 0,
                     verbose: false,
                     )
                 ],
-                fileEncoding: 'UTF-8',
-                filePath:"${log_file}"
-                ),
-            ]
-        ))
+            fileEncoding: 'UTF-8',
+            filePath:"${log_file}"
+            ),
+        )
     }
     contentReplace(
-        config_list
+        configs: config_list
     )
 }
 
@@ -973,7 +971,7 @@ finally {
             } else {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
-                ReplaceContent()
+                ReplaceContent(env.REPOSITORY_NAME, env.BRANCH_NAME)
             }
             if(env.POST_AR_BUILD_SNS_TOPIC) {
                 message_json = [
