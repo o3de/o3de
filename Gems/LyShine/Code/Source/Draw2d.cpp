@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -111,15 +112,9 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState);
-    if (uiCanvasPass)
-    {
-        m_dynamicDraw->SetOutputScope(uiCanvasPass);
-    }
-    else
-    {
-        // Render target support is disabled
-        m_dynamicDraw->SetOutputScope(scene);
-    }
+    // Use scene as output scope (will render to the UiCanvas child pass of the LyShine pass)
+    m_dynamicDraw->SetOutputScope(scene);
+    m_dynamicDraw->InitDrawListTag(uiCanvasPass->GetDrawListTag());
     m_dynamicDraw->EndInit();
 
     // Check that the dynamic draw context has been initialized appropriately

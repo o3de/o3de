@@ -50,7 +50,6 @@
             ],
             "PassData": {
                 "$type": "RasterPassData",
-                "DrawListTag": "uicanvas",
                 "PipelineViewTag": "MainCamera"
             }
         }
