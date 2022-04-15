@@ -25,6 +25,7 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
 
 namespace Multiplayer
 {
