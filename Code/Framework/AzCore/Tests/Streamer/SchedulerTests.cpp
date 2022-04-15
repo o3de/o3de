@@ -364,7 +364,7 @@ namespace AZ::IO
                 }
                 else
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(32));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
                     return true;
                 }
             }));

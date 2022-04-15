@@ -141,15 +141,19 @@ namespace GradientSignal
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         DitherGradientRequestBus::Handler::BusConnect(GetEntityId());
         SectorDataNotificationBus::Handler::BusConnect();
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void DitherGradientComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         DitherGradientRequestBus::Handler::BusDisconnect();
         SectorDataNotificationBus::Handler::BusDisconnect();
     }
@@ -250,6 +254,8 @@ namespace GradientSignal
 
     float DitherGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         const AZ::Vector3& coordinate = sampleParams.m_position;
 
         const float pointsPerUnit = GetCalculatedPointsPerUnit();
@@ -271,6 +277,8 @@ namespace GradientSignal
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
             return;
         }
+
+        AZStd::shared_lock lock(m_queryMutex);
 
         const float pointsPerUnit = GetCalculatedPointsPerUnit();
 
@@ -309,7 +317,13 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetUseSystemPointsPerUnit(bool value)
     {
-        m_configuration.m_useSystemPointsPerUnit = value;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_useSystemPointsPerUnit = value;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -320,7 +334,12 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetPointsPerUnit(float points)
     {
-        m_configuration.m_pointsPerUnit = points;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_pointsPerUnit = points;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -331,7 +350,12 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetPatternOffset(AZ::Vector3 offset)
     {
-        m_configuration.m_patternOffset = offset;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_patternOffset = offset;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -342,7 +366,12 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetPatternType(AZ::u8 type)
     {
-        m_configuration.m_patternType = (DitherGradientConfig::BayerPatternType)type;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_patternType = (DitherGradientConfig::BayerPatternType)type;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

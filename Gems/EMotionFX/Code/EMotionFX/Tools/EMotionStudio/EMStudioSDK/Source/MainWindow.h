@@ -72,7 +72,6 @@ namespace EMStudio
 {
     // forward declaration
     class DirtyFileManager;
-    class EMStudioPlugin;
     class FileManager;
     class MainWindow;
     class NativeEventFilter;
@@ -164,6 +163,8 @@ namespace EMStudio
         void AddRecentActorFile(const QString& fileName);
 
         void LoadKeyboardShortcuts();
+
+        void UpdatePlugins(float timeDelta);
 
     public slots:
         void OnAutosaveTimeOut();
@@ -310,8 +311,6 @@ namespace EMStudio
         // AZ::TickBus::Handler overrides
         void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
         int GetTickOrder() override;
-
-        void UpdatePlugins(float timeDelta);
 
         void EnableUpdatingPlugins();
         void DisableUpdatingPlugins();

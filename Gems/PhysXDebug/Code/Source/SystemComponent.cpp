@@ -835,7 +835,7 @@ namespace PhysXDebug
             if (AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus))
             {
                 const AZ::Color wireframeColor = MapOriginalPhysXColorToUserDefinedValues(1);
-                debugDisplay->SetColor(wireframeColor.GetAsVector4());
+                debugDisplay->SetColor(wireframeColor);
                 debugDisplay->DrawWireBox(cullingBoxAabb.GetMin(), cullingBoxAabb.GetMax());
             }
         }
