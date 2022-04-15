@@ -540,11 +540,11 @@ def ReplaceContent(String githubUrl, String branchName) {
     def base_path = Jenkins.instance.getItemByFullName("${JOB_NAME}").rootDir
     def log_file = "${base_path}" + "/builds/${env.BUILD_NUMBER}/log"
     def config_list = []
-    def regex_replace_map = {
+    def regex_replace_map = [
         '( .*o3de)(.*\\.cpp)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .cpp files
         '( .*o3de)(.*\\.h)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .h files
         ' .*(\\.\\.\\\\)+(.*\\.py):(\\d+): ': ' ' + github_url + '$2#L$3 ', // .py files
-    }
+    ]
     regex_replace_map.each { regex_replace ->
         config_list.add(
             fileContentReplaceConfig(
