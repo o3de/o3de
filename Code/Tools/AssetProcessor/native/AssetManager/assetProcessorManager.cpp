@@ -2546,15 +2546,15 @@ namespace AssetProcessor
                             AutoFailJob(
                                 AZStd::string::format(
                                     "ProcessFilesToExamineQueue: source file path ( %s ) contains non ascii characters.\n",
-                                    normalizedPath.toUtf8().constData(), normalizedPath.length(), AP_MAX_PATH_LEN),
+                                    normalizedPath.toUtf8().constData()),
                                 AZStd::string::format(
                                     "Source file ( %s ) contains non ASCII characters.\n"
                                     "O3DE currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
                                     "Please rename the source file to fix this error.\n",
-                                    normalizedPath.toUtf8().data()),
+                                    normalizedPath.toUtf8().constData()),
                                 normalizedPath.toUtf8().constData(),
                                 JobEntry(
-                                    scanFolderInfo->ScanPath().toUtf8().data(),
+                                    scanFolderInfo->ScanPath().toUtf8().constData(),
                                     relativePathToFile,
                                     databasePathToFile,
                                     AZ::Uuid::CreateNull(),
