@@ -44,7 +44,7 @@ namespace ScriptCanvasEditor
 
     bool Interpreter::Execute()
     {
-        if (IsExecutable())
+        if (m_executor.IsExecutable())
         {    
             AZ::SystemTickBus::QueueFunction([this]()
             {
@@ -52,7 +52,7 @@ namespace ScriptCanvasEditor
 
                 if (m_runtimePropertiesDirty)
                 {
-                    if (IsExecutable())
+                    if (m_executor.IsExecutable())
                     {
                         m_executor.StopAndClearExecutable();
                     }
@@ -61,7 +61,7 @@ namespace ScriptCanvasEditor
                     m_runtimePropertiesDirty = false;
                 }
 
-                if (IsExecutable())
+                if (m_executor.IsExecutable())
                 {
                     SetSatus(InterpreterStatus::Running);
 
@@ -135,7 +135,7 @@ namespace ScriptCanvasEditor
     void Interpreter::OnAssetNotReady()
     {
         MutexLock lock(m_mutex);
-        if (IsExecutable())
+        if (m_executor.IsExecutable())
         {
             m_executor.StopAndClearExecutable();
         }
@@ -245,20 +245,20 @@ namespace ScriptCanvasEditor
     {
         MutexLock lock(m_mutex);
 
-        if (IsExecutable())
+        if (m_executor.IsExecutable())
         {
             AZ::SystemTickBus::QueueFunction([this]()
             {
                 MutexLock lock(m_mutex);
 
-                if (IsExecutable())
+                if (m_executor.IsExecutable())
                 {
                     m_executor.StopAndKeepExecutable();
                 }
 
                 SystemRequestBus::Broadcast(&SystemRequests::RequestGarbageCollect);
 
-                if (IsExecutable())
+                if (m_executor.IsExecutable())
                 {
                     SetSatus(InterpreterStatus::Ready);
                 }
