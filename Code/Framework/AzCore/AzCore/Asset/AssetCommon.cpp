@@ -92,6 +92,14 @@ namespace AZ::Data
         }
     }
 
+    AZStd::fixed_string<AssetId::MaxStringBuffer> AssetId::ToFixedString() const
+    {
+        using FixedString = AZStd::fixed_string<MaxStringBuffer>;
+        FixedString result;
+        result = FixedString::format("%s:%08x", m_guid.ToString<FixedString>().c_str(), m_subId);
+        return result;
+    }
+
     namespace AssetInternal
     {
         Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior)

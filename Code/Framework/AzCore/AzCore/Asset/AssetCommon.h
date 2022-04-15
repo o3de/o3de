@@ -8,18 +8,19 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/IStreamerTypes.h>
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzCore/std/function/function_fwd.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Math/Uuid.h>
-#include <AzCore/Preprocessor/Enum.h>
-#include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_base_of.h>
-#include <AzCore/IO/IStreamerTypes.h>
 
 namespace AZ
 {
@@ -81,6 +82,9 @@ namespace AZ
 
             static AssetId CreateString(AZStd::string_view input);
             static void Reflect(ReflectContext* context);
+
+            static const size_t MaxStringBuffer = AZ::Uuid::MaxStringBuffer + 9; /// UUid string + ":" + fixed size, hex, subId
+            AZStd::fixed_string<MaxStringBuffer> ToFixedString() const;
 
             Uuid m_guid;
             u32  m_subId;   ///< To allow easier and more consistent asset guid, we can provide asset sub ID. (i.e. Guid is a cubemap texture, subId is the index of the side)
