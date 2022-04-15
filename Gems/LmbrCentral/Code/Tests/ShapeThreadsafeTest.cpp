@@ -43,7 +43,7 @@ namespace UnitTest
         for (auto& queryThread : queryThreads)
         {
             queryThread = AZStd::thread(
-                [shapeEntityId, TestPoint, ExpectedDistance, numIterations, &syncThreads]()
+                [shapeEntityId, TestPoint, numIterations, &syncThreads]()
                 {
                     // Block until all the threads are created, so that we can run them 100% in parallel.
                     syncThreads.acquire();
@@ -74,7 +74,7 @@ namespace UnitTest
         // until all our query threads have finished their iterations.
         AZStd::atomic_bool stopSetThread = false;
         AZStd::thread setThread = AZStd::thread(
-            [shapeEntityId, NumQueryThreads, &shapeSetFn, &syncThreads, &stopSetThread]()
+            [shapeEntityId, &shapeSetFn, &syncThreads, &stopSetThread]()
             {
                 // Now that all threads are created, signal everything to start running in parallel.
                 syncThreads.release(NumQueryThreads);
