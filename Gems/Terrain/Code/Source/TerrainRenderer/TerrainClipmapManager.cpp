@@ -182,7 +182,7 @@ namespace Terrain
         imageDesc.m_size = AZ::RHI::Size(m_config.m_clipmapSize, m_config.m_clipmapSize, 1);
 
         // TODO: Test and find the most suitable precision for color map.
-        imageDesc.m_format = AZ::RHI::Format::R32G32B32A32_FLOAT;
+        imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
         imageDesc.m_arraySize = aznumeric_cast<uint16_t>(m_macroClipmapStackSize);
 
         AZ::Name macroColorClipmapName = AZ::Name("MacroColorClipmaps");

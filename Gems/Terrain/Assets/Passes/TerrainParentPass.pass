@@ -10,12 +10,12 @@
                 {
                     "Name": "TerrainMacroClipmapGenerationPass",
                     "TemplateName": "TerrainMacroClipmapGenerationPassTemplate",
-                    "Enabled": true
+                    "Enabled": false
                 },
                 {
                     "Name": "TerrainDetailClipmapGenerationPass",
                     "TemplateName": "TerrainDetailClipmapGenerationPassTemplate",
-                    "Enabled": true
+                    "Enabled": false
                 }
             ]
         }
