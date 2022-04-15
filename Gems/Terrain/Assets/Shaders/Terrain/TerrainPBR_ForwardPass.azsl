@@ -112,9 +112,13 @@ void GatherSurfaceDataFromClipmaps(
     )
 {
     ClipmapSample clipmapSample = SampleClipmap(position);
-    macroColor = clipmapSample.m_macroColor;
-    macroNormal = clipmapSample.m_macroNormal;
     hasDetailSurface = clipmapSample.m_hasDetail;
+
+    if (clipmapSample.m_hasMacro)
+    {
+        macroColor = clipmapSample.m_macroColor;
+        macroNormal = clipmapSample.m_macroNormal;
+    }
     if (hasDetailSurface)
     {
         detailSurface = clipmapSample.m_detailSurface;
@@ -144,7 +148,6 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     {
         GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
-
 
     const float macroRoughness = 1.0;
     const float macroSpecularF0 = 0.5;

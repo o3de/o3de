@@ -11,30 +11,47 @@
 #include <TerrainDetailHelpers.azsli>
 
 // Clipmap levels
-// --------|--------------|-------- level 0
-//   ------|--------------|------   level 1
-//     ----|--------------|----     level 2
-//       --|--------------|--       level 3
-//         |--------------|         level 4 (always covers the area defined by max render size)
+//         |<- clipmap size ->|
+// --------|------------------|-------- level 0
+//   ------|------------------|------   level 1
+//     ----|------------------|----     level 2
+//       --|------------------|--       level 3
+//                 ...                   ...
+//         |------------------|         level n = stack size - 1 (always covers the area defined by max render size)
 
-float GetClipmapScale(uint clipmapLevel)
+float GetMacroClipmapScaleInv(uint clipmapLevel)
 {
-    return TerrainSrg::m_clipmapData.m_clipmapScaleInv[clipmapLevel].x;
+    return TerrainSrg::m_clipmapData.m_macroClipmapScaleInv[clipmapLevel].x;
 }
 
-float2 GetPreviousClipmapCenter(uint clipmapLevel)
+float GetDetailClipmapScaleInv(uint clipmapLevel)
 {
-    return TerrainSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].xy;
+    return TerrainSrg::m_clipmapData.m_detailClipmapScaleInv[clipmapLevel].x;
 }
 
-float2 GetCurrentClipmapCenter(uint clipmapLevel)
+float2 GetPreviousMacroClipmapCenter(uint clipmapLevel)
 {
-    return TerrainSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].zw;
+    return TerrainSrg::m_clipmapData.m_macroClipmapCenters[clipmapLevel].xy;
+}
+
+float2 GetCurrentMacroClipmapCenter(uint clipmapLevel)
+{
+    return TerrainSrg::m_clipmapData.m_macroClipmapCenters[clipmapLevel].zw;
+}
+
+float2 GetPreviousDetailClipmapCenter(uint clipmapLevel)
+{
+    return TerrainSrg::m_clipmapData.m_detailClipmapCenters[clipmapLevel].xy;
+}
+
+float2 GetCurrentDetailClipmapCenter(uint clipmapLevel)
+{
+    return TerrainSrg::m_clipmapData.m_detailClipmapCenters[clipmapLevel].zw;
 }
 
 // Get the world position at the pixel position in a clipmap.
 // Note: clipmap center is dynamic because we are using toroidal addressing. It's not always at the middle.
-float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapLevel)
+float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapLevel, float clipmapScaleInv, float maxRenderDistance)
 {
     float2 normalizedPixelPosition = (pixelPosition.xy + 0.5) / TerrainSrg::m_clipmapData.m_clipmapSize;
 
@@ -48,56 +65,44 @@ float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapL
     distance.y -= step(0.5, distance.y);
     distance.y += step(distance.y, -0.5);
 
-    float clipmapScale = GetClipmapScale(clipmapLevel);
-    float2 maxRenderSize = TerrainSrg::m_clipmapData.m_maxRenderSize.xy;
-    float2 viewRelativePosition = distance * (maxRenderSize * clipmapScale);
+    float2 viewRelativePosition = distance * (maxRenderDistance * 2.0f * clipmapScaleInv);
     return TerrainSrg::m_clipmapData.m_currentViewPosition + viewRelativePosition;
 }
 
-int2 GetPixelPosition(float2 viewRelativePosition, uint clipmapLevel)
+float2 GetCurrentWorldPositionFromMacroClipmaps(uint2 pixelPosition, uint clipmapLevel)
 {
-    float clipmapScale = GetClipmapScale(clipmapLevel);
-    float2 maxRenderSize = TerrainSrg::m_clipmapData.m_maxRenderSize.xy;
-    float2 normalizedDistance = viewRelativePosition / (maxRenderSize * clipmapScale);
-    float2 normalizedPixelPosition = GetCurrentClipmapCenter(clipmapLevel) + normalizedDistance;
-    // By clipmap mechanics, the normalized position can only fall into [-1.0, 2.0].
-    // We can use fraction after shifting 1.0 to get the actual position.
-    normalizedPixelPosition = frac(normalizedPixelPosition + float2(1.0, 1.0));
-
-    return int2(normalizedPixelPosition * TerrainSrg::m_clipmapData.m_clipmapSize);
+    float2 currentClipmapCenter = GetCurrentMacroClipmapCenter(clipmapLevel);
+    float clipmapScaleInv = GetMacroClipmapScaleInv(clipmapLevel);
+    float maxRenderDistance = TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance;
+    return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel, clipmapScaleInv, maxRenderDistance);
 }
 
-float2 GetPreviousWorldPosition(uint2 pixelPosition, uint clipmapLevel)
+float2 GetCurrentWorldPositionFromDetailClipmaps(uint2 pixelPosition, uint clipmapLevel)
 {
-    float2 previousClipmapCenter = GetPreviousClipmapCenter(clipmapLevel);
-    return GetWorldPosition(previousClipmapCenter, pixelPosition, clipmapLevel);
+    float2 currentClipmapCenter = GetCurrentDetailClipmapCenter(clipmapLevel);
+    float clipmapScaleInv = GetDetailClipmapScaleInv(clipmapLevel);
+    float maxRenderDistance = TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance;
+    return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel, clipmapScaleInv, maxRenderDistance);
 }
 
-float2 GetCurrentWorldPosition(uint2 pixelPosition, uint clipmapLevel)
+float2 ddxPosition(float maxRenderDistance, float clipmapScaleInv)
 {
-    float2 currentClipmapCenter = GetCurrentClipmapCenter(clipmapLevel);
-    return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel);
+    float dx = maxRenderDistance * 2.0 * clipmapScaleInv / TerrainSrg::m_clipmapData.m_clipmapSize;
+    return float2(dx, 0.0);
 }
 
-float2 ddxPosition(uint clipmapLevel)
+float2 ddyPosition(float maxRenderDistance, float clipmapScaleInv)
 {
-    float clipmapScale = GetClipmapScale(clipmapLevel);
-    float2 dxdy = TerrainSrg::m_clipmapData.m_maxRenderSize / TerrainSrg::m_clipmapData.m_clipmapSize * clipmapScale;
-    return float2(dxdy.x, 0.0);
-}
-
-float2 ddyPosition(uint clipmapLevel)
-{
-    float clipmapScale = GetClipmapScale(clipmapLevel);
-    float2 dxdy = TerrainSrg::m_clipmapData.m_maxRenderSize / TerrainSrg::m_clipmapData.m_clipmapSize * clipmapScale;
-    return float2(0.0, dxdy.y);
+    float dy = maxRenderDistance * 2.0 * clipmapScaleInv / TerrainSrg::m_clipmapData.m_clipmapSize;
+    return float2(0.0, dy);
 }
 
 struct ClipmapSample
 {
     float3 m_macroColor;
     float3 m_macroNormal;
-    bool   m_hasDetail;
+    bool   m_hasMacro;  // false if world position is out of the clipmap range. Needs increasing max render distance.
+    bool   m_hasDetail; // false if the position doesn't have detail or out of the clipmap range.
     DetailSurface m_detailSurface;
 };
 
@@ -107,52 +112,112 @@ float3 UnpackNormal(float2 packedNormal)
     return float3(packedNormal.xy, z);
 }
 
-uint3 WorldPositionToClipmapTexelIndex(float2 worldPosition, uint clipmapStackSize)
+uint3 WorldPositionToMacroClipmapTexelIndex(float2 worldPosition)
 {
     float2 currentViewPosition = TerrainSrg::m_clipmapData.m_currentViewPosition;
-    float2 halfMaxRenderSize = TerrainSrg::m_clipmapData.m_maxRenderSize / 2.0;
+    float maxRenderDistance = TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance;
+
+    float2 maxRenderSize = float2(maxRenderDistance, maxRenderDistance);
     // The top clipmap's render distance
-    float2 halfMinRenderSize = halfMaxRenderSize / (float)(1u << (clipmapStackSize - 1u));
+    float2 minRenderSize = maxRenderSize / pow(TerrainSrg::m_clipmapData.m_macroClipmapScaleBase, (float)(TerrainSrg::m_clipmapData.m_macroClipmapStackSize - 1u));
 
     float2 distance = worldPosition - currentViewPosition;
-    float2 clampedDistance = clamp(halfMinRenderSize, abs(distance), halfMaxRenderSize);
-    float2 distanceRatio = halfMaxRenderSize / clampedDistance;
-    // Due to clamping, the max result of log2 is (clipmapStackSize - 1u), which falls into the first clipmap
-    uint clipmapLevel = clipmapStackSize - 1u - uint(floor(log2(min(distanceRatio.x, distanceRatio.y))));
-    uint2 pixelPosition = GetPixelPosition(distance, clipmapLevel);
+    float2 clampedDistance = clamp(minRenderSize, abs(distance), maxRenderSize);
+    float2 distanceRatio = maxRenderSize / clampedDistance;
+    // Due to clamping, the max result of log is (clipmapStackSize - 1u), which falls into the first clipmap
+    uint clipmapLevel = TerrainSrg::m_clipmapData.m_macroClipmapStackSize - 1u - uint(floor(log(min(distanceRatio.x, distanceRatio.y))/log(TerrainSrg::m_clipmapData.m_macroClipmapScaleBase)));
+    
+    float clipmapScaleInv = GetMacroClipmapScaleInv(clipmapLevel);
+    float2 normalizedDistance = distance / (maxRenderDistance * 2.0 * clipmapScaleInv);
+    float2 clipmapCenter = GetCurrentMacroClipmapCenter(clipmapLevel);
+    float2 normalizedPixelPosition = clipmapCenter + normalizedDistance;
+    // By toroidal addressing, the normalized position can only fall into [-1.0, 2.0].
+    // We can use fraction after shifting 1.0 to get the actual position.
+    normalizedPixelPosition = frac(normalizedPixelPosition + float2(1.0, 1.0));
+
+    uint2 pixelPosition = uint2(normalizedPixelPosition * TerrainSrg::m_clipmapData.m_clipmapSize);
+
+    return uint3(pixelPosition, clipmapLevel);
+}
+
+uint3 WorldPositionToDetailClipmapTexelIndex(float2 worldPosition)
+{
+    float2 currentViewPosition = TerrainSrg::m_clipmapData.m_currentViewPosition;
+    float maxRenderDistance = TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance;
+
+    float2 maxRenderSize = float2(maxRenderDistance, maxRenderDistance);
+    // The top clipmap's render distance
+    float2 minRenderSize = maxRenderSize / pow(TerrainSrg::m_clipmapData.m_detailClipmapScaleBase, (float)(TerrainSrg::m_clipmapData.m_detailClipmapStackSize - 1u));
+
+    float2 distance = worldPosition - currentViewPosition;
+    float2 clampedDistance = clamp(minRenderSize, abs(distance), maxRenderSize);
+    float2 distanceRatio = maxRenderSize / clampedDistance;
+    // Due to clamping, the max result of log is (clipmapStackSize - 1u), which falls into the first clipmap
+    uint clipmapLevel = TerrainSrg::m_clipmapData.m_detailClipmapStackSize - 1u - uint(floor(log(min(distanceRatio.x, distanceRatio.y))/log(TerrainSrg::m_clipmapData.m_detailClipmapScaleBase)));
+    
+    float clipmapScaleInv = GetDetailClipmapScaleInv(clipmapLevel);
+    float2 normalizedDistance = distance / (maxRenderDistance * 2.0 * clipmapScaleInv);
+    float2 clipmapCenter = GetCurrentDetailClipmapCenter(clipmapLevel);
+    float2 normalizedPixelPosition = clipmapCenter + normalizedDistance;
+    // By toroidal addressing, the normalized position can only fall into [-1.0, 2.0].
+    // We can use fraction after shifting 1.0 to get the actual position.
+    normalizedPixelPosition = frac(normalizedPixelPosition + float2(1.0, 1.0));
+
+    uint2 pixelPosition = uint2(normalizedPixelPosition * TerrainSrg::m_clipmapData.m_clipmapSize);
     
     return uint3(pixelPosition, clipmapLevel);
 }
 
 ClipmapSample SampleClipmap(float2 worldPosition)
 {
-    uint3 macroTexelIndex = WorldPositionToClipmapTexelIndex(worldPosition, MacroClipmapStackSize);
-    uint3 detailTexelIndex = WorldPositionToClipmapTexelIndex(worldPosition, DetailClipmapStackSize);
+    ClipmapSample data;
+
+    float2 distance = worldPosition - TerrainSrg::m_clipmapData.m_currentViewPosition;
+    float2 absDistance = abs(distance);
+    if (absDistance.x > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance || absDistance.y > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance)
+    {
+        data.m_hasMacro = false;
+        data.m_hasDetail = false;
+        return data;
+    }
+    data.m_hasMacro = true;
+
+    uint3 macroTexelIndex = WorldPositionToMacroClipmapTexelIndex(worldPosition);
 
     float4 macroColor = TerrainSrg::m_macroColorClipmaps[macroTexelIndex];
     float2 macroNormalPacked = TerrainSrg::m_macroNormalClipmaps[macroTexelIndex];
-    float4 detailColor = TerrainSrg::m_detailColorClipmaps[detailTexelIndex];
-
-    ClipmapSample data;
 
     data.m_macroColor = macroColor.rgb;
     data.m_macroNormal = UnpackNormal(macroNormalPacked);
-    // alpha represents hasDetailSurface, 1.0 for true and 0.0 for false.
-    data.m_hasDetail = detailColor.a == 1.0;
 
-    if (data.m_hasDetail)
+    if (absDistance.x > TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance || absDistance.y > TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance)
     {
-        float2 detailNormalPacked = TerrainSrg::m_detailNormalClipmaps[detailTexelIndex];
-        float detailHeight = TerrainSrg::m_detailHeightClipmaps[detailTexelIndex];
-        float4 detailMisc = TerrainSrg::m_detailMiscClipmaps[detailTexelIndex];
+        data.m_hasDetail = false;
+    }
+    else
+    {
+        uint3 detailTexelIndex = WorldPositionToDetailClipmapTexelIndex(worldPosition);
+        float4 detailColor = TerrainSrg::m_detailColorClipmaps[detailTexelIndex];
+        // alpha represents hasDetailSurface, 1.0 for true and 0.0 for false.
+        data.m_hasDetail = detailColor.a == 1.0;
 
-        data.m_detailSurface.m_color = detailColor.rgb;
-        data.m_detailSurface.m_normal = UnpackNormal(detailNormalPacked);
-        data.m_detailSurface.m_roughness = detailMisc.x;
-        data.m_detailSurface.m_specularF0 = detailMisc.y;
-        data.m_detailSurface.m_metalness = detailMisc.z;
-        data.m_detailSurface.m_occlusion = detailMisc.w;
-        data.m_detailSurface.m_height = detailHeight;
+        if (data.m_hasDetail)
+        {
+            float2 detailNormalPacked = TerrainSrg::m_detailNormalClipmaps[detailTexelIndex];
+            float detailHeight = TerrainSrg::m_detailHeightClipmaps[detailTexelIndex];
+            float detailRoughness = TerrainSrg::m_detailRoughnessClipmaps[detailTexelIndex];
+            float detailSpecularF0 = TerrainSrg::m_detailSpecularF0Clipmaps[detailTexelIndex];
+            float detailMetalness = TerrainSrg::m_detailMetalnessClipmaps[detailTexelIndex];
+            float detailOcclusion = TerrainSrg::m_detailOcclusionClipmaps[detailTexelIndex];
+
+            data.m_detailSurface.m_color = detailColor.rgb;
+            data.m_detailSurface.m_normal = UnpackNormal(detailNormalPacked);
+            data.m_detailSurface.m_roughness = detailRoughness;
+            data.m_detailSurface.m_specularF0 = detailSpecularF0;
+            data.m_detailSurface.m_metalness = detailMetalness;
+            data.m_detailSurface.m_occlusion = detailOcclusion;
+            data.m_detailSurface.m_height = detailHeight;
+        }
     }
 
     return data;
