@@ -397,9 +397,9 @@ namespace Multiplayer
             return;
         }
         
-        const char* sending_leveldata_message = "(3/3) Editor is sending the editor-server the level data packet.";
-        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(sending_leveldata_message);
-        AZ_Printf("MultiplayerEditor", sending_leveldata_message)
+        AZStd::string sending_leveldata_message = "Editor is sending the editor-server the level data packet.";
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(("(3/3) " + sending_leveldata_message).c_str());
+        AZ_Printf("MultiplayerEditor", sending_leveldata_message.c_str())
 
         const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
 
