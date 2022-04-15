@@ -50,6 +50,7 @@
             ],
             "PassData": {
                 "$type": "RasterPassData",
+                "DrawListTag": "lyshinerttpass",
                 "PipelineViewTag": "MainCamera"
             }
         }

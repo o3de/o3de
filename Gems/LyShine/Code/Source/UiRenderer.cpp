@@ -16,6 +16,7 @@
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Debug/Trace.h>
@@ -256,7 +257,7 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContextFo
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
 
     dynamicDraw->SetOutputScope(rttPass);
-
+    dynamicDraw->InitDrawListTag(rttPass->GetDrawListTag());
     dynamicDraw->EndInit();
 
     return dynamicDraw;
