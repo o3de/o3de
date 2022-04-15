@@ -63,6 +63,13 @@ namespace GradientSignal
         Manual                  //! Scale according to m_scaleRangeMin and m_scaleRangeMax
     };
 
+    //! Sampling type to use for the image data
+    enum class SamplingType : AZ::u8
+    {
+        Point,                  //! Point sampling just queries the X,Y point as specified (Default)
+        Bilinear                //! Apply a bilinear filter to the image data
+    };
+
     class ImageGradientConfig
         : public AZ::ComponentConfig
     {
@@ -83,6 +90,7 @@ namespace GradientSignal
         float m_scaleRangeMin = 0.0f;
         float m_scaleRangeMax = 1.0f;
         AZ::u32 m_mipIndex = 0;
+        SamplingType m_samplingType = SamplingType::Point;
     };
 
     static const AZ::Uuid ImageGradientComponentTypeId = "{4741F079-157F-457E-93E0-D6BA4EAF76FE}";
@@ -132,11 +140,13 @@ namespace GradientSignal
 
         void GetSubImageData();
         float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
+        float GetPixelValue(AZ::u32 x, AZ::u32 y) const;
         float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const;
         void SetupMultiplierAndOffset(float min, float max);
         void SetupDefaultMultiplierAndOffset();
         void SetupAutoScaleMultiplierAndOffset();
         void SetupManualScaleMultiplierAndOffset();
+        float GetValueForSamplingType(AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const;
 
         // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;
@@ -160,5 +170,6 @@ namespace GradientSignal
         float m_offset = 0.0f;
         AZ::u32 m_currentMipIndex = 0;
         AZ::RHI::ImageDescriptor m_imageDescriptor;
+        SamplingType m_currentSamplingType = SamplingType::Point;
     };
 }

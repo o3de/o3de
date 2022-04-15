@@ -82,12 +82,6 @@ using WIN_HMODULE = void*;
 typedef void* WIN_HMODULE;
 #endif
 
-//forward declarations
-namespace Audio
-{
-    struct IAudioSystem;
-    struct IMusicSystem;
-} // namespace Audio
 
 #define PHSYICS_OBJECT_ENTITY 0
 
