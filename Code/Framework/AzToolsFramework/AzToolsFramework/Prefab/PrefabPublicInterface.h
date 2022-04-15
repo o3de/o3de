@@ -151,6 +151,7 @@ namespace AzToolsFramework
             virtual PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const = 0;
 
             /**
+             * [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
              * Deletes all entities from the owning instance. Bails if the entities don't all belong to the same instance.
              * @param entities The entities to delete.
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
