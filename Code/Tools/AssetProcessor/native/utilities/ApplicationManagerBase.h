@@ -186,7 +186,7 @@ protected:
     int m_processedAssetCount = 0;
     int m_warningCount = 0;
     int m_errorCount = 0;
-    AZStd::unordered_set<AZStd::string> m_failedAssets;
+    AZStd::set<AZStd::string> m_failedAssets;
     bool m_AssetProcessorManagerIdleState = false;
     bool m_sourceControlReady = false;
     bool m_fullIdle = false;

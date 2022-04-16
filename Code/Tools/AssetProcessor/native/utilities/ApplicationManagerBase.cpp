@@ -104,7 +104,7 @@ void ApplicationManagerBase::ResetProcessedAssetCount()
 
 void ApplicationManagerBase::ResetFailedAssetCount()
 {
-    m_failedAssets = {};
+    m_failedAssets = AZStd::set<AZStd::string>{};
 }
 
 
