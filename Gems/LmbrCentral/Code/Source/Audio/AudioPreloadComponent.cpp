@@ -120,7 +120,10 @@ namespace LmbrCentral
         }
 
         Audio::TAudioPreloadRequestID preloadRequestId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-        Audio::AudioSystemRequestBus::BroadcastResult(preloadRequestId, &Audio::AudioSystemRequestBus::Events::GetAudioPreloadRequestID, preloadName);
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            preloadRequestId = audioSystem->GetAudioPreloadRequestID(preloadName);
+        }
 
         if (preloadRequestId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
         {
@@ -137,7 +140,10 @@ namespace LmbrCentral
         }
 
         Audio::TAudioPreloadRequestID preloadRequestId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-        Audio::AudioSystemRequestBus::BroadcastResult(preloadRequestId, &Audio::AudioSystemRequestBus::Events::GetAudioPreloadRequestID, preloadName);
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            preloadRequestId = audioSystem->GetAudioPreloadRequestID(preloadName);
+        }
 
         if (preloadRequestId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
         {
@@ -177,21 +183,24 @@ namespace LmbrCentral
     {
         Audio::AudioPreloadNotificationBus::MultiHandler::BusConnect(preloadId);
 
-        Audio::SAudioRequest request;
-        Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> requestData(preloadId);
-        request.nFlags = (Audio::eARF_PRIORITY_NORMAL);
-        request.pData = &requestData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, request);
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            Audio::SystemRequest::LoadBank loadBank;
+            loadBank.m_preloadRequestId = preloadId;
+            loadBank.m_asyncLoad = true;
+            audioSystem->PushRequest(AZStd::move(loadBank));
+        }
     }
 
     //=========================================================================
     void AudioPreloadComponent::UnloadPreloadById(Audio::TAudioPreloadRequestID preloadId)
     {
-        Audio::SAudioRequest request;
-        Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_SINGLE_REQUEST> requestData(preloadId);
-        request.nFlags = (Audio::eARF_PRIORITY_NORMAL);
-        request.pData = &requestData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, request);
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            Audio::SystemRequest::UnloadBank unloadBank;
+            unloadBank.m_preloadRequestId = preloadId;
+            audioSystem->PushRequest(AZStd::move(unloadBank));
+        }
     }
 
 } // namespace LmbrCentral

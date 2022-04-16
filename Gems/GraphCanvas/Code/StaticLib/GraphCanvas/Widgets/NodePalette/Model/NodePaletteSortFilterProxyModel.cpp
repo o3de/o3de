@@ -187,6 +187,59 @@ namespace GraphCanvas
         return showRow;
     }
 
+    bool NodePaletteSortFilterProxyModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
+    {
+        QAbstractItemModel* model = sourceModel();
+        QString left = model->data(source_left).toString();
+        QString right = model->data(source_right).toString();
+
+        if (m_filter.isEmpty())
+        {
+            return left < right;
+        }
+        else
+        {
+            int leftScore = CalculateSortingScore(source_left);
+            int rightScore = CalculateSortingScore(source_right);
+            // When sorting score is equal, follow alphabetical order instead
+            if (leftScore == rightScore)
+            {
+                return left < right;
+            }
+            else
+            {
+                return leftScore < rightScore;
+            }
+        }
+    }
+
+    int NodePaletteSortFilterProxyModel::CalculateSortingScore(const QModelIndex& source) const
+    {
+        QAbstractItemModel* model = sourceModel();
+        QString sourceString = model->data(source).toString();
+        if (sourceString.compare(m_filter, Qt::CaseInsensitive) == 0)
+        {
+            return -1; // match has highest priority
+        }
+
+        int result = INT_MAX;
+        // Calculate the score from children if available
+        if (model->hasChildren(source))
+        {
+            for (int i = 0; i < model->rowCount(source); ++i)
+            {
+                QModelIndex child = model->index(i, 0, source);
+                result = AZStd::min(result, CalculateSortingScore(child));
+            }
+        }
+        // If name contains filter or filter regex, assuming shorter name has stronger relevance
+        if (sourceString.contains(m_filter) || sourceString.contains(m_filterRegex))
+        {
+            result = AZStd::min(result, sourceString.size());
+        }
+        return result;
+    }
+
     void NodePaletteSortFilterProxyModel::PopulateUnfilteredModel()
     {
         m_unfilteredAutoCompleteModel->beginResetModel();

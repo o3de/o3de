@@ -50,10 +50,6 @@ struct IRemoteConsole;
 struct IRenderer;
 struct ICryFont;
 struct IMovieSystem;
-namespace Audio
-{
-    struct IAudioSystem;
-} // namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
@@ -965,7 +961,7 @@ struct ISystem
     //   Execute command line arguments.
     //   Should be after init game.
     // Example:
-    //   +g_gametype ASSAULT +map "testy"
+    //   +g_gametype ASSAULT +LoadLevel "testy"
     virtual void ExecuteCommandLine(bool deferred=true) = 0;
 
     // Description:
