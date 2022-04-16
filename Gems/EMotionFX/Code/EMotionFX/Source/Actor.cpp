@@ -2592,7 +2592,7 @@ namespace EMotionFX
 
             lodLevels[lodLevel].m_nodeInfos.resize(numNodes);
 
-            // Create a single mesh for the actor.
+            // Create a single mesh for the actor per LOD.
             Mesh* mesh = Mesh::CreateFromModelLod(lodAsset, m_skinToSkeletonIndexMap);
 
             // Find an owning joint for the mesh.

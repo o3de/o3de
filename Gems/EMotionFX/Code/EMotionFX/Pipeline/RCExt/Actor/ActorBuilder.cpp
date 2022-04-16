@@ -366,7 +366,12 @@ namespace EMotionFX
                 auto mesh = azrtti_cast<const SceneDataTypes::IMeshData*>(it->second);
                 if (mesh)
                 {
-                    outMeshIndices.push_back(nodeIndex);
+                    outMeshIndices.emplace_back(nodeIndex);
+                    if (!graph.HasNodeChild(nodeIndex))
+                    {
+                        // No need to add an emfx node for an end-point mesh node.
+                        continue;
+                    }
                 }
 
                 auto bone = azrtti_cast<const SceneDataTypes::IBoneData*>(it->second);
