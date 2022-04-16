@@ -85,7 +85,13 @@ namespace AzNetworking
             return InvalidConnectionId;
         }
 
-        if (!(tcpSocket->IsOpen() && m_tcpSocketManager.AddSocket(tcpSocket->GetSocketFd())))
+        if (!tcpSocket->IsOpen())
+        {
+            AZLOG(NET_TcpTraffic, "Failed to bind new incoming connection to socket manager, socket already closed.");
+            return InvalidConnectionId;
+        }
+
+        if (!m_tcpSocketManager.AddSocket(tcpSocket->GetSocketFd()))
         {
             tcpSocket->Close();
             AZLOG_ERROR("Failed to bind new incoming connection to socket manager, failed fd: %d", static_cast<int32_t>(tcpSocket->GetSocketFd()));
@@ -248,7 +254,13 @@ namespace AzNetworking
 
     void TcpNetworkInterface::AddConnectionHelper(ConnectionId connectionId, const IpAddress& remoteAddress, TcpSocket& tcpSocket)
     {
-        if (!(tcpSocket.IsOpen() && m_tcpSocketManager.AddSocket(tcpSocket.GetSocketFd())))
+        if (!tcpSocket.IsOpen())
+        {
+            AZLOG(NET_TcpTraffic, "Failed to bind new incoming connection to socket manager, socket already closed.");
+            return;
+        }
+
+        if(!m_tcpSocketManager.AddSocket(tcpSocket.GetSocketFd()))
         {
             tcpSocket.Close();
             AZLOG_ERROR("Failed to bind new incoming connection to socket manager, failed fd: %d", static_cast<int32_t>(tcpSocket.GetSocketFd()));
