@@ -51,8 +51,11 @@ namespace AWSClientAuth
                 {
                     Aws::CognitoIdentityProvider::Model::AuthenticationResultType authenticationResult = initiateAuthResult.GetAuthenticationResult();
                     UpdateTokens(authenticationResult);
-                    AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnPasswordGrantSingleFactorSignInSuccess
-                        , m_authenticationTokens);
+
+                    AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnPasswordGrantSingleFactorSignInSuccess,
+                        AuthenticationTokens(authenticationResult.GetAccessToken().c_str(),
+                            authenticationResult.GetRefreshToken().c_str(), authenticationResult.GetIdToken().c_str(),
+                            ProviderNameEnum::AWSCognitoIDP, authenticationResult.GetExpiresIn()));
                 }
                 else
                 {
@@ -126,8 +129,11 @@ namespace AWSClientAuth
                 {
                     Aws::CognitoIdentityProvider::Model::AuthenticationResultType authenticationResult = respondToAuthChallengeResult.GetAuthenticationResult();
                     UpdateTokens(authenticationResult);
-                    AuthenticationProviderNotificationBus::Broadcast(
-                        &AuthenticationProviderNotifications::OnPasswordGrantMultiFactorConfirmSignInSuccess, m_authenticationTokens);
+
+                    AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnPasswordGrantMultiFactorConfirmSignInSuccess,
+                        AuthenticationTokens(authenticationResult.GetAccessToken().c_str(),
+                            authenticationResult.GetRefreshToken().c_str(), authenticationResult.GetIdToken().c_str(),
+                            ProviderNameEnum::AWSCognitoIDP, authenticationResult.GetExpiresIn()));
                 }
             }
             else
@@ -179,7 +185,11 @@ namespace AWSClientAuth
                 {
                     Aws::CognitoIdentityProvider::Model::AuthenticationResultType authenticationResult = initiateAuthResult.GetAuthenticationResult();
                     UpdateTokens(authenticationResult);
-                    AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnRefreshTokensSuccess, m_authenticationTokens);
+
+                    AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnRefreshTokensSuccess,
+                        AuthenticationTokens(authenticationResult.GetAccessToken().c_str(),
+                            authenticationResult.GetRefreshToken().c_str(), authenticationResult.GetIdToken().c_str(),
+                            ProviderNameEnum::AWSCognitoIDP, authenticationResult.GetExpiresIn()));
                 }
                 else
                 {
@@ -231,8 +241,8 @@ namespace AWSClientAuth
 
     void AWSCognitoAuthenticationProvider::UpdateTokens(const Aws::CognitoIdentityProvider::Model::AuthenticationResultType& authenticationResult)
     {
-        m_authenticationTokens = AuthenticationTokens(authenticationResult.GetAccessToken().c_str(), authenticationResult.GetRefreshToken().c_str(),
-            authenticationResult.GetIdToken().c_str(), ProviderNameEnum::AWSCognitoIDP,
+        m_authenticationTokens = AuthenticationTokens("", authenticationResult.GetRefreshToken().c_str(),
+            "", ProviderNameEnum::AWSCognitoIDP,
             authenticationResult.GetExpiresIn());
     }
 } // namespace AWSClientAuth
