@@ -25,19 +25,19 @@ namespace AzNetworking
     {
     public:
 
-         SerializerDelta();
+        SerializerDelta();
 
-         uint32_t GetNumDirtyBits() const;
-         bool GetDirtyBit(uint32_t index) const;
-         bool InsertDirtyBit(bool dirtyBit);
+        uint32_t GetNumDirtyBits() const;
+        bool GetDirtyBit(uint32_t index) const;
+        bool InsertDirtyBit(bool dirtyBit);
 
-         uint8_t* GetBufferPtr();
-         uint32_t GetBufferSize() const;
-         uint32_t GetBufferCapacity() const;
+        uint8_t* GetBufferPtr();
+        uint32_t GetBufferSize() const;
+        uint32_t GetBufferCapacity() const;
 
-         void SetBufferSize(uint32_t size);
+        void SetBufferSize(uint32_t size);
 
-         bool Serialize(ISerializer& serializer);
+        bool Serialize(ISerializer& serializer);
 
     private:
 

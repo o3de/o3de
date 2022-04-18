@@ -105,7 +105,7 @@ namespace UnitTest
         }
     };
 
-    class DeltaSerializerTests 
+    class DeltaSerializerTests
         : public UnitTest::AllocatorsTestFixture
     {
     public:
@@ -182,7 +182,7 @@ namespace UnitTest
         EXPECT_EQ(createSerializer.GetBuffer(), nullptr);
         EXPECT_EQ(createSerializer.GetSerializerMode(), AzNetworking::SerializerMode::ReadFromObject);
 
-        createSerializer.ClearTrackedChangesFlag(); // NO-OP
+        createSerializer.ClearTrackedChangesFlag(); //NO-OP
         EXPECT_FALSE(createSerializer.GetTrackedChangesFlag());
         EXPECT_TRUE(createSerializer.BeginObject("CreateSerializer", "Begin"));
         EXPECT_TRUE(createSerializer.EndObject("CreateSerializer", "End"));
@@ -214,8 +214,8 @@ namespace UnitTest
         EXPECT_EQ(applySerializer.GetSize(), 0);
         EXPECT_EQ(applySerializer.GetBuffer(), nullptr);
         EXPECT_EQ(applySerializer.GetSerializerMode(), AzNetworking::SerializerMode::WriteToObject);
-        
-        applySerializer.ClearTrackedChangesFlag(); // NO-OP
+
+        applySerializer.ClearTrackedChangesFlag(); //NO-OP
         EXPECT_FALSE(applySerializer.GetTrackedChangesFlag());
         EXPECT_TRUE(applySerializer.BeginObject("CreateSerializer", "Begin"));
         EXPECT_TRUE(applySerializer.EndObject("CreateSerializer", "End"));
