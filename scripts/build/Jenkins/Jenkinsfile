@@ -543,7 +543,7 @@ def ReplaceContent(String githubUrl) {
     def regex_replace_map = [
         '( .*o3de)(.*\\.cpp)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .cpp files
         '( .*o3de)(.*\\.h)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .h files
-        ' .*(\\.\\.\\\\)+(.*\\.py):(\\d+): ': ' ' + github_url + '$2#L$3 ', // .py files
+        ' .*(\\.\\.\\\\|o3de)+(.*\\.py):(\\d+): ': ' ' + github_url + '$2#L$3 ', // .py files
     ]
     regex_replace_map.each { regex_replace ->
         config_list.add(
