@@ -68,12 +68,9 @@ namespace RecastNavigation
     }
 
     void RecastNavigationSurveyorComponent::AppendColliderGeometry(
-        Geometry& geometry,
-        const AZ::Aabb& aabb,
+        BoundedGeometry& geometry,
         const AzPhysics::SceneQueryHits& overlapHits)
     {
-        AZ::Aabb volumeAabb = aabb;
-
         AZStd::vector<AZ::Vector3> vertices;
         AZStd::vector<AZ::u32> indices;
         AZStd::size_t indicesCount = geometry.m_indices.size();
@@ -94,7 +91,7 @@ namespace RecastNavigation
                 /*AZ_Printf("NavMesh", "world %s, local %s & %s = %s", AZ::ToString(t).c_str(),
                     AZ::ToString(pose.first).c_str(), AZ::ToString(pose.second).c_str(), AZ::ToString(worldTransform).c_str());*/
 
-                overlapHit.m_shape->GetGeometry(vertices, indices, &volumeAabb);
+                overlapHit.m_shape->GetGeometry(vertices, indices, &geometry.m_worldBounds);
                 if (!vertices.empty() && !indices.empty())
                 {
                     for (const AZ::Vector3& vertex : vertices)
@@ -133,13 +130,12 @@ namespace RecastNavigation
         RecastNavigationSurveyorRequestBus::Handler::BusDisconnect();
     }
 
-    void RecastNavigationSurveyorComponent::CollectGeometry(Geometry& geometryData)
+    void RecastNavigationSurveyorComponent::CollectGeometry(BoundedGeometry& geometryData)
     {
-        AZ::Aabb worldBounds;
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(geometryData.m_worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
-        AZ::Vector3 dimension = worldBounds.GetExtents();
-        AZ::Transform pose = AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), worldBounds.GetCenter());
+        AZ::Vector3 dimension = geometryData.m_worldBounds.GetExtents();
+        AZ::Transform pose = AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), geometryData.m_worldBounds.GetCenter());
 
         Physics::BoxShapeConfiguration shapeConfiguration;
         shapeConfiguration.m_dimensions = dimension;
@@ -159,7 +155,7 @@ namespace RecastNavigation
 
         AZ_Printf("RecastNavigationSurveyorComponent", "found %llu physx meshes", results.m_hits.size());
 
-        AppendColliderGeometry(geometryData, worldBounds, results);
+        AppendColliderGeometry(geometryData, results);
     }
 
     AZ::Aabb RecastNavigationSurveyorComponent::GetWorldBounds()

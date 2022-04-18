@@ -48,6 +48,12 @@ set_property(
     PROPERTY COMPILE_OPTIONS ${compile_options}
 )
 unset(compile_options)
+set(RECAST_FETCHCONTENT_FOLDER "Gems/RecastNavigation/External")
+set_property(TARGET DebugUtils PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
+set_property(TARGET Detour PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
+set_property(TARGET DetourCrowd PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
+set_property(TARGET DetourTileCache PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
+set_property(TARGET Recast PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
 
 # Add the RecastNavigation.Static target
 # Note: We include the common files and the platform specific files which are set in recastnavigation_common_files.cmake

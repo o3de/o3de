@@ -16,7 +16,7 @@ namespace RecastNavigation
         : public AZ::ComponentBus
     {
     public:
-        virtual void CollectGeometry(Geometry& geometryData) = 0;
+        virtual void CollectGeometry(BoundedGeometry& geometryData) = 0;
         virtual AZ::Aabb GetWorldBounds() = 0;
     };
 

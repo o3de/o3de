@@ -136,10 +136,7 @@ namespace RecastNavigation
         // Get geometry
         m_geom.clear();
         RecastNavigationSurveyorRequestBus::Event(GetEntityId(), &RecastNavigationSurveyorRequestBus::Events::CollectGeometry, m_geom);
-
-        // Get the world bounds of the geometry
-        RecastNavigationSurveyorRequestBus::EventResult(m_worldBounds, GetEntityId(), &RecastNavigationSurveyorRequestBus::Events::GetWorldBounds);
-        
+  
         m_taskGraph.Reset();
         m_taskGraph.AddTask(
             m_taskDescriptor,
@@ -192,8 +189,8 @@ namespace RecastNavigation
         // Here the bounds of the input mesh are used, but the
         // area could be specified by an user defined box, etc.
 
-        const RecastVector3 worldMin(m_worldBounds.GetMin());
-        const RecastVector3 worldMax(m_worldBounds.GetMax());
+        const RecastVector3 worldMin(m_geom.m_worldBounds.GetMin());
+        const RecastVector3 worldMax(m_geom.m_worldBounds.GetMax());
 
         rcVcopy(m_config.bmin, &worldMin.m_x);
         rcVcopy(m_config.bmax, &worldMax.m_x);

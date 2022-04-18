@@ -37,11 +37,11 @@ namespace RecastNavigation
         void Deactivate() override;
 
         // RecastNavigationSurveyorRequestBus interface implementation
-        void CollectGeometry(Geometry& geometryData) override;
+        void CollectGeometry(BoundedGeometry& geometryData) override;
         AZ::Aabb GetWorldBounds() override;
 
     private:
         // Append the geometry within the world volume
-        void AppendColliderGeometry(Geometry& geometry, const AZ::Aabb& aabb, const AzPhysics::SceneQueryHits& overlapHits);
+        void AppendColliderGeometry(BoundedGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
     };
 } // namespace RecastNavigation

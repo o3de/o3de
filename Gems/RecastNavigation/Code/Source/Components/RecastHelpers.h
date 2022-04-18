@@ -8,6 +8,7 @@
 
 #pragma once
 #include <Recast.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 
 namespace RecastNavigation
@@ -53,13 +54,15 @@ namespace RecastNavigation
         }
     };
     
-    struct Geometry
+    struct BoundedGeometry
     {
+        AZ::Aabb m_worldBounds;
         AZStd::vector<RecastVector3> m_verts;
         AZStd::vector<AZ::s32> m_indices;
 
         void clear()
         {
+            m_worldBounds.SetNull();
             m_verts.clear();
             m_indices.clear();
         }

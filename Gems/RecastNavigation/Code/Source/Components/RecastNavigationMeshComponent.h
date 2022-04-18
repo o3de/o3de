@@ -61,8 +61,7 @@ namespace RecastNavigation
         AZ::TaskDescriptor m_taskDescriptor{ "UpdateNavigationMesh", "RecastNavigation" };
 
         bool TaskUpdateNavigationMesh();
-        AZ::Aabb m_worldBounds;
-        Geometry m_geom;
+        BoundedGeometry m_geom;
         AZStd::atomic<bool> m_navMeshReady = false;
         AZStd::atomic<bool> m_waitingOnNavMeshRebuild = false;
         
