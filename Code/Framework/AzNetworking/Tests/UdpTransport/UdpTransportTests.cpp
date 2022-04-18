@@ -61,8 +61,7 @@ namespace UnitTest
         {
             AZStd::string name = AZStd::string::format("UdpClient%d", ++s_numClients);
             m_name = name;
-            m_clientNetworkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
-                m_name, ProtocolType::Udp, TrustZone::ExternalClientToServer, m_connectionListener);
+            m_clientNetworkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(m_name, ProtocolType::Udp, TrustZone::ExternalClientToServer, m_connectionListener);
             m_clientNetworkInterface->Connect(IpAddress(127, 0, 0, 1, 12345));
         }
 
@@ -82,8 +81,7 @@ namespace UnitTest
     public:
         TestUdpServer()
         {
-            m_serverNetworkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
-                m_name, ProtocolType::Udp, TrustZone::ExternalClientToServer, m_connectionListener);
+            m_serverNetworkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(m_name, ProtocolType::Udp, TrustZone::ExternalClientToServer, m_connectionListener);
             m_serverNetworkInterface->Listen(12345);
         }
 
@@ -97,9 +95,11 @@ namespace UnitTest
         INetworkInterface* m_serverNetworkInterface;
     };
 
-    class UdpTransportTests : public AllocatorsFixture
+    class UdpTransportTests
+        : public AllocatorsFixture
     {
     public:
+
         void SetUp() override
         {
             SetupAllocator();
@@ -129,6 +129,7 @@ namespace UnitTest
     {
         const uint32_t SEQUENCE_BOUNDARY = 0xFFFF;
         UdpPacketTracker tracker;
+
         for (uint32_t i = 0; i < SEQUENCE_BOUNDARY; ++i)
         {
             tracker.GetNextPacketId();
@@ -140,8 +141,10 @@ namespace UnitTest
     {
         static const SequenceId TestReliableSequenceId = InvalidSequenceId;
         static const PacketType TestPacketId = PacketType{ 0 };
+
         UdpPacketTracker send;
         UdpPacketTracker recv;
+
         for (uint32_t i = 0; i < 128; i++)
         {
             UdpPacketHeader sendHeader1(send, TestPacketId, TestReliableSequenceId);
@@ -152,6 +155,7 @@ namespace UnitTest
             UdpPacketHeader sendHeader6(send, TestPacketId, TestReliableSequenceId);
             UdpPacketHeader sendHeader7(send, TestPacketId, TestReliableSequenceId);
             UdpPacketHeader sendHeader8(send, TestPacketId, TestReliableSequenceId);
+
             UdpPacketHeader recvHeader1(recv, TestPacketId, TestReliableSequenceId);
             UdpPacketHeader recvHeader2(recv, TestPacketId, TestReliableSequenceId);
             UdpPacketHeader recvHeader3(recv, TestPacketId, TestReliableSequenceId);
@@ -160,6 +164,7 @@ namespace UnitTest
             UdpPacketHeader recvHeader6(recv, TestPacketId, TestReliableSequenceId);
             UdpPacketHeader recvHeader7(recv, TestPacketId, TestReliableSequenceId);
             UdpPacketHeader recvHeader8(recv, TestPacketId, TestReliableSequenceId);
+
             send.ProcessReceived(nullptr, recvHeader3);
             recv.ProcessReceived(nullptr, sendHeader3);
             recv.ProcessReceived(nullptr, sendHeader2);
@@ -168,13 +173,17 @@ namespace UnitTest
             recv.ProcessReceived(nullptr, sendHeader5);
             recv.ProcessReceived(nullptr, sendHeader8);
             send.ProcessReceived(nullptr, recvHeader2);
+
             UdpPacketHeader recvHeaderTmp(recv, TestPacketId, TestReliableSequenceId);
             send.ProcessReceived(nullptr, recvHeaderTmp);
+
             {
                 BitsetChunk sendChunk;
                 BitsetChunk recvChunk;
+
                 send.GetAcknowledgedWindow().GetMostRecentAckState(sendChunk);
                 recv.GetReceivedWindow().GetMostRecentAckState(recvChunk);
+
                 BitsetChunk testResult = 0;
                 for (uint32_t bit = 0; bit < UdpPacketIdWindow::PacketAckContainer::NumBitsetChunkedBits; ++bit)
                 {
@@ -183,16 +192,21 @@ namespace UnitTest
                         SetBitHelper(testResult, bit, true);
                     }
                 }
+
                 EXPECT_EQ(sendChunk, recvChunk); // PacketTracker: Replication of acked bits
                 EXPECT_EQ(sendChunk, testResult); // Optimized ack window generation failed brute force check
             }
+
             UdpPacketHeader sendHeaderTmp(send, TestPacketId, TestReliableSequenceId);
             recv.ProcessReceived(nullptr, sendHeaderTmp);
+
             {
                 BitsetChunk sendChunk;
                 BitsetChunk recvChunk;
+
                 recv.GetAcknowledgedWindow().GetMostRecentAckState(sendChunk);
                 send.GetReceivedWindow().GetMostRecentAckState(recvChunk);
+
                 BitsetChunk testResult = 0;
                 for (uint32_t bit = 0; bit < UdpPacketIdWindow::PacketAckContainer::NumBitsetChunkedBits; ++bit)
                 {
@@ -201,6 +215,7 @@ namespace UnitTest
                         SetBitHelper(testResult, bit, true);
                     }
                 }
+
                 EXPECT_EQ(sendChunk, recvChunk); // PacketTracker: Replication of acked bits
                 EXPECT_EQ(sendChunk, testResult); // Optimized ack window generation failed brute force check
             }
@@ -212,29 +227,31 @@ namespace UnitTest
         const PacketType TestPacketType{ 12212 };
 
         UdpPacketIdWindow packetWindow;
-        UdpPacketHeader header1(
-            TestPacketType, InvalidSequenceId, SequenceId{ 985 }, InvalidSequenceId, 0xF8000FFF, SequenceRolloverCount{ 0 });
+
+        UdpPacketHeader header1(TestPacketType, InvalidSequenceId, SequenceId{ 985 }, InvalidSequenceId, 0xF8000FFF, SequenceRolloverCount{ 0 });
         packetWindow.UpdateForRemoteAckStatus(nullptr, header1);
-        UdpPacketHeader header2(
-            TestPacketType, InvalidSequenceId, SequenceId{ 995 }, InvalidSequenceId, 0x3FFFFF, SequenceRolloverCount{ 0 });
+
+        UdpPacketHeader header2(TestPacketType, InvalidSequenceId, SequenceId{ 995 }, InvalidSequenceId, 0x3FFFFF, SequenceRolloverCount{ 0 });
         packetWindow.UpdateForRemoteAckStatus(nullptr, header2);
-        UdpPacketHeader header3(
-            TestPacketType, InvalidSequenceId, SequenceId{ 999 }, InvalidSequenceId, 0x3FFFFFF, SequenceRolloverCount{ 0 });
+
+        UdpPacketHeader header3(TestPacketType, InvalidSequenceId, SequenceId{ 999 }, InvalidSequenceId, 0x3FFFFFF, SequenceRolloverCount{ 0 });
         packetWindow.UpdateForRemoteAckStatus(nullptr, header3);
-        UdpPacketHeader header4(
-            TestPacketType, InvalidSequenceId, SequenceId{ 1080 }, InvalidSequenceId, 0x3FF, SequenceRolloverCount{ 0 });
+
+        UdpPacketHeader header4(TestPacketType, InvalidSequenceId, SequenceId{ 1080 }, InvalidSequenceId, 0x3FF, SequenceRolloverCount{ 0 });
         packetWindow.UpdateForRemoteAckStatus(nullptr, header4);
-        UdpPacketHeader header5(
-            TestPacketType, InvalidSequenceId, SequenceId{ 1090 }, InvalidSequenceId, 0xFFFFF, SequenceRolloverCount{ 0 });
+
+        UdpPacketHeader header5(TestPacketType, InvalidSequenceId, SequenceId{ 1090 }, InvalidSequenceId, 0xFFFFF, SequenceRolloverCount{ 0 });
         packetWindow.UpdateForRemoteAckStatus(nullptr, header5);
-        UdpPacketHeader header6(
-            TestPacketType, InvalidSequenceId, SequenceId{ 1100 }, InvalidSequenceId, 0x3FFFFFFF, SequenceRolloverCount{ 0 });
+
+        UdpPacketHeader header6(TestPacketType, InvalidSequenceId, SequenceId{ 1100 }, InvalidSequenceId, 0x3FFFFFFF, SequenceRolloverCount{ 0 });
         packetWindow.UpdateForRemoteAckStatus(nullptr, header6);
-        UdpPacketHeader header7(
-            TestPacketType, InvalidSequenceId, SequenceId{ 1102 }, InvalidSequenceId, 0xFFFFFFFF, SequenceRolloverCount{ 0 });
+
+        UdpPacketHeader header7(TestPacketType, InvalidSequenceId, SequenceId{ 1102 }, InvalidSequenceId, 0xFFFFFFFF, SequenceRolloverCount{ 0 });
         packetWindow.UpdateForRemoteAckStatus(nullptr, header7);
+
         UdpPacketHeader header8(TestPacketType, InvalidSequenceId, SequenceId{ 1134 }, InvalidSequenceId, 0x1, SequenceRolloverCount{ 0 });
         packetWindow.UpdateForRemoteAckStatus(nullptr, header8);
+
         PacketAckState ackState = packetWindow.GetPacketAckStatus(PacketId(1007));
         EXPECT_EQ(ackState, PacketAckState::Nacked); // Testing that PacketId is not flagged as acked
     }
@@ -251,8 +268,8 @@ namespace UnitTest
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
             m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
             bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
-            bool canTerminate = (testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == 1) &&
-                (testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount() == 1);
+            bool canTerminate = (testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == 1)
+                             && (testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount() == 1);
             if (canTerminate || timeExpired)
             {
                 break;
@@ -276,10 +293,10 @@ namespace UnitTest
     TEST_F(UdpTransportTests, TestMultipleClients)
     {
         constexpr uint32_t NumTestClients = 50;
-
+    
         TestUdpServer testServer;
         TestUdpClient testClient[NumTestClients];
-
+    
         constexpr AZ::TimeMs TotalIterationTimeMs = AZ::TimeMs{ 5000 };
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
         for (;;)
@@ -297,11 +314,11 @@ namespace UnitTest
                 break;
             }
         }
-
+    
         EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), NumTestClients);
         for (uint32_t i = 0; i < NumTestClients; ++i)
         {
             EXPECT_EQ(testClient[i].m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
         }
     }
-} // namespace UnitTest
+}

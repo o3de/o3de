@@ -105,7 +105,8 @@ namespace UnitTest
         }
     };
 
-    class DeltaSerializerTests : public UnitTest::AllocatorsTestFixture
+    class DeltaSerializerTests 
+        : public UnitTest::AllocatorsTestFixture
     {
     public:
         void SetUp() override
@@ -127,6 +128,7 @@ namespace UnitTest
         DeltaDataContainer testContainer;
         AZStd::vector<int> growVector, shrinkVector;
         shrinkVector.resize(testContainer.m_container.array_size);
+
         testContainer.m_containerName = "TestContainer";
         for (int i = 0; i < testContainer.m_container.array_size; ++i)
         {
@@ -139,6 +141,7 @@ namespace UnitTest
             shrinkVector.resize(testContainer.m_container.array_size - i);
             testContainer.m_container[i].m_shrinkVector = shrinkVector;
         }
+
         return testContainer;
     }
 
@@ -147,11 +150,15 @@ namespace UnitTest
         DeltaDataContainer inContainer = TestDeltaContainer();
         AZStd::array<uint8_t, 2048> buffer;
         AzNetworking::NetworkInputSerializer inSerializer(buffer.data(), static_cast<uint32_t>(buffer.size()));
+
         // Always serialize the full first element
         EXPECT_TRUE(inContainer.Serialize(inSerializer));
+
         DeltaDataContainer outContainer;
         AzNetworking::NetworkOutputSerializer outSerializer(buffer.data(), static_cast<uint32_t>(buffer.size()));
+
         EXPECT_TRUE(outContainer.Serialize(outSerializer));
+
         for (uint32_t i = 0; i > outContainer.m_container.size(); ++i)
         {
             EXPECT_EQ(inContainer.m_container[i].m_blendFactor, outContainer.m_container[i].m_blendFactor);
@@ -169,10 +176,12 @@ namespace UnitTest
         // Every function here should return a constant value regardless of inputs
         AzNetworking::SerializerDelta deltaSerializer;
         AzNetworking::DeltaSerializerCreate createSerializer(deltaSerializer);
+
         EXPECT_EQ(createSerializer.GetCapacity(), 0);
         EXPECT_EQ(createSerializer.GetSize(), 0);
         EXPECT_EQ(createSerializer.GetBuffer(), nullptr);
         EXPECT_EQ(createSerializer.GetSerializerMode(), AzNetworking::SerializerMode::ReadFromObject);
+
         createSerializer.ClearTrackedChangesFlag(); // NO-OP
         EXPECT_FALSE(createSerializer.GetTrackedChangesFlag());
         EXPECT_TRUE(createSerializer.BeginObject("CreateSerializer", "Begin"));
@@ -183,10 +192,12 @@ namespace UnitTest
     {
         DeltaDataContainer deltaContainer = TestDeltaContainer();
         DeltaDataContainer noDeltaContainer = TestDeltaContainer();
+
         AZStd::array<uint8_t, 2048> deltaBuffer;
         AzNetworking::NetworkInputSerializer deltaSerializer(deltaBuffer.data(), static_cast<uint32_t>(deltaBuffer.size()));
         AZStd::array<uint8_t, 2048> noDeltaBuffer;
         AzNetworking::NetworkInputSerializer noDeltaSerializer(noDeltaBuffer.data(), static_cast<uint32_t>(noDeltaBuffer.size()));
+
         EXPECT_TRUE(deltaContainer.Serialize(deltaSerializer));
         EXPECT_FALSE(noDeltaContainer.SerializeNoDelta(noDeltaSerializer)); // Should run out of space
         EXPECT_EQ(noDeltaSerializer.GetCapacity(), noDeltaSerializer.GetSize()); // Verify that the serializer filled up
@@ -198,13 +209,15 @@ namespace UnitTest
         // Every function here should return a constant value regardless of inputs
         AzNetworking::SerializerDelta deltaSerializer;
         AzNetworking::DeltaSerializerApply applySerializer(deltaSerializer);
+
         EXPECT_EQ(applySerializer.GetCapacity(), 0);
         EXPECT_EQ(applySerializer.GetSize(), 0);
         EXPECT_EQ(applySerializer.GetBuffer(), nullptr);
         EXPECT_EQ(applySerializer.GetSerializerMode(), AzNetworking::SerializerMode::WriteToObject);
+        
         applySerializer.ClearTrackedChangesFlag(); // NO-OP
         EXPECT_FALSE(applySerializer.GetTrackedChangesFlag());
         EXPECT_TRUE(applySerializer.BeginObject("CreateSerializer", "Begin"));
         EXPECT_TRUE(applySerializer.EndObject("CreateSerializer", "End"));
     }
-} // namespace UnitTest
+}

@@ -95,7 +95,7 @@ public:
         Fn* fn = reinterpret_cast<Fn*>(m_fn);
         return (*fn)();
     }
-    
+
     bool IsValid() override { return m_fn != nullptr; }
 
 private:

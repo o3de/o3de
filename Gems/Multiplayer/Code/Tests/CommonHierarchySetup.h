@@ -1,6 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
- * this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,27 +7,27 @@
 
 #pragma once
 
+#include <IMultiplayerConnectionMock.h>
+#include <MockInterfaces.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Console/Console.h>
 #include <AzCore/EBus/EventSchedulerSystemComponent.h>
+#include <AzCore/Console/Console.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzTest/AzTest.h>
-#include <IMultiplayerConnectionMock.h>
-#include <MockInterfaces.h>
+#include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/Components/NetworkTransformComponent.h>
-#include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <NetworkEntity/NetworkEntityAuthorityTracker.h>
@@ -52,16 +51,8 @@ namespace Multiplayer
     {
     public:
         MockNetworkHierarchyCallbackHandler()
-            : m_leaveHandler(
-                  [this]()
-                  {
-                      OnNetworkHierarchyLeave();
-                  })
-            , m_changedHandler(
-                  [this](const AZ::EntityId& rootId)
-                  {
-                      OnNetworkHierarchyUpdated(rootId);
-                  })
+            : m_leaveHandler([this]() { OnNetworkHierarchyLeave(); })
+            , m_changedHandler([this](const AZ::EntityId& rootId) { OnNetworkHierarchyUpdated(rootId); })
         {
         }
 
@@ -72,7 +63,8 @@ namespace Multiplayer
         MOCK_METHOD1(OnNetworkHierarchyUpdated, void(const AZ::EntityId&));
     };
 
-    class HierarchyTests : public AllocatorsFixture
+    class HierarchyTests
+        : public AllocatorsFixture
     {
     public:
         void SetUp() override
@@ -122,8 +114,7 @@ namespace Multiplayer
             m_mockNetworkEntityManager = AZStd::make_unique<NiceMock<MockNetworkEntityManager>>();
             AZ::Interface<INetworkEntityManager>::Register(m_mockNetworkEntityManager.get());
 
-            ON_CALL(*m_mockNetworkEntityManager, AddEntityToEntityMap(_, _))
-                .WillByDefault(Invoke(this, &HierarchyTests::AddEntityToEntityMap));
+            ON_CALL(*m_mockNetworkEntityManager, AddEntityToEntityMap(_, _)).WillByDefault(Invoke(this, &HierarchyTests::AddEntityToEntityMap));
             ON_CALL(*m_mockNetworkEntityManager, GetEntity(_)).WillByDefault(Invoke(this, &HierarchyTests::GetEntity));
             ON_CALL(*m_mockNetworkEntityManager, GetNetEntityIdById(_)).WillByDefault(Invoke(this, &HierarchyTests::GetNetEntityIdById));
 
@@ -138,27 +129,23 @@ namespace Multiplayer
             EXPECT_NE(AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager(), nullptr);
 
             const IpAddress address("localhost", 1, ProtocolType::Udp);
-            m_mockConnection =
-                AZStd::make_unique<NiceMock<IMultiplayerConnectionMock>>(ConnectionId{ 1 }, address, ConnectionRole::Connector);
+            m_mockConnection = AZStd::make_unique<NiceMock<IMultiplayerConnectionMock>>(ConnectionId{ 1 }, address, ConnectionRole::Connector);
             m_mockConnectionListener = AZStd::make_unique<MockConnectionListener>();
 
             m_networkEntityTracker = AZStd::make_unique<NetworkEntityTracker>();
             ON_CALL(*m_mockNetworkEntityManager, GetNetworkEntityTracker()).WillByDefault(Return(m_networkEntityTracker.get()));
 
             m_networkEntityAuthorityTracker = AZStd::make_unique<NetworkEntityAuthorityTracker>(*m_mockNetworkEntityManager);
-            ON_CALL(*m_mockNetworkEntityManager, GetNetworkEntityAuthorityTracker())
-                .WillByDefault(Return(m_networkEntityAuthorityTracker.get()));
+            ON_CALL(*m_mockNetworkEntityManager, GetNetworkEntityAuthorityTracker()).WillByDefault(Return(m_networkEntityAuthorityTracker.get()));
 
-            m_entityReplicationManager = AZStd::make_unique<EntityReplicationManager>(
-                *m_mockConnection, *m_mockConnectionListener, EntityReplicationManager::Mode::LocalClientToRemoteServer);
+            m_entityReplicationManager = AZStd::make_unique<EntityReplicationManager>(*m_mockConnection, *m_mockConnectionListener, EntityReplicationManager::Mode::LocalClientToRemoteServer);
 
             m_console.reset(aznew AZ::Console());
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
 
             m_multiplayerComponentRegistry = AZStd::make_unique<MultiplayerComponentRegistry>();
-            ON_CALL(*m_mockNetworkEntityManager, GetMultiplayerComponentRegistry())
-                .WillByDefault(Return(m_multiplayerComponentRegistry.get()));
+            ON_CALL(*m_mockNetworkEntityManager, GetMultiplayerComponentRegistry()).WillByDefault(Return(m_multiplayerComponentRegistry.get()));
             RegisterMultiplayerComponents();
             MultiplayerTest::RegisterMultiplayerComponents();
         }
@@ -230,8 +217,7 @@ namespace Multiplayer
 
         AZStd::unique_ptr<EntityReplicationManager> m_entityReplicationManager;
 
-        AZStd::unique_ptr<MultiplayerComponentRegistry> m_multiplayerComponentRegistry;
-        ;
+        AZStd::unique_ptr<MultiplayerComponentRegistry> m_multiplayerComponentRegistry;;
 
         mutable AZStd::map<NetEntityId, AZ::Entity*> m_networkEntityMap;
 
@@ -358,8 +344,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            static_cast<ISerializer*>(&inSerializer)
-                ->Serialize(translation, "translation" /* Derived from NetworkTransformComponent.AutoComponent.xml */);
+            static_cast<ISerializer*>(&inSerializer)->Serialize(translation,
+                "translation" /* Derived from NetworkTransformComponent.AutoComponent.xml */);
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
@@ -368,13 +354,12 @@ namespace Multiplayer
             entity->FindComponent<NetworkTransformComponent>()->NotifyStateDeltaChanges(notifyRecord);
         }
 
-        template<typename Component>
+        template <typename Component>
         void SetHierarchyRootFieldOnNetworkHierarchyChild(const AZStd::unique_ptr<AZ::Entity>& entity, NetEntityId value)
         {
             /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
             constexpr int totalBits = 1 /*NetworkHierarchyChildComponentInternal::AuthorityToClientDirtyEnum::Count*/;
-            constexpr int inHierarchyBit =
-                0 /*NetworkHierarchyChildComponentInternal::AuthorityToClientDirtyEnum::hierarchyRoot_DirtyFlag*/;
+            constexpr int inHierarchyBit = 0 /*NetworkHierarchyChildComponentInternal::AuthorityToClientDirtyEnum::hierarchyRoot_DirtyFlag*/;
 
             ReplicationRecord currentRecord;
             currentRecord.m_authorityToClient.AddBits(totalBits);
@@ -453,20 +438,17 @@ namespace Multiplayer
 
             // Create an entity replicator for the child entity
             const NetworkEntityHandle childOfChildHandle(childOfChild.m_entity.get(), m_networkEntityTracker.get());
-            childOfChild.m_replicator = AZStd::make_unique<EntityReplicator>(
-                *m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, childOfChildHandle);
+            childOfChild.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, childOfChildHandle);
             childOfChild.m_replicator->Initialize(childOfChildHandle);
 
             // Create an entity replicator for the child entity
             const NetworkEntityHandle childHandle(child.m_entity.get(), m_networkEntityTracker.get());
-            child.m_replicator = AZStd::make_unique<EntityReplicator>(
-                *m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, childHandle);
+            child.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, childHandle);
             child.m_replicator->Initialize(childHandle);
 
             // Create an entity replicator for the root entity
             const NetworkEntityHandle rootHandle(root.m_entity.get(), m_networkEntityTracker.get());
-            root.m_replicator = AZStd::make_unique<EntityReplicator>(
-                *m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, rootHandle);
+            root.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, rootHandle);
             root.m_replicator->Initialize(rootHandle);
 
             root.m_entity->Activate();
@@ -474,4 +456,4 @@ namespace Multiplayer
             childOfChild.m_entity->Activate();
         }
     };
-} // namespace Multiplayer
+}

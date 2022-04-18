@@ -19,32 +19,32 @@ namespace AzNetworking
     {
     public:
         //! Starts the thread.
-         void Start();
+        void Start();
 
         //! Stops the thread.
-         void Stop();
+        void Stop();
 
         //! Joins the thread.
-         void Join();
+        void Join();
 
         //! Returns true if the thread is running.
         //! @return boolean true if the thread is running, false otherwise
-         bool IsRunning() const;
+        bool IsRunning() const;
 
-         TimedThread(const char* name, AZ::TimeMs updateRate);
-         virtual ~TimedThread() { AZ_Assert(!IsRunning(), "You must stop and join your thread before destructing it"); };
+        TimedThread(const char* name, AZ::TimeMs updateRate);
+        virtual ~TimedThread() { AZ_Assert(!IsRunning(), "You must stop and join your thread before destructing it"); };
 
     protected:
 
         //! Invoked on thread start.
-         virtual void OnStart() = 0;
+        virtual void OnStart() = 0;
 
         //! Invoked on thread stop.
-         virtual void OnStop() = 0;
+        virtual void OnStop() = 0;
 
         //! Invoked on thread update.
         //! @param updateRateMs The amount of time the thread can spend in OnUpdate in ms
-         virtual void OnUpdate(AZ::TimeMs updateRateMs) = 0;
+        virtual void OnUpdate(AZ::TimeMs updateRateMs) = 0;
 
     private:
 

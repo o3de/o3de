@@ -6,24 +6,25 @@
  *
  */
 
-#include <AzCore/Name/Name.h>
-#include <AzCore/Name/NameDictionary.h>
+#include <CommonHierarchySetup.h>
+#include <MockInterfaces.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Name/Name.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzTest/AzTest.h>
-#include <CommonHierarchySetup.h>
-#include <ConnectionData/ServerToClientConnectionData.h>
+#include <MultiplayerSystemComponent.h>
 #include <IMultiplayerConnectionMock.h>
 #include <IMultiplayerSpawnerMock.h>
-#include <MockInterfaces.h>
-#include <MultiplayerSystemComponent.h>
+#include <ConnectionData/ServerToClientConnectionData.h>
 #include <ReplicationWindows/ServerToClientReplicationWindow.h>
 
 namespace UnitTest
 {
-    class MultiplayerSystemTests : public AllocatorsFixture
+    class MultiplayerSystemTests
+        : public AllocatorsFixture
     {
     public:
         void SetUp() override
@@ -37,23 +38,11 @@ namespace UnitTest
             m_netComponent = new AzNetworking::NetworkingSystemComponent();
             m_mpComponent = new Multiplayer::MultiplayerSystemComponent();
 
-            m_initHandler = Multiplayer::SessionInitEvent::Handler(
-                [this](AzNetworking::INetworkInterface* value)
-                {
-                    TestInitEvent(value);
-                });
+            m_initHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestInitEvent(value); });
             m_mpComponent->AddSessionInitHandler(m_initHandler);
-            m_shutdownHandler = Multiplayer::SessionShutdownEvent::Handler(
-                [this](AzNetworking::INetworkInterface* value)
-                {
-                    TestShutdownEvent(value);
-                });
+            m_shutdownHandler = Multiplayer::SessionShutdownEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestShutdownEvent(value); });
             m_mpComponent->AddSessionShutdownHandler(m_shutdownHandler);
-            m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler(
-                [this](Multiplayer::MultiplayerAgentDatum value)
-                {
-                    TestConnectionAcquiredEvent(value);
-                });
+            m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler([this](Multiplayer::MultiplayerAgentDatum value) { TestConnectionAcquiredEvent(value); });
             m_mpComponent->AddConnectionAcquiredHandler(m_connAcquiredHandler);
             m_mpComponent->Activate();
         }
@@ -111,10 +100,8 @@ namespace UnitTest
     TEST_F(MultiplayerSystemTests, TestShutdownEvent)
     {
         m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::DedicatedServer);
-        IMultiplayerConnectionMock connMock1 =
-            IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        IMultiplayerConnectionMock connMock2 =
-            IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
+        IMultiplayerConnectionMock connMock1 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        IMultiplayerConnectionMock connMock2 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
 
@@ -124,10 +111,8 @@ namespace UnitTest
     TEST_F(MultiplayerSystemTests, TestConnectionDatum)
     {
         using namespace testing;
-        NiceMock<IMultiplayerConnectionMock> connMock1(
-            aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        NiceMock<IMultiplayerConnectionMock> connMock2(
-            aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        NiceMock<IMultiplayerConnectionMock> connMock1(aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        NiceMock<IMultiplayerConnectionMock> connMock2(aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
         m_mpComponent->OnConnect(&connMock1);
         m_mpComponent->OnConnect(&connMock2);
 
@@ -148,10 +133,8 @@ namespace UnitTest
         Multiplayer::NetworkEntityHandle controlledEntity;
         IMultiplayerConnectionMock connMock =
             IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        Multiplayer::ServerToClientConnectionData* connectionData =
-            new Multiplayer::ServerToClientConnectionData(&connMock, *m_mpComponent);
-        connectionData->GetReplicationManager().SetReplicationWindow(
-            AZStd::make_unique<Multiplayer::ServerToClientReplicationWindow>(controlledEntity, &connMock));
+        Multiplayer::ServerToClientConnectionData* connectionData = new Multiplayer::ServerToClientConnectionData(&connMock, *m_mpComponent);
+        connectionData->GetReplicationManager().SetReplicationWindow(AZStd::make_unique<Multiplayer::ServerToClientReplicationWindow>(controlledEntity, &connMock));
         connMock.SetUserData(connectionData);
 
         m_mpComponent->OnDisconnect(&connMock, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
@@ -160,4 +143,4 @@ namespace UnitTest
         EXPECT_EQ(m_mpSpawnerMock.m_playerCount, 0);
         AZ::Interface<Multiplayer::IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
     }
-} // namespace UnitTest
+}

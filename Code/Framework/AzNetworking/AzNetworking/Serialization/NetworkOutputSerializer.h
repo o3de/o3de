@@ -14,7 +14,7 @@ namespace AzNetworking
 {
     //! @class NetworkOutputSerializer
     //! @brief Output serializer for inflating and writing out a bytestream into an object model.
-    class  NetworkOutputSerializer
+    class NetworkOutputSerializer
         : public ISerializer
     {
     public:
