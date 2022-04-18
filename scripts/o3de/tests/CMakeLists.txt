@@ -69,6 +69,13 @@ ly_add_pytest(
 
 ly_add_pytest(
     NAME o3de_gem_properties
+    PATH ${CMAKE_CURRENT_LIST_DIR}/test_repo.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
+    NAME o3de_gem_properties
     PATH ${CMAKE_CURRENT_LIST_DIR}/test_gem_properties.py
     TEST_SUITE smoke
     EXCLUDE_TEST_RUN_TARGET_FROM_IDE
