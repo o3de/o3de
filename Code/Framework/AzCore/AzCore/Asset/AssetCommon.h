@@ -1235,8 +1235,6 @@ namespace AZ
             using ProductDependencyFlags = AZStd::bitset<64>;
             AZ::Data::AssetLoadBehavior LoadBehaviorFromFlags(const ProductDependencyFlags& dependencyFlags);
             AZ::Data::ProductDependencyInfo::ProductDependencyFlags CreateFlags(AZ::Data::AssetLoadBehavior autoLoadBehavior);
-            //! Clears any existing AssetLoadBehavior flags and sets a new AssetLoadBehavior without overwriting any other flags
-            void SetAssetLoadBehavior(ProductDependencyFlags& dependencyFlags, AZ::Data::AssetLoadBehavior autoLoadBehavior);
         } // namespace ProductDependencyInfo
     }  // namespace Data
 
