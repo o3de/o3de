@@ -206,6 +206,10 @@ namespace LmbrCentral
 
     void PolygonPrismShape::Activate(AZ::EntityId entityId)
     {
+        // Clear out callbacks at the start of activation. Otherwise, the underlying polygonPrism will attempt to trigger callbacks
+        // before this shape is fully activated, which we want to avoid.
+        m_polygonPrism->SetCallbacks({}, {}, {}, {});
+
         m_entityId = entityId;
         m_currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(m_currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
@@ -214,12 +218,17 @@ namespace LmbrCentral
 
         m_currentNonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(m_currentNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
+
+        // This will trigger an OnChangeNonUniformScale callback if one is set, which is why we clear out the callbacks at the
+        // start of activation. Those callbacks might try to query back to this shape, which isn't fully initialized or activated yet
+        // (see for example EditorPolygonPrismShapeComponent), so they would end up retrieving invalid data.
         m_polygonPrism->SetNonUniformScale(m_currentNonUniformScale);
         m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
 
         AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
             m_nonUniformScaleChangedHandler);
 
+        // Now that we've finished initializing the other data, set up the default change callbacks.
         const auto polygonPrismChanged = [this]()
         {
             ShapeChanged();
@@ -246,6 +255,9 @@ namespace LmbrCentral
         PolygonPrismShapeComponentRequestBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
+
+        // Clear out callbacks to ensure that they don't get called while the component is deactivated.
+        m_polygonPrism->SetCallbacks({}, {}, {}, {});
     }
 
     void PolygonPrismShape::InvalidateCache(InvalidateShapeCacheReason reason)

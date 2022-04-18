@@ -891,4 +891,58 @@ namespace UnitTest
         ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
     }
 
-}
+    TEST_F(PolygonPrismShapeTest, StaleCallbacksAreNotCalledDuringActivation)
+    {
+        // If callbacks are set on the underlying polygon prism for the PolygonPrismShape Component, they should get cleared out
+        // and reset on every deactivation / activation. There was previously a bug in which stale callbacks would get triggered
+        // during the Activate call before getting cleared out at the end of Activate().
+
+        // Create a simple polygon prism component.
+
+        AZ::Entity entity;
+        constexpr float ShapeHeight = 2.0f;
+        CreatePolygonPrism(
+            AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()), ShapeHeight,
+            AZStd::vector<AZ::Vector2>(
+                { AZ::Vector2(-2.0f, -2.0f), AZ::Vector2(2.0f, -2.0f), AZ::Vector2(2.0f, 2.0f), AZ::Vector2(-2.0f, 2.0f) }),
+            entity);
+
+        // Set the callbacks on the underlying polygonPrism shape so that we can detect when they get called.
+
+        AZ::PolygonPrismPtr polygonPrism;
+        LmbrCentral::PolygonPrismShapeComponentRequestBus::EventResult(
+            polygonPrism, entity.GetId(), &LmbrCentral::PolygonPrismShapeComponentRequestBus::Events::GetPolygonPrism);
+
+        int numCalls = 0;
+        auto notificationCallback = [&numCalls]()
+        {
+            numCalls++;
+        };
+
+        auto vertexNotificationCallback = [&numCalls]([[maybe_unused]] size_t index)
+        {
+            numCalls++;
+        };
+
+        polygonPrism->SetCallbacks(
+            vertexNotificationCallback, vertexNotificationCallback, vertexNotificationCallback,
+            notificationCallback, notificationCallback, notificationCallback, notificationCallback);
+
+        // Deactivate the component.
+        entity.Deactivate();
+
+        // No callbacks should have been triggered during the deactivate.
+        EXPECT_EQ(numCalls, 0);
+
+        // Activate the component.
+        entity.Activate();
+
+        // Our callbacks should not have been triggered during an activation.
+        EXPECT_EQ(numCalls, 0);
+
+        // Verify that setting the height at this point doesn't trigger our callbacks - they should have been reset back to default
+        // during the component activation.
+        polygonPrism->SetHeight(ShapeHeight + 1.0f);
+        EXPECT_EQ(numCalls, 0);
+    }
+} // namespace UnitTest
