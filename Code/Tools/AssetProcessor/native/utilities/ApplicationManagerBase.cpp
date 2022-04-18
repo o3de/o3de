@@ -1617,7 +1617,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
                     {
-                        int delay = aznumeric_cast<int>(pow(2.0, aznumeric_cast<double>(retryCount-1)));
+                        const int delay = aznumeric_caster(pow(2, retryCount-1));
 
                         // Check if we need a new builder, and if so, request a new one
                         if (!builderRef->IsValid())
