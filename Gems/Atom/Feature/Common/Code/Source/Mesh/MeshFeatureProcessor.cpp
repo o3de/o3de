@@ -587,7 +587,7 @@ namespace AZ
             {
                 //when running with null renderer, the RPI::Model::FindOrCreate(...) is expected to return nullptr, so suppress this error.
                 AZ_Error(
-                    "ModelDataInstance::OnAssetReady", RHI::IsNullRenderer(), "Failed to create model instance for '%s'",
+                    "ModelDataInstance::OnAssetReady", RHI::IsNullRHI(), "Failed to create model instance for '%s'",
                     asset.GetHint().c_str());
             }
         }

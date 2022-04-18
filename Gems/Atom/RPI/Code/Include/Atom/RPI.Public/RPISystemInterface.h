@@ -40,6 +40,10 @@ namespace AZ
             //! Was the RPI system initialized properly
             virtual bool IsInitialized() const = 0;
 
+            //! If the renderer is null.
+            //! It's controlled by renderer=null command line option
+            virtual bool IsNullRenderer() const = 0;
+
             //! Register a created scene to RPISystem. Registered scene will be simulated and rendered in RPISystem ticks
             virtual void RegisterScene(ScenePtr scene) = 0;
 

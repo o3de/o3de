@@ -747,7 +747,7 @@ namespace Blast
     public:
         MOCK_CONST_METHOD0(GetTkFramework, Nv::Blast::TkFramework*());
         MOCK_CONST_METHOD0(GetExtSerialization, Nv::Blast::ExtSerialization*());
-        MOCK_METHOD0(GetTkGroup, Nv::Blast::TkGroup*());
+        MOCK_METHOD0(CreateTkGroup, Nv::Blast::TkGroup*());
         MOCK_CONST_METHOD0(GetGlobalConfiguration, const BlastGlobalConfiguration&());
         MOCK_METHOD1(SetGlobalConfiguration, void(const BlastGlobalConfiguration&));
         MOCK_METHOD0(InitPhysics, void());

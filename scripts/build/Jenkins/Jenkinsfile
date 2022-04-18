@@ -534,6 +534,38 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
     }
 }
 
+def ReplaceContent(String githubUrl) {
+    // Get absolute directory for job metadata. Needs permissions from Jenkins for each upstream classes
+    def github_url = "https://github.com/${githubUrl}/tree/${env.CHANGE_ID}"
+    def base_path = Jenkins.instance.getItemByFullName("${JOB_NAME}").rootDir
+    def log_file = "${base_path}" + "/builds/${env.BUILD_NUMBER}/log"
+    def config_list = []
+    def regex_replace_map = [
+        '( .*o3de)(.*\\.cpp)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .cpp files
+        '( .*o3de)(.*\\.h)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .h files
+        ' .*(\\.\\.\\\\)+(.*\\.py):(\\d+): ': ' ' + github_url + '$2#L$3 ', // .py files
+    ]
+    regex_replace_map.each { regex_replace ->
+        config_list.add(
+            fileContentReplaceConfig(
+                configs: [
+                    fileContentReplaceItemConfig(
+                    search: "${regex_replace.key}",
+                    replace: "${regex_replace_map[regex_replace.key]}",
+                    matchCount: 0,
+                    verbose: false,
+                    )
+                ],
+            fileEncoding: 'UTF-8',
+            filePath:"${log_file}"
+            ),
+        )
+    }
+    contentReplace(
+        configs: config_list
+    )
+}
+
 def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars, boolean onlyMountEBSVolume = false) {
     return {
         stage('Setup') {
@@ -920,7 +952,6 @@ try {
             stage('Build') {
                 parallel buildConfigs // Run parallel builds
             }
-
             echo 'All builds successful'
         }
         if (!someBuildHappened) {
@@ -940,7 +971,7 @@ finally {
             } else {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
-
+                ReplaceContent(env.REPOSITORY_NAME)
             }
             if(env.POST_AR_BUILD_SNS_TOPIC) {
                 message_json = [
