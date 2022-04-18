@@ -332,7 +332,6 @@ namespace O3DE::ProjectManager
                     // If project is not currently or about to build
                     if (!m_currentBuilder || m_currentBuilder->GetProjectInfo() != project)
                     {
-
                         if (project.m_buildFailed)
                         {
                             projectIter.value()->SetBuildLogsLink(project.m_logUrl);

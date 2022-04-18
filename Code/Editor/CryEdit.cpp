@@ -46,6 +46,8 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/EBus/IEventScheduler.h>
+#include <AzCore/Name/Name.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
@@ -850,6 +852,11 @@ namespace
 
 QString FormatVersion([[maybe_unused]] const SFileVersion& v)
 {
+    if (QObject::tr("%1").arg(LY_VERSION_BUILD_NUMBER) == "0")
+    {
+        return QObject::tr("Development Build");
+    }
+
     return QObject::tr("Version %1").arg(LY_VERSION_BUILD_NUMBER);
 }
 
@@ -2466,6 +2473,25 @@ void CCryEditApp::OnViewSwitchToGame()
     {
         return;
     }
+
+    // If switching on game mode...
+    if (!GetIEditor()->IsInGameMode())
+    {
+        // If simulation mode is enabled...
+        uint32 flags = GetIEditor()->GetDisplaySettings()->GetSettings();
+        if (flags & SETTINGS_PHYSICS)
+        {
+            // Disable simulation mode
+            OnSwitchPhysics();
+
+            // Schedule for next frame to enable game mode
+            AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback(
+                [this] { OnViewSwitchToGame(); },
+                AZ::Name("Enable Game Mode"), AZ::Time::ZeroTimeMs);
+            return;
+        }
+    }
+
     // close all open menus
     auto activePopup = qApp->activePopupWidget();
     if (qobject_cast<QMenu*>(activePopup))
@@ -3648,7 +3674,7 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
     {
         if (sTitleStr.isEmpty())
         {
-            sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
+            sTitleStr = QObject::tr("O3DE Editor [%1]").arg(FormatVersion(m_pEditor->GetFileVersion()));
         }
 
         if (!sPreTitleStr.isEmpty())
