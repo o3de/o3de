@@ -70,13 +70,12 @@ namespace O3DE::ProjectManager
 
         QString cmakeInstalledPath = cmakeInstalledPathQuery.GetValue();
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
-        QString gameLauncherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
-        QString serverLauncherTargetName = m_projectInfo.m_projectName + ".ServerLauncher";
+        QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
 
         return AZ::Success(QStringList{cmakeInstalledPath,
                                         "--build", targetBuildPath,
                                         "--config", "profile",
-                                        "--target", gameLauncherTargetName, serverLauncherTargetName, ProjectCMakeBuildTargetEditor});
+                                        "--target", launcherTargetName, ProjectCMakeBuildTargetEditor});
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(const QString& pidToKill) const
