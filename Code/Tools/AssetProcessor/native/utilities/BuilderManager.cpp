@@ -332,13 +332,7 @@ namespace AssetProcessor
 
     BuilderRef::~BuilderRef()
     {
-        if (m_builder)
-        {
-            AZ_Warning("BuilderRef", m_builder->m_busy, "Builder reference is valid but is already set to not busy");
-
-            m_builder->m_busy = false;
-            m_builder = nullptr;
-        }
+        release();
     }
 
     const Builder* BuilderRef::operator->() const
@@ -349,6 +343,17 @@ namespace AssetProcessor
     BuilderRef::operator bool() const
     {
         return m_builder != nullptr;
+    }
+
+    void BuilderRef::release()
+    {
+        if (m_builder)
+        {
+            AZ_Warning("BuilderRef", m_builder->m_busy, "Builder reference is valid but is already set to not busy");
+
+            m_builder->m_busy = false;
+            m_builder = nullptr;
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
