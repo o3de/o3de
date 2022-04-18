@@ -95,15 +95,7 @@ public:
         Fn* fn = reinterpret_cast<Fn*>(m_fn);
         return (*fn)();
     }
-
-    void operator()(void* arg) override
-    {
-        using Fn = void(void*);
-
-        Fn* fn = reinterpret_cast<Fn*>(m_fn);
-        (*fn)(arg);
-    }
-
+    
     bool IsValid() override { return m_fn != nullptr; }
 
 private:

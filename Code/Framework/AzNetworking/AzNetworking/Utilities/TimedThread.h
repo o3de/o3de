@@ -10,7 +10,6 @@
 
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/Time/ITime.h>
-#include <AzNetworking/AzNetworkingConfiguration.h>
 
 namespace AzNetworking
 {
@@ -20,32 +19,32 @@ namespace AzNetworking
     {
     public:
         //! Starts the thread.
-        AZNETWORKING_API void Start();
+         void Start();
 
         //! Stops the thread.
-        AZNETWORKING_API void Stop();
+         void Stop();
 
         //! Joins the thread.
-        AZNETWORKING_API void Join();
+         void Join();
 
         //! Returns true if the thread is running.
         //! @return boolean true if the thread is running, false otherwise
-        AZNETWORKING_API bool IsRunning() const;
+         bool IsRunning() const;
 
-        AZNETWORKING_API TimedThread(const char* name, AZ::TimeMs updateRate);
-        AZNETWORKING_API virtual ~TimedThread() { AZ_Assert(!IsRunning(), "You must stop and join your thread before destructing it"); };
+         TimedThread(const char* name, AZ::TimeMs updateRate);
+         virtual ~TimedThread() { AZ_Assert(!IsRunning(), "You must stop and join your thread before destructing it"); };
 
     protected:
 
         //! Invoked on thread start.
-        AZNETWORKING_API virtual void OnStart() = 0;
+         virtual void OnStart() = 0;
 
         //! Invoked on thread stop.
-        AZNETWORKING_API virtual void OnStop() = 0;
+         virtual void OnStop() = 0;
 
         //! Invoked on thread update.
         //! @param updateRateMs The amount of time the thread can spend in OnUpdate in ms
-        AZNETWORKING_API virtual void OnUpdate(AZ::TimeMs updateRateMs) = 0;
+         virtual void OnUpdate(AZ::TimeMs updateRateMs) = 0;
 
     private:
 

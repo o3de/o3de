@@ -36,46 +36,46 @@ namespace AzNetworking
 
         using PacketAckContainer = RingbufferBitset<PacketWindowAckCount>;
 
-        AZNETWORKING_API UdpPacketIdWindow();
-        AZNETWORKING_API ~UdpPacketIdWindow();
+         UdpPacketIdWindow();
+         ~UdpPacketIdWindow();
 
         //! Resets the packet ack window, putting it back into a default initialized state.
-        AZNETWORKING_API void Reset();
+         void Reset();
 
         //! Retrieves the latest ack status for a given PacketId.
         //! @param packetId the identifier of the packet to lookup the latest ack status of
         //! @return the current status for the given PacketId
-        AZNETWORKING_API PacketAckState GetPacketAckStatus(PacketId packetId) const;
+         PacketAckState GetPacketAckStatus(PacketId packetId) const;
 
         //! Returns the latest known SequenceId managed by this UdpPacketIdWindow instance.
         //! @return the latest known SequenceId managed by this UdpPacketIdWindow instance
-        AZNETWORKING_API SequenceId GetHeadSequenceId() const;
+         SequenceId GetHeadSequenceId() const;
 
         //! Returns the SequenceRolloverCount for the number of times the sequence ids have rolled over.
         //! @return the number of times the sequence ids have rolled over
-        AZNETWORKING_API SequenceRolloverCount GetSequenceRolloverCount() const;
+         SequenceRolloverCount GetSequenceRolloverCount() const;
 
         //! Returns the latest ack vector contained in this UdpPacketIdWindow.
         //! @param outWindow the window to store the most recent ack state in
         //! @return reference to the window where the ack vector was stored
-        AZNETWORKING_API BitsetChunk& GetMostRecentAckState(BitsetChunk& outWindow) const;
+         BitsetChunk& GetMostRecentAckState(BitsetChunk& outWindow) const;
 
         //! Returns the underlying packet ack container used for retaining packet ack status.
         //! @return the underlying packet ack container used for retaining packet ack status
-        AZNETWORKING_API const PacketAckContainer& GetPacketAckContainer() const;
+         const PacketAckContainer& GetPacketAckContainer() const;
 
         //! Updates the internal ack state for the newly received PacketId.
         //! @param header the packet header received to process
         //! @return boolean false if updating failed, and the packet should be discarded without further processing
-        AZNETWORKING_API bool UpdateForReceivedPacket(UdpPacketHeader& header);
+         bool UpdateForReceivedPacket(UdpPacketHeader& header);
 
         //! Updates the internal ack state to replicate the received remote ack status.
         //! @param connection the connection this packet was received on, used for ack callbacks
         //! @param header     the packet header received to process
-        AZNETWORKING_API void UpdateForRemoteAckStatus(UdpConnection* connection, UdpPacketHeader& header);
+         void UpdateForRemoteAckStatus(UdpConnection* connection, UdpPacketHeader& header);
 
         //! Prints the most recent ack window status to the Logger.
-        AZNETWORKING_API void PrintStatus() const;
+         void PrintStatus() const;
 
     private:
 

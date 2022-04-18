@@ -10,7 +10,6 @@
 
 #include <stdint.h>
 #include <AzCore/std/limits.h>
-#include <AzNetworking/AzNetworkingConfiguration.h>
 
 namespace AzNetworking
 {
@@ -36,7 +35,7 @@ namespace AzNetworking
     //! for writing to an object model, TrackChangesSerializer which is used to efficiently serialize objects without incurring significant
     //! copy or comparison overhead, and HashSerializer which can be used to generate a hash of all visited data which is important for
     //! automated desync detection. 
-    class AZNETWORKING_API ISerializer
+    class ISerializer
     {
     public:
 

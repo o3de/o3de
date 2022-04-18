@@ -40,6 +40,8 @@ namespace StandaloneTools
 
         RegisterComponentDescriptor(LegacyFramework::IPCComponent::CreateDescriptor());
 
+        RegisterComponentDescriptor(AzNetworking::NetworkingSystemComponent::CreateDescriptor());
+
         RegisterComponentDescriptor(AZ::UserSettingsComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
 
@@ -59,6 +61,8 @@ namespace StandaloneTools
     {
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
+        EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
+        EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
         EnsureComponentCreated(LegacyFramework::IPCComponent::RTTI_Type());
 
         // Check for user settings components already added (added by the app descriptor

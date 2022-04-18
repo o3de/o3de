@@ -8,14 +8,13 @@
 
 #pragma once
 
-#include <AzNetworking/AzNetworkingConfiguration.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 
 namespace AzNetworking
 {
     //! @class NetworkOutputSerializer
     //! @brief Output serializer for inflating and writing out a bytestream into an object model.
-    class AZNETWORKING_API NetworkOutputSerializer
+    class  NetworkOutputSerializer
         : public ISerializer
     {
     public:

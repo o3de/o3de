@@ -72,6 +72,7 @@
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include "Application.h"
+#include <AzNetworking/AzNetworkingModule.h>
 #include <AzFramework/AzFrameworkModule.h>
 #include <cctype>
 #include <stdio.h>
@@ -390,6 +391,7 @@ namespace AzFramework
     {
         AZ::ComponentApplication::CreateStaticModules(outModules);
 
+        outModules.emplace_back(aznew AzNetworking::AzNetworkingModule());
         outModules.emplace_back(aznew AzFrameworkModule());
     }
 

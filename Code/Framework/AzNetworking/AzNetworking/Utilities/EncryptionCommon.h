@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzNetworking/AzNetworkingConfiguration.h>
 #include <AzNetworking/Utilities/IpAddress.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
@@ -81,9 +80,9 @@ namespace AzNetworking
     //! Returns a 32-bit random number using the crypto random generator.
     //! note that 4 bytes is a really small number of bytes for crypto purposes!
     //! @return 32-bit unsigned random number
-    AZNETWORKING_API uint32_t CryptoRand32();
+     uint32_t CryptoRand32();
 
     //! Returns a 64-bit random number using the crypto random generator.
     //! @return 64-bit unsigned random number
-    AZNETWORKING_API uint64_t CryptoRand64();
+     uint64_t CryptoRand64();
 }

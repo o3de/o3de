@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Name/Name.h>
-#include <AzNetworking/AzNetworkingConfiguration.h>
 #include <AzNetworking/Framework/ICompressor.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
@@ -33,23 +32,23 @@ namespace AzNetworking
     public:
         AZ_COMPONENT(NetworkingSystemComponent, "{29914D25-5E8F-49C9-8C57-5125ABD3D489}");
 
-        AZNETWORKING_API static void Reflect(AZ::ReflectContext* context);
-        AZNETWORKING_API static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        AZNETWORKING_API static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+         static void Reflect(AZ::ReflectContext* context);
+         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        AZNETWORKING_API NetworkingSystemComponent();
-        AZNETWORKING_API ~NetworkingSystemComponent() override;
+         NetworkingSystemComponent();
+         ~NetworkingSystemComponent() override;
 
         //! AZ::Component overrides.
         //! @{
-        AZNETWORKING_API void Activate() override;
-        AZNETWORKING_API void Deactivate() override;
+         void Activate() override;
+         void Deactivate() override;
         //! @}
 
         //! AZ::TickBus::Handler overrides.
         //! @{
-        AZNETWORKING_API void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        AZNETWORKING_API int GetTickOrder() override;
+         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+         int GetTickOrder() override;
         //! @}
 
         //! INetworking overrides.

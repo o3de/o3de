@@ -129,9 +129,6 @@ namespace AzTestRunner
         std::cout << "Loading: " << lib << std::endl;
         std::shared_ptr<AZ::Test::IModuleHandle> module = platform.GetModule(lib);
 
-        std::shared_ptr<AZ::Test::IFunctionHandle> initDynamicModuleFunc;
-        std::shared_ptr<AZ::Test::IFunctionHandle> uninitDynamicModuleFunc;
-
         int result = 0;
         if (module->IsValid())
         {
@@ -166,25 +163,9 @@ namespace AzTestRunner
         // run the test main function.
         if (testMainFunction->IsValid())
         {
-            // init and uninit dynamic module are optionally specified, failure to find is acceptable
-            initDynamicModuleFunc = module->GetFunction("InitializeDynamicModule");
-            uninitDynamicModuleFunc = module->GetFunction("UninitializeDynamicModule");
-
-            if (initDynamicModuleFunc->IsValid())
-            {
-                (*initDynamicModuleFunc)(AZ::Environment::GetInstance());
-            }
-
             result = (*testMainFunction)(argc, argv);
             std::cout << "OKAY " << symbol << "() returned " << result << std::endl;
             testMainFunction.reset();
-
-            if (initDynamicModuleFunc->IsValid())
-            {
-                (*uninitDynamicModuleFunc)();
-            }
-            initDynamicModuleFunc.reset();
-            uninitDynamicModuleFunc.reset();
         }
 
         // Construct a retry command if the test fails

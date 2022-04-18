@@ -11,7 +11,6 @@
 #include <stdint.h>
 #include <AzCore/std/hash.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzNetworking/AzNetworkingConfiguration.h>
 
 namespace AzNetworking
 {
@@ -31,7 +30,7 @@ namespace AzNetworking
 
     //! @class IpAddress
     //! @brief Wrapper for dealing with internet Ip addresses.
-    class AZNETWORKING_API IpAddress
+    class IpAddress
     {
     public:
 

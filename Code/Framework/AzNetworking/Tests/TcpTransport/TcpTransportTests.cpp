@@ -11,8 +11,6 @@
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
-#include <AzCore/Component/Entity.h>
-#include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Time/TimeSystem.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -20,39 +18,38 @@
 namespace UnitTest
 {
     using namespace AzNetworking;
-
-    class TestTcpConnectionListener
-        : public IConnectionListener
+    class TestTcpConnectionListener : public IConnectionListener
     {
     public:
-        ConnectResult ValidateConnect([[maybe_unused]] const IpAddress& remoteAddress, [[maybe_unused]] const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer) override
+        ConnectResult ValidateConnect(
+            [[maybe_unused]] const IpAddress& remoteAddress,
+            [[maybe_unused]] const IPacketHeader& packetHeader,
+            [[maybe_unused]] ISerializer& serializer) override
         {
             return ConnectResult::Accepted;
         }
-
         void OnConnect([[maybe_unused]] IConnection* connection) override
         {
             ;
         }
-
-        PacketDispatchResult OnPacketReceived([[maybe_unused]] IConnection* connection, const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer) override
+        PacketDispatchResult OnPacketReceived(
+            [[maybe_unused]] IConnection* connection, const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer) override
         {
-            EXPECT_TRUE((packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket))
-                     || (packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::HeartbeatPacket)));
+            EXPECT_TRUE(
+                (packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket)) ||
+                (packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::HeartbeatPacket)));
             return PacketDispatchResult::Failure;
         }
-
         void OnPacketLost([[maybe_unused]] IConnection* connection, [[maybe_unused]] PacketId packetId) override
         {
-
         }
-
-        void OnDisconnect([[maybe_unused]] IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint) override
+        void OnDisconnect(
+            [[maybe_unused]] IConnection* connection,
+            [[maybe_unused]] DisconnectReason reason,
+            [[maybe_unused]] TerminationEndpoint endpoint) override
         {
-
         }
     };
-
     class TestTcpClient
     {
     public:
@@ -62,22 +59,19 @@ namespace UnitTest
             m_name = name;
             m_clientNetworkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
                 m_name, ProtocolType::Tcp, TrustZone::ExternalClientToServer, m_connectionListener);
-            m_connectionId = m_clientNetworkInterface->Connect(IpAddress(127, 0, 0, 1, 12345));
+            m_clientNetworkInterface->Connect(IpAddress(127, 0, 0, 1, 12345));
         }
 
         ~TestTcpClient()
         {
-            m_clientNetworkInterface->Disconnect(m_connectionId, AzNetworking::DisconnectReason::TerminatedByClient);
             AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(m_name);
         }
 
         AZ::Name m_name;
-        AzNetworking::ConnectionId m_connectionId = AzNetworking::InvalidConnectionId;
         TestTcpConnectionListener m_connectionListener;
         INetworkInterface* m_clientNetworkInterface;
         static inline int32_t s_numClients = 0;
     };
-
     class TestTcpServer
     {
     public:
@@ -92,7 +86,6 @@ namespace UnitTest
         {
             AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(m_name);
         }
-
         AZ::Name m_name = AZ::Name(AZStd::string_view("TcpServer"));
         TestTcpConnectionListener m_connectionListener;
         INetworkInterface* m_serverNetworkInterface;
@@ -104,29 +97,26 @@ namespace UnitTest
         void SetUp() override
         {
             SetupAllocator();
-            AZ::ModuleManagerRequestBus::Broadcast(
-                &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
-                [this](const AZ::ModuleData& moduleData)
-                {
-                    AZ::Entity* moduleEntity = moduleData.GetEntity();
-                    for (const auto& component : moduleEntity->GetComponents())
-                    {
-                        if (auto netSysComponent = azrtti_cast<NetworkingSystemComponent*>(component))
-                        {
-                            this->m_networkingSystemComponent = netSysComponent;
-                        }
-                    }
-                    return true;
-                });
+            AZ::NameDictionary::Create();
+
+            m_loggerComponent = AZStd::make_unique<AZ::LoggerSystemComponent>();
+            m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
+            m_networkingSystemComponent = AZStd::make_unique<AzNetworking::NetworkingSystemComponent>();
         }
 
         void TearDown() override
         {
-            m_networkingSystemComponent = nullptr;
+            m_networkingSystemComponent.reset();
+            m_timeSystem.reset();
+            m_loggerComponent.reset();
+
+            AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
 
-        AzNetworking::NetworkingSystemComponent* m_networkingSystemComponent;
+        AZStd::unique_ptr<AZ::LoggerSystemComponent> m_loggerComponent;
+        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
+        AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
     };
 
 #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
@@ -137,7 +127,6 @@ namespace UnitTest
     {
         TestTcpServer testServer;
         TestTcpClient testClient;
-
         constexpr AZ::TimeMs TotalIterationTimeMs = AZ::TimeMs{ 5000 };
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
         for (;;)
@@ -152,13 +141,13 @@ namespace UnitTest
                 break;
             }
         }
-
         EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
         EXPECT_EQ(testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
-
         const AZ::TimeMs timeoutMs = AZ::TimeMs{ 100 };
         testClient.m_clientNetworkInterface->SetTimeoutMs(timeoutMs);
         EXPECT_EQ(testClient.m_clientNetworkInterface->GetTimeoutMs(), timeoutMs);
+
+        EXPECT_TRUE(testServer.m_serverNetworkInterface->StopListening());
     }
 
 #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
@@ -171,11 +160,11 @@ namespace UnitTest
 
         TestTcpServer testServer;
         TestTcpClient testClient[NumTestClients];
-
         constexpr AZ::TimeMs TotalIterationTimeMs = AZ::TimeMs{ 5000 };
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
         for (;;)
         {
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
             m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
             bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
             bool canTerminate = testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == NumTestClients;
@@ -188,11 +177,10 @@ namespace UnitTest
                 break;
             }
         }
-
         EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), NumTestClients);
         for (uint32_t i = 0; i < NumTestClients; ++i)
         {
             EXPECT_EQ(testClient[i].m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
         }
     }
-}
+} // namespace UnitTest

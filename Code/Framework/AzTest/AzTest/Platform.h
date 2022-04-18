@@ -48,9 +48,6 @@ namespace AZ
 
             //! call as simple function
             virtual int operator()() = 0;
-
-            //! call as a function with void* user data
-            virtual void operator()(void*) = 0;
         };
 
         //! Platform implementation of AzTest scanner

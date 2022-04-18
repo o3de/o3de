@@ -20,6 +20,8 @@ namespace UnitTest
     {
     public:
         Multiplayer::NetworkTime m_networkTime;
+        AZ::LoggerSystemComponent m_loggerComponent;
+        AZ::TimeSystem m_timeSystem;
     };
 
     static constexpr uint32_t RewindableBufferFrames = 32;

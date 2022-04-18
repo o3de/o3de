@@ -9,25 +9,114 @@
 #pragma once
 
 #ifdef HAVE_BENCHMARK
-#include <CommonHierarchySetup.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <benchmark/benchmark.h>
+#include <CommonHierarchySetup.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <benchmark/benchmark.h>
 
 namespace Multiplayer
 {
+    class BenchmarkComponentApplicationRequests : public AZ::ComponentApplicationRequests
+    {
+    public:
+        void RegisterComponentDescriptor([[maybe_unused]] const AZ::ComponentDescriptor* descriptor) override
+        {
+        }
+        void UnregisterComponentDescriptor([[maybe_unused]] const AZ::ComponentDescriptor* descriptor) override
+        {
+        }
+        AZ::ComponentApplication* GetApplication() override
+        {
+            return {};
+        }
+        void RegisterEntityAddedEventHandler([[maybe_unused]] AZ::Event<AZ::Entity*>::Handler& handler) override
+        {
+        }
+        void RegisterEntityRemovedEventHandler([[maybe_unused]] AZ::Event<AZ::Entity*>::Handler& handler) override
+        {
+        }
+        void RegisterEntityActivatedEventHandler([[maybe_unused]] AZ::Event<AZ::Entity*>::Handler& handler) override
+        {
+        }
+        void RegisterEntityDeactivatedEventHandler([[maybe_unused]] AZ::Event<AZ::Entity*>::Handler& handler) override
+        {
+        }
+        void SignalEntityActivated([[maybe_unused]] AZ::Entity* entity) override
+        {
+        }
+        void SignalEntityDeactivated([[maybe_unused]] AZ::Entity* entity) override
+        {
+        }
+        bool RemoveEntity([[maybe_unused]] AZ::Entity* entity) override
+        {
+            return {};
+        }
+        bool DeleteEntity([[maybe_unused]] const AZ::EntityId& id) override
+        {
+            return {};
+        }
+        void EnumerateEntities([[maybe_unused]] const EntityCallback& callback) override
+        {
+        }
+        AZ::SerializeContext* GetSerializeContext() override
+        {
+            return {};
+        }
+        AZ::BehaviorContext* GetBehaviorContext() override
+        {
+            return {};
+        }
+        AZ::JsonRegistrationContext* GetJsonRegistrationContext() override
+        {
+            return {};
+        }
+        const char* GetEngineRoot() const override
+        {
+            return {};
+        }
+        const char* GetExecutableFolder() const override
+        {
+            return {};
+        }
+        void QueryApplicationType([[maybe_unused]] AZ::ApplicationTypeQuery& appType) const override
+        {
+        }
+
+        AZStd::map<AZ::EntityId, AZ::Entity*> m_entities;
+
+        bool AddEntity(AZ::Entity* entity) override
+        {
+            m_entities[entity->GetId()] = entity;
+            return true;
+        }
+
+        AZ::Entity* FindEntity(const AZ::EntityId& id) override
+        {
+            const auto iterator = m_entities.find(id);
+            if (iterator != m_entities.end())
+            {
+                return iterator->second;
+            }
+
+            return nullptr;
+        }
+    };
+
     class BenchmarkConnectionListener : public AzNetworking::IConnectionListener
     {
     public:
-        ConnectResult ValidateConnect([[maybe_unused]] const IpAddress& remoteAddress, [[maybe_unused]] const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer) override
+        ConnectResult ValidateConnect(
+            [[maybe_unused]] const IpAddress& remoteAddress,
+            [[maybe_unused]] const IPacketHeader& packetHeader,
+            [[maybe_unused]] ISerializer& serializer) override
         {
             return {};
         }
@@ -36,7 +125,10 @@ namespace Multiplayer
         {
         }
 
-        PacketDispatchResult OnPacketReceived([[maybe_unused]] IConnection* connection, [[maybe_unused]] const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer) override
+        PacketDispatchResult OnPacketReceived(
+            [[maybe_unused]] IConnection* connection,
+            [[maybe_unused]] const IPacketHeader& packetHeader,
+            [[maybe_unused]] ISerializer& serializer) override
         {
             return {};
         }
@@ -45,7 +137,10 @@ namespace Multiplayer
         {
         }
 
-        void OnDisconnect([[maybe_unused]] IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint) override
+        void OnDisconnect(
+            [[maybe_unused]] IConnection* connection,
+            [[maybe_unused]] DisconnectReason reason,
+            [[maybe_unused]] TerminationEndpoint endpoint) override
         {
         }
     };
@@ -99,7 +194,11 @@ namespace Multiplayer
         {
         }
 
-        void AlterTime([[maybe_unused]] HostFrameId frameId, [[maybe_unused]] AZ::TimeMs timeMs, [[maybe_unused]] float blendFactor, [[maybe_unused]] AzNetworking::ConnectionId rewindConnectionId) override
+        void AlterTime(
+            [[maybe_unused]] HostFrameId frameId,
+            [[maybe_unused]] AZ::TimeMs timeMs,
+            [[maybe_unused]] float blendFactor,
+            [[maybe_unused]] AzNetworking::ConnectionId rewindConnectionId) override
         {
         }
     };
@@ -158,12 +257,27 @@ namespace Multiplayer
     class BenchmarkNetworkEntityManager : public Multiplayer::INetworkEntityManager
     {
     public:
-        BenchmarkNetworkEntityManager() : m_authorityTracker(*this) {}
+        BenchmarkNetworkEntityManager()
+            : m_authorityTracker(*this)
+        {
+        }
 
-        NetworkEntityTracker* GetNetworkEntityTracker() override { return &m_tracker; }
-        NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override { return &m_authorityTracker; }
-        MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override { return &m_multiplayerComponentRegistry; }
-        const HostId& GetHostId() const override { return m_hostId; }
+        NetworkEntityTracker* GetNetworkEntityTracker() override
+        {
+            return &m_tracker;
+        }
+        NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override
+        {
+            return &m_authorityTracker;
+        }
+        MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override
+        {
+            return &m_multiplayerComponentRegistry;
+        }
+        const HostId& GetHostId() const override
+        {
+            return m_hostId;
+        }
 
         mutable AZStd::map<NetEntityId, AZ::Entity*> m_networkEntityMap;
 
@@ -192,14 +306,23 @@ namespace Multiplayer
             return InvalidNetEntityId;
         }
 
-        void Initialize([[maybe_unused]] const HostId& hostId, [[maybe_unused]] AZStd::unique_ptr<IEntityDomain> entityDomain) override {}
-        bool IsInitialized() const override { return false; }
-        IEntityDomain* GetEntityDomain() const override { return nullptr; }
+        void Initialize([[maybe_unused]] const HostId& hostId, [[maybe_unused]] AZStd::unique_ptr<IEntityDomain> entityDomain) override
+        {
+        }
+        bool IsInitialized() const override
+        {
+            return false;
+        }
+        IEntityDomain* GetEntityDomain() const override
+        {
+            return nullptr;
+        }
         EntityList CreateEntitiesImmediate(
             [[maybe_unused]] const PrefabEntityId& prefabEntryId,
             [[maybe_unused]] NetEntityRole netEntityRole,
             [[maybe_unused]] const AZ::Transform& transform,
-            [[maybe_unused]] AutoActivate autoActivate) override {
+            [[maybe_unused]] AutoActivate autoActivate) override
+        {
             return {};
         }
         EntityList CreateEntitiesImmediate(
@@ -207,42 +330,99 @@ namespace Multiplayer
             [[maybe_unused]] NetEntityId netEntityId,
             [[maybe_unused]] NetEntityRole netEntityRole,
             [[maybe_unused]] AutoActivate autoActivate,
-            [[maybe_unused]] const AZ::Transform& transform) override {
+            [[maybe_unused]] const AZ::Transform& transform) override
+        {
             return {};
         }
         [[nodiscard]] AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
             [[maybe_unused]] const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable,
-            [[maybe_unused]] const AZ::Transform& transform) override {
+            [[maybe_unused]] const AZ::Transform& transform) override
+        {
             return {};
         }
-        void SetupNetEntity([[maybe_unused]] AZ::Entity* netEntity, [[maybe_unused]] PrefabEntityId prefabEntityId, [[maybe_unused]] NetEntityRole netEntityRole) override {}
-        uint32_t GetEntityCount() const override {
+        void SetupNetEntity(
+            [[maybe_unused]] AZ::Entity* netEntity,
+            [[maybe_unused]] PrefabEntityId prefabEntityId,
+            [[maybe_unused]] NetEntityRole netEntityRole) override
+        {
+        }
+        uint32_t GetEntityCount() const override
+        {
             return 0;
         }
-        void MarkForRemoval([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override {}
-        bool IsMarkedForRemoval([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) const override {
+        void MarkForRemoval([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override
+        {
+        }
+        bool IsMarkedForRemoval([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) const override
+        {
             return false;
         }
-        void ClearEntityFromRemovalList([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override {}
-        void ClearAllEntities() override {}
-        void AddEntityMarkedDirtyHandler([[maybe_unused]] AZ::Event<>::Handler& entityMarkedDirtyHandle) override {}
-        void AddEntityNotifyChangesHandler([[maybe_unused]] AZ::Event<>::Handler& entityNotifyChangesHandle) override {}
-        void AddEntityExitDomainHandler([[maybe_unused]] EntityExitDomainEvent::Handler& entityExitDomainHandler) override {}
-        void AddControllersActivatedHandler([[maybe_unused]] ControllersActivatedEvent::Handler& controllersActivatedHandler) override {}
-        void AddControllersDeactivatedHandler([[maybe_unused]] ControllersDeactivatedEvent::Handler& controllersDeactivatedHandler) override {}
-        void NotifyEntitiesDirtied() override {}
-        void NotifyEntitiesChanged() override {}
-        void NotifyControllersActivated([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, [[maybe_unused]] EntityIsMigrating entityIsMigrating) override {}
-        void NotifyControllersDeactivated([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, [[maybe_unused]] EntityIsMigrating entityIsMigrating) override {}
-        void HandleLocalRpcMessage([[maybe_unused]] NetworkEntityRpcMessage& message) override {}
-        void HandleEntitiesExitDomain([[maybe_unused]] const NetEntityIdSet& entitiesNotInDomain) override {}
-        void ForceAssumeAuthority([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override {}
-        void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle&, bool) override {}
-        void MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle&, bool) override {}
-        const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override { static NetEntityHandleSet value; return value; }
-        const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override { static NetEntityHandleSet value; return value; }
-        void SetMigrateTimeoutTimeMs([[maybe_unused]] AZ::TimeMs timeoutTimeMs) override {}
-        void DebugDraw() const override {}
+        void ClearEntityFromRemovalList([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override
+        {
+        }
+        void ClearAllEntities() override
+        {
+        }
+        void AddEntityMarkedDirtyHandler([[maybe_unused]] AZ::Event<>::Handler& entityMarkedDirtyHandle) override
+        {
+        }
+        void AddEntityNotifyChangesHandler([[maybe_unused]] AZ::Event<>::Handler& entityNotifyChangesHandle) override
+        {
+        }
+        void AddEntityExitDomainHandler([[maybe_unused]] EntityExitDomainEvent::Handler& entityExitDomainHandler) override
+        {
+        }
+        void AddControllersActivatedHandler([[maybe_unused]] ControllersActivatedEvent::Handler& controllersActivatedHandler) override
+        {
+        }
+        void AddControllersDeactivatedHandler([[maybe_unused]] ControllersDeactivatedEvent::Handler& controllersDeactivatedHandler) override
+        {
+        }
+        void NotifyEntitiesDirtied() override
+        {
+        }
+        void NotifyEntitiesChanged() override
+        {
+        }
+        void NotifyControllersActivated(
+            [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, [[maybe_unused]] EntityIsMigrating entityIsMigrating) override
+        {
+        }
+        void NotifyControllersDeactivated(
+            [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, [[maybe_unused]] EntityIsMigrating entityIsMigrating) override
+        {
+        }
+        void HandleLocalRpcMessage([[maybe_unused]] NetworkEntityRpcMessage& message) override
+        {
+        }
+        void HandleEntitiesExitDomain([[maybe_unused]] const NetEntityIdSet& entitiesNotInDomain) override
+        {
+        }
+        void ForceAssumeAuthority([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override
+        {
+        }
+        void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle&, bool) override
+        {
+        }
+        void MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle&, bool) override
+        {
+        }
+        const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override
+        {
+            static NetEntityHandleSet value;
+            return value;
+        }
+        const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override
+        {
+            static NetEntityHandleSet value;
+            return value;
+        }
+        void SetMigrateTimeoutTimeMs([[maybe_unused]] AZ::TimeMs timeoutTimeMs) override
+        {
+        }
+        void DebugDraw() const override
+        {
+        }
 
         NetworkEntityTracker m_tracker;
         NetworkEntityAuthorityTracker m_authorityTracker;
@@ -253,34 +433,100 @@ namespace Multiplayer
     class BenchmarkMultiplayer : public Multiplayer::IMultiplayer
     {
     public:
-        BenchmarkMultiplayer(BenchmarkNetworkEntityManager& manager) : m_manager(manager) {}
+        BenchmarkMultiplayer(BenchmarkNetworkEntityManager& manager)
+            : m_manager(manager)
+        {
+        }
 
-        MultiplayerAgentType GetAgentType() const override { return {}; }
-        void InitializeMultiplayer([[maybe_unused]] MultiplayerAgentType state) override {}
-        bool StartHosting([[maybe_unused]] uint16_t port, [[maybe_unused]] bool isDedicated) override { return {}; }
-        bool Connect([[maybe_unused]] const AZStd::string& remoteAddress, [[maybe_unused]] uint16_t port) override { return {}; }
-        void Terminate([[maybe_unused]] AzNetworking::DisconnectReason reason) override {}
-        void AddClientDisconnectedHandler([[maybe_unused]] ClientDisconnectedEvent::Handler& handler) override {}
-        void AddConnectionAcquiredHandler([[maybe_unused]] ConnectionAcquiredEvent::Handler& handler) override {}
-        void AddServerAcceptanceReceivedHandler([[maybe_unused]] ServerAcceptanceReceivedEvent::Handler& handler) override {}
-        void AddSessionInitHandler([[maybe_unused]] SessionInitEvent::Handler& handler) override {}
-        void AddSessionShutdownHandler([[maybe_unused]] SessionShutdownEvent::Handler& handler) override {}
-        void SendReadyForEntityUpdates([[maybe_unused]] bool readyForEntityUpdates) override {}
-        AZ::TimeMs GetCurrentHostTimeMs() const override { return {}; }
-        float GetCurrentBlendFactor() const override { return {}; }
-        INetworkTime* GetNetworkTime() override { return {}; }
-        INetworkEntityManager* GetNetworkEntityManager() override { return &m_manager; }
-        void AddClientMigrationStartEventHandler([[maybe_unused]] ClientMigrationStartEvent::Handler& handler) override {}
-        void AddClientMigrationEndEventHandler([[maybe_unused]] ClientMigrationEndEvent::Handler& handler) override {}
-        void AddNotifyClientMigrationHandler([[maybe_unused]] NotifyClientMigrationEvent::Handler& handler) override {}
-        void AddNotifyEntityMigrationEventHandler([[maybe_unused]] NotifyEntityMigrationEvent::Handler& handler) override {}
-        void SendNotifyClientMigrationEvent([[maybe_unused]] AzNetworking::ConnectionId connectionId, [[maybe_unused]] const HostId& hostId,
-            [[maybe_unused]] uint64_t userIdentifier, [[maybe_unused]] ClientInputId lastClientInputId, [[maybe_unused]] NetEntityId netEntityId) override {}
-        void SendNotifyEntityMigrationEvent([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, [[maybe_unused]] const HostId& remoteHostId) override {}
-        void RegisterPlayerIdentifierForRejoin(uint64_t, NetEntityId) override {}
-        void CompleteClientMigration(uint64_t, AzNetworking::ConnectionId, const HostId&, ClientInputId) override {}
-        void SetShouldSpawnNetworkEntities([[maybe_unused]] bool value) override {}
-        bool GetShouldSpawnNetworkEntities() const override { return true; }
+        MultiplayerAgentType GetAgentType() const override
+        {
+            return {};
+        }
+        void InitializeMultiplayer([[maybe_unused]] MultiplayerAgentType state) override
+        {
+        }
+        bool StartHosting([[maybe_unused]] uint16_t port, [[maybe_unused]] bool isDedicated) override
+        {
+            return {};
+        }
+        bool Connect([[maybe_unused]] const AZStd::string& remoteAddress, [[maybe_unused]] uint16_t port) override
+        {
+            return {};
+        }
+        void Terminate([[maybe_unused]] AzNetworking::DisconnectReason reason) override
+        {
+        }
+        void AddClientDisconnectedHandler([[maybe_unused]] ClientDisconnectedEvent::Handler& handler) override
+        {
+        }
+        void AddConnectionAcquiredHandler([[maybe_unused]] ConnectionAcquiredEvent::Handler& handler) override
+        {
+        }
+        void AddServerAcceptanceReceivedHandler([[maybe_unused]] ServerAcceptanceReceivedEvent::Handler& handler) override
+        {
+        }
+        void AddSessionInitHandler([[maybe_unused]] SessionInitEvent::Handler& handler) override
+        {
+        }
+        void AddSessionShutdownHandler([[maybe_unused]] SessionShutdownEvent::Handler& handler) override
+        {
+        }
+        void SendReadyForEntityUpdates([[maybe_unused]] bool readyForEntityUpdates) override
+        {
+        }
+        AZ::TimeMs GetCurrentHostTimeMs() const override
+        {
+            return {};
+        }
+        float GetCurrentBlendFactor() const override
+        {
+            return {};
+        }
+        INetworkTime* GetNetworkTime() override
+        {
+            return {};
+        }
+        INetworkEntityManager* GetNetworkEntityManager() override
+        {
+            return &m_manager;
+        }
+        void AddClientMigrationStartEventHandler([[maybe_unused]] ClientMigrationStartEvent::Handler& handler) override
+        {
+        }
+        void AddClientMigrationEndEventHandler([[maybe_unused]] ClientMigrationEndEvent::Handler& handler) override
+        {
+        }
+        void AddNotifyClientMigrationHandler([[maybe_unused]] NotifyClientMigrationEvent::Handler& handler) override
+        {
+        }
+        void AddNotifyEntityMigrationEventHandler([[maybe_unused]] NotifyEntityMigrationEvent::Handler& handler) override
+        {
+        }
+        void SendNotifyClientMigrationEvent(
+            [[maybe_unused]] AzNetworking::ConnectionId connectionId,
+            [[maybe_unused]] const HostId& hostId,
+            [[maybe_unused]] uint64_t userIdentifier,
+            [[maybe_unused]] ClientInputId lastClientInputId,
+            [[maybe_unused]] NetEntityId netEntityId) override
+        {
+        }
+        void SendNotifyEntityMigrationEvent(
+            [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, [[maybe_unused]] const HostId& remoteHostId) override
+        {
+        }
+        void RegisterPlayerIdentifierForRejoin(uint64_t, NetEntityId) override
+        {
+        }
+        void CompleteClientMigration(uint64_t, AzNetworking::ConnectionId, const HostId&, ClientInputId) override
+        {
+        }
+        void SetShouldSpawnNetworkEntities([[maybe_unused]] bool value) override
+        {
+        }
+        bool GetShouldSpawnNetworkEntities() const override
+        {
+            return true;
+        }
 
         BenchmarkNetworkEntityManager& m_manager;
     };
@@ -311,6 +557,10 @@ namespace Multiplayer
         virtual void internalSetUp()
         {
             SetupAllocator();
+            AZ::NameDictionary::Create();
+
+            m_ComponentApplicationRequests = AZStd::make_unique<BenchmarkComponentApplicationRequests>();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(m_ComponentApplicationRequests.get());
 
             // register components involved in testing
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
@@ -339,6 +589,8 @@ namespace Multiplayer
             // Without Multiplayer::RegisterMultiplayerComponents() the stats go to invalid id, which is fine for unit tests
             GetMultiplayer()->GetStats().ReserveComponentStats(Multiplayer::InvalidNetComponentId, 50, 0);
 
+            m_Time = AZStd::make_unique<AZ::StubTimeSystem>();
+
             m_NetworkTime = AZStd::make_unique<BenchmarkNetworkTime>();
             AZ::Interface<INetworkTime>::Register(m_NetworkTime.get());
 
@@ -348,13 +600,21 @@ namespace Multiplayer
             m_Connection = AZStd::make_unique<BenchmarkMultiplayerConnection>(ConnectionId{ 1 }, address, ConnectionRole::Connector);
             m_ConnectionListener = AZStd::make_unique<BenchmarkConnectionListener>();
 
-            m_entityReplicationManager = AZStd::make_unique<EntityReplicationManager>(*m_Connection, *m_ConnectionListener, EntityReplicationManager::Mode::LocalClientToRemoteServer);
+            m_entityReplicationManager = AZStd::make_unique<EntityReplicationManager>(
+                *m_Connection, *m_ConnectionListener, EntityReplicationManager::Mode::LocalClientToRemoteServer);
+
+            m_console.reset(aznew AZ::Console());
+            AZ::Interface<AZ::IConsole>::Register(m_console.get());
+            m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
 
             RegisterMultiplayerComponents();
         }
 
         virtual void internalTearDown()
         {
+            AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
+            m_console.reset();
+
             m_entityReplicationManager.reset();
 
             m_Connection.reset();
@@ -362,6 +622,10 @@ namespace Multiplayer
 
             AZ::Interface<INetworkTime>::Unregister(m_NetworkTime.get());
             AZ::Interface<IMultiplayer>::Unregister(m_Multiplayer.get());
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_ComponentApplicationRequests.get());
+
+            m_Time.reset();
+
             m_NetworkEntityManager.reset();
             m_Multiplayer.reset();
 
@@ -371,11 +635,15 @@ namespace Multiplayer
             m_hierarchyChildDescriptor.reset();
             m_netBindDescriptor.reset();
             m_serializeContext.reset();
+            m_ComponentApplicationRequests.reset();
 
             AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
 
+        AZStd::unique_ptr<AZ::IConsole> m_console;
+
+        AZStd::unique_ptr<BenchmarkComponentApplicationRequests> m_ComponentApplicationRequests;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_netBindDescriptor;
@@ -385,6 +653,7 @@ namespace Multiplayer
 
         AZStd::unique_ptr<BenchmarkMultiplayer> m_Multiplayer;
         AZStd::unique_ptr<BenchmarkNetworkEntityManager> m_NetworkEntityManager;
+        AZStd::unique_ptr<AZ::StubTimeSystem> m_Time;
         AZStd::unique_ptr<BenchmarkNetworkTime> m_NetworkTime;
 
         AZStd::unique_ptr<BenchmarkMultiplayerConnection> m_Connection;
@@ -456,12 +725,13 @@ namespace Multiplayer
             entity->FindComponent<NetworkTransformComponent>()->NotifyStateDeltaChanges(notifyRecord);
         }
 
-        template <typename Component>
+        template<typename Component>
         void SetHierarchyRootFieldOnNetworkHierarchyChild(const AZStd::unique_ptr<AZ::Entity>& entity, NetEntityId value)
         {
             /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
             constexpr int totalBits = 1 /*NetworkHierarchyChildComponentInternal::AuthorityToClientDirtyEnum::Count*/;
-            constexpr int inHierarchyBit = 0 /*NetworkHierarchyChildComponentInternal::AuthorityToClientDirtyEnum::hierarchyRoot_DirtyFlag*/;
+            constexpr int inHierarchyBit =
+                0 /*NetworkHierarchyChildComponentInternal::AuthorityToClientDirtyEnum::hierarchyRoot_DirtyFlag*/;
 
             ReplicationRecord currentRecord;
             currentRecord.m_authorityToClient.AddBits(totalBits);
@@ -533,7 +803,8 @@ namespace Multiplayer
 
             // Create an entity replicator for the child entity
             const NetworkEntityHandle childHandle(parent.m_entity.get(), m_NetworkEntityManager->GetNetworkEntityTracker());
-            parent.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_Connection.get(), NetEntityRole::Client, childHandle);
+            parent.m_replicator =
+                AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_Connection.get(), NetEntityRole::Client, childHandle);
             parent.m_replicator->Initialize(childHandle);
 
             parent.m_entity->Activate();
@@ -550,7 +821,8 @@ namespace Multiplayer
 
             // Create an entity replicator for the child entity
             const NetworkEntityHandle childHandle(child.m_entity.get(), m_NetworkEntityManager->GetNetworkEntityTracker());
-            child.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_Connection.get(), NetEntityRole::Client, childHandle);
+            child.m_replicator =
+                AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_Connection.get(), NetEntityRole::Client, childHandle);
             child.m_replicator->Initialize(childHandle);
 
             child.m_entity->Activate();
@@ -564,6 +836,6 @@ namespace Multiplayer
             }
         }
     };
-}
+} // namespace Multiplayer
 
 #endif

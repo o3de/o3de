@@ -6,23 +6,7 @@
  *
  */
 
+#include <AzCore/UnitTest/UnitTest.h>
 #include <AzTest/AzTest.h>
-#include <AzTest/GemTestEnvironment.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 
-class AzNetworkingTestEnvironment : public AZ::Test::GemTestEnvironment
-{
-    void AddGemsAndComponents() override;
-};
-
-void AzNetworkingTestEnvironment::AddGemsAndComponents()
-{
-    // Forcibly inject TargetManagement's descriptor since AzNetworking presently requires it
-    AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors;
-    componentDescriptors.push_back(AzFramework::TargetManagementComponent::CreateDescriptor());
-    AddComponentDescriptors(componentDescriptors);
-    AddDynamicModulePaths({ "AzNetworking" });
-}
-
-AZ_UNIT_TEST_HOOK_DYNAMIC(new AzNetworkingTestEnvironment);
-
+    AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

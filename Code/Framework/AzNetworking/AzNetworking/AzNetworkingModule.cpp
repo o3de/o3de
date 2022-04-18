@@ -30,8 +30,3 @@ namespace AzNetworking
         };
     }
 } // namespace AzNetworking
-
-// DO NOT MODIFY THIS LINE
-// The first parameter should be Gem_AzNetworking
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_AzNetworking, AzNetworking::AzNetworkingModule)
