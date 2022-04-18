@@ -22,9 +22,9 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "o3de_manifest_name": "testuser",
     "origin": "C:/Users/testuser/.o3de",
     "default_engines_folder": "C:/Users/testuser/.o3de/Engines",
-    "default_projects_folder": "C:/Users/testuser/.o3de/Projects",
-    "default_gems_folder": "C:/Users/testuser/.o3de/Gems",
-    "default_templates_folder": "C:/Users/testuser/.o3de/Templates",
+    "default_projects_folder": "C:/Users/testuser/O3DE/Projects",
+    "default_gems_folder": "C:/Users/testuser/O3DE/Gems",
+    "default_templates_folder": "C:/Users/testuser/O3DE/Templates",
     "default_restricted_folder": "C:/Users/testuser/.o3de/Restricted",
     "default_third_party_folder": "C:/Users/testuser/.o3de/3rdParty",
     "projects": [],
@@ -141,15 +141,20 @@ class TestRepos:
             return True
 
         def mocked_requests_get(url):
-            if url in self.valid_urls:
-                cm = MagicMock()
-                cm.getcode.return_value = 200
-                cm.read.return_value = 0
-                cm.__enter__.return_value = cm
+            if isinstance(url, urllib.request.Request):
+                url_str = url.get_full_url()
             else:
-                raise urllib.error.HTTPError(url, 404, "Not found", {}, 0)
+                url_str = url
 
-            return cm
+            if url_str in self.valid_urls:
+                custom_mock = MagicMock()
+                custom_mock.getcode.return_value = 200
+                custom_mock.read.return_value = 0
+                custom_mock.__enter__.return_value = custom_mock
+            else:
+                raise urllib.error.HTTPError(url_str, 404, "Not found", {}, 0)
+
+            return custom_mock
 
         def mocked_open(path, mode, *args, **kwargs):
             file_data = bytes(0)
