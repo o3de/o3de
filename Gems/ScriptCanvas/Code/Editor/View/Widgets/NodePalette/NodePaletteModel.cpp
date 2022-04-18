@@ -35,6 +35,12 @@ AZ_DEFINE_BUDGET(NodePaletteModel);
 
 namespace
 {
+    static constexpr char DefaultGlobalConstantCategory[] = "Global Constants";
+    static constexpr char DefaultGlobalMethodCategory[] = "Global Methods";
+    static constexpr char DefaultClassMethodCategory[] = "Class Methods";
+    static constexpr char DefaultEbusHandlerCategory[] = "Event Handlers";
+    static constexpr char DefaultEbusEventCategory[] = "Events";
+
     // Various Helper Methods
     bool IsDeprecated(const AZ::AttributeArray& attributes)
     {
@@ -136,20 +142,12 @@ namespace
             return;
         }
 
-        // If the reflected method returns an AZ::Event, reflect it to the SerializeContext
-        if (AZ::MethodReturnsAzEventByReferenceOrPointer(method))
-        {
-            const AZ::BehaviorParameter* resultParameter = method.GetResult();
-            ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
-        }
-
         nodePaletteModel.RegisterClassNode(categoryPath, behaviorClass ? behaviorClass->m_name : "", name, &method, &behaviorContext, propertyStatus, isOverloaded);
     }
 
     void RegisterGlobalMethod(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel, const AZ::BehaviorContext& behaviorContext,
         const AZ::BehaviorMethod& behaviorMethod)
     {
-
         AZ_PROFILE_SCOPE(NodePaletteModel, "RegisterGlobalMethod");
 
         const auto isExposableOutcome = ScriptCanvas::IsExposable(behaviorMethod);
@@ -165,13 +163,6 @@ namespace
             return; // skip this method
         }
 
-        // If the reflected method returns an AZ::Event, reflect it to the SerializeContext
-        if (AZ::MethodReturnsAzEventByReferenceOrPointer(behaviorMethod))
-        {
-            const AZ::BehaviorParameter* resultParameter = behaviorMethod.GetResult();
-            ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
-
-        }
         nodePaletteModel.RegisterMethodNode(behaviorContext, behaviorMethod);
     }
 
@@ -511,7 +502,7 @@ namespace
                     }
                     else
                     {
-                        categoryPath = "Other";
+                        categoryPath = DefaultClassMethodCategory;
                     }
                 }
 
@@ -603,16 +594,16 @@ namespace
                     }
                     else
                     {
-                        categoryPath = "Other/";
+                        categoryPath = AZStd::string::format("%s/", DefaultEbusHandlerCategory);
                     }
 
                     if (!details.m_name.empty())
                     {
                         categoryPath.append(details.m_name.c_str());
                     }
-                    else if (categoryPath.contains("Other"))
+                    else if (categoryPath.contains(DefaultEbusHandlerCategory))
                     {
-                        // Use the BehaviorEBus name to categorize within the 'Other' category
+                        // Use the BehaviorEBus name to categorize within the default ebus handler category
                         categoryPath.append(behaviorEbus.m_name.c_str());
                     }
                 }
@@ -650,16 +641,16 @@ namespace
             }
             else
             {
-                categoryPath = "Other/";
+                categoryPath = AZStd::string::format("%s/", DefaultEbusEventCategory);
             }
 
             if (!details.m_name.empty())
             {
                 categoryPath.append(details.m_name.c_str());
             }
-            else if (categoryPath.contains("Other"))
+            else if (categoryPath.contains(DefaultEbusEventCategory))
             {
-                // Use the behavior EBus name to categorize within the 'Other' category
+                // Use the behavior EBus name to categorize within the ebus event category
                 categoryPath.append(behaviorEbus.m_name.c_str());
             }
 
@@ -683,7 +674,7 @@ namespace
                 }
 
                 const bool isOverload{ false }; // overloaded events are not trivially supported
-                nodePaletteModel.RegisterEBusSenderNodeModelInformation(categoryPath, behaviorEbus.m_name, event.first, ScriptCanvas::EBusBusId(behaviorEbus.m_name.c_str()), ScriptCanvas::EBusEventId(event.first.c_str()), event.second, ScriptCanvas::PropertyStatus::None, isOverload);
+                nodePaletteModel.RegisterEBusSenderNodeModelInformation(categoryPath, behaviorEbus.m_name, event.first, ScriptCanvas::EBusBusId(behaviorEbus.m_name.c_str()), ScriptCanvas::EBusEventId(event.first.c_str()), ScriptCanvas::PropertyStatus::None, isOverload);
             }
         }
     }
@@ -1041,7 +1032,7 @@ namespace ScriptCanvasEditor
 
             if (methodModelInformation->m_categoryPath.empty())
             {
-                methodModelInformation->m_categoryPath = "Other";
+                methodModelInformation->m_categoryPath = DefaultClassMethodCategory;
             }
 
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, methodModelInformation));
@@ -1082,14 +1073,14 @@ namespace ScriptCanvasEditor
 
             if (methodModelInformation->m_categoryPath.empty())
             {
-                methodModelInformation->m_categoryPath = "Constants";
+                methodModelInformation->m_categoryPath = DefaultGlobalConstantCategory;
             }
 
             m_registeredNodes.emplace(nodeIdentifier, methodModelInformation.release());
         }
     }
 
-    void NodePaletteModel::RegisterMethodNode(const AZ::BehaviorContext&, const AZ::BehaviorMethod& behaviorMethod)
+    void NodePaletteModel::RegisterMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod)
     {
         AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterMethodNode");
 
@@ -1113,7 +1104,15 @@ namespace ScriptCanvasEditor
 
             methodModelInformation->m_displayName = details.m_name.empty() ? behaviorMethod.m_name : details.m_name;
             methodModelInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
-            methodModelInformation->m_categoryPath = details.m_category.empty() ? "Behavior Context: Global Methods" : details.m_category;
+            if (details.m_category.empty())
+            {
+                auto categoryPath = GetCategoryPath(behaviorMethod.m_attributes, behaviorContext);
+                methodModelInformation->m_categoryPath = categoryPath.empty() ? DefaultGlobalMethodCategory : categoryPath;
+            }
+            else
+            {
+                methodModelInformation->m_categoryPath = details.m_category;
+            }
 
             m_registeredNodes.emplace(nodeIdentifier, methodModelInformation.release());
         }
@@ -1159,7 +1158,6 @@ namespace ScriptCanvasEditor
         , AZStd::string_view eventName
         , const ScriptCanvas::EBusBusId& busId
         , const ScriptCanvas::EBusEventId& eventId
-        , const AZ::BehaviorEBusEventSender& sender
         , ScriptCanvas::PropertyStatus propertyStatus
         , bool isOverload)
     {
@@ -1193,17 +1191,6 @@ namespace ScriptCanvasEditor
             senderInformation->m_displayName = details.m_name.empty() ? eventName : details.m_name.c_str();
             senderInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
 
-            auto safeRegister = [](AZ::BehaviorMethod* method)
-            {
-                if (method && AZ::MethodReturnsAzEventByReferenceOrPointer(*method))
-                {
-                    const AZ::BehaviorParameter* resultParameter = method->GetResult();
-                    ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
-                }
-            };
-
-            safeRegister(sender.m_event);
-            safeRegister(sender.m_broadcast);
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, senderInformation));
         }
     }

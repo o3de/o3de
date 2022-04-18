@@ -31,14 +31,6 @@
             "isTemplated": true
         },
         {
-            "file": "cmake/CompilerSettings.cmake",
-            "isTemplated": false
-        },
-        {
-            "file": "cmake/Platform/Linux/CompilerSettings_linux.cmake",
-            "isTemplated": false
-        },
-        {
             "file": "Config/default_aws_resource_mappings.json",
             "isTemplated": false
         },
@@ -123,6 +115,10 @@
             "isTemplated": true
         },
         {
+            "file": "Gem/Registry/assetprocessor_settings.setreg",
+            "isTemplated": true
+        },
+        {
             "file": "Gem/Source/${Name}Module.cpp",
             "isTemplated": true
         },
@@ -183,7 +179,7 @@
             "isTemplated": false
         },
         {
-            "file": "Registry/assets_scan_folders.setreg",
+            "file": "Registry/assetprocessor_settings.setreg",
             "isTemplated": true
         },
         {
@@ -379,12 +375,6 @@
             "dir": "cmake"
         },
         {
-            "dir": "cmake/Platform"
-        },
-        {
-            "dir": "cmake/Platform/Linux"
-        },
-        {
             "dir": "Config"
         },
         {
@@ -413,6 +403,9 @@
         },
         {
             "dir": "Gem/Platform/iOS"
+        },
+        {
+            "dir": "Gem/Registry"
         },
         {
             "dir": "Gem/Source"

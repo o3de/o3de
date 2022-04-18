@@ -58,6 +58,22 @@
                         },
                         "LoadAction": "Clear"
                     }
+                },
+                {
+                    "Name": "QueryOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
                 }
             ],
             "ImageAttachments": [
@@ -95,6 +111,13 @@
                     "LocalSlot": "VisualizationOutput",
                     "AttachmentRef": {
                         "Pass": "DiffuseProbeGridVisualizationRayTracingPass",
+                        "Attachment": "Output"
+                    }
+                },
+                {
+                    "LocalSlot": "QueryOutput",
+                    "AttachmentRef": {
+                        "Pass": "DiffuseProbeGridQueryPass",
                         "Attachment": "Output"
                     }
                 }
@@ -228,6 +251,10 @@
                 {
                     "Name": "DiffuseProbeGridVisualizationRayTracingPass",
                     "TemplateName": "DiffuseProbeGridVisualizationRayTracingPassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridQueryPass",
+                    "TemplateName": "DiffuseProbeGridQueryPassTemplate"
                 }
             ]
         }

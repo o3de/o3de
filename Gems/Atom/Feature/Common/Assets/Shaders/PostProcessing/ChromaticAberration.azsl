@@ -1,0 +1,51 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    RWTexture2D<float4> m_outputColor;
+
+    // Must match the struct in ChromaticAberrationPass.cpp
+    struct Constants
+    {
+        uint2 m_outputSize; // texture size of output
+        float2 m_outputCenter; // center of image in pixel coords
+        float m_strength; // strength of effect (0 to 1), i.e. displacement of channels
+        float m_blend; // blend factor between original and aberration
+    };
+    Constants m_constants;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    if (dispatchThreadID.x >= PassSrg::m_constants.m_outputSize.x || dispatchThreadID.y >= PassSrg::m_constants.m_outputSize.y)
+    {
+        return;
+    }
+
+    // determine offset using m_strength parameter and distance from screen center (as float2)
+    // offset is *0.5f since we will be using *2 later for the blue and want to remain within bounds (consider strength>=0.5)
+    float2 disp = dispatchThreadID.xy - PassSrg::m_constants.m_outputCenter;
+    float2 offset = disp * PassSrg::m_constants.m_strength * 0.5f;
+
+    // crop and scale the image correctly by using offset pixel as base (needed to remove border artifacts due to out of bounds r values)
+    float4 base = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)];
+
+    // retrieve the desired values for each channel, mindful of the cropping (note the absence of g channel)
+    float2 ca = float2(PassSrg::m_inputColor[dispatchThreadID.xy].r, PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 2)].b);
+    
+    // weight it according to m_blend and add it to the base (note the absence of g channel)
+    ca *= PassSrg::m_constants.m_blend;
+    ca += base.rb * (1 - PassSrg::m_constants.m_blend);
+
+    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(ca.x, base.g, ca.y, base.a);
+}

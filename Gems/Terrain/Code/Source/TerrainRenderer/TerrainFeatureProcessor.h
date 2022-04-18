@@ -13,6 +13,7 @@
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
+#include <TerrainRenderer/TerrainClipmapManager.h>
 #include <TerrainRenderer/TerrainMeshManager.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
@@ -52,8 +53,12 @@ namespace Terrain
         void Deactivate() override;
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet) override;
 
+        void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config);
         void SetWorldSize(AZ::Vector2 sizeInMeters);
 
+        const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
+        const AZ::Data::Instance<AZ::RPI::Material> GetMaterial() const;
+        const TerrainClipmapManager& GetClipmapManager() const;
     private:
 
         static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
@@ -75,6 +80,7 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         // AZ::RPI::SceneNotificationBus overrides...
+        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
         void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
         
         // AZ::RPI::FeatureProcessor overrides...
@@ -94,6 +100,7 @@ namespace Terrain
         TerrainMeshManager m_meshManager;
         TerrainMacroMaterialManager m_macroMaterialManager;
         TerrainDetailMaterialManager m_detailMaterialManager;
+        TerrainClipmapManager m_clipmapManager;
 
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_imageArrayHandler;
 

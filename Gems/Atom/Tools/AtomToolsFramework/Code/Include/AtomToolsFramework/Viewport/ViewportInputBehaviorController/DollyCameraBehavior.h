@@ -12,7 +12,7 @@
 
 namespace AtomToolsFramework
 {
-    //! Moves(zooms) camera back and forth towards the target
+    //! Moves(zooms) camera back and forth towards the object
     class DollyCameraBehavior final : public ViewportInputBehavior
     {
     public:

@@ -6,18 +6,18 @@
          PreferredClassName="Despawn"
          Base="ScriptCanvas::Nodeable"
          Icon="Icons/ScriptCanvas/Placeholder.png"
-         Category="Spawning"
+         Category="Prefab/Spawning"
          Version="0"
          GeneratePropertyFriend="True"
          Namespace="ScriptCanvas"
          Description="Despawns a selected prefab">
 
     <Input Name="Request Despawn" OutputName="Despawn Requested">
-        <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance assosiated with spawnable asset."/>
+        <Parameter Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance assosiated with spawnable asset."/>
     </Input>
 
     <Output Name="On Despawn" Description="Called when despawning entities has completed.">
-        <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance of the despawn result."/>
+        <Parameter Name="SpawnTicketOut" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance of the despawn result."/>
     </Output>/>
   </Class>
 </ScriptCanvas>

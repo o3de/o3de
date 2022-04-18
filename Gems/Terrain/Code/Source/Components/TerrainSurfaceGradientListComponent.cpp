@@ -15,6 +15,8 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
+AZ_DECLARE_BUDGET(Terrain);
+
 namespace Terrain
 {
     void TerrainSurfaceGradientMapping::Reflect(AZ::ReflectContext* context)
@@ -90,7 +92,6 @@ namespace Terrain
     void TerrainSurfaceGradientListComponent::Activate()
     {
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        Terrain::TerrainAreaSurfaceRequestBus::Handler::BusConnect(GetEntityId());
 
         // Make sure we get update notifications whenever this entity or any dependent gradient entity changes in any way.
         // We'll use that to notify the terrain system that the surface information needs to be refreshed.
@@ -106,19 +107,24 @@ namespace Terrain
             }
         }
 
+        Terrain::TerrainAreaSurfaceRequestBus::Handler::BusConnect(GetEntityId());
+
         // Notify that the area has changed.
         OnCompositionChanged();
     }
 
     void TerrainSurfaceGradientListComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
-
+        // Disconnect before doing any other teardown. This will guarantee that any active queries have finished before we proceed.
         Terrain::TerrainAreaSurfaceRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         // Since this surface data will no longer exist, notify the terrain system to refresh the area.
-        OnCompositionChanged();
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
     }
 
     bool TerrainSurfaceGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -145,7 +151,17 @@ namespace Terrain
         const AZ::Vector3& inPosition,
         AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights) const
     {
+        // Make sure we don't run queries simultaneously with changing any of the cached data.
+        AZStd::shared_lock lock(m_queryMutex);
+
         outSurfaceWeights.clear();
+
+        if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce("Terrain", false, "Detected cyclic dependencies with terrain surface entity references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
+            return;
+        }
 
         const GradientSignal::GradientSampleParams params(inPosition);
 
@@ -163,8 +179,21 @@ namespace Terrain
         AZStd::span<const AZ::Vector3> inPositionList,
         AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const
     {
+        AZ_PROFILE_FUNCTION(Terrain);
+
+        // Make sure we don't run queries simultaneously with changing any of the cached data.
+        AZStd::shared_lock lock(m_queryMutex);
+
         AZ_Assert(
             inPositionList.size() == outSurfaceWeightsList.size(), "The position list size doesn't match the outSurfaceWeights list size.");
+
+        if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce(
+                "Terrain", false, "Detected cyclic dependencies with terrain surface entity references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
+            return;
+        }
 
         AZStd::vector<float> gradientValues(inPositionList.size());
 
@@ -182,6 +211,9 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
+        // Ensure that we only change our terrain registration status when no queries are actively running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         TerrainSystemServiceRequestBus::Broadcast(
             &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
             AzFramework::Terrain::TerrainDataNotifications::SurfaceData);

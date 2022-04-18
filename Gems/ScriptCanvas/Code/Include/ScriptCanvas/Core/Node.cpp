@@ -2702,7 +2702,8 @@ namespace ScriptCanvas
             {
                 if (foundIndex == index)
                 {
-                    return FindModifiableDatumView(slot.GetId(), controller);
+                    FindModifiableDatumView(slot.GetId(), controller);
+                    return;
                 }
 
                 ++foundIndex;
@@ -2763,9 +2764,9 @@ namespace ScriptCanvas
         }
 
         return datum;
-    }    
+    }
 
-    void Node::FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView)
+    bool Node::FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView)
     {
         auto slotIter = m_slotIdIteratorCache.find(slotId);
 
@@ -2780,6 +2781,7 @@ namespace ScriptCanvas
                 if (variable)
                 {
                     datumView.ConfigureView((*variable));
+                    return true;
                 }
                 else
                 {
@@ -2791,9 +2793,12 @@ namespace ScriptCanvas
                 if (slotIter->second.HasDatum())
                 {
                     datumView.ConfigureView((*slotIter->second.GetDatum()));
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     SlotId Node::FindSlotIdForDescriptor(AZStd::string_view slotName, const SlotDescriptor& descriptor) const
@@ -3529,6 +3534,11 @@ namespace ScriptCanvas
     VariableId Node::GetVariableIdWritten(const Slot*) const
     {
         return {};
+    }
+
+    const Slot* Node::GetVariableInputSlot() const
+    {
+        return nullptr;
     }
 
     const Slot* Node::GetVariableOutputSlot() const

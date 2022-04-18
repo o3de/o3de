@@ -185,12 +185,14 @@ namespace UnitTest
     {
         MockSurfaceDataSystem()
         {
+            AZ::Interface<SurfaceDataSystem>::Register(this);
             BusConnect();
         }
 
         ~MockSurfaceDataSystem()
         {
             BusDisconnect();
+            AZ::Interface<SurfaceDataSystem>::Unregister(this);
         }
 
         AZStd::unordered_map<AZStd::pair<float, float>, SurfaceData::SurfacePointList> m_surfacePoints;

@@ -23,6 +23,9 @@
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
 
 namespace Multiplayer
 {
@@ -34,6 +37,8 @@ namespace Multiplayer
         "Whether Editor should launch a server when the server address is localhost");
     AZ_CVAR(AZ::CVarFixedString, editorsv_process, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The server executable that should be run. Empty to use the current project's ServerLauncher");
+    AZ_CVAR(bool, editorsv_hidden, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The server executable launches hidden without a window. Best used with editorsv_rhi_override set to null.");
     AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
     AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
@@ -185,6 +190,11 @@ namespace Multiplayer
                 console->PerformCommand("disconnect");
             }
 
+            if (m_connectionEvent.IsScheduled())
+            {
+                m_connectionEvent.RemoveFromQueue();
+            }
+
             AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
 
             // Rebuild the library to clear temporary in-memory spawnable assets
@@ -194,22 +204,62 @@ namespace Multiplayer
         }
     }
 
+    bool MultiplayerEditorSystemComponent::FindServerLauncher(AZ::IO::FixedMaxPath& serverPath)
+    {
+        serverPath.clear();
+
+        // 1. Try the path from `editorsv_process` cvar.
+        const AZ::IO::FixedMaxPath serverPathFromCvar{ AZ::CVarFixedString(editorsv_process).c_str()};
+        if (AZ::IO::SystemFile::Exists(serverPathFromCvar.c_str()))
+        {
+            serverPath = serverPathFromCvar;
+            return true;
+        }
+
+        // 2. Try from the executable folder where the Editor was launched from.
+        AZ::IO::FixedMaxPath serverPathFromEditorLocation = AZ::Utils::GetExecutableDirectory();
+        serverPathFromEditorLocation /= AZStd::string_view(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+        if (AZ::IO::SystemFile::Exists(serverPathFromEditorLocation.c_str()))
+        {
+            serverPath = serverPathFromEditorLocation;
+            return true;
+        }
+
+        // 3. Try from the project's build folder.
+        AZ::IO::FixedMaxPath serverPathFromProjectBin;
+        if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPath projectModulePath;
+                settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
+            {
+                serverPathFromProjectBin /= projectModulePath;
+                serverPathFromProjectBin /= AZStd::string_view(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+                if (AZ::IO::SystemFile::Exists(serverPathFromProjectBin.c_str()))
+                {
+                    serverPath = serverPathFromProjectBin;
+                    return true;
+                }
+            }
+        }
+
+        AZ_Error(
+            "MultiplayerEditor", false,
+            "The ServerLauncher binary is missing! (%s), (%s) and (%s) were tried. Please build server launcher or specify using editorsv_process.",
+            serverPathFromCvar.c_str(),
+            serverPathFromEditorLocation.c_str(),
+            serverPathFromProjectBin.c_str());
+
+        return false;
+    }
+
     void MultiplayerEditorSystemComponent::LaunchEditorServer()
     {
         // Assemble the server's path
-        AZ::CVarFixedString serverProcess = editorsv_process;
         AZ::IO::FixedMaxPath serverPath;
-        if (serverProcess.empty())
+        if (!FindServerLauncher(serverPath))
         {
-            // If enabled but no process name is supplied, try this project's ServerLauncher
-            serverProcess = AZ::Utils::GetProjectName() + ".ServerLauncher";
-            serverPath = AZ::Utils::GetExecutableDirectory();
-            serverPath /= serverProcess + AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
-        }
-        else
-        {
-            serverPath = serverProcess;
-        }
+            return;
+        }        
 
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
@@ -220,33 +270,41 @@ namespace Multiplayer
         {
             server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
         }
-        
+
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --rhi "%s")",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
-            server_rhi.GetCStr()
+            server_rhi.GetCStr(),
+            static_cast<uint16_t>(editorsv_port)
         );
-        processLaunchInfo.m_showWindow = true;
+        processLaunchInfo.m_showWindow = !editorsv_hidden;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
         // Launch the Server
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
             processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
 
-        AZ_Error(
-            "MultiplayerEditor", processLaunchInfo.m_launchResult != AzFramework::ProcessLauncher::ProcessLaunchResult::PLR_MissingFile,
-            "LaunchEditorServer failed! The ServerLauncher binary is missing! (%s)  Please build server launcher.", serverPath.c_str())
-
-        // Stop the previous server if one exists
-        if (m_serverProcessWatcher)
+        if (outProcess)
         {
-            AZ::TickBus::Handler::BusDisconnect();
-            m_serverProcessWatcher->TerminateProcess(0);
+            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage("(1/3) Launching server...");
+
+            // Stop the previous server if one exists
+            if (m_serverProcessWatcher)
+            {
+                AZ::TickBus::Handler::BusDisconnect();
+                m_serverProcessWatcher->TerminateProcess(0);
+            }
+            m_serverProcessWatcher.reset(outProcess);
+            m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
+            AZ::TickBus::Handler::BusConnect();
         }
-        m_serverProcessWatcher.reset(outProcess);
-        m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
-        AZ::TickBus::Handler::BusConnect();
+        else
+        {
+            const char* fail_message = "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.";
+            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(fail_message);
+            AZ_Error("MultiplayerEditor", outProcess, fail_message);
+        }
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
@@ -290,9 +348,9 @@ namespace Multiplayer
             }
         }
 
-        const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
         if (editorsv_launch)
         {
+            const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
             if (LocalHost != remoteAddress)
             {
                 AZ_Warning(
@@ -303,37 +361,17 @@ namespace Multiplayer
                 return;
             }
 
-            // Begin listening for MPEditor packets before we launch the editor-server.
-            // The editor-server will send us (the editor) an "EditorServerReadyForLevelData" packet to let us know it's ready to receive data.
-            INetworkInterface* editorNetworkInterface =
-                AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
-            AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
-            editorNetworkInterface->Listen(editorsv_port);
+            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
 
             // Launch the editor-server
             LaunchEditorServer();
         }
-        else
-        {
-            // Editorsv_launch=false, so we're expecting an editor-server already exists.
-            // Connect to the editor-server and then send the EditorServerLevelData packet.
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
-            AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
-                
-            m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
-
-            if (m_editorConnId == AzNetworking::InvalidConnectionId)
-            {
-                AZ_Warning(
-                    "MultiplayerEditor", false,
-                    "Could not connect to a server at editorsv_serveraddr(%s) on editorsv_port(%i). Check server is active or use editorsv_launch to auto-launch a server.",
-                    remoteAddress.c_str(),
-                    static_cast<uint16_t>(editorsv_port))
-                return;
-            }
-
-            SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
-        }
+        
+        // Keep trying to connect until the port is finally available.
+        m_connectionAttempts = 0;
+        constexpr float retrySeconds = 1.0f;
+        constexpr bool autoRequeue = true;
+        m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
@@ -358,8 +396,10 @@ namespace Multiplayer
             AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
             return;
         }
-
-        AZ_Printf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
+        
+        AZStd::string sending_leveldata_message = "Editor is sending the editor-server the level data packet.";
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(("(3/3) " + sending_leveldata_message).c_str());
+        AZ_Printf("MultiplayerEditor", sending_leveldata_message.c_str())
 
         const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
 
@@ -436,6 +476,29 @@ namespace Multiplayer
             AZ_Warning(
                 "MultiplayerEditorSystemComponent", false,
                 "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
+        }
+    }
+
+    void MultiplayerEditorSystemComponent::Connect()
+    {
+        ++m_connectionAttempts;
+
+        char message[64];
+        azsnprintf(message, 64, "(2/3) Editor tcp connection attempt #%i.", m_connectionAttempts);
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(message);
+        AZ_Printf("MultiplayerEditor", message)
+
+        INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
+        AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
+
+        const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
+        m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
+
+        if (m_editorConnId != AzNetworking::InvalidConnectionId)
+        {
+            AZ_Printf("MultiplayerEditor", "Editor has connected to the editor-server.")
+            m_connectionEvent.RemoveFromQueue();
+            SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
         }
     }
 

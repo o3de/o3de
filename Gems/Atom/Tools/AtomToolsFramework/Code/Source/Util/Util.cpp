@@ -20,6 +20,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
@@ -62,6 +63,14 @@ namespace AtomToolsFramework
         job->Start();
     }
 
+    QWidget* GetToolMainWindow()
+    {
+        QWidget* mainWindow = QApplication::activeWindow();
+        AzToolsFramework::EditorWindowRequestBus::BroadcastResult(
+            mainWindow, &AzToolsFramework::EditorWindowRequestBus::Events::GetAppMainWindow);
+        return mainWindow;
+    }
+
     AZStd::string GetDisplayNameFromPath(const AZStd::string& path)
     {
         QFileInfo fileInfo(path.c_str());
@@ -81,7 +90,7 @@ namespace AtomToolsFramework
         const QString initialExt(initialFileInfo.completeSuffix());
 
         const QFileInfo selectedFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
-            QApplication::activeWindow(),
+            GetToolMainWindow(),
             QObject::tr("Save %1").arg(title.c_str()),
             initialFileInfo.absoluteFilePath(),
             QString("Files (*.%1)").arg(initialExt)));
@@ -94,7 +103,7 @@ namespace AtomToolsFramework
 
         if (!selectedFileInfo.absoluteFilePath().endsWith(initialExt))
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("File name must have .%1 extension.").arg(initialExt));
+            QMessageBox::critical(GetToolMainWindow(), "Error", QString("File name must have .%1 extension.").arg(initialExt));
             return AZStd::string();
         }
 
@@ -111,7 +120,7 @@ namespace AtomToolsFramework
         selection.SetMultiselect(true);
 
         AzToolsFramework::AssetBrowser::AssetBrowserComponentRequestBus::Broadcast(
-            &AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests::PickAssets, selection, QApplication::activeWindow());
+            &AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests::PickAssets, selection, GetToolMainWindow());
 
         AZStd::vector<AZStd::string> results;
         results.reserve(selection.GetResults().size());
@@ -135,14 +144,96 @@ namespace AtomToolsFramework
         return fileInfo.absoluteFilePath().toUtf8().constData();
     }
 
-    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& baseName)
+    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& extension)
     {
-        return GetUniqueFilePath(AZStd::string::format("%s/Assets/%s", AZ::Utils::GetProjectPath().c_str(), baseName.c_str()));
+        return GetUniqueFilePath(AZStd::string::format("%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(), extension.c_str()));
     }
 
     AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath)
     {
         return GetSaveFilePath(GetUniqueFilePath(initialPath), "Duplicate File");
+    }
+
+    bool ValidateDocumentPath(AZStd::string& path)
+    {
+        if (path.empty())
+        {
+            return false;
+        }
+
+        if (!AzFramework::StringFunc::Path::Normalize(path))
+        {
+            return false;
+        }
+
+        if (AzFramework::StringFunc::Path::IsRelative(path.c_str()))
+        {
+            return false;
+        }
+
+        if (!IsDocumentPathInSupportedFolder(path))
+        {
+            return false;
+        }
+
+        if (!IsDocumentPathEditable(path))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool IsDocumentPathInSupportedFolder(const AZStd::string& path)
+    {
+        bool assetFoldersRetrieved = false;
+        AZStd::vector<AZStd::string> assetFolders;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            assetFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetFolders);
+
+        AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(path).LexicallyNormal();
+        for (const auto& assetFolder : assetFolders)
+        {
+            // Check if the path is relative to the asset folder
+            if (assetPath.IsRelativeTo(AZ::IO::PathView(assetFolder)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool IsDocumentPathEditable(const AZStd::string& path)
+    {
+        for (const auto& [storedPath, flag] :
+             GetSettingsObject<AZStd::unordered_map<AZStd::string, bool>>("/O3DE/Atom/Tools/EditablePathSettings"))
+        {
+            if (auto resolveResult = AZ::IO::FileIOBase::GetInstance()->ResolvePath(AZ::IO::PathView{ storedPath }))
+            {
+                if (resolveResult->Compare(path) == 0)
+                {
+                    return flag;
+                }
+            }
+        }
+        return true;
+    }
+
+    bool IsDocumentPathPreviewable(const AZStd::string& path)
+    {
+        for (const auto& [storedPath, flag] :
+             GetSettingsObject<AZStd::unordered_map<AZStd::string, bool>>("/O3DE/Atom/Tools/PreviewablePathSettings"))
+        {
+            if (auto resolveResult = AZ::IO::FileIOBase::GetInstance()->ResolvePath(AZ::IO::PathView{ storedPath }))
+            {
+                if (resolveResult->Compare(path) == 0)
+                {
+                    return flag;
+                }
+            }
+        }
+        return true;
     }
 
     bool LaunchTool(const QString& baseName, const QStringList& arguments)

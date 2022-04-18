@@ -100,6 +100,7 @@ set(FILES
     Include/ScriptCanvas/Execution/ExecutionStateDeclarations.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedClassAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedDebugAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedEBusAPI.h
@@ -252,8 +253,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.h
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/Spawning.h
-    Include/ScriptCanvas/Libraries/Spawning/SpawnableAsset.h
-    Include/ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h

@@ -107,8 +107,7 @@ namespace Terrain
     {
         if (m_providerHandle != SurfaceData::InvalidSurfaceDataRegistryHandle)
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
         }
 
@@ -221,13 +220,11 @@ namespace Terrain
             // that the entire terrain provider needs to be updated, since it either has new bounds or the entire set of data is dirty.
             if (dirtyRegion.IsValid() && m_terrainBounds.IsClose(terrainBoundsBeforeUpdate))
             {
-                SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                    &SurfaceData::SurfaceDataSystemRequestBus::Events::RefreshSurfaceData, dirtyRegion);
+                AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RefreshSurfaceData(dirtyRegion);
             }
             else
             {
-                SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                    &SurfaceData::SurfaceDataSystemRequestBus::Events::UpdateSurfaceDataProvider, m_providerHandle, registryEntry);
+                AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UpdateSurfaceDataProvider(m_providerHandle, registryEntry);
             }
         }
         else if (!terrainValidBeforeUpdate && terrainValidAfterUpdate)
@@ -236,8 +233,7 @@ namespace Terrain
             AZ_Assert(
                 (m_providerHandle == SurfaceData::InvalidSurfaceDataRegistryHandle),
                 "Surface Provider data handle is initialized before our terrain became valid");
-            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
-                m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, registryEntry);
+            m_providerHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataProvider(registryEntry);
 
             // Start listening for surface data events
             AZ_Assert((m_providerHandle != SurfaceData::InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
@@ -247,8 +243,7 @@ namespace Terrain
         {
             // Our terrain has stopped being valid, so unregister and stop listening for surface data events
             AZ_Assert((m_providerHandle != SurfaceData::InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
         }

@@ -25,10 +25,13 @@ namespace AZ
     namespace AssImpSDKWrapper
     {
         AssImpSceneWrapper::AssImpSceneWrapper()
+            : m_assImpScene(nullptr)
+            , m_importer(AZStd::make_unique<Assimp::Importer>())
         {
         }
         AssImpSceneWrapper::AssImpSceneWrapper(aiScene* aiScene)
             : m_assImpScene(aiScene)
+            , m_importer(AZStd::make_unique<Assimp::Importer>())
         {
         }
 
@@ -63,13 +66,13 @@ namespace AZ
 
             // aiProcess_LimitBoneWeights is not enabled because it will remove bones which are not associated with a mesh.
             // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
-            m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
-            m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
+            m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+            m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
             // The remove empty bones flag is on by default, but doesn't do anything internal to AssImp right now.
             // This is here as a bread crumb to save others times investigating issues with empty bones.
             // m_importer.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
             m_sceneFileName = fileName;
-            m_assImpScene = m_importer.ReadFile(fileName,
+            m_assImpScene = m_importer->ReadFile(fileName,
                 aiProcess_Triangulate //Triangulates all faces of all meshes
                 | aiProcess_GenNormals); //Generate normals for meshes
 
@@ -83,7 +86,7 @@ namespace AZ
 
             if (!m_assImpScene)
             {
-                AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "Failed to import Asset Importer Scene. Error returned: %s", m_importer.GetErrorString());
+                AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "Failed to import Asset Importer Scene. Error returned: %s", m_importer->GetErrorString());
                 return false;
             }
 
@@ -106,7 +109,11 @@ namespace AZ
 
         void AssImpSceneWrapper::Clear()
         {
-            m_importer.FreeScene();
+            if(m_importer)
+            {
+                m_importer->FreeScene();
+                m_importer = AZStd::make_unique<Assimp::Importer>();
+            }
         }
 
         const aiScene* AssImpSceneWrapper::GetAssImpScene() const

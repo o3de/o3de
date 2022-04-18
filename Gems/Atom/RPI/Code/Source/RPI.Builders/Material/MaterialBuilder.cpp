@@ -54,7 +54,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 128; // fixed material type version numbers
+            materialBuilderDescriptor.m_version = 132; // Job Dependency subIds
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -94,14 +94,24 @@ namespace AZ
         }
 
         //! Adds all relevant dependencies for a referenced source file, considering that the path might be relative to the original file location or a full asset path.
-        //! This will usually include multiple source dependencies and a single job dependency, but will include only source dependencies if the file is not found.
+        //! This can include both source dependencies and a single job dependency, but will include only source dependencies if the file is not found.
         //! Note the AssetBuilderSDK::JobDependency::m_platformIdentifier will not be set by this function. The calling code must set this value before passing back
-        //! to the AssetBuilderSDK::CreateJobsResponse. 
+        //! to the AssetBuilderSDK::CreateJobsResponse.
+        //! @param currentFilePath The path of the .material or .materialtype file being processed
+        //! @param referencedParentPath The path to the referenced file as it appears in the current file
+        //! @param jobKey The job key for the job that is expected to process the referenced file
+        //! @param jobDependencies Dependencies may be added to this list
+        //! @param sourceDependencies Dependencies may be added to this list
+        //! @param forceOrderOnce If true, any job dependencies will use JobDependencyType::OrderOnce. Use this if the builder will only ever need to get the AssetId
+        //!                       of the referenced file but will not need to load the asset.
         void AddPossibleDependencies(
             const AZStd::string& currentFilePath,
             const AZStd::string& referencedParentPath,
             const char* jobKey,
-            AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies)
+            AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
+            AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies,
+            bool forceOrderOnce = false,
+            AZStd::optional<AZ::u32> productSubId = AZStd::nullopt)
         {
             bool dependencyFileFound = false;
             
@@ -127,18 +137,62 @@ namespace AZ
                         jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
                         jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
                         
+                        if(productSubId)
+                        {
+                            jobDependency.m_productSubIds.push_back(productSubId.value());
+                        }
+                        
                         // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data won't be used.
                         // However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the material type asset so the builder can get it's AssetId.
                         // This can significantly reduce AP processing time when a material type or its shaders are edited.
-                        if (currentFileIsMaterial && referencedFileIsMaterialType && !shouldFinalizeMaterialAssets)
+                        if (forceOrderOnce || currentFileIsMaterial && referencedFileIsMaterialType && !shouldFinalizeMaterialAssets)
                         {
                             jobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
                         }
 
                         jobDependencies.push_back(jobDependency);
                     }
+                    else
+                    {
+                        // The file was not found so we can't add a job dependency. But we add a source dependency instead so if a file
+                        // shows up later at this location, it will wake up the builder to try again.
+
+                        AssetBuilderSDK::SourceFileDependency sourceDependency;
+                        sourceDependency.m_sourceFileDependencyPath = file;
+                        sourceDependencies.push_back(sourceDependency);
+                    }
                 }
             }
+        }
+
+        void AddPossibleImageDependencies(
+            const AZStd::string& currentFilePath,
+            const AZStd::string& imageFilePath,
+            AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
+            AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies)
+        {
+            if (imageFilePath.empty())
+            {
+                return;
+            }
+
+            AZStd::string ext;
+            AzFramework::StringFunc::Path::GetExtension(imageFilePath.c_str(), ext, false);
+            AZStd::to_upper(ext.begin(), ext.end());
+            AZStd::string jobKey = "Image Compile: " + ext;
+
+            if (ext.empty())
+            {
+                return;
+            }
+
+            bool forceOrderOnce = true;
+            AddPossibleDependencies(currentFilePath,
+                imageFilePath,
+                jobKey.c_str(),
+                jobDependencies,
+                sourceDependencies,
+                forceOrderOnce);
         }
 
         void MaterialBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
@@ -193,10 +247,13 @@ namespace AZ
                         AddPossibleDependencies(request.m_sourceFile,
                             shader.m_shaderFilePath,
                             "Shader Asset",
-                            outputJobDescriptor.m_jobDependencyList);
+                            outputJobDescriptor.m_jobDependencyList,
+                            response.m_sourceFileDependencyList,
+                            false,
+                            0);
                     }
 
-                    auto addFunctorDependencies = [&outputJobDescriptor, &request](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
+                    auto addFunctorDependencies = [&outputJobDescriptor, &request, &response](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
                     {
                         for (auto& functor : functors)
                         {
@@ -207,7 +264,8 @@ namespace AZ
                                 AddPossibleDependencies(request.m_sourceFile,
                                     dependency.m_sourceFilePath,
                                     dependency.m_jobKey.c_str(),
-                                    outputJobDescriptor.m_jobDependencyList);
+                                    outputJobDescriptor.m_jobDependencyList,
+                                    response.m_sourceFileDependencyList);
                             }
                         }
                     };
@@ -217,6 +275,20 @@ namespace AZ
                     materialTypeSourceData.GetValue().EnumeratePropertyGroups([addFunctorDependencies](const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack)
                         {
                             addFunctorDependencies(propertyGroupStack.back()->GetFunctors());
+                            return true;
+                        });
+
+                    materialTypeSourceData.GetValue().EnumerateProperties(
+                        [&request, &response, &outputJobDescriptor](const MaterialTypeSourceData::PropertyDefinition* property, const MaterialNameContext&)
+                        {
+                            if (property->m_dataType == MaterialPropertyDataType::Image && MaterialSourceData::LooksLikeImageFileReference(property->m_value))
+                            {
+                                AddPossibleImageDependencies(
+                                    request.m_sourceFile,
+                                    property->m_value.GetValue<AZStd::string>(),
+                                    outputJobDescriptor.m_jobDependencyList,
+                                    response.m_sourceFileDependencyList);
+                            }
                             return true;
                         });
                 }
@@ -229,19 +301,19 @@ namespace AZ
                     AZStd::string materialTypePath;
                     AZStd::string parentMaterialPath;
 
-                    auto& variantData = document;
+                    auto& materialJson = document;
 
                     const char* const materialTypeField = "materialType";
                     const char* const parentMaterialField = "parentMaterial";
 
-                    if (variantData.IsObject() && variantData.HasMember(materialTypeField) && variantData[materialTypeField].IsString())
+                    if (materialJson.IsObject() && materialJson.HasMember(materialTypeField) && materialJson[materialTypeField].IsString())
                     {
-                        materialTypePath = variantData[materialTypeField].GetString();
+                        materialTypePath = materialJson[materialTypeField].GetString();
                     }
 
-                    if (variantData.IsObject() && variantData.HasMember(parentMaterialField) && variantData[parentMaterialField].IsString())
+                    if (materialJson.IsObject() && materialJson.HasMember(parentMaterialField) && materialJson[parentMaterialField].IsString())
                     {
-                        parentMaterialPath = variantData[parentMaterialField].GetString();
+                        parentMaterialPath = materialJson[parentMaterialField].GetString();
                     }
 
                     if (parentMaterialPath.empty())
@@ -254,7 +326,39 @@ namespace AZ
                     AddPossibleDependencies(request.m_sourceFile,
                         parentMaterialPath,
                         JobKey,
-                        outputJobDescriptor.m_jobDependencyList);
+                        outputJobDescriptor.m_jobDependencyList,
+                        response.m_sourceFileDependencyList,
+                        false,
+                        0);
+
+                    // Even though above we were able to get away without deserializing the material json, we do need to deserialize here in order
+                    // to easily read the property values. Note that with the latest .material file format, it actually wouldn't be too hard to
+                    // just read the raw json, it's just a map of property name to property value. But we also are maintaining backward compatible
+                    // support for an older file format that nests property values rather than using a flat list. By deserializing we leave it up
+                    // to the MaterialSourceData class to provide that backward compatibility (see MaterialSourceData::ConvertToNewDataFormat()).
+                    
+                    auto materialSourceData = MaterialUtils::LoadMaterialSourceData(fullSourcePath, &materialJson);
+                    if (materialSourceData.IsSuccess())
+                    {
+                        for (auto& [propertyId, propertyValue] : materialSourceData.GetValue().GetPropertyValues())
+                        {
+                            AZ_UNUSED(propertyId);
+                            
+                            if (MaterialSourceData::LooksLikeImageFileReference(propertyValue))
+                            {
+                                AddPossibleImageDependencies(
+                                    request.m_sourceFile,
+                                    propertyValue.GetValue<AZStd::string>(),
+                                    outputJobDescriptor.m_jobDependencyList,
+                                    response.m_sourceFileDependencyList);
+                            }
+                        }
+                        
+                    }
+                    else
+                    {
+                        AZ_Warning(MaterialBuilderName, false, "Could not report dependencies for Image properties because the material json couldn't be loaded.");
+                    }
                 }
             }
             
@@ -357,7 +461,7 @@ namespace AZ
                     AZ_TracePrintf("MaterialBuilder", AZStd::string::format("Producing %s...", fileName.c_str()).c_str());
 
                     // Load the material type file and create the MaterialTypeAsset object
-                    materialTypeAsset = CreateMaterialTypeAsset(request.m_sourceFile, document);
+                    materialTypeAsset = CreateMaterialTypeAsset(fullSourcePath, document);
 
                     if (!materialTypeAsset)
                     {

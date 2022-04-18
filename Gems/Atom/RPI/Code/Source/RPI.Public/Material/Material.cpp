@@ -8,6 +8,8 @@
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
@@ -598,33 +600,45 @@ namespace AZ
             }
             else
             {
-                if (!imageAsset.IsReady())
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
+
+                auto assetType = imageAsset.GetType();
+
+                if (assetInfo.m_assetId.IsValid())
                 {
-                    imageAsset = Data::AssetManager::Instance().GetAsset<StreamingImageAsset>(imageAsset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad);
-                    imageAsset.BlockUntilLoadComplete();
-                    if (!imageAsset.IsReady())
+                    if (assetType != imageAsset.GetType())
                     {
-                        AZ_Error(s_debugTraceName, false, "Image asset could not be loaded");
-                        return false;
+                        AZ_Assert(false, "Wrong asset type with input asset");
+                        // Correct the asset type
+                        assetType = assetInfo.m_assetType;
                     }
                 }
 
-                if (Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset))
+                Data::Instance<Image> image = nullptr;
+                if (assetType == azrtti_typeid<StreamingImageAsset>())
                 {
-                    Data::Instance<Image> image = StreamingImage::FindOrCreate(streamingImageAsset);
-                    if (!image)
-                    {
-                        AZ_Error(s_debugTraceName, false, "Could not create StreamingImage");
-                        return false;
-                    }
-
-                    return SetPropertyValue(index, image);
+                    Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset);
+                    image = StreamingImage::FindOrCreate(streamingImageAsset);
+                }
+                else if (assetType == azrtti_typeid<AttachmentImageAsset>())
+                {
+                    Data::Asset<AttachmentImageAsset> attachmentImageAsset = Data::static_pointer_cast<AttachmentImageAsset>(imageAsset);
+                    image = AttachmentImage::FindOrCreate(attachmentImageAsset);
                 }
                 else
                 {
                     AZ_Error(s_debugTraceName, false, "Unsupported image asset type");
                     return false;
                 }
+
+                if (!image)
+                {
+                    AZ_Error(s_debugTraceName, false, "Image asset could not be loaded");
+                    return false;
+                }
+
+                return SetPropertyValue(index, image);
             }
         }
 

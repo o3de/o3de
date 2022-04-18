@@ -14,6 +14,7 @@ set(FILES
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
+    Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
     Include/Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h
@@ -111,6 +112,16 @@ set(FILES
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
     Source/Checkerboard/CheckerboardPass.h
+    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.h
+    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.cpp
+    Source/CubeMapCapture/CubeMapCapture.h
+    Source/CubeMapCapture/CubeMapCapture.cpp
+    Source/CubeMapCapture/CubeMapRenderer.h
+    Source/CubeMapCapture/CubeMapRenderer.cpp
+    Source/Debug/RenderDebugFeatureProcessor.h
+    Source/Debug/RenderDebugFeatureProcessor.cpp
+    Source/Debug/RenderDebugSettings.h
+    Source/Debug/RenderDebugSettings.cpp
     Source/Decals/DecalFeatureProcessor.h
     Source/Decals/DecalFeatureProcessor.cpp
     Source/Decals/DecalTextureArray.h
@@ -150,6 +161,8 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
@@ -204,6 +217,8 @@ set(FILES
     Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.h
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.cpp
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.h
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.cpp
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.h
     Source/PostProcess/ExposureControl/ExposureControlSettings.cpp
@@ -224,6 +239,20 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
+    Source/PostProcessing/ChromaticAberrationPass.h
+    Source/PostProcessing/ChromaticAberrationPass.cpp
+    Source/PostProcessing/EditorModeFeedbackParentPass.cpp
+    Source/PostProcessing/EditorModeFeedbackParentPass.h
+    Source/PostProcessing/EditorModeFeedbackPassBase.cpp
+    Source/PostProcessing/EditorModeFeedbackPassBase.h
+    Source/PostProcessing/EditorModeDesaturationPass.cpp
+    Source/PostProcessing/EditorModeDesaturationPass.h
+    Source/PostProcessing/EditorModeTintPass.cpp
+    Source/PostProcessing/EditorModeTintPass.h
+    Source/PostProcessing/EditorModeBlurPass.cpp
+    Source/PostProcessing/EditorModeBlurPass.h
+    Source/PostProcessing/EditorModeOutlinePass.cpp
+    Source/PostProcessing/EditorModeOutlinePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h

@@ -49,8 +49,9 @@ namespace ShaderManagementConsole
         }
     }
 
-    ShaderManagementConsoleDocument::ShaderManagementConsoleDocument(const AZ::Crc32& toolId)
-        : AtomToolsFramework::AtomToolsDocument(toolId)
+    ShaderManagementConsoleDocument::ShaderManagementConsoleDocument(
+        const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+        : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
     {
         ShaderManagementConsoleDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -113,19 +114,17 @@ namespace ShaderManagementConsole
 
     AtomToolsFramework::DocumentTypeInfo ShaderManagementConsoleDocument::BuildDocumentTypeInfo()
     {
-        AtomToolsFramework::DocumentTypeInfo documentType = AtomToolsDocument::BuildDocumentTypeInfo();
+        AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Shader Variant List";
-        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId) { return aznew ShaderManagementConsoleDocument(toolId); };
+        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
+            return aznew ShaderManagementConsoleDocument(toolId, documentTypeInfo); };
         documentType.m_supportedExtensionsToCreate.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
+        documentType.m_supportedExtensionsToCreate.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
+        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::ShaderAsset>());
         return documentType;
-    }
-
-    AtomToolsFramework::DocumentTypeInfo ShaderManagementConsoleDocument::GetDocumentTypeInfo() const
-    {
-        return BuildDocumentTypeInfo();
     }
 
     AtomToolsFramework::DocumentObjectInfoVector ShaderManagementConsoleDocument::GetObjectInfo() const
@@ -309,13 +308,18 @@ namespace ShaderManagementConsole
             }
         }
 
+        // Even though the data originated from a different file source it has now been transformed into a shader variant list so update the
+        // extension to match. This will allow the document to be resaved immediately without doing a save as child or derived type when
+        // loaded from a shader source file.
+        AzFramework::StringFunc::Path::ReplaceExtension(m_absolutePath, AZ::RPI::ShaderVariantListSourceData::Extension);
+
         SetShaderVariantListSourceData(shaderVariantListSourceData);
         return IsOpen() ? OpenSucceeded() : OpenFailed();
     }
 
     bool ShaderManagementConsoleDocument::LoadShaderVariantListSourceData()
     {
-        // Load previously generated shader variant list source data 
+        // Load previously generated shader variant list source data
         AZ::RPI::ShaderVariantListSourceData shaderVariantListSourceData;
         if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_absolutePath, shaderVariantListSourceData))
         {
@@ -333,7 +337,7 @@ namespace ShaderManagementConsole
         assetDatabaseConnection.OpenDatabase();
 
         // Find all material types that reference shaderFilePath
-        AZStd::vector<AZStd::string> materialTypeSources;
+        AZStd::list<AZStd::string> materialTypeSources;
 
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
             shaderFilePath.c_str(), nullptr, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
@@ -347,32 +351,34 @@ namespace ShaderManagementConsole
                 return true;
             });
 
-        // Find all materials that reference any of the material types using this shader 
-        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productDependencies;
+        // Find all materials that reference any of the material types using this shader
+        AZStd::string watchFolder;
+        AZ::Data::AssetInfo materialTypeSourceAssetInfo;
+        AZStd::list<AzToolsFramework::AssetDatabase::ProductDatabaseEntry> productDependencies;
         for (const auto& materialTypeSource : materialTypeSources)
         {
             bool result = false;
-            AZ::Data::AssetInfo materialTypeSourceAssetInfo;
-            AZStd::string watchFolder;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                 result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, materialTypeSource.c_str(),
                 materialTypeSourceAssetInfo, watchFolder);
-
-            assetDatabaseConnection.QueryDirectReverseProductDependenciesBySourceGuidSubId(
-                materialTypeSourceAssetInfo.m_assetId.m_guid, materialTypeSourceAssetInfo.m_assetId.m_subId,
-                [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
-                {
-                    if (AzFramework::StringFunc::Path::IsExtension(entry.m_productName.c_str(), AZ::RPI::MaterialAsset::Extension))
+            if (result)
+            {
+                assetDatabaseConnection.QueryDirectReverseProductDependenciesBySourceGuidSubId(
+                    materialTypeSourceAssetInfo.m_assetId.m_guid, materialTypeSourceAssetInfo.m_assetId.m_subId,
+                    [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
                     {
-                        productDependencies.push_back(entry);
-                    }
-                    return true;
-                });
+                        if (AzFramework::StringFunc::Path::IsExtension(entry.m_productName.c_str(), AZ::RPI::MaterialAsset::Extension))
+                        {
+                            productDependencies.push_back(entry);
+                        }
+                        return true;
+                    });
+            }
         }
 
         AZStd::vector<AZ::Data::AssetId> results;
         results.reserve(productDependencies.size());
-        for (auto product : productDependencies)
+        for (const auto& product : productDependencies)
         {
             assetDatabaseConnection.QueryCombinedByProductID(
                 product.m_productID,

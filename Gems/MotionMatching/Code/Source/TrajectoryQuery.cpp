@@ -24,7 +24,8 @@ namespace EMotionFX::MotionMatching
     void TrajectoryQuery::PredictFutureTrajectory(const ActorInstance& actorInstance,
         const FeatureTrajectory* trajectoryFeature,
         const AZ::Vector3& targetPos,
-        [[maybe_unused]] const AZ::Vector3& targetFacingDir)
+        const AZ::Vector3& targetFacingDir,
+        bool useTargetFacingDir)
     {
         const AZ::Vector3 actorInstanceWorldPosition = actorInstance.GetWorldSpaceTransform().m_position;
         const AZ::Quaternion actorInstanceWorldRotation = actorInstance.GetWorldSpaceTransform().m_rotation;
@@ -42,7 +43,21 @@ namespace EMotionFX::MotionMatching
             const float velocity = actorInstanceToTarget.GetLength() / trajectoryFeature->GetFutureTimeRange();
 
             linearDisplacementPerSample = (velocity / numSections);
+        }
+        else
+        {
+            // Force using the target facing direction in the dead zone as the samples of the future trajectory will be all at the same
+            // location.
+            useTargetFacingDir = true;
+        }
 
+        if (useTargetFacingDir)
+        {
+            // Use the given target facing direction and convert the direction vector to a quaternion.
+            targetFacingDirQuat = AZ::Quaternion::CreateShortestArc(trajectoryFeature->GetFacingAxisDir(), targetFacingDir);
+        }
+        else
+        {
             // Use the direction from the current actor instance position to the target as the target facing direction
             // and convert the direction vector to a quaternion.
             targetFacingDirQuat = AZ::Quaternion::CreateShortestArc(trajectoryFeature->GetFacingAxisDir(), actorInstanceToTarget);
@@ -92,6 +107,7 @@ namespace EMotionFX::MotionMatching
         EMode mode,
         const AZ::Vector3& targetPos,
         const AZ::Vector3& targetFacingDir,
+        bool useTargetFacingDir,
         float timeDelta,
         float pathRadius,
         float pathSpeed)
@@ -114,7 +130,7 @@ namespace EMotionFX::MotionMatching
 
         if (mode == MODE_TARGETDRIVEN)
         {
-            PredictFutureTrajectory(actorInstance, trajectoryFeature, targetPos, targetFacingDir);
+            PredictFutureTrajectory(actorInstance, trajectoryFeature, targetPos, targetFacingDir, useTargetFacingDir);
         }
         else
         {
