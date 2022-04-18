@@ -16,6 +16,8 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -31,7 +33,7 @@ namespace RecastNavigation
     {
     public:
         AZ_COMPONENT(RecastNavigationMeshComponent, "{a281f314-a525-4c05-876d-17eb632f14b4}");
-
+        
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -39,10 +41,10 @@ namespace RecastNavigation
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
         // RecastNavigationRequestBus interface implementation
-        bool UpdateNavigationMesh() override;
+        void UpdateNavigationMesh() override;
         AZStd::vector<AZ::Vector3> FindPathToEntity(AZ::EntityId fromEntity, AZ::EntityId toEntity) override;
         AZStd::vector<AZ::Vector3> FindPathToPosition(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& targetWorldPosition) override;
-        
+
         // AZ::Component interface implementation
         void Activate() override;
         void Deactivate() override;
@@ -53,19 +55,23 @@ namespace RecastNavigation
     private:
 
         static RecastVector3 GetPolyCenter(const dtNavMesh* navMesh, dtPolyRef ref);
-
-        bool UpdateNavigationMesh_JobThread(const AZ::Aabb& aabb);
-        AZStd::atomic<bool> m_navMeshReady = false;
-        bool m_waitingOnNavMeshRebuild = false;
         
-        Geometry m_geom;
+        AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
+        AZ::TaskGraph m_taskGraph;
+        AZ::TaskDescriptor m_taskDescriptor{ "UpdateNavigationMesh", "RecastNavigation" };
 
+        bool TaskUpdateNavigationMesh();
+        AZ::Aabb m_worldBounds;
+        Geometry m_geom;
+        AZStd::atomic<bool> m_navMeshReady = false;
+        AZStd::atomic<bool> m_waitingOnNavMeshRebuild = false;
+        
         AZStd::unique_ptr<rcContext> m_context;
 
         RecastNavigationMeshConfig m_meshConfig;
 
         RecastNavigationDebugDraw m_customDebugDraw;
-        
+
         rcConfig m_config = {};
         AZStd::vector<AZ::u8> m_trianglesAreas;
         RecastPointer<rcHeightfield> m_solid;

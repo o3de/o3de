@@ -84,8 +84,6 @@ namespace RecastNavigation
             {
                 AZ::EntityId hitEntityId = overlapHit.m_entityId;
 
-                // TODO filter out based on a Tag component value
-
                 // most physics bodies just have world transforms, but some also have local transforms including terrain.
                 // we are not applying the local orientation because it causes terrain geometry to be oriented incorrectly
 
@@ -166,7 +164,7 @@ namespace RecastNavigation
 
     AZ::Aabb RecastNavigationSurveyorComponent::GetWorldBounds()
     {
-        AZ::Aabb worldBounds;
+        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
         return worldBounds;
     }

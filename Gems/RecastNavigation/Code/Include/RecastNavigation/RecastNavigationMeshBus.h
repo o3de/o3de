@@ -22,7 +22,7 @@ namespace RecastNavigation
     {
     public:
 
-        virtual bool UpdateNavigationMesh() = 0;
+        virtual void UpdateNavigationMesh() = 0;
 
         virtual AZStd::vector<AZ::Vector3> FindPathToEntity( AZ::EntityId fromEntity, AZ::EntityId toEntity ) = 0;
         virtual AZStd::vector<AZ::Vector3> FindPathToPosition( const AZ::Vector3& fromWorldPosition, const AZ::Vector3& targetWorldPosition ) = 0;

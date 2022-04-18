@@ -12,7 +12,6 @@
 #include <DetourNavMeshBuilder.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
-#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -47,6 +46,7 @@ namespace RecastNavigation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(nullptr, &RecastNavigationMeshComponent::m_meshConfig, "Config", "Navigation Mesh configuration")
                     ;
             }
         }
@@ -58,6 +58,8 @@ namespace RecastNavigation
                 ->Attribute(AZ::Script::Attributes::Module, "navigation")
                 ->Attribute(AZ::Script::Attributes::Category, "Navigation")
                 ->Event("UpdateNavigationMesh", &RecastNavigationMeshRequests::UpdateNavigationMesh)
+                ->Event("FindPathToEntity", &RecastNavigationMeshRequests::FindPathToEntity)
+                ->Event("FindPathToPosition", &RecastNavigationMeshRequests::FindPathToPosition)
                 ;
 
             behaviorContext->Class<RecastNavigationMeshComponent>()->RequestBus("RecastNavigationMeshRequestBus");
@@ -120,38 +122,41 @@ namespace RecastNavigation
         return centerRecast;
     }
 
-    bool RecastNavigationMeshComponent::UpdateNavigationMesh()
+    void RecastNavigationMeshComponent::UpdateNavigationMesh()
     {
         if (m_waitingOnNavMeshRebuild)
         {
-            return false;
+            return;
         }
 
+        m_taskGraphEvent = AZStd::unique_ptr<AZ::TaskGraphEvent>();
         m_navMeshReady = false;
         m_waitingOnNavMeshRebuild = true;
 
+        // Get geometry
         m_geom.clear();
         RecastNavigationSurveyorRequestBus::Event(GetEntityId(), &RecastNavigationSurveyorRequestBus::Events::CollectGeometry, m_geom);
 
-        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
-        RecastNavigationSurveyorRequestBus::EventResult(worldBounds, GetEntityId(), &RecastNavigationSurveyorRequestBus::Events::GetWorldBounds);
-
-        auto* job = AZ::CreateJobFunction([this, worldBounds]()
+        // Get the world bounds of the geometry
+        RecastNavigationSurveyorRequestBus::EventResult(m_worldBounds, GetEntityId(), &RecastNavigationSurveyorRequestBus::Events::GetWorldBounds);
+        
+        m_taskGraph.Reset();
+        m_taskGraph.AddTask(
+            m_taskDescriptor,
+            [this]
             {
-                if (UpdateNavigationMesh_JobThread(worldBounds))
+                if (TaskUpdateNavigationMesh())
                 {
                     m_navMeshReady = true;
                     RecastNavigationMeshNotificationBus::Broadcast(&RecastNavigationMeshNotificationBus::Events::OnNavigationMeshUpdated);
                 }
-            }
-        , true);
 
-        job->Start();
-
-        return true;
+                m_waitingOnNavMeshRebuild = false;
+            });
+        m_taskGraph.Submit(m_taskGraphEvent.get());
     }
 
-    bool RecastNavigationMeshComponent::UpdateNavigationMesh_JobThread(const AZ::Aabb& aabb)
+    bool RecastNavigationMeshComponent::TaskUpdateNavigationMesh()
     {
         if (m_geom.m_verts.empty())
         {
@@ -187,8 +192,8 @@ namespace RecastNavigation
         // Here the bounds of the input mesh are used, but the
         // area could be specified by an user defined box, etc.
 
-        const RecastVector3 worldMin(aabb.GetMin());
-        const RecastVector3 worldMax(aabb.GetMax());
+        const RecastVector3 worldMin(m_worldBounds.GetMin());
+        const RecastVector3 worldMax(m_worldBounds.GetMax());
 
         rcVcopy(m_config.bmin, &worldMin.m_x);
         rcVcopy(m_config.bmax, &worldMax.m_x);
@@ -606,6 +611,13 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponent::Deactivate()
     {
+        if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
+        {
+            m_taskGraphEvent->Wait();
+            m_taskGraphEvent.reset();
+        }
+
+        m_context = {};
         m_navQuery = {};
         m_navMesh = {};
 
