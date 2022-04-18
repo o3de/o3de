@@ -118,7 +118,7 @@ namespace LmbrCentral
     {
     public:
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        typedef AZ::EntityId BusIdType;
+        using BusIdType = AZ::EntityId;
 
         /// @brief Returns the type of shape that this component holds
         /// @return Crc32 indicating the type of shape
