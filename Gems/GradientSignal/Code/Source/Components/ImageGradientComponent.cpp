@@ -140,6 +140,16 @@ namespace GradientSignal
         return options;
     }
 
+    AZStd::vector<AZ::Edit::EnumConstant<SamplingType>> SupportedSamplingTypeOptions()
+    {
+        AZStd::vector<AZ::Edit::EnumConstant<SamplingType>> options;
+
+        options.push_back(AZ::Edit::EnumConstant<SamplingType>(SamplingType::Point, "Point"));
+        options.push_back(AZ::Edit::EnumConstant<SamplingType>(SamplingType::Bilinear, "Bilinear"));
+
+        return options;
+    }
+
     bool DoesFormatSupportTerrarium(AZ::RHI::Format format)
     {
         // The terrarium type is only supported by 8-bit formats that have
@@ -174,6 +184,7 @@ namespace GradientSignal
                 ->Field("ScaleRangeMin", &ImageGradientConfig::m_scaleRangeMin)
                 ->Field("ScaleRangeMax", &ImageGradientConfig::m_scaleRangeMax)
                 ->Field("MipIndex", &ImageGradientConfig::m_mipIndex)
+                ->Field("SamplingType", &ImageGradientConfig::m_samplingType)
                 ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -215,6 +226,11 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Max, AZ::RHI::Limits::Image::MipCountMax)
+
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_samplingType, "Sampling Type", "Sampling type to use for the image data.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->Attribute(AZ::Edit::Attributes::EnumValues, &SupportedSamplingTypeOptions)
                     ;
             }
         }
@@ -346,6 +362,7 @@ namespace GradientSignal
 
             m_currentChannel = m_configuration.m_channelToUse;
             m_currentScaleType = m_configuration.m_customScaleType;
+            m_currentSamplingType = m_configuration.m_samplingType;
 
             // Make sure the custom mip level doesn't exceed the available mip levels in this
             // image asset. If so, then just use the lowest available mip level.
@@ -364,6 +381,7 @@ namespace GradientSignal
             m_currentChannel = ChannelToUse::Red;
             m_currentScaleType = CustomScaleType::None;
             m_currentMipIndex = 0;
+            m_currentSamplingType = SamplingType::Point;
         }
 
         // Update our cached image data
@@ -431,17 +449,13 @@ namespace GradientSignal
                 // UVs outside the 0-1 range are treated as infinitely tiling, so that we behave the same as the 
                 // other gradient generators.  As mentioned above, if clamping is desired, we expect it to be applied
                 // outside of this function.
-                auto x = aznumeric_cast<AZ::u32>(pixelLookup.GetX()) % width;
-                auto y = aznumeric_cast<AZ::u32>(pixelLookup.GetY()) % height;
+                float pixelX = pixelLookup.GetX();
+                float pixelY = pixelLookup.GetY();
+                auto x = aznumeric_cast<AZ::u32>(pixelX) % width;
+                auto y = aznumeric_cast<AZ::u32>(pixelY) % height;
 
-                // Flip the y because images are stored in reverse of our world axes
-                y = (height - 1) - y;
-
-                // For terrarium, there is a separate algorithm for retrieving the value
-                const float value = (m_currentChannel == ChannelToUse::Terrarium)
-                    ? GetTerrariumPixelValue(x, y)
-                    : AZ::RPI::GetImageDataPixelValue<float>(
-                        m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+                // Retrieve our pixel value based on our sampling type
+                const float value = GetValueForSamplingType(x, y, pixelX, pixelY);
 
                 // Scale (inverse lerp) the value into a 0 - 1 range. We also clamp it because manual scale values could cause
                 // the result to fall outside of the expected output range.
@@ -450,6 +464,21 @@ namespace GradientSignal
         }
 
         return defaultValue;
+    }
+
+    float ImageGradientComponent::GetPixelValue(AZ::u32 x, AZ::u32 y) const
+    {
+        // Flip the y because images are stored in reverse of our world axes
+        const auto& height = m_imageDescriptor.m_size.m_height;
+        y = (height - 1) - y;
+
+        // For terrarium, there is a separate algorithm for retrieving the value
+        float value = (m_currentChannel == ChannelToUse::Terrarium)
+            ? GetTerrariumPixelValue(x, y)
+            : AZ::RPI::GetImageDataPixelValue<float>(
+                m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+
+        return value;
     }
 
     float ImageGradientComponent::GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const
@@ -550,6 +579,87 @@ namespace GradientSignal
         SetupMultiplierAndOffset(m_configuration.m_scaleRangeMin, m_configuration.m_scaleRangeMax);
     }
 
+    float ImageGradientComponent::GetValueForSamplingType(AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const
+    {
+        switch (m_currentSamplingType)
+        {
+        case SamplingType::Point:
+        default:
+            // Retrieve the pixel value for the single point
+            return GetPixelValue(x0, y0);
+
+        case SamplingType::Bilinear:
+            // Bilinear interpolation
+            //
+            //   |
+            //   |
+            //   |  (x0,y1) *             * (x1,y1)
+            //   |
+            //   |                o (x,y)
+            //   |
+            //   |  (x0,y0) *             * (x1,y0)
+            //   |___________________________________
+            //
+            // The bilinear filtering samples from a grid around a desired pixel (x,y)
+            // x0,y0 contains one corner of our grid square, x1,y1 contains the opposite corner, and deltaX/Y is the fractional
+            // amount the position exists between those corners.
+            // Ex: (3.3, 4.4) would have a x0,y0 of (3, 4), a x1,y1 of (4, 5), and a deltaX/Y of (0.3, 0.4).
+            const auto& width = m_imageDescriptor.m_size.m_width;
+            const auto& height = m_imageDescriptor.m_size.m_height;
+            float deltaX = pixelX - floor(pixelX);
+            float deltaY = pixelY - floor(pixelY);
+
+            // Handle the x1,y1 points based on the configured wrapping type
+            AZ::u32 x1;
+            AZ::u32 y1;
+            bool x1IsValid = true;
+            bool y1IsValid = true;
+            switch (m_gradientTransform.GetWrappingType())
+            {
+            case WrappingType::ClampToZero:
+                // For ClampToZero, the value will always be 0 outside of the shape
+                // So go ahead and do the calculation here, but if it ends
+                // up being outside of the shape, then it will be considered
+                // invalid and we will use 0 for the value below
+                x1 = x0 + 1;
+                if (x1 >= width)
+                {
+                    x1IsValid = false;
+                }
+                y1 = y0 + 1;
+                if (y1 >= height)
+                {
+                    y1IsValid = false;
+                }
+                break;
+            case WrappingType::ClampToEdge:
+            case WrappingType::Mirror:
+                // On the mirror edge case we are only ever
+                // looking at x+1 or y+1 just out of the image
+                // bounds, so the edge value will be the
+                // mirrored value
+                x1 = AZStd::min(x0 + 1, width - 1);
+                y1 = AZStd::min(y0 + 1, height - 1);
+                break;
+            case WrappingType::None:
+            case WrappingType::Repeat:
+            default:
+                x1 = (x0 + 1) % width;
+                y1 = (y0 + 1) % width;
+                break;
+            }
+
+            // Retrieve all the points in the grid and then perform the interpolation
+            const float valueX0Y0 = GetPixelValue(x0, y0);
+            const float valueX1Y0 = (x1IsValid) ? GetPixelValue(x1, y0) : 0.0f;
+            const float valueX0Y1 = (y1IsValid) ? GetPixelValue(x0, y1) : 0.0f;
+            const float valueX1Y1 = (x1IsValid && y1IsValid) ? GetPixelValue(x1, y1) : 0.0f;
+            const float valueXY0 = AZ::Lerp(valueX0Y0, valueX1Y0, deltaX);
+            const float valueXY1 = AZ::Lerp(valueX0Y1, valueX1Y1, deltaX);
+            return AZ::Lerp(valueXY0, valueXY1, deltaY);
+        }
+    }
+
     void ImageGradientComponent::Activate()
     {
         // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
@@ -558,7 +668,6 @@ namespace GradientSignal
         SetupDependencies();
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
 
         // Invoke the QueueLoad before connecting to the AssetBus, so that
         // if the asset is already ready, then OnAssetReady will be triggered immediately
@@ -566,18 +675,22 @@ namespace GradientSignal
         m_configuration.m_imageAsset.QueueLoad();
 
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ImageGradientComponent::Deactivate()
     {
-        AZ::Data::AssetBus::Handler::BusDisconnect();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        AZ::Data::AssetBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
 
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.Release();
     }
 
@@ -603,7 +716,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
 
         GetSubImageData();
@@ -611,7 +724,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
 
         GetSubImageData();
@@ -619,7 +732,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
 
         GetSubImageData();
@@ -627,7 +740,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> lock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_gradientTransform = newTransform;
     }
 
@@ -636,21 +749,19 @@ namespace GradientSignal
         AZ::Vector3 uvw = sampleParams.m_position;
         bool wasPointRejected = false;
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         // Return immediately if our cached image data hasn't been retrieved yet
         if (m_imageData.empty())
         {
             return 0.0f;
         }
 
+        m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
+
+        if (!wasPointRejected)
         {
-            AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
-
-            m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
-
-            if (!wasPointRejected)
-            {
-                return GetValueFromImageData(uvw, 0.0f);
-            }
+            return GetValueFromImageData(uvw, 0.0f);
         }
 
         return 0.0f;
@@ -664,6 +775,8 @@ namespace GradientSignal
             return;
         }
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         // Return immediately if our cached image data hasn't been retrieved yet
         if (m_imageData.empty())
         {
@@ -672,8 +785,6 @@ namespace GradientSignal
 
         AZ::Vector3 uvw;
         bool wasPointRejected = false;
-
-        AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
 
         for (size_t index = 0; index < positions.size(); index++)
         {
@@ -719,7 +830,10 @@ namespace GradientSignal
             AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
             {
-                AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+                // Only hold the lock during the actual data changes, to ensure that we aren't mid-query when changing it, but also to
+                // minimize the total lock duration. Also, because we've disconnected from the imageAsset Asset bus prior to locking this,
+                // we won't get any OnAsset* notifications while we're changing out the asset.
+                AZStd::unique_lock lock(m_queryMutex);
 
                 // Clear our cached image data
                 m_imageData = AZStd::span<const uint8_t>();
@@ -748,7 +862,12 @@ namespace GradientSignal
 
     void ImageGradientComponent::SetTilingX(float tilingX)
     {
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_tiling.SetX(tilingX);
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -759,7 +878,12 @@ namespace GradientSignal
 
     void ImageGradientComponent::SetTilingY(float tilingY)
     {
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_tiling.SetY(tilingY);
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }

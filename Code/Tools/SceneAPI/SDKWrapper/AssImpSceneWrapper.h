@@ -45,7 +45,7 @@ namespace AZ
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
         protected:
             const aiScene* m_assImpScene = nullptr;
-            Assimp::Importer m_importer;
+            AZStd::unique_ptr<Assimp::Importer> m_importer;
 
             // FBX SDK automatically resolved relative paths to textures based on the current file location.
             // AssImp does not, so it needs to be specifically handled.

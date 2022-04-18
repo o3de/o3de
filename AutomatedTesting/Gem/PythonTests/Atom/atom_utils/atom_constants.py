@@ -80,6 +80,12 @@ DISPLAY_MAPPER_PRESET = {
     '4000Nits': 3,
 }
 
+# Control Type options for the Exposure Control component.
+EXPOSURE_CONTROL_TYPE = {
+    'manual': 0,
+    'eye_adaptation': 1
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -388,12 +394,44 @@ class AtomComponentProperties:
         Exposure Control component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable' Toggle active state of Exposure Control (bool).
+          - 'Enabled Override' Toggle active state of Exposure Control Overrides (bool).
+          - 'ExposureControlType Override' Toggle enable for Exposure Control Type (bool).
+          - 'ManualCompensation Override' Override Factor for Manual Compensation (0.0, 1.0).
+          - 'EyeAdaptationExposureMin Override' Override Factor for Minimum Exposure (0.0, 1.0).
+          - 'EyeAdaptationExposureMax Override' Override Factor for Maximum Exposure (0.0, 1.0).
+          - 'EyeAdaptationSpeedUp Override' Override Factor for Speed Up (0.0, 1.0).
+          - 'EyeAdaptationSpeedDown Override' Override Factor for Speed Down (0.0, 1.0).
+          - 'HeatmapEnabled Override' Toggle enable for Enable Heatmap (bool).
+          - 'Control Type' specifies manual or Eye Adaptation control from atom_constants.py CONTROL_TYPE.
+          - 'Manual Compensation' Manual exposure compensation value (-16.0, 16.0).
+          - 'Minimum Exposure' Exposure compensation for Eye Adaptation minimum exposure (-16.0, 16.0).
+          - 'Maximum Exposure' Exposure compensation for Eye Adaptation maximum exposure (-16.0, 16.0).
+          - 'Speed Up' Speed for Auto Exposure to adapt to bright scenes (0.01, 10.0).
+          - 'Speed Down' Speed for Auto Exposure to adapt to dark scenes (0.01, 10.0).
+          - 'Enable Heatmap' Toggle enable for Heatmap (bool).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Exposure Control',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable': 'Controller|Configuration|Enable',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'ExposureControlType Override': 'Controller|Configuration|Overrides|ExposureControlType Override',
+            'ManualCompensation Override': 'Controller|Configuration|Overrides|ManualCompensation Override',
+            'EyeAdaptationExposureMin Override': 'Controller|Configuration|Overrides|EyeAdaptationExposureMin Override',
+            'EyeAdaptationExposureMax Override': 'Controller|Configuration|Overrides|EyeAdaptationExposureMax Override',
+            'EyeAdaptationSpeedUp Override': 'Controller|Configuration|Overrides|EyeAdaptationSpeedUp Override',
+            'EyeAdaptationSpeedDown Override': 'Controller|Configuration|Overrides|EyeAdaptationSpeedDown Override',
+            'HeatmapEnabled Override': 'Controller|Configuration|Overrides|HeatmapEnabled Override',
+            'Control Type': 'Controller|Configuration|Control Type',
+            'Manual Compensation': 'Controller|Configuration|Manual Compensation',
+            'Minimum Exposure': 'Controller|Configuration|Eye Adaptation|Minimum Exposure',
+            'Maximum Exposure': 'Controller|Configuration|Eye Adaptation|Maximum Exposure',
+            'Speed Up': 'Controller|Configuration|Eye Adaptation|Speed Up',
+            'Speed Down': 'Controller|Configuration|Eye Adaptation|Speed Down',
+            'Enable Heatmap': 'Controller|Configuration|Eye Adaptation|Enable Heatmap',
         }
         return properties[property]
 

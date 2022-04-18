@@ -51,112 +51,113 @@ function(ly_is_newer_than file1 file2 is_newer)
 
 endfunction()
 
-function(ly_copy source_file target_directory)
-    
-    cmake_path(GET source_file FILENAME target_filename)
-    
-    # If target_directory is a bundle
-    if("${target_directory}" MATCHES "\\.app/Contents/MacOS")
-
-        set(target_is_bundle TRUE)
-        if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
-
-            if(NOT @LY_BUILD_FIXUP_BUNDLE@)
-                return()
-            endif()
-
-            # fixup origin to copy the whole Framework folder and change destination to Contents/Frameworks
-            string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
-            get_filename_component(source_file_folder "${source_file}" DIRECTORY)
-
-            # Python.framework produces a bug in BundleUtilities so it needs manual handling
-            # https://gitlab.kitware.com/cmake/cmake/-/issues/20165
-            if("${source_file}" MATCHES "Python.framework")
-                # fixup the destination so it ends up in Contents/Frameworks
-                string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/Frameworks" target_directory "${target_directory}")
-                set(local_plugin_dirs ${plugin_dirs})
-                list(APPEND local_plugin_dirs "${target_directory}/Python.framework")
-                set(target_filename Python.framework)
-                set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
-                set(depends_on_python TRUE PARENT_SCOPE)
-            else()
-                set(local_plugin_dirs ${plugin_dirs})
-                list(APPEND local_plugin_dirs "${source_file_folder}")
-                set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
-                return()
-            endif()
-
-        elseif("${source_file}" MATCHES "qt/plugins")
-
-            if(NOT @LY_BUILD_FIXUP_BUNDLE@)
-                return()
-            endif()
-
-            # fixup the destination so it ends up in Contents/PlugIns
-            string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/PlugIns" target_directory "${target_directory}")
-
-            set(local_plugin_dirs ${plugin_dirs})
-            list(APPEND local_plugin_dirs "${target_directory}")
-            set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
-            set(local_plugin_libs ${plugin_libs})
-            list(APPEND local_plugin_libs "${target_directory}/${target_filename}")
-            set(plugin_libs ${local_plugin_libs} PARENT_SCOPE)
-
-        elseif("${source_file}" MATCHES "qt/translations")
-
-            return() # skip, is this used?
+function(ly_copy source_files target_directory)
+    foreach(source_file IN LISTS source_files)
+        cmake_path(GET source_file FILENAME target_filename)
         
-        elseif("${source_file}" MATCHES ".dylib")
+        # If target_directory is a bundle
+        if("${target_directory}" MATCHES "\\.app/Contents/MacOS")
+
+            set(target_is_bundle TRUE)
+            if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
+
+                if(NOT @LY_BUILD_FIXUP_BUNDLE@)
+                    return()
+                endif()
+
+                # fixup origin to copy the whole Framework folder and change destination to Contents/Frameworks
+                string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
+                get_filename_component(source_file_folder "${source_file}" DIRECTORY)
+
+                # Python.framework produces a bug in BundleUtilities so it needs manual handling
+                # https://gitlab.kitware.com/cmake/cmake/-/issues/20165
+                if("${source_file}" MATCHES "Python.framework")
+                    # fixup the destination so it ends up in Contents/Frameworks
+                    string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/Frameworks" target_directory "${target_directory}")
+                    set(local_plugin_dirs ${plugin_dirs})
+                    list(APPEND local_plugin_dirs "${target_directory}/Python.framework")
+                    set(target_filename Python.framework)
+                    set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+                    set(depends_on_python TRUE PARENT_SCOPE)
+                else()
+                    set(local_plugin_dirs ${plugin_dirs})
+                    list(APPEND local_plugin_dirs "${source_file_folder}")
+                    set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+                    return()
+                endif()
+
+            elseif("${source_file}" MATCHES "qt/plugins")
+
+                if(NOT @LY_BUILD_FIXUP_BUNDLE@)
+                    return()
+                endif()
+
+                # fixup the destination so it ends up in Contents/PlugIns
+                string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/PlugIns" target_directory "${target_directory}")
+
+                set(local_plugin_dirs ${plugin_dirs})
+                list(APPEND local_plugin_dirs "${target_directory}")
+                set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+                set(local_plugin_libs ${plugin_libs})
+                list(APPEND local_plugin_libs "${target_directory}/${target_filename}")
+                set(plugin_libs ${local_plugin_libs} PARENT_SCOPE)
+
+            elseif("${source_file}" MATCHES "qt/translations")
+
+                return() # skip, is this used?
             
-            set(local_plugin_dirs ${plugin_dirs})
-            list(APPEND local_plugin_dirs "${target_directory}")
-            set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+            elseif("${source_file}" MATCHES ".dylib")
+                
+                set(local_plugin_dirs ${plugin_dirs})
+                list(APPEND local_plugin_dirs "${target_directory}")
+                set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
 
-        endif()
-    
-    else()
-        
-        # target is not a bundle
-        set(target_is_bundle FALSE)
-        if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
-
-            # fixup origin to copy the whole Framework folder
-            string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
-            get_filename_component(target_filename "${source_file}" NAME)
-
-            if("${source_file}" MATCHES "Python.framework")
-                set(depends_on_python TRUE PARENT_SCOPE)
             endif()
         
+        else()
+            
+            # target is not a bundle
+            set(target_is_bundle FALSE)
+            if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
+
+                # fixup origin to copy the whole Framework folder
+                string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
+                get_filename_component(target_filename "${source_file}" NAME)
+
+                if("${source_file}" MATCHES "Python.framework")
+                    set(depends_on_python TRUE PARENT_SCOPE)
+                endif()
+            
+            endif()
+
         endif()
 
-    endif()
+        cmake_path(APPEND target_file "${target_directory}" "${target_filename}")
+        cmake_path(COMPARE "${source_file}" EQUAL "${target_file}" same_location)
+        if(NOT ${same_location})
+            if(NOT EXISTS "${target_directory}")
+                file(MAKE_DIRECTORY "${target_directory}")
+            endif()
 
-    cmake_path(APPEND target_file "${target_directory}" "${target_filename}")
-    cmake_path(COMPARE "${source_file}" EQUAL "${target_file}" same_location)
-    if(NOT ${same_location})
-        if(NOT EXISTS "${target_directory}")
-            file(MAKE_DIRECTORY "${target_directory}")
+            unset(is_source_newer)
+
+            # ly_is_newer_than will be true if:
+            # 1. The source library was rebuilt.
+            # 2. The library is a 3rdParty lib and it was downloaded after the target was copied.
+            # 3. The library is being copied over for the first time(target does not exist).
+            # While downloaded 3rdParty libs will have the creation time set to when it was built,
+            # their modification time will reflect the time it was downloaded.
+            ly_is_newer_than(${source_file} ${target_file} is_source_newer)
+            
+            if(${is_source_newer})
+                message(STATUS "Copying \"${source_file}\" to \"${target_directory}\"...")
+                file(MAKE_DIRECTORY "${target_directory}")
+                file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
+                file(TOUCH_NOCREATE "${target_file}")
+                set(anything_new TRUE PARENT_SCOPE)
+            endif()
         endif()
-
-        unset(is_source_newer)
-
-        # ly_is_newer_than will be true if:
-        # 1. The source library was rebuilt.
-        # 2. The library is a 3rdParty lib and it was downloaded after the target was copied.
-        # 3. The library is being copied over for the first time(target does not exist).
-        # While downloaded 3rdParty libs will have the creation time set to when it was built,
-        # their modification time will reflect the time it was downloaded.
-        ly_is_newer_than(${source_file} ${target_file} is_source_newer)
-        
-        if(${is_source_newer})
-            message(STATUS "Copying \"${source_file}\" to \"${target_directory}\"...")
-            file(MAKE_DIRECTORY "${target_directory}")
-            file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
-            file(TOUCH_NOCREATE "${target_file}")
-            set(anything_new TRUE PARENT_SCOPE)
-        endif()
-    endif()
+    endforeach()
 endfunction()
 
 @LY_COPY_COMMANDS@

@@ -13,7 +13,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 
-static constexpr char GraphicsDevModeSetting[] = "/Atom/GraphicsDevMode";
+static constexpr char GraphicsDevModeSetting[] = "/O3DE/Atom/RHI/GraphicsDevMode";
 
 namespace AZ
 {
@@ -105,7 +105,7 @@ namespace AZ
             return originalFormat;
         }
         
-        bool IsNullRenderer()
+        bool IsNullRHI()
         {
             return RHI::Factory::Get().GetAPIUniqueIndex() == static_cast<uint32_t>(APIIndex::Null);
         }

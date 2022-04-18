@@ -172,10 +172,10 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
     :param object_name: name of the object being downloaded
     :param download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
+    file_exists = False
     if download_path.is_file():
         if not force_overwrite:
-            logger.error(f'File already downloaded to {download_path} and force_overwrite is not set.')
-            return 1
+            file_exists = True
         else:
             try:
                 os.unlink(download_path)
@@ -185,12 +185,31 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         try:
-            with urllib.request.urlopen(parsed_uri.geturl()) as s:
+            current_request = urllib.request.Request(parsed_uri.geturl())
+            resume_position = 0
+            if not force_overwrite:
+                if file_exists:
+                    resume_position = os.path.getsize(download_path)
+                    current_request.add_header("If-Range", "bytes=%d-" % resume_position)
+            with urllib.request.urlopen(current_request) as s:
                 download_file_size = 0
                 try:
                     download_file_size = s.headers['content-length']
                 except KeyError:
                     pass
+
+                # if the server does not return a content length we also have to assume we would be replacing a complete file
+                if file_exists and (resume_position == int(download_file_size) or int(download_file_size) == 0) and not force_overwrite:
+                    logger.error(f'File already downloaded to {download_path} and force_overwrite is not set.')
+                    return 1
+
+                if s.getcode() == 206: # partial content
+                    file_mode = 'ab'
+                elif s.getcode() == 200:
+                    file_mode = 'wb'
+                else:
+                    logger.error(f'HTTP status {e.code} opening {parsed_uri.geturl()}')
+                    return 1
 
                 def print_progress(downloaded, total_size):
                     end_ch = '\r'
@@ -209,7 +228,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                         return download_progress_callback(int(downloaded_bytes), int(download_file_size))
                     return False
 
-                with download_path.open('wb') as f:
+                with download_path.open(file_mode) as f:
                     download_cancelled = copyfileobj(s, f, download_progress)
                     if download_cancelled:
                         logger.info(f'Download of file to {download_path} cancelled.')

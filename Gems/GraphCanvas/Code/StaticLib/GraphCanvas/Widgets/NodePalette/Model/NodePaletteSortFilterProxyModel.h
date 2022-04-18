@@ -62,6 +62,7 @@ namespace GraphCanvas
         NodePaletteSortFilterProxyModel(QObject* parent);
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
+        bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override;
 
         void PopulateUnfilteredModel();
 
@@ -78,7 +79,7 @@ namespace GraphCanvas
         void OnModelElementAboutToBeRemoved(const GraphCanvasTreeItem* treeItem);
 
     private:
-
+        int CalculateSortingScore(const QModelIndex& source) const;
         void ProcessItemForUnfilteredModel(const GraphCanvasTreeItem* currentItem, bool signalAdd = false);
 
         QCompleter m_unfilteredCompleter;

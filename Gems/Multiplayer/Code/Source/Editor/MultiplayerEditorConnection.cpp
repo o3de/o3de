@@ -22,6 +22,7 @@
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
 
 namespace Multiplayer
 {
@@ -62,7 +63,7 @@ namespace Multiplayer
             }
         }
     }
-    
+
     void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
     {
         if (m_isActivated || !editorsv_isDedicated)
@@ -73,22 +74,7 @@ namespace Multiplayer
         
         AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.")
 
-        // Check if there's already an Editor out there waiting to connect
-        const ConnectionId editorServerToEditorConnectionId =
-            m_networkEditorInterface->Connect(IpAddress(LocalHost.data(), editorsv_port, ProtocolType::Tcp));
-
-        // If there wasn't an Editor waiting for this server to start, then assume this is an editor-server launched by hand... listen
-        // and wait for the editor to request a connection
-        if (editorServerToEditorConnectionId == InvalidConnectionId)
-        {
-            m_networkEditorInterface->Listen(editorsv_port);
-            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation did not find an editor in game-mode willing to connect; we'll instead wait and listen for an editor trying to connect to us.")
-        }
-        else
-        {
-            m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForLevelData());
-            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation has found and connected to the editor.\n")
-        }
+        m_networkEditorInterface->Listen(editorsv_port);
     }
 
     bool MultiplayerEditorConnection::HandleRequest
@@ -214,10 +200,14 @@ namespace Multiplayer
         if (AZ::Interface<IMultiplayer>::Get()->Connect(editorsv_serveraddr.c_str(), sv_port))
         {
             AZ_Printf("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.")
+            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->StopViewportDebugMessaging();
         }
         else
-        {
-            AZ_Warning("MultiplayerEditorConnection", false, "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Connecting to the editor-server's network simulation failed.")
+        {   
+            char connection_fail_message[256];
+            azsnprintf(connection_fail_message, 256, "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?", sv_port);
+            AZLOG_WARN("%s", connection_fail_message)
+            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(connection_fail_message);
         }
         return true;
     }
