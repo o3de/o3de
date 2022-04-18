@@ -40,9 +40,8 @@ namespace O3DE::ProjectManager
     {
         auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"});
         bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
-        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
-        QString gameLauncherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
-        QString serverLauncherTargetName = m_projectInfo.m_projectName + ".ServerLauncher";
+        const QString gameLauncherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
+        const QString serverLauncherTargetName = m_projectInfo.m_projectName + ".ServerLauncher";
 
         QStringList buildProjectArgs = QStringList{ProjectCMakeCommand,
                                                    "--build", ProjectBuildPathPostfix,
