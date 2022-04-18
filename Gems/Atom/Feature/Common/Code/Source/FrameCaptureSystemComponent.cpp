@@ -341,7 +341,7 @@ namespace AZ
 
         bool FrameCaptureSystemComponent::CanCapture() const
         {
-            return !AZ::RHI::IsNullRenderer();
+            return !AZ::RHI::IsNullRHI();
         }
 
         bool FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)

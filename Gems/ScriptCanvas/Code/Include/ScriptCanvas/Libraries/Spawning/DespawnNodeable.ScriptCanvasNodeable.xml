@@ -17,7 +17,7 @@
     </Input>
 
     <Output Name="On Despawn" Description="Called when despawning entities has completed.">
-        <Parameter Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance of the despawn result."/>
+        <Parameter Name="SpawnTicketOut" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance of the despawn result."/>
     </Output>/>
   </Class>
 </ScriptCanvas>

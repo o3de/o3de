@@ -327,15 +327,19 @@ namespace AZStd
             return *this;
         }
 
-        AZ_FORCE_INLINE iterator        begin()         { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset, this)); }
-        AZ_FORCE_INLINE const_iterator  begin() const   { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset, this)); }
-        AZ_FORCE_INLINE iterator        end()           { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset + m_size, this)); }
-        AZ_FORCE_INLINE const_iterator  end() const     { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + m_size, this)); }
+        AZ_FORCE_INLINE iterator        begin() noexcept         { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset, this)); }
+        AZ_FORCE_INLINE const_iterator  begin() const noexcept   { return cbegin(); }
+        AZ_FORCE_INLINE const_iterator  cbegin() const noexcept  { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset, this)); }
+        AZ_FORCE_INLINE iterator        end() noexcept           { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset + m_size, this)); }
+        AZ_FORCE_INLINE const_iterator  end() const noexcept     { return cend(); }
+        AZ_FORCE_INLINE const_iterator  cend() const noexcept    { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + m_size, this)); }
 
-        AZ_FORCE_INLINE reverse_iterator        rbegin()        { return reverse_iterator(iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset + m_size, this))); }
-        AZ_FORCE_INLINE const_reverse_iterator  rbegin() const  { return const_reverse_iterator(const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + m_size, this))); }
-        AZ_FORCE_INLINE reverse_iterator        rend()          { return reverse_iterator(iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset, this))); }
-        AZ_FORCE_INLINE const_reverse_iterator  rend() const    { return const_reverse_iterator(const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset, this))); }
+        AZ_FORCE_INLINE reverse_iterator        rbegin() noexcept        { return reverse_iterator(iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset + m_size, this))); }
+        AZ_FORCE_INLINE const_reverse_iterator  rbegin() const noexcept  { return crbegin(); }
+        AZ_FORCE_INLINE const_reverse_iterator  crbegin() const noexcept { return const_reverse_iterator(const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + m_size, this))); }
+        AZ_FORCE_INLINE reverse_iterator        rend() noexcept          { return reverse_iterator(iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset, this))); }
+        AZ_FORCE_INLINE const_reverse_iterator  rend() const noexcept    { return crend(); }
+        AZ_FORCE_INLINE const_reverse_iterator  crend() const noexcept   { return const_reverse_iterator(const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset, this))); }
 
         AZ_FORCE_INLINE void resize(size_type newSize)              { resize(newSize, value_type()); }
         AZ_FORCE_INLINE void resize(size_type newSize, const value_type& value)

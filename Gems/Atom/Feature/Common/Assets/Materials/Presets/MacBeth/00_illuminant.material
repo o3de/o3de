@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "",
     "materialType": "../../Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "metallic": {
             "useTexture": false

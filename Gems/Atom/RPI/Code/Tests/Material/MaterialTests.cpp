@@ -869,7 +869,12 @@ namespace UnitTest
         AddCommonTestMaterialProperties(materialTypeCreator);
         materialTypeCreator.SetVersion(2);
         MaterialVersionUpdate versionUpdate(2);
-        versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "OldName" },Name{ "MyInt" }}));
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(Name("rename"),
+                {
+                    { Name{ "from" }, AZStd::string("OldName") },
+                    { Name{ "to"   }, AZStd::string("MyInt")   }
+                } ));
+
         materialTypeCreator.AddVersionUpdate(versionUpdate);
         materialTypeCreator.End(m_testMaterialTypeAsset);
 

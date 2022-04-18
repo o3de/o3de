@@ -139,23 +139,23 @@ namespace Blast
 
     void BlastFamilyComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("BlastFamilyService"));
+        provided.push_back(AZ_CRC_CE("BlastFamilyService"));
     }
 
     void BlastFamilyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("BlastFamilyService"));
+        incompatible.push_back(AZ_CRC_CE("BlastFamilyService"));
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void BlastFamilyComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void BlastFamilyComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("BlastMeshDataService"));
+        dependent.push_back(AZ_CRC_CE("BlastMeshDataService"));
     }
 
     AZStd::vector<const BlastActor*> BlastFamilyComponent::GetActors()
@@ -167,14 +167,11 @@ namespace Blast
 
     AZStd::vector<BlastActorData> BlastFamilyComponent::GetActorsData()
     {
-        if (!m_family)
-        {
-            AZ_Warning("Blast", false, "The family is not active.");
-            return {};
-        }
+        const AZStd::unordered_set<BlastActor*>& familyActors = m_family->GetActorTracker().GetActors();
 
         AZStd::vector<BlastActorData> actors;
-        for (auto actor : m_family->GetActorTracker().GetActors())
+        actors.reserve(familyActors.size());
+        for (const auto* actor : familyActors)
         {
             actors.emplace_back(*actor);
         }
@@ -191,27 +188,18 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        AZ_Assert(m_blastAsset.GetId().IsValid(), "BlastFamilyComponent created with invalid blast asset.");
+        if (!m_blastAsset.GetId().IsValid())
+        {
+            AZ_Warning("BlastFamilyComponent", false, "Blast Family Component created with invalid blast asset.");
+            return;
+        }
 
         Spawn();
-
-        BlastFamilyDamageRequestBus::MultiHandler::BusConnect(GetEntityId());
-        BlastFamilyComponentRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void BlastFamilyComponent::Deactivate()
     {
         AZ_PROFILE_FUNCTION(Physics);
-
-        // cleanup collision handlers
-        for (auto& itr : m_collisionHandlers)
-        {
-            itr.second.Disconnect();
-        }
-        m_collisionHandlers.clear();
-
-        BlastFamilyDamageRequestBus::MultiHandler::BusDisconnect();
-        BlastFamilyComponentRequestBus::Handler::BusDisconnect();
 
         Despawn();
     }
@@ -220,10 +208,20 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
+        if (m_isSpawned)
+        {
+            return;
+        }
+
         if (!m_blastAsset.IsReady())
         {
-            m_shouldSpawnOnAssetLoad = true;
-            return;
+            m_blastAsset.QueueLoad();
+            m_blastAsset.BlockUntilLoadComplete();
+            if (!m_blastAsset.IsReady())
+            {
+                AZ_Error("BlastFamilyComponent", false, "Failed to load blast asset %s.", m_blastAsset.GetHint().c_str());
+                return;
+            }
         }
 
         auto blastSystem = AZ::Interface<BlastSystemRequests>::Get();
@@ -241,17 +239,15 @@ namespace Blast
         }
         auto blastMaterial = BlastMaterial(blastMaterialConfiguration.m_configuration);
 
-        AZStd::shared_ptr<EntityProvider> entityProvider = EntityProvider::Create();
-
         // Create family
         const BlastFamilyDesc familyDesc
             {*m_blastAsset.Get(),
              this,
-             blastSystem->GetTkGroup(),
+             blastSystem->CreateTkGroup(), // Blast system takes care of destroying this group when it's empty.
              m_physicsMaterialId,
              blastMaterial,
              AZStd::make_shared<BlastActorFactoryImpl>(),
-             entityProvider,
+             EntityProvider::Create(),
              m_actorConfiguration};
 
         m_family = BlastFamily::Create(familyDesc);
@@ -294,6 +290,9 @@ namespace Blast
         // Spawn the family
         m_family->Spawn(transform);
 
+        BlastFamilyDamageRequestBus::MultiHandler::BusConnect(GetEntityId());
+        BlastFamilyComponentRequestBus::Handler::BusConnect(GetEntityId());
+
         m_isSpawned = true;
     }
 
@@ -301,12 +300,28 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        m_isSpawned = false;
+        if (!m_isSpawned)
+        {
+            return;
+        }
 
-        m_family = nullptr;
-        m_actorRenderManager = nullptr;
-        m_damageManager = nullptr;
-        m_solver = nullptr;
+        // Despawn family before reseting members so all the events are properly called
+        // and all data is available to be cleaned up accordingly
+        m_family->Despawn();
+
+        // collision handlers should have been cleaned up when the family was despawned
+        AZ_Assert(m_collisionHandlers.empty(), "%d collision handlers were missing to be deactivated when its blast actors were destroyed", m_collisionHandlers.size());
+
+        // Disconnect from buses before destroying everything
+        BlastFamilyDamageRequestBus::MultiHandler::BusDisconnect();
+        BlastFamilyComponentRequestBus::Handler::BusDisconnect();
+
+        m_actorRenderManager.reset();
+        m_damageManager.reset();
+        m_solver.reset();
+        m_family.reset();
+
+        m_isSpawned = false;
     }
 
     AZ::EntityId BlastFamilyComponent::GetFamilyId()
@@ -436,10 +451,7 @@ namespace Blast
     void BlastFamilyComponent::FillDebugRenderBuffer(
         DebugRenderBuffer& debugRenderBuffer, DebugRenderMode debugRenderMode)
     {
-        if (m_family)
-        {
-            m_family->FillDebugRender(debugRenderBuffer, debugRenderMode, 1.0);
-        }
+        m_family->FillDebugRender(debugRenderBuffer, debugRenderMode, 1.0f);
 
         if (!(DebugRenderStressGraph <= debugRenderMode && debugRenderMode <= DebugRenderStressGraphBondsImpulses))
         {
@@ -448,7 +460,7 @@ namespace Blast
 
         for (const BlastActor* blastActor : m_family->GetActorTracker().GetActors())
         {
-            Nv::Blast::TkActor& actor = blastActor->GetTkActor();
+            const Nv::Blast::TkActor& actor = blastActor->GetTkActor();
             auto lineStartIndex = aznumeric_cast<uint32_t>(debugRenderBuffer.m_lines.size());
 
             uint32_t nodeCount = actor.getGraphNodeCount();
@@ -497,44 +509,41 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        if (m_solver)
+        for (auto actor : m_family->GetActorTracker().GetActors())
         {
-            for (auto actor : m_family->GetActorTracker().GetActors())
+            auto worldBody = actor->GetSimulatedBody();
+            if (actor->IsStatic())
             {
-                auto worldBody = actor->GetSimulatedBody();
-                if (actor->IsStatic())
+                AZ::Vector3 gravity = AzPhysics::DefaultGravity;
+                if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
                 {
-                    AZ::Vector3 gravity = AzPhysics::DefaultGravity;
-                    if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-                    {
-                        gravity = sceneInterface->GetGravity(worldBody->m_sceneOwner);
-                    }
-                    auto localGravity =
-                        worldBody->GetTransform().GetRotation().GetInverseFull().TransformVector(gravity);
-                    m_solver->addGravityForce(*actor->GetTkActor().getActorLL(), Convert(localGravity));
+                    gravity = sceneInterface->GetGravity(worldBody->m_sceneOwner);
                 }
-                else
-                {
-                    auto* rigidBody = static_cast<AzPhysics::RigidBody*>(worldBody);
-                    auto localCenterMass = rigidBody->GetCenterOfMassLocal();
-                    auto localAngularVelocity =
-                        worldBody->GetTransform().GetRotation().GetInverseFull().TransformVector(
-                            rigidBody->GetAngularVelocity());
-                    m_solver->addAngularVelocity(
-                        *actor->GetTkActor().getActorLL(), Convert(localCenterMass), Convert(localAngularVelocity));
-                }
+                auto localGravity =
+                    worldBody->GetTransform().GetRotation().GetInverseFull().TransformVector(gravity);
+                m_solver->addGravityForce(*actor->GetTkActor().getActorLL(), Convert(localGravity));
             }
-
-            m_solver->update();
-
-            if (m_solver->getOverstressedBondCount() > 0)
+            else
             {
-                NvBlastFractureBuffers commands;
-                m_solver->generateFractureCommands(commands);
-                if (commands.bondFractureCount > 0)
-                {
-                    m_family->GetTkFamily()->applyFracture(&commands);
-                }
+                auto* rigidBody = static_cast<AzPhysics::RigidBody*>(worldBody);
+                auto localCenterMass = rigidBody->GetCenterOfMassLocal();
+                auto localAngularVelocity =
+                    worldBody->GetTransform().GetRotation().GetInverseFull().TransformVector(
+                        rigidBody->GetAngularVelocity());
+                m_solver->addAngularVelocity(
+                    *actor->GetTkActor().getActorLL(), Convert(localCenterMass), Convert(localAngularVelocity));
+            }
+        }
+
+        m_solver->update();
+
+        if (m_solver->getOverstressedBondCount() > 0)
+        {
+            NvBlastFractureBuffers commands;
+            m_solver->generateFractureCommands(commands);
+            if (commands.bondFractureCount > 0)
+            {
+                m_family->GetTkFamily()->applyFracture(&commands);
             }
         }
     }
