@@ -546,7 +546,7 @@ namespace UnitTest
         ::testing::ValuesIn(CylinderShapeDistanceFromPointTest::ShouldPass)
     );
 
-    TEST_F(CylinderShapeDistanceFromPointTest, ShapeHasThreadsafeGetSetCalls)
+    TEST_F(CylinderShapeTest, ShapeHasThreadsafeGetSetCalls)
     {
         // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
         // correct, consistent results.
