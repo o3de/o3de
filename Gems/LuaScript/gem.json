@@ -1,0 +1,20 @@
+{
+    "gem_name": "LuaScript",
+    "GemFormatVersion": 3,
+    "Uuid": "3bc47fc36e154d61812bda806c8b3a25",
+    "Name": "LuaScript",
+    "DisplayName": "LuaScript",
+    "Version": "0.1.0",
+    "Summary": "This is lua script preview.",
+    "Tags": ["Lua", "Script", "Preview"],
+    "Modules": [
+      {
+        "Type": "GameModule"
+      },
+	  {
+        "Name": "Editor",
+        "Type": "EditorModule",
+        "Extends": "GameModule"
+      }
+    ]
+}

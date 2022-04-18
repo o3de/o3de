@@ -84,9 +84,11 @@
         "Gems/Vegetation",
         "Gems/VideoPlaybackFramework",
         "Gems/VirtualGamepad",
-        "Gems/WhiteBox"
+        "Gems/WhiteBox",
+        "Gems/LuaScript"
     ],
     "projects": [
+        "UCDDemo",
         "AutomatedTesting"
     ],
     "templates": [

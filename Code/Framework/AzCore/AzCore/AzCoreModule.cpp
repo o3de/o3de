@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
+#include <AzCore/Script/ScriptAdapterComponent.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
@@ -42,7 +43,7 @@ namespace AZ
             LoggerSystemComponent::CreateDescriptor(),
             EventSchedulerSystemComponent::CreateDescriptor(),
             TaskGraphSystemComponent::CreateDescriptor(),
-
+            ScriptAdapterComponent::CreateDescriptor(),
 #if !defined(_RELEASE)
             Statistics::StatisticalProfilerProxySystemComponent::CreateDescriptor(),
 #endif

@@ -46,6 +46,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Script/ScriptAdapterBus.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
@@ -1766,7 +1767,7 @@ bool CCryEditApp::InitInstance()
             GetIEditor()->GetToolBoxManager()->ExecuteMacro(startUpMacroIndex, true);
         }
     }
-
+       
     if (GetIEditor()->GetCommandManager()->IsRegistered("editor.open_lnm_editor"))
     {
         CCommand0::SUIInfo uiInfo;
@@ -2052,6 +2053,8 @@ int CCryEditApp::ExitInstance(int exitCode)
             }
         }
     }
+
+    AZ::AdapterBus::Broadcast(&AZ::AdapterBus::Events::DeleteLuaFile);
 
     if (GetIEditor() && !GetIEditor()->IsInMatEditMode())
     {
@@ -3925,8 +3928,13 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         {
             return -1;
         }
+        AZ::AdapterBus::Broadcast(&AZ::AdapterBus::Events::SaveLuaFile);
+        AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyQtApplicationAvailable, &app);
 
-        AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyQtApplicationAvailable, app);
+    #if defined(AZ_PLATFORM_MAC)
+        // Native menu bars do not work on macOS due to all the tool dialogs
+        QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
+    #endif
 
         int exitCode = 0;
 

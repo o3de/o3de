@@ -466,6 +466,9 @@ set(FILES
     Script/ScriptSystemBus.h
     Script/ScriptSystemComponent.cpp
     Script/ScriptSystemComponent.h
+	Script/ScriptAdapterBus.h
+    Script/ScriptAdapterComponent.cpp
+    Script/ScriptAdapterComponent.h
     Script/ScriptTimePoint.cpp
     Script/ScriptTimePoint.h
     Script/ScriptProperty.h
