@@ -852,6 +852,11 @@ namespace
 
 QString FormatVersion([[maybe_unused]] const SFileVersion& v)
 {
+    if (QObject::tr("%1").arg(LY_VERSION_BUILD_NUMBER) == "0")
+    {
+        return QObject::tr("Development Build");
+    }
+
     return QObject::tr("Version %1").arg(LY_VERSION_BUILD_NUMBER);
 }
 
@@ -3669,7 +3674,7 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
     {
         if (sTitleStr.isEmpty())
         {
-            sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
+            sTitleStr = QObject::tr("O3DE Editor [%1]").arg(FormatVersion(m_pEditor->GetFileVersion()));
         }
 
         if (!sPreTitleStr.isEmpty())
