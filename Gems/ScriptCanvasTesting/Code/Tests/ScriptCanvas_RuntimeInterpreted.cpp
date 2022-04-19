@@ -676,6 +676,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResultsByValue)
     RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResultsByValue", ExecutionMode::Interpreted);
 }
 
+TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnSameTypeResults)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnSameTypeResults", ExecutionMode::Interpreted);
+}
+
 TEST_F(ScriptCanvasTestFixture, InterpretedMultipleStartNodes)
 {
     RunUnitTestGraph("LY_SC_UnitTest_MultipleStartNodes");
