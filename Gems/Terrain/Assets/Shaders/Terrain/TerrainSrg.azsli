@@ -12,6 +12,7 @@
 
 static const uint MacroClipmapStackSizeMax = 16u;
 static const uint DetailClipmapStackSizeMax = 16u;
+static const uint StackSizeMax = 16u; // = max(MacroClipmapStackSizeMax, DetailClipmapStackSizeMax)
 
 ShaderResourceGroupSemantic SRG_Terrain
 {
@@ -118,8 +119,8 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         // A list of reciprocal the clipmap scale [s],
         // where 1 pixel in the current layer of clipmap represents s meters. 
         // Fast lookup list to avoid redundant calculation in shaders.
-        float4 m_macroClipmapScaleInv[MacroClipmapStackSizeMax];
-        float4 m_detailClipmapScaleInv[DetailClipmapStackSizeMax];
+        // x: macro; y: detail
+        float4 m_clipmapScaleInv[StackSizeMax];
     };
 
     // Clipmap SRG

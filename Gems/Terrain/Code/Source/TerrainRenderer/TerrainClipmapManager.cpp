@@ -161,14 +161,14 @@ namespace Terrain
         for (int32_t clipmapIndex = m_macroClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             AZ::Vector4(0.5f).StoreToFloat4(m_clipmapData.m_macroClipmapCenters[clipmapIndex].data());
-            AZ::Vector4(clipmapScaleInv).StoreToFloat4(m_clipmapData.m_macroClipmapScaleInv[clipmapIndex].data());
+            m_clipmapData.m_clipmapScaleInv[clipmapIndex][0] = clipmapScaleInv;
             clipmapScaleInv /= m_config.m_macroClipmapScaleBase;
         }
         clipmapScaleInv = 1.0f;
         for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             AZ::Vector4(0.5f).StoreToFloat4(m_clipmapData.m_detailClipmapCenters[clipmapIndex].data());
-            AZ::Vector4(clipmapScaleInv).StoreToFloat4(m_clipmapData.m_detailClipmapScaleInv[clipmapIndex].data());
+            m_clipmapData.m_clipmapScaleInv[clipmapIndex][1] = clipmapScaleInv;
             clipmapScaleInv /= m_config.m_detailClipmapScaleBase;
         }
     }

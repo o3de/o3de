@@ -152,8 +152,8 @@ namespace Terrain
             //! A list of reciprocal the clipmap scale [s],
             //! where 1 pixel in the current layer of clipmap represents s meters.
             //! Fast lookup list to avoid redundant calculation in shaders.
-            AZStd::array<AZStd::array<float, 4>, ClipmapConfiguration::MacroClipmapStackSizeMax> m_macroClipmapScaleInv;
-            AZStd::array<AZStd::array<float, 4>, ClipmapConfiguration::DetailClipmapStackSizeMax> m_detailClipmapScaleInv;
+            //! x: macro; y: detail
+            AZStd::array<AZStd::array<float, 4>, AZStd::max(ClipmapConfiguration::MacroClipmapStackSizeMax, ClipmapConfiguration::DetailClipmapStackSizeMax)> m_clipmapScaleInv;
         };
 
         ClipmapData m_clipmapData;

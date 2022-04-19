@@ -35,8 +35,6 @@ void MainCS(
 
         float2 worldPosition = GetCurrentWorldPositionFromDetailClipmaps(pixelPosition, clipmapLevel);
 
-        uint3 index = WorldPositionToDetailClipmapTexelIndex(worldPosition);
-
         if (any(worldPosition < TerrainSrg::m_clipmapData.m_worldBoundsMin) || any(worldPosition > TerrainSrg::m_clipmapData.m_worldBoundsMax))
         {
             // alpha represents hasDetailSurface
@@ -57,7 +55,21 @@ void MainCS(
         float2 detailUvDdx = ddxPosition(TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance, clipmapScaleInv) * TerrainMaterialSrg::m_detailTextureMultiplier;
         float2 detailUvDdy = ddyPosition(TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance, clipmapScaleInv) * TerrainMaterialSrg::m_detailTextureMultiplier;
 
-        uint3 macroTexelIndex = WorldPositionToMacroClipmapTexelIndex(worldPosition);
+        float2 distance = worldPosition - TerrainSrg::m_clipmapData.m_currentViewPosition;
+        uint macroClipmapLevel = CalculateClosestClipmapLevel(
+            distance,
+            TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance,
+            TerrainSrg::m_clipmapData.m_macroClipmapScaleBase,
+            TerrainSrg::m_clipmapData.m_macroClipmapStackSize
+        );
+        uint2 macroClipmapUv = CalculateClipmapUv(
+            distance,
+            TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance,
+            GetMacroClipmapScaleInv(macroClipmapLevel),
+            GetCurrentMacroClipmapCenter(macroClipmapLevel)
+        );
+        uint3 macroTexelIndex = uint3(macroClipmapUv, macroClipmapLevel);
+
         float3 macroColor = PassSrg::m_macroColorClipmaps[macroTexelIndex].rgb;
 
         bool hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, detailUvDdx, detailUvDdy, macroColor);
