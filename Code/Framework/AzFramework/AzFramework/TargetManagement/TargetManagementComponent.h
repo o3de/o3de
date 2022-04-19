@@ -171,7 +171,7 @@ namespace AzFramework
         AZStd::mutex        m_outboxMutex;
 
         AZ::SerializeContext*   m_serializeContext;
-        
+
         // these are used for target communication
         AZStd::atomic_bool                  m_stopRequested;
         AZStd::thread                       m_threadHandle;
