@@ -368,7 +368,7 @@ namespace EMotionFX
                 {
                     outMeshIndices.emplace_back(nodeIndex);
 
-                    // Don't need to add mesh node except it is a parent of other joint / mesh node.
+                    // Don't need to add a mesh node except if it is a parent of another joint / mesh node.
                     // Example:
                     // joint_1
                     //   |____transform
@@ -378,8 +378,8 @@ namespace EMotionFX
                     //         |      |____transform
                     //         |_______joint_2
                     //                |____transform
-                    // emfx doesn't need to contain the "end-point" mesh node because mesh buffers ultimately stored in a single atom mesh.
-                    // NOTE: Joint and mesh node often has a transform node as the children. To correctly detect whether a mesh node have a joint
+                    // emfx doesn't need to contain the "end-point" mesh node because mesh buffers are ultimately stored in a single atom mesh.
+                    // NOTE: Joint and mesh node often have a transform node as the children. To correctly detect whether a mesh node has a joint
                     // or mesh children, we need to check the type id of the children as well.
                     if (!graph.HasNodeChild(nodeIndex))
                     {
