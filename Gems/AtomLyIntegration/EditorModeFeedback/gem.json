@@ -18,8 +18,6 @@
         "Atom_Feature_Common",
         "Atom_RPI",
         "Atom_RHI",
-        "CommonFeaturesAtom",
-        "Atom_Bootstrap",
-        "Atom_AtomBridge"
+        "Atom_Bootstrap"
     ]
 }
