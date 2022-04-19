@@ -9,10 +9,12 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Math/IntersectPoint.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
+#include <LyShine/UiSerializeHelpers.h>
 
 #include <Cry_Geo.h>
 #include <IIndexedMesh.h>
@@ -165,9 +167,9 @@ bool UiCanvasOnMeshComponent::ProcessHitInputEvent(
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasOnMeshComponent::OnCanvasLoadedIntoEntity(AZ::EntityId uiCanvasEntity)
 {
-    if (uiCanvasEntity.IsValid() && !m_renderTargetOverride.empty())
+    if (uiCanvasEntity.IsValid() && m_attachmentImageAssetOverride)
     {
-        EBUS_EVENT_ID(uiCanvasEntity, UiCanvasBus, SetRenderTargetName, m_renderTargetOverride);
+        UiCanvasBus::Event(GetEntityId(), &UiCanvasInterface::SetAttachmentImageAsset, m_attachmentImageAssetOverride);
     }
 }
 
@@ -193,8 +195,8 @@ void UiCanvasOnMeshComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiCanvasOnMeshComponent, AZ::Component>()
-            ->Version(1)
-            ->Field("RenderTargetOverride", &UiCanvasOnMeshComponent::m_renderTargetOverride);
+            ->Version(2, &VersionConverter)
+            ->Field("AttachmentImageAssetOverride", &UiCanvasOnMeshComponent::m_attachmentImageAssetOverride);
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
@@ -209,10 +211,10 @@ void UiCanvasOnMeshComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/ui/canvas-on-mesh/")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c));
 
-            editInfo->DataElement(0, &UiCanvasOnMeshComponent::m_renderTargetOverride,
+            editInfo->DataElement(0, &UiCanvasOnMeshComponent::m_attachmentImageAssetOverride,
                 "Render target override",
-                "If not empty, this name overrides the render target set on the UI canvas.\n"
-                "This is useful if multiple instances the same UI canvas are rendered in the level.");
+                "If not empty, this asset overrides the render target set on the UI canvas.\n"
+                "This is useful if multiple instances of the same UI canvas are rendered in the level.");
         }
     }
 }
@@ -362,4 +364,21 @@ AZ::EntityId UiCanvasOnMeshComponent::GetCanvas()
     AZ::EntityId result;
     EBUS_EVENT_ID_RESULT(result, GetEntityId(), UiCanvasRefBus, GetCanvas);
     return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiCanvasOnMeshComponent::VersionConverter(AZ::SerializeContext& context,
+    AZ::SerializeContext::DataElementNode& classElement)
+{
+    // conversion from version 1 to 2:
+    // - Need to remove render target name as it was replaced with attachment image asset
+    if (classElement.GetVersion() < 2)
+    {
+        if (!LyShine::RemoveRenderTargetAsString(context, classElement, "RenderTargetOverride"))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }

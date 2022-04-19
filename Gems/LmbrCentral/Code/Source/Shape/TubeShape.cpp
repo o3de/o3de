@@ -67,12 +67,21 @@ namespace LmbrCentral
         }
     }
 
+    TubeShape::TubeShape(const TubeShape& rhs)
+    {
+        m_spline = rhs.m_spline;
+        m_variableRadius = rhs.m_variableRadius;
+        m_currentTransform = rhs.m_currentTransform;
+        m_entityId = rhs.m_entityId;
+        m_radius = rhs.m_radius;
+    }
+
+
     void TubeShape::Activate(AZ::EntityId entityId)
     {
         m_entityId = entityId;
 
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
-        ShapeComponentRequestsBus::Handler::BusConnect(m_entityId);
         TubeShapeComponentRequestsBus::Handler::BusConnect(m_entityId);
         SplineComponentNotificationBus::Handler::BusConnect(m_entityId);
 
@@ -80,20 +89,24 @@ namespace LmbrCentral
         SplineComponentRequestBus::EventResult(m_spline, m_entityId, &SplineComponentRequests::GetSpline);
 
         m_variableRadius.Activate(entityId);
+        ShapeComponentRequestsBus::Handler::BusConnect(m_entityId);
     }
 
     void TubeShape::Deactivate()
     {
+        ShapeComponentRequestsBus::Handler::BusDisconnect();
         m_variableRadius.Deactivate();
         SplineComponentNotificationBus::Handler::BusDisconnect();
         TubeShapeComponentRequestsBus::Handler::BusDisconnect();
-        ShapeComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
     void TubeShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        m_currentTransform = world;
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_currentTransform = world;
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
@@ -101,8 +114,11 @@ namespace LmbrCentral
 
     void TubeShape::SetRadius(float radius)
     {
-        m_radius = radius;
-        ValidateAllVariableRadii();
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_radius = radius;
+            ValidateAllVariableRadii();
+        }
 
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
@@ -111,23 +127,14 @@ namespace LmbrCentral
 
     float TubeShape::GetRadius() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_radius;
     }
 
     void TubeShape::SetVariableRadius(int vertIndex, float radius)
     {
-        m_variableRadius.SetElement(vertIndex, radius);
-        ValidateVariableRadius(vertIndex);
-
-        ShapeComponentNotificationsBus::Event(
-            m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
-    }
-
-    void TubeShape::SetAllVariableRadii(float radius)
-    {
-        for (size_t vertIndex = 0; vertIndex < m_variableRadius.Size(); ++vertIndex)
         {
+            AZStd::unique_lock lock(m_mutex);
             m_variableRadius.SetElement(vertIndex, radius);
             ValidateVariableRadius(vertIndex);
         }
@@ -137,18 +144,37 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
+    void TubeShape::SetAllVariableRadii(float radius)
+    {
+        {
+            AZStd::unique_lock lock(m_mutex);
+            for (size_t vertIndex = 0; vertIndex < m_variableRadius.Size(); ++vertIndex)
+            {
+                m_variableRadius.SetElement(vertIndex, radius);
+                ValidateVariableRadius(vertIndex);
+            }
+        }
+
+        ShapeComponentNotificationsBus::Event(
+            m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+            ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+    }
+
     float TubeShape::GetVariableRadius(int vertIndex) const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_variableRadius.GetElement(vertIndex);
     }
 
     float TubeShape::GetTotalRadius(const AZ::SplineAddress& address) const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_radius + m_variableRadius.GetElementInterpolated(address, Lerpf);
     }
 
     const SplineAttribute<float>& TubeShape::GetRadiusAttribute() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_variableRadius;
     }
 
@@ -160,6 +186,7 @@ namespace LmbrCentral
 
     AZ::SplinePtr TubeShape::GetSpline()
     {
+        AZStd::shared_lock lock(m_mutex);
         if (!m_spline)
         {
             SplineComponentRequestBus::EventResult(m_spline, m_entityId, &SplineComponentRequests::GetSpline);
@@ -171,6 +198,7 @@ namespace LmbrCentral
 
     AZ::ConstSplinePtr TubeShape::GetConstSpline() const
     {
+        AZStd::shared_lock lock(m_mutex);
         if (!m_spline)
         {
             SplineComponentRequestBus::EventResult(m_spline, m_entityId, &SplineComponentRequests::GetSpline);
@@ -206,6 +234,7 @@ namespace LmbrCentral
 
     AZ::Aabb TubeShape::GetEncompassingAabb()
     {
+        AZStd::shared_lock lock(m_mutex);
         if (m_spline == nullptr)
         {
             return AZ::Aabb::CreateNull();
@@ -219,12 +248,14 @@ namespace LmbrCentral
 
     void TubeShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
     {
+        AZStd::shared_lock lock(m_mutex);
         bounds = CalculateTubeBounds(*this, AZ::Transform::CreateIdentity());
         transform = m_currentTransform;
     }
 
     bool TubeShape::IsPointInside(const AZ::Vector3& point)
     {
+        AZStd::shared_lock lock(m_mutex);
         if (m_spline == nullptr)
         {
             return false;
@@ -245,6 +276,7 @@ namespace LmbrCentral
 
     float TubeShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
+        AZStd::shared_lock lock(m_mutex);
         AZ::Transform worldFromLocalNormalized = m_currentTransform;
         const float uniformScale = worldFromLocalNormalized.ExtractUniformScale();
         const AZ::Transform localFromWorldNormalized = worldFromLocalNormalized.GetInverse();
@@ -259,6 +291,7 @@ namespace LmbrCentral
 
     bool TubeShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
+        AZStd::shared_lock lock(m_mutex);
         const auto splineQueryResult = IntersectSpline(m_currentTransform, src, dir, *m_spline);
         const float variableRadius = m_variableRadius.GetElementInterpolated(
             splineQueryResult.m_splineAddress, Lerpf);
@@ -590,9 +623,10 @@ namespace LmbrCentral
     {
         // if the total radius is less than 0, adjust the variable radius
         // to ensure the total radius stays positive
-        if (GetTotalRadius(AZ::SplineAddress(vertIndex)) < 0.0f)
+        float totalRadius = m_radius + m_variableRadius.GetElementInterpolated(AZ::SplineAddress(vertIndex), Lerpf);
+        if (totalRadius < 0.0f)
         {
-            SetVariableRadius(static_cast<int>(vertIndex), -GetRadius());
+            m_variableRadius.SetElement(vertIndex, -m_radius);
         }
     }
 

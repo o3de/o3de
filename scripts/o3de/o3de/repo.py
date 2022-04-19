@@ -83,24 +83,22 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
     # Having a repo is also optional
     repo_list = []
     try:
-        repo_list.append(repo_data['repos'])
+        repo_list.extend(repo_data['repos'])
     except KeyError:
         pass
 
     for repo in repo_list:
         if repo not in repo_set:
             repo_set.add(repo)
-            for o3de_object_uri in o3de_object_uris:
-                parsed_uri = urllib.parse.urlparse(f'{repo}/repo.json')
-                manifest_json_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
-                cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
-                if cache_file.is_file():
-                    cache_file.unlink()
-                download_file_result = utils.download_file(parsed_uri, cache_file, True)
-                if download_file_result != 0:
-                    return download_file_result
+            parsed_uri = urllib.parse.urlparse(f'{repo}/repo.json')
+            manifest_json_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
+            cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
 
-                return process_add_o3de_repo(parsed_uri.geturl(), repo_set)
+            download_file_result = utils.download_file(parsed_uri, cache_file, True)
+            if download_file_result != 0:
+                return download_file_result
+
+            return process_add_o3de_repo(cache_file, repo_set)
     return 0
 
 
