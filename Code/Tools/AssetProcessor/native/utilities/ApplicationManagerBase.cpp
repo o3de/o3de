@@ -1565,19 +1565,21 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                         // Check if we need a new builder, and if so, request a new one
                         if (!builderRef->IsValid())
                         {
-                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d with %d second delay)",
-                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
-                                            retryCount,
-                                            delay);
-
+                            AZStd::string oldBuilderId = builderRef->GetUuid().ToString<AZStd::string>();
                             builderRef.release();
                             AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
+                                            oldBuilderId.c_str(),
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount+1,
+                                            delay);
                         } 
                         else
                         {
-                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new Builder (Attempt %d  with %d second delay)",
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d  with %d second delay)",
                                             builderRef->GetUuid().ToString<AZStd::string>().c_str(),
-                                            retryCount,
+                                            retryCount+1,
                                             delay);
                         }
                         AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
@@ -1622,19 +1624,21 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                         // Check if we need a new builder, and if so, request a new one
                         if (!builderRef->IsValid())
                         {
-                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d with %d second delay)",
-                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
-                                            retryCount,
-                                            delay);
-
+                            AZStd::string oldBuilderId = builderRef->GetUuid().ToString<AZStd::string>();
                             builderRef.release();
                             AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
+                                            oldBuilderId.c_str(),
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount+1,
+                                            delay);
+
                         } 
                         else
                         {
-                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new Builder (Attempt %d  with %d second delay)",
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d  with %d second delay)",
                                             builderRef->GetUuid().ToString<AZStd::string>().c_str(),
-                                            retryCount,
+                                            retryCount+1,
                                             delay);
                         }
                         AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
