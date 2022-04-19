@@ -32,5 +32,4 @@ namespace AZ
     } // namespace Render
 } // namespace AZ
 
-
 AZ_DECLARE_MODULE_CLASS(Gem_EditorModeFeedback, AZ::Render::EditorModeFeedbackModule)

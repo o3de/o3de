@@ -24,6 +24,7 @@ namespace AZ
 
             EditorModeFeedbackModule();
 
+            // GetRequiredSystemComponents overrides ...
             AZ::ComponentTypeList GetRequiredSystemComponents() const override;
         };
     } // namespace Render

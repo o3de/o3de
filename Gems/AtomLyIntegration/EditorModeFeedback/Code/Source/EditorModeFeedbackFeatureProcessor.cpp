@@ -15,6 +15,11 @@ namespace AZ
 {
     namespace Render
     {
+        namespace
+        {
+            const char* const Window = "EditorModeFeedback";
+        }
+
         void EditorModeFeatureProcessor::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -25,59 +30,47 @@ namespace AZ
 
         void EditorModeFeatureProcessor::Activate()
         {
-            //AZ_Printf("EditorModeFeatureProcessor", "Activate");
             EnableSceneNotification();
         }
 
         void EditorModeFeatureProcessor::Deactivate()
         {
-            //AZ_Printf("EditorModeFeatureProcessor", "Deactivate");
             DisableSceneNotification();
             m_parentPassRequestAsset.Reset();
         }
 
         void EditorModeFeatureProcessor::ApplyRenderPipelineChange([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
         {
-            //AZ_Printf("EditorModeFeatureProcessor", "ApplyRenderPipelineChange");
+            const AZ::RPI::PassRequest* passRequest = nullptr;
             const char* passRequestAssetFilePath = "Passes/EditorModeFeedback_PassRequest.azasset";
             m_parentPassRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                 passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
-            const AZ::RPI::PassRequest* passRequest = nullptr;
+
             if (m_parentPassRequestAsset->IsReady())
             {
                 passRequest = m_parentPassRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
             }
+
             if (!passRequest)
             {
-                AZ_Error("EditorModeFeedback", false, "Failed to add editor mode feedback parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
-                //return false;
+                AZ_Error(Window, false, "Failed to add editor mode feedback parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
+                return;
             }
 
             // Create the pass
             RPI::Ptr<RPI::Pass> parentPass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
-
             if (!parentPass)
             {
-                AZ_Error("EditorModeFeedback", false, "Create parent pass from pass request failed", renderPipeline->GetId().GetCStr());
-                //return false;
+                AZ_Error(Window, false, "Create editor mode feedback parent pass from pass request failed", renderPipeline->GetId().GetCStr());
+                return;
             }
 
-            // Add the pass to render pipeline
-            bool success = renderPipeline->AddPassAfter(parentPass, Name("PostProcessPass"));
             // only create pass resources if it was success
-            if (success)
+            if (!renderPipeline->AddPassAfter(parentPass, Name("PostProcessPass")))
             {
-                //CreatePerPassResources();
-                AZ_Printf("Foo", "Awesomse!");
+                AZ_Error(Window, false, "Add editor mode feedback parent pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());
+                return;
             }
-            else
-            {
-                AZ_Error(
-                    "EditorModeFeedback", false, "Add the parent pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());
-            }
-
-
-            // return success;
         }
     } // namespace Render
 } // namespace AZ

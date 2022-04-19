@@ -13,13 +13,9 @@
 
 namespace AZ
 {
-    namespace RPI
-    {
-        class FullscreenTrianglePass;
-    }
-
     namespace Render
     {
+        //! Feature processor for Editor Mode Feedback visual effect system.
         class EditorModeFeatureProcessor
             : public RPI::FeatureProcessor
         {
@@ -34,7 +30,7 @@ namespace AZ
             void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
 
         private:
-            // Cache the pass request data for creating a hair parent pass
+            // Cache the pass request data for creating an editor mode feedback parent pass
             AZ::Data::Asset<AZ::RPI::AnyAsset> m_parentPassRequestAsset;
         };
     } // namespace Render

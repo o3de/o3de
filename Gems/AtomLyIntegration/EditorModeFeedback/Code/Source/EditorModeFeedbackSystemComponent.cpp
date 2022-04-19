@@ -130,13 +130,11 @@ namespace AZ
 
         void EditorModeFeedbackSystemComponent::Activate()
         {
-            //AzFramework::ApplicationRequests::Bus::Broadcast(
-            //    [this](AzFramework::ApplicationRequests::Bus::Events* ebus)
-            //    {
-            //        m_registeryEnabled = ebus->IsEditorModeFeedbackEnabled();
-            //    });
-
-            m_registeryEnabled = true;
+            AzFramework::ApplicationRequests::Bus::Broadcast(
+                [this](AzFramework::ApplicationRequests::Bus::Events* ebus)
+                {
+                    m_registeryEnabled = ebus->IsEditorModeFeedbackEnabled();
+                });
 
             if (!m_registeryEnabled)
             {
