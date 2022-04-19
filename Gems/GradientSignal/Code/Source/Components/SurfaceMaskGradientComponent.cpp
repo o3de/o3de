@@ -193,9 +193,8 @@ namespace GradientSignal
         if (!m_configuration.m_surfaceTagList.empty())
         {
             SurfaceData::SurfacePointList points;
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagList,
-                points);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(
+                positions, m_configuration.m_surfaceTagList, points);
 
             // For each position, get the max surface weight that matches our filter and that appears at that position.
             points.EnumeratePoints(

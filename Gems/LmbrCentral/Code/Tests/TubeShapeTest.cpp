@@ -14,6 +14,7 @@
 #include <Shape/SplineComponent.h>
 #include <Shape/TubeShapeComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <ShapeThreadsafeTest.h>
 
 namespace UnitTest
 {
@@ -412,4 +413,39 @@ namespace UnitTest
             EXPECT_THAT(variableRadius, FloatEq(radiis.second));
         }
     }
-}
+
+    TEST_F(TubeShapeTest, ShapeHasThreadsafeGetSetCalls)
+    {
+        // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
+        // correct, consistent results.
+
+        // Create our sphere centered at 0 with half our height as the radius.
+        AZ::Entity entity;
+        CreateTube(AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()), ShapeThreadsafeTest::ShapeHeight / 2.0f, entity);
+
+        // Define the function for setting unimportant dimensions on the shape while queries take place.
+        auto setDimensionFn = [](AZ::EntityId shapeEntityId, float minDimension, uint32_t dimensionVariance, float height)
+        {
+            // Set the radius back to the same value. This should have no effect.
+            LmbrCentral::TubeShapeComponentRequestsBus::Event(
+                shapeEntityId, &LmbrCentral::TubeShapeComponentRequestsBus::Events::SetRadius, height / 2.0f);
+
+            // Set the end radii to random values. As long as we don't set the middle radii that describe the portion of the tube
+            // that intersects the origin, changing these should have no effect on our test point distance.
+
+            float radius = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+            LmbrCentral::TubeShapeComponentRequestsBus::Event(
+                shapeEntityId, &LmbrCentral::TubeShapeComponentRequestsBus::Events::SetVariableRadius, 0, radius);
+
+            radius = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+            LmbrCentral::TubeShapeComponentRequestsBus::Event(
+                shapeEntityId, &LmbrCentral::TubeShapeComponentRequestsBus::Events::SetVariableRadius, 3, radius);
+        };
+
+        // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
+        // The number of iterations is arbitrary - it's set high enough to catch most failures, but low enough to keep the test
+        // time to a minimum.
+        const int numIterations = 30000;
+        ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
+    }
+} // namespace UnitTest

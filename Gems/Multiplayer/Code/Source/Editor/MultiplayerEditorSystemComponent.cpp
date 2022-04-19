@@ -24,7 +24,8 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
 
 namespace Multiplayer
 {
@@ -286,6 +287,8 @@ namespace Multiplayer
 
         if (outProcess)
         {
+            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage("(1/3) Launching server...");
+
             // Stop the previous server if one exists
             if (m_serverProcessWatcher)
             {
@@ -298,7 +301,9 @@ namespace Multiplayer
         }
         else
         {
-            AZ_Error("MultiplayerEditor", outProcess, "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.");
+            const char* fail_message = "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.";
+            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(fail_message);
+            AZ_Error("MultiplayerEditor", outProcess, fail_message);
         }
     }
 
@@ -391,8 +396,10 @@ namespace Multiplayer
             AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
             return;
         }
-
-        AZ_Printf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
+        
+        AZStd::string sending_leveldata_message = "Editor is sending the editor-server the level data packet.";
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(("(3/3) " + sending_leveldata_message).c_str());
+        AZ_Printf("MultiplayerEditor", sending_leveldata_message.c_str())
 
         const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
 
@@ -475,7 +482,11 @@ namespace Multiplayer
     void MultiplayerEditorSystemComponent::Connect()
     {
         ++m_connectionAttempts;
-        AZ_Printf("MultiplayerEditor", "Editor tcp connection attempt #%i.", m_connectionAttempts)
+
+        char message[64];
+        azsnprintf(message, 64, "(2/3) Editor tcp connection attempt #%i.", m_connectionAttempts);
+        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(message);
+        AZ_Printf("MultiplayerEditor", message)
 
         INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
         AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")

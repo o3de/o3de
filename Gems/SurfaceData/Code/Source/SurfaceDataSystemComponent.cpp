@@ -95,12 +95,14 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::Activate()
     {
+        AZ::Interface<SurfaceDataSystem>::Register(this);
         SurfaceDataSystemRequestBus::Handler::BusConnect();
     }
 
     void SurfaceDataSystemComponent::Deactivate()
     {
         SurfaceDataSystemRequestBus::Handler::BusDisconnect();
+        AZ::Interface<SurfaceDataSystem>::Unregister(this);
     }
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataProvider(const SurfaceDataRegistryEntry& entry)
