@@ -506,7 +506,7 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
         AssetProcessor::BuilderInfoList builders;
         AssetProcessor::AssetBuilderInfoBus::Broadcast(&AssetProcessor::AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
 
-        AZ_Assert(index.row() >= 0, "Index must be >= 0");
+        AZ_Assert(index.isValid(), "BuilderTabSelectionChanged index out of bounds");
 
         const auto& builder = builders[index.row()];
         QString patternString;

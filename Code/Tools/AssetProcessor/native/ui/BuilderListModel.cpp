@@ -21,9 +21,8 @@ QVariant BuilderListModel::data(const QModelIndex& index, int role) const
 {
     AssetProcessor::BuilderInfoList builders;
     AssetProcessor::AssetBuilderInfoBus::Broadcast(&AssetProcessor::AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
-
-    AZ_Assert(index.row() >= 0, "Index must be >= 0");
-    AZ_Assert(index.row() < builders.size(), "Index out of bounds");
+    
+    AZ_Assert(index.isValid(), "BuilderListModel index out of bounds");
 
     const auto& assetBuilderDesc = builders[index.row()];
 
