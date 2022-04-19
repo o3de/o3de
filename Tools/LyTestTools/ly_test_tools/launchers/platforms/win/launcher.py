@@ -11,6 +11,7 @@ import logging
 import os
 import subprocess
 
+import ly_test_tools.environment.process_utils
 import ly_test_tools.environment.waiter
 import ly_test_tools.launchers.exceptions
 
@@ -250,3 +251,27 @@ class WinGenericLauncher(WinLauncher):
         assert self.workspace.project is not None, (
             'Project cannot be NoneType - please specify a project name string.')
         return self.expected_executable_path
+
+
+class WinMaterialEditor(WinLauncher):
+
+    def __init__(self, build, args=None):
+        super(WinLauncher, self).__init__(build, args)
+
+    def stop(self):
+        """
+        Kills the MaterialEditor and AssetProcessor processes.
+        :return: None
+        """
+        ly_test_tools.environment.process_utils.kill_processes_named("MaterialEditor", ignore_extensions=True)
+        self.workspace.asset_processor.stop()
+
+    def binary_path(self):
+        """
+        Return full path to the Editor for this build's configuration and project
+
+        :return: full path to Editor
+        """
+        assert self.workspace.project is not None
+        return os.path.join(self.workspace.paths.build_directory(), "MaterialEditor.exe")
+

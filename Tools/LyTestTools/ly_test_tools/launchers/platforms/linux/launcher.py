@@ -251,3 +251,18 @@ class LinuxGenericLauncher(LinuxLauncher):
         assert self.workspace.project is not None, (
             'Project cannot be NoneType - please specify a project name string.')
         return self.expected_executable_path
+
+
+class LinuxMaterialEditor(LinuxLauncher):
+
+    def __init__(self, build, args=None):
+        super(LinuxLauncher, self).__init__(build, args)
+
+    def binary_path(self):
+        """
+        Return full path to the Editor for this build's configuration and project
+
+        :return: full path to Editor
+        """
+        assert self.workspace.project is not None
+        return os.path.join(self.workspace.paths.build_directory(), "MaterialEditor")

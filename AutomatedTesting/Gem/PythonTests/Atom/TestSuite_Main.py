@@ -126,3 +126,13 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C36525660")
     class AtomEditorComponentsLevel_DisplayMapperAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponentsLevel_DisplayMapperAdded as test_module
+
+
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+@pytest.mark.parametrize("launcher_platform", ['windows_material_editor'])
+class TestMaterialEditor(EditorTestSuite):
+
+    material_editor_test = True
+
+    class MaterialEditor_Atom_LaunchMaterialEditor(EditorSharedTest):
+        from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
