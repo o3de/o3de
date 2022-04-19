@@ -15,6 +15,8 @@
 #include "native/utilities/BatchApplicationServer.h"
 #include "native/utilities/PlatformConfiguration.h"
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/Application/Application.h>
 #include <QApplication>
@@ -222,6 +224,38 @@ REGISTER_UNIT_TEST(AssetProcessorServerUnitTest)
 
 namespace UnitTest
 {
+    class UnitTestAppManager : public BatchApplicationManager
+    {
+    public:
+        explicit UnitTestAppManager(int* argc, char*** argv)
+            : BatchApplicationManager(argc, argv)
+        {
+        }
+
+        bool PrepareForTests()
+        {
+            if (!ApplicationManager::Activate())
+            {
+                return false;
+            }
+
+            // tests which use the builder bus plug in their own mock version, so disconnect ours.
+            AssetProcessor::AssetBuilderInfoBus::Handler::BusDisconnect();
+
+            // Disable saving global user settings to prevent failure due to detecting file updates
+            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+
+            m_platformConfig.reset(new AssetProcessor::PlatformConfiguration);
+            m_connectionManager.reset(new ConnectionManager(m_platformConfig.get()));
+            RegisterObjectForQuit(m_connectionManager.get());
+
+            return true;
+        }
+        AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_platformConfig;
+        AZStd::unique_ptr<ConnectionManager> m_connectionManager;
+    };
+
+
     AssetProcessorServerUnitTest::AssetProcessorServerUnitTest()
         : ScopedAllocatorSetupFixture()
     {
@@ -229,64 +263,52 @@ namespace UnitTest
 
     void AssetProcessorServerUnitTest::SetUp()
     {
+        ScopedAllocatorSetupFixture::SetUp();
         m_app.reset(aznew AZ::ComponentApplication());
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        m_app->Create(desc);
+        AZ::Entity* systemEntity = m_app->Create(desc);
+        systemEntity->Init();
+        systemEntity->Activate();
 
         static int numParams = 1;
         static char processName[] = { "AssetProcessorBatch" };
         static char* namePtr = &processName[0];
         static char** paramStringArray = { &namePtr };
-        m_batchApplicationManager = AZStd::make_unique<BatchApplicationManager>(&numParams, &paramStringArray);
 
-        auto status = m_batchApplicationManager->BeforeRun();
-        ASSERT_EQ(status, ApplicationManager::BeforeRunStatus::Status_Success);
+        auto registry = AZ::SettingsRegistry::Get();
+        auto bootstrapKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
+        auto projectPathKey = bootstrapKey + "/project_path";
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-        //m_batchApplicationManager->m_platformConfiguration = new PlatformConfiguration();
-        m_batchApplicationManager->Activate();
+        // Forcing the branch token into settings registry before starting the application manager.
+        // This avoids writing the asset_processor.setreg file which can cause fileIO errors.
+        auto branchTokenKey = bootstrapKey + "/assetProcessor_branch_token";
+        AZStd::string token;
+        AzFramework::StringFunc::AssetPath::CalculateBranchToken(enginePath.c_str(), token);
+        registry->Set(branchTokenKey, token.c_str());
 
-        m_batchApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(true);
+        m_batchApplicationManager.reset(new UnitTestAppManager(&numParams, &paramStringArray));
+        ASSERT_EQ(m_batchApplicationManager->BeforeRun(), ApplicationManager::Status_Success);
+        ASSERT_TRUE(m_batchApplicationManager->PrepareForTests());
 
-        m_platformConfig.reset(new AssetProcessor::PlatformConfiguration);
-        //m_connectionManager.reset(new ConnectionManager(m_platformConfig.get()));
-        m_iniConfiguration.readINIConfigFile();
-        m_iniConfiguration.SetListeningPort(FEATURE_TEST_LISTEN_PORT);
 
         m_applicationServer = AZStd::make_unique<BatchApplicationServer>();
         m_applicationServer->startListening(FEATURE_TEST_LISTEN_PORT); // a port that is not the normal port
         connect(m_applicationServer.get(), SIGNAL(newIncomingConnection(qintptr)), ConnectionManager::Get(), SLOT(NewConnection(qintptr)));
+
     }
 
     void AssetProcessorServerUnitTest::TearDown()
     {
-        m_batchApplicationManager->GetAssetProcessorManager()->QuitRequested();
-        
-        if (ConnectionManager::Get())
-        {
-            QEventLoop eventLoop;
-
-            QObject::connect(
-                ConnectionManager::Get(), &ConnectionManager::ReadyToQuit, &eventLoop, &QEventLoop::quit);
-
-            ConnectionManager::Get()->QuitRequested();
-
-            eventLoop.exec();
-        }
-
-        //disconnect();
-       // ConnectionManager::Get()->removeConnection(m_connectionId);
-        //ConnectionManager::Get()->disconnect();
-        //m_connectionManager.reset();
-        while (!m_batchApplicationManager->IsAssetProcessorManagerIdle())
-        {
-        }
-        //EBUS_EVENT(AssetProcessor::ApplicationManagerNotifications::Bus, ApplicationShutdownRequested);
-
         m_batchApplicationManager.reset();
 
         m_app->Destroy();
-        //m_app.reset();
+
+        ScopedAllocatorSetupFixture::TearDown();
     }
 
     AssetProcessorServerUnitTest::~AssetProcessorServerUnitTest()

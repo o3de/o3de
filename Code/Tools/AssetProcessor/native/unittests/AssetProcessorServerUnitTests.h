@@ -57,7 +57,6 @@ private:
 #include <QObject>
 
 class ApplicationServer;
-class BatchApplicationManager;
 class ConnectionManager;
 
 namespace AZ
@@ -67,6 +66,7 @@ namespace AZ
 
 namespace UnitTest
 {
+    class UnitTestAppManager;
 
     class AssetProcessorServerUnitTest
         : public QObject
@@ -88,11 +88,11 @@ namespace UnitTest
         void RunAssetProcessorConnectionStressTest(bool failNegotiation);
         AZStd::unique_ptr<ApplicationServer> m_applicationServer;
         //AZStd::unique_ptr<ConnectionManager> m_connectionManager;
-        AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_platformConfig;
+        //AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_platformConfig;
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;
         IniConfiguration m_iniConfiguration;
 
-        AZStd::unique_ptr<BatchApplicationManager> m_batchApplicationManager;
+        AZStd::unique_ptr<UnitTestAppManager> m_batchApplicationManager;
         
         QMetaObject::Connection m_connection;
 
