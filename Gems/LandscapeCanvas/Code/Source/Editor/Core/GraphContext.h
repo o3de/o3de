@@ -29,9 +29,6 @@ namespace LandscapeCanvas
         GraphModel::DataTypePtr GetDataTypeForValue(const AZStd::any& value) const override;
 
     private:
-        //! Performs initialization that can't be done in the constructor
-        void Init();
-
         static AZStd::shared_ptr<GraphContext> s_instance;
     };
 } // namespace LandscapeCanvas

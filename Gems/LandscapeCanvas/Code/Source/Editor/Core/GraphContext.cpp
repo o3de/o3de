@@ -27,7 +27,7 @@ namespace LandscapeCanvas
 
         if (s_instance)
         {
-            s_instance->Init();
+            s_instance->CreateModuleGraphManager();
         }
     }
 
@@ -51,14 +51,6 @@ namespace LandscapeCanvas
         // Construct basic data types
         const AZ::Uuid stringTypeUuid = azrtti_typeid<AZStd::string>();
         m_dataTypes.push_back(AZStd::make_shared<LandscapeCanvasDataType>(LandscapeCanvasDataTypeEnum::String, stringTypeUuid, AZStd::any(AZStd::string("")), "String", "AZStd::string"));
-    }
-
-    void GraphContext::Init()
-    {
-        if (!m_moduleGraphManager)
-        {
-            m_moduleGraphManager = AZStd::make_shared<GraphModel::ModuleGraphManager>(shared_from_this());
-        }
     }
 
     GraphModel::DataTypePtr GraphContext::GetDataTypeForValue(const AZStd::any& value) const

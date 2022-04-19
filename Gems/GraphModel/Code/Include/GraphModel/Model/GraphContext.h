@@ -37,6 +37,10 @@ namespace GraphModel
         //! Returns the file extension used for module files
         const char* GetModuleFileExtension() const;
 
+        //! Creates the module graph manager used by all module nodes in this context.
+        //! This is done after construction because it is optional and the module graph manager needs a reference to the graph context
+        virtual void CreateModuleGraphManager();
+
         //! Returns a ModuleGraphManager to support creating ModuleNodes. Subclasses can just return nullptr if this isn't needed.
         ModuleGraphManagerPtr GetModuleGraphManager() const;
 
