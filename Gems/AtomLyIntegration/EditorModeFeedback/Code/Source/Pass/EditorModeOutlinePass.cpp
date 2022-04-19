@@ -12,7 +12,6 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
 
 // Temporary measure for setting the outline pass shader parameters at runtime until GHI 3455 is implemented
 AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeOutlinePass, 0.0f, 0.0f, 10.0f, 1.0f);

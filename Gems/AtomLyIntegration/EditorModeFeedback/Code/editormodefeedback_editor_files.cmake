@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/EditorModeFeedback/EditorModeFeedbackInterface.h
     Source/Pass/EditorModeFeedbackParentPass.cpp
     Source/Pass/EditorModeFeedbackParentPass.h
     Source/Pass/EditorModeFeedbackPassBase.cpp

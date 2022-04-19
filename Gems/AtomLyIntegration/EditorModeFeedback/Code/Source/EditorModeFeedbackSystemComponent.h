@@ -15,7 +15,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
-#include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
+#include <EditorModeFeedback/EditorModeFeedbackInterface.h>
 #include <Atom/RPI.Reflect/Model/ModelLodIndex.h>
 #include <AtomCore/Instance/Instance.h>
 
