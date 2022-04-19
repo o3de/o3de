@@ -225,11 +225,12 @@ namespace AZ
     }                                                                                                                           \
     AZ_POP_DISABLE_WARNING
 
-    #define AZ_TracePrintf(window, ...)                                                                            \
-    if(AZ::Debug::Trace::IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                                 \
-    {                                                                                                              \
-        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
-    }
+    #define AZ_TracePrintf(...)
+    // #define AZ_TracePrintf(window, ...)                                                                            \
+    // if(AZ::Debug::Trace::IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                                 \
+    // {                                                                                                              \
+        // AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
+    // }
 
 
     //! The AZ_TrancePrintfOnce macro output the result of the format string only once for each use of the macro
