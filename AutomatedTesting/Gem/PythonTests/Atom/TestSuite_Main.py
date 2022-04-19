@@ -22,6 +22,30 @@ class TestAutomation(EditorTestSuite):
     class AtomLevelLoadTest_Editor(EditorSharedTest):
         from Atom.tests import hydra_Atom_LevelLoadTest as test_module
 
+    @pytest.mark.test_case_id("C36530722")
+    class AtomLevelLoadTest_Editor(EditorSharedTest):
+        from Atom.tests import levelLoad_Atom_hermanubis as test_module
+
+    @pytest.mark.test_case_id("C36530724")
+    class AtomLevelLoadTest_Editor(EditorSharedTest):
+        from Atom.tests import levelLoad_Atom_hermanubis_high as test_module
+
+    @pytest.mark.test_case_id("C36530725")
+    class AtomLevelLoadTest_Editor(EditorSharedTest):
+        from Atom.tests import levelLoad_Atom_macbeth_shaderballs as test_module
+
+    @pytest.mark.test_case_id("C36530726")
+    class AtomLevelLoadTest_Editor(EditorSharedTest):
+        from Atom.tests import levelLoad_Atom_PbrMaterialChart as test_module
+
+    @pytest.mark.test_case_id("C36530727")
+    class AtomLevelLoadTest_Editor(EditorSharedTest):
+        from Atom.tests import levelLoad_Atom_ShadowTest as test_module
+
+    @pytest.mark.test_case_id("C36530728")
+    class AtomLevelLoadTest_Editor(EditorSharedTest):
+        from Atom.tests import levelLoad_Atom_Sponza as test_module
+
     @pytest.mark.test_case_id("C36525657")
     class AtomEditorComponents_BloomAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_BloomAdded as test_module
@@ -126,3 +150,4 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C36525660")
     class AtomEditorComponentsLevel_DisplayMapperAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponentsLevel_DisplayMapperAdded as test_module
+
