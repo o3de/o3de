@@ -11,9 +11,13 @@
 #include "native/connection/connectionManager.h"
 #include "native/utilities/ApplicationServer.h"
 #include "native/utilities/assetUtils.h"
+#include <native/utilities/BatchApplicationManager.h>
 #include "native/utilities/BatchApplicationServer.h"
+#include "native/utilities/PlatformConfiguration.h"
+#include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/Application/Application.h>
+#include <QApplication>
 
 #define FEATURE_TEST_LISTEN_PORT 12125
 
@@ -33,6 +37,8 @@
 // NUMBER_OF_ITERATION is how many times the entire test is restarted
 #define NUMBER_OF_ITERATION 2
 #endif
+
+#if USE_OLD_TEST
 
 AssetProcessorServerUnitTest::AssetProcessorServerUnitTest()
 {
@@ -67,7 +73,9 @@ int AssetProcessorServerUnitTest::UnitTestPriority() const
 void AssetProcessorServerUnitTest::RunFirstPartOfUnitTestsForAssetProcessorServer()
 {
     m_numberOfDisconnectionReceived = 0;
-    m_connection = connect(m_connectionManager, SIGNAL(ConnectionError(unsigned int, QString)), this, SLOT(ConnectionErrorForNonProxyMode(unsigned int, QString)));
+    m_connection = connect(
+        m_connectionManager, SIGNAL(ConnectionError(unsigned int, QString)), this,
+        SLOT(ConnectionErrorForNonProxyMode(unsigned int, QString)));
     m_connectionId = m_connectionManager->addConnection();
     Connection* connection = m_connectionManager->getConnection(m_connectionId);
     connection->SetPort(FEATURE_TEST_LISTEN_PORT);
@@ -79,25 +87,33 @@ void AssetProcessorServerUnitTest::RunAssetProcessorConnectionStressTest(bool fa
 {
     AZStd::string azBranchToken;
     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, azBranchToken);
-    
+
     QString branchToken(azBranchToken.c_str());
 
     if (failNegotiation)
     {
-        branchToken = branchToken.append("invalid"); //invalid branch token will result in negotiation to fail
+        branchToken = branchToken.append("invalid"); // invalid branch token will result in negotiation to fail
     }
 
     AZStd::atomic_int numberOfConnection(0);
     AZStd::atomic_bool failureOccurred = false;
 
-    enum : int { totalConnections = NUMBER_OF_CONNECTION * NUMBER_OF_TRIES };
+    enum : int
+    {
+        totalConnections = NUMBER_OF_CONNECTION * NUMBER_OF_TRIES
+    };
 
-    AZStd::function<void(int)> StartConnection = [this, &branchToken, &numberOfConnection, &failureOccurred, failNegotiation](int numTimeWait)
+    AZStd::function<void(int)> StartConnection =
+        [this, &branchToken, &numberOfConnection, &failureOccurred, failNegotiation](int numTimeWait)
     {
         for (int idx = 0; idx < NUMBER_OF_TRIES; ++idx)
         {
             AzFramework::AssetSystem::AssetProcessorConnection connection;
-            connection.Configure(branchToken.toUtf8().data(), "pc", "UNITTEST", AssetUtilities::ComputeProjectName().toUtf8().constData()); // UNITTEST identifier will skip the processID validation during negotiation
+            connection.Configure(
+                branchToken.toUtf8().data(), "pc", "UNITTEST",
+                AssetUtilities::ComputeProjectName()
+                    .toUtf8()
+                    .constData()); // UNITTEST identifier will skip the processID validation during negotiation
             connection.Connect("127.0.0.1", FEATURE_TEST_LISTEN_PORT);
             while (!connection.IsConnected() && !connection.NegotiationFailed())
             {
@@ -107,7 +123,7 @@ void AssetProcessorServerUnitTest::RunAssetProcessorConnectionStressTest(bool fa
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(numTimeWait + idx));
             numberOfConnection.fetch_sub(1);
 
-            if(connection.NegotiationFailed() != failNegotiation)
+            if (connection.NegotiationFailed() != failNegotiation)
             {
                 failureOccurred = true;
             }
@@ -126,7 +142,7 @@ void AssetProcessorServerUnitTest::RunAssetProcessorConnectionStressTest(bool fa
 
         for (int idx = 0; idx < NUMBER_OF_CONNECTION; ++idx)
         {
-            // each thread should sleep after each test for a different amount of time so that they 
+            // each thread should sleep after each test for a different amount of time so that they
             // end up trying all different overlapping parts of the code.
             int sleepTime = iteration * (idx + 1);
             assetProcessorConnectionList.push_back(AZStd::thread(AZStd::bind(StartConnection, sleepTime)));
@@ -155,8 +171,8 @@ void AssetProcessorServerUnitTest::RunAssetProcessorConnectionStressTest(bool fa
 
 void AssetProcessorServerUnitTest::AssetProcessorConnectionStressTest()
 {
-    // UnitTest for testing the AssetProcessorConnection by creating lot of connections that connects to AP and then disconnecting them at different times
-    // This test should detect any deadlocks that can arise due to rapidly connecting/disconnecting connections
+    // UnitTest for testing the AssetProcessorConnection by creating lot of connections that connects to AP and then disconnecting them at
+    // different times This test should detect any deadlocks that can arise due to rapidly connecting/disconnecting connections
     UnitTestUtils::AssertAbsorber assertAbsorber;
 
     // Testing the case when negotiation succeeds
@@ -200,6 +216,245 @@ void AssetProcessorServerUnitTest::ConnectionErrorForNonProxyMode(unsigned int c
     }
 }
 
-
 REGISTER_UNIT_TEST(AssetProcessorServerUnitTest)
 
+#else
+
+namespace UnitTest
+{
+    AssetProcessorServerUnitTest::AssetProcessorServerUnitTest()
+        : ScopedAllocatorSetupFixture()
+    {
+    }
+
+    void AssetProcessorServerUnitTest::SetUp()
+    {
+        m_app.reset(aznew AZ::ComponentApplication());
+        AZ::ComponentApplication::Descriptor desc;
+        desc.m_useExistingAllocator = true;
+        m_app->Create(desc);
+
+        static int numParams = 1;
+        static char processName[] = { "AssetProcessorBatch" };
+        static char* namePtr = &processName[0];
+        static char** paramStringArray = { &namePtr };
+        m_batchApplicationManager = AZStd::make_unique<BatchApplicationManager>(&numParams, &paramStringArray);
+
+        auto status = m_batchApplicationManager->BeforeRun();
+        ASSERT_EQ(status, ApplicationManager::BeforeRunStatus::Status_Success);
+
+        //m_batchApplicationManager->m_platformConfiguration = new PlatformConfiguration();
+        m_batchApplicationManager->Activate();
+
+        m_batchApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(true);
+
+        m_platformConfig.reset(new AssetProcessor::PlatformConfiguration);
+        //m_connectionManager.reset(new ConnectionManager(m_platformConfig.get()));
+        m_iniConfiguration.readINIConfigFile();
+        m_iniConfiguration.SetListeningPort(FEATURE_TEST_LISTEN_PORT);
+
+        m_applicationServer = AZStd::make_unique<BatchApplicationServer>();
+        m_applicationServer->startListening(FEATURE_TEST_LISTEN_PORT); // a port that is not the normal port
+        connect(m_applicationServer.get(), SIGNAL(newIncomingConnection(qintptr)), ConnectionManager::Get(), SLOT(NewConnection(qintptr)));
+    }
+
+    void AssetProcessorServerUnitTest::TearDown()
+    {
+        m_batchApplicationManager->GetAssetProcessorManager()->QuitRequested();
+        
+        if (ConnectionManager::Get())
+        {
+            QEventLoop eventLoop;
+
+            QObject::connect(
+                ConnectionManager::Get(), &ConnectionManager::ReadyToQuit, &eventLoop, &QEventLoop::quit);
+
+            ConnectionManager::Get()->QuitRequested();
+
+            eventLoop.exec();
+        }
+
+        //disconnect();
+       // ConnectionManager::Get()->removeConnection(m_connectionId);
+        //ConnectionManager::Get()->disconnect();
+        //m_connectionManager.reset();
+        while (!m_batchApplicationManager->IsAssetProcessorManagerIdle())
+        {
+        }
+        //EBUS_EVENT(AssetProcessor::ApplicationManagerNotifications::Bus, ApplicationShutdownRequested);
+
+        m_batchApplicationManager.reset();
+
+        m_app->Destroy();
+        //m_app.reset();
+    }
+
+    AssetProcessorServerUnitTest::~AssetProcessorServerUnitTest()
+    {
+    }
+
+    void AssetProcessorServerUnitTest::RunAssetProcessorConnectionStressTest(bool failNegotiation)
+    {
+        AZStd::string azBranchToken;
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, azBranchToken);
+
+        QString branchToken(azBranchToken.c_str());
+        
+        if (failNegotiation)
+        {
+            branchToken = branchToken.append("invalid"); // invalid branch token will result in negotiation to fail
+        }
+
+        AZStd::atomic_int numberOfConnection(0);
+        AZStd::atomic_bool failureOccurred = false;
+
+        enum : int
+        {
+            totalConnections = NUMBER_OF_CONNECTION * NUMBER_OF_TRIES
+        };
+
+        AZStd::function<void(int)> StartConnection =
+            [&branchToken, &numberOfConnection, &failureOccurred, failNegotiation](int numTimeWait)
+        {
+            for (int idx = 0; idx < NUMBER_OF_TRIES; ++idx)
+            {
+                AzFramework::AssetSystem::AssetProcessorConnection connection;
+                connection.Configure(
+                    branchToken.toUtf8().data(), "pc", "UNITTEST",
+                    AssetUtilities::ComputeProjectName()
+                        .toUtf8()
+                        .constData()); // UNITTEST identifier will skip the processID validation during negotiation
+                connection.Connect("127.0.0.1", FEATURE_TEST_LISTEN_PORT);
+                while (!connection.IsConnected() && !connection.NegotiationFailed())
+                {
+                    AZStd::this_thread::yield();
+                }
+
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(numTimeWait + idx));
+                numberOfConnection.fetch_sub(1);
+
+                if (connection.NegotiationFailed() != failNegotiation)
+                {
+                    failureOccurred = true;
+                }
+
+                EXPECT_TRUE(connection.NegotiationFailed() == failNegotiation);
+            }
+        };
+
+        AZStd::vector<AZStd::thread> assetProcessorConnectionList;
+        for (int iteration = 0; iteration < NUMBER_OF_ITERATION; ++iteration)
+        {
+#if defined(DEBUG_ASSETPROCESSORCONNECTION)
+            printf("Iteration %4i/%4i...\n", iteration, NUMBER_OF_ITERATION);
+#endif
+            numberOfConnection = totalConnections;
+
+            for (int idx = 0; idx < NUMBER_OF_CONNECTION; ++idx)
+            {
+                // each thread should sleep after each test for a different amount of time so that they
+                // end up trying all different overlapping parts of the code.
+                int sleepTime = iteration * (idx + 1);
+                assetProcessorConnectionList.push_back(AZStd::thread(AZStd::bind(StartConnection, sleepTime)));
+            };
+
+            // We need to process all events, since AssetProcessorServer is also on the same thread
+            while (numberOfConnection.load() && !failureOccurred)
+            {
+                QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+                QCoreApplication::processEvents();
+            }
+
+            EXPECT_TRUE(failureOccurred == false);
+
+            for (int idx = 0; idx < NUMBER_OF_CONNECTION; ++idx)
+            {
+                if (assetProcessorConnectionList[idx].joinable())
+                {
+                    assetProcessorConnectionList[idx].join();
+                }
+            }
+
+            assetProcessorConnectionList.clear();
+        }
+    }
+
+    void AssetProcessorServerUnitTest::AssetProcessorConnectionStressTest()
+    {
+        // UnitTest for testing the AssetProcessorConnection by creating lot of connections that connects to AP and then disconnecting them
+        // at different times This test should detect any deadlocks that can arise due to rapidly connecting/disconnecting connections
+        //UnitTestUtils::AssertAbsorber assertAbsorber;
+
+        // Testing the case when negotiation succeeds
+        RunAssetProcessorConnectionStressTest(false);
+
+        //EXPECT_EQ(assertAbsorber.m_numErrorsAbsorbed, 0);
+        //EXPECT_EQ(assertAbsorber.m_numAssertsAbsorbed, 0);
+
+        // Testing the case when negotiation fails
+        RunAssetProcessorConnectionStressTest(true);
+
+        //EXPECT_EQ(assertAbsorber.m_numErrorsAbsorbed, 0);
+        //EXPECT_EQ(assertAbsorber.m_numAssertsAbsorbed, 0);
+    }
+
+    void AssetProcessorServerUnitTest::ConnectionErrorForNonProxyMode(unsigned int connId, QString error)
+    {
+        if ((connId == 10 || connId == 11))
+        {
+            if (QString::compare(error, "Attempted to negotiate with self") == 0)
+            {
+                m_gotNegotiationWithSelfError = true;
+            }
+            ++m_numberOfDisconnectionReceived;
+        }
+
+        if (m_numberOfDisconnectionReceived == 2)
+        {
+            ConnectionManager::Get()->removeConnection(m_connectionId);
+            disconnect(m_connection);
+            EXPECT_TRUE(m_gotNegotiationWithSelfError);
+            if (m_gotNegotiationWithSelfError)
+            {
+                AssetProcessorConnectionStressTest();
+            }
+            m_eventWasPosted = true;
+        }
+    }
+
+    TEST_F(AssetProcessorServerUnitTest, RunFirstPartOfUnitTestsForAssetProcessorServer)
+    {
+        //QSharedPointer<QCoreApplication> qCoreApplication;
+        // QApplications require command line arguments, so create something to meet that requirement.
+        //int argC{ 1 };
+        //char commandLineBuffer[AZ_MAX_PATH_LEN];
+        //char* commandLineBufferAddress{ commandLineBuffer };
+        //azstrcpy(commandLineBuffer, AZ_ARRAY_SIZE(commandLineBuffer), "no_argv_supplied");
+
+        //qCoreApplication.reset(new QApplication(argC, &commandLineBufferAddress));
+
+        m_numberOfDisconnectionReceived = 0;
+        m_connection = connect(
+            ConnectionManager::Get(), SIGNAL(ConnectionError(unsigned int, QString)), this,
+            SLOT(ConnectionErrorForNonProxyMode(unsigned int, QString)));
+        m_connectionId = ConnectionManager::Get()->addConnection();
+        Connection* connection = ConnectionManager::Get()->getConnection(m_connectionId);
+        connection->SetPort(FEATURE_TEST_LISTEN_PORT);
+        connection->SetIpAddress("127.0.0.1");
+        connection->SetAutoConnect(true);
+
+        
+        QElapsedTimer time;
+        time.start();
+
+        const int testTimeoutMS = 120 * 1000;
+        while (time.elapsed() < testTimeoutMS && !m_eventWasPosted)
+        {
+            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+            QCoreApplication::processEvents();
+        }
+    }
+
+} // namespace UnitTest
+#endif
