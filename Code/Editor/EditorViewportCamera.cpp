@@ -14,11 +14,6 @@
 
 namespace SandboxEditor
 {
-    static AZ::Quaternion CameraRotation(const float pitch, const float yaw)
-    {
-        return AZ::Quaternion::CreateRotationZ(yaw) * AZ::Quaternion::CreateRotationX(pitch);
-    }
-
     void SetDefaultViewportCameraPosition(const AZ::Vector3& position)
     {
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();

@@ -11,14 +11,6 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 
-//! Returns the dimensions of the specified 2D image.
-float2 GetImageSize(Texture2D<float4> image)
-{
-    float2 size = float2(0., 0.);
-    image.GetDimensions(size.x, size.y);
-    return size;
-}
-
 //! Returns the linear depth value of the specified non-linear depth value.
 float CalculateLinearDepth(const float zDepth)
 {
@@ -43,7 +35,11 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     Texture2D<float4> m_depth;
 
     //! The entity mask containing the visible fragments of entities of interest.
-    Texture2D<float4> m_entityMask;
+    //! @note Red channel contains the visible fragments, green channel contains the visible and occluded fragments.
+    Texture2D<float2> m_entityMask;
+
+    //! Dimensions of mask texture (xy is width and height, zw is 1/width and 1/height).
+    float4 m_maskDimensions;
 
     //! The final blend amount that is used to scale the calculated blend values.
     float m_finalBlendAmount;

@@ -214,6 +214,8 @@ namespace AzToolsFramework
             virtual bool StickySelectEnabled() const = 0;
             //! Returns the default viewport camera position.
             virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
+            //! Returns the default viewport camera orientation (pitch and yaw in degrees).
+            virtual AZ::Vector2 DefaultEditorCameraOrientation() const = 0;
             //! Returns if icons are visible in the viewport.
             virtual bool IconsVisible() const = 0;
             //! Returns if viewport helpers (additional debug drawing) are visible in the viewport.

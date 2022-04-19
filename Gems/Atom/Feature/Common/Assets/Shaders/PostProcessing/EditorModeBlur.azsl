@@ -11,30 +11,25 @@
 
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    //! Width of kernal to apply box blur effect.
-    float m_kernalWidth;
+    //! Width of kernel to apply box blur effect.
+    float m_kernelHalfWidth;
+
+    //! The direction to perform the blur (0 = horizontal, 1 = vertical).
+    uint m_direction;
 }
 
-//! Applies a box blur of the specified kernal width
-//! @note This is not an efficient implementation. Future work will replace this with a multi-pass Gaussian blur.
-float3 Blur(const float2 uv, const float kernalWidth)
+//! Applies a box blur of the specified kernel width in the specified direction.
+float3 Blur(const float2 uv, const float2 uvDir, const float kernelHalfWidth)
 {
-    const float2 maskSize = GetImageSize(PassSrg::m_entityMask);
-    const float2 unormalizedUv = float2(uv.x * maskSize.x, uv.y * maskSize.y);
-    const float2 maskSizeReciprocal = float2(1., 1.0) / maskSize;
+    const float2 unormalizedUv = float2(uv.x * PassSrg::m_maskDimensions.x, uv.y * PassSrg::m_maskDimensions.y);
     float3 outColor = float3(0., 0., 0.);
 
-    float weights = 0.;
-    for(float u = -kernalWidth; u <= kernalWidth; u+=1.)
+    for(float i = -kernelHalfWidth; i <= kernelHalfWidth; i+=1.)
     {
-        for(float v = -kernalWidth; v <= kernalWidth; v+=1.)
-        {
-            weights += 1.;
-            outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * maskSizeReciprocal).rgb;
-        }
+        outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, (unormalizedUv + (float2(i,i) * uvDir)) * PassSrg::m_maskDimensions.zw).rgb;
     }
 
-    return outColor / weights;
+    return outColor / (kernelHalfWidth * 2.0 + 1.0);
 }
 
 PSOutput MainPS(VSOutput IN)
@@ -45,8 +40,9 @@ PSOutput MainPS(VSOutput IN)
     const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
     
     // Blur effect
-    float3 finalEffect = Blur(IN.m_texCoord, PassSrg::m_kernalWidth);
-  
+    float2 blurDirection = (PassSrg::m_direction == 0) ? float2(1.0, 0.0) : float2(0.0, 1.0);
+    float3 finalEffect = Blur(IN.m_texCoord, blurDirection, PassSrg::m_kernelHalfWidth);
+    
     // Apply the depth transition to the blend amount
     const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
     const float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);

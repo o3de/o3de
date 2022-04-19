@@ -164,20 +164,24 @@ namespace GradientSignal
         m_dependencyMonitor.ConnectDependency(m_configuration.m_shapeEntityId);
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
         AZ::TickBus::Handler::BusConnect();
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceAltitudeGradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
         UpdateFromShape();
         m_dirty = false;
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void SurfaceAltitudeGradientComponent::Deactivate()
     {
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
+        GradientRequestBus::Handler::BusDisconnect();
+
         m_dependencyMonitor.Reset();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        GradientRequestBus::Handler::BusDisconnect();
         SurfaceAltitudeGradientRequestBus::Handler::BusDisconnect();
         m_dirty = false;
     }
@@ -224,12 +228,11 @@ namespace GradientSignal
             return;
         }
 
-        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::shared_lock lock(m_queryMutex);
 
         SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
-            points);
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(
+            positions, m_configuration.m_surfaceTagsToSample, points);
 
         // For each position, turn the height into a 0-1 value based on our min/max altitudes.
         for (size_t index = 0; index < positions.size(); index++)
@@ -277,8 +280,29 @@ namespace GradientSignal
     }
 
     void SurfaceAltitudeGradientComponent::OnSurfaceChanged(
-        [[maybe_unused]] const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds)
+        [[maybe_unused]] const AZ::EntityId& entityId,
+        [[maybe_unused]] const AZ::Aabb& oldBounds,
+        [[maybe_unused]] const AZ::Aabb& newBounds)
     {
+        /* The following logic is currently disabled until we can find a safer way to do this.
+           The intent of the logic is to make the SurfaceAltitudeGradient refresh its data if the surface(s) that it depends on changes.
+           However, it's currently possible to get into a refresh feedback loop if a surface provider (like terrain) uses one of these
+           gradients. The loop looks like this:
+           - Surface that the gradient depends on changes, which triggers this OnSurfaceChanged message
+           - Gradient marks itself as dirty, which triggers an OnCompositionChanged message to anything depending on the gradient
+           - Terrain receives message and triggers an OnSurfaceChanged message
+           - OnSurfaceChanged message makes it back to this gradient. Even if this gradient doesn't depend on that specific surface,
+             it doesn't have enough information here to know that, so if the AABB overlaps, it will mark itself as dirty again, even
+             though the actual surfaces we're listening to in that AABB didn't change.
+
+           We can't just query the surface provider itself to see what surfaces it provides, because if there are any surface modifiers,
+           it's *possible* for them to modify the points of the surface provider to add the surface types we're listening for.
+
+           By disabling this code, we end up with stale data on the gradient, but enabling it can cause refreshes on every frame which
+           destroys the framerate.
+        */ 
+
+        /*
         // Create a box that's infinite in the XY direction, but contains our altitude range, so that we can compare against the dirty
         // surface region.
         const AZ::Aabb altitudeBox = AZ::Aabb::CreateFromMinMaxValues(
@@ -290,13 +314,12 @@ namespace GradientSignal
             m_dirty = true;
             m_surfaceDirty = true;
         }
+        */
     }
 
     void SurfaceAltitudeGradientComponent::UpdateFromShape()
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::unique_lock lock(m_queryMutex);
 
         if (m_configuration.m_shapeEntityId.IsValid())
         {
@@ -320,7 +343,13 @@ namespace GradientSignal
     }
     void SurfaceAltitudeGradientComponent::SetShapeEntityId(AZ::EntityId entityId)
     {
-        m_configuration.m_shapeEntityId = entityId;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_shapeEntityId = entityId;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -331,7 +360,13 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::SetAltitudeMin(float altitudeMin)
     {
-        m_configuration.m_altitudeMin = altitudeMin;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_altitudeMin = altitudeMin;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -342,7 +377,13 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::SetAltitudeMax(float altitudeMax)
     {
-        m_configuration.m_altitudeMax = altitudeMax;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_altitudeMax = altitudeMax;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -358,13 +399,25 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::RemoveTag(int tagIndex)
     {
-        m_configuration.RemoveTag(tagIndex);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.RemoveTag(tagIndex);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void SurfaceAltitudeGradientComponent::AddTag(AZStd::string tag)
     {
-        m_configuration.AddTag(tag);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.AddTag(tag);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }

@@ -43,12 +43,12 @@ namespace EMotionFX::MotionMatching
         const ActorInstance* actorInstance = context.m_actorInstance;
         const Frame& frame = context.m_frameDatabase->GetFrame(context.m_frameIndex);
 
-        AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
-        AnimGraphPose* tempPose = posePool.RequestPose(actorInstance);
+        AnimGraphPose* tempPose = context.m_posePool.RequestPose(actorInstance);
         {
             // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
             PoseDataJointVelocities* velocityPoseData = tempPose->GetPose().GetAndPreparePoseData<PoseDataJointVelocities>(actorInstance);
             velocityPoseData->CalculateVelocity(actorInstance,
+                context.m_posePool,
                 frame.GetSourceMotion(),
                 frame.GetSampleTime(),
                 m_relativeToNodeIndex);
@@ -56,7 +56,7 @@ namespace EMotionFX::MotionMatching
             const AZ::Vector3& velocity = velocityPoseData->GetVelocities()[m_jointIndex];
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
         }
-        posePool.FreePose(tempPose);
+        context.m_posePool.FreePose(tempPose);
     }
 
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,

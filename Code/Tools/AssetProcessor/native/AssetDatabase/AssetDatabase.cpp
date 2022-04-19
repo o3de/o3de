@@ -93,6 +93,7 @@ namespace AssetProcessor
             "    SubID          INTEGER NOT NULL, "
             "    AssetType      BLOB NOT NULL, "
             "    LegacyGuid     BLOB NOT NULL, "
+            "    Hash           INTEGER NOT NULL, "
             "    FOREIGN KEY (JobPK) REFERENCES "
             "       Jobs(JobID) ON DELETE CASCADE);";
 
@@ -116,6 +117,7 @@ namespace AssetProcessor
             "    BuilderGuid                   BLOB NOT NULL, "
             "    Source                        TEXT NOT NULL collate nocase, "
             "    DependsOnSource               TEXT NOT NULL collate nocase, "
+            "    SubIds                        TEXT NOT NULL collate nocase, "
             "    TypeOfDependency              INTEGER NOT NULL DEFAULT 0,"
             "    FromAssetId                   INTEGER NOT NULL DEFAULT 0 "
             "); ";
@@ -394,15 +396,16 @@ namespace AssetProcessor
 
         static const char* INSERT_PRODUCT = "AssetProcessor::InsertProduct";
         static const char* INSERT_PRODUCT_STATEMENT =
-            "INSERT INTO Products (JobPK, SubID, ProductName, AssetType, LegacyGuid) "
-            "VALUES (:jobid, :subid, :productname, :assettype, :legacyguid);";
+            "INSERT INTO Products (JobPK, SubID, ProductName, AssetType, LegacyGuid, Hash) "
+            "VALUES (:jobid, :subid, :productname, :assettype, :legacyguid, :hash);";
 
         static const auto s_InsertProductQuery = MakeSqlQuery(INSERT_PRODUCT, INSERT_PRODUCT_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":jobid"),
             SqlParam<AZ::u32>(":subid"),
             SqlParam<const char*>(":productname"),
             SqlParam<AZ::Uuid>(":assettype"),
-            SqlParam<AZ::Uuid>(":legacyguid"));
+            SqlParam<AZ::Uuid>(":legacyguid"),
+            SqlParam<AZ::u64>(":hash"));
 
         static const char* UPDATE_PRODUCT = "AssetProcessor::UpdateProduct";
         static const char* UPDATE_PRODUCT_STATEMENT =
@@ -411,8 +414,9 @@ namespace AssetProcessor
             "SubID = :subid, "
             "ProductName = :productname, "
             "AssetType = :assettype, "
-            "LegacyGuid = :legacyguid WHERE "
-            "ProductID = :productid;";
+            "LegacyGuid = :legacyguid, "
+            "Hash = :hash "
+            "WHERE ProductID = :productid;";
 
         static const auto s_UpdateProductQuery = MakeSqlQuery(UPDATE_PRODUCT, UPDATE_PRODUCT_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":jobid"),
@@ -420,7 +424,8 @@ namespace AssetProcessor
             SqlParam<const char*>(":productname"),
             SqlParam<AZ::Uuid>(":assettype"),
             SqlParam<AZ::Uuid>(":legacyguid"),
-            SqlParam<AZ::s64>(":productid"));
+            SqlParam<AZ::s64>(":productid"),
+            SqlParam<AZ::u64>(":hash"));
 
         static const char* DELETE_PRODUCT = "AssetProcessor::DeleteProduct";
         static const char* DELETE_PRODUCT_STATEMENT =
@@ -464,14 +469,15 @@ namespace AssetProcessor
 
         static const char* INSERT_SOURCE_DEPENDENCY = "AssetProcessor::InsertSourceDependency";
         static const char* INSERT_SOURCE_DEPENDENCY_STATEMENT =
-            "INSERT INTO SourceDependency (BuilderGuid, Source, DependsOnSource, TypeOfDependency, FromAssetId) "
-            "VALUES (:builderGuid, :source, :dependsOnSource, :typeofdependency, :fromAssetId);";
+            "INSERT INTO SourceDependency (BuilderGuid, Source, DependsOnSource, TypeOfDependency, FromAssetId, SubIds) "
+            "VALUES (:builderGuid, :source, :dependsOnSource, :typeofdependency, :fromAssetId, :subIds);";
         static const auto s_InsertSourceDependencyQuery = MakeSqlQuery(INSERT_SOURCE_DEPENDENCY, INSERT_SOURCE_DEPENDENCY_STATEMENT, LOG_NAME,
             SqlParam<AZ::Uuid>(":builderGuid"),
             SqlParam<const char*>(":source"),
             SqlParam<const char*>(":dependsOnSource"),
             SqlParam<AZ::s32>(":typeofdependency"),
-            SqlParam<AZ::s32>(":fromAssetId"));
+            SqlParam<AZ::s32>(":fromAssetId"),
+            SqlParam<const char*>(":subIds"));
 
         static const char* DELETE_SOURCE_DEPENDENCY_SOURCEDEPENDENCYID = "AssetProcessor::DeleteSourceDependencBySourceDependencyId";
         static const char* DELETE_SOURCE_DEPENDENCY_SOURCEDEPENDENCYID_STATEMENT =
@@ -766,6 +772,16 @@ namespace AssetProcessor
         static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY = "AssetProcesser::DropIndexBuilderGuid_Source_SourceDependency";
         static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT =
             "DROP INDEX IF EXISTS BuilderGuid_Source_SourceDependency;";
+
+        static const char* INSERT_COLUMN_PRODUCT_HASH = "AssetProcessor::InsertColumnsProductsHash";
+        static const char* INSERT_COLUMN_PRODUCT_HASH_STATEMENT =
+            "ALTER TABLE PRODUCTS "
+            "ADD Hash INTEGER NOT NULL DEFAULT 0;";
+
+        static const char* INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS = "AssetProcessor::InsertColumnsSourceDependenciesSubIds";
+        static const char* INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS_STATEMENT =
+            "ALTER TABLE SourceDependency "
+            "ADD SubIds TEXT NOT NULL collate nocase default('');";
     }
 
     AssetDatabaseConnection::AssetDatabaseConnection()
@@ -1050,6 +1066,15 @@ namespace AssetProcessor
             }
         }
 
+        if (foundVersion == AssetDatabase::DatabaseVersion::AddedSourceIndexForSourceDependencyTable)
+        {
+            if (m_databaseConnection->ExecuteOneOffStatement(INSERT_COLUMN_PRODUCT_HASH) && m_databaseConnection->ExecuteOneOffStatement(INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS))
+            {
+                foundVersion = AssetDatabase::DatabaseVersion::AddedSourceDependencySubIdsAndProductHashes;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedSourceDependencySubIdsAndProductHashes)\n", foundVersion);
+            }
+        }
+
         if (foundVersion == CurrentDatabaseVersion())
         {
             dropAllTables = false;
@@ -1192,6 +1217,7 @@ namespace AssetProcessor
         //                   Products table
         // ---------------------------------------------------------------------------------------------
         m_databaseConnection->AddStatement(CREATE_PRODUCT_TABLE, CREATE_PRODUCT_TABLE_STATEMENT);
+        m_databaseConnection->AddStatement(INSERT_COLUMN_PRODUCT_HASH, INSERT_COLUMN_PRODUCT_HASH_STATEMENT);
         m_createStatements.push_back(CREATE_PRODUCT_TABLE);
 
         AddStatement(m_databaseConnection, s_InsertProductQuery);
@@ -1207,6 +1233,7 @@ namespace AssetProcessor
         m_databaseConnection->AddStatement(CREATE_SOURCE_DEPENDENCY_TABLE, CREATE_SOURCE_DEPENDENCY_TABLE_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_SOURCEDEPENDENCY_TYPEOFDEPENDENCY, INSERT_COLUMN_SOURCEDEPENDENCY_TYPEOFDEPENDENCY_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMNS_SOURCEDEPENDENCY_FROM_ASSETID, INSERT_COLUMNS_SOURCEDEPENDENCY_FROM_ASSETID_STATEMENT);
+        m_databaseConnection->AddStatement(INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS, INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS_STATEMENT);
 
         m_createStatements.push_back(CREATE_SOURCE_DEPENDENCY_TABLE);
 
@@ -2270,7 +2297,7 @@ namespace AssetProcessor
             if (wasAlreadyInDatabase)
             {
                 // it was already in the database, so use the "UPDATE" version
-                if (!s_UpdateProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_productID))
+                if (!s_UpdateProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_productID, entry.m_hash))
                 {
                     return false;
                 }
@@ -2278,7 +2305,7 @@ namespace AssetProcessor
             else
             {
                 // it wasn't in the database, so use the "INSERT" version
-                if (!s_InsertProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid))
+                if (!s_InsertProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_hash))
                 {
                     return false;
                 }
@@ -2510,7 +2537,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::SetSourceFileDependency(SourceFileDependencyEntry& entry)
     {
         //first make sure its not already in the database
-        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_source.c_str(), entry.m_dependsOnSource.c_str(), entry.m_typeOfDependency, entry.m_fromAssetId))
+        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_source.c_str(), entry.m_dependsOnSource.c_str(), entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
         {
             return false;
         }

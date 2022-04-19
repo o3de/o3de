@@ -91,7 +91,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_HandleOpacityDoubleSided.lua"
+                "file": "Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua"
             }
         }
     ]

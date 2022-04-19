@@ -68,12 +68,15 @@ namespace AZ
                 const auto& propertyValues = materialAsset.GetPropertyValues();
                 const AZ::RPI::MaterialPropertyValue& propertyValue = propertyValues[propertyIndex.GetIndex()];
                 auto imageAsset = propertyValue.GetValue<Data::Asset<RPI::ImageAsset>>();
-                imageAsset.QueueLoad();
-                // [GFX TODO][ATOM-14271] - DecalTextureArrayFeatureProcessor should use async loading
-                imageAsset.BlockUntilLoadComplete();
-
                 const auto& assetId = imageAsset.GetId();
-                if (!assetId.IsValid())
+
+                if (assetId.IsValid())
+                {
+                    imageAsset.QueueLoad();
+                    // [GFX TODO][ATOM-14271] - DecalTextureArrayFeatureProcessor should use async loading
+                    imageAsset.BlockUntilLoadComplete();
+                }
+                else
                 {
                     AZ_Warning("DecalTextureArray", false, "Material property: %s does not have a valid asset Id", propertyName.GetCStr());
                     return {};
@@ -200,7 +203,7 @@ namespace AZ
                 const DecalMapType mapType = aznumeric_cast<DecalMapType>(i);
                 if (!AreAllTextureMapsPresent(mapType))
                 {
-                    AZ_Warning("DecalTextureArray", true, "Missing decal texture maps for %s. Please make sure all maps of this type are present.\n", GetMapName(mapType).GetCStr());
+                    AZ_Warning("DecalTextureArray", false, "Missing decal texture maps for %s. Please make sure all maps of this type are present.\n", GetMapName(mapType).GetCStr());
                     m_textureArrayPacked[i] = nullptr;
                     continue;
                 }

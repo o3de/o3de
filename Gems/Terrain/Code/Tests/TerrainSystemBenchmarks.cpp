@@ -49,7 +49,7 @@ namespace UnitTest
                 const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)> ApiCaller)
         {
-            AZ_PROFILE_FUNCTION(Entity);
+            AZ_PROFILE_FUNCTION(Terrain);
 
             // Get the ranges for querying from our benchmark parameters
             float boundsRange = aznumeric_cast<float>(state.range(0));
@@ -103,7 +103,7 @@ namespace UnitTest
             AZStd::function<void(
                 float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)> ApiCaller)
         {
-            AZ_PROFILE_FUNCTION(Entity);
+            AZ_PROFILE_FUNCTION(Terrain);
 
             // Get the ranges for querying from our benchmark parameters.
             // state.range(1) contains the number of requested surfaces, for consistency with other benchmarks.

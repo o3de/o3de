@@ -279,39 +279,16 @@ namespace EMStudio
         }
     }
 
-
-    // get the compile date
-    const char* AnimGraphPlugin::GetCompileDate() const
-    {
-        return MCORE_DATE;
-    }
-
-
     // get the name
     const char* AnimGraphPlugin::GetName() const
     {
         return "Anim Graph";
     }
 
-
     // get the plugin type id
     uint32 AnimGraphPlugin::GetClassID() const
     {
         return AnimGraphPlugin::CLASS_ID;
-    }
-
-
-    // get the creator name
-    const char* AnimGraphPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-
-    // get the version
-    float AnimGraphPlugin::GetVersion() const
-    {
-        return 1.0f;
     }
 
     void AnimGraphPlugin::AddWindowMenuEntries(QMenu* parent)
@@ -437,14 +414,6 @@ namespace EMStudio
         {
             m_dockWindowActions[option]->setEnabled(isEnabled);
         }
-    }
-
-
-    // clone the log window
-    EMStudioPlugin* AnimGraphPlugin::Clone()
-    {
-        AnimGraphPlugin* newPlugin = new AnimGraphPlugin();
-        return newPlugin;
     }
 
     void AnimGraphPlugin::SetActionFilter(const AnimGraphActionFilter& actionFilter)

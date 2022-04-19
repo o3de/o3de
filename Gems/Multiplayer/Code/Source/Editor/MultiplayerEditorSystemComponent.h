@@ -86,6 +86,7 @@ namespace Multiplayer
     private:
         void LaunchEditorServer();
         bool FindServerLauncher(AZ::IO::FixedMaxPath& serverPath);
+        void Connect();
         
         //! EditorEvents::Handler overrides
         //! @{
@@ -114,5 +115,7 @@ namespace Multiplayer
         AzNetworking::ConnectionId m_editorConnId;
 
         ServerAcceptanceReceivedEvent::Handler m_serverAcceptanceReceivedHandler;
+        AZ::ScheduledEvent m_connectionEvent = AZ::ScheduledEvent([this]{this->Connect();}, AZ::Name("MultiplayerEditorConnect"));
+        uint16_t m_connectionAttempts = 0;
     };
 }

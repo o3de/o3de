@@ -54,6 +54,8 @@ namespace AzFramework
             // System-level queries to understand world size and resolution
             virtual float GetTerrainHeightQueryResolution() const = 0;
             virtual void SetTerrainHeightQueryResolution(float queryResolution) = 0;
+            virtual float GetTerrainSurfaceDataQueryResolution() const = 0;
+            virtual void SetTerrainSurfaceDataQueryResolution(float queryResolution) = 0;
 
             virtual AZ::Aabb GetTerrainAabb() const = 0;
             virtual void SetTerrainAabb(const AZ::Aabb& worldBounds) = 0;
@@ -168,7 +170,7 @@ namespace AzFramework
             //! Returns the number of samples for a given region and step size. The first and second
             //! elements of the pair correspond to the X and Y sample counts respectively.
             virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize) const = 0;
+                const AZ::Vector2& stepSize, Sampler samplerType) const = 0;
 
             //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
             //! coordinates in the region.
@@ -432,6 +434,27 @@ namespace AzFramework
                 [[maybe_unused]] const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
             {
             }
+            
+            //! Connection policy that auto-calls OnTerrainDataCreateBegin & OnTerrainDataCreateEnd on connection.
+            template<class Bus>
+            struct ConnectionPolicy : public AZ::EBusConnectionPolicy<Bus>
+            {
+                static void Connect(
+                    typename Bus::BusPtr& busPtr,
+                    typename Bus::Context& context,
+                    typename Bus::HandlerNode& handler,
+                    typename Bus::Context::ConnectLockGuard& connectLock,
+                    const typename Bus::BusIdType& id = 0)
+                {
+                    AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
+
+                    if (TerrainDataRequestBus::HasHandlers())
+                    {
+                        handler->OnTerrainDataCreateBegin();
+                        handler->OnTerrainDataCreateEnd();
+                    }
+                }
+            };
         };
         using TerrainDataNotificationBus = AZ::EBus<TerrainDataNotifications>;
     } // namespace Terrain

@@ -142,7 +142,12 @@ namespace UnitTest
 
     AZ::Vector3 ViewportSettingsTestImpl::DefaultEditorCameraPosition() const
     {
-        return {};
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector2 ViewportSettingsTestImpl::DefaultEditorCameraOrientation() const
+    {
+        return AZ::Vector2::CreateZero();
     }
 
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)

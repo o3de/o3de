@@ -379,8 +379,8 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 
     if (result)
     {
-        AZ_Assert(Audio::AudioSystemRequestBus::HasHandlers(),
-            "Initialization of the Audio System succeeded, but the Audio System EBus is not connected!\n");
+        AZ_Assert(AZ::Interface<Audio::IAudioSystem>::Get() != nullptr,
+            "Initialization of the Audio System succeeded, but the IAudioSystem interface is not registered!\n");
     }
     else
     {

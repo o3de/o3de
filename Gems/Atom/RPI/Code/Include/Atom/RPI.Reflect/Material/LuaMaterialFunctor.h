@@ -278,6 +278,8 @@ namespace AZ
             template<typename Type>
             Type GetMaterialPropertyValue(const char* name) const;
 
+            bool HasMaterialValue(const char* name) const;
+
             //! Set the value of a shader option. Applies to any shader that has an option with this name.
             //! @param name the name of the shader option to set
             //! @param value the new value for the shader option

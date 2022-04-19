@@ -88,6 +88,7 @@ namespace AZ
                 jobDependency.m_jobKey = "Atom Material Builder";
                 jobDependency.m_sourceFile = materialTypeSource;
                 jobDependency.m_platformIdentifier = platformIdentifier;
+                jobDependency.m_productSubIds.push_back(0);
 
                 // If FinalizeMaterialAssets is true, then a job dependency is needed so the material builder can validate
                 // MaterialAsset properties against the MaterialTypeAsset at asset build time. If FinalizeMaterialAssets is false, the
@@ -127,7 +128,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(25);  // Fixed job dependency type logic
+                    ->Version(26);  // Add productSubId dependency for materialtype
             }
         }
         
