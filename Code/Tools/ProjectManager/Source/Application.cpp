@@ -9,7 +9,6 @@
 #include <Application.h>
 #include <ProjectUtils.h>
 
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Logging/LoggingComponent.h>
@@ -40,6 +39,8 @@ namespace O3DE::ProjectManager
 
         QCoreApplication::setApplicationName(applicationName);
         QCoreApplication::setApplicationVersion("1.0");
+
+        SetupCrashHandler();
 
         // Use the LogComponent for non-dev logging log
         RegisterComponentDescriptor(AzFramework::LogComponent::CreateDescriptor());
@@ -72,6 +73,8 @@ namespace O3DE::ProjectManager
 
         // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
         QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
+
+        m_pythonBindings->AddGemRepo("ADASDASD");
 
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
 
