@@ -36,17 +36,17 @@ namespace Benchmark
             m_entityModify= CreateEntity("Entity", AZ::EntityId());
             entities.emplace_back(m_entityModify);
 
-            instanceCreated = m_prefabSystemComponent->CreatePrefab(entities, {}, templatePath);
-            TemplateId templateToInstantiateId = instanceCreated->GetTemplateId();
+            m_instanceCreated = m_prefabSystemComponent->CreatePrefab(entities, {}, templatePath);
+            TemplateId templateToInstantiateId = m_instanceCreated->GetTemplateId();
 
             // We need 2 prefab instances: One to make the original change to; And one to propagate that change to.
-            instanceToUseForPropagation = m_prefabSystemComponent->InstantiatePrefab(templateToInstantiateId);
+            m_instanceToUseForPropagation = m_prefabSystemComponent->InstantiatePrefab(templateToInstantiateId);
         }
 
         void TeardownHarness(const benchmark::State& state) override
         {
-            instanceCreated.reset();
-            instanceToUseForPropagation.reset();
+            m_instanceCreated.reset();
+            m_instanceToUseForPropagation.reset();
             BM_Prefab::TeardownHarness(state);
         }
 
@@ -54,15 +54,15 @@ namespace Benchmark
         void UpdateTemplate()
         {
             PrefabDom updatedPrefabDom;
-            PrefabDomUtils::StoreInstanceInPrefabDom(*instanceCreated, updatedPrefabDom);
-            PrefabDom& enclosingTemplatePrefabDom = m_prefabSystemComponent->FindTemplateDom(instanceCreated->GetTemplateId());
+            PrefabDomUtils::StoreInstanceInPrefabDom(*m_instanceCreated, updatedPrefabDom);
+            PrefabDom& enclosingTemplatePrefabDom = m_prefabSystemComponent->FindTemplateDom(m_instanceCreated->GetTemplateId());
             enclosingTemplatePrefabDom.CopyFrom(updatedPrefabDom, enclosingTemplatePrefabDom.GetAllocator());
-            m_instanceUpdateExecutorInterface->AddTemplateInstancesToQueue(instanceCreated->GetTemplateId(), *instanceCreated);
+            m_instanceUpdateExecutorInterface->AddTemplateInstancesToQueue(m_instanceCreated->GetTemplateId(), *m_instanceCreated);
         }
 
         AZ::Entity* m_entityModify;
-        AZStd::unique_ptr<Instance> instanceCreated;
-        AZStd::unique_ptr<Instance> instanceToUseForPropagation;
+        AZStd::unique_ptr<Instance> m_instanceCreated;
+        AZStd::unique_ptr<Instance> m_instanceToUseForPropagation;
     };
 
     BENCHMARK_DEFINE_F(SingleInstanceMultipleEntityBenchmarks, PropagateUpdateComponentChange)(benchmark::State& state)
@@ -156,6 +156,70 @@ namespace Benchmark
     }
 
     BENCHMARK_REGISTER_F(SingleInstanceMultipleEntityBenchmarks, PropagateRemoveComponentChange)
+        ->RangeMultiplier(10)
+        ->Range(100, 10000)
+        ->Unit(benchmark::kMillisecond)
+        ->Complexity();
+
+    BENCHMARK_DEFINE_F(SingleInstanceMultipleEntityBenchmarks, PropagateAddEntityChange)(benchmark::State& state)
+    {
+        for (auto _ : state)
+        {
+            state.PauseTiming();
+
+            // Add an entity and update the template.
+            AZStd::unique_ptr<AZ::Entity> newEntity = AZStd::make_unique<AZ::Entity>("Added Entity");
+            AZ::EntityId newEntityId = newEntity->GetId();
+            ASSERT_TRUE(newEntity != nullptr);
+            m_instanceCreated->AddEntity(AZStd::move(newEntity));
+            UpdateTemplate();
+            state.ResumeTiming();
+
+            m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
+            state.PauseTiming();
+
+            // Remove the entityadded. This will make sure that when multiple iterations are done, we will always be going from
+            // 'n' entities to 'n+1' entities.
+            ASSERT_TRUE(newEntity == nullptr);
+            newEntity = m_instanceCreated->DetachEntity(newEntityId);
+            ASSERT_TRUE(newEntity != nullptr);
+            UpdateTemplate();
+        }
+
+        state.SetComplexityN(state.range());
+    }
+
+    BENCHMARK_REGISTER_F(SingleInstanceMultipleEntityBenchmarks, PropagateAddEntityChange)
+        ->RangeMultiplier(10)
+        ->Range(100, 10000)
+        ->Unit(benchmark::kMillisecond)
+        ->Complexity();
+
+    BENCHMARK_DEFINE_F(SingleInstanceMultipleEntityBenchmarks, PropagateDetachEntityChange)(benchmark::State& state)
+    {
+        for (auto _ : state)
+        {
+            state.PauseTiming();
+
+            // Add an entity and update the template.
+            AZStd::unique_ptr<AZ::Entity> detachedEntity = m_instanceCreated->DetachEntity(m_entityModify->GetId());
+            ASSERT_TRUE(detachedEntity != nullptr);
+            UpdateTemplate();
+            state.ResumeTiming();
+
+            m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
+            state.PauseTiming();
+
+            // Add back the entity removed. This will make sure that when multiple iterations are done, we will always be going from
+            // 'n' entities to 'n-1' entities.
+            m_instanceCreated->AddEntity(AZStd::move(detachedEntity));
+            UpdateTemplate();
+        }
+
+        state.SetComplexityN(state.range());
+    }
+
+    BENCHMARK_REGISTER_F(SingleInstanceMultipleEntityBenchmarks, PropagateDetachEntityChange)
         ->RangeMultiplier(10)
         ->Range(100, 10000)
         ->Unit(benchmark::kMillisecond)

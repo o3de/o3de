@@ -34,18 +34,15 @@ namespace EMStudio
         ~OpenGLRenderPlugin();
 
         // plugin information
-        const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "OpenGL Render Window (Deprecated)"; }
         uint32 GetClassID() const override                  { return static_cast<uint32>(RenderPlugin::CLASS_ID); }
-        const char* GetCreatorName() const override         { return "O3DE"; }
-        float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override                    { return new OpenGLRenderPlugin(); }
+        EMStudioPlugin* Clone() const override              { return new OpenGLRenderPlugin(); }
 
         // overloaded functions
         void CreateRenderWidget(RenderViewWidget* renderViewWidget, RenderWidget** outRenderWidget, QWidget** outWidget) override;

@@ -121,34 +121,48 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
                 set(imported_property IMPORTED_LOCATION)
             endif()
 
+            # The below loop emulates CMake's search for imported locations:
             unset(target_locations)
-            get_target_property(target_locations ${ly_TARGET} ${imported_property})
-            if(target_locations)
-                list(APPEND all_runtime_dependencies "${target_locations}")
-            else()
-                # Check if the property exists for configurations
-                unset(target_locations)
-                foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
-                    string(TOUPPER ${conf} UCONF)
-                    unset(current_target_locations)
-                    get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${UCONF})
-                    if(current_target_locations)
-                        string(APPEND target_locations $<$<CONFIG:${conf}>:${current_target_locations}>)
+            foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+                string(TOUPPER ${conf} UCONF)
+                # try to use the mapping
+                get_target_property(mapped_conf ${ly_TARGET} MAP_IMPORTED_CONFIG_${UCONF})
+                if(NOT mapped_conf)
+                    # if there's no mapping specified, prefer a matching conf if its available
+                    # and if its not, fall back to the blank/empty one (the semicolon is not a typo)
+                    set(mapped_conf "${UCONF};")
+                endif()
+
+                unset(current_target_locations)
+                # note that mapped_conf is a LIST, we need to iterate the list and find the first one that exists:
+                foreach(check_conf IN LISTS mapped_conf)
+                    # check_conf will either be a string like "RELEASE" or the blank empty string.
+                    if (check_conf)
+                        # a non-empty element indicates to look fro IMPORTED_LOCATION_xxxxxxxxx
+                        get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${check_conf})
                     else()
-                        # try to use the mapping
-                        get_target_property(mapped_conf ${ly_TARGET} MAP_IMPORTED_CONFIG_${UCONF})
-                        if(mapped_conf)
-                            unset(current_target_locations)
-                            get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${mapped_conf})
-                            if(current_target_locations)
-                                string(APPEND target_locations $<$<CONFIG:${conf}>:${current_target_locations}>)
-                            endif()
-                        endif()
+                        # an empty element indicates to look at the IMPORTED_LOCATION with no suffix.
+                        get_target_property(current_target_locations ${ly_TARGET} ${imported_property})
+                    endif()
+
+                    if(current_target_locations)
+                        # we need to escape any semicolons, since this could be a list.
+                        string(REPLACE ";" "$<SEMICOLON>" current_target_locations "${current_target_locations}")
+                        string(APPEND target_locations "$<$<CONFIG:${conf}>:${current_target_locations}>")
+                        break() # stop looking after the first one is found (This emulates CMakes behavior)
                     endif()
                 endforeach()
-                if(target_locations)
-                    list(APPEND all_runtime_dependencies ${target_locations})
+                if (NOT current_target_locations)
+                    # we didn't find any locations.
+                    if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+                        # If you explicitly chose to declare a STATIC library but not supply an imported location
+                        # then its a mistake.
+                        message(FATAL_ERROR "${target_type} Library ${ly_TARGET} specified MAP_IMPORTED_CONFIG_${UCONF} = ${mapped_conf} but did not have any of ${imported_property}_xxxx set")
+                    endif()
                 endif()
+            endforeach()
+            if(target_locations)
+                list(APPEND all_runtime_dependencies ${target_locations})
             endif()
 
         endif()
@@ -266,7 +280,8 @@ function(ly_delayed_generate_runtime_dependencies)
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
             unset(runtime_depend)
-            ly_get_runtime_dependency_command(runtime_command runtime_depend ${runtime_dependency})
+           
+            ly_get_runtime_dependency_command(runtime_command runtime_depend "${runtime_dependency}")
             string(APPEND LY_COPY_COMMANDS ${runtime_command})
             list(APPEND runtime_depends ${runtime_depend})
         endforeach()

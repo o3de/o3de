@@ -8,10 +8,10 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/functional.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 
 namespace AZ
@@ -72,14 +72,14 @@ namespace AZ
             
             virtual ~Compression() = default;
 
-            virtual void FindCompressionInfo(bool& found, CompressionInfo& info, const AZStd::string_view filename) = 0;
+            virtual void FindCompressionInfo(bool& found, CompressionInfo& info, const AZ::IO::PathView filePath) = 0;
         };
 
         using CompressionBus = AZ::EBus<Compression>;
 
         namespace CompressionUtils
         {
-            bool FindCompressionInfo(CompressionInfo& info, const AZStd::string_view filename);
+            bool FindCompressionInfo(CompressionInfo& info, const AZ::IO::PathView filePath);
         }
     }
 }

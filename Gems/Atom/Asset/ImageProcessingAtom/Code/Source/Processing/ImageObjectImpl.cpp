@@ -10,6 +10,7 @@
 #include <Processing/ImageObjectImpl.h>
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/ImageFlags.h>
+#include <Processing/ImageConvert.h>
 #include <Converters/PixelOperation.h>
 #include <AzCore/std/string/conversions.h>
 
@@ -35,6 +36,7 @@ namespace ImageProcessingAtom
         : m_pixelFormat(pixelFormat)
         , m_colMinARGB(0.0f, 0.0f, 0.0f, 0.0f)
         , m_colMaxARGB(1.0f, 1.0f, 1.0f, 1.0f)
+        , m_averageColor(0.0f, 0.0f, 0.0f, 0.0f)
         , m_averageBrightness(0.63f)
         , m_imageFlags(0)
         , m_numPersistentMips(0)
@@ -87,6 +89,7 @@ namespace ImageProcessingAtom
         m_pixelFormat = pixelFormat;
         m_colMinARGB = AZ::Color(0.0f, 0.0f, 0.0f, 0.0f);
         m_colMaxARGB = AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
+        m_averageColor = AZ::Color(0.0f, 0.0f, 0.0f, 0.0f);
         m_averageBrightness = 0.0f;
         m_imageFlags = 0;
         m_numPersistentMips = 0;
@@ -147,6 +150,7 @@ namespace ImageProcessingAtom
         if (m_pixelFormat == other->m_pixelFormat
             && m_colMinARGB == other->m_colMinARGB
             && m_colMaxARGB == other->m_colMaxARGB
+            && m_averageColor == other->m_averageColor
             && m_averageBrightness == other->m_averageBrightness
             && m_imageFlags == other->m_imageFlags
             && m_numPersistentMips == other->m_numPersistentMips
@@ -584,6 +588,16 @@ namespace ImageProcessingAtom
         m_averageBrightness = avgBrightness;
     }
 
+    AZ::Color CImageObject::GetAverageColor() const
+    {
+        return m_averageColor;
+    }
+
+    void CImageObject::SetAverageColor(const AZ::Color& averageColor)
+    {
+        m_averageColor = averageColor;
+    }
+
     AZ::u32 CImageObject::GetImageFlags() const
     {
         return m_imageFlags;
@@ -637,6 +651,7 @@ namespace ImageProcessingAtom
     {
         m_colMinARGB = src->m_colMinARGB;
         m_colMaxARGB = src->m_colMaxARGB;
+        m_averageColor = src->m_averageColor;
         m_averageBrightness = src->m_averageBrightness;
         m_imageFlags = src->GetImageFlags();
     }

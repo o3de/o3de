@@ -17,18 +17,6 @@ SET SOURCE_DIRECTORY=%CD%
 SET PATH=%SOURCE_DIRECTORY%\python;%PATH%
 SET GEM_DIRECTORY=%SOURCE_DIRECTORY%\Gems
 
-REM Create and activate a virtualenv for the CDK destruction
-CALL python -m venv .env
-IF ERRORLEVEL 1 (
-    ECHO [cdk_bootstrap] Failed to create a virtualenv for the CDK destruction
-    exit /b 1
-)
-CALL .env\Scripts\activate.bat
-IF ERRORLEVEL 1 (
-    ECHO [cdk_bootstrap] Failed to activate the virtualenv for the CDK destruction
-    exit /b 1
-)
-
 ECHO [cdk_installation] Install the latest version of CDK
 CALL npm uninstall -g aws-cdk
 IF ERRORLEVEL 1 (

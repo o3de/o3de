@@ -175,7 +175,7 @@ SEditorSettings::SEditorSettings()
     strStandardTempDirectory = "Temp";
 
     // Init source safe params.
-    enableSourceControl = true;
+    enableSourceControl = false;
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
     textEditorForScript = "TextEdit";

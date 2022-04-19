@@ -45,11 +45,8 @@ namespace EMStudio
         ~NodeWindowPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Joint outliner"; }
         uint32 GetClassID() const override                  { return CLASS_ID; }
-        const char* GetCreatorName() const override         { return "O3DE"; }
-        float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
@@ -57,7 +54,7 @@ namespace EMStudio
         // overloaded main init function
         void Reflect(AZ::ReflectContext* context) override;
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new NodeWindowPlugin(); }
         void ReInit();
 
         void ProcessFrame(float timePassedInSeconds) override;

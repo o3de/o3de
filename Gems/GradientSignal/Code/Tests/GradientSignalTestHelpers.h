@@ -47,10 +47,12 @@ namespace UnitTest
     //! @param width Width of the image
     //! @param height Height of the image
     //! @param pixelSize Number of bytes per pixel
-    //! @param pixelX The X coordinate of the pixel to set to a specific value based on the component
-    //! @param pixelY The Y coordinate of the pixel to set to a specific value based on the component
+    //! @param pixelX The X coordinate of the pixel to set to a specific value
+    //! @param pixelY The Y coordinate of the pixel to set to a specific value
+    //! @param setPixelValues The values to set the one specific pixel to (one value per pixel channel, determined by pixelSize)
     //! @return A vector of bytes for the image data
-    AZStd::vector<uint8_t> BuildSpecificPixelImageData(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY);
+    AZStd::vector<uint8_t> BuildSpecificPixelImageData(
+        AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues);
 
     //! Build a mip chain asset that contains the specific image data from BuildSpecificPixelImageData
     //! @param mipLevels Number of mip levels in the chain
@@ -58,10 +60,13 @@ namespace UnitTest
     //! @param width The width of the image
     //! @param height The height of the image
     //! @param pixelSize The number of bytes per pixel
-    //! @param pixelX The X coordinate of the pixel to set to a specific value based on the component
-    //! @param pixelY The Y coordinate of the pixel to set to a specific value based on the component
+    //! @param pixelX The X coordinate of the pixel to set to a specific value 
+    //! @param pixelY The Y coordinate of the pixel to set to a specific value 
+    //! @param setPixelValues The values to set the one specific pixel to (one value per pixel channel, determined by pixelSize)
     //! @return A mip chain asset with the specific pixel image data
-    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY);
+    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(
+        AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize,
+        AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues);
 
     //! Creates a deterministically random set of pixel data as an AZ::RPI::StreamingImageAsset.
     //! \param width The width of the AZ::RPI::StreamingImageAsset
@@ -73,10 +78,12 @@ namespace UnitTest
     //! Creates an AZ::RPI::StreamingImageAsset where all the pixels are 0 except for the one pixel at the given coordinates, which is set to a specific value based on the component.
     //! \param width The width of the AZ::RPI::StreamingImageAsset
     //! \param height The height of the AZ::RPI::StreamingImageAsset
-    //! \param pixelX The X coordinate of the pixel to set to a specific value based on the component
-    //! \param pixelY The Y coordinate of the pixel to set to a specific value based on the component
+    //! \param pixelX The X coordinate of the pixel to set to a specific value
+    //! \param pixelY The Y coordinate of the pixel to set to a specific value
+    //! @param setPixelValues The values to set the one specific pixel to (one value per pixel channel, determined by pixelSize)
     //! \return The AZ::RPI::StreamingImageAsset in a loaded ready state
-    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY);
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(
+        AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues);
 
     class GradientSignalTestHelpers
     {

@@ -18,8 +18,10 @@
 #include <IAudioInterfacesCommonData.h>
 #include <ATLEntities.h>
 
-// Forward declarations
-struct IRenderAuxGeom;
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
 
 namespace Audio
 {
@@ -68,7 +70,7 @@ namespace Audio
         EAudioRequestStatus UnloadDataByScope(const EATLDataScope dataScope);
 
     #if !defined(AUDIO_RELEASE)
-        void DrawDebugInfo(IRenderAuxGeom& auxGeom, const float posX, const float posY);
+        void DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const float posX, const float posY);
     #endif // !AUDIO_RELEASE
 
     private:
@@ -92,7 +94,12 @@ namespace Audio
         void UncacheFile(CATLAudioFileEntry* const audioFileEntry);
         void TryToUncacheFiles();
         void UpdateLocalizedFileEntryData(CATLAudioFileEntry* const audioFileEntry);
-        bool TryCacheFileCacheEntryInternal(CATLAudioFileEntry* const audioFileEntry, const TAudioFileEntryID fileID, const bool loadSynchronously, const bool overrideUseCount = false, const size_t useCount = 0);
+        bool TryCacheFileCacheEntryInternal(
+            CATLAudioFileEntry* const audioFileEntry,
+            const TAudioFileEntryID fileID,
+            const bool loadSynchronously,
+            const bool overrideUseCount = false,
+            const AZ::u32 useCount = 0);
 
         // Internal members
         TATLPreloadRequestLookup& m_preloadRequests;

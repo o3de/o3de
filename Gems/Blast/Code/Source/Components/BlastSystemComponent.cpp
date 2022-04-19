@@ -218,16 +218,21 @@ namespace Blast
 
         jobCompletion.StartAndWaitForCompletion();
 
-        // Run groups
-        for (auto i = 0; i < m_groups.size(); ++i)
+        // Remove empty groups
+        for (size_t i = 0; i < m_groups.size();)
         {
             if (m_groups[i].m_tkGroup->getActorCount() == 0)
             {
                 AZStd::swap(m_groups[i], m_groups.back());
                 m_groups.pop_back();
             }
+            else
+            {
+                ++i;
+            }
         }
 
+        // Run groups
         for (auto& group : m_groups)
         {
             AZ_PROFILE_SCOPE(Physics, "ExtGroupTaskManager::process");
@@ -354,7 +359,7 @@ namespace Blast
         return m_extSerialization.get();
     }
 
-    Nv::Blast::TkGroup* BlastSystemComponent::GetTkGroup()
+    Nv::Blast::TkGroup* BlastSystemComponent::CreateTkGroup()
     {
         m_groups.emplace_back();
         Nv::Blast::TkGroupDesc groupDesc;

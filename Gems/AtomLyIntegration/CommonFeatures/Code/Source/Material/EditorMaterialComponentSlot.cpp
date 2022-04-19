@@ -36,7 +36,7 @@ namespace AZ
         {
             if (classElement.GetVersion() < 2)
             {
-                constexpr AZ::u32 materialIdDataCrc = AZ_CRC("id", 0xbf396750);
+                constexpr AZ::u32 materialIdDataCrc = AZ_CRC_CE("id");
 
                 AZStd::pair<MaterialAssignmentLodIndex, AZ::Data::AssetId> oldId;
                 if (!classElement.GetChildData(materialIdDataCrc, oldId))
@@ -125,6 +125,7 @@ namespace AZ
                     ->Method("SetAssetId", static_cast<void (EditorMaterialComponentSlot::*)(const Data::AssetId&)>(&EditorMaterialComponentSlot::SetAsset))
                     ->Method("SetAsset", static_cast<void (EditorMaterialComponentSlot::*)(const Data::Asset<RPI::MaterialAsset>&)>(&EditorMaterialComponentSlot::SetAsset))
                     ->Method("Clear", &EditorMaterialComponentSlot::Clear)
+                    ->Method("ClearMaterial", &EditorMaterialComponentSlot::ClearMaterial)
                     ->Method("ClearOverrides", &EditorMaterialComponentSlot::ClearOverrides)
                     ->Method("OpenMaterialExporter", &EditorMaterialComponentSlot::OpenMaterialExporter)
                     ->Method("OpenMaterialEditor", &EditorMaterialComponentSlot::OpenMaterialEditor)
@@ -211,6 +212,14 @@ namespace AZ
             MaterialComponentRequestBus::Event(
                 m_entityId, &MaterialComponentRequestBus::Events::SetMaterialOverride, m_id, m_materialAsset.GetId());
             ClearOverrides();
+        }
+
+        void EditorMaterialComponentSlot::ClearMaterial()
+        {
+            m_materialAsset = {};
+            MaterialComponentRequestBus::Event(
+                m_entityId, &MaterialComponentRequestBus::Events::SetMaterialOverride, m_id, m_materialAsset.GetId());
+            OnDataChanged();
         }
 
         void EditorMaterialComponentSlot::ClearOverrides()

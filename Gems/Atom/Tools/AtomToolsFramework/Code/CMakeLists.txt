@@ -29,19 +29,23 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AzCore
-            AZ::AzToolsFramework
-            AZ::AzQtComponents
+            3rdParty::Python
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
             3rdParty::Qt::Network
             3rdParty::Qt::Widgets
-            3rdParty::Python
+            AZ::AzCore
+            AZ::AzQtComponents
+            AZ::AzToolsFramework
+            Gem::Atom_Bootstrap.Headers
+            Gem::Atom_Component_DebugCamera.Static
+            Gem::Atom_Feature_Common
+            Gem::Atom_Feature_Common.Public
+            Gem::Atom_Feature_Common.Static
+            Gem::Atom_RHI.Public
+            Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
-            Gem::Atom_RHI.Reflect
-            Gem::Atom_Feature_Common.Static
-            Gem::Atom_Bootstrap.Headers
             Gem::ImageProcessingAtom.Headers
 )
 
@@ -62,6 +66,13 @@ ly_add_target(
         PRIVATE
             Gem::AtomToolsFramework.Static
     RUNTIME_DEPENDENCIES
+        Gem::Atom_Bootstrap
+        Gem::Atom_Component_DebugCamera
+        Gem::Atom_Feature_Common.Editor
+        Gem::Atom_RHI.Private
+        Gem::Atom_RHI_Null.Private
+        Gem::Atom_RPI.Editor
+        Gem::EditorPythonBindings.Editor
         Gem::ImageProcessingAtom.Editor
 )
 
@@ -82,11 +93,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 3rdParty::Qt::Test
+                AZ::AzFrameworkTestShared
                 AZ::AzTest
                 AZ::AzTestShared
-                AZ::AzFrameworkTestShared
-                Gem::AtomToolsFramework.Static
                 Gem::Atom_Utils.TestUtils.Static
+                Gem::AtomToolsFramework.Static
     )
 
     ly_add_googletest(

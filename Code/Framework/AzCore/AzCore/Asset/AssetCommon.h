@@ -144,19 +144,20 @@ namespace AZ
             /// Asset is loaded and ready for use.
             /// Note that the asset may be ready for use before the OnAssetReady
             /// event has been dispatched by the AssetBus on the main thread.
-            AZ_FORCE_INLINE bool IsReady() const
+            bool IsReady() const
             {
                 AssetStatus status = GetStatus();
                 return (status == AssetStatus::Ready || status == AssetStatus::ReadyPreNotify);
             }
 
             /// @return True if the asset status is Error or Canceled
-            AZ_FORCE_INLINE bool IsError() const { return GetStatus() == AssetStatus::Error; }
+            bool IsError() const { return GetStatus() == AssetStatus::Error; }
             bool IsLoading(bool includeQueued = true) const;
-            AZ_FORCE_INLINE AssetStatus GetStatus() const { return m_status.load(); }
-            AZ_FORCE_INLINE const AssetId& GetId() const { return m_assetId; }
-            AZ_FORCE_INLINE const AssetType& GetType() const { return RTTI_GetType(); }
-            AZ_FORCE_INLINE int GetUseCount() const { return m_useCount.load(); }
+            AssetStatus GetStatus() const { return m_status.load(); }
+            const AssetId& GetId() const { return m_assetId; }
+            const AssetType& GetType() const { return RTTI_GetType(); }
+            int GetUseCount() const { return m_useCount.load(); }
+            int GetCreationToken() const { return m_creationToken; }
 
         protected:
             /**
@@ -1250,7 +1251,7 @@ namespace AZStd
     {
         typedef AZ::Uuid    argument_type;
         typedef size_t      result_type;
-        AZ_FORCE_INLINE size_t operator()(const AZ::Data::AssetId& id) const
+        size_t operator()(const AZ::Data::AssetId& id) const
         {
             // use the subId here because otherwise you suffer performance problems if one source has a lot of products (same guid, varying subid)
             return id.m_guid.GetHash() ^ static_cast<size_t>(id.m_subId);

@@ -16,7 +16,7 @@
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 
-namespace BuildVariableOverridesCpp
+namespace ScriptCanvasBuilderCpp
 {
     enum Version
     {
@@ -31,7 +31,7 @@ namespace BuildVariableOverridesCpp
         ( AZ::SerializeContext& serializeContext
         , AZ::SerializeContext::DataElementNode& rootElement)
     {
-        if (rootElement.GetVersion() < BuildVariableOverridesCpp::Version::EditorAssetRedux)
+        if (rootElement.GetVersion() < ScriptCanvasBuilderCpp::Version::EditorAssetRedux)
         {
             auto sourceIndex = rootElement.FindElement(AZ_CRC_CE("source"));
             if (sourceIndex == -1)
@@ -57,6 +57,55 @@ namespace BuildVariableOverridesCpp
         }
 
         return true;
+    }
+
+    AZStd::string Tabs(int indent = 0)
+    {
+        AZStd::string tabs("");
+
+        while (indent > 0)
+        {
+            tabs += "\t";
+            --indent;
+        }
+
+        return tabs;
+    }
+
+    AZStd::string ToString(const ScriptCanvasBuilder::BuildVariableOverrides& overrides, int indent)
+    {
+        const auto tabs = Tabs(indent);
+        AZStd::string asString = tabs;
+        asString += overrides.m_source.ToString();
+        asString += "\n";
+        
+        if (!overrides.m_overrides.empty())
+        {
+            asString += tabs;
+            asString += "Overrides:\n";
+
+            for (auto& overrideEntry : overrides.m_overrides)
+            {
+                asString += tabs;
+                asString += overrideEntry.GetVariableName();
+                asString += ", ";
+                asString += overrideEntry.GetDatum()->ToString();
+                asString += "\n";
+            }
+        }
+
+        if (!overrides.m_dependencies.empty())
+        {
+            asString += tabs;
+            asString += "Dependencies:\n";
+
+            for (auto& dependency : overrides.m_dependencies)
+            {
+                asString += ToString(dependency, indent);
+            }
+        }
+
+        return asString;
     }
 }
 
@@ -152,7 +201,7 @@ namespace ScriptCanvasBuilder
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
             serializeContext->Class<BuildVariableOverrides>()
-                ->Version(BuildVariableOverridesCpp::Version::Current, &BuildVariableOverridesCpp::VersionConverter)
+                ->Version(ScriptCanvasBuilderCpp::Version::Current, &ScriptCanvasBuilderCpp::VersionConverter)
                 ->Field("source", &BuildVariableOverrides::m_source)
                 ->Field("variables", &BuildVariableOverrides::m_variables)
                 ->Field("entityId", &BuildVariableOverrides::m_entityIds)
@@ -372,5 +421,12 @@ namespace ScriptCanvasBuilder
 
         return AZ::Success(result);
     }
+}
 
+namespace AZStd
+{
+    AZStd::string to_string(const ScriptCanvasBuilder::BuildVariableOverrides& overrides)
+    {
+        return ScriptCanvasBuilderCpp::ToString(overrides, 0);
+    }
 }

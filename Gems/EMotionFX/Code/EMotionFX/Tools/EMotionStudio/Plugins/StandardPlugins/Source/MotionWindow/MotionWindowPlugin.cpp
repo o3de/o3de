@@ -159,13 +159,6 @@ namespace EMStudio
         m_motionEntries.clear();
     }
 
-
-    EMStudioPlugin* MotionWindowPlugin::Clone()
-    {
-        return new MotionWindowPlugin();
-    }
-
-
     bool MotionWindowPlugin::Init()
     {
         //LogInfo("Initializing motion window.");

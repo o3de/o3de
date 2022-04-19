@@ -25,6 +25,7 @@
         "RHI",
         "RPI",
         "Tools/AtomToolsFramework",
+        "Tools/MaterialCanvas",
         "Tools/MaterialEditor",
         "Tools/ShaderManagementConsole"
     ],
@@ -36,6 +37,7 @@
         "Atom_RHI",
         "Atom_RPI",
         "AtomToolsFramework",
+        "MaterialCanvas",
         "MaterialEditor",
         "ShaderManagementConsole",
         "Atom_AtomBridge"

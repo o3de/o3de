@@ -43,7 +43,7 @@ namespace EMotionFX
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
-        EMStudioPlugin* Clone() override                    { return new SkeletonOutlinerPlugin(); }
+        EMStudioPlugin* Clone() const override              { return new SkeletonOutlinerPlugin(); }
         bool Init() override;
 
         // SkeletalOutlinerRequestBus overrides

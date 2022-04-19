@@ -35,12 +35,6 @@ namespace EMotionFX
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    EMStudio::EMStudioPlugin* ClothJointInspectorPlugin::Clone()
-    {
-        ClothJointInspectorPlugin* newPlugin = new ClothJointInspectorPlugin();
-        return newPlugin;
-    }
-
     bool ClothJointInspectorPlugin::IsNvClothGemAvailable() const
     {
         AZ::SerializeContext* serializeContext = nullptr;

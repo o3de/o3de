@@ -374,6 +374,6 @@ namespace EMStudio
 
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
-            cameraConfig, m_lightHandles, nullptr, AZ::RPI::MaterialPropertyIndex::Null, false);
+            cameraConfig, m_lightHandles, false);
     }
 } // namespace EMStudio

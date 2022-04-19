@@ -13,6 +13,7 @@
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
+#include <TerrainRenderer/TerrainClipmapManager.h>
 #include <TerrainRenderer/TerrainMeshManager.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
@@ -56,8 +57,8 @@ namespace Terrain
         void SetWorldSize(AZ::Vector2 sizeInMeters);
 
         const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
-        const AZ::Aabb& GetTerrainBounds() const;
         const AZ::Data::Instance<AZ::RPI::Material> GetMaterial() const;
+        const TerrainClipmapManager& GetClipmapManager() const;
     private:
 
         static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
@@ -99,6 +100,7 @@ namespace Terrain
         TerrainMeshManager m_meshManager;
         TerrainMacroMaterialManager m_macroMaterialManager;
         TerrainDetailMaterialManager m_detailMaterialManager;
+        TerrainClipmapManager m_clipmapManager;
 
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_imageArrayHandler;
 
