@@ -1560,7 +1560,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
                     {
-                        const int delay = aznumeric_caster(pow(2, retryCount-1));
+                        const int delay = 1 << (retryCount-1);
 
                         // Check if we need a new builder, and if so, request a new one
                         if (!builderRef->IsValid())
@@ -1617,7 +1617,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
                     {
-                        const int delay = aznumeric_caster(pow(2, retryCount-1));
+                        const int delay = 1 << (retryCount-1);
 
                         // Check if we need a new builder, and if so, request a new one
                         if (!builderRef->IsValid())
