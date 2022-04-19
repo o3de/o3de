@@ -34,10 +34,6 @@ namespace LandscapeCanvas
         GraphModel::DataTypePtr GetDataType(AZ::Uuid typeId) const override;
         GraphModel::DataTypePtr GetDataTypeForValue(const AZStd::any& value) const override;
         GraphModel::DataTypePtr GetDataType(GraphModel::DataType::Enum typeEnum) const override;
-
-        template<typename T>
-        GraphModel::DataTypePtr GetDataType() const { return IGraphContext::GetDataType<T>(); }
-
         GraphModel::ModuleGraphManagerPtr GetModuleGraphManager() const override;
 
     private:
