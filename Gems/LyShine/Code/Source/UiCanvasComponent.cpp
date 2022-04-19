@@ -965,7 +965,7 @@ void UiCanvasComponent::SetIsRenderToTexture(bool isRenderToTexture)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> UiCanvasComponent::GetAttachmentImageAsset()
+const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& UiCanvasComponent::GetAttachmentImageAsset()
 {
     return m_attachmentImageAsset;
 }
@@ -977,7 +977,7 @@ void UiCanvasComponent::SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::A
     {
         DestroyRenderTarget();
         m_attachmentImageAsset = attachmentImageAsset;
-    }    
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2235,7 +2235,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
         UiAnimationSystem::Reflect(serializeContext);
 
         serializeContext->Class<UiCanvasComponent, AZ::Component>()
-            ->Version(3, &VersionConverter)
+            ->Version(4, &VersionConverter)
         // Not in properties pane
             ->Field("UniqueId", &UiCanvasComponent::m_uniqueId)
             ->Field("RootElement", &UiCanvasComponent::m_rootElement)
@@ -4209,6 +4209,16 @@ bool UiCanvasComponent::VersionConverter(AZ::SerializeContext& context,
     if (classElement.GetVersion() < 3)
     {
         if (!LyShine::ConvertSubElementFromVec2ToVector2(context, classElement, "CanvasSize"))
+        {
+            return false;
+        }
+    }
+
+    // conversion from version 3 to 4:
+    // - Need to remove render target name as it was replaced with attachment image asset
+    if (classElement.GetVersion() < 4)
+    {
+        if (!LyShine::RemoveRenderTargetAsString(context, classElement, "RenderTargetName"))
         {
             return false;
         }

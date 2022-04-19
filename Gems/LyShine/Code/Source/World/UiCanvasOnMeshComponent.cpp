@@ -14,6 +14,7 @@
 #include <AzCore/Math/IntersectSegment.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
+#include <LyShine/UiSerializeHelpers.h>
 
 #include <Cry_Geo.h>
 #include <IIndexedMesh.h>
@@ -168,7 +169,7 @@ void UiCanvasOnMeshComponent::OnCanvasLoadedIntoEntity(AZ::EntityId uiCanvasEnti
 {
     if (uiCanvasEntity.IsValid() && m_attachmentImageAssetOverride)
     {
-        EBUS_EVENT_ID(uiCanvasEntity, UiCanvasBus, SetAttachmentImageAsset, m_attachmentImageAssetOverride);
+        UiCanvasBus::Event(GetEntityId(), &UiCanvasInterface::SetAttachmentImageAsset, m_attachmentImageAssetOverride);
     }
 }
 
@@ -194,8 +195,8 @@ void UiCanvasOnMeshComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiCanvasOnMeshComponent, AZ::Component>()
-            ->Version(1)
-            ->Field("RenderTargetOverride", &UiCanvasOnMeshComponent::m_attachmentImageAssetOverride);
+            ->Version(2, &VersionConverter)
+            ->Field("AttachmentImageAssetOverride", &UiCanvasOnMeshComponent::m_attachmentImageAssetOverride);
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
@@ -363,4 +364,21 @@ AZ::EntityId UiCanvasOnMeshComponent::GetCanvas()
     AZ::EntityId result;
     EBUS_EVENT_ID_RESULT(result, GetEntityId(), UiCanvasRefBus, GetCanvas);
     return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiCanvasOnMeshComponent::VersionConverter(AZ::SerializeContext& context,
+    AZ::SerializeContext::DataElementNode& classElement)
+{
+    // conversion from version 1 to 2:
+    // - Need to remove render target name as it was replaced with attachment image asset
+    if (classElement.GetVersion() < 2)
+    {
+        if (!LyShine::RemoveRenderTargetAsString(context, classElement, "RenderTargetOverride"))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }

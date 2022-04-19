@@ -218,7 +218,7 @@ public: // member functions
     virtual void SetIsRenderToTexture(bool isRenderToTexture) = 0;
 
     //! Get the attachment image that this canvas will render to
-    virtual AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> GetAttachmentImageAsset() = 0;
+    virtual const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& GetAttachmentImageAsset() = 0;
 
     //! Set the attachment image that this canvas will render to
     virtual void SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) = 0;

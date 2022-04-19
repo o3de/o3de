@@ -127,7 +127,7 @@ public: // member functions
 
     bool GetIsRenderToTexture() override;
     void SetIsRenderToTexture(bool isRenderToTexture) override;
-    AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> GetAttachmentImageAsset() override;
+    const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& GetAttachmentImageAsset() override;
     void SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
 
     bool GetIsPositionalInputSupported() override;

@@ -72,6 +72,11 @@ public: // static member functions
 
     static void Reflect(AZ::ReflectContext* context);
 
+private: // static member functions
+
+    static bool VersionConverter(AZ::SerializeContext& context,
+        AZ::SerializeContext::DataElementNode& classElement);
+
 protected: // member functions
 
     // AZ::Component
