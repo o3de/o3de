@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Application_linux.cpp
     Python_linux.cpp
     ProjectBuilderWorker_linux.cpp
     ProjectUtils_linux.cpp

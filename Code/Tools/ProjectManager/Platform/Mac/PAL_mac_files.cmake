@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Application_mac.cpp
     Python_mac.cpp
     ProjectBuilderWorker_mac.cpp
     ProjectUtils_mac.cpp
