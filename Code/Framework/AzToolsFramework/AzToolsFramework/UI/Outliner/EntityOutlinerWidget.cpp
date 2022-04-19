@@ -211,16 +211,16 @@ namespace AzToolsFramework
             // Introduce SegmentBar to switch between view modes
             auto segmentBar = new AzQtComponents::SegmentBar(this);
             segmentBar->setObjectName("OutlinerModeSwitcher");
-            segmentBar->addTab("Simple View");
-            segmentBar->addTab("Advanced View");
+            segmentBar->addTab("Prefab View");
+            segmentBar->addTab("Nested Instance Override View");
             modeSwitchLayout->addWidget(segmentBar);
 
             auto modeHelpLabel = new QLabel(this);
             modeHelpLabel->setObjectName("OutlinerModeSwitcherHelp");
             modeHelpLabel->setText("?");
-            modeHelpLabel->setToolTip("Toggle between Prefab visualization modes:\n"
-                                      "Simple Mode: Show nested prefab instances as a single object.\n"
-                                      "Advanced Mode: Allow selection of entities belonging to nested prefab instances.");
+            modeHelpLabel->setToolTip("Toggle between Prefab views:\n"
+                                      "Prefab View: Show nested prefab instances as a single object.\n"
+                                      "Nested Instance Override View: Allow selection of entities belonging to nested prefab instances.");
             modeHelpLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             modeSwitchLayout->addWidget(modeHelpLabel);
 
