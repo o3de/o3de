@@ -26,9 +26,5 @@ namespace AZ::Render
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-
-        //! AZ::Component
-        void Activate() override;
-        void Deactivate() override;
     };
 } // namespace Stars

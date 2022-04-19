@@ -41,15 +41,4 @@ namespace AZ::Render
         BaseSystemComponent::GetIncompatibleServices(incompatible);
         incompatible.push_back(AZ_CRC_CE("EditorStarsService"));
     }
-
-    void EditorStarsSystemComponent::Activate()
-    {
-        BaseSystemComponent::Activate();
-    }
-
-    void EditorStarsSystemComponent::Deactivate()
-    {
-        BaseSystemComponent::Deactivate();
-    }
-
 } // namespace Stars
