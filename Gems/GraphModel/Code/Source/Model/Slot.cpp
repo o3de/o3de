@@ -316,9 +316,11 @@ namespace GraphModel
         {
             AZStd::any slotValue;
             if (LoadAny<bool>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<int16_t>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<uint16_t>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<int32_t>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<int64_t>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<uint32_t>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<int64_t>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<uint64_t>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<float>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<double>(slotValue, serializedSlotValue->value, context, result) ||
@@ -372,9 +374,11 @@ namespace GraphModel
             {
                 rapidjson::Value outputPropertyValue;
                 if (StoreAny<bool>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<int16_t>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<uint16_t>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<int32_t>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<int64_t>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<uint32_t>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<int64_t>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<uint64_t>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<float>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<double>(slot->m_value, outputPropertyValue, context, result) ||
