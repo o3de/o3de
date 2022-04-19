@@ -37,6 +37,7 @@ namespace LandscapeCanvas
     }
 
     GraphContext::GraphContext()
+        : GraphModel::GraphContext(SYSTEM_NAME, MODULE_FILE_EXTENSION, {})
     {
         // Construct our custom data types
         const AZ::EntityId invalidEntity;
@@ -60,29 +61,6 @@ namespace LandscapeCanvas
         }
     }
 
-    const char* GraphContext::GetSystemName() const
-    {
-        return SYSTEM_NAME;
-    }
-
-    const char* GraphContext::GetModuleFileExtension() const
-    {
-        return MODULE_FILE_EXTENSION;
-    }
-
-    GraphModel::DataTypePtr GraphContext::GetDataType(AZ::Uuid typeId) const
-    {
-        for (GraphModel::DataTypePtr dataType : m_dataTypes)
-        {
-            if (dataType->GetTypeUuid() == typeId)
-            {
-                return dataType;
-            }
-        }
-
-        return AZStd::make_shared<LandscapeCanvasDataType>(); // LandscapeCanvasDataType is Invalid
-    }
-
     GraphModel::DataTypePtr GraphContext::GetDataTypeForValue(const AZStd::any& value) const
     {
         // If the value is an AZ::EntityId::InvalidEntityId return our special
@@ -97,28 +75,6 @@ namespace LandscapeCanvas
             }
         }
 
-        return GraphModel::IGraphContext::GetDataTypeForValue(value);
-    }
-
-    GraphModel::DataTypePtr GraphContext::GetDataType(GraphModel::DataType::Enum typeEnum) const
-    {
-        if (typeEnum < m_dataTypes.size())
-        {
-            return m_dataTypes[typeEnum];
-        }
-        else
-        {
-            return AZStd::make_shared<LandscapeCanvasDataType>(); // LandscapeCanvasDataType is Invalid
-        }
-    }
-
-    const AZStd::vector<GraphModel::DataTypePtr>& GraphContext::GetAllDataTypes() const
-    {
-        return m_dataTypes;
-    }
-
-    GraphModel::ModuleGraphManagerPtr GraphContext::GetModuleGraphManager() const
-    {
-        return m_moduleGraphManager;
+        return GraphModel::GraphContext::GetDataTypeForValue(value);
     }
 } // namespace LandscapeCanvas
