@@ -22,6 +22,8 @@ namespace AZ
 
 namespace O3DE::ProjectManager
 {
+    void SetupCrashHandler();
+
     class Application
         : public AzFramework::Application
     {

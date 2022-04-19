@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Application_windows.cpp
     Python_windows.cpp
     ProjectBuilderWorker_windows.cpp
     ProjectUtils_windows.cpp
