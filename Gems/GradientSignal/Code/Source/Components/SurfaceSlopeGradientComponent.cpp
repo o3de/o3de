@@ -232,9 +232,8 @@ namespace GradientSignal
         AZStd::shared_lock lock(m_queryMutex);
 
         SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
-            points);
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(
+            positions, m_configuration.m_surfaceTagsToSample, points);
 
         const float angleMin = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMin, 0.0f, 90.0f));
         const float angleMax = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMax, 0.0f, 90.0f));

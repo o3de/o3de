@@ -30,11 +30,6 @@
 /Templates/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Tools/EventLogTool/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 
-# SIG-Core Asset Pipeline ownership area
-/AutomatedTesting/Gem/PythonTests/assetpipeline/ap_fixtures/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/AutomatedTesting/Gem/PythonTests/assetpipeline/asset_processor_tests/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Code/Tools/AssetProcessor/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-
 # SIG-Core deprecated areas of ownership
 /cmake/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Code/Legacy/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
@@ -50,3 +45,13 @@
 /Gems/NvCloth/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/PhysX/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/PhysXDebug/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+
+# SIG-Content Asset Pipeline ownership area
+/AutomatedTesting/Gem/PythonTests/assetpipeline/ap_fixtures/ @o3de/sig-content-maintainers
+/AutomatedTesting/Gem/PythonTests/assetpipeline/asset_processor_tests/ @o3de/sig-content-maintainers
+/AutomatedTesting/Gem/PythonTests/assetpipeline/fbx_tests/ @o3de/sig-content-maintainers
+/AutomatedTesting/Gem/PythonTests/PythonAssetBuilder/ @o3de/sig-content-maintainers
+/Code/Tools/AssetBundler/ @o3de/sig-content-maintainers
+/Code/Tools/AssetProcessor/ @o3de/sig-content-maintainers
+/Code/Tools/SceneAPI/ @o3de/sig-content-maintainers
+/Gems/SceneProcessing/ @o3de/sig-content-maintainers

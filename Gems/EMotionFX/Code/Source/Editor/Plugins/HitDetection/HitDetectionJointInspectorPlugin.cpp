@@ -33,12 +33,6 @@ namespace EMotionFX
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    EMStudio::EMStudioPlugin* HitDetectionJointInspectorPlugin::Clone()
-    {
-        HitDetectionJointInspectorPlugin* newPlugin = new HitDetectionJointInspectorPlugin();
-        return newPlugin;
-    }
-
     bool HitDetectionJointInspectorPlugin::Init()
     {
         if (ColliderHelpers::AreCollidersReflected())

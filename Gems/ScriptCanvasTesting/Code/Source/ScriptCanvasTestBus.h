@@ -119,7 +119,13 @@ namespace ScriptCanvasTesting
         {
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->Class<TestTupleMethods>("TestTupleMethods")->Method("Three", &TestTupleMethods::Three);
+                behaviorContext->Class<TestTupleMethods>("TestTupleMethods")
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests")
+                    ->Method("Three", &TestTupleMethods::Three);
+
+                behaviorContext->Method("ScriptCanvasTesting_TestTupleMethods_GlobalThree", &TestTupleMethods::Three)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests");
             }
         }
     };

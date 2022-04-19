@@ -200,6 +200,20 @@ def GetEnvStringList(Map envVarMap) {
     return strList
 }
 
+def GetCrashArtifactDir() {
+    if (env.IS_UNIX) {
+        def uname = sh(script: 'uname', returnStdout: true).trim()
+        if (uname.startsWith('Darwin')) {
+            return '~/Library/Logs/DiagnosticReports/' // MacOS
+        }
+        else {
+            return '/var/lib/apport/coredump/'
+        }
+    } else {
+        return "$LOCALAPPDATA\\CrashDumps"
+    }
+}
+
 def CheckoutBootstrapScripts(String branchName) {
     checkout([$class: 'GitSCM',
         branches: [[name: "*/${branchName}"]],
@@ -472,6 +486,13 @@ def UploadTestArtifacts(String workspace, String outputDirectory) {
         ArchiveArtifactsOnS3("${cmakeBuildDir}/Testing", "test_artifacts", true)
     }
 }
+def UploadCrashArtifacts(String platform) {
+    catchError(message: "Error archiving crash artifacts (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        def crashArtifactDir = GetCrashArtifactDir()
+        echo "Uploading Crash Artifacts: ${crashArtifactDir}"
+        ArchiveArtifactsOnS3("${crashArtifactDir}", "${platform}_crash_artifacts", true)
+    }
+}
 
 def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
     echo 'Starting post-build common steps...'
@@ -511,6 +532,38 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
         palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action create --tags ${mountName} --execute", "Starting volume snapshots", true)
         palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action delete --tags ${mountName} --retention ${env.SNAP_RETENTION} --execute", "Cleaning up old snapshots", true)
     }
+}
+
+def ReplaceContent(String githubUrl) {
+    // Get absolute directory for job metadata. Needs permissions from Jenkins for each upstream classes
+    def github_url = "https://github.com/${githubUrl}/tree/${env.CHANGE_ID}"
+    def base_path = Jenkins.instance.getItemByFullName("${JOB_NAME}").rootDir
+    def log_file = "${base_path}" + "/builds/${env.BUILD_NUMBER}/log"
+    def config_list = []
+    def regex_replace_map = [
+        '( .*o3de)(.*\\.cpp)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .cpp files
+        '( .*o3de)(.*\\.h)\\((\\d+)\\)': ' ' + github_url + '$2#L$3', // .h files
+        ' .*(\\.\\.\\\\)+(.*\\.py):(\\d+): ': ' ' + github_url + '$2#L$3 ', // .py files
+    ]
+    regex_replace_map.each { regex_replace ->
+        config_list.add(
+            fileContentReplaceConfig(
+                configs: [
+                    fileContentReplaceItemConfig(
+                    search: "${regex_replace.key}",
+                    replace: "${regex_replace_map[regex_replace.key]}",
+                    matchCount: 0,
+                    verbose: false,
+                    )
+                ],
+            fileEncoding: 'UTF-8',
+            filePath:"${log_file}"
+            ),
+        )
+    }
+    contentReplace(
+        configs: config_list
+    )
 }
 
 def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars, boolean onlyMountEBSVolume = false) {
@@ -570,6 +623,14 @@ def CreateUploadTestArtifactStage(String jobName, String workspace, String outpu
     return {
         stage("${jobName}_upload_test_artifacts") {
             UploadTestArtifacts(workspace, outputDirectory)
+        }
+    }
+}
+
+def CreateUploadCrashArtifactStage(String jobName, String platform) {
+    return {
+        stage("${jobName}_upload_crash_artifacts") {
+            UploadCrashArtifacts(platform)
         }
     }
 }
@@ -647,12 +708,14 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         currentException = e.toString()
                     }
                     finally {
-
                         if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
                             CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, params.OUTPUT_DIRECTORY, params.CONFIGURATION).call()
                         }
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
+                        }
+                        if (fileExists(GetCrashArtifactDir())) {
+                            CreateUploadCrashArtifactStage(build_job_name, platform.key).call()
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
@@ -889,7 +952,6 @@ try {
             stage('Build') {
                 parallel buildConfigs // Run parallel builds
             }
-
             echo 'All builds successful'
         }
         if (!someBuildHappened) {
@@ -909,7 +971,7 @@ finally {
             } else {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
-
+                ReplaceContent(env.REPOSITORY_NAME)
             }
             if(env.POST_AR_BUILD_SNS_TOPIC) {
                 message_json = [
