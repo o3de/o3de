@@ -83,8 +83,9 @@ namespace AZ
             static AssetId CreateString(AZStd::string_view input);
             static void Reflect(ReflectContext* context);
 
-            static const size_t MaxStringBuffer = AZ::Uuid::MaxStringBuffer + 9; /// UUid string + ":" + fixed size, hex, subId
-            AZStd::fixed_string<MaxStringBuffer> ToFixedString() const;
+            static constexpr size_t MaxStringBuffer = AZ::Uuid::MaxStringBuffer + 9; /// UUid size (includes terminal) + ":" + hex, subId
+            using FixedString = AZStd::fixed_string<MaxStringBuffer>;
+            FixedString ToFixedString() const;
 
             Uuid m_guid;
             u32  m_subId;   ///< To allow easier and more consistent asset guid, we can provide asset sub ID. (i.e. Guid is a cubemap texture, subId is the index of the side)
@@ -1041,13 +1042,11 @@ namespace AZ
             if (assetData && !assetData->RTTI_IsTypeOf(AzTypeInfo<T>::Uuid()))
             {
 #ifdef AZ_ENABLE_TRACING
-                char assetDataIdGUIDStr[Uuid::MaxStringBuffer];
-                char assetTypeIdGUIDStr[Uuid::MaxStringBuffer];
-                assetData->GetId().m_guid.ToString(assetDataIdGUIDStr, AZ_ARRAY_SIZE(assetDataIdGUIDStr));
-                AzTypeInfo<T>::Uuid().ToString(assetTypeIdGUIDStr, AZ_ARRAY_SIZE(assetTypeIdGUIDStr));
-                AZ_Error("AssetDatabase", false, "Asset of type %s:%x (%s) is not related to %s (%s)!",
-                    assetData->GetType().ToString<AZStd::string>().c_str(), assetData->GetId().m_subId, assetDataIdGUIDStr,
-                    AzTypeInfo<T>::Name(), assetTypeIdGUIDStr);
+                AZ_Error("AssetDatabase", false, "Asset: %s TypeId: %s, is not related to Type: %s (%s)!"
+                    , assetData->GetId().ToFixedString().c_str()
+                    , assetData->GetType().ToFixedString().c_str()
+                    , AzTypeInfo<T>::Name()
+                    , AzTypeInfo<T>::Uuid().ToFixedString().c_str());
 #endif // AZ_ENABLE_TRACING
                 m_assetId = AssetId();
                 m_assetType = azrtti_typeid<T>();

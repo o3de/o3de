@@ -45,7 +45,7 @@ namespace AZ
 
         static constexpr int ValidUuidStringLength = 32; /// Number of characters (data only, no extra formatting) in a valid UUID string
         static constexpr size_t MaxStringBuffer = 39; /// 32 Uuid + 4 dashes + 2 brackets + 1 terminate
-        
+        using FixedString = AZStd::fixed_string<MaxStringBuffer>;
         Uuid() = default;
         Uuid(const char* string, size_t stringLength = 0) { *this = CreateString(string, stringLength); }
 
@@ -121,10 +121,7 @@ namespace AZ
             ToString(&result[0], static_cast<int>(result.size()) + 1, isBrackets, isDashes);
         }
 
-        AZStd::fixed_string<MaxStringBuffer> ToFixedString(bool isBrackets = true, bool isDashes = true) const
-        {
-            return ToString<AZStd::fixed_string<MaxStringBuffer>>(isBrackets, isDashes);
-        }
+        FixedString ToFixedString(bool isBrackets = true, bool isDashes = true) const;
 
         AZ_MATH_INLINE bool operator==(const Uuid& rhs) const
         {

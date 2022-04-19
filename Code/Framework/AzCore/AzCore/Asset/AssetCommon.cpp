@@ -92,11 +92,10 @@ namespace AZ::Data
         }
     }
 
-    AZStd::fixed_string<AssetId::MaxStringBuffer> AssetId::ToFixedString() const
+    AssetId::FixedString AssetId::ToFixedString() const
     {
-        using FixedString = AZStd::fixed_string<MaxStringBuffer>;
         FixedString result;
-        result = FixedString::format("%s:%08x", m_guid.ToString<FixedString>().c_str(), m_subId);
+        result = FixedString::format("%s:%08x", m_guid.ToFixedString().c_str(), m_subId);
         return result;
     }
 
