@@ -101,13 +101,6 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>development</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QLabel" name="m_TransparentVersion">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
