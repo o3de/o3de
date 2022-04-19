@@ -328,7 +328,13 @@ namespace AssetProcessor
         void DispatchFileChange();
         bool InitializeCacheRoot();
         void PopulateJobStateCache();
-        void AutoFailJob(const AZStd::string& consoleMsg, const AZStd::string& autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
+        void AutoFailJob(
+            AZStd::string_view consoleMsg,
+            AZStd::string_view autoFailReason,
+            const AZ::IO::Path& filePath,
+            JobEntry jobEntry,
+            AZStd::string_view jobLog = "");
+        void AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
 
         using ProductInfoList = AZStd::vector<AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>>;
 
@@ -404,6 +410,12 @@ namespace AssetProcessor
 
         //! Analyzes and forward the job to the RCController if the job requires processing
         void ProcessJob(JobDetails& jobDetails);
+
+        // Returns true if the path is inside the Cache and *not* inside the Intermediate Assets folder
+        bool IsInCacheFolder(AZ::IO::PathView path) const;
+
+        // Returns true if the path is inside the Intermediate Assets folder
+        bool IsInIntermediateAssetsFolder(AZ::IO::PathView path) const;
 
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 

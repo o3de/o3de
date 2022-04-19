@@ -1461,6 +1461,41 @@ namespace AssetUtilities
         return false;
     }
 
+    bool IsInCacheFolder(AZ::IO::PathView path, AZ::IO::Path cachePath)
+    {
+        if(cachePath.empty())
+        {
+            QDir cacheDir;
+            [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
+
+            AZ_Error("AssetUtils", result, "Failed to get cache root for IsInCacheFolder");
+
+            cachePath = cacheDir.absolutePath().toUtf8().constData();
+        }
+
+        return path.IsRelativeTo(cachePath) && !IsInIntermediateAssetsFolder(path, cachePath);
+    }
+
+    bool IsInIntermediateAssetsFolder(AZ::IO::PathView path, AZ::IO::PathView cachePath)
+    {
+        AZ::IO::FixedMaxPath fixedCachedPath = cachePath;
+
+        if (fixedCachedPath.empty())
+        {
+            QDir cacheDir;
+            [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
+
+            AZ_Error("AssetUtils", result, "Failed to get cache root for IsInCacheFolder");
+
+            fixedCachedPath = cacheDir.absolutePath().toUtf8().constData();
+        }
+
+        AZ::IO::FixedMaxPath intermediateAssetsPath(cachePath);
+        intermediateAssetsPath /= AssetProcessor::IntermediateAssetsFolderName;
+
+        return path.IsRelativeTo(intermediateAssetsPath);
+    }
+
     BuilderFilePatternMatcher::BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID)
         : AssetBuilderSDK::FilePatternMatcher(pattern)
         , m_builderDescID(builderDescID)

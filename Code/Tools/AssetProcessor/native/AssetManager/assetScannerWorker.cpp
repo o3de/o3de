@@ -102,10 +102,7 @@ void AssetScannerWorker::ScanForSourceFiles(const ScanFolderInfo& scanFolderInfo
         AssetFileInfo assetFileInfo(absPath, modTime, fileSize, &rootScanFolder, isDirectory);
 
         // Skip over the Cache folder if the file entry is the project cache root
-        QDir projectCacheRoot;
-        AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
-        QString relativeToProjectCacheRoot = projectCacheRoot.relativeFilePath(absPath);
-        if (QDir::isRelativePath(relativeToProjectCacheRoot) && !relativeToProjectCacheRoot.startsWith(".."))
+        if (AssetUtilities::IsInCacheFolder(absPath.toUtf8().constData()))
         {
             // The Cache folder should not be scanned
             continue;
