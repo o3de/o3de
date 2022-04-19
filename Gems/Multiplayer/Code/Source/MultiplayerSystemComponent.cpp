@@ -548,7 +548,7 @@ namespace Multiplayer
             }
             else
             {
-                AZLOG_ERROR("No IMultiplyaerSpawner was available. Ensure that one is registered for usage on PlayerJoin.");
+                AZLOG_ERROR("No IMultiplayerSpawner was available. Ensure that one is registered for usage on PlayerJoin.");
             }
 
             if (controlledEntity.Exists())

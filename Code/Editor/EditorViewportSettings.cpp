@@ -58,6 +58,8 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraDefaultStartingPositionX = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/x";
     constexpr AZStd::string_view CameraDefaultStartingPositionY = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/y";
     constexpr AZStd::string_view CameraDefaultStartingPositionZ = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/z";
+    constexpr AZStd::string_view CameraDefaultStartingPitch = "/Amazon/Preferences/Editor/Camera/DefaultStartingPitch";
+    constexpr AZStd::string_view CameraDefaultStartingYaw = "/Amazon/Preferences/Editor/Camera/DefaultStartingYaw";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -100,11 +102,24 @@ namespace SandboxEditor
             aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDefaultStartingPositionZ, 4.0)));
     }
 
-    void SetCameraDefaultEditorPosition(const AZ::Vector3& defaultCameraPosition)
+    void SetCameraDefaultEditorPosition(const AZ::Vector3& position)
     {
-        AzToolsFramework::SetRegistry(CameraDefaultStartingPositionX, defaultCameraPosition.GetX());
-        AzToolsFramework::SetRegistry(CameraDefaultStartingPositionY, defaultCameraPosition.GetY());
-        AzToolsFramework::SetRegistry(CameraDefaultStartingPositionZ, defaultCameraPosition.GetZ());
+        AzToolsFramework::SetRegistry(CameraDefaultStartingPositionX, position.GetX());
+        AzToolsFramework::SetRegistry(CameraDefaultStartingPositionY, position.GetY());
+        AzToolsFramework::SetRegistry(CameraDefaultStartingPositionZ, position.GetZ());
+    }
+
+    AZ::Vector2 CameraDefaultEditorOrientation()
+    {
+        return AZ::Vector2(
+            aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDefaultStartingPitch, 0.0)),
+            aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDefaultStartingYaw, 0.0)));
+    }
+
+    void SetCameraDefaultEditorOrientation(const AZ::Vector2& pitchYaw)
+    {
+        AzToolsFramework::SetRegistry(CameraDefaultStartingPitch, pitchYaw.GetX());
+        AzToolsFramework::SetRegistry(CameraDefaultStartingYaw, pitchYaw.GetY());
     }
 
     AZ::u64 MaxItemsShownInAssetBrowserSearch()

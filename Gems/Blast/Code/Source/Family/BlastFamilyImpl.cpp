@@ -45,10 +45,6 @@ namespace Blast
     {
         Nv::Blast::TkFramework* tkFramework = AZ::Interface<BlastSystemRequests>::Get()->GetTkFramework();
         AZ_Assert(tkFramework, "TkFramework uninitialized when trying to create BlastFamily");
-        if (!tkFramework)
-        {
-            return;
-        }
 
         // Create the TkActor from our Blast asset
         Nv::Blast::TkActorDesc tkActorDesc;
@@ -69,12 +65,13 @@ namespace Blast
         Nv::Blast::TkActor* actor = tkFramework->createActor(tkActorDesc);
         AZ_Assert(actor, "TkActor creation failed when creating BlastFamily.");
 
-        if (!actor)
-        {
-            return;
-        }
-
+        // The new actor is the first member of a new TkFamily, which will be owned by BlastFamilyImpl.
+        // Family takes care of releasing whatever actor is remaining.
         m_tkFamily.reset(&actor->getFamily());
+
+        // If a TkGroup was passed in the description, add the new TkActor to it.
+        // Actors will remove themselves from the group when they are released.
+        // BlastSystemComponet takes care of destroying empty groups.
         if (desc.m_group)
         {
             desc.m_group->addActor(*actor);
@@ -83,17 +80,13 @@ namespace Blast
 
     BlastFamilyImpl::~BlastFamilyImpl()
     {
-        if (m_isSpawned)
-        {
-            Despawn();
-        }
+        Despawn();
     }
 
     bool BlastFamilyImpl::Spawn(const AZ::Transform& transform)
     {
-        AZ_Assert(!m_isSpawned, "BlastFamily was already spawned.");
         AZ_Assert(m_tkFamily, "No TkFamily created for this BlastFamily.");
-        if (m_isSpawned || !m_tkFamily)
+        if (m_isSpawned)
         {
             return false;
         }
@@ -102,7 +95,7 @@ namespace Blast
 
         m_tkFamily->addListener(*this);
 
-        CreateActors(CalculateInitialActors(transform));
+        CreateActors(CalculateActorsDescFromFamily(transform));
 
         m_isSpawned = true;
         return true;
@@ -110,23 +103,23 @@ namespace Blast
 
     void BlastFamilyImpl::Despawn()
     {
+        AZ_Assert(m_tkFamily, "No TkFamily created for this BlastFamily.");
+        if (!m_isSpawned)
+        {
+            return;
+        }
+
         // Intentional copy here as we will use this set to delete actors from ActorTracker itself
         AZStd::unordered_set<BlastActor*> toDelete = m_actorTracker.GetActors();
         DestroyActors(toDelete);
 
-        if (m_tkFamily)
-        {
-            m_tkFamily->removeListener(*this);
-        }
+        m_tkFamily->removeListener(*this);
         m_isSpawned = false;
     }
 
     void BlastFamilyImpl::HandleEvents(const Nv::Blast::TkEvent* events, uint32_t eventCount)
     {
         AZ_PROFILE_FUNCTION(Physics);
-
-        AZStd::vector<BlastActorDesc> newActors;
-        AZStd::unordered_set<BlastActor*> actorsToDelete;
 
         for (uint32_t i = 0; i < eventCount; ++i)
         {
@@ -135,62 +128,54 @@ namespace Blast
             {
             case Nv::Blast::TkEvent::Split:
                 {
-                    HandleSplitEvent(event.getPayload<Nv::Blast::TkSplitEvent>(), newActors, actorsToDelete);
+                    AZStd::vector<BlastActorDesc> newActorsDesc;
+                    AZStd::unordered_set<BlastActor*> actorsToDelete;
+
+                    HandleSplitEvent(event.getPayload<Nv::Blast::TkSplitEvent>(), newActorsDesc, actorsToDelete);
+
+                    DestroyActors(actorsToDelete);
+                    CreateActors(AZStd::move(newActorsDesc));
                     break;
                 }
             default:
                 break;
             }
         }
-
-        DestroyActors(actorsToDelete);
-        CreateActors(AZStd::move(newActors));
     }
 
     void BlastFamilyImpl::HandleSplitEvent(
-        const Nv::Blast::TkSplitEvent* splitEvent, AZStd::vector<BlastActorDesc>& newActors,
+        const Nv::Blast::TkSplitEvent* splitEvent, AZStd::vector<BlastActorDesc>& newActorsDesc,
         AZStd::unordered_set<BlastActor*>& actorsToDelete)
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        AZ_Assert(splitEvent, "Received null TkSplitEvent from the Blast library.");
         if (!splitEvent)
         {
+            AZ_Error("Blast", false, "Received null TkSplitEvent from the Blast library.");
             return;
         }
 
-        const uint32_t newActorsCount = splitEvent->numChildren;
-
-        BlastActor* parentActor = nullptr;
-        AzPhysics::SimulatedBody* parentBody = nullptr;
-        AZ_Assert(splitEvent->parentData.userData, "Parent actor in split event must have user data.");
         if (!splitEvent->parentData.userData)
         {
+            AZ_Error("Blast", false, "Parent actor in split event must have user data.");
             return;
         }
 
-        parentActor = reinterpret_cast<BlastActor*>(splitEvent->parentData.userData);
+        BlastActor* parentActor = static_cast<BlastActor*>(splitEvent->parentData.userData);
         AZ_Assert(parentActor, "TkActor had a null user data instead of a BlastActor.");
-        if (!parentActor)
-        {
-            return;
-        }
-        parentBody = parentActor->GetSimulatedBody();
 
+        AzPhysics::SimulatedBody* parentBody = parentActor->GetSimulatedBody();
+
+        const uint32_t newActorsCount = splitEvent->numChildren;
         const bool parentStatic = parentActor->IsStatic();
 
         // Fill in actor create infos for newly created actors, based on the parent's velocity & center of mass
         for (uint32_t childIndex = 0; childIndex < newActorsCount; ++childIndex)
         {
-            if (childIndex >= splitEvent->numChildren)
+            Nv::Blast::TkActor* tkActorChild = splitEvent->children[childIndex];
+            if (!tkActorChild)
             {
-                AZ_Assert(false, "Out of bounds access to split event's children.");
-                continue;
-            }
-
-            if (!splitEvent->children[childIndex])
-            {
-                AZ_Assert(false, "Split event generated with null TkActor");
+                AZ_Error("Blast", false, "Split event generated with null TkActor");
                 continue;
             }
 
@@ -205,8 +190,8 @@ namespace Blast
                 parentTransform = m_initialTransform;
             }
 
-            newActors.push_back(
-                CalculateActorDesc(parentBody, parentStatic, parentTransform, splitEvent->children[childIndex]));
+            newActorsDesc.push_back(
+                CalculateActorDesc(parentBody, parentStatic, parentTransform, tkActorChild));
         }
 
         actorsToDelete.insert(parentActor);
@@ -217,13 +202,18 @@ namespace Blast
     {
         auto actorDesc = CalculateActorDesc(parentTransform, tkActor);
 
-        actorDesc.m_bodyConfiguration.m_initialAngularVelocity = !parentStatic
+        const bool isParentBodyDynamic = (parentBody && !parentStatic);
+
+        actorDesc.m_bodyConfiguration.m_initialAngularVelocity =
+            isParentBodyDynamic
             ? static_cast<AzPhysics::RigidBody*>(parentBody)->GetAngularVelocity()
             : AZ::Vector3::CreateZero();
         actorDesc.m_parentCenterOfMass = parentTransform.TransformPoint(
-            !parentStatic ? static_cast<AzPhysics::RigidBody*>(parentBody)->GetCenterOfMassLocal()
-                          : AZ::Vector3::CreateZero());
-        actorDesc.m_parentLinearVelocity = !parentStatic
+            isParentBodyDynamic
+            ? static_cast<AzPhysics::RigidBody*>(parentBody)->GetCenterOfMassLocal()
+            : AZ::Vector3::CreateZero());
+        actorDesc.m_parentLinearVelocity =
+            isParentBodyDynamic
             ? static_cast<AzPhysics::RigidBody*>(parentBody)->GetLinearVelocity()
             : AZ::Vector3::CreateZero();
 
@@ -259,7 +249,7 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        for (auto& actorDesc : actorDescs)
+        for (const auto& actorDesc : actorDescs)
         {
             BlastActor* actor = m_actorFactory->CreateActor(actorDesc);
             m_actorTracker.AddActor(actor);
@@ -271,7 +261,7 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        for (const auto actor : actors)
+        for (auto* actor : actors)
         {
             m_actorTracker.RemoveActor(actor);
             DispatchActorDestroyed(*actor);
@@ -281,6 +271,11 @@ namespace Blast
 
     void BlastFamilyImpl::DestroyActor(BlastActor* blastActor)
     {
+        if (!blastActor)
+        {
+            return;
+        }
+
         if (m_actorTracker.GetActors().find(blastActor) == m_actorTracker.GetActors().end())
         {
             AZ_Warning(
@@ -307,23 +302,22 @@ namespace Blast
         m_listener->OnActorDestroyed(*this, actor);
     }
 
-    AZStd::vector<BlastActorDesc> BlastFamilyImpl::CalculateInitialActors(const AZ::Transform& transform)
+    AZStd::vector<BlastActorDesc> BlastFamilyImpl::CalculateActorsDescFromFamily(const AZ::Transform& transform)
     {
         // Get current active TkActors
         // Normally only 1, but it can be already in split state
         const uint32_t actorCount = m_tkFamily->getActorCount();
-        AZStd::vector<Nv::Blast::TkActor*> initialTkActors;
-        initialTkActors.resize_no_construct(actorCount);
+        AZStd::vector<Nv::Blast::TkActor*> initialTkActors(actorCount, nullptr);
         m_tkFamily->getActors(initialTkActors.data(), actorCount);
 
         // Fill initial actor create infos
         AZStd::vector<BlastActorDesc> initialActors;
         initialActors.reserve(actorCount);
-        for (auto tkActor : initialTkActors)
+        for (auto* tkActor : initialTkActors)
         {
             initialActors.push_back(CalculateActorDesc(transform, tkActor));
         }
-        return AZStd::move(initialActors);
+        return initialActors;
     }
 
     static AZ::Color MixColors(const AZ::Color& color1, AZ::Color color2, float ratio)
@@ -381,7 +375,7 @@ namespace Blast
     }
 
     void BlastFamilyImpl::FillDebugRenderHealthGraph(
-        DebugRenderBuffer& debugRenderBuffer, DebugRenderMode mode, Nv::Blast::TkActor& actor)
+        DebugRenderBuffer& debugRenderBuffer, DebugRenderMode mode, const Nv::Blast::TkActor& actor)
     {
         const NvBlastChunk* chunks = actor.getFamily().getAsset()->getChunks();
         const NvBlastBond* bonds = actor.getFamily().getAsset()->getBonds();
@@ -468,7 +462,7 @@ namespace Blast
     {
         for (const BlastActor* blastActor : m_actorTracker.GetActors())
         {
-            Nv::Blast::TkActor& actor = blastActor->GetTkActor();
+            const Nv::Blast::TkActor& actor = blastActor->GetTkActor();
             auto lineStartIndex = aznumeric_cast<uint32_t>(debugRenderBuffer.m_lines.size());
 
             uint32_t nodeCount = actor.getGraphNodeCount();

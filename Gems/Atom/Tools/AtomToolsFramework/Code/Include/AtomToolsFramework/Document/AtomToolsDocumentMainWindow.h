@@ -94,6 +94,8 @@ namespace AtomToolsFramework
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
+        void OnDocumentCleared(const AZ::Uuid& documentId) override;
+        void OnDocumentError(const AZ::Uuid& documentId) override;
         void OnDocumentDestroyed(const AZ::Uuid& documentId) override;
         void OnDocumentModified(const AZ::Uuid& documentId) override;
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;

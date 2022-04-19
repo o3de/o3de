@@ -194,11 +194,11 @@ namespace MaterialCanvas
         menuEdit->addSeparator();
         m_actionSelectAll = menuEdit->addAction(tr("Select All"), [this] {
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::SelectAll);
-        });
+        }, QKeySequence::SelectAll);
         m_actionSelectInputs = menuEdit->addAction(tr("Select Inputs"), [this] {
             GraphCanvas::SceneRequestBus::Event(
                 m_activeGraphId, &GraphCanvas::SceneRequests::SelectAllRelative, GraphCanvas::ConnectionType::CT_Input);
-        });
+        }, QKeySequence::Deselect);
         m_actionSelectOutputs = menuEdit->addAction(tr("Select Outputs"), [this] {
             GraphCanvas::SceneRequestBus::Event(
                 m_activeGraphId, &GraphCanvas::SceneRequests::SelectAllRelative, GraphCanvas::ConnectionType::CT_Output);
@@ -266,14 +266,12 @@ namespace MaterialCanvas
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ZoomIn);
-        });
-        m_actionZoomIn->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Plus), QKeySequence(Qt::CTRL + Qt::Key_Equal) });
+        }, QKeySequence::ZoomIn);
         m_actionZoomOut = menuView->addAction(tr("Zoom Out"), [this] {
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ZoomOut);
-        });
-        m_actionZoomOut->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Minus), QKeySequence(Qt::CTRL + Qt::Key_hyphen) });
+        }, QKeySequence::ZoomOut);
         m_actionZoomSelection = menuView->addAction(tr("Zoom Selection"), [this] {
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
@@ -285,12 +283,12 @@ namespace MaterialCanvas
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnStartOfChain);
-        });
+        }, QKeySequence::MoveToStartOfDocument);
         m_actionGotoEndOfChain = menuView->addAction(tr("Goto End Of Chain"), [this] {
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnEndOfChain);
-        });
+        }, QKeySequence::MoveToEndOfDocument);
 
         connect(menuEdit, &QMenu::aboutToShow, this, [this](){
             AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(

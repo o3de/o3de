@@ -135,14 +135,6 @@ namespace GradientSignal
         // Cancel any pending preview refreshes before locking, to help ensure the preview itself isn't holding the lock
         auto entityIds = CancelPreviewRendering();
 
-         // block anyone from accessing the buses while the editor deactivates and re-activates the contained component.
-        auto& surfaceDataSystemRequestBusContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-        auto& gradientRequestBusContextContext = GradientRequestBus::GetOrCreateContext(false);
-        AZStd::scoped_lock< decltype(surfaceDataSystemRequestBusContext.m_contextMutex),
-                            decltype(gradientRequestBusContextContext.m_contextMutex)
-                          > 
-                scopeLock(  surfaceDataSystemRequestBusContext.m_contextMutex,
-                            gradientRequestBusContextContext.m_contextMutex);
         auto refreshResult = BaseClassType::ConfigurationChanged();
 
         // Refresh any of the previews that we cancelled that were still in progress so they can be completed

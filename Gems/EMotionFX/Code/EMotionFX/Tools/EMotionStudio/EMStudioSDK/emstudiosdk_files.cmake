@@ -30,6 +30,7 @@ set(FILES
     Source/MainWindow.h
     Source/MotionEventPresetManager.cpp
     Source/MotionEventPresetManager.h
+    Source/PersistentPlugin.h
     Source/PluginManager.cpp
     Source/PluginManager.h
     Source/PluginOptions.h

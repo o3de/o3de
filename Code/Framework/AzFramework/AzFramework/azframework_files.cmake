@@ -285,6 +285,12 @@ set(FILES
     Render/Intersector.h
     Render/IntersectorInterface.h
     Spawnable/RootSpawnableInterface.h
+    Spawnable/Script/SpawnableScriptAssetRef.cpp
+    Spawnable/Script/SpawnableScriptAssetRef.h
+    Spawnable/Script/SpawnableScriptBus.h
+    Spawnable/Script/SpawnableScriptMediator.cpp
+    Spawnable/Script/SpawnableScriptMediator.h
+    Spawnable/Script/SpawnableScriptNotificationsHandler.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
     Spawnable/SpawnableAssetBus.h
@@ -299,6 +305,7 @@ set(FILES
     Spawnable/SpawnableMetaData.cpp
     Spawnable/SpawnableMetaData.h
     Spawnable/SpawnableMonitor.h
+    Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp

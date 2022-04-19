@@ -157,7 +157,6 @@ namespace AtomToolsFramework
                 }
 
                 dockWidget->setVisible(visible);
-                dockWidget->widget()->setVisible(visible);
                 break;
             }
         }

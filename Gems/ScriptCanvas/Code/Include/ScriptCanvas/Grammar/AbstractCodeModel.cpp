@@ -1132,7 +1132,11 @@ namespace ScriptCanvas
             // get/set methods 
             if (IsVariableSet(execution) && !IsPropertyExtractionSlot(execution, &outputSlot))
             {
-                AZ_Assert(out.m_output.size() == 1, "the output for Get/Set should already have been supplied");
+                if (!out.m_output.size() == 1)
+                {
+                    AddError(execution->GetId().m_node->GetEntityId(), nullptr, ScriptCanvas::ParseErrors::GetOrSetVariableOutputNotSupplied);
+                    return nullptr;
+                }
 
                 if (!connections.m_returnValuesOrReferences.empty())
                 {

@@ -100,7 +100,6 @@ namespace Terrain
     void TerrainHeightGradientListComponent::Activate()
     {
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        Terrain::TerrainAreaHeightRequestBus::Handler::BusConnect(GetEntityId());
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         // Make sure we get update notifications whenever this entity or any dependent gradient entity changes in any way.
@@ -117,18 +116,19 @@ namespace Terrain
             }
         }
 
+        Terrain::TerrainAreaHeightRequestBus::Handler::BusConnect(GetEntityId());
+
         // Cache any height data needed and notify that the area has changed.
         OnCompositionChanged();
     }
 
     void TerrainHeightGradientListComponent::Deactivate()
     {
-        // Ensure that we only deactivate when no queries are actively running.
-        AZStd::unique_lock lock(m_queryMutex);
+        // Disconnect before doing any other teardown. This will guarantee that any active queries have finished before we proceed.
+        Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
-        Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         // Since this height data will no longer exist, notify the terrain system to refresh the area.
@@ -162,7 +162,7 @@ namespace Terrain
         AZ::Vector3& outPosition,
         bool& terrainExists)
     {
-        // Allow multiple queries to run simultaneously, but prevent them from running in parallel with activation / deactivation.
+        // Make sure we don't run queries simultaneously with changing any of the cached data.
         AZStd::shared_lock lock(m_queryMutex);
 
         float maxSample = 0.0f;
@@ -207,7 +207,7 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(Terrain);
 
-        // Allow multiple queries to run simultaneously, but prevent them from running in parallel with activation / deactivation.
+        // Make sure we don't run queries simultaneously with changing any of the cached data.
         AZStd::shared_lock lock(m_queryMutex);
 
         AZ_Assert(

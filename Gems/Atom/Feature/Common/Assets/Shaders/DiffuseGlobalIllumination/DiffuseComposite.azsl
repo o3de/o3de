@@ -158,6 +158,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
     float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
+    bool enableIBL = DecodeUnorm2BitFlag1(encodedNormal.a);
     float4 albedo = PassSrg::m_albedo.Load(screenCoords, sampleIndex);
     float probeIrradianceBlendWeight = saturate(PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex).a);
   
@@ -168,7 +169,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
         diffuse = (albedo.rgb / PI) * probeIrradiance * probeIrradianceBlendWeight;
     }
 
-    if (probeIrradianceBlendWeight < 1.0f)
+    if (probeIrradianceBlendWeight < 1.0f && enableIBL)
     {
         float3 globalIrradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal);
 

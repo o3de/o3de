@@ -92,8 +92,8 @@ void CEditorPreferencesPage_ViewportManipulator::Reflect(AZ::SerializeContext& s
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &Manipulators::m_manipulatorViewBaseScale, "Manipulator View Base Scale",
                 "The base scale to apply to all Manipulator Views (default is 1.0)")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.5f)
-            ->Attribute(AZ::Edit::Attributes::Max, 2.0f)
+            ->Attribute(AZ::Edit::Attributes::Min, AzToolsFramework::MinManipulatorViewBaseScale)
+            ->Attribute(AZ::Edit::Attributes::Max, AzToolsFramework::MaxManipulatorViewBaseScale)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &Manipulators::m_flipManipulatorAxesTowardsView, "Flip Manipulator Axes Towards View",
                 "Determines whether Planar and Linear Manipulators should switch to face the view (camera) in the Editor");

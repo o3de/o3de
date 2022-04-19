@@ -68,18 +68,15 @@ namespace EMStudio
         ~TimeViewPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override;
         const char* GetName() const override;
         uint32 GetClassID() const override;
-        const char* GetCreatorName() const override;
-        float GetVersion() const override;
         bool GetIsClosable() const override             { return true; }
         bool GetIsFloatable() const override            { return true; }
         bool GetIsVertical() const override             { return false; }
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new TimeViewPlugin(); }
 
         void OnBeforeRemovePlugin(uint32 classID) override;
 

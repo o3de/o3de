@@ -95,12 +95,14 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::Activate()
     {
+        AZ::Interface<SurfaceDataSystem>::Register(this);
         SurfaceDataSystemRequestBus::Handler::BusConnect();
     }
 
     void SurfaceDataSystemComponent::Deactivate()
     {
         SurfaceDataSystemRequestBus::Handler::BusDisconnect();
+        AZ::Interface<SurfaceDataSystem>::Unregister(this);
     }
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataProvider(const SurfaceDataRegistryEntry& entry)
@@ -248,6 +250,8 @@ namespace SurfaceData
         AZStd::span<const AZ::Vector3> inPositions, const AZ::Aabb& inPositionBounds,
         const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointLists) const
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
         const bool useTagFilters = HasValidTags(desiredTags);
@@ -299,16 +303,23 @@ namespace SurfaceData
         {
             tagFilters = desiredTags;
         }
-        surfacePointLists.StartListConstruction(inPositions, maxPointsCreatedPerInput, tagFilters);
+
+        {
+            AZ_PROFILE_SCOPE(Entity, "GetSurfacePointsFromListInternal: StartListConstruction");
+            surfacePointLists.StartListConstruction(inPositions, maxPointsCreatedPerInput, tagFilters);
+        }
 
         // Loop through each data provider and generate surface points from the set of input positions.
         // Any generated points that have the same XY coordinates and extremely similar Z values will get combined together.
-        for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
         {
-            if (ProviderIsApplicable(provider))
+            AZ_PROFILE_SCOPE(Entity, "GetSurfacePointsFromListInternal: GetSurfacePointsFromList");
+            for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
             {
-                SurfaceDataProviderRequestBus::Event(
-                    providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePointsFromList, inPositions, surfacePointLists);
+                if (ProviderIsApplicable(provider))
+                {
+                    SurfaceDataProviderRequestBus::Event(
+                        providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePointsFromList, inPositions, surfacePointLists);
+                }
             }
         }
 
@@ -317,13 +328,16 @@ namespace SurfaceData
         // create new surface points, but surface data *modifiers* simply annotate points that have already been created.  The modifiers
         // are used to annotate points that occur within a volume.  A common example is marking points as "underwater" for points that occur
         // within a water volume.
-        for (const auto& [modifierHandle, modifier] : m_registeredSurfaceDataModifiers)
         {
-            bool hasInfiniteBounds = !modifier.m_bounds.IsValid();
-
-            if (hasInfiniteBounds || AabbOverlaps2D(modifier.m_bounds, surfacePointLists.GetSurfacePointAabb()))
+            AZ_PROFILE_SCOPE(Entity, "GetSurfacePointsFromListInternal: ModifySurfaceWeights");
+            for (const auto& [modifierHandle, modifier] : m_registeredSurfaceDataModifiers)
             {
-                surfacePointLists.ModifySurfaceWeights(modifierHandle);
+                bool hasInfiniteBounds = !modifier.m_bounds.IsValid();
+
+                if (hasInfiniteBounds || AabbOverlaps2D(modifier.m_bounds, surfacePointLists.GetSurfacePointAabb()))
+                {
+                    surfacePointLists.ModifySurfaceWeights(modifierHandle);
+                }
             }
         }
 

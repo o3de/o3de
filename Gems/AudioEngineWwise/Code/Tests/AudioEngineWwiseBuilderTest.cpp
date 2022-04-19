@@ -76,8 +76,8 @@ protected:
         AZStd::string absoluteRequestPath = GetTestFileFullPath(fileName);
 
         AZ::Outcome<AZStd::string, AZStd::string> result = worker.GatherProductDependencies(absoluteRequestPath, relativeRequestPath, resolvedPaths);
-        ASSERT_FALSE(result.IsSuccess());
-        ASSERT_EQ(resolvedPaths.size(), 0);
+        EXPECT_FALSE(result.IsSuccess());
+        EXPECT_EQ(resolvedPaths.size(), 0);
     }
 
     void TestSuccessCase(AZStd::string_view fileName, AZStd::vector<const char*>& expectedDependencies, bool expectWarning = false)
@@ -96,29 +96,29 @@ protected:
         AZStd::string absoluteRequestPath = GetTestFileFullPath(fileName);
 
         AZ::Outcome<AZStd::string, AZStd::string> result = worker.GatherProductDependencies(absoluteRequestPath, relativeRequestPath, resolvedPaths);
-        ASSERT_TRUE(result.IsSuccess());
-        ASSERT_EQ(!result.GetValue().empty(), expectWarning);
-        ASSERT_EQ(resolvedPaths.size(), referencedFilesCount);
+        EXPECT_TRUE(result.IsSuccess());
+        EXPECT_EQ(!result.GetValue().empty(), expectWarning);
+        EXPECT_EQ(resolvedPaths.size(), referencedFilesCount);
         if (referencedFilesCount > 0)
         {
             for (const AssetBuilderSDK::ProductPathDependency& dependency : expectedResolvedPaths)
             {
-                ASSERT_TRUE(resolvedPaths.find(dependency) != resolvedPaths.end());
+                EXPECT_TRUE(resolvedPaths.find(dependency) != resolvedPaths.end());
             }
         }
     }
 
-    void TestSuccessCase(AZStd::string_view fileName, const char* expectedTexture, bool expectWarning = false)
+    void TestSuccessCase(AZStd::string_view fileName, const char* expectedDependency, bool expectWarning = false)
     {
-        AZStd::vector<const char*> expectedTextures;
-        expectedTextures.push_back(expectedTexture);
-        TestSuccessCase(fileName, expectedTextures, expectWarning);
+        AZStd::vector<const char*> expectedDependencies;
+        expectedDependencies.push_back(expectedDependency);
+        TestSuccessCase(fileName, expectedDependencies, expectWarning);
     }
 
     void TestSuccessCaseNoDependencies(AZStd::string_view fileName, bool expectWarning = false)
     {
-        AZStd::vector<const char*> expectedTextures;
-        TestSuccessCase(fileName, expectedTextures, expectWarning);
+        AZStd::vector<const char*> expectedDependencies;
+        TestSuccessCase(fileName, expectedDependencies, expectWarning);
     }
 
 private:
@@ -178,20 +178,19 @@ TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_MultipleDependencies)
     TestSuccessCase("test_bank6.bnk", expectedPaths);
 }
 
-TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_DependencyArrayNonexistent_NoDependencies)
+TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_DependencyArrayNonexistent_OneDefaultDependency)
 {
     // Should generate a warning when trying to get dependency info from metadata file, but the dependency field does
-    //  not an empty array. Warning should be describing that a dependency on the init bank was added by default, but
+    //  not exist. Warning should be describing that a dependency on the init bank was added by default, but
     //  the full dependency list could not be generated.
-    TestSuccessCaseNoDependencies("test_bank7.bnk", true);
+    TestSuccessCase("test_bank7.bnk", "Sounds/wwise/init.bnk", true);
 }
 
-TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_NoElementsInDependencyArray_NoDependencies)
+TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_NoElementsInDependencyArray_OneDefaultDependency)
 {
     // Should generate a warning when trying to get dependency info from metadata file, but the dependency field is
-    //  an empty array. Warning should be describing that a dependency on the init bank was added by default, but the
-    //  full dependency list could not be generated.
-    TestSuccessCaseNoDependencies("test_bank8.bnk", true);
+    //  an empty array. Warning should be describing that a dependency on the init bank was added by default.
+    TestSuccessCase("test_bank8.bnk", "Sounds/wwise/init.bnk", true);
 }
 
 TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_MissingInitBankDependency_MultipleDependencies)

@@ -9,8 +9,8 @@
 #pragma once
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <Viewport/MaterialCanvasViewportSettingsSystem.h>
 #include <Window/MaterialCanvasMainWindow.h>
 
 namespace MaterialCanvas
@@ -40,6 +40,6 @@ namespace MaterialCanvas
         QWidget* GetAppMainWindow() override;
 
         AZStd::unique_ptr<MaterialCanvasMainWindow> m_window;
-        AZStd::unique_ptr<MaterialCanvasViewportSettingsSystem> m_viewportSettingsSystem;
+        AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
     };
 } // namespace MaterialCanvas

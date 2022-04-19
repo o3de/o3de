@@ -5,9 +5,17 @@
     "description": "Properties for configuring the irradiance used in global illumination.",
     "properties": [
         {
-            "name": "color",
-            "displayName": "Color",
-            "description": "Color is displayed as sRGB but the values are stored as linear color.",
+            "name": "irradianceColorSource",
+            "displayName": "Irradiance Color Source",
+            "description": "Where to get the irradiance color from? This color can be automatically derived from the diffuse base color (BaseColor: including average texture color if textured; BaseColorTint: base color only, ignoring texture), or the manually provided color below (Manual).",
+            "type": "Enum",
+            "enumValues": [ "BaseColor", "BaseColorTint", "Manual"],
+            "defaultValue": "BaseColor"
+        },
+        {
+            "name": "manualColor",
+            "displayName": "Manual Color",
+            "description": "Irradiance color that is used when the Irradiance Color Source is set to 'Manual'. Color is displayed as sRGB but the values are stored as linear color.",
             "type": "Color",
             "defaultValue": [ 1.0, 1.0, 1.0 ]
         },
@@ -19,6 +27,14 @@
             "defaultValue": 1.0,
             "min": 0.0,
             "max": 1.0
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/StandardPBR_HandleIrradianceColorSource.lua"
+            }
         }
     ]
 }
