@@ -188,7 +188,9 @@ namespace UnitTest
         };
 
         // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
-        const int numIterations = 100000;
+        // The number of iterations is arbitrary - it's set high enough to catch most failures, but low enough to keep the test
+        // time to a minimum.
+        const int numIterations = 30000;
         ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
     }
 
