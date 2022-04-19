@@ -299,7 +299,7 @@ namespace AZ::IO
         //! then call WaitForScheduler to give Steamers scheduler some time to update it's internal status.
         void WaitForScheduler()
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(250));
+            AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(1));
         }
 
     protected:

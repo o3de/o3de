@@ -11,3 +11,4 @@
 
 # define AZ_OS_MALLOC(byteSize, alignment) ::memalign(alignment, byteSize)
 # define AZ_OS_FREE(pointer) ::free(pointer)
+# define AZ_MALLOC_TRIM(pad) ::malloc_trim(pad)

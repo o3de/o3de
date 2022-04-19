@@ -21,6 +21,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/CommandLine/CommandLine.h>
+
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #endif
@@ -88,10 +91,27 @@ namespace AZ
         void RPISystemComponent::Activate()
         {
             auto settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry)
+            const char* settingPath = "/O3DE/Atom/RPI/Initialization";
+
+            // if the command line contains -NullRenderer, merge it to setting registry
+            const char* nullRendererOption = "NullRenderer"; // command line option name
+            const char* setregName = "NullRenderer"; // same as serialization context name for RPISystemDescriptor::m_isNullRenderer
+            const AzFramework::CommandLine* commandLine = nullptr;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
+
+            AZStd::string commandLineValue;
+            if (commandLine)
             {
-                settingsRegistry->GetObject(m_rpiDescriptor, "/O3DE/Atom/RPI/Initialization");
+                if (commandLine->GetNumSwitchValues(nullRendererOption) > 0)
+                {
+                    // add it to setting registry
+                    auto overrideArg = AZStd::string::format("%s/%s=true", settingPath, setregName);
+                    settingsRegistry->MergeCommandLineArgument(overrideArg, "");
+                }
             }
+
+            // load rpi desriptor from setting registry
+            settingsRegistry->GetObject(m_rpiDescriptor, settingPath);
 
             m_rpiSystem.Initialize(m_rpiDescriptor);
             AZ::SystemTickBus::Handler::BusConnect();

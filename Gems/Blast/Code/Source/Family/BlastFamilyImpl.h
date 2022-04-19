@@ -58,10 +58,10 @@ namespace Blast
         void DispatchActorCreated(const BlastActor& actor);
         void DispatchActorDestroyed(const BlastActor& actor);
 
-        AZStd::vector<BlastActorDesc> CalculateInitialActors(const AZ::Transform& transform);
+        AZStd::vector<BlastActorDesc> CalculateActorsDescFromFamily(const AZ::Transform& transform);
 
         void HandleSplitEvent(
-            const Nv::Blast::TkSplitEvent* splitEvent, AZStd::vector<BlastActorDesc>& newActors,
+            const Nv::Blast::TkSplitEvent* splitEvent, AZStd::vector<BlastActorDesc>& newActorsDesc,
             AZStd::unordered_set<BlastActor*>& actorsToDelete);
 
         // Calculates actor description for an actor that has a parent.
@@ -73,7 +73,7 @@ namespace Blast
         BlastActorDesc CalculateActorDesc(const AZ::Transform& transform, Nv::Blast::TkActor* tkActor);
 
         void FillDebugRenderHealthGraph(
-            DebugRenderBuffer& debugRenderBuffer, DebugRenderMode mode, Nv::Blast::TkActor& actor);
+            DebugRenderBuffer& debugRenderBuffer, DebugRenderMode mode, const Nv::Blast::TkActor& actor);
         void FillDebugRenderAccelerator(DebugRenderBuffer& debugRenderBuffer, DebugRenderMode mode);
 
 
