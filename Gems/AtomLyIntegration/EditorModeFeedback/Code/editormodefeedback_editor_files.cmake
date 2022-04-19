@@ -14,6 +14,8 @@ set(FILES
     Source/Pass/EditorModeFeedbackPassBase.h
     Source/Pass/EditorModeDesaturationPass.cpp
     Source/Pass/EditorModeDesaturationPass.h
+    Source/Pass/EditorModeTintPass.cpp
+    Source/Pass/EditorModeTintPass.h
     Source/Pass/EditorModeBlurPass.cpp
     Source/Pass/EditorModeBlurPass.h
     Source/Pass/EditorModeOutlinePass.cpp

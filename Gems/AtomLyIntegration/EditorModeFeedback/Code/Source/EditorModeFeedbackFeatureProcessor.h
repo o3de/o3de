@@ -32,19 +32,8 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
             void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
-            void Render(const FeatureProcessor::RenderPacket& packet) override;
-            void Simulate(const SimulatePacket& packet) override;
-
-            // RPI::SceneNotificationBus overrides ...
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-            void OnBeginPrepareRender() override;
 
         private:
-            void InitPasses(RPI::RenderPipeline* renderPipeline);
-
-            RPI::FullscreenTrianglePass* m_tintFullscreenTrianglePass = nullptr;
-
             // Cache the pass request data for creating a hair parent pass
             AZ::Data::Asset<AZ::RPI::AnyAsset> m_parentPassRequestAsset;
         };

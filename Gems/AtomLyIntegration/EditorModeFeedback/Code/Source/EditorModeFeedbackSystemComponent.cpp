@@ -6,6 +6,12 @@
  *
  */
 
+#include <Pass/EditorModeFeedbackParentPass.h>
+#include <Pass/EditorModeDesaturationPass.h>
+#include <Pass/EditorModeTintPass.h>
+#include <Pass/EditorModeBlurPass.h>
+#include <Pass/EditorModeOutlinePass.h>
+
 #include <EditorModeFeedbackSystemComponent.h>
 #include <EditorModeFeedbackFeatureProcessor.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -26,10 +32,6 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/Utils/Utils.h>
-#include <Pass/EditorModeFeedbackParentPass.h>
-#include <Pass/EditorModeDesaturationPass.h>
-#include <Pass/EditorModeBlurPass.h>
-#include <Pass/EditorModeOutlinePass.h>
 
 namespace AZ
 {
@@ -159,6 +161,7 @@ namespace AZ
            
             passSystem->AddPassCreator(Name("EditorModeFeedbackParentPass"), &EditorModeFeedbackParentPass::Create);
             passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
             passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
             passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
             passSystem->ConnectEvent(m_loadTemplatesHandler);
