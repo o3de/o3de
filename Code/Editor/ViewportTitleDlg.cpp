@@ -44,6 +44,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
+#include <AzQtComponents/Actions/ActionManagerConstants.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
@@ -82,8 +83,6 @@ namespace
         }
     };
 } // end anonymous namespace
-
-static constexpr const char s_actionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
 
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)

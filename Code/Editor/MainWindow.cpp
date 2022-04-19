@@ -53,6 +53,7 @@
 #include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 
 // AzQtComponents
+#include <AzQtComponents/Actions/ActionManagerConstants.h>
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
@@ -289,7 +290,6 @@ namespace
 // MainWindow
 /////////////////////////////////////////////////////////////////////////////
 MainWindow* MainWindow::m_instance = nullptr;
-static constexpr const char s_actionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)

@@ -37,6 +37,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
+#include <AzQtComponents/Actions/ActionManagerConstants.h>
 #include <AzQtComponents/Components/SearchLineEdit.h>
 
 using namespace AZ;
@@ -161,7 +162,6 @@ namespace
         }
     }
 }
-static constexpr const char s_actionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
 
 LevelEditorMenuHandler::LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager)
     : QObject(mainWindow)

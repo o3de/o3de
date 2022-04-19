@@ -27,6 +27,7 @@
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Visibility/BoundsBus.h>
+#include <AzQtComponents/Actions/ActionManagerConstants.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
@@ -167,8 +168,6 @@ SandboxIntegrationManager::~SandboxIntegrationManager()
     delete m_prefabIntegrationManager;
     m_prefabIntegrationManager = nullptr;
 }
-
-static constexpr const char s_actionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
 
 void SandboxIntegrationManager::Setup()
 {
