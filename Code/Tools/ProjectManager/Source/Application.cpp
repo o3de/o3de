@@ -74,8 +74,6 @@ namespace O3DE::ProjectManager
         // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
         QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
 
-        m_pythonBindings->AddGemRepo("ADASDASD");
-
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
 
         if (!m_pythonBindings->PythonStarted())
