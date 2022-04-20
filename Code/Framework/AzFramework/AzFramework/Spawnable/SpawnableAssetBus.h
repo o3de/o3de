@@ -35,7 +35,7 @@ namespace AzFramework
 
         //! Notification to allow systems to access a spawnable before it's been modified by aliasing.
         //! This ebus function will be called for all spawnables, even if there are no aliases on the spawnable.
-        virtual void OnPreparingSpawnable(const Spawnable& spawnable, const AZ::Data::AssetId& id) {}
+        virtual void OnPreparingSpawnable([[maybe_unused]]const Spawnable& spawnable, [[maybe_unused]]const AZ::Data::AssetId& id) {}
     };
 
     using SpawnableAssetEventsBus = AZ::EBus<SpawnableAssetEvents>;
