@@ -62,8 +62,8 @@ namespace ScriptCanvas
                 // If we have no dynamically grouped slots. Add in our defaults.
                 if (slotList.empty())
                 {
-                    CreateSlot("Value", "An operand to use in performing the specified Operation", ConnectionType::Input);
-                    CreateSlot("Value", "An operand to use in performing the specified Operation", ConnectionType::Input);
+                    CreateSlot("Value 1", "An operand to use in performing the specified Operation", ConnectionType::Input);
+                    CreateSlot("Value 2", "An operand to use in performing the specified Operation", ConnectionType::Input);
 
                     CreateSlot("Result", "The result of the specified operation", ConnectionType::Output);
                 }
@@ -228,6 +228,7 @@ namespace ScriptCanvas
                 slotConfiguration.m_dynamicGroup = GetArithmeticDynamicTypeGroup();
                 slotConfiguration.m_dynamicDataType = DynamicDataType::Any;
 
+                // consider reverting this
                 slotConfiguration.m_addUniqueSlotByNameAndType = false;
 
                 SlotId slotId = AddSlot(slotConfiguration);
@@ -260,16 +261,25 @@ namespace ScriptCanvas
                     {
                         if (!slot->IsData())
                         {
-                            AZ_Assert(false, "%s", "Unknown Source Slot type for Arithmetic Operator. Cannot perform rename.");
-                        }
-                        else if (slot->IsInput())
-                        {
-                            slot->Rename(inputName);
+                            AZ_Error("ScriptCanvas", false
+                                , "OperatorArithmetic::SetSourceNames Unknown Source Slot type for Arithmetic Operator. Cannot perform rename.");
                         }
                         else if (slot->IsOutput())
                         {
                             slot->Rename(outputName);
                         }
+                    }
+                }
+
+                auto inputs = GetAllSlotsByDescriptor(SlotDescriptors::DataIn());
+                
+                for (size_t i = 0; i < inputs.size(); ++i)
+                {
+                    Slot* slot = GetSlot(inputs[i]->GetId());
+
+                    if (slot)
+                    {
+                        slot->Rename(AZStd::string::format("%s %zu", inputName.c_str(), i));
                     }
                 }
             }

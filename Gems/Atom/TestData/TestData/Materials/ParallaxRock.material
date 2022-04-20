@@ -1,6 +1,6 @@
 {
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "parentMaterial": "Materials/Presets/PBR/default_grid.material",
     "propertyValues": {
         "baseColor.textureMap": "TestData/Textures/cc0/Rock030_2K_Color.jpg",

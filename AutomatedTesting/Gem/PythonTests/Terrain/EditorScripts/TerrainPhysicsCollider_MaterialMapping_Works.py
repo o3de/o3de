@@ -66,7 +66,7 @@ def TerrainPhysicsCollider_MaterialMapping_Works():
     # calculate distance traveled
     glass_is_moving = helper.wait_for_condition(lambda: not is_stationary(physics_cube_glass), 3.0)
     Report.result(Tests.glass_cube_moves, glass_is_moving)
-    glass_is_stationary = helper.wait_for_condition(lambda: is_stationary(physics_cube_glass), 10.0)
+    glass_is_stationary = helper.wait_for_condition(lambda: is_stationary(physics_cube_glass), 30.0)
     rubber_is_stationary = helper.wait_for_condition(lambda: is_stationary(physics_cube_rubber), 10.0)
     Report.result(Tests.cubes_are_stationary, glass_is_stationary and rubber_is_stationary)
     glass_finish = components.TransformBus(bus.Event, "GetWorldTranslation", physics_cube_glass)

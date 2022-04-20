@@ -6,10 +6,6 @@
  *
  */
 
-#include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Matrix4x4.h>
@@ -18,6 +14,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QApplication>
@@ -26,12 +23,13 @@
 namespace AtomToolsFramework
 {
     ViewportInputBehaviorController::ViewportInputBehaviorController(
-        const AZ::EntityId& cameraEntityId, const AZ::EntityId& targetEntityId, const AZ::EntityId& environmentEntityId)
+        QWidget* owner, const AZ::EntityId& cameraEntityId, const AZ::EntityId& objectEntityId, const AZ::EntityId& environmentEntityId)
         : AzFramework::SingleViewportController()
+        , m_owner(owner)
         , m_cameraEntityId(cameraEntityId)
-        , m_targetEntityId(targetEntityId)
+        , m_objectEntityId(objectEntityId)
         , m_environmentEntityId(environmentEntityId)
-        , m_targetPosition(AZ::Vector3::CreateZero())
+        , m_objectPosition(AZ::Vector3::CreateZero())
     {
     }
 
@@ -49,9 +47,9 @@ namespace AtomToolsFramework
         return m_cameraEntityId;
     }
 
-    const AZ::EntityId& ViewportInputBehaviorController::GetTargetEntityId() const
+    const AZ::EntityId& ViewportInputBehaviorController::GetObjectEntityId() const
     {
-        return m_targetEntityId;
+        return m_objectEntityId;
     }
 
     const AZ::EntityId& ViewportInputBehaviorController::GetEnvironmentEntityId() const
@@ -59,38 +57,30 @@ namespace AtomToolsFramework
         return m_environmentEntityId;
     }
 
-    const AZ::Vector3& ViewportInputBehaviorController::GetTargetPosition() const
+    const AZ::Vector3& ViewportInputBehaviorController::GetObjectPosition() const
     {
-        return m_targetPosition;
+        return m_objectPosition;
     }
 
-    void ViewportInputBehaviorController::SetTargetPosition(const AZ::Vector3& targetPosition)
+    void ViewportInputBehaviorController::SetObjectPosition(const AZ::Vector3& objectPosition)
     {
-        m_targetPosition = targetPosition;
+        m_objectPosition = objectPosition;
         m_isCameraCentered = false;
     }
 
-    void ViewportInputBehaviorController::SetTargetBounds(const AZ::Aabb& targetBounds)
+    float ViewportInputBehaviorController::GetDistanceToObject() const
     {
-        m_targetBounds = targetBounds;
-    }
-
-    float ViewportInputBehaviorController::GetDistanceToTarget() const
-    {
-        AZ::Vector3 cameraPosition;
-        AZ::TransformBus::EventResult(cameraPosition, m_cameraEntityId, &AZ::TransformBus::Events::GetLocalTranslation);
-        return cameraPosition.GetDistance(m_targetPosition);
-    }
-
-    void ViewportInputBehaviorController::GetExtents(float& distanceMin, float& distanceMax) const
-    {
-        distanceMin = m_distanceMin;
-        distanceMax = m_distanceMax;
+        AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
+        AZ::TransformBus::EventResult(cameraPosition, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
+        return cameraPosition.GetDistance(m_objectPosition);
     }
 
     float ViewportInputBehaviorController::GetRadius() const
     {
-        return m_radius;
+        float radius = 0.5f;
+        AZ::Vector3 center = AZ::Vector3::CreateZero();
+        m_objectBounds.GetAsSphere(center, radius);
+        return radius;
     }
 
     void ViewportInputBehaviorController::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
@@ -193,9 +183,8 @@ namespace AtomToolsFramework
             }
             else if (inputChannelId == InputDeviceKeyboard::Key::AlphanumericZ && (m_keys & Ctrl) == None)
             {
-                // only reset camera if no other widget besides viewport is in focus
-                const auto focus = QApplication::focusWidget();
-                if (!focus || focus->objectName() == "Viewport")
+                // only reset camera if no other widget is in focus
+                if (!QApplication::focusWidget() || m_owner->hasFocus())
                 {
                     Reset();
                 }
@@ -227,30 +216,26 @@ namespace AtomToolsFramework
 
     void ViewportInputBehaviorController::Reset()
     {
-        CalculateExtents();
+        // Reset environment entity transform
+        AZ::TransformBus::Event(m_environmentEntityId, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateIdentity());
+
+        // Reset object entity transform
+        AZ::TransformBus::Event(m_objectEntityId, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateIdentity());
+
+        // Reset object entity bounds
+        m_objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        AzFramework::BoundsRequestBus::EventResult(
+            m_objectBounds, m_objectEntityId, &AzFramework::BoundsRequestBus::Events::GetWorldBounds);
 
         // reset camera
-        m_targetPosition = m_modelCenter;
-        const float distance = m_distanceMin * StartingDistanceMultiplier;
+        m_objectPosition = m_objectBounds.GetCenter();
+        const float distanceMin = GetRadius() * 0.5f + DepthNear;
+        const float distance = distanceMin * StartingDistanceMultiplier;
         const AZ::Quaternion cameraRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), StartingRotationAngle);
-        AZ::Vector3 cameraPosition(m_targetPosition.GetX(), m_targetPosition.GetY() - distance, m_targetPosition.GetZ());
-        cameraPosition = cameraRotation.TransformVector(cameraPosition);
-        AZ::Transform cameraTransform = AZ::Transform::CreateFromQuaternionAndTranslation(cameraRotation, cameraPosition);
-        AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalTM, cameraTransform);
+        const AZ::Vector3 cameraPosition = m_objectPosition - cameraRotation.TransformVector(AZ::Vector3::CreateAxisY() * distance);
+        const AZ::Transform cameraTransform = AZ::Transform::CreateFromQuaternionAndTranslation(cameraRotation, cameraPosition);
+        AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetWorldTM, cameraTransform);
         m_isCameraCentered = true;
-
-        // reset model
-        AZ::Transform modelTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::Event(m_targetEntityId, &AZ::TransformBus::Events::SetLocalTM, modelTransform);
-
-        // reset environment
-        AZ::Transform environmentTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::Event(m_environmentEntityId, &AZ::TransformBus::Events::SetLocalTM, environmentTransform);
-
-        const AZ::Matrix4x4 rotationMatrix = AZ::Matrix4x4::CreateIdentity();
-        auto skyBoxFeatureProcessor =
-            AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::SkyBoxFeatureProcessorInterface>(m_environmentEntityId);
-        skyBoxFeatureProcessor->SetCubemapRotationMatrix(rotationMatrix);
 
         if (m_behavior)
         {
@@ -267,14 +252,6 @@ namespace AtomToolsFramework
     bool ViewportInputBehaviorController::IsCameraCentered() const
     {
         return m_isCameraCentered;
-    }
-
-    void ViewportInputBehaviorController::CalculateExtents()
-    {
-        AZ::TransformBus::EventResult(m_modelCenter, m_targetEntityId, &AZ::TransformBus::Events::GetLocalTranslation);
-        m_targetBounds.GetAsSphere(m_modelCenter, m_radius);
-        m_distanceMin = m_targetBounds.GetExtents().GetMinElement() * 0.5f + DepthNear;
-        m_distanceMax = m_radius * MaxDistanceMultiplier;
     }
 
     void ViewportInputBehaviorController::EvaluateControlBehavior()

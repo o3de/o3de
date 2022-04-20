@@ -1,0 +1,78 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#include <TerrainSrg.azsli>
+#include <TerrainMaterialSrg.azsli>
+#include "ClipmapComputeHelpers.azsli"
+#include "TerrainDetailHelpers.azsli"
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2DArray<float4> m_macroColorClipmaps;
+    Texture2DArray<float2> m_macroNormalClipmaps;
+    RWTexture2DArray<float4> m_detailColorClipmaps;
+    RWTexture2DArray<float2> m_detailNormalClipmaps;
+    RWTexture2DArray<float> m_detailHeightClipmaps;
+    // Miscellany clipmap combining:
+    // roughness, specularF0, metalness, occlusion
+    RWTexture2DArray<float4> m_detailMiscClipmaps;
+}
+
+[numthreads(32,32,1)]
+void MainCS(
+    uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    uint2 pixelPosition = dispatchThreadID.xy;
+
+    for (uint clipmapLevel = 0; clipmapLevel < DetailClipmapStackSize; ++clipmapLevel)
+    {
+        uint3 texelAddress = uint3(dispatchThreadID.xy, clipmapLevel);
+
+        float2 worldPosition = GetCurrentWorldPosition(pixelPosition, clipmapLevel);
+
+        if (any(worldPosition < TerrainSrg::m_clipmapData.m_worldBoundsMin) || any(worldPosition > TerrainSrg::m_clipmapData.m_worldBoundsMax))
+        {
+            // alpha represents hasDetailSurface
+            PassSrg::m_detailColorClipmaps[texelAddress] = float4(TerrainMaterialSrg::m_baseColor.rgb, 0.0);
+            PassSrg::m_detailNormalClipmaps[texelAddress] = float2(0.0, 0.0);
+            PassSrg::m_detailHeightClipmaps[texelAddress] = 0.0;
+            PassSrg::m_detailMiscClipmaps[texelAddress] = float4(0.0, 0.0, 0.0, 0.0);
+            continue;
+        }
+
+        DetailSurface detailSurface;
+        float2 detailRegionCoord = worldPosition * TerrainSrg::m_detailMaterialIdScale;
+        float2 detailUv = worldPosition * TerrainMaterialSrg::m_detailTextureMultiplier;
+        float2 detailUvDdx = ddxPosition(clipmapLevel) * TerrainMaterialSrg::m_detailTextureMultiplier;
+        float2 detailUvDdy = ddyPosition(clipmapLevel) * TerrainMaterialSrg::m_detailTextureMultiplier;
+
+        uint3 texelIndex = WorldPositionToClipmapTexelIndex(worldPosition, MacroClipmapStackSize);
+        float3 macroColor = PassSrg::m_macroColorClipmaps[texelAddress];
+
+        bool hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, detailUvDdx, detailUvDdy, macroColor);
+
+        if (hasDetailSurface)
+        {
+            float3 normal = normalize(detailSurface.m_normal);
+
+            // alpha represents hasDetailSurface
+            PassSrg::m_detailColorClipmaps[texelAddress] = float4(detailSurface.m_color, 1.0);
+            PassSrg::m_detailNormalClipmaps[texelAddress] = float2(normal.xy);
+            PassSrg::m_detailHeightClipmaps[texelAddress] = detailSurface.m_height;
+            PassSrg::m_detailMiscClipmaps[texelAddress] = float4(detailSurface.m_roughness, detailSurface.m_specularF0, detailSurface.m_metalness, detailSurface.m_occlusion);
+        }
+        else
+        {
+            // alpha represents hasDetailSurface
+            PassSrg::m_detailColorClipmaps[texelAddress] = float4(TerrainMaterialSrg::m_baseColor.rgb, 0.0);
+            PassSrg::m_detailNormalClipmaps[texelAddress] = float2(0.0, 0.0);
+            PassSrg::m_detailHeightClipmaps[texelAddress] = 0.0;
+            PassSrg::m_detailMiscClipmaps[texelAddress] = float4(0.0, 0.0, 0.0, 0.0);
+        }
+    }
+}
+

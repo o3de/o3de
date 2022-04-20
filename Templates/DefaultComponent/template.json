@@ -1,0 +1,38 @@
+{
+    "template_name": "DefaultComponent",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Default Component Template",
+    "summary": "A component template for a typical game component.",
+    "canonical_tags": [
+        "Template"
+    ],
+    "user_tags": [
+        "DefaultComponent"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "Source/${Name}Component.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Source/${Name}Component.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Include/${GemName}/${Name}Interface.h",
+            "isTemplated": true
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Include/${GemName}"
+        },
+        {
+            "dir": "Source"
+        }
+    ]
+}

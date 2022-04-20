@@ -150,6 +150,8 @@ namespace AssetProcessor
         const Builder* operator->() const;
 
         explicit operator bool() const;
+    
+        void release();
 
     private:
         AZStd::shared_ptr<Builder> m_builder = nullptr;

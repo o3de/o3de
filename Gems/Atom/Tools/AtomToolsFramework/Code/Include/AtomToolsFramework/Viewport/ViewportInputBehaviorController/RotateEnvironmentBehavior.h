@@ -10,14 +10,6 @@
 
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h>
 
-namespace AZ
-{
-    namespace Render
-    {
-        class SkyBoxFeatureProcessorInterface;
-    }
-} // namespace AZ
-
 namespace AtomToolsFramework
 {
     //! Rotates lighting and skybox around vertical axis
@@ -27,8 +19,6 @@ namespace AtomToolsFramework
         RotateEnvironmentBehavior(ViewportInputBehaviorControllerInterface* controller);
         virtual ~RotateEnvironmentBehavior() = default;
 
-        void Start() override;
-
     protected:
         void TickInternal(float x, float y, float z) override;
         float GetSensitivityX() override;
@@ -36,10 +26,7 @@ namespace AtomToolsFramework
 
     private:
         static constexpr float SensitivityX = 0.01f;
-        static constexpr float SensitivityY = 0;
-
-        AZ::EntityId m_environmentEntityId;
-        AZ::Render::SkyBoxFeatureProcessorInterface* m_skyBoxFeatureProcessor = {};
+        static constexpr float SensitivityY = 0.0f;
         float m_rotation = {};
     };
 } // namespace AtomToolsFramework

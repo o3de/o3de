@@ -61,13 +61,6 @@ namespace EMStudio
         MotionEventPresetManager::Reflect(context);
     }
 
-    // clone the log window
-    EMStudioPlugin* MotionEventsPlugin::Clone()
-    {
-        return new MotionEventsPlugin();
-    }
-
-
     // on before remove plugin
     void MotionEventsPlugin::OnBeforeRemovePlugin(uint32 classID)
     {
