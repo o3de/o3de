@@ -1042,6 +1042,7 @@ namespace AssetProcessor
             for (const AssetBuilderSDK::JobProduct& product : processedAsset.m_response.m_outputProducts)
             {
                 AssetUtilities::ProductPath productPath(product.m_productFileName, processedAsset.m_entry.m_platformInfo.m_identifier);
+                ProductAssetWrapper wrapper{ product, productPath };
 
                 //make a new product entry for this file
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntry newProduct;
@@ -1049,7 +1050,7 @@ namespace AssetProcessor
                 newProduct.m_productName = productPath.GetDatabasePath();
                 newProduct.m_assetType = product.m_productAssetType;
                 newProduct.m_subID = product.m_productSubID;
-                newProduct.m_hash = AssetUtilities::GetFileHash(product.m_productFileName.c_str());
+                newProduct.m_hash = wrapper.ComputeHash();
                 newProduct.m_flags = static_cast<AZ::s64>(product.m_outputFlags);
 
                 // This is the legacy product guid, its only use is for backward compatibility as before the asset id's guid was created off of the relative product name.

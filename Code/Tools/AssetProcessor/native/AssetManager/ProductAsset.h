@@ -24,6 +24,7 @@ namespace AssetProcessor
         bool IsValid() const;
         bool ExistsOnDisk(bool printErrorMessage) const;
         bool DeleteFile() const;
+        AZ::u64 ComputeHash() const;
 
     protected:
         const AssetBuilderSDK::JobProduct& m_product;
@@ -39,6 +40,7 @@ namespace AssetProcessor
         bool IsValid() const;
         bool ExistOnDisk() const;
         bool DeleteFiles() const;
+        AZ::u64 ComputeHash() const;
 
     protected:
         AZStd::fixed_vector<AZStd::unique_ptr<ProductAsset>, 2> m_products;

@@ -54,6 +54,11 @@ namespace AssetProcessor
         return true;
     }
 
+    AZ::u64 ProductAsset::ComputeHash() const
+    {
+        return AssetUtilities::GetFileHash(m_absolutePath.c_str());
+    }
+
     ProductAssetWrapper::ProductAssetWrapper(
         const AssetBuilderSDK::JobProduct& jobProduct, const AssetUtilities::ProductPath& productPath)
     {
@@ -98,5 +103,19 @@ namespace AssetProcessor
             {
                 return productAsset->DeleteFile();
             });
+    }
+
+    AZ::u64 ProductAssetWrapper::ComputeHash() const
+    {
+        for (const auto& product : m_products)
+        {
+            if (product)
+            {
+                // We just need one of the hashes, they should all be the same
+                return product->ComputeHash();
+            }
+        }
+
+        return 0;
     }
 }

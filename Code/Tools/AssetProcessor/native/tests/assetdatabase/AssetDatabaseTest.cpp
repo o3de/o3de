@@ -252,7 +252,7 @@ namespace UnitTests
         flags.set(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::IntermediateAsset | AssetBuilderSDK::ProductOutputFlags::ProductAsset));
 
         ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1,
-            AZ::Uuid::CreateNull(), flags};
+            AZ::Uuid::CreateNull(), 0, flags};
 
         m_errorAbsorber->Clear();
         EXPECT_TRUE(m_data->m_connection.SetProduct(product));
@@ -292,7 +292,7 @@ namespace UnitTests
         AZStd::bitset<64> flags;
         flags.set(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::ProductAsset));
         ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1,
-            AZ::Uuid::CreateNull(), flags};
+            AZ::Uuid::CreateNull(), 0, flags};
         ASSERT_TRUE(m_data->m_connection.SetProduct(product));
 
         // --- set up complete --- perform the test!
