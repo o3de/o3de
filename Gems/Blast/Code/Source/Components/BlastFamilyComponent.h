@@ -12,6 +12,7 @@
 #include <Asset/BlastAsset.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastFamilyComponentBus.h>
@@ -37,6 +38,7 @@ namespace Blast
         , protected BlastFamilyDamageRequestBus::MultiHandler
         , protected BlastFamilyComponentRequestBus::Handler
         , protected BlastListener
+        , protected AZ::Data::AssetBus::MultiHandler
     {
     public:
         AZ_COMPONENT(BlastFamilyComponent, "{88ECE087-C88A-4A83-A83C-477BA9C13221}", AZ::Component);
@@ -89,6 +91,10 @@ namespace Blast
         void FillDebugRenderBuffer(DebugRenderBuffer& debugRenderBuffer, DebugRenderMode debugRenderMode) override;
         void ApplyStressDamage() override;
         void SyncMeshes() override;
+
+        // AZ::Data::AssetBus overrides ...
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
     private:
         // BlastListener overrides ...

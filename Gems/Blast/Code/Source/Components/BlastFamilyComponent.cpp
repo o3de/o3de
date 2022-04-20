@@ -192,19 +192,32 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        if (!m_blastAsset.GetId().IsValid())
+        if (const auto blastAssetId = m_blastAsset.GetId();
+            blastAssetId.IsValid())
+        {
+            AZ::Data::AssetBus::MultiHandler::BusConnect(blastAssetId);
+        }
+        else
         {
             AZ_Warning("BlastFamilyComponent", false, "Blast Family Component created with invalid blast asset.");
             return;
         }
-		AZ_Assert(m_blastMaterialAsset.GetId().IsValid(), "BlastFamilyComponent created with invalid blast material asset.");
 
-        Spawn();
+        // If user didn't assign a blast material the default will be used.
+        if (const auto blastMaterialAssetId = m_blastMaterialAsset.GetId();
+            blastMaterialAssetId.IsValid())
+        {
+            AZ::Data::AssetBus::MultiHandler::BusConnect(blastMaterialAssetId);
+        }
+
+        // Wait for assets to be ready to spawn the blast family
     }
 
     void BlastFamilyComponent::Deactivate()
     {
         AZ_PROFILE_FUNCTION(Physics);
+
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
         Despawn();
     }
@@ -218,34 +231,18 @@ namespace Blast
             return;
         }
 
-        if (!m_blastAsset.IsReady())
+        // Create blast material instance
+        if (m_blastMaterialAsset.IsReady())
         {
-            m_blastAsset.QueueLoad();
-            m_blastAsset.BlockUntilLoadComplete();
-            if (!m_blastAsset.IsReady())
-            {
-                AZ_Error("BlastFamilyComponent", false, "Failed to load blast asset %s.", m_blastAsset.GetHint().c_str());
-                return;
-            }
+            m_blastMaterial = AZStd::make_unique<Material>(m_blastMaterialAsset.Get()->GetMaterialConfiguration());
         }
-
-        if (!m_blastMaterialAsset.IsReady())
+        else
         {
-            AZ_Warning("BlastFamilyComponent", false, "Blast assets are not ready.");
-            return;
+            // Use default material configuration
+            m_blastMaterial = AZStd::make_unique<Material>(MaterialConfiguration{});
         }
 
         auto blastSystem = AZ::Interface<BlastSystemRequests>::Get();
-
-        // Get transform
-        AZ::Transform transform = AZ::Transform::Identity();
-        AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-
-        // Create blast material instance
-        // TODO: At the moment each component creates its own instance of the material asset.
-        // A better approach could be to create only one instance per material asset so all
-        // components using the same asset will reference the same instance.
-        m_blastMaterial = AZStd::make_unique<Material>(m_blastMaterialAsset.Get()->GetMaterialConfiguration());
 
         // Create family
         const BlastFamilyDesc familyDesc
@@ -287,6 +284,10 @@ namespace Blast
 
         // Create damage and actor render managers
         m_damageManager = AZStd::make_unique<DamageManager>(m_blastMaterial.get(), m_family->GetActorTracker());
+
+        // Get transform
+        AZ::Transform transform = AZ::Transform::Identity();
+        AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
         if (m_meshDataComponent)
         {
@@ -614,6 +615,50 @@ namespace Blast
         if (m_actorRenderManager)
         {
             m_actorRenderManager->SyncMeshes();
+        }
+    }
+
+    void BlastFamilyComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (m_blastAsset == asset)
+        {
+            m_blastAsset = asset;
+        }
+
+        const bool expectingMaterialAsset = m_blastMaterialAsset.GetId().IsValid();
+        if (expectingMaterialAsset && m_blastMaterialAsset == asset)
+        {
+            m_blastMaterialAsset = asset;
+        }
+
+        if (m_blastAsset.IsReady() &&
+            (!expectingMaterialAsset || m_blastMaterialAsset.IsReady()))
+        {
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect();
+
+            Spawn();
+        }
+    }
+
+    void BlastFamilyComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (m_blastAsset == asset)
+        {
+            AZ_Warning("BlastFamilyComponent", false, "Blast Family Component has an invalid blast asset.");
+        }
+        else if (m_blastMaterialAsset == asset)
+        {
+            AZ_Warning("BlastFamilyComponent", false, "Blast Family Component has an invalid blast material asset. Default material will be used.");
+
+            // Set asset to an invalid id to know it's not expected to have a material asset and use the default material instead.
+            m_blastMaterialAsset = {};
+
+            if (m_blastAsset.IsReady())
+            {
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect();
+
+                Spawn();
+            }
         }
     }
 } // namespace Blast
