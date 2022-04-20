@@ -127,8 +127,8 @@ public: // member functions
 
     bool GetIsRenderToTexture() override;
     void SetIsRenderToTexture(bool isRenderToTexture) override;
-    AZStd::string GetRenderTargetName() override;
-    void SetRenderTargetName(const AZStd::string& name) override;
+    const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& GetAttachmentImageAsset() override;
+    void SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
 
     bool GetIsPositionalInputSupported() override;
     void SetIsPositionalInputSupported(bool isSupported) override;
@@ -232,6 +232,7 @@ public: // member functions
 
     // RenderToTextureRequests
     AZ::RHI::AttachmentId UseRenderTarget(const AZ::Name& renderTargetName, AZ::RHI::Size size) override;
+    AZ::RHI::AttachmentId UseRenderTargetAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
     void ReleaseRenderTarget(const AZ::RHI::AttachmentId& attachmentId) override;
     AZ::Data::Instance<AZ::RPI::AttachmentImage> GetRenderTarget(const AZ::RHI::AttachmentId& attachmentId) override;
     // ~RenderToTextureRequests
@@ -559,8 +560,8 @@ private: // data
     //! If true the canvas is not rendered to the screen but is instead rendered to a texture
     bool m_renderToTexture;
 
-    //! The user-specified name for the render target taht we render to if m_renderToTexture is true
-    AZStd::string m_renderTargetName;
+    //! The user-specified asset for the attachment image that we render to if m_renderToTexture is true
+    AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_attachmentImageAsset;
 
     //! When rendering to a texture this is the attachment image for the render target
     AZ::RHI::AttachmentId m_attachmentImageId;
