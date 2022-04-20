@@ -14,6 +14,7 @@
 #include <GradientSignal/Ebuses/ShapeAreaFalloffGradientRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace LmbrCentral
 {
@@ -46,6 +47,7 @@ namespace GradientSignal
         : public AZ::Component
         , private GradientRequestBus::Handler
         , private ShapeAreaFalloffGradientRequestBus::Handler
+        , private LmbrCentral::ShapeComponentNotificationsBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -72,6 +74,10 @@ namespace GradientSignal
         void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
+        ////////////////////////////////////////////////////////////////////////
+        // LmbrCentral::ShapeComponentNotificationsBus
+        void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons reasons) override;
+
         //////////////////////////////////////////////////////////////////////////
         // ShapeAreaFalloffGradientRequestBus
         AZ::EntityId GetShapeEntityId() const override;
@@ -83,9 +89,12 @@ namespace GradientSignal
         FalloffType GetFalloffType() const override;
         void SetFalloffType(FalloffType type) override;
 
+        void CacheShapeBounds();
+
     private:
         ShapeAreaFalloffGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_queryMutex;
+        AZ::Vector3 m_cachedShapeCenter;
     };
 }
