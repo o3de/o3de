@@ -319,6 +319,42 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Helper function to VersionConverter to remove render target string type and display an error
+    inline bool RemoveRenderTargetAsString(
+        [[maybe_unused]] AZ::SerializeContext& context,
+        AZ::SerializeContext::DataElementNode& classElement,
+        const char* renderTargetStringElementName)
+    {
+        int index = classElement.FindElement(AZ_CRC(renderTargetStringElementName));
+        if (index != -1)
+        {
+            AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(index);
+
+            AZStd::string oldData;
+
+            if (!elementNode.GetData(oldData))
+            {
+                AZ_Error("Serialization", false, "Element %s is not a AZStd::string.", renderTargetStringElementName);
+                return false;
+            }
+
+            // Remove old version.
+            classElement.RemoveElement(index);
+
+            if (!oldData.empty())
+            {
+                // Notify that this class element was removed
+                AZ_Error("Serialization", false, "The UI canvas's \"Render Target\" property has been converted from string to asset type. "
+                    "Please edit this property in the Properties pane and assign it an attachment image asset. The old string value for this property was %s",
+                    oldData.c_str());
+            }
+        }
+
+        // if the field did not exist then we do not report an error
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // Helper function to VersionConverter to convert a Vec2 field to a AZ::Vector2.
     // Inline to avoid DLL linkage issues
     inline bool ConvertSubElementFromVec2ToVector2(
