@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Editor/EditorSystemComponent.h>
 #include <Editor/EditorWindow.h>
-#include <Editor/BlastMaterial/LegacyMaterialAssetConversion.h>
+#include <Editor/Material/LegacyBlastMaterialAssetConversion.h>
 
 namespace Blast
 {
