@@ -174,7 +174,8 @@ namespace AWSClientAuth
 
     void LWAAuthenticationProvider::UpdateTokens(const Aws::Utils::Json::JsonView& jsonView)
     {
-        // For Login with Amazon openId and access tokens are the same.
+        // Storing authentication tokens in memory can be a security concern. The access token and id token are not actually in use by
+        // the authentication provider and shouldn't be stored in the member variable.
         m_authenticationTokens = AuthenticationTokens("", jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(),
             "", ProviderNameEnum::LoginWithAmazon
             , jsonView.GetInteger(OAuthExpiresInResponseKey));

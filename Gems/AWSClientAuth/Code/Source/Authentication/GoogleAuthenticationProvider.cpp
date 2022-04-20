@@ -174,6 +174,8 @@ namespace AWSClientAuth
 
     void GoogleAuthenticationProvider::UpdateTokens(const Aws::Utils::Json::JsonView& jsonView)
     {
+        // Storing authentication tokens in memory can be a security concern. The access token and id token are not actually in use by
+        // the authentication provider and shouldn't be stored in the member variable.
         m_authenticationTokens = AuthenticationTokens("",
             jsonView.GetString(OAuthRefreshTokenResponseKey).c_str() ,"", ProviderNameEnum::Google
             , jsonView.GetInteger(OAuthExpiresInResponseKey));
