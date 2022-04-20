@@ -141,8 +141,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/HeartBeatNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/Spawning.cpp
-    Include/ScriptCanvas/Libraries/Spawning/SpawnableAsset.cpp
-    Include/ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.cpp
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.cpp

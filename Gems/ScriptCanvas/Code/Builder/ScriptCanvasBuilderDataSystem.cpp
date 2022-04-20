@@ -36,6 +36,12 @@ namespace ScriptCanvasBuilder
         DataSystemRequestsBus::Handler::BusConnect();
     }
 
+    DataSystem::~DataSystem()
+    {
+        DataSystemRequestsBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+    }
+
     void DataSystem::AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuildResult&& result)
     {
         MutexLock lock(m_mutex);

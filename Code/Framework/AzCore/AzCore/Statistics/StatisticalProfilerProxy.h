@@ -10,7 +10,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Statistics/StatisticalProfiler.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/parallel/shared_spin_mutex.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 
 
 namespace AZ::Statistics
@@ -50,7 +50,7 @@ namespace AZ::Statistics
         AZ_TYPE_INFO(StatisticalProfilerProxy, "{1103D0EB-1C32-4854-B9D9-40A2D65BDBD2}");
 
         using StatIdType = AZ::Crc32;
-        using StatisticalProfilerType = StatisticalProfiler<StatIdType, AZStd::shared_spin_mutex>;
+        using StatisticalProfilerType = StatisticalProfiler<StatIdType, AZStd::shared_mutex>;
 
         //! A Convenience class used to measure time performance of scopes of code
         //! with constructor/destructor. Suitable to be used as part of a macro

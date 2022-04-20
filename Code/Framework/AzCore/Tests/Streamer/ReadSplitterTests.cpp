@@ -122,8 +122,7 @@ namespace AZ::IO
         CreateStandardReadSplitter();
 
         FileRequest* readRequest = m_context.GetNewInternalRequest();
-        RequestPath path;
-        path.InitFromRelativePath("TestPath");
+        RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, nullptr, SplitSize / 2, path, 0, SplitSize / 2);
 
         EXPECT_CALL(*m_mock, QueueRequest(readRequest)).Times(1);
@@ -141,8 +140,7 @@ namespace AZ::IO
 
         char buffer[SplitSize * 2];
         FileRequest* readRequest = m_context.GetNewInternalRequest();
-        RequestPath path;
-        path.InitFromRelativePath("TestPath");
+        RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer, SplitSize * 2, path, 0, SplitSize * 2);
 
         AZStd::vector<FileRequest*> subRequests;
@@ -172,8 +170,7 @@ namespace AZ::IO
         CreatePassThroughReadSplitter();
 
         FileRequest* readRequest = m_context.GetNewInternalRequest();
-        RequestPath path;
-        path.InitFromRelativePath("TestPath");
+        RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, nullptr, SplitSize * 2, path, 0, SplitSize * 2);
 
         EXPECT_CALL(*m_mock, QueueRequest(readRequest)).Times(1);
@@ -194,8 +191,7 @@ namespace AZ::IO
         constexpr size_t size = numSubReads * SplitSize;
         auto buffer = AZStd::unique_ptr<u8[]>(new u8[size]);
         FileRequest* readRequest = m_context.GetNewInternalRequest();
-        RequestPath path;
-        path.InitFromRelativePath("TestPath");
+        RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer.get(), size, path, 0, size);
 
         AZStd::vector<FileRequest*> subRequests;
@@ -253,8 +249,7 @@ namespace AZ::IO
         u8* memory = reinterpret_cast<u8*>(azmalloc(readSize + 3, MemoryAlignment));
         u8* buffer = memory + 3; // Adjust the starting address so it doesn't align
         FileRequest* readRequest = m_context.GetNewInternalRequest();
-        RequestPath path;
-        path.InitFromRelativePath("TestPath");
+        RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer, readSize, path, 0, readSize);
 
         FileRequest* subRequest{ nullptr };
@@ -299,8 +294,7 @@ namespace AZ::IO
         ASSERT_GT(MemoryAlignment, offsetAdjustment);
         u8* buffer = reinterpret_cast<u8*>(azmalloc(readSize, MemoryAlignment));
         FileRequest* readRequest = m_context.GetNewInternalRequest();
-        RequestPath path;
-        path.InitFromRelativePath("TestPath");
+        RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer, readSize, path, offsetAdjustment, readSize);
 
         FileRequest* subRequest{ nullptr };
@@ -345,8 +339,7 @@ namespace AZ::IO
         u8* memory = reinterpret_cast<u8*>(azmalloc(readSize + 3, MemoryAlignment));
         u8* buffer = memory + 3; // Adjust the starting address so it doesn't align
         FileRequest* readRequest = m_context.GetNewInternalRequest();
-        RequestPath path;
-        path.InitFromRelativePath("TestPath");
+        RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer, readSize, path, 0, readSize);
 
         EXPECT_CALL(*m_mock, QueueRequest(_))
@@ -376,8 +369,7 @@ namespace AZ::IO
         u8* memory0 = reinterpret_cast<u8*>(azmalloc(readSize + 3, MemoryAlignment));
         u8* buffer = memory0 + 3; // Adjust the starting address so it doesn't align
         FileRequest* readRequestDelayed = m_context.GetNewInternalRequest();
-        RequestPath path;
-        path.InitFromRelativePath("TestPath");
+        RequestPath path("TestPath");
         readRequestDelayed->CreateRead(nullptr, buffer, readSize, path, 0, readSize);
         readRequestDelayed->SetCompletionCallback([&completedRequests](FileRequestHandle) { ++completedRequests; });
 
@@ -433,8 +425,7 @@ namespace AZ::IO
         u8* memory0 = reinterpret_cast<u8*>(azmalloc(readSize + 3, MemoryAlignment));
         u8* buffer0 = memory0 + 3; // Adjust the starting address so it doesn't align
         FileRequest* readRequestDelayed = m_context.GetNewInternalRequest();
-        RequestPath path;
-        path.InitFromRelativePath("TestPath");
+        RequestPath path("TestPath");
         readRequestDelayed->CreateRead(nullptr, buffer0, readSize, path, 0, readSize);
         readRequestDelayed->SetCompletionCallback([&completedRequests](FileRequestHandle) { ++completedRequests; });
 

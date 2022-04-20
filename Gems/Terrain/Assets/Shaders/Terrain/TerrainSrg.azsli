@@ -10,6 +10,9 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+static const uint MacroClipmapStackSize = 3u;
+static const uint DetailClipmapStackSize = 5u;
+
 ShaderResourceGroupSemantic SRG_Terrain
 {
     FrequencyId = 7;
@@ -75,6 +78,47 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float2 m_offset; // x/y offset of min x/y corner of grid.
     };
 
+    struct ClipmapData
+    {
+        // The 2D xy-plane view position where the main camera is.
+        float2 m_previousViewPosition;
+        float2 m_currentViewPosition;
+
+        // 2D xy-plane world bounds defined by the terrain.
+        float2 m_worldBoundsMin;
+        float2 m_worldBoundsMax;
+
+        // The max range that the clipmap is covering.
+        float2 m_maxRenderSize;
+
+        // The size of a single clipmap.
+        float2 m_clipmapSize;
+
+        // Clipmap centers in normalized UV coordinates [0, 1].
+        // xy represent previous clipmap centers, zw represent current clipmap centers.
+        // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
+        // They are used for toroidal addressing and may move each frame based on the view point movement.
+        // The move distance is scaled differently in each layer.
+        float4 m_clipmapCenters[DetailClipmapStackSize];
+
+        // A list of reciprocal the clipmap scale [s],
+        // where 1 pixel in the current layer of clipmap represents s meters. 
+        // Fast lookup list to avoid redundant calculation in shaders.
+        float4 m_clipmapScaleInv[DetailClipmapStackSize];
+    };
+
+    // Clipmap SRG
+    ClipmapData m_clipmapData;
+
+    Texture2DArray<float4> m_macroColorClipmaps;
+    Texture2DArray<float2> m_macroNormalClipmaps;
+    Texture2DArray<float4> m_detailColorClipmaps;
+    Texture2DArray<float2> m_detailNormalClipmaps;
+    Texture2DArray<float> m_detailHeightClipmaps;
+    // Miscellany clipmap combining:
+    // roughness, specularF0, metalness, occlusion
+    Texture2DArray<float4> m_detailMiscClipmaps;
+
     Texture2D<uint4> m_detailMaterialIdImage;
     StructuredBuffer<DetailMaterialData> m_detailMaterialData;
 
@@ -84,6 +128,10 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     Texture2D m_textures[]; // bindless array of all textures for detail and macro materials
     float m_detailMaterialIdScale;
 
+    uint2 GetMacroGridResolution()
+    {
+        return uint2(m_macroMaterialGrid.m_resolution >> 16, m_macroMaterialGrid.m_resolution & 0xFFFF);
+    }
 }
 
 static const float MacroMaterialsPerTile = 4;

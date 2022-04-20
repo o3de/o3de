@@ -319,12 +319,12 @@ namespace UnitTest
 
         MockSurfaceHandler()
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Handler::BusConnect();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Register(this);
         }
 
         ~MockSurfaceHandler()
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Handler::BusDisconnect();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Unregister(this);
         }
 
         AZ::Vector3 m_outPosition = {};

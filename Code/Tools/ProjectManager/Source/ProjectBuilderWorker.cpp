@@ -28,7 +28,6 @@ namespace O3DE::ProjectManager
 
     void ProjectBuilderWorker::BuildProject()
     {
-
         auto result = BuildProjectForPlatform();
 
         if (result.IsSuccess())

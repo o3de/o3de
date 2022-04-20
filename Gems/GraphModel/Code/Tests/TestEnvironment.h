@@ -58,13 +58,6 @@ namespace GraphModelIntegrationTest
         const GraphModel::DataTypeList& GetAllDataTypes() const override;
         GraphModel::DataTypePtr GetDataType(AZ::Uuid typeId) const override;
         GraphModel::DataTypePtr GetDataType(GraphModel::DataType::Enum typeEnum) const override;
-
-        template<typename T>
-        GraphModel::DataTypePtr GetDataType() const
-        {
-            return IGraphContext::GetDataType<T>();
-        }
-
         GraphModel::ModuleGraphManagerPtr GetModuleGraphManager() const override;
 
     private:

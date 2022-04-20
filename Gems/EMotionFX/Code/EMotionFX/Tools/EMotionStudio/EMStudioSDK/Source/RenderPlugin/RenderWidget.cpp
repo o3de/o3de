@@ -1047,13 +1047,11 @@ namespace EMStudio
             return;
         }
 
-        // render all custom plugin visuals
-        const size_t numPlugins = GetPluginManager()->GetNumActivePlugins();
-        for (size_t i = 0; i < numPlugins; ++i)
-        {
-            EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
-            EMStudioPlugin::RenderInfo renderInfo(renderUtil, m_camera, m_width, m_height);
+        EMStudioPlugin::RenderInfo renderInfo(renderUtil, m_camera, m_width, m_height);
 
+        const PluginManager::PluginVector& activePlugins = GetPluginManager()->GetActivePlugins();
+        for (EMStudioPlugin* plugin : activePlugins)
+        {
             plugin->LegacyRender(m_plugin, &renderInfo);
         }
 

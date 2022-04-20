@@ -143,15 +143,13 @@ namespace UnitTest
                 }
             }
 
-            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
-                m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, providerRegistryEntry);
+            m_providerHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataProvider(providerRegistryEntry);
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
         }
 
         void Deactivate() override
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
         }
