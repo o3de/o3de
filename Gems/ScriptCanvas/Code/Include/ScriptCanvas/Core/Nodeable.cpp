@@ -43,6 +43,7 @@ namespace ScriptCanvas
 
     void Nodeable::Deactivate()
     {
+        m_outs.clear();
         OnDeactivate();
     }
 

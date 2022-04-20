@@ -166,6 +166,7 @@ namespace ScriptCanvas
         if (m_executionState)
         {
             m_executionState->StopExecution();
+            m_executionState.reset();
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(GetScriptCanvasId(), m_runtimeOverrides.m_runtimeAsset.GetId());
             SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
         }
