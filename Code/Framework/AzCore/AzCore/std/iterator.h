@@ -197,9 +197,5 @@ namespace AZStd
             return *reinterpret_cast<Iterator*>(&iter);
         }
     }
-
-    using std::size;
-    using std::empty;
-    using std::data;
 } // namespace AZStd
 

@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string_view.h>
 
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
@@ -22,8 +23,6 @@ class QString;
 
 namespace AzToolsFramework
 {
-    using EntityList = AZStd::vector<AZ::Entity*>;
-
     namespace Prefab
     {
         class Instance;

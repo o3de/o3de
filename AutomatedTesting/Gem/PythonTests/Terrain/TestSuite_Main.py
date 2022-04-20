@@ -32,3 +32,6 @@ class TestAutomation(EditorTestSuite):
 
     class test_TerrainWorld_ConfigurationWorks(EditorSharedTest):
         from .EditorScripts import Terrain_World_ConfigurationWorks as test_module
+
+    class test_TerrainPhysicsCollider_MaterialMapping_Works(EditorSharedTest):
+        from .EditorScripts import TerrainPhysicsCollider_MaterialMapping_Works as test_module

@@ -20,7 +20,6 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
-#include <GradientSignal/ImageAsset.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
@@ -132,15 +131,25 @@ namespace UnitTest
             providerRegistryEntry.m_bounds = m_bounds;
             providerRegistryEntry.m_tags = m_tags;
 
-            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
-                m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, providerRegistryEntry);
+            // Run through the set of surface points that have been set on this component to find out the maximum number
+            // that we'll return for any given input point.
+            providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
+            for (auto& pointEntry : m_surfacePoints)
+            {
+                for (size_t index = 0; index < pointEntry.second.GetInputPositionSize(); index++)
+                {
+                    providerRegistryEntry.m_maxPointsCreatedPerInput =
+                        AZ::GetMax(providerRegistryEntry.m_maxPointsCreatedPerInput, pointEntry.second.GetSize(index));
+                }
+            }
+
+            m_providerHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataProvider(providerRegistryEntry);
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
         }
 
         void Deactivate() override
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
         }
@@ -160,7 +169,15 @@ namespace UnitTest
 
             if (surfacePoints != m_surfacePoints.end())
             {
-                surfacePointList = surfacePoints->second;
+                // If we have an entry for this input position, run through all of its points and add them to the passed-in list.
+                surfacePoints->second.EnumeratePoints(
+                    [inPosition, &surfacePointList](
+                        [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal,
+                        const SurfaceData::SurfaceTagWeights& weights) -> bool
+                    {
+                        surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, position, normal, weights);
+                        return true;
+                    });
             }
         }
 

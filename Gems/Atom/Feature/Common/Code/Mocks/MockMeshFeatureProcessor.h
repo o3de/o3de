@@ -15,6 +15,7 @@ namespace UnitTest
     class MockMeshFeatureProcessor : public AZ::Render::MeshFeatureProcessorInterface
     {
     public:
+        MOCK_CONST_METHOD1(GetObjectId, AZ::Render::TransformServiceFeatureProcessorInterface::ObjectId(const MeshHandle&));
         MOCK_METHOD1(ReleaseMesh, bool(MeshHandle&));
         MOCK_METHOD1(CloneMesh, MeshHandle(const MeshHandle&));
         MOCK_CONST_METHOD1(GetModel, AZStd::intrusive_ptr<AZ::RPI::Model>(const MeshHandle&));

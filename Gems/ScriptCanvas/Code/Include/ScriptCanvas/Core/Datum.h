@@ -95,7 +95,12 @@ namespace ScriptCanvas
         AZ_INLINE const void* GetAsDanger() const;
 
         const Data::Type& GetType() const { return m_type; }
-        void SetType(const Data::Type& dataType);
+        enum class TypeChange
+        {
+            Forced,
+            Requested,
+        };
+        void SetType(const Data::Type& dataType, TypeChange typeChange = TypeChange::Requested);
 
         template<typename T>
         void SetAZType()

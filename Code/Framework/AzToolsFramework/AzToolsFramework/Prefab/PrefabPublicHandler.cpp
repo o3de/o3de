@@ -373,7 +373,8 @@ namespace AzToolsFramework
 
             if (!instanceToParentUnder.has_value())
             {
-                instanceToParentUnder = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+                AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
+                instanceToParentUnder = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
                 parent = instanceToParentUnder->get().GetContainerEntityId();
             }
 
@@ -1297,6 +1298,9 @@ namespace AzToolsFramework
 
             Prefab::PrefabDom instanceDomAfter;
             m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonOwningInstance->get());
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
 
             // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
             // and then add the deletion as children.

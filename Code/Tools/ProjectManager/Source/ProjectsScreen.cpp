@@ -44,6 +44,7 @@
 #include <QQueue>
 #include <QDir>
 #include <QGuiApplication>
+#include <QFileSystemWatcher>
 
 namespace O3DE::ProjectManager
 {
@@ -54,6 +55,9 @@ namespace O3DE::ProjectManager
         vLayout->setAlignment(Qt::AlignTop);
         vLayout->setContentsMargins(s_contentMargins, 0, s_contentMargins, 0);
         setLayout(vLayout);
+
+        m_fileSystemWatcher = new QFileSystemWatcher(this);
+        connect(m_fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &ProjectsScreen::HandleProjectFilePathChanged);
 
         m_stack = new QStackedWidget(this);
 
@@ -227,6 +231,7 @@ namespace O3DE::ProjectManager
                 {
                     projectButtonsIter.value()->deleteLater();
                     projectButtonsIter = m_projectButtons.erase(projectButtonsIter);
+                    m_fileSystemWatcher->removePath(QDir::toNativeSeparators(projectButtonsIter.value()->GetProjectInfo().m_path + "/project.json"));
                 }
                 else
                 {
@@ -276,6 +281,7 @@ namespace O3DE::ProjectManager
                 {
                     currentButton = CreateProjectButton(project);
                     m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), currentButton);
+                    m_fileSystemWatcher->addPath(QDir::toNativeSeparators(project.m_path + "/project.json"));
                 }
                 else
                 {
@@ -283,7 +289,7 @@ namespace O3DE::ProjectManager
                     if (projectButtonIter != m_projectButtons.end())
                     {
                         currentButton = projectButtonIter.value();
-                        currentButton->RestoreDefaultState();
+                        currentButton->SetState(ProjectButtonState::ReadyToLaunch);
                     }
                 }
 
@@ -297,7 +303,7 @@ namespace O3DE::ProjectManager
 
                     if (!projectBuiltSuccessfully)
                     {
-                        currentButton->ShowBuildRequired();
+                        currentButton->SetState(ProjectButtonState::NeedsToBuild);
                     }
                 }
             }
@@ -315,7 +321,7 @@ namespace O3DE::ProjectManager
                 if (projectIter != m_projectButtons.end())
                 {
                     projectIter.value()->SetProjectButtonAction(
-                        tr("Cancel Queued Build"),
+                        tr("Cancel queued build"),
                         [this, project]
                         {
                             UnqueueBuildProject(project);
@@ -329,13 +335,18 @@ namespace O3DE::ProjectManager
                 auto projectIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
                 if (projectIter != m_projectButtons.end())
                 {
-                    if (project.m_buildFailed)
+                    // If project is not currently or about to build
+                    if (!m_currentBuilder || m_currentBuilder->GetProjectInfo() != project)
                     {
-                        projectIter.value()->ShowBuildFailed(true, project.m_logUrl);
-                    }
-                    else
-                    {
-                        projectIter.value()->ShowBuildRequired();
+                        if (project.m_buildFailed)
+                        {
+                            projectIter.value()->SetBuildLogsLink(project.m_logUrl);
+                            projectIter.value()->SetState(ProjectButtonState::BuildFailed);
+                        }
+                        else
+                        {
+                            projectIter.value()->SetState(ProjectButtonState::NeedsToBuild);
+                        }
                     }
                 }
             }
@@ -343,6 +354,12 @@ namespace O3DE::ProjectManager
 
         m_stack->setCurrentWidget(m_projectsContent);
         m_projectsFlowLayout->update();
+    }
+
+    void ProjectsScreen::HandleProjectFilePathChanged(const QString& /*path*/)
+    {
+        // QFileWatcher automatically stops watching the path if it was removed so we will just refresh our view
+        ResetProjectsContent();
     }
 
     ProjectManagerScreen ProjectsScreen::GetScreenEnum()
@@ -441,8 +458,7 @@ namespace O3DE::ProjectManager
                     ProjectButton* button = qobject_cast<ProjectButton*>(sender());
                     if (button)
                     {
-                        button->SetLaunchButtonEnabled(false);
-                        button->SetButtonOverlayText(tr("Opening Editor..."));
+                        button->SetState(ProjectButtonState::Launching);
                     }
 
                     // enable the button after 3 seconds
@@ -453,7 +469,7 @@ namespace O3DE::ProjectManager
                         {
                             if (button)
                             {
-                                button->SetLaunchButtonEnabled(true);
+                                button->SetState(ProjectButtonState::ReadyToLaunch);
                             }
                         });
                 }

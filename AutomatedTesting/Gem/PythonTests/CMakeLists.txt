@@ -67,3 +67,6 @@ add_subdirectory(Multiplayer)
 
 ## Integration tests for editor testing framework ##
 add_subdirectory(editor_test_testing)
+
+## Performance ##
+add_subdirectory(Performance)

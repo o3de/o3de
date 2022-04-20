@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
@@ -99,5 +100,9 @@ namespace Terrain
 
         TerrainSurfaceGradientListConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+
+        // The TerrainAreaSurfaceRequestBus has lockless dispatch, so make sure that queries don't happen at the same
+        // time as bus connects / disconnects.
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 } // namespace Terrain

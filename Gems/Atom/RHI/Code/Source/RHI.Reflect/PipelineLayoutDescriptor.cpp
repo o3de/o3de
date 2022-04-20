@@ -47,7 +47,7 @@ namespace AZ
             HashValue64 seed = TypeHash64(m_constantDataBindingInfo);
             for (const auto& resourceInfo : m_resourcesRegisterMap)
             {
-                seed = TypeHash64(resourceInfo.first, seed);
+                seed = TypeHash64(resourceInfo.first.GetHash(), seed);
                 seed = TypeHash64(resourceInfo.second, seed);
             }
             seed = TypeHash64(m_spaceId, seed);
@@ -103,6 +103,11 @@ namespace AZ
                 if (m_rootConstantsLayout)
                 {
                     seed = TypeHash64(m_rootConstantsLayout->GetHash(), seed);
+                }
+
+                for (const auto& index : m_bindingSlotToIndex)
+                {
+                    seed = TypeHash64(index, seed);
                 }
 
                 m_hash = GetHashInternal(seed);

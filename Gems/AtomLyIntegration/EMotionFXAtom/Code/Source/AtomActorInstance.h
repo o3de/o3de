@@ -86,7 +86,7 @@ namespace AZ
 
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
-            void DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags);
+            void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags);
             void UpdateBounds() override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;

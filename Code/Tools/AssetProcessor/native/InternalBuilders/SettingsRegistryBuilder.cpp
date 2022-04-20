@@ -162,7 +162,7 @@ namespace AssetProcessor
         builderDesc.m_version = 1;
 
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDesc);
-        
+
         return true;
     }
 
@@ -254,8 +254,8 @@ namespace AssetProcessor
 
         AZStd::vector<AZStd::string> excludes = ReadExcludesFromRegistry();
         // Exclude the AssetProcessor settings from the game regsitry
-        excludes.emplace_back(AssetProcessor::AssetProcessorSettingsKey); 
-        
+        excludes.emplace_back(AssetProcessor::AssetProcessorSettingsKey);
+
         AZStd::vector<char> scratchBuffer;
         scratchBuffer.reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
         AZStd::fixed_vector<AZStd::string_view, AzFramework::MaxPlatformCodeNames> platformCodes;
@@ -269,7 +269,7 @@ namespace AssetProcessor
         // Determines the suffix that will be used for the launcher based on processing server vs non-server assets
         const char* launcherType = assetPlatformIdentifier != AzFramework::PlatformHelper::GetPlatformName(AzFramework::PlatformId::SERVER)
             ? "_GameLauncher" : "_ServerLauncher";
-        
+
         AZ::SettingsRegistryInterface::Specializations specializations[] =
         {
             { AZStd::string_view{"release"}, AZStd::string_view{"game"} },
@@ -312,10 +312,6 @@ namespace AssetProcessor
                 }
 
                 using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-                // Placeholder Key used by the local Settings Registry for storing all Gems SourcePaths
-                // array entries.
-                constexpr auto PlaceholderGemKey = FixedValueString(AZ::SettingsRegistryMergeUtils::OrganizationRootKey)
-                    + "/Gems/__SettingsRegistryBuilderPlaceholder";
 
                 AZ::SettingsRegistryImpl registry;
 
@@ -340,47 +336,37 @@ namespace AssetProcessor
                             " to local settings registry", settingsKey.c_str());
                     }
 
-                    // The purpose of this section is to copy the Gem's SourcePaths from the Global Settings Registry
-                    // the local SettingsRegistry. The reason this is needed is so that the call to
-                    // `MergeSettingsToRegistry_GemRegistries` below is able to locate each gem's "<gem-root>/Registry" folder
+                    // The purpose of this section is to copy the active gems entry and manifest gems entries
+                    // to a local SettingsRegistry.
+                    // The reason this is needed is so that the call to
+                    // `MergeSettingsToRegistry_GemRegistries` below is able to locate each gems root directory
                     // that will be merged into the bootstrap.game.<configuration>.setreg file
                     // This is used by the GameLauncher applications to read from a single merged .setreg file
                     // containing the settings needed to run a game/simulation without have access to the source code base registry
-                    AZStd::vector<AzFramework::GemInfo> gemInfos;
-                    size_t pathIndex{};
-                    if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
+                    auto CopySettingsToLocalRegistry = [&registry, settingsRegistry, copiedSettings = AZStd::string()]
+                    (AZStd::string_view copyFieldKey) mutable
                     {
-                        AZStd::vector<AZ::IO::PathView> sourcePaths;
-                        for (const AzFramework::GemInfo& gemInfo : gemInfos)
-                        {
-                            for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
-                            {
-                                if (auto foundIt = AZStd::find(sourcePaths.begin(), sourcePaths.end(), absoluteSourcePath);
-                                    foundIt == sourcePaths.end())
-                                {
-                                    sourcePaths.emplace_back(absoluteSourcePath);
-                                }
-                            }
-                        }
+                        // Copy Settings at the specified field key recursively to the local settings registry
+                        copiedSettings.clear();
+                        AZ::IO::ByteContainerStream copiedSettingsStream(&copiedSettings);
+                        AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+                        AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*settingsRegistry, copyFieldKey,
+                            copiedSettingsStream, dumperSettings);
+                        registry.MergeSettings(copiedSettings, AZ::SettingsRegistryInterface::Format::JsonMergePatch, copyFieldKey);
+                    };
 
-                        for (const AZ::IO::PathView& sourcePath : sourcePaths)
-                        {
-                            // Use JSON Pointer to append elements to the SourcePaths array
-                            registry.Set(FixedValueString::format("%s/SourcePaths/%zu", PlaceholderGemKey.c_str(), pathIndex++),
-                                sourcePath.Native());
-                        }
-                    }
+                    CopySettingsToLocalRegistry(AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
+                    CopySettingsToLocalRegistry(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
                 }
 
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer);
-                // This function iterates over each path for each the "/Amazon/Gems/<gem-name>/SourcePaths" key and attempts
-                // to merge the "Registry" directory in each path.
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer);
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);
 
-                // The Placeholder Key is removed now that each gem's "<gem-root>/Registry" directory have been merged to
-                // the local Settings Registry instance via `MergeSettingsToRegistry_GemRegistries`
-                registry.Remove(PlaceholderGemKey);
+                // The Gem Root Key and Manifest Gems Root is removed now that each gems "<gem-root>/Registry" directory
+                // have been merged to the local Settings Registry
+                registry.Remove(AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
+                registry.Remove(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
 
                 // Merge the Project User and User home settings registry only in non-release builds
                 constexpr bool executeRegDumpCommands = false;

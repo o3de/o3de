@@ -94,7 +94,7 @@ int ApplicationManagerBase::ProcessedAssetCount() const
 }
 int ApplicationManagerBase::FailedAssetsCount() const
 {
-    return m_failedAssetsCount;
+    return static_cast<int>(m_failedAssets.size());
 }
 
 void ApplicationManagerBase::ResetProcessedAssetCount()
@@ -104,7 +104,7 @@ void ApplicationManagerBase::ResetProcessedAssetCount()
 
 void ApplicationManagerBase::ResetFailedAssetCount()
 {
-    m_failedAssetsCount = 0;
+    m_failedAssets = AZStd::set<AZStd::string>{};
 }
 
 
@@ -431,79 +431,114 @@ void ApplicationManagerBase::DestroyPlatformConfiguration()
     }
 }
 
-void ApplicationManagerBase::InitFileMonitor()
+void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> fileWatcher)
 {
+    m_fileWatcher = AZStd::move(fileWatcher);
+
     for (int folderIdx = 0; folderIdx < m_platformConfiguration->GetScanFolderCount(); ++folderIdx)
     {
         const AssetProcessor::ScanFolderInfo& info = m_platformConfiguration->GetScanFolderAt(folderIdx);
-        m_fileWatcher.AddFolderWatch(info.ScanPath(), info.RecurseSubFolders());
+        m_fileWatcher->AddFolderWatch(info.ScanPath(), info.RecurseSubFolders());
     }
 
     QDir cacheRoot;
     if (AssetUtilities::ComputeProjectCacheRoot(cacheRoot))
     {
-        m_fileWatcher.AddFolderWatch(cacheRoot.absolutePath(), true);
+        m_fileWatcher->AddFolderWatch(cacheRoot.absolutePath(), true);
     }
 
     if (m_platformConfiguration->GetScanFolderCount() || !cacheRoot.path().isEmpty())
     {
         const auto cachePath = QDir::toNativeSeparators(cacheRoot.absolutePath());
 
+        // For the handlers below, we need to make sure to use invokeMethod on any QObjects so Qt can queue
+        // the callback to run on the QObject's thread if needed.  The APM methods for example are not thread-safe.
+
         const auto OnFileAdded = [this, cachePath](QString path)
         {
             const bool isCacheRoot = path.startsWith(cachePath);
-            if (isCacheRoot)
+            if (!isCacheRoot)
             {
-                m_fileStateCache->AddFile(path);
+                [[maybe_unused]] bool result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()
+                {
+                    m_assetProcessorManager->AssessAddedFile(path);
+                }, Qt::QueuedConnection);
+                AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessAddedFile");
+
+                result = QMetaObject::invokeMethod(m_fileProcessor.get(), [this, path]()
+                {
+                    m_fileProcessor->AssessAddedFile(path);
+                }, Qt::QueuedConnection);
+                AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessAddedFile");
+
+                auto cache = AZ::Interface<AssetProcessor::ExcludedFolderCacheInterface>::Get();
+
+                if(cache)
+                {
+                    cache->FileAdded(path);
+                }
+                else
+                {
+                    AZ_Error("AssetProcessor", false, "ExcludedFolderCacheInterface not found");
+                }
             }
-            else
-            {
-                m_assetProcessorManager->AssessAddedFile(path);
-                m_fileStateCache->AddFile(path);
-                AZ::Interface<AssetProcessor::ExcludedFolderCacheInterface>::Get()->FileAdded(path);
-                m_fileProcessor->AssetProcessor::FileProcessor::AssessAddedFile(path);
-            }
+
+            m_fileStateCache->AddFile(path);
         };
 
         const auto OnFileModified = [this, cachePath](QString path)
         {
             const bool isCacheRoot = path.startsWith(cachePath);
-            if (isCacheRoot)
+            if (!isCacheRoot)
             {
-                m_assetProcessorManager->AssessModifiedFile(path);
-            }
-            else
-            {
-                m_assetProcessorManager->AssessModifiedFile(path);
                 m_fileStateCache->UpdateFile(path);
             }
+
+            [[maybe_unused]] bool result = QMetaObject::invokeMethod(
+                m_assetProcessorManager,
+                [this, path]
+                {
+                    m_assetProcessorManager->AssessModifiedFile(path);
+                }, Qt::QueuedConnection);
+
+            AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessModifiedFile");
         };
 
         const auto OnFileRemoved = [this, cachePath](QString path)
         {
+            [[maybe_unused]] bool result = false;
             const bool isCacheRoot = path.startsWith(cachePath);
-            if (isCacheRoot)
+            if (!isCacheRoot)
             {
-                m_fileStateCache->RemoveFile(path);
-                m_assetProcessorManager->AssessDeletedFile(path);
+                result = QMetaObject::invokeMethod(m_fileProcessor.get(), [this, path]()
+                {
+                    m_fileProcessor->AssessDeletedFile(path);
+                }, Qt::QueuedConnection);
+                AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessDeletedFile");
             }
-            else
+
+            result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()
             {
                 m_assetProcessorManager->AssessDeletedFile(path);
-                m_fileStateCache->RemoveFile(path);
-                m_fileProcessor->AssessDeletedFile(path);
-            }
+            }, Qt::QueuedConnection);
+            AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessDeletedFile");
+
+            m_fileStateCache->RemoveFile(path);
         };
 
-        connect(&m_fileWatcher, &FileWatcher::fileAdded, OnFileAdded);
-        connect(&m_fileWatcher, &FileWatcher::fileModified, OnFileModified);
-        connect(&m_fileWatcher, &FileWatcher::fileRemoved, OnFileRemoved);
+        connect(m_fileWatcher.get(), &FileWatcher::fileAdded, OnFileAdded);
+        connect(m_fileWatcher.get(), &FileWatcher::fileModified, OnFileModified);
+        connect(m_fileWatcher.get(), &FileWatcher::fileRemoved, OnFileRemoved);
     }
 }
 
 void ApplicationManagerBase::DestroyFileMonitor()
 {
-    m_fileWatcher.ClearFolderWatches();
+    if(m_fileWatcher)
+    {
+        m_fileWatcher->ClearFolderWatches();
+        m_fileWatcher = nullptr;
+    }
 }
 
 void ApplicationManagerBase::DestroyApplicationServer()
@@ -905,6 +940,19 @@ bool ApplicationManagerBase::Run()
 
     AZ_Printf(AssetProcessor::ConsoleChannel, "-----------------------------------------\n");
     AZ_Printf(AssetProcessor::ConsoleChannel, "Asset Processor Batch Processing complete\n");
+
+    if (!m_failedAssets.empty())
+    {
+        AZ_Printf(AssetProcessor::ConsoleChannel, "---------------FAILED ASSETS-------------\n");
+
+        for (const auto& failedAsset : m_failedAssets)
+        {
+            AZ_Printf(AssetProcessor::ConsoleChannel, "%s\n", failedAsset.c_str());
+        }
+
+        AZ_Printf(AssetProcessor::ConsoleChannel, "-----------------------------------------\n");
+    }
+
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Assets Successfully Processed: %d.\n", ProcessedAssetCount());
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Assets Failed to Process: %d.\n", FailedAssetsCount());
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Warnings Reported: %d.\n", m_warningCount);
@@ -1357,7 +1405,7 @@ bool ApplicationManagerBase::Activate()
     InitFileProcessor();
 
     InitAssetCatalog();
-    InitFileMonitor();
+    InitFileMonitor(AZStd::make_unique<FileWatcher>());
     InitAssetScanner();
     InitAssetServerHandler();
     InitRCController();
@@ -1520,8 +1568,37 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
-                } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
-                         retryCount <= AssetProcessor::RetriesForJobNetworkError);
+
+                    // If a lost connection occured, prepare for a retry using an exponential backoff policy
+                    if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+                         result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
+                    {
+                        const int delay = aznumeric_caster(pow(2, retryCount-1));
+
+                        // Check if we need a new builder, and if so, request a new one
+                        if (!builderRef->IsValid())
+                        {
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d with %d second delay)",
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount,
+                                            delay);
+
+                            builderRef.release();
+                            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+                        } 
+                        else
+                        {
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new Builder (Attempt %d  with %d second delay)",
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount,
+                                            delay);
+                        }
+                        AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
+                    }
+
+                } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
+                          retryCount <= AssetProcessor::RetriesForJobLostConnection);
             }
             else
             {
@@ -1548,8 +1625,38 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
-                } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
-                         retryCount <= AssetProcessor::RetriesForJobNetworkError);
+                    
+                    // If a lost connection occured, prepare for a retry using an exponential backoff policy
+                    if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+                         result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
+                    {
+                        const int delay = aznumeric_caster(pow(2, retryCount-1));
+
+                        // Check if we need a new builder, and if so, request a new one
+                        if (!builderRef->IsValid())
+                        {
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d with %d second delay)",
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount,
+                                            delay);
+
+                            builderRef.release();
+                            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+                        } 
+                        else
+                        {
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new Builder (Attempt %d  with %d second delay)",
+                                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                            retryCount,
+                                            delay);
+                        }
+                        AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
+
+                    }
+                    
+                } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
+                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
+                          retryCount <= AssetProcessor::RetriesForJobLostConnection);
             }
             else
             {

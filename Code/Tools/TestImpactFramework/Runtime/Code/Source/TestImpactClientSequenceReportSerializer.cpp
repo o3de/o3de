@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/typetraits/disjunction.h>
 #include <TestImpactFramework/TestImpactClientSequenceReportSerializer.h>
 #include <TestImpactFramework/TestImpactSequenceReportException.h>
 #include <TestImpactFramework/TestImpactUtils.h>
@@ -735,7 +736,11 @@ namespace TestImpact
         };
     }
 
-    template<typename PolicyStateType>
+    template<typename PolicyStateType, typename = AZStd::enable_if_t<AZStd::disjunction_v<
+        AZStd::is_same<PolicyStateType, SequencePolicyState>,
+        AZStd::is_same<PolicyStateType, SafeImpactAnalysisSequencePolicyState>,
+        AZStd::is_same<PolicyStateType, ImpactAnalysisSequencePolicyState>
+    >>>
     PolicyStateType DeserializePolicyStateType(const rapidjson::Value& serialPolicyStateType)
     {
         if constexpr (AZStd::is_same_v<PolicyStateType, SequencePolicyState>)
@@ -749,10 +754,6 @@ namespace TestImpact
         else if constexpr (AZStd::is_same_v<PolicyStateType, ImpactAnalysisSequencePolicyState>)
         {
             return DeserializeImpactAnalysisSequencePolicyStateMembers(serialPolicyStateType);
-        }
-        else
-        {
-            static_assert(false, "Template paramater must be a valid policy state type");
         }
     }
 
@@ -775,7 +776,7 @@ namespace TestImpact
             serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::MaxConcurrency]].GetUint64(),
             testTargetTimeout ? AZStd::optional<AZStd::chrono::milliseconds>{ testTargetTimeout } : AZStd::nullopt,
             globalTimeout ? AZStd::optional<AZStd::chrono::milliseconds>{ globalTimeout } : AZStd::nullopt,
-            DeserializePolicyStateType<SequenceReportBaseType::PolicyState>(serialSequenceReportBase),
+            DeserializePolicyStateType<typename SequenceReportBaseType::PolicyState>(serialSequenceReportBase),
             SuiteTypeFromString(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::Suite]].GetString()),
             DeserializeTestSelection(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::SelectedTestRuns]]),
             DeserializeTestRunReport(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::SelectedTestRunReport]]));

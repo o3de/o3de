@@ -12,6 +12,7 @@
 #include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
@@ -21,8 +22,9 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
-        class PrefabSystemComponentInterface;
+        class PrefabFocusInterface;
         class PrefabLoaderInterface;
+        class PrefabSystemComponentInterface;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -97,7 +99,6 @@ namespace AzToolsFramework
         , private AzFramework::SliceEntityRequestBus::MultiHandler
     {
     public:
-        using EntityList = AzFramework::EntityList;
         using OnEntitiesAddedCallback = AzFramework::OnEntitiesAddedCallback;
         using OnEntitiesRemovedCallback = AzFramework::OnEntitiesRemovedCallback;
         using ValidateEntitiesCallback = AzFramework::ValidateEntitiesCallback;
@@ -215,8 +216,10 @@ namespace AzToolsFramework
 
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
-        Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent;
-        Prefab::PrefabLoaderInterface* m_loaderInterface;
+
+        Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+        Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent = nullptr;
+        Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
         bool m_isRootPrefabAssigned = false;

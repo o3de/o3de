@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -15,11 +16,11 @@
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Serialization/Json/JsonImporter.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzCore/std/string/string.h>
@@ -44,7 +45,17 @@ namespace AZ
                     // We use TraceLevel::None because fallback textures are available and we'll return GetImageAssetResult::Missing below in that case.
                     // Callers of GetImageAssetReference will be responsible for logging warnings or errors as needed.
 
-                    Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, StreamingImageAsset::GetImageAssetSubId(), AssetUtils::TraceLevel::None);
+                    uint32_t subId = 0;
+                    auto typeId = azrtti_typeid<AttachmentImageAsset>();
+
+                    bool isAttachmentImageAsset = imageFilePath.ends_with(AttachmentImageAsset::Extension);
+                    if (!isAttachmentImageAsset)
+                    {
+                        subId = StreamingImageAsset::GetImageAssetSubId();
+                        typeId = azrtti_typeid<StreamingImageAsset>();
+                    }
+
+                    Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, subId, AssetUtils::TraceLevel::None);
                     
                     if (!imageAssetId.IsSuccess())
                     {
@@ -58,7 +69,7 @@ namespace AZ
                         return GetImageAssetResult::Missing;
                     }
                     
-                    imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath};
+                    imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), typeId, imageFilePath};
                     return GetImageAssetResult::Found;
                 }
             }
@@ -74,20 +85,38 @@ namespace AZ
                 outResolvedValue = enumValue;
                 return true;
             }
-
-            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, const rapidjson::Value* document)
+            
+            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document, ImportedJsonFiles* importedFiles)
             {
-                AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome;
+                rapidjson::Document localDocument;
+
                 if (document == nullptr)
                 {
-                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
+                    AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!loadOutcome.IsSuccess())
                     {
                         AZ_Error("MaterialUtils", false, "%s", loadOutcome.GetError().c_str());
                         return AZ::Failure();
                     }
 
-                    document = &loadOutcome.GetValue();
+                    localDocument = loadOutcome.TakeValue();
+                    document = &localDocument;
+                }
+                
+                AZ::BaseJsonImporter jsonImporter;
+                AZ::JsonImportSettings importSettings;
+                importSettings.m_importer = &jsonImporter;
+                importSettings.m_loadedJsonPath = filePath;
+                AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ResolveImports(document->GetObject(), document->GetAllocator(), importSettings);
+                if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
+                {
+                    AZ_Error("MaterialUtils", false, "%s", result.ToString(filePath).c_str());
+                    return AZ::Failure();
+                }
+
+                if (importedFiles)
+                {
+                    *importedFiles = importSettings.m_importer->GetImportedFiles();
                 }
 
                 MaterialTypeSourceData materialType;
@@ -96,11 +125,6 @@ namespace AZ
 
                 JsonReportingHelper reportingHelper;
                 reportingHelper.Attach(settings);
-
-                // This is required by some custom material serializers to support relative path references.
-                JsonFileLoadContext fileLoadContext;
-                fileLoadContext.PushFilePath(filePath);
-                settings.m_metadata.Add(fileLoadContext);
 
                 JsonSerialization::Load(materialType, *document, settings);
                 materialType.ConvertToNewDataFormat();

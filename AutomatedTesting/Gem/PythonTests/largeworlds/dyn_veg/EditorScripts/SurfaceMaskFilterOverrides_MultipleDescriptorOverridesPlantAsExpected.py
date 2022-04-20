@@ -73,7 +73,7 @@ def SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected():
     general.set_current_view_position(512.0, 500.0, 38.0)
     general.set_current_view_rotation(-20.0, 0.0, 0.0)
 
-    # 2) Create a new instance spawner entity with multiple Dynamic Slice Instance Spawner descriptors
+    # 2) Create a new instance spawner entity with multiple Prefab Instance Spawner descriptors
     spawner_center_point = math.Vector3(512.0, 512.0, 32.0)
     pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "SurfaceMaskOverrides_PinkFlower")[0]

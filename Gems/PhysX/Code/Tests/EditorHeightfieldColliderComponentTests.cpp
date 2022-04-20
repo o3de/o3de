@@ -274,6 +274,10 @@ namespace PhysXEditorTests
         EXPECT_EQ(numColumns, heightfield->getNbColumns());
         EXPECT_EQ(numRows, heightfield->getNbRows());
 
+        AZStd::vector<Physics::HeightMaterialPoint> samples;
+        Physics::HeightfieldProviderRequestsBus::EventResult(
+            samples, gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
+
         for (int sampleRow = 0; sampleRow < numRows; ++sampleRow)
         {
             for (int sampleColumn = 0; sampleColumn < numColumns; ++sampleColumn)
@@ -284,9 +288,6 @@ namespace PhysXEditorTests
                     gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds, minHeightBounds,
                     maxHeightBounds);
 
-                AZStd::vector<Physics::HeightMaterialPoint> samples;
-                Physics::HeightfieldProviderRequestsBus::EventResult(
-                    samples, gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
                 const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
                 const float scaleFactor = (maxHeightBounds <= minHeightBounds) ? 1.0f : AZStd::numeric_limits<int16_t>::max() / halfBounds;
 

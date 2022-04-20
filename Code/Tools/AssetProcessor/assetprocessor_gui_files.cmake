@@ -33,6 +33,9 @@ set(FILES
     native/ui/MainWindow.ui
     native/ui/MainWindow.cpp
     native/ui/MainWindow.ui
+    native/ui/MessageWindow.h
+    native/ui/MessageWindow.cpp
+    native/ui/MessageWindow.ui
     native/ui/ProductAssetDetailsPanel.h
     native/ui/ProductAssetDetailsPanel.cpp
     native/ui/ProductAssetDetailsPanel.ui

@@ -13,6 +13,7 @@
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Physics/Utils.h>
@@ -83,9 +84,9 @@ namespace PhysX
 
         AZ::IO::FileIOBase::SetInstance(m_fileIo.get());
 
-        char testDir[AZ_MAX_PATH_LEN];
-        m_fileIo->ConvertToAbsolutePath("Test.Assets/Gems/PhysX/Code/Tests", testDir, AZ_MAX_PATH_LEN);
-        m_fileIo->SetAlias("@test@", testDir);
+        AZ::IO::FixedMaxPath testDir = AZ::Utils::GetExecutableDirectory();
+        testDir /= "Test.Assets/Gems/PhysX/Code/Tests";
+        m_fileIo->SetAlias("@test@", testDir.c_str());
 
         LoadPhysXLibraryModules();
 

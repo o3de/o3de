@@ -17,7 +17,6 @@
 
 // Qt
 #include <QImage>
-#include <QObject>
 #include <QSize>
 #include <QTimer>
 
@@ -424,14 +423,12 @@ namespace GradientSignal
     };
 
     class EditorGradientPreviewRenderer
-        : public QObject
-        , private AZ::TickBus::Handler
+        : private AZ::TickBus::Handler
     {
     public:
         using SampleFilterFunc = AZStd::function<float(float, const GradientSampleParams&)>;
 
         EditorGradientPreviewRenderer()
-            : QObject()
         {
             m_updateJob = aznew EditorGradientPreviewUpdateJob();
             AZ::TickBus::Handler::BusConnect();

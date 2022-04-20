@@ -77,9 +77,10 @@ namespace AZ::Render
     void AtomActorInstance::OnTick([[maybe_unused]] float timeDelta)
     {
         UpdateBounds();
+        m_atomActorDebugDraw->UpdateActorInstance(m_actorInstance, timeDelta);
     }
 
-    void AtomActorInstance::DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags)
+    void AtomActorInstance::DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags)
     {
         m_atomActorDebugDraw->DebugDraw(renderFlags, m_actorInstance);
     }
@@ -453,7 +454,7 @@ namespace AZ::Render
         if (m_skinnedMeshInputBuffers)
         {
             m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, GetSkinningMethod());
-            AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRenderer(), "Failed to create bone transform buffer.");
+            AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRHI(), "Failed to create bone transform buffer.");
 
             // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
             // Wait for them all to be ready before creating the instance

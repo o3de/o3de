@@ -9,7 +9,7 @@
 # Deploy the CDK applications for AWS gems (Linux only)
 
 SOURCE_DIRECTORY=$PWD
-PATH=$SOURCE_DIRECTORY/python:$PATH
+PATH=$SOURCE_DIRECTORY/python/runtime/$PYTHON_RUNTIME/python/bin:$PATH
 GEM_DIRECTORY=$SOURCE_DIRECTORY/Gems
 
 DeployCDKApplication()
@@ -45,18 +45,6 @@ DeployCDKApplication()
     fi
     popd
 }
-
-# Create and activate a virtualenv for the CDK deployment
-if ! python/python.sh -m venv .env;
-then
-    echo [cdk_bootstrap] Failed to create a virtualenv for the CDK deployment
-    exit 1
-fi
-if ! source .env/bin/activate;
-then
-    echo [cdk_bootstrap] Failed to activate the virtualenv for the CDK deployment
-    exit 1
-fi
 
 echo [cdk_installation] Install nvm $NVM_VERSION
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash

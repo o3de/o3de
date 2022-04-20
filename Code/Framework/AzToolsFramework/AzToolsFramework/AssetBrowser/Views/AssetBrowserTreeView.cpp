@@ -203,11 +203,6 @@ namespace AzToolsFramework
             return selectionModel()->selectedIndexes();
         }
 
-        void AssetBrowserTreeView::SetThumbnailContext(const char* thumbnailContext) const
-        {
-            m_delegate->SetThumbnailContext(thumbnailContext);
-        }
-
         void AssetBrowserTreeView::SetShowSourceControlIcons(bool showSourceControlsIcons)
         {
             m_delegate->SetShowSourceControlIcons(showSourceControlsIcons);

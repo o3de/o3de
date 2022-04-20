@@ -130,6 +130,7 @@ ly_add_target(
         PRIVATE
             Gem::Atom_RHI_Vulkan.Private.Static
             Gem::Atom_RHI.Public
+            ${VULKAN_VALIDATION_LAYER}
 )
 
 ly_add_target(

@@ -320,7 +320,8 @@ namespace Vegetation
 
             //get the intersection data at the new position
             m_points.Clear();
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, instanceData.m_position, m_surfaceTagsToSnapToCombined, m_points);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePoints(
+                instanceData.m_position, m_surfaceTagsToSnapToCombined, m_points);
 
             // Get the point with the closest distance from the new position in case there are multiple intersections at different or
             // unrelated heights
@@ -328,7 +329,8 @@ namespace Vegetation
             AZ::Vector3 originalInstanceDataPosition = instanceData.m_position;
             m_points.EnumeratePoints(
                 [&instanceData, originalInstanceDataPosition, &closestPointDistanceSq](
-                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                    const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     float distanceSq = position.GetDistanceSq(originalInstanceDataPosition);
                     if (distanceSq < closestPointDistanceSq)

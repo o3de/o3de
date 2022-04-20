@@ -136,7 +136,6 @@
     "PARAMETERS": {
       "CONFIGURATION":"profile",
       "OUTPUT_DIRECTORY":"build\\ad_grd",
-      "GAME_PROJECT": "AutomatedTesting",
       "SIGN_APK": "false",
       "GRADLE_BUILD_CMD": "build",
       "ADDITIONAL_GENERATE_ARGS": ""

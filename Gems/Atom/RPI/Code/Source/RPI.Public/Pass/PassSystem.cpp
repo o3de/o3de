@@ -429,7 +429,7 @@ namespace AZ
             return m_passFactory.CreatePassFromClass(passClassName, passName);
         }
 
-        Ptr<Pass> PassSystem::CreatePassFromTemplate(const AZStd::shared_ptr<PassTemplate>& passTemplate, Name passName)
+        Ptr<Pass> PassSystem::CreatePassFromTemplate(const AZStd::shared_ptr<const PassTemplate>& passTemplate, Name passName)
         {
             return m_passFactory.CreatePassFromTemplate(passTemplate, passName);
         }
@@ -451,6 +451,11 @@ namespace AZ
 
         // --- Pass Library Functions --- 
 
+        bool PassSystem::HasTemplate(const Name& templateName) const
+        {
+            return m_passLibrary.HasTemplate(templateName);
+        }
+
         bool PassSystem::HasPassesForTemplateName(const Name& templateName) const
         {
             return m_passLibrary.HasPassesForTemplate(templateName);
@@ -461,7 +466,7 @@ namespace AZ
             return m_passLibrary.AddPassTemplate(name, passTemplate);
         }
 
-        const AZStd::shared_ptr<PassTemplate> PassSystem::GetPassTemplate(const Name& name) const
+        const AZStd::shared_ptr<const PassTemplate> PassSystem::GetPassTemplate(const Name& name) const
         {
             return m_passLibrary.GetPassTemplate(name);
         }

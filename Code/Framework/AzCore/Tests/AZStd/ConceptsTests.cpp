@@ -8,6 +8,7 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/concepts/concepts.h>
+#include <AzCore/std/ranges/ranges_functional.h>
 
 namespace UnitTest
 {
@@ -198,5 +199,123 @@ namespace UnitTest
         static_assert(AZStd::strict_weak_order<RelationPredicate, Base, AZStd::string_view>);
         static_assert(!AZStd::strict_weak_order<RelationPredicate, int, Base>);
         static_assert(!AZStd::strict_weak_order<RelationPredicate, Base, int>);
+    }
+
+    TEST_F(ConceptsTestFixture, IteratorInvocableConcepts)
+    {
+        // concept indirectly unary invocable
+        // i.e Is deferencing an iterator like type and invoking
+        // a unary callable a well formed expression
+        auto CharUnaryCallable = [](const char) -> int { return {}; };
+        auto IntUnaryCallable = [](int) -> int { return {}; };
+        auto IntRefUnaryCallable = [](int&) -> int { return {}; };
+        static_assert(AZStd::indirectly_unary_invocable<decltype(CharUnaryCallable), AZStd::string_view::iterator>);
+        static_assert(AZStd::indirectly_unary_invocable<decltype(IntUnaryCallable), AZStd::string_view::iterator>);
+        static_assert(!AZStd::indirectly_unary_invocable<decltype(IntRefUnaryCallable), AZStd::string_view::iterator>);
+
+        // concept indirectly regular unary invocable
+        // i.e Is deferencing an iterator like type and invoking with a unary callable
+        // which will not modify the input arguments(hence the term "regular") a well formed expression
+        static_assert(AZStd::indirectly_regular_unary_invocable<decltype(CharUnaryCallable), AZStd::string_view::iterator>);
+        static_assert(AZStd::indirectly_regular_unary_invocable<decltype(IntUnaryCallable), AZStd::string_view::iterator>);
+        static_assert(!AZStd::indirectly_regular_unary_invocable<decltype(IntRefUnaryCallable), AZStd::string_view::iterator>);
+
+        // concept indirect unary predicate
+        // i.e Is deferencing an iterator like type and invoking with a unary predicate
+        // i.e which is a callable that accepts one argument and returns value testable in a boolean context
+        auto CharUnaryPredicate = [](const char) -> bool { return {}; };
+        auto IntUnaryPredicate = [](int) -> int { return {}; };// Return value is an int which is convertible to bool
+        auto IntRefUnaryPredicate = [](int&) -> int { return {}; }; // string_view iterator value type(char) can't bind to an int&
+        auto CharUnaryNonPredicate = [](const char) -> AZStd::string_view { return {}; }; // string_view is not convertible to bool
+
+        static_assert(AZStd::indirect_unary_predicate<decltype(CharUnaryPredicate), AZStd::string_view::iterator>);
+        static_assert(AZStd::indirect_unary_predicate<decltype(IntUnaryPredicate), AZStd::string_view::iterator>);
+        static_assert(!AZStd::indirect_unary_predicate<decltype(IntRefUnaryPredicate), AZStd::string_view::iterator>);
+        static_assert(!AZStd::indirect_unary_predicate<decltype(CharUnaryNonPredicate), AZStd::string_view::iterator>);
+
+        // concept indirect binary predicate
+        // i.e Is deferencing two iterator like types and invoking a binary predicate with those values
+        // well formed and returns value testable in a boolean context.
+        auto CharIntBinaryPredicate = [](const char, int) -> bool { return{}; };
+        auto CharCharRefBinaryPredicate = [](const char, const char&) -> uint32_t { return{}; };
+        auto UIntRefCharBinaryPredicate = [](uint32_t&, char) -> bool { return{}; };
+        auto CharCharBinaryNonPredicate = [](const char, const char) -> AZStd::string_view { return {}; };
+
+        static_assert(AZStd::indirect_binary_predicate<decltype(CharIntBinaryPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        static_assert(AZStd::indirect_binary_predicate<decltype(CharCharRefBinaryPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        // string_view iterator value type(char) cannot bind to int&
+        static_assert(!AZStd::indirect_binary_predicate<decltype(UIntRefCharBinaryPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        // string_view is not convertible to bool
+        static_assert(!AZStd::indirect_binary_predicate<decltype(CharCharBinaryNonPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        // Ok - iter_reference_t<uint32_t*> = uint32_t&
+        static_assert(AZStd::indirect_binary_predicate<decltype(UIntRefCharBinaryPredicate),
+            uint32_t*, AZStd::string_view::iterator>);
+
+        // concept indirect equivalence relation
+        // i.e Is deferencing two iterator like types and invoking a binary predicate with those values
+        // well formed and returns value testable in a boolean context.
+        // The dereferenced iterator types should be model an equivalence relationship
+        // (a == b) && (b == c) == (a ==c)
+        static_assert(AZStd::indirect_equivalence_relation<decltype(CharIntBinaryPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        static_assert(AZStd::indirect_equivalence_relation<decltype(CharCharRefBinaryPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        static_assert(!AZStd::indirect_equivalence_relation<decltype(UIntRefCharBinaryPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        static_assert(!AZStd::indirect_equivalence_relation<decltype(CharCharBinaryNonPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        // The "relation" concept requires that both both arguments can be bind to
+        // either of the two binary parameters
+        static_assert(!AZStd::indirect_equivalence_relation<decltype(UIntRefCharBinaryPredicate),
+            uint32_t*, AZStd::string_view::iterator>);
+
+        // concept indirect strict weak order
+        // i.e Is deferencing two iterator like types and invoking a binary predicate with those values
+        // well formed and returns value testable in a boolean context.
+        // The dereferenced iterator types should be model a strict weak order relation
+        // (a < b) && (b < c) == (a < c)
+        static_assert(AZStd::indirect_strict_weak_order<decltype(CharIntBinaryPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        static_assert(AZStd::indirect_strict_weak_order<decltype(CharCharRefBinaryPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        static_assert(!AZStd::indirect_strict_weak_order<decltype(UIntRefCharBinaryPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        static_assert(!AZStd::indirect_strict_weak_order<decltype(CharCharBinaryNonPredicate),
+            AZStd::string_view::iterator, AZStd::string_view::iterator>);
+        // The "relation" concept requires that both both arguments can be bind to
+        // either of the two binary parameters
+        static_assert(!AZStd::indirect_strict_weak_order<decltype(UIntRefCharBinaryPredicate),
+            uint32_t*, AZStd::string_view::iterator>);
+
+        // indirect_result_t type alias
+        static_assert(AZStd::same_as<AZStd::indirect_result_t<decltype(CharCharRefBinaryPredicate),
+            AZStd::string_view::iterator, const char*>, uint32_t>);
+
+        // projected operator* returns indirect result of the projection function
+        static_assert(AZStd::same_as<AZStd::iter_reference_t<AZStd::projected<int*, AZStd::identity>>, int&>);
+    }
+
+    TEST_F(ConceptsTestFixture, IteratorAlgorithmConcepts)
+    {
+        static_assert(AZStd::indirectly_swappable<int*, int*>);
+        static_assert(!AZStd::indirectly_swappable<int*, const int*>);
+        auto CharIntIndirectlyComparable = [](const char lhs, int rhs) -> bool { return lhs == rhs; };
+        static_assert(AZStd::indirectly_comparable<const char*, int*, decltype(CharIntIndirectlyComparable)>);
+        static_assert(!AZStd::indirectly_comparable<AZStd::string_view, int*, decltype(CharIntIndirectlyComparable)>);
+
+        static_assert(AZStd::permutable<typename AZStd::vector<int>::iterator>);
+        // const iterator isn't indirectlly swappable or indirectly movable
+        static_assert(!AZStd::permutable<typename AZStd::vector<int>::const_iterator>);
+
+        static_assert(AZStd::mergeable<AZStd::vector<int>::iterator, AZStd::string_view::iterator, AZStd::vector<int>::iterator>);
+        static_assert(!AZStd::mergeable<AZStd::vector<int>::iterator, AZStd::string_view::iterator, AZStd::string_view::iterator>);
+
+        static_assert(AZStd::sortable<int*>);
+        // Not sortable becaue the iter_reference_t<const int*> = const int& which isn't swappable
+        static_assert(!AZStd::sortable<const int*>);
     }
 }

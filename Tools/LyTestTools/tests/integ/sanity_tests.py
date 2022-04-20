@@ -52,7 +52,7 @@ class TestAutomatedTestingProject(object):
             workspace = helpers.create_builtin_workspace(project=project)
 
             # Create the Launcher object and add args
-            launcher = launcher_helper.create_launcher(workspace)
+            launcher = launcher_helper.create_game_launcher(workspace)
             launcher.args.extend(['-rhi=Null'])
 
             # Call the game client executable
@@ -73,7 +73,7 @@ class TestAutomatedTestingProject(object):
 
             # Create the Launcher object and add args, such as `-rhi=Null` which disables GPU rendering and allows the
             # test to run on nodes without a GPU
-            launcher = launcher_helper.create_dedicated_launcher(workspace)
+            launcher = launcher_helper.create_server_launcher(workspace)
             launcher.args.extend(['-rhi=Null'])
 
             # Call the game client executable
@@ -88,7 +88,7 @@ class TestAutomatedTestingProject(object):
         """
         The `test_StartEditor_Sanity` test function is similar to the previous example with minor adjustments. A
         PyTest mark skips the test if the operating system is not Windows. We use the `create_editor` function instead
-        of `create_launcher` to create an Editor type launcher instead of a game client type launcher. The additional
+        of `create_game_launcher` to create an Editor type launcher instead of a game client type launcher. The additional
         `-autotest_mode` arg supresses modal dialogs from interfering with our test. We launch the Editor executable and
         wait for the process to exist.
         """

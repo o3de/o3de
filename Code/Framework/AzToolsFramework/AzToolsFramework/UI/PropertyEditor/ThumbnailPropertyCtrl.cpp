@@ -65,11 +65,11 @@ namespace AzToolsFramework
         UpdateVisibility();
     }
 
-    void ThumbnailPropertyCtrl::SetThumbnailKey(Thumbnailer::SharedThumbnailKey key, const char* contextName)
+    void ThumbnailPropertyCtrl::SetThumbnailKey(Thumbnailer::SharedThumbnailKey key)
     {
         m_key = key;
-        m_thumbnail->SetThumbnailKey(m_key, contextName);
-        m_thumbnailEnlarged->SetThumbnailKey(m_key, contextName);
+        m_thumbnail->SetThumbnailKey(m_key);
+        m_thumbnailEnlarged->SetThumbnailKey(m_key);
         UpdateVisibility();
     }
 

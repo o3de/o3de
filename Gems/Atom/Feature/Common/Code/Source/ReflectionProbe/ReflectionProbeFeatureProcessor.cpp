@@ -169,9 +169,8 @@ namespace AZ
         void ReflectionProbeFeatureProcessor::OnRenderEnd()
         {
             // call OnRenderEnd on all reflection probes
-            for (uint32_t probeIndex = 0; probeIndex < m_reflectionProbes.size(); ++probeIndex)
+            for (auto& reflectionProbe : m_reflectionProbes)
             {
-                AZStd::shared_ptr<ReflectionProbe>& reflectionProbe = m_reflectionProbes[probeIndex];
                 AZ_Assert(reflectionProbe.use_count() > 1, "ReflectionProbe found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
                 reflectionProbe->OnRenderEnd();
@@ -234,10 +233,10 @@ namespace AZ
             m_probeSortRequired = true;
         }
 
-        void ReflectionProbeFeatureProcessor::BakeProbe(const ReflectionProbeHandle& probe, BuildCubeMapCallback callback, const AZStd::string& relativePath)
+        void ReflectionProbeFeatureProcessor::BakeProbe(const ReflectionProbeHandle& probe, RenderCubeMapCallback callback, const AZStd::string& relativePath)
         {
             AZ_Assert(probe.get(), "BakeProbe called with an invalid handle");
-            probe->BuildCubeMap(callback);
+            probe->Bake(callback);
 
             // check to see if this is an existing asset
             AZ::Data::AssetId assetId;

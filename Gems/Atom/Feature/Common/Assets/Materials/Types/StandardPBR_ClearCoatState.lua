@@ -11,13 +11,13 @@
 
 function GetMaterialPropertyDependencies()
     return {
-        "clearCoat.enable", 
-        "clearCoat.influenceMap", 
-        "clearCoat.useInfluenceMap", 
-        "clearCoat.roughnessMap", 
-        "clearCoat.useRoughnessMap", 
-        "clearCoat.normalMap", 
-        "clearCoat.useNormalMap", 
+        "enable", 
+        "influenceMap", 
+        "useInfluenceMap", 
+        "roughnessMap", 
+        "useRoughnessMap", 
+        "normalMap", 
+        "useNormalMap", 
         }
 end
 
@@ -37,12 +37,12 @@ function UpdateUseTextureState(context, clearCoatEnabled, textureMapPropertyName
 end
 
 function Process(context)
-    local enable = context:GetMaterialPropertyValue_bool("clearCoat.enable")
+    local enable = context:GetMaterialPropertyValue_bool("enable")
     context:SetShaderOptionValue_bool("o_clearCoat_enabled", enable)
     
-    UpdateUseTextureState(context, enable, "clearCoat.influenceMap", "clearCoat.useInfluenceMap", "o_clearCoat_factor_useTexture")
-    UpdateUseTextureState(context, enable, "clearCoat.roughnessMap", "clearCoat.useRoughnessMap", "o_clearCoat_roughness_useTexture")
-    UpdateUseTextureState(context, enable, "clearCoat.normalMap", "clearCoat.useNormalMap", "o_clearCoat_normal_useTexture")
+    UpdateUseTextureState(context, enable, "influenceMap", "useInfluenceMap", "o_clearCoat_factor_useTexture")
+    UpdateUseTextureState(context, enable, "roughnessMap", "useRoughnessMap", "o_clearCoat_roughness_useTexture")
+    UpdateUseTextureState(context, enable, "normalMap", "useNormalMap", "o_clearCoat_normal_useTexture")
 end
 
 -- Note this logic matches that of the UseTextureFunctor class.
@@ -63,12 +63,12 @@ function UpdateNormalStrengthPropertyVisibility(context, textureMapPropertyName,
     local useTexture = context:GetMaterialPropertyValue_bool(useTexturePropertyName)
 
     if(textureMap == nil) or (not useTexture) then
-        context:SetMaterialPropertyVisibility("clearCoat.normalStrength", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("normalStrength", MaterialPropertyVisibility_Hidden)
     end
 end
 
 function ProcessEditor(context)
-    local enable = context:GetMaterialPropertyValue_bool("clearCoat.enable")
+    local enable = context:GetMaterialPropertyValue_bool("enable")
     
     local mainVisibility
     if(enable) then
@@ -77,23 +77,23 @@ function ProcessEditor(context)
         mainVisibility = MaterialPropertyVisibility_Hidden
     end
     
-    context:SetMaterialPropertyVisibility("clearCoat.factor", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.influenceMap", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.useInfluenceMap", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.influenceMapUv", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.roughness", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.roughnessMap", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.useRoughnessMap", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.roughnessMapUv", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.normalMap", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.useNormalMap", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.normalMapUv", mainVisibility)
-    context:SetMaterialPropertyVisibility("clearCoat.normalStrength", mainVisibility)
+    context:SetMaterialPropertyVisibility("factor", mainVisibility)
+    context:SetMaterialPropertyVisibility("influenceMap", mainVisibility)
+    context:SetMaterialPropertyVisibility("useInfluenceMap", mainVisibility)
+    context:SetMaterialPropertyVisibility("influenceMapUv", mainVisibility)
+    context:SetMaterialPropertyVisibility("roughness", mainVisibility)
+    context:SetMaterialPropertyVisibility("roughnessMap", mainVisibility)
+    context:SetMaterialPropertyVisibility("useRoughnessMap", mainVisibility)
+    context:SetMaterialPropertyVisibility("roughnessMapUv", mainVisibility)
+    context:SetMaterialPropertyVisibility("normalMap", mainVisibility)
+    context:SetMaterialPropertyVisibility("useNormalMap", mainVisibility)
+    context:SetMaterialPropertyVisibility("normalMapUv", mainVisibility)
+    context:SetMaterialPropertyVisibility("normalStrength", mainVisibility)
 
     if(enable) then
-        UpdateTextureDependentPropertyVisibility(context, "clearCoat.influenceMap", "clearCoat.useInfluenceMap", "clearCoat.influenceMapUv")
-        UpdateTextureDependentPropertyVisibility(context, "clearCoat.roughnessMap", "clearCoat.useRoughnessMap", "clearCoat.roughnessMapUv")
-        UpdateTextureDependentPropertyVisibility(context, "clearCoat.normalMap", "clearCoat.useNormalMap", "clearCoat.normalMapUv")
-        UpdateNormalStrengthPropertyVisibility(context, "clearCoat.normalMap", "clearCoat.useNormalMap")
+        UpdateTextureDependentPropertyVisibility(context, "influenceMap", "useInfluenceMap", "influenceMapUv")
+        UpdateTextureDependentPropertyVisibility(context, "roughnessMap", "useRoughnessMap", "roughnessMapUv")
+        UpdateTextureDependentPropertyVisibility(context, "normalMap", "useNormalMap", "normalMapUv")
+        UpdateNormalStrengthPropertyVisibility(context, "normalMap", "useNormalMap")
     end
 end

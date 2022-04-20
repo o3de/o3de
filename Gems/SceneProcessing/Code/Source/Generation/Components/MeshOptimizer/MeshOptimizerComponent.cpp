@@ -659,7 +659,7 @@ namespace AZ::SceneGenerationComponents
         }
 
         // Copy node attributes
-        AZStd::apply([](const auto&&... nodePairView) {
+        AZStd::apply([]([[maybe_unused]] const auto&&... nodePairView) {
             ((AZStd::for_each(begin(nodePairView), end(nodePairView), [](const auto& nodePair) {
                 auto& originalNode = nodePair.first;
                 auto& optimizedNode = nodePair.second;

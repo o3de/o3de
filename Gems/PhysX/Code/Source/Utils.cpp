@@ -16,7 +16,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/SimdMath.h>
-#include <AzCore/Math/ToString.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -29,6 +29,7 @@
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include <PhysX/ColliderShapeBus.h>
+#include <PhysX/EditorColliderComponentRequestBus.h>
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/Utils.h>
@@ -222,7 +223,7 @@ namespace PhysX
             if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
             {
                 AZ_Error("PhysX Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
-                    ToString(shapeConfiguration.m_scale).c_str());
+                    AZStd::to_string(shapeConfiguration.m_scale).c_str());
                 return false;
             }
 
@@ -247,7 +248,7 @@ namespace PhysX
                 if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
                 {
                     AZ_Error("PhysX Utils", false, "Negative or zero values are invalid for box dimensions %s",
-                        ToString(boxConfig.m_dimensions).c_str());
+                        AZStd::to_string(boxConfig.m_dimensions).c_str());
                     return false;
                 }
                 pxGeometry.storeAny(physx::PxBoxGeometry(PxMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale)));
@@ -830,6 +831,17 @@ namespace PhysX
             const AZ::Quaternion& colliderRelativeRotation)
         {
             return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRelativeRotation, colliderRelativePosition);
+        }
+
+        AZ::Transform GetColliderLocalTransform(const AZ::EntityComponentIdPair& idPair)
+        {
+            AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
+            PhysX::EditorColliderComponentRequestBus::EventResult(colliderRotation, idPair, &PhysX::EditorColliderComponentRequests::GetColliderRotation);
+
+            AZ::Vector3 colliderOffset = AZ::Vector3::CreateZero();
+            PhysX::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
+
+            return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRotation, colliderOffset);
         }
 
         AZ::Transform GetColliderWorldTransform(const AZ::Transform& worldTransform,
@@ -1549,7 +1561,7 @@ namespace PhysX
             return entityWorldTransformWithoutScale * jointLocalTransformWithoutScale;
         }
         
-        Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId)
+        Physics::HeightfieldShapeConfiguration CreateBaseHeightfieldShapeConfiguration(AZ::EntityId entityId)
         {
             Physics::HeightfieldShapeConfiguration configuration;
 
@@ -1562,7 +1574,7 @@ namespace PhysX
             int32_t numRows = 0;
             int32_t numColumns = 0;
             Physics::HeightfieldProviderRequestsBus::Event(
-                            entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
+                entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
 
             configuration.SetNumRows(numRows);
             configuration.SetNumColumns(numColumns);
@@ -1574,6 +1586,13 @@ namespace PhysX
 
             configuration.SetMinHeightBounds(minHeightBounds);
             configuration.SetMaxHeightBounds(maxHeightBounds);
+
+            return configuration;
+        }
+
+        Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId)
+        {
+            Physics::HeightfieldShapeConfiguration configuration = CreateBaseHeightfieldShapeConfiguration(entityId);
 
             AZStd::vector<Physics::HeightMaterialPoint> samples;
             Physics::HeightfieldProviderRequestsBus::EventResult(

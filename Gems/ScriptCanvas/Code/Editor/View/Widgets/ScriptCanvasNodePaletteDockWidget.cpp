@@ -851,41 +851,11 @@ namespace ScriptCanvasEditor
             CycleToNextNode();
         }
 
-        static AZStd::string GetGemPath(const AZStd::string& gemName)
-        {
-            if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
-            {
-                AZ::IO::Path gemSourceAssetDirectories;
-                AZStd::vector<AzFramework::GemInfo> gemInfos;
-                if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
-                {
-                    auto FindGemByName = [gemName](const AzFramework::GemInfo& gemInfo)
-                    {
-                        return gemInfo.m_gemName == gemName;
-                    };
-                    // Gather unique list of Gem Paths from the Settings Registry
-
-                    auto foundIt = AZStd::find_if(gemInfos.begin(), gemInfos.end(), FindGemByName);
-                    if (foundIt != gemInfos.end())
-                    {
-                        const AzFramework::GemInfo& gemInfo = *foundIt;
-                        for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
-                        {
-                            gemSourceAssetDirectories = (absoluteSourcePath / gemInfo.GetGemAssetFolder());
-                        }
-
-                        return gemSourceAssetDirectories.c_str();
-                    }
-                }
-            }
-            return "";
-        }
-
         void NodePaletteDockWidget::NavigateToTranslationFile(GraphCanvas::NodePaletteTreeItem* nodePaletteItem)
         {
             if (nodePaletteItem)
             {
-                AZ::IO::Path gemPath = GetGemPath("ScriptCanvas.Editor");
+                AZ::IO::Path gemPath = ScriptCanvasEditorTools::Helpers::GetGemPath("ScriptCanvas");
                 gemPath = gemPath / AZ::IO::Path("TranslationAssets");
                 gemPath = gemPath / nodePaletteItem->GetTranslationDataPath();
                 gemPath.ReplaceExtension(".names");

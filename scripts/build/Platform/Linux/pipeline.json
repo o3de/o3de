@@ -1,6 +1,6 @@
 {
     "ENV": {
-        "NODE_LABEL": "linux-707531fc7",
+        "NODE_LABEL": "linux-7cb44cc9e",
         "LY_3RDPARTY_PATH": "/data/workspace/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "/data/workspace",

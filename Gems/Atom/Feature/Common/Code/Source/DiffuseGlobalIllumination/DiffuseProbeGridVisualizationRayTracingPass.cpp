@@ -200,6 +200,16 @@ namespace AZ
                     }
                 }
 
+                // grid data
+                {
+                    RHI::BufferScopeAttachmentDescriptor desc;
+                    desc.m_attachmentId = diffuseProbeGrid->GetGridDataBufferAttachmentId();
+                    desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
+                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                }
+
                 // probe irradiance
                 {
                     RHI::ImageScopeAttachmentDescriptor desc;
@@ -239,7 +249,7 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationRayTracingPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {           
-            const RHI::ImageView* outputImageView = context.GetImageView(GetOutputBinding(0).m_attachment->GetAttachmentId());
+            const RHI::ImageView* outputImageView = context.GetImageView(GetOutputBinding(0).GetAttachment()->GetAttachmentId());
             AZ_Assert(outputImageView, "Failed to retrieve output ImageView");
 
             RPI::Scene* scene = m_pipeline->GetScene();

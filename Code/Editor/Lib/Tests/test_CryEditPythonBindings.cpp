@@ -36,7 +36,7 @@ namespace CryEditPythonBindingsUnitTests
 
             m_app.Start(appDesc);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
             m_app.RegisterComponentDescriptor(AzToolsFramework::CryEditPythonHandler::CreateDescriptor());
@@ -74,7 +74,6 @@ namespace CryEditPythonBindingsUnitTests
         EXPECT_TRUE(behaviorContext->m_methods.find("idle_is_enabled") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("idle_wait") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("idle_wait_frames") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("start_process_detached") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("launch_lua_editor") != behaviorContext->m_methods.end());
     }
 

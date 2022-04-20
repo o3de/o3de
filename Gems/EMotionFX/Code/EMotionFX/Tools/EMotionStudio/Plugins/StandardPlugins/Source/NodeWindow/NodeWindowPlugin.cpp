@@ -47,12 +47,6 @@ namespace EMStudio
         m_callbacks.clear();
     }
 
-
-    EMStudioPlugin* NodeWindowPlugin::Clone()
-    {
-        return new NodeWindowPlugin();
-    }
-
     void NodeWindowPlugin::Reflect(AZ::ReflectContext* context)
     {
         NamedPropertyStringValue::Reflect(context);

@@ -10,6 +10,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Spawnable/ComponentRequirementsValidator.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h>
@@ -50,7 +51,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         static void Reflect(AZ::ReflectContext* context);
 
      protected:
-        using EntityList = AZStd::vector<AZ::Entity*>;
         static void GetEntitiesFromInstance(AzToolsFramework::Prefab::Instance& instance, EntityList& hierarchyEntities);
 
         static bool ReadComponentAttribute(

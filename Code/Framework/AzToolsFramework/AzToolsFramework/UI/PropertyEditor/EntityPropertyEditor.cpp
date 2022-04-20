@@ -39,6 +39,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
@@ -501,6 +502,11 @@ namespace AzToolsFramework
         m_readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
         AZ_Assert(m_readOnlyEntityPublicInterface != nullptr, "EntityPropertyEditor requires a ReadOnlyEntityPublicInterface instance on Initialize.");
 
+        m_focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
+        AZ_Assert(m_focusModeInterface != nullptr, "EntityPropertyEditor requires a FocusModeInterface instance on Initialize.");
+
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+
         setObjectName("EntityPropertyEditor");
         setAcceptDrops(true);
 
@@ -797,7 +803,7 @@ namespace AzToolsFramework
     {
         if (IsEntitySelected(entityId))
         {
-            UpdateContents(); // immediately refresh
+            QueuePropertyRefresh();
         }
     }
 
@@ -5666,13 +5672,38 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         AzToolsFramework::EditorInspectorComponentNotificationBus::MultiHandler::BusConnect(entityId);
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(entityId);
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+        AzToolsFramework::FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
     }
 
     void EntityPropertyEditor::DisconnectFromEntityBuses(const AZ::EntityId& entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+        AzToolsFramework::FocusModeNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorInspectorComponentNotificationBus::MultiHandler::BusDisconnect(entityId);
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(entityId);
+    }
+
+    void EntityPropertyEditor::OnEditorFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousFocusEntityId, [[maybe_unused]] AZ::EntityId newFocusEntityId)
+    {
+        // We need to wait for the Container Entity System to update before checking
+        QTimer::singleShot( 1, this, [this]()
+            {
+                bool enable = true;
+                for (AZ::EntityId entityId : m_overrideSelectedEntityIds)
+                {
+                    if (!m_focusModeInterface->IsInFocusSubTree(entityId) ||
+                        m_containerEntityInterface->IsUnderClosedContainerEntity(entityId))
+                    {
+                        enable = false;
+                        break;
+                    }
+                }
+                SetEditorUiEnabled(enable);
+            });
     }
 
     static void SetPropertyEditorState(Ui::EntityPropertyEditorUI* propertyEditorUi, const bool on)

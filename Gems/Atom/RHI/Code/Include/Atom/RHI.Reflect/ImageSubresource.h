@@ -48,26 +48,29 @@ namespace AZ
 
             static const uint16_t HighestSliceIndex = static_cast<uint16_t>(-1);
 
-            /// Defaults to the full mapping of the image.
+            //! Defaults to the full mapping of the image.
             ImageSubresourceRange() = default;
 
-            /// Constructs a range from a [min, max] range for mips and array indices.
+            //! Constructs a range from a [min, max] range for mips and array indices.
             ImageSubresourceRange(
                 uint16_t mipSliceMin,
                 uint16_t mipSliceMax,
                 uint16_t arraySliceMin,
                 uint16_t arraySliceMax);
 
-            /// Constructs a range that covers the whole image.
+            //! Constructs a range that covers the whole image.
             explicit ImageSubresourceRange(const ImageDescriptor& descriptor);
 
-            /// Constructs a range that covers the same region as the image view.
+            //! Constructs a range that covers the same region as the image view.
             explicit ImageSubresourceRange(const ImageViewDescriptor& descriptor);
 
-            /// Constructs a range from a single subresource.
+            //! Constructs a range from a single subresource.
             ImageSubresourceRange(ImageSubresource subresource);
 
-            /// Comparison operator.
+            //! Returns the hash of the view.
+            HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
+
+            //! Comparison operator.
             bool operator==(const ImageSubresourceRange& other) const;
 
             /// Minimum mip slice offset.
@@ -132,19 +135,16 @@ namespace AZ
             uint32_t m_offset = 0;
         };
 
-        /**
-         * This family of helper function provide a standard subresource layout suitable for
-         * the source of a copy from system memory to a destination RHI staging buffer. The results are
-         * platform agnostic. It works by inspecting the image size and format, and then computing the required
-         * size and memory layout requirements to represent the data as linear rows.
-         */
+
+        //! This family of helper function provide a standard subresource layout suitable for
+        //! the source of a copy from system memory to a destination RHI staging buffer. The results are
+        //! platform agnostic. It works by inspecting the image size and format, and then computing the required
+        //! size and memory layout requirements to represent the data as linear rows.
         ImageSubresourceLayout GetImageSubresourceLayout(Size imageSize, Format imageFormat);
         ImageSubresourceLayout GetImageSubresourceLayout(const ImageDescriptor& imageDescriptor, const ImageSubresource& subresource);
 
-        /**
-         * Returns the image subresource index given the mip and array slices, and the total mip levels. Subresources
-         * are organized by arrays of mip chains. The formula is: subresourceIndex = mipSlice + arraySlice * mipLevels.
-         */
+        //! Returns the image subresource index given the mip and array slices, and the total mip levels. Subresources
+        //! are organized by arrays of mip chains. The formula is: subresourceIndex = mipSlice + arraySlice * mipLevels.
         uint32_t GetImageSubresourceIndex(uint32_t mipSlice, uint32_t arraySlice, uint32_t mipLevels);
         uint32_t GetImageSubresourceIndex(ImageSubresource subresource, uint32_t mipLevels);
     }

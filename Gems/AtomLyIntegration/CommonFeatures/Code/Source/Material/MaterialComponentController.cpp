@@ -618,7 +618,6 @@ namespace AZ
             const MaterialAssignmentId& materialAssignmentId, const AZ::RPI::MaterialModelUvOverrideMap& modelUvOverrides)
         {
             auto& materialAssignment = m_configuration.m_materials[materialAssignmentId];
-            const bool wasEmpty = materialAssignment.m_matModUvOverrides.empty();
             materialAssignment.m_matModUvOverrides = modelUvOverrides;
 
             if (materialAssignment.RequiresLoading())
@@ -627,13 +626,10 @@ namespace AZ
                 return;
             }
 
-            if (wasEmpty != materialAssignment.m_matModUvOverrides.empty())
-            {
-                materialAssignment.RebuildInstance();
-                QueueMaterialUpdateNotification();
-            }
-
-            QueuePropertyChanges(materialAssignmentId);
+            // Unlike material properties which are applied to the material itself, UV overrides are applied outside the material
+            // by the MeshFeatureProcessor. So all we have to do is notify the mesh component that the materials were updated and it
+            // will pass the updated data to the MeshFeatureProcessor.
+            QueueMaterialUpdateNotification();
         }
 
         AZ::RPI::MaterialModelUvOverrideMap MaterialComponentController::GetModelUvOverrides(

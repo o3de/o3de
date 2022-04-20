@@ -12,7 +12,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        InstanceEntityScrubber::InstanceEntityScrubber(Instance::EntityList& entities)
+        InstanceEntityScrubber::InstanceEntityScrubber(EntityList& entities)
             : m_entities(entities)
         {}
 

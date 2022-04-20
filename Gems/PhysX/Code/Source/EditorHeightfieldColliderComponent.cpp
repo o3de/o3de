@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <Editor/ColliderComponentMode.h>
 #include <EditorHeightfieldColliderComponent.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
@@ -153,9 +154,10 @@ namespace PhysX
             { AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), m_shapeConfig });
     }
 
-    void EditorHeightfieldColliderComponent::OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion)
+    void EditorHeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
-        RefreshHeightfield();
+        RefreshHeightfield(dirtyRegion, changeMask);
     }
 
     void EditorHeightfieldColliderComponent::ClearHeightfield()
@@ -207,14 +209,68 @@ namespace PhysX
         *m_shapeConfig = Utils::CreateHeightfieldShapeConfiguration(GetEntityId());
     }
 
-    void EditorHeightfieldColliderComponent::RefreshHeightfield()
+    void EditorHeightfieldColliderComponent::RefreshHeightfield(const AZ::Aabb& dirtyRegion,
+        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
-        ClearHeightfield();
-        InitHeightfieldShapeConfiguration();
+        AZ::Aabb heightfieldAabb = GetColliderShapeAabb();
+        AZ::Aabb requestRegion = dirtyRegion;
 
-        if (!m_shapeConfig->GetSamples().empty())
+        if (!requestRegion.IsValid())
         {
-            InitStaticRigidBody();
+            requestRegion = heightfieldAabb;
+        }
+
+        // Early out if the updated region is outside of the heightfield Aabb
+        if (heightfieldAabb.Disjoint(requestRegion))
+        {
+            return;
+        }
+
+        // Clamp requested region to the entire heightfield AABB
+        requestRegion.Clamp(heightfieldAabb);
+
+        // if dirty region invalid, recreate the entire heightfield, otherwise request samples
+        bool shouldRecreateHeightfield = m_shapeConfig == nullptr;
+
+        // Check if dirtyRegion covers the entire terrain
+        shouldRecreateHeightfield = shouldRecreateHeightfield || (requestRegion == heightfieldAabb);
+
+        // Check if base configuration parameters have changed
+        if (!shouldRecreateHeightfield)
+        {
+            Physics::HeightfieldShapeConfiguration baseConfiguration = Utils::CreateBaseHeightfieldShapeConfiguration(GetEntityId());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumRows() != m_shapeConfig->GetNumRows());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumColumns() != m_shapeConfig->GetNumColumns());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetMinHeightBounds() != m_shapeConfig->GetMinHeightBounds());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetMaxHeightBounds() != m_shapeConfig->GetMaxHeightBounds());
+        }
+
+        if (shouldRecreateHeightfield)
+        {
+            ClearHeightfield();
+            InitHeightfieldShapeConfiguration();
+
+            if (!m_shapeConfig->GetSamples().empty())
+            {
+                InitStaticRigidBody();
+            }
+        }
+        else
+        {
+            // Update m_shapeConfig
+            Physics::HeightfieldProviderRequestsBus::Event(GetEntityId(),
+                &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterials,
+                [this](int32_t row, int32_t col, const Physics::HeightMaterialPoint& point)
+                {
+                    m_shapeConfig->ModifySample(row, col, point);
+                },
+                requestRegion);
+
+            if (!m_shapeConfig->GetSamples().empty())
+            {
+                ClearHeightfield();
+                InitStaticRigidBody();
+            }
         }
 
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);

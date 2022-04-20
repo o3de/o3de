@@ -134,7 +134,7 @@ protected:
     virtual void DestroyAssetScanner();
     virtual bool InitPlatformConfiguration();
     virtual void DestroyPlatformConfiguration();
-    virtual void InitFileMonitor();
+    virtual void InitFileMonitor(AZStd::unique_ptr<FileWatcher> fileWatcher);
     virtual void DestroyFileMonitor();
     virtual bool InitBuilderConfiguration();
     virtual void InitControlRequestHandler();
@@ -184,14 +184,14 @@ protected Q_SLOTS:
 
 protected:
     int m_processedAssetCount = 0;
-    int m_failedAssetsCount = 0;
     int m_warningCount = 0;
     int m_errorCount = 0;
+    AZStd::set<AZStd::string> m_failedAssets;
     bool m_AssetProcessorManagerIdleState = false;
     bool m_sourceControlReady = false;
     bool m_fullIdle = false;
 
-    FileWatcher m_fileWatcher;
+    AZStd::unique_ptr<FileWatcher> m_fileWatcher;
     AssetProcessor::PlatformConfiguration* m_platformConfiguration = nullptr;
     AssetProcessor::AssetProcessorManager* m_assetProcessorManager = nullptr;
     AssetProcessor::AssetCatalog* m_assetCatalog = nullptr;

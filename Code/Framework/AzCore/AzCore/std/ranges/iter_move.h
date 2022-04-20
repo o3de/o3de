@@ -74,8 +74,16 @@ namespace AZStd::ranges::Internal
 
 namespace AZStd::ranges
 {
-    inline namespace customization_point_object
+    // Workaround for clang bug https://bugs.llvm.org/show_bug.cgi?id=37556
+    // Adding placing the inline customization_point_object namespace
+    // under a regular namespace and then aliasing that into the AZStd::ranges namespace
+    namespace workaround
     {
-        inline constexpr auto iter_move = Internal::iter_move_fn{};
+        inline namespace customization_point_object
+        {
+            inline constexpr auto iter_move = Internal::iter_move_fn{};
+        }
     }
+
+    using namespace workaround;
 }

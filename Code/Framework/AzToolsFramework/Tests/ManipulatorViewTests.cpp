@@ -121,7 +121,7 @@ namespace UnitTest
         const AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
             AZ::Transform::CreateFromMatrix3x3AndTranslation(
                 AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-90.0f)), AZ::Vector3(10.0f, -15.0f, 6.0f)),
-            AZ::Vector2(1280, 720));
+            AzFramework::ScreenSize(1280, 720));
 
         // test debug display instance to record vertices that were output
         auto testDebugDisplayRequests = AZStd::make_shared<TestDebugDisplayRequests>();

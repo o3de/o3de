@@ -22,9 +22,14 @@ namespace AZ
         //! The groups are optional, in which case the full property ID will just be like "propertyName".
         class MaterialPropertyId
         {
-        public:                
+        public:
+            //! Returns whether the name is a valid C-style identifier
             static bool IsValidName(AZStd::string_view name);
             static bool IsValidName(const AZ::Name& name);
+            
+            //! Returns whether the name is a valid C-style identifier, and reports errors if it is not.
+            static bool CheckIsValidName(AZStd::string_view name);
+            static bool CheckIsValidName(const AZ::Name& name);
 
             //! Creates a MaterialPropertyId from a full name string like "groupA.groupB.[...].propertyName" or just "propertyName".
             //! Also checks the name for validity.

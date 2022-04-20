@@ -81,11 +81,12 @@ def GraphUpdates_UpdateComponent():
                                                   entity.EntityId(), position)
     Report.critical_result(Tests.prefab_instantiated, prefab_result.IsSuccess())
 
-    # Search for root entity to ensure prefab is loaded
+    # Search for root entity to ensure prefab is loaded and focused
     search_filter = entity.SearchFilter()
     search_filter.names = ["LandscapeCanvas"]
     helper.wait_for_condition(lambda: len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)) > 0, 5.0)
     prefab_lc_root = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)[0]
+    azlmbr.prefab.PrefabFocusPublicRequestBus(bus.Broadcast, "FocusOnOwningPrefab", prefab_lc_root)
 
     # Find needed entities in the loaded level
     bush_spawner_id = hydra.find_entity_by_name('BushSpawner')
@@ -114,7 +115,6 @@ def GraphUpdates_UpdateComponent():
     Report.result(Tests.component_removed, not has_rotation_modifier)
 
     # Find the Vegetation Layer Spawner node on the BushSpawner entity
-    open_graph_id = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'OnGraphEntity', prefab_lc_root)
     layer_spawner_node = lc.find_nodes_matching_entity_component('Vegetation Layer Spawner', bush_spawner_id)
 
     # Remove the Vegetation Layer Spawner node and verify the corresponding entity is deleted
@@ -125,7 +125,6 @@ def GraphUpdates_UpdateComponent():
     Report.result(Tests.entity_deleted, not layer_spawner_node and not bush_spawner_id)
 
     # Connect the FlowerSpawner's Rotation Modifier node to the Invert Gradient Modifier node
-    open_graph_id = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'OnGraphEntity', prefab_lc_root)
     rotation_modifier_node = lc.find_nodes_matching_entity_component('Vegetation Rotation Modifier', flower_spawner_id)
     invert_node = lc.find_nodes_matching_entity_component('Invert Gradient Modifier', inverted_perlin_noise_id)
 

@@ -29,6 +29,7 @@ namespace EMotionFX::MotionMatching
         {
             INPUTPORT_TARGETPOS = 0,
             INPUTPORT_TARGETFACINGDIR = 1,
+            INPUTPORT_USEFACINGDIR = 2,
             OUTPUTPORT_POSE = 0
         };
 
@@ -36,6 +37,7 @@ namespace EMotionFX::MotionMatching
         {
             PORTID_INPUT_TARGETPOS = 0,
             PORTID_INPUT_TARGETFACINGDIR = 1,
+            PORTID_INPUT_USEFACINGDIR = 2,
             PORTID_OUTPUT_POSE = 0
         };
 

@@ -30,6 +30,19 @@ namespace AssetProcessor
     class AssetRequestHandler;
 }
 
+class GUIApplicationManager;
+
+struct ErrorCollector
+{
+    explicit ErrorCollector(QWidget* parent = nullptr) : m_parent(parent){}
+    ~ErrorCollector();
+
+    void AddError(AZStd::string message);
+
+    QWidget* m_parent{};
+    QStringList m_errorMessages;
+};
+
 //! This class is the Application manager for the GUI Mode
 
 
@@ -99,6 +112,7 @@ private:
 
     QPointer<QSystemTrayIcon> m_trayIcon;
     QPointer<MainWindow> m_mainWindow;
+    AZStd::unique_ptr<ErrorCollector> m_startupErrorCollector; // Collects errors during start up to display when startup has finished
 
     AZStd::chrono::system_clock::time_point m_timeWhenLastWarningWasShown;
 };

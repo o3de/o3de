@@ -174,7 +174,7 @@ namespace AZ
         
         void AttachmentImage::Shutdown()
         {
-            if (m_imageAsset->HasUniqueName())
+            if (m_imageAsset && m_imageAsset->HasUniqueName())
             {
                 ImageSystemInterface::Get()->UnregisterAttachmentImage(this);
             }

@@ -35,11 +35,14 @@ namespace UnitTest
             LuaMaterialFunctorSourceData functorSourceData;
             functorSourceData.m_luaScript = script;
 
+            MaterialNameContext nameContext;
+
             MaterialFunctorSourceData::RuntimeContext createFunctorContext{
                 "Dummy.materialtype",
                 materialTypeCreator.GetMaterialPropertiesLayout(),
                 materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                materialTypeCreator.GetShaderCollection()
+                materialTypeCreator.GetShaderCollection(),
+                &nameContext
             };
 
             MaterialFunctorSourceData::FunctorResult result = functorSourceData.CreateFunctor(createFunctorContext);

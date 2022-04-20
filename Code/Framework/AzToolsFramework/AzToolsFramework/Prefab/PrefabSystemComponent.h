@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutor.h>
@@ -36,8 +37,6 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    using EntityList = AZStd::vector<AZ::Entity*>;
-
     namespace Prefab
     {
         using InstanceList = AZStd::vector<AzToolsFramework::Prefab::Instance*>;

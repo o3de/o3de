@@ -113,7 +113,7 @@ namespace AZ::Dom
         return AZ::Success(AZStd::move(rootElement));
     }
 
-    PatchOperation::PatchOutcome PatchOperation::ApplyInPlace(Value& rootElement) const
+    PatchOutcome PatchOperation::ApplyInPlace(Value& rootElement) const
     {
         switch (m_type)
         {
@@ -451,7 +451,7 @@ namespace AZ::Dom
         return AZ::Success<PathContext>({ *targetValue, AZStd::move(destinationIndex) });
     }
 
-    PatchOperation::PatchOutcome PatchOperation::ApplyAdd(Value& rootElement) const
+    PatchOutcome PatchOperation::ApplyAdd(Value& rootElement) const
     {
         auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
         if (!pathLookup.IsSuccess())
@@ -482,7 +482,7 @@ namespace AZ::Dom
         return AZ::Success();
     }
 
-    PatchOperation::PatchOutcome PatchOperation::ApplyRemove(Value& rootElement) const
+    PatchOutcome PatchOperation::ApplyRemove(Value& rootElement) const
     {
         auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::VerifyFullPath | ExistenceCheckFlags::AllowEndOfArray);
         if (!pathLookup.IsSuccess())
@@ -506,7 +506,7 @@ namespace AZ::Dom
         return AZ::Success();
     }
 
-    PatchOperation::PatchOutcome PatchOperation::ApplyReplace(Value& rootElement) const
+    PatchOutcome PatchOperation::ApplyReplace(Value& rootElement) const
     {
         auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::VerifyFullPath);
         if (!pathLookup.IsSuccess())
@@ -518,7 +518,7 @@ namespace AZ::Dom
         return AZ::Success();
     }
 
-    PatchOperation::PatchOutcome PatchOperation::ApplyCopy(Value& rootElement) const
+    PatchOutcome PatchOperation::ApplyCopy(Value& rootElement) const
     {
         auto sourceLookup = LookupPath(rootElement, GetSourcePath(), ExistenceCheckFlags::VerifyFullPath);
         if (!sourceLookup.IsSuccess())
@@ -536,7 +536,7 @@ namespace AZ::Dom
         return AZ::Success();
     }
 
-    PatchOperation::PatchOutcome PatchOperation::ApplyMove(Value& rootElement) const
+    PatchOutcome PatchOperation::ApplyMove(Value& rootElement) const
     {
         auto sourceLookup = LookupPath(rootElement, GetSourcePath(), ExistenceCheckFlags::VerifyFullPath);
         if (!sourceLookup.IsSuccess())
@@ -569,7 +569,7 @@ namespace AZ::Dom
         return AZ::Success();
     }
 
-    PatchOperation::PatchOutcome PatchOperation::ApplyTest(Value& rootElement) const
+    PatchOutcome PatchOperation::ApplyTest(Value& rootElement) const
     {
         auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::VerifyFullPath);
         if (!pathLookup.IsSuccess())
@@ -583,6 +583,23 @@ namespace AZ::Dom
         }
 
         return AZ::Success();
+    }
+
+    void CombinePatchOutcomes(PatchOutcome& lhs, PatchOutcome&& rhs)
+    {
+        if (!rhs.IsSuccess())
+        {
+            if (lhs.IsSuccess())
+            {
+                lhs = rhs;
+            }
+            else
+            {
+                lhs.GetError().reserve(lhs.GetError().length() + rhs.GetError().length() + 1);
+                lhs.GetError().append(1, '\n');
+                lhs.GetError().append(rhs.GetError());
+            }
+        }
     }
 
     namespace PatchApplicationStrategy
@@ -727,7 +744,7 @@ namespace AZ::Dom
         for (const PatchOperation& operation : m_operations)
         {
             state.m_lastOperation = &operation;
-            state.m_outcome = operation.ApplyInPlace(rootElement);
+            CombinePatchOutcomes(state.m_outcome, operation.ApplyInPlace(rootElement));
             strategy(state);
             if (!state.m_shouldContinue)
             {

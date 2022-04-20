@@ -195,6 +195,16 @@ namespace AZ
                     }
                 }
 
+                // grid data
+                {
+                    RHI::BufferScopeAttachmentDescriptor desc;
+                    desc.m_attachmentId = diffuseProbeGrid->GetGridDataBufferAttachmentId();
+                    desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
+                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                }
+
                 // probe raytrace
                 {
                     [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetRayTraceImageAttachmentId(), diffuseProbeGrid->GetRayTraceImage());

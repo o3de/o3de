@@ -119,7 +119,7 @@
       "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L (SUITE_periodic)",
+      "CTEST_OPTIONS": "-L (SUITE_periodic) -LE (REQUIRES_gpu)",
       "TEST_RESULTS": "False"
     }
   },

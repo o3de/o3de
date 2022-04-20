@@ -81,7 +81,7 @@ namespace O3DE::ProjectManager
         m_rightPanelStack = new QStackedWidget(this);
         m_rightPanelStack->setFixedWidth(sidePanelWidth);
 
-        m_gemInspector = new GemInspector(m_gemModel, this);
+        m_gemInspector = new GemInspector(m_gemModel, m_rightPanelStack);
 
         connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
         connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);
@@ -233,7 +233,12 @@ namespace O3DE::ProjectManager
             const QVector<GemInfo>& gemInfos = allGemInfosResult.GetValue();
             for (const GemInfo& gemInfo : gemInfos)
             {
-                gemInfoHash.insert(gemInfo.m_name, gemInfo);
+                // ${Name} is a special name used for templates and should be ignored
+                // eventually we should handle this in Python instead of here
+                if (gemInfo.m_name != "${Name}")
+                {
+                    gemInfoHash.insert(gemInfo.m_name, gemInfo);
+                }
             }
         }
 
@@ -503,7 +508,10 @@ namespace O3DE::ProjectManager
             const QVector<GemInfo>& allGemInfos = allGemInfosResult.GetValue();
             for (const GemInfo& gemInfo : allGemInfos)
             {
-                m_gemModel->AddGem(gemInfo);
+                if (gemInfo.m_name != "${Name}")
+                {
+                    m_gemModel->AddGem(gemInfo);
+                }
             }
 
             const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();

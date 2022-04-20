@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <Atom/RPI.Public/RPISystem.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
@@ -107,6 +107,10 @@ namespace AZ
             Debug::TraceMessageBus::Handler::BusConnect();
 #endif
             m_descriptor = rpiSystemDescriptor;
+
+            // set the default multisample state to MSAA 4x
+            // the default render pipeline may override this when it is loaded
+            m_multisampleState.m_samples = 4;
         }
 
         void RPISystem::Shutdown()
@@ -260,7 +264,7 @@ namespace AZ
 
         void RPISystem::SimulationTick()
         {
-            if (!m_systemAssetsInitialized)
+            if (!m_systemAssetsInitialized || IsNullRenderer())
             {
                 return;
             }
@@ -284,8 +288,9 @@ namespace AZ
 
         void RPISystem::RenderTick()
         {
-            if (!m_systemAssetsInitialized)
+            if (!m_systemAssetsInitialized || IsNullRenderer())
             {
+                m_dynamicDraw.FrameEnd();
                 return;
             }
 
@@ -370,6 +375,7 @@ namespace AZ
             m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());
             if (!m_commonShaderAssetForSrgs.IsReady())
             {
+                AZ_Error("RPI system", false, "Failed to load RPI system asset %s", m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
             m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
@@ -395,11 +401,17 @@ namespace AZ
             m_passSystem.InitPassTemplates();
 
             m_systemAssetsInitialized = true;
+            AZ_TracePrintf("RPI system", "System assets initialized\n");
         }
 
         bool RPISystem::IsInitialized() const
         {
             return m_systemAssetsInitialized;
+        }
+
+        bool RPISystem::IsNullRenderer() const
+        {
+            return m_descriptor.m_isNullRenderer;
         }
 
         void RPISystem::InitializeSystemAssetsForTests()

@@ -181,7 +181,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Deleting assets from Cache will make them re-processed in AP (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_ProcessAndDeleteCache_APBatchShouldReprocess")
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
 
         # Calling AP first time and checking whether desired assets were processed
         result, _ = asset_processor.batch_process()
@@ -224,7 +224,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # AP Batch Processing changed files (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_ProcessAndChangeSource_APBatchShouldReprocess")
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
 
         # Calling AP first time and checking whether desired assets were processed
         batch_success, output = asset_processor.batch_process(capture_output=True)
@@ -234,7 +234,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         assert not missing_assets, 'Following assets were not found in cache {}. AP Batch Output {}'.format(
             missing_assets, output)
 
-        # Appending a newline to source slice
+        # Appending a newline to source prefab
         source_asset = os.listdir(asset_processor.project_test_source_folder())[0]
         asset_path = os.path.join(asset_processor.project_test_source_folder(), source_asset)
         os.chmod(asset_path, stat.S_IWRITE)
@@ -244,12 +244,10 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         # Reprocessing and getting number of successfully processed assets from output
         batch_success, output = asset_processor.batch_process(capture_output=True)
-
-        # Checking if number of jobs were at least two after reprocessing a slice:
-        #    Two jobs for the test slice (See Test Case Test Assets Folder for Asset Names)
+        # Checking the number of jobs is equal to 1
         num_processed_assets = asset_processor_utils.get_num_processed_assets(output)
-        assert num_processed_assets >= 2, \
-            f'Wrong number of successfully processed assets found in output: {num_processed_assets}'
+        assert num_processed_assets == 1, \
+            f'Wrong number of successfully processed assets found in output. Expected: 1 Found: {num_processed_assets}'
 
 
     @pytest.mark.BAT
@@ -287,7 +285,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Copying test assets once again
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_ProcessByBothApAndBatch_Md5ShouldMatch")
 
-        result, _ = asset_processor.gui_process(quitonidle=True)
+        result, _ = asset_processor.gui_process()
         assert result, "AP GUI failed"
 
         checksum_assetprocessor = utils.get_files_hashsum(asset_processor.project_test_cache_folder())
@@ -309,10 +307,10 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         4. Verify the correct number of jobs were performed
         5. Verify that product files are in the cache
         """
-        # Feed two similar slices and texture with different names - should process without any issues
+        # Feed two similar prefabs with different names - should process without any issues
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_AddSameAssetsDifferentNames_ShouldProcess")
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
 
         # Launching AP, capturing output and asserting on number of processed assets
         result, output = asset_processor.batch_process(capture_output=True)
@@ -321,9 +319,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         num_failed_assets = asset_processor_utils.get_num_failed_processed_assets(output)
         assert num_failed_assets is 0, 'Wrong number of failed assets'
 
-        # Checking if number of jobs were three after reprocessing a slice:
-        #    6 jobs for three slices (all slices have 2 processing jobs),
-        #    2 jobs for 2 png textures (See Test Case Test Assets Folder for Asset Names),
+        # Checking if number of jobs were two after reprocessing the prefabs
         #    There are possible asset updates we should allow such as bootstrap.cfg for the branch token
         #    Q - But what if <many extra assets are processed question>
         #    A - Add a test specific for that case.  Restrictions on "exactly this number of assets and no more
@@ -331,7 +327,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         #    or an expected behavior has changed.  Processing bootstrap.cfg sometimes but not other times should not
         #    cause a failure in this test.
         num_processed_assets = asset_processor_utils.get_num_processed_assets(output)
-        assert num_processed_assets >= 6, f'Wrong number of successfully processed assets found in output: '\
+        assert num_processed_assets >= 2, f'Wrong number of successfully processed assets found in output: '\
                                           '{num_processed_assets}'
 
         missing_assets, _ = asset_processor.compare_assets_with_cache()
@@ -428,7 +424,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Prepare test assets and start Asset Processor Batch
-        asset_processor.prepare_test_environment(env["tests_dir"], "C1571774")
+        asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
         result, output_list = asset_processor.batch_process(capture_output=True)
         assert result, f"AP Batch failed with output: {output_list}"
 
@@ -439,7 +435,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         if missing_assets:
             logger.info(f"Missing asset Failure log was {output_list}")
-        assert not missing_assets, f"Following assets were not found in cache: {missing_assets} found was {found_assets}"
+        assert not missing_assets, f"Following assets were not found in cache: {missing_assets}, found was: {found_assets}"
 
     @pytest.mark.test_case_id("C1568831")
     @pytest.mark.BAT
@@ -523,7 +519,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Add assets to test asset directory
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C1591338")
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
 
         # Run batch to ensure everything is processed
         assert asset_processor.batch_process(), "First AP Batch failed"
@@ -653,38 +649,39 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
-    def test_AllSupportedPlatforms_CorruptSlice_BatchReportsProcessingFail(self, asset_processor, ap_setup_fixture):
+    def test_AllSupportedPlatforms_CorruptPrefab_BatchReportsProcessingFail(self, asset_processor, ap_setup_fixture):
         # fmt:on
         """
         Utilizing corrupted test assets, run the batch process to verify the
         AP logs the failure to process the corrupted file.
 
         Test Steps:
-        1. Create test environment with corrupted slice
+        1. Create test environment with corrupted_prefab
         2. Launch Asset Processor
-        3. Verify that asset processor fails to process corrupted slice
+        3. Verify that asset processor fails to process corrupted_prefab
         """
         env = ap_setup_fixture
         error_line_found = False
 
         # Import pre-corrupted test assets
-        asset_processor.prepare_test_environment(env["tests_dir"], "C1564073")
+        asset_processor.prepare_test_environment(env["tests_dir"], "TestAssets/Corrupted_Prefab")
         success, output = asset_processor.batch_process(capture_output=True, expect_failure=True)
         log = APOutputParser(output)
-        for _ in log.get_lines(-1, ["Createjobs Failed", "test_slice.slice"]):
+        for _ in log.get_lines(-1, ["Createjobs Failed", "Corrupted_Prefab.prefab"]):
             error_line_found = True
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
+    @pytest.mark.skip(reason="GHI: 8,365 Update assets from .prefab to a different type to test preload cyclical dependencies")
     def test_validateDirectPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
         """
         Tests processing an asset with a circular dependency and verifies that Asset Processor will return an error
         notifying the user about a circular dependency.
 
         Test Steps:
-        1. Create test environment with an asset that has a circular dependency
+        1. Create test environment with an asset that has a preload circular dependency
         2. Launch asset processor
         3. Verify that error is returned informing the user that the asset has a circular dependency
         """
@@ -695,23 +692,23 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         success, output = asset_processor.batch_process(capture_output=True, expect_failure=False)
         log = APOutputParser(output)
-        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testc.dynamicslice"]):
+        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testc.prefab"]):
             error_line_found = True
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip(reason="need to change assets from .slice files to an asset type that can have nested dependencies")
+    @pytest.mark.skip(reason="GHI: 8,365 Update assets from .prefab to an asset type that can have nested preload dependencies")
     def test_validateNestedPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
         """
-        Tests processing of a nested circular dependency and verifies that Asset Processor will return an error
-        notifying the user about a circular depdency
+        Tests processing of a nested preload circular dependency and verifies that Asset Processor will return an error
+        notifying the user about a circular dependency.
 
         Test Steps:
-        1. Create test environment with an asset that has a nested circular dependency
+        1. Create test environment with an asset that has a nested preload circular dependency
         2. Launch asset processor
-        3. Verify that error is returned informing the user that the asset has a circular dependency
+        3. Verify that error is returned informing the user that the asset has a preload circular dependency
         """
 
         env = ap_setup_fixture
@@ -721,7 +718,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         success, output = asset_processor.batch_process(capture_output=True, expect_failure=False)
         log = APOutputParser(output)
-        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testa.dynamicslice"]):
+        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testa.prefab"]):
             error_line_found = True
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."

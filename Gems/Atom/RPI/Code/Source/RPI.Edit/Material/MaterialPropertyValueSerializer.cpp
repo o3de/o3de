@@ -183,6 +183,11 @@ namespace AZ
             {
                 result.Combine(ContinueStoring(outputValue, &property->GetValue<AZStd::string>(), nullptr, azrtti_typeid<AZStd::string>(), context));
             }
+            else
+            {
+                result.Combine(context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Unsupported,
+                    AZStd::string::format("MaterialPropertyValue type %s is not supported.", property->GetTypeId().ToString<AZStd::string>().c_str())));
+            }
 
             if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)
             {

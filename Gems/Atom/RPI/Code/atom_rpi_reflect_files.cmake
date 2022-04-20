@@ -53,6 +53,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Material/MaterialAsset.h
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreator.h
     Include/Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h
+    Include/Atom/RPI.Reflect/Material/MaterialNameContext.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyValue.h
@@ -133,6 +134,7 @@ set(FILES
     Source/RPI.Reflect/Material/MaterialPropertyValue.cpp
     Source/RPI.Reflect/Material/MaterialAsset.cpp
     Source/RPI.Reflect/Material/MaterialAssetCreator.cpp
+    Source/RPI.Reflect/Material/MaterialNameContext.cpp
     Source/RPI.Reflect/Material/LuaMaterialFunctor.cpp
     Source/RPI.Reflect/Material/MaterialDynamicMetadata.cpp
     Source/RPI.Reflect/Material/MaterialPropertyDescriptor.cpp

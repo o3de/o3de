@@ -29,7 +29,7 @@ namespace AZ::Dom::Benchmark
         Value doubleValue(4.0);
         Value stringValue("foo", true);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             (intValue.GetType());
             (boolValue.GetType());
@@ -118,7 +118,7 @@ namespace AZ::Dom::Benchmark
                 value.GetInternalValue());
         };
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             (getTypeViaVisit(intValue));
             (getTypeViaVisit(boolValue));
@@ -136,7 +136,7 @@ namespace AZ::Dom::Benchmark
 
     BENCHMARK_DEFINE_F(DomValueBenchmark, AzDomValueMakeComplexObject)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             TakeAndDiscardWithoutTimingDtor(GenerateDomBenchmarkPayload(state.range(0), state.range(1)), state);
         }
@@ -149,7 +149,7 @@ namespace AZ::Dom::Benchmark
     {
         Value original = GenerateDomBenchmarkPayload(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             Value copy = original;
             benchmark::DoNotOptimize(copy);
@@ -163,7 +163,7 @@ namespace AZ::Dom::Benchmark
     {
         Value original = GenerateDomBenchmarkPayload(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             Value copy = original;
             copy["entries"]["Key0"].ArrayPushBack(Value(42));
@@ -178,7 +178,7 @@ namespace AZ::Dom::Benchmark
     {
         Value original = GenerateDomBenchmarkPayload(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             Value copy = Utils::DeepCopy(original);
             TakeAndDiscardWithoutTimingDtor(AZStd::move(copy), state);
@@ -199,7 +199,7 @@ namespace AZ::Dom::Benchmark
             value[key] = i;
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const AZ::Name& key : keys)
             {
@@ -222,7 +222,7 @@ namespace AZ::Dom::Benchmark
             value[key] = i;
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const AZStd::string& key : keys)
             {
@@ -245,7 +245,7 @@ namespace AZ::Dom::Benchmark
             value[key] = i;
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const AZStd::string& key : keys)
             {

@@ -16,6 +16,7 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
@@ -88,16 +89,14 @@ namespace Terrain
     private:
         TerrainHeightGradientListConfig m_configuration;
 
-        void RefreshMinMaxHeights();
-
         float m_cachedMinWorldHeight{ 0.0f };
         float m_cachedMaxWorldHeight{ 0.0f };
-        float m_cachedHeightQueryResolution{ 1.0f };
         AZ::Aabb m_cachedShapeBounds;
 
-        // prevent recursion in case user attaches cyclic dependences
-        mutable bool m_isRequestInProgress{ false }; 
-
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+
+        // The TerrainAreaHeightRequestBus has lockless dispatch, so make sure that queries don't happen at the same
+        // time as bus connects / disconnects.
+        AZStd::shared_mutex m_queryMutex;
     };
 }

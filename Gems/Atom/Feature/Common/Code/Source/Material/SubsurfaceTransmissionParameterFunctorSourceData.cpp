@@ -82,9 +82,9 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_scatterDistanceColor);
             AddMaterialPropertyDependency(functor, functor->m_scatterDistanceIntensity);
 
-            functor->m_scatterDistance = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{ m_scatterDistance });
-            functor->m_transmissionParams = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{ m_transmissionParams });
-            functor->m_transmissionTintThickness = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{ m_transmissionTintThickness });
+            functor->m_scatterDistance = context.FindShaderInputConstantIndex(Name{ m_scatterDistance });
+            functor->m_transmissionParams = context.FindShaderInputConstantIndex(Name{ m_transmissionParams });
+            functor->m_transmissionTintThickness = context.FindShaderInputConstantIndex(Name{ m_transmissionTintThickness });
 
             if (functor->m_scatterDistance.IsNull())
             {

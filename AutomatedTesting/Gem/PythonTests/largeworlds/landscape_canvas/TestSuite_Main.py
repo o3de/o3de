@@ -62,7 +62,6 @@ class TestAutomation(EditorTestSuite):
     class test_LandscapeCanvas_GraphClosed_TabbedGraphClosesIndependently(EditorSharedTest):
         from .EditorScripts import GraphClosed_TabbedGraph as test_module
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/7141" "https://github.com/o3de/o3de/issues/4872")
     class test_LandscapeCanvas_GraphUpdates_UpdateComponents(EditorSharedTest):
         from .EditorScripts import GraphUpdates_UpdateComponents as test_module
 

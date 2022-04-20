@@ -413,6 +413,21 @@ namespace Physics
         return m_samples;
     }
 
+    void HeightfieldShapeConfiguration::ModifySample(int32_t row, int32_t column, const Physics::HeightMaterialPoint& point)
+    {
+        const int32_t index = row * m_numColumns + column;
+        if (row < m_numRows && column < m_numColumns && index < m_samples.size())
+        {
+            m_samples[index] = point;
+        }
+        else
+        {
+            AZ_Error("HeightfieldShapeConfiguration", false,
+                "Trying to modify a sample out of range. Row: %d, Col: %d, NumColumns: %d, NumRows: %d",
+                row, column, m_numColumns, m_numRows);
+        }
+    }
+
     void HeightfieldShapeConfiguration::SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples)
     {
         m_samples = samples;

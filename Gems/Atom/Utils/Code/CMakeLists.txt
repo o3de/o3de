@@ -20,9 +20,13 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::Atom_RHI.Public
+            AzFramework
         PUBLIC
             Gem::Atom_RHI.Reflect
-            3rdParty::libpng
+            Gem::Atom_RPI.Public
+            Gem::ImGui.imguilib
+            3rdParty::PNG
+            Gem::ProfilerImGui
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

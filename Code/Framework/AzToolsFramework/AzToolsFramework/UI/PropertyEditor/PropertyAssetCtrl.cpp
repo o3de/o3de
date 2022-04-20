@@ -52,7 +52,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -344,6 +343,11 @@ namespace AzToolsFramework
         }
     }
 
+    bool PropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
+    {        
+        return (assetId.IsValid() && !assetType.IsNull() && assetType == GetCurrentAssetType());
+    }
+
     bool PropertyAssetCtrl::IsCorrectMimeData(const QMimeData* pData, AZ::Data::AssetId* pAssetId, AZ::Data::AssetType* pAssetType) const
     {
         if (pAssetId)
@@ -364,7 +368,7 @@ namespace AzToolsFramework
         // Helper function to consistently check and set asset ID and type for all possible mime types
         auto checkAsset = [&, this](const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType)
         {
-            if (assetId.IsValid() && !assetType.IsNull() && assetType == GetCurrentAssetType())
+            if (CanAcceptAsset(assetId, assetType))
             {
                 if (pAssetId)
                 {
@@ -813,7 +817,7 @@ namespace AzToolsFramework
             selection.SetDisplayFilter(FilterConstType(compFilter));
         }
 
-        AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parentWidget());
+        PickAssetSelectionFromDialog(selection, parentWidget());
         if (selection.IsValid())
         {
             const auto product = azrtti_cast<const ProductAssetBrowserEntry*>(selection.GetResult());
@@ -829,6 +833,11 @@ namespace AzToolsFramework
                 SetSelectedAssetID(AZ::Data::AssetId());
             }
         }
+    }
+
+    void PropertyAssetCtrl::PickAssetSelectionFromDialog(AssetSelectionModel& selection, QWidget* parent)
+    {
+        AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parent);
     }
 
     void PropertyAssetCtrl::OnClearButtonClicked()
@@ -1201,7 +1210,7 @@ namespace AzToolsFramework
                     SharedThumbnailKey thumbnailKey = MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, assetID);
                     if (m_showThumbnail)
                     {
-                        m_thumbnail->SetThumbnailKey(thumbnailKey, Thumbnailer::ThumbnailContext::DefaultContext);
+                        m_thumbnail->SetThumbnailKey(thumbnailKey);
                     }
                     return;
                 }
@@ -1524,7 +1533,7 @@ namespace AzToolsFramework
         ConsumeAttributeInternal(GUI, attrib, attrValue, debugName);
     }
 
-    void AssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    void AssetPropertyHandlerDefault::WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
@@ -1539,7 +1548,12 @@ namespace AzToolsFramework
         }
     }
 
-    bool AssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    void AssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    {
+        WriteGUIValuesIntoPropertyInternal(index, GUI, instance, node);
+    }
+
+    bool AssetPropertyHandlerDefault::ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
@@ -1557,6 +1571,11 @@ namespace AzToolsFramework
 
         GUI->blockSignals(false);
         return false;
+    }
+
+    bool AssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    {
+        return ReadValuesIntoGUIInternal(index, GUI, instance, node);
     }
 
     QWidget* SimpleAssetPropertyHandlerDefault::CreateGUI(QWidget* pParent)

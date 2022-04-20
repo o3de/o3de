@@ -281,7 +281,7 @@ namespace AZ
                     {
                         srgPool->CompileGroupsBegin();
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
                         AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
                         AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
 
@@ -332,7 +332,7 @@ namespace AZ
                     const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](ShaderResourceGroupPool* srgPool)
                     {
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
 
                         for (uint32_t i = 0; i < jobCount; ++i)
                         {
@@ -455,6 +455,12 @@ namespace AZ
             if (CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherMemoryStatistics))
             {
                 m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Detail);
+                m_memoryStatistics.m_detailedCapture = true;
+            }
+            else
+            {
+                m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Basic);
+                m_memoryStatistics.m_detailedCapture = false;
             }
 
             m_device->UpdateCpuTimingStatistics();
@@ -588,10 +594,7 @@ namespace AZ
 
         const MemoryStatistics* FrameScheduler::GetMemoryStatistics() const
         {
-            return
-                CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherMemoryStatistics)
-                ? &m_memoryStatistics
-                : nullptr;
+            return &m_memoryStatistics;
         }
 
         const TransientAttachmentStatistics* FrameScheduler::GetTransientAttachmentStatistics() const

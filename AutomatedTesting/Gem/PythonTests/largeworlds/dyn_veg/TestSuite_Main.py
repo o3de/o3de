@@ -45,9 +45,6 @@ class TestAutomation(EditorTestSuite):
     class test_DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius(EditorSharedTest):
         from .EditorScripts import DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius as test_module
 
-    class test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(EditorSharedTest):
-        from .EditorScripts import DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks as test_module
-
     class test_EmptyInstanceSpawner_EmptySpawnerWorks(EditorSharedTest):
         from .EditorScripts import EmptyInstanceSpawner_EmptySpawnerWorks as test_module
 

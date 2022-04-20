@@ -532,8 +532,6 @@ set(FILES
     ErrorReport.h
     IconManager.cpp
     IconManager.h
-    LevelInfo.cpp
-    LevelInfo.h
     ProcessInfo.cpp
     ProcessInfo.h
     TrackView/AtomOutputFrameCapture.cpp

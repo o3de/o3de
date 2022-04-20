@@ -25,15 +25,15 @@ class Tests:
     )
 
 
-def SpawnerSlices_SliceCreationAndVisibilityToggleWorks():
+def SpawnerPrefabs_PrefabCreationAndVisibilityToggleWorks():
     """
     Summary:
-    C2627900 Verifies if a slice containing the component can be created.
-    C2627905 A slice containing the Vegetation Layer Blender component can be created.
-    C2627904: Hiding a slice containing the component clears any visuals from the Viewport.
+    C2627900 Verifies if a prefab containing the component can be created.
+    C2627905 A prefab containing the Vegetation Layer Blender component can be created.
+    C2627904: Hiding a prefab containing the component clears any visuals from the Viewport.
 
     Expected Result:
-    C2627900, C2627905: Slice is created, and is properly processed in the Asset Processor.
+    C2627900, C2627905: Prefab is created, and is properly processed in the Asset Processor.
     C2627904: Vegetation area visuals are hidden from the Viewport.
 
     :return: None
@@ -85,10 +85,10 @@ def SpawnerSlices_SliceCreationAndVisibilityToggleWorks():
     hidden_instance_count = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 16.0, 0), 5.0)
     Report.result(Tests.instance_count_hidden, hidden_instance_count)
 
-    # 3.4) Unhide the slice
+    # 3.4) Unhide the prefab
     editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", spawner_prefab_instance.container_entity.id, True)
 
-    # 4) A slice containing the Vegetation Layer Blender component can be created.
+    # 4) A prefab containing the Vegetation Layer Blender component can be created.
     # 4.1) Create another vegetation entity to add to blender component
     veg_2 = dynveg.create_empty_vegetation_area("vegetation_2", position, 1.0, 1.0, 1.0)
 
@@ -118,4 +118,4 @@ def SpawnerSlices_SliceCreationAndVisibilityToggleWorks():
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
-    Report.start_test(SpawnerSlices_SliceCreationAndVisibilityToggleWorks)
+    Report.start_test(SpawnerPrefabs_PrefabCreationAndVisibilityToggleWorks)

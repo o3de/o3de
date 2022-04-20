@@ -10,13 +10,13 @@ Contains command to add a gem to a project's enabled_gem.cmake file
 """
 
 import argparse
-import json
+
 import logging
 import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest, project_properties, register, validation, utils
+from o3de import cmake, manifest, project_properties, utils
 
 logger = logging.getLogger('o3de.enable_gem')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -111,12 +111,65 @@ def enable_gem_in_project(gem_name: str = None,
     return ret_val
 
 
+def add_explicit_gem_activation_for_all_paths(gem_root_folders: list,
+                                 project_name: str = None,
+                                 project_path: pathlib.Path = None,
+                                 enabled_gem_file: pathlib.Path = None) -> int:
+    """
+    walks each gem root folder directory structure and adds explicit
+    activation of the gems to the project
+    :param gem_root_folders: name of the gem to add
+    :param project_name: name of to the project to add the gem to
+    :param project_path: path to the project to add the gem to
+    :param enabled_gem_file: if this dependency goes/is in a specific file
+    :return: 0 for success or non 0 failure code
+    """
+    if not gem_root_folders:
+        logger.error('gem_root_folders list cannot be empty')
+        return 1
+
+    def stop_on_template_folders(directories: list, filenames: list) -> bool:
+        return 'template.json' in filenames
+
+    gem_dirs_set = set()
+    ret_val = 0
+    for gem_root_folder in gem_root_folders:
+        gem_root_folder = pathlib.Path(gem_root_folder).resolve()
+        if not gem_root_folder.is_dir():
+            logger.error(f'gem root folder of {gem_root_folder} is not a directory')
+            ret_val = 1
+        for root, dirs, files in os.walk(gem_root_folder):
+            # Skip activating gems within template directories
+            if stop_on_template_folders(dirs, files):
+                dirs[:] = []
+            elif 'gem.json' in files:
+                gem_dirs_set.add(pathlib.Path(root))
+
+    for gem_dir in sorted(gem_dirs_set):
+        # Run the command to add explicit activation even if previous calls failed
+        ret_val = enable_gem_in_project(gem_path=gem_dir,
+                                        project_name=project_name,
+                                        project_path=project_path,
+                                        enabled_gem_file=enabled_gem_file) or ret_val
+
+    return ret_val
+
+
 def _run_enable_gem_in_project(args: argparse) -> int:
-    return enable_gem_in_project(args.gem_name,
-                                 args.gem_path,
-                                 args.project_name,
-                                 args.project_path,
-                                 args.enabled_gem_file)
+    if args.all_gem_paths:
+        return add_explicit_gem_activation_for_all_paths(
+            args.all_gem_paths,
+            args.project_name,
+            args.project_path,
+            args.enabled_gem_file
+        )
+    else:
+        return enable_gem_in_project(args.gem_name,
+                                     args.gem_path,
+                                     args.project_name,
+                                     args.project_path,
+                                     args.enabled_gem_file
+                                     )
 
 
 def add_parser_args(parser):
@@ -140,6 +193,8 @@ def add_parser_args(parser):
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
                        help='The name of the gem.')
+    group.add_argument('-agp', '--all-gem-paths', type=pathlib.Path, nargs='*', required=False,
+                       help='Explicitly activates all gems in the path recursively.')
     parser.add_argument('-egf', '--enabled-gem-file', type=pathlib.Path, required=False,
                                    help='The cmake enabled_gem file in which the gem names are specified.'
                                         'If not specified it will assume enabled_gems.cmake')

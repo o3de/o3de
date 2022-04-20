@@ -130,12 +130,15 @@ set(FILES
     DOM/DomVisitor.h
     DOM/DomComparison.cpp
     DOM/DomComparison.h
+    DOM/DomPrefixTree.h
+    DOM/DomPrefixTree.inl
     DOM/Backends/JSON/JsonBackend.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
+    EBus/EBusSharedDispatchTraits.h
     EBus/Environment.h
     EBus/Event.h
     EBus/Event.inl
@@ -298,6 +301,8 @@ set(FILES
     Math/MathUtils.h
     Math/MathMatrixSerializer.h
     Math/MathMatrixSerializer.cpp
+    Math/MathStringConversions.h
+    Math/MathStringConversions.cpp
     Math/MathVectorSerializer.h
     Math/MathVectorSerializer.cpp
     Math/Matrix3x3.cpp
@@ -364,8 +369,6 @@ set(FILES
     Math/Color.cpp
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
-    Math/ToString.h
-    Math/ToString.cpp
     Memory/AllocationRecords.cpp
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
@@ -560,6 +563,9 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/ConfigurableStack.cpp
+    Settings/ConfigurableStack.inl
+    Settings/ConfigurableStack.h
     Settings/SettingsRegistry.cpp
     Settings/SettingsRegistry.h
     Settings/SettingsRegistryConsoleUtils.cpp

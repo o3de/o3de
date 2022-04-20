@@ -26,7 +26,7 @@ namespace EMStudio
         virtual void UpdateCameraFollowUp(bool followUp) = 0;
 
         //! Update render flags
-        virtual void UpdateRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags) = 0;
+        virtual void UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags) = 0;
     };
 
     using AnimViewportRequestBus = AZ::EBus<AnimViewportRequests>;

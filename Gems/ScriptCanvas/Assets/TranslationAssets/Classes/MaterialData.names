@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetBaseColor",
-                    "context": "MaterialData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Base Color"
@@ -525,13 +524,13 @@
                     "base": "GetBaseColor",
                     "context": "Getter",
                     "details": {
-                        "name": "Get Base Color"
+                        "name": "Base Color"
                     },
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Base Color"
+                                "name": "Value"
                             }
                         }
                     ]

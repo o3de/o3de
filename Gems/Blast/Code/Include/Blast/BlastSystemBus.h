@@ -56,7 +56,7 @@ namespace Blast
         //! Getters for the NvBlast singletons
         virtual Nv::Blast::TkFramework* GetTkFramework() const = 0;
         virtual Nv::Blast::ExtSerialization* GetExtSerialization() const = 0;
-        virtual Nv::Blast::TkGroup* GetTkGroup() = 0;
+        virtual Nv::Blast::TkGroup* CreateTkGroup() = 0;
 
         //! Configuration
         virtual const BlastGlobalConfiguration& GetGlobalConfiguration() const = 0;

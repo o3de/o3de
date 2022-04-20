@@ -138,6 +138,16 @@ namespace AZ
             }
         }
 
+        float BufferMemoryAllocator::ComputeFragmentation() const
+        {
+            if (m_usePageAllocator)
+            {
+                return m_subAllocator.ComputeFragmentation();
+            }
+
+            return 0.f;
+        }
+
         BufferMemoryView BufferMemoryAllocator::AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);

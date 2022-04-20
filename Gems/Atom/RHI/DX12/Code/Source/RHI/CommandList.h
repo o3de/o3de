@@ -275,6 +275,13 @@ namespace AZ
                 return false;
             }
             
+            const PipelineLayout* pipelineLayout = &pipelineState->GetPipelineLayout();
+            if (!pipelineLayout)
+            {
+                AZ_Assert(false, "Pipeline layout is null.");
+                return false;
+            }
+            
             bool updatePipelineState = m_state.m_pipelineState != pipelineState;
             // The pipeline state gets set first.
             if (updatePipelineState)
@@ -286,7 +293,6 @@ namespace AZ
 
                 GetCommandList()->SetPipelineState(pipelineState->Get());
 
-                const PipelineLayout* pipelineLayout = &pipelineState->GetPipelineLayout();
                 // Check if we need to set custom sample positions
                 if constexpr (pipelineType == RHI::PipelineStateType::Draw)
                 {
@@ -389,13 +395,11 @@ namespace AZ
                 }
             }
 
-            const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
-
             // Pull from slot bindings dictated by the pipeline layout. Re-bind anything that has changed
             // at the flat index level.
-            for (size_t srgIndex = 0; srgIndex < pipelineLayout.GetRootParameterBindingCount(); ++srgIndex)
+            for (size_t srgIndex = 0; srgIndex < pipelineLayout->GetRootParameterBindingCount(); ++srgIndex)
             {
-                const size_t srgSlot = pipelineLayout.GetSlotByIndex(srgIndex);
+                const size_t srgSlot = pipelineLayout->GetSlotByIndex(srgIndex);
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[srgSlot];
 
                 if (AZ::RHI::Validation::IsEnabled())
@@ -432,7 +436,7 @@ namespace AZ
                     bindings.m_srgsByIndex[srgIndex] = shaderResourceGroup;
 
                     const ShaderResourceGroupCompiledData& compiledData = shaderResourceGroup->GetCompiledData();
-                    RootParameterBinding binding = pipelineLayout.GetRootParameterBindingByIndex(srgIndex);
+                    RootParameterBinding binding = pipelineLayout->GetRootParameterBindingByIndex(srgIndex);
 
                     switch (pipelineType)
                     {
@@ -501,7 +505,7 @@ namespace AZ
 #if defined (AZ_RHI_ENABLE_VALIDATION)
                 if (updatePipelineState || updateSRG)
                 {
-                    const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout.GetPipelineLayoutDescriptor();
+                    const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout->GetPipelineLayoutDescriptor();
                     m_validator.ValidateShaderResourceGroup(
                         *shaderResourceGroup,
                         pipelineLayoutDescriptor.GetShaderResourceGroupBindingInfo(srgIndex));

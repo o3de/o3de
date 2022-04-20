@@ -110,7 +110,6 @@ namespace AZ::IO
 }
 struct ICryFont;
 struct IMovieSystem;
-struct IAudioSystem;
 struct IPhysicalWorld;
 
 #endif //__cplusplus

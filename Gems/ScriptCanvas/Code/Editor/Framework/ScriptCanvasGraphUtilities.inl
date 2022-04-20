@@ -113,7 +113,7 @@ namespace ScriptCanvasEditor
     {
         if (auto loadFileOutcome = LoadFromFile(graphPath); loadFileOutcome.IsSuccess())
         {
-            auto& source = loadFileOutcome.GetValue();
+            auto& source = loadFileOutcome.GetValue().handle;
             auto testableSource = SourceHandle(source, AZ::Uuid::CreateRandom(), source.Path().c_str());
 
             AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome(AZ::Failure(AZStd::string("asset create failed")));

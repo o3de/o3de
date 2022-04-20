@@ -41,6 +41,7 @@ ly_add_target(
     NAMESPACE Gem
     AUTOMOC
     AUTOUIC
+    AUTORCC
     FILES_CMAKE
         imageprocessing_files.cmake
         ${pal_tools_include_files}
@@ -66,7 +67,7 @@ ly_add_target(
             3rdParty::squish-ccr
             3rdParty::TIFF
             3rdParty::ISPCTexComp
-            3rdParty::ilmbase
+            3rdParty::OpenEXR
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AzQtComponents

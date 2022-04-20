@@ -18,6 +18,7 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
+#include <Atom/RPI.Reflect/Pass/PassData.h>
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
 
 #include <Atom/RHI/DrawList.h>
@@ -35,7 +36,6 @@
     friend class PassFactory;                                                       \
     friend class PassLibrary;                                                       \
     friend class PassSystem;                                                        \
-    friend class PassFactory;                                                       \
     friend class ParentPass;                                                        \
     friend class RenderPipeline;                                                    \
     friend class UnitTest::PassTests;                                               \
@@ -381,6 +381,7 @@ namespace AZ
             const Name PassNameThis{"This"};
             const Name PassNameParent{"Parent"};
             const Name PipelineKeyword{"Pipeline"};
+            const Name PipelineGlobalKeyword{"PipelineGlobal"};
 
             // List of input, output and input/output attachment bindings
             // Fixed size for performance and so we can hold pointers to the bindings for connections
@@ -405,7 +406,7 @@ namespace AZ
 
             // The PassTemplate used to create this pass
             // Null if this pass was not created by a PassTemplate
-            AZStd::shared_ptr<PassTemplate> m_template = nullptr;
+            AZStd::shared_ptr<const PassTemplate> m_template = nullptr;
 
             // The PassRequest used to create this pass
             // Only valid if m_createdByPassRequest flag is set
@@ -453,6 +454,9 @@ namespace AZ
 
                         // Whether the pass is the root pass for a pipeline. Used to control pipeline render tick rate
                         uint64_t m_isPipelineRoot : 1;
+
+                        // Whether this pass contains a binding that is referenced globally through the pipeline
+                        uint64_t m_containsGlobalReference : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };
@@ -479,6 +483,9 @@ namespace AZ
             // For image attachment preview
             AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
 
+            //! Optional data used during pass initialization
+            AZStd::shared_ptr<PassData> m_passData = nullptr;
+
         private:
             // Return the Timestamp result of this pass
             virtual TimestampResult GetTimestampResultInternal() const;
@@ -493,6 +500,9 @@ namespace AZ
             // Used by the RenderPipeline to create it's passes immediately instead of waiting on
             // the next Pass System update. The function internally build and initializes the pass.
             void ManualPipelineBuildAndInitialize();
+
+            // Registers any bindings specified as pipeline bindings with the pipeline for global reference
+            void RegisterPipelineGlobalConnections();
 
             // --- Hierarchy related functions ---
 
@@ -569,6 +579,9 @@ namespace AZ
             // Used to maintain references to imported attachments so they're underlying
             // buffers and images don't get deleted during attachment build phase
             AZStd::vector<Ptr<PassAttachment>> m_importedAttachmentStore;
+
+            // List of connections on this pass that will be registered with the pipeline for reference in a global manner
+            PipelineGlobalConnectionList m_pipelineGlobalConnections;
 
             // Name of the pass. Will be concatenated with parent names to form a unique path
             Name m_name;

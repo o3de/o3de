@@ -13,16 +13,40 @@
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <Document/MaterialDocument.h>
 
 namespace MaterialEditor
 {
-    MaterialDocument::MaterialDocument()
-        : AtomToolsFramework::AtomToolsDocument()
+    void MaterialDocument::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<MaterialDocument, AtomToolsFramework::AtomToolsDocument>()
+                ->Version(0);
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<MaterialDocumentRequestBus>("MaterialDocumentRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
+                ->Event("SetPropertyValue", &MaterialDocumentRequestBus::Events::SetPropertyValue)
+                ->Event("GetPropertyValue", &MaterialDocumentRequestBus::Events::GetPropertyValue);
+        }
+    }
+
+    MaterialDocument::MaterialDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+        : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
     {
         MaterialDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -86,12 +110,12 @@ namespace MaterialEditor
                         }
                     }
 
-                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                        &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
+                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                        m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
                         GetObjectInfoFromDynamicPropertyGroup(group.get()), false);
 
-                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                        &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                        m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
                     return false;
                 }
             }
@@ -122,7 +146,25 @@ namespace MaterialEditor
         return property->GetValue();
     }
 
-    AZStd::vector<AtomToolsFramework::DocumentObjectInfo> MaterialDocument::GetObjectInfo() const
+    AtomToolsFramework::DocumentTypeInfo MaterialDocument::BuildDocumentTypeInfo()
+    {
+        AtomToolsFramework::DocumentTypeInfo documentType;
+        documentType.m_documentTypeName = "Material";
+        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
+            return aznew MaterialDocument(toolId, documentTypeInfo); };
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
+        documentType.m_supportedExtensionsToSave.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
+        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::MaterialTypeAsset>());
+        documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
+            "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
+            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype"));
+        return documentType;
+    }
+
+    AtomToolsFramework::DocumentObjectInfoVector MaterialDocument::GetObjectInfo() const
     {
         if (!IsOpen())
         {
@@ -130,7 +172,7 @@ namespace MaterialEditor
             return {};
         }
 
-        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> objects;
+        AtomToolsFramework::DocumentObjectInfoVector objects;
         objects.reserve(m_groups.size());
 
         AtomToolsFramework::DocumentObjectInfo objectInfo;
@@ -178,7 +220,7 @@ namespace MaterialEditor
         return SaveSucceeded();
     }
 
-    bool MaterialDocument::SaveAsCopy(AZStd::string_view savePath)
+    bool MaterialDocument::SaveAsCopy(const AZStd::string& savePath)
     {
         if (!AtomToolsDocument::SaveAsCopy(savePath))
         {
@@ -210,7 +252,7 @@ namespace MaterialEditor
         return SaveSucceeded();
     }
 
-    bool MaterialDocument::SaveAsChild(AZStd::string_view savePath)
+    bool MaterialDocument::SaveAsChild(const AZStd::string& savePath)
     {
         if (!AtomToolsDocument::SaveAsChild(savePath))
         {
@@ -268,11 +310,6 @@ namespace MaterialEditor
             return true;
         });
         return result;
-    }
-
-    bool MaterialDocument::IsSavable() const
-    {
-        return AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension);
     }
 
     bool MaterialDocument::BeginEdit()
@@ -335,9 +372,10 @@ namespace MaterialEditor
         bool addPropertiesResult = true;
 
         // populate sourceData with properties that meet the filter
-        m_materialTypeSourceData.EnumerateProperties([&, this](const AZStd::string& propertyIdContext, const auto& propertyDefinition) {
+        m_materialTypeSourceData.EnumerateProperties([&](const auto& propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext) {
 
-            AZ::Name propertyId{propertyIdContext + propertyDefinition->GetName()};
+            AZ::Name propertyId{propertyDefinition->GetName()};
+            nameContext.ContextualizeProperty(propertyId);
 
             const auto property = FindProperty(propertyId);
             if (property && propertyFilter(*property))
@@ -352,9 +390,7 @@ namespace MaterialEditor
                         return false;
                     }
                     
-                    // TODO: Support populating the Material Editor with nested property groups, not just the top level.
-                    AZStd::string_view groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->GetName().size() - 1);
-                    sourceData.SetPropertyValue(AZ::RPI::MaterialPropertyId{groupName, propertyDefinition->GetName()}, propertyValue);
+                    sourceData.SetPropertyValue(propertyId, propertyValue);
                 }
             }
             return true;
@@ -375,7 +411,7 @@ namespace MaterialEditor
         return true;
     }
 
-    bool MaterialDocument::Open(AZStd::string_view loadPath)
+    bool MaterialDocument::Open(const AZStd::string& loadPath)
     {
         if (!AtomToolsDocument::Open(loadPath))
         {
@@ -499,6 +535,7 @@ namespace MaterialEditor
         propertyConfig.m_originalValue = propertyConfig.m_defaultValue;
         propertyConfig.m_parentValue = propertyConfig.m_defaultValue;
         propertyConfig.m_readOnly = true;
+        propertyConfig.m_showThumbnail = true;
 
         m_groups.back()->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
 
@@ -551,25 +588,43 @@ namespace MaterialEditor
         // Assets must still be used for now because they contain the final accumulated value after all other materials
         // in the hierarchy are applied
         bool enumerateResult = m_materialTypeSourceData.EnumeratePropertyGroups(
-            [this, &parentPropertyValues](
-                const AZStd::string& propertyIdContext, const AZ::RPI::MaterialTypeSourceData::PropertyGroup* propertyGroup)
+            [this, &parentPropertyValues](const AZ::RPI::MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack)
             {
-                // Add any material functors that are located inside each property group.
-                if (!AddEditorMaterialFunctors(propertyGroup->GetFunctors()))
+                using namespace AZ::RPI;
+
+                const MaterialTypeSourceData::PropertyGroup* propertyGroup = propertyGroupStack.back();
+                
+                MaterialNameContext groupNameContext = MaterialTypeSourceData::MakeMaterialNameContext(propertyGroupStack);
+
+                if (!AddEditorMaterialFunctors(propertyGroup->GetFunctors(), groupNameContext))
                 {
                     return false;
                 }
 
+                AZStd::vector<AZStd::string> groupNameVector;
+                AZStd::vector<AZStd::string> groupDisplayNameVector;
+                
+                groupNameVector.reserve(propertyGroupStack.size());
+                groupDisplayNameVector.reserve(propertyGroupStack.size());
+
+                for (auto& group : propertyGroupStack)
+                {
+                    groupNameVector.push_back(group->GetName());
+                    groupDisplayNameVector.push_back(group->GetDisplayName());
+                }
+
                 m_groups.emplace_back(aznew AtomToolsFramework::DynamicPropertyGroup);
-                m_groups.back()->m_name = propertyIdContext + propertyGroup->GetName();
-                m_groups.back()->m_displayName = propertyGroup->GetDisplayName();
                 m_groups.back()->m_description = propertyGroup->GetDescription();
+                AzFramework::StringFunc::Join(m_groups.back()->m_name, groupNameVector.begin(), groupNameVector.end(), ".");
+                AzFramework::StringFunc::Join(m_groups.back()->m_displayName, groupDisplayNameVector.begin(), groupDisplayNameVector.end(), " | ");
 
                 for (const auto& propertyDefinition : propertyGroup->GetProperties())
                 {
-                    // Assign id before conversion so it can be used in dynamic description
                     AtomToolsFramework::DynamicPropertyConfig propertyConfig;
-                    propertyConfig.m_id = m_groups.back()->m_name + "." + propertyDefinition->GetName();
+
+                    // Assign id before conversion so it can be used in dynamic description
+                    propertyConfig.m_id = propertyDefinition->GetName();
+                    groupNameContext.ContextualizeProperty(propertyConfig.m_id);
 
                     const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                     const bool propertyIndexInBounds =
@@ -581,9 +636,8 @@ namespace MaterialEditor
                     if (propertyIndexInBounds)
                     {
                         AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition);
-
-                        // TODO: Support populating the Material Editor with nested property groups, not just the top level.
-                        // (Does DynamicPropertyConfig really even need m_groupDisplayName?)
+                        
+                        // (Does DynamicPropertyConfig really even need m_groupName? It doesn't seem to be used anywhere)
                         propertyConfig.m_groupName = m_groups.back()->m_name;
                         propertyConfig.m_groupDisplayName = m_groups.back()->m_displayName;
                         propertyConfig.m_showThumbnail = true;
@@ -611,7 +665,8 @@ namespace MaterialEditor
         }
 
         // Add material functors that are in the top-level functors list.
-        if (!AddEditorMaterialFunctors(m_materialTypeSourceData.m_materialFunctorSourceData))
+        AZ::RPI::MaterialNameContext materialNameContext; // There is no name context for top-level functors, only functors inside PropertyGroups
+        if (!AddEditorMaterialFunctors(m_materialTypeSourceData.m_materialFunctorSourceData, materialNameContext))
         {
             return OpenFailed();
         }
@@ -739,10 +794,11 @@ namespace MaterialEditor
     }
 
     bool MaterialDocument::AddEditorMaterialFunctors(
-        const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders)
+        const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders,
+        const AZ::RPI::MaterialNameContext& nameContext)
     {
         const AZ::RPI::MaterialFunctorSourceData::EditorContext editorContext = AZ::RPI::MaterialFunctorSourceData::EditorContext(
-            m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout());
+            m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout(), &nameContext);
 
         for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder> functorData : functorSourceDataHolders)
         {
@@ -826,8 +882,8 @@ namespace MaterialEditor
 
             if (groupChange || groupRebuilt)
             {
-                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                    &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                    m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
                     GetObjectInfoFromDynamicPropertyGroup(group.get()), groupRebuilt);
             }
             return true;
@@ -844,6 +900,13 @@ namespace MaterialEditor
         objectInfo.m_description = group->m_description;
         objectInfo.m_objectType = azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>();
         objectInfo.m_objectPtr = const_cast<AtomToolsFramework::DynamicPropertyGroup*>(group);
+        objectInfo.m_nodeIndicatorFunction = [](const AzToolsFramework::InstanceDataNode* node)
+        {
+            const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
+            return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue)
+                ? ":/Icons/changed_property.svg"
+                : ":/Icons/blank.png";
+        };
         return objectInfo;
     }
 

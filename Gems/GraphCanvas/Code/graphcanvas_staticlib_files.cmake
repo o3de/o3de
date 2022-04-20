@@ -7,6 +7,13 @@
 #
 
 set(FILES
+
+    Source/Translation/TranslationBus.h
+    Source/Translation/TranslationDatabase.h
+    Source/Translation/TranslationDatabase.cpp
+    Source/Translation/TranslationSerializer.h
+    Source/Translation/TranslationSerializer.cpp
+
     StaticLib/GraphCanvas/Widgets/Resources/GraphCanvasEditorResources.qrc
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeContainer.cpp
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeContainer.h

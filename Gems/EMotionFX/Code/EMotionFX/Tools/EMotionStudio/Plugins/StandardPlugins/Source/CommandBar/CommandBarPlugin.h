@@ -45,11 +45,8 @@ namespace EMStudio
         ~CommandBarPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override;
         const char* GetName() const override;
         uint32 GetClassID() const override;
-        const char* GetCreatorName() const override;
-        float GetVersion() const override;
 
         bool GetIsFloatable() const override                            { return false; }
         bool GetIsVertical() const override                             { return false; }
@@ -59,7 +56,7 @@ namespace EMStudio
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new CommandBarPlugin(); }
 
         void UpdateLockSelectionIcon();
 

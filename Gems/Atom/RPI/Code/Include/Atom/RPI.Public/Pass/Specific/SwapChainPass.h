@@ -22,12 +22,6 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        class SwapChain;
-        struct ImageScopeAttachmentDescriptor;
-    }
-
     namespace RPI
     {
         class WindowContext;
@@ -42,7 +36,7 @@ namespace AZ
             AZ_RTTI(SwapChainPass, "{551AD61F-8603-4998-A7D1-226F03022295}", ParentPass);
             AZ_CLASS_ALLOCATOR(SwapChainPass, SystemAllocator, 0);
 
-            SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const Name& childTemplateName);
+            SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext);
             ~SwapChainPass();
 
             Ptr<ParentPass> Recreate() const override;
@@ -58,7 +52,6 @@ namespace AZ
 
         protected:
             // Pass behavior overrides
-            void CreateChildPassesInternal() override final;
             void BuildInternal() override final;
             void FrameBeginInternal(FramePrepareParams params) override final;
             
@@ -66,7 +59,6 @@ namespace AZ
             void OnWindowResized(uint32_t width, uint32_t height) override;
 
         private:
-
             // Sets up a swap chain PassAttachment using the swap chain id from the window context 
             void SetupSwapChainAttachment();
 
@@ -80,14 +72,6 @@ namespace AZ
 
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;
-
-            bool m_postProcess = false;
-
-            // The child pass used to drive rendering for this swapchain
-            Ptr<Pass> m_childPass = nullptr;
-
-            // Name of the template used to create the child pass. Needed for Recreate()
-            Name m_childTemplateName;
         };
 
     }   // namespace RPI

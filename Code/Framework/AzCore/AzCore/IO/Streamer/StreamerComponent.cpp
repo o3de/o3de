@@ -55,7 +55,6 @@ namespace AZ
 
     AZStd::unique_ptr<AZ::IO::Scheduler> StreamerComponent::CreateStreamerStack(AZStd::string_view profile)
     {
-        AZ::IO::StreamerConfig config;
         auto settingsRegistry = AZ::SettingsRegistry::Get();
 
         if (!settingsRegistry)
@@ -82,6 +81,7 @@ namespace AZ
         AZStd::string profilePath = "/Amazon/AzCore/Streamer/Profiles/";
         profilePath += profile;
 
+        AZ::IO::StreamerConfig config;
         if (!settingsRegistry->GetObject(config, profilePath))
         {
             AZ_Printf("Streamer",
@@ -96,7 +96,7 @@ namespace AZ
         }
 
         AZStd::shared_ptr<AZ::IO::StreamStackEntry> stack;
-        for (AZStd::shared_ptr<AZ::IO::IStreamerStackConfig>& stackEntryConfig : config.m_stackConfig)
+        for (auto&& [name, stackEntryConfig] : config.m_stackConfig)
         {
             stack = stackEntryConfig->AddStreamStackEntry(hardwareInfo, AZStd::move(stack));
         }

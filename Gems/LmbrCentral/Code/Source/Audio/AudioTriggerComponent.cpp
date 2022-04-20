@@ -6,32 +6,37 @@
  *
  */
 
-#include "AudioTriggerComponent.h"
-
-#include <ISystem.h>
-
-#include <LmbrCentral/Audio/AudioProxyComponentBus.h>
+#include <Audio/AudioTriggerComponent.h>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <ISystem.h>
+#include <LmbrCentral/Audio/AudioProxyComponentBus.h>
 
 
 namespace LmbrCentral
 {
     //=========================================================================
     // Behavior Context AudioTriggerComponentNotificationBus forwarder
-    class BehaviorAudioTriggerComponentNotificationBusHandler
-        : public AudioTriggerComponentNotificationBus::Handler, public AZ::BehaviorEBusHandler
+    class BehaviorAudioTriggerNotificationBusHandler
+        : public Audio::AudioTriggerNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
     {
     public:
-        AZ_EBUS_BEHAVIOR_BINDER(BehaviorAudioTriggerComponentNotificationBusHandler, "{ACCB0C42-3752-496B-9B1F-19276925EBB0}", AZ::SystemAllocator,
-            OnTriggerFinished);
+        AZ_EBUS_BEHAVIOR_BINDER(
+            BehaviorAudioTriggerNotificationBusHandler, "{ACCB0C42-3752-496B-9B1F-19276925EBB0}", AZ::SystemAllocator,
+            ReportTriggerStarted, ReportTriggerFinished);
 
-        void OnTriggerFinished(const Audio::TAudioControlID triggerID) override
+        void ReportTriggerStarted(Audio::TAudioControlID triggerId) override
         {
-            Call(FN_OnTriggerFinished, triggerID);
+            Call(FN_ReportTriggerStarted, triggerId);
+        }
+
+        void ReportTriggerFinished(Audio::TAudioControlID triggerId) override
+        {
+            Call(FN_ReportTriggerFinished, triggerId);
         }
     };
 
@@ -42,12 +47,16 @@ namespace LmbrCentral
         if (serializeContext)
         {
             serializeContext->Class<AudioTriggerComponent, AZ::Component>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Play Trigger", &AudioTriggerComponent::m_defaultPlayTriggerName)
                 ->Field("Stop Trigger", &AudioTriggerComponent::m_defaultStopTriggerName)
                 ->Field("Obstruction Type", &AudioTriggerComponent::m_obstructionType)
                 ->Field("Plays Immediately", &AudioTriggerComponent::m_playsImmediately)
-                ->Field("Send Finished Event", &AudioTriggerComponent::m_notifyWhenTriggerFinishes)
+                ;
+
+            serializeContext->Class<Audio::TriggerNotificationIdType>()
+                ->Version(1)
+                ->Field("Owner", &Audio::TriggerNotificationIdType::m_owner)
                 ;
         }
 
@@ -68,8 +77,13 @@ namespace LmbrCentral
                 ->Event("SetObstructionType", &AudioTriggerComponentRequestBus::Events::SetObstructionType)
                 ;
 
-            behaviorContext->EBus<AudioTriggerComponentNotificationBus>("AudioTriggerComponentNotificationBus")
-                ->Handler<BehaviorAudioTriggerComponentNotificationBusHandler>()
+            behaviorContext->Class<Audio::TriggerNotificationIdType>("AudioTriggerNotificationIdType")
+                ->Constructor<AZ::EntityId>()
+                    ->Attribute(AZ::Script::Attributes::DefaultConstructorOverrideIndex, 0)
+                ;
+
+            behaviorContext->EBus<Audio::AudioTriggerNotificationBus>("AudioTriggerNotificationBus")
+                ->Handler<BehaviorAudioTriggerNotificationBusHandler>()
                 ;
         }
 
@@ -81,26 +95,6 @@ namespace LmbrCentral
         OnPlayTriggerChanged();
         OnStopTriggerChanged();
         OnObstructionTypeChanged();
-
-        if (m_notifyWhenTriggerFinishes)
-        {
-            m_callbackInfo.reset(new Audio::SAudioCallBackInfos(
-                this,
-                static_cast<AZ::u64>(GetEntityId()),
-                nullptr,
-                (Audio::eARF_PRIORITY_NORMAL | Audio::eARF_SYNC_FINISHED_CALLBACK)
-            ));
-
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::AddRequestListener,
-                &AudioTriggerComponent::OnAudioEvent,
-                this,
-                Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST,
-                Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE);
-        }
-        else
-        {
-            m_callbackInfo.reset(new Audio::SAudioCallBackInfos(Audio::SAudioCallBackInfos::GetEmptyObject()));
-        }
 
         AudioTriggerComponentRequestBus::Handler::BusConnect(GetEntityId());
 
@@ -116,23 +110,15 @@ namespace LmbrCentral
     {
         AudioTriggerComponentRequestBus::Handler::BusDisconnect(GetEntityId());
 
-        if (m_notifyWhenTriggerFinishes)
-        {
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RemoveRequestListener, &AudioTriggerComponent::OnAudioEvent, this);
-        }
-
         KillAllTriggers();
-
-        m_callbackInfo.reset();
     }
 
     //=========================================================================
-    AudioTriggerComponent::AudioTriggerComponent(const AZStd::string& playTriggerName, const AZStd::string& stopTriggerName, Audio::ObstructionType obstructionType, bool playsImmediately, bool notifyFinished)
+    AudioTriggerComponent::AudioTriggerComponent(const AZStd::string& playTriggerName, const AZStd::string& stopTriggerName, Audio::ObstructionType obstructionType, bool playsImmediately)
         : m_defaultPlayTriggerName(playTriggerName)
         , m_defaultStopTriggerName(stopTriggerName)
         , m_obstructionType(obstructionType)
         , m_playsImmediately(playsImmediately)
-        , m_notifyWhenTriggerFinishes(notifyFinished)
     {
     }
 
@@ -141,7 +127,7 @@ namespace LmbrCentral
     {
         if (m_defaultPlayTriggerID != INVALID_AUDIO_CONTROL_ID)
         {
-            AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, m_defaultPlayTriggerID, *m_callbackInfo);
+            AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, m_defaultPlayTriggerID);
         }
     }
 
@@ -154,7 +140,7 @@ namespace LmbrCentral
         }
         else
         {
-            AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, m_defaultStopTriggerID, *m_callbackInfo);
+            AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, m_defaultStopTriggerID);
         }
     }
 
@@ -164,10 +150,14 @@ namespace LmbrCentral
         if (triggerName && triggerName[0] != '\0')
         {
             Audio::TAudioControlID triggerID = INVALID_AUDIO_CONTROL_ID;
-            Audio::AudioSystemRequestBus::BroadcastResult(triggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                triggerID = audioSystem->GetAudioTriggerID(triggerName);
+            }
+
             if (triggerID != INVALID_AUDIO_CONTROL_ID)
             {
-                AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, triggerID, *m_callbackInfo);
+                AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, triggerID);
             }
         }
     }
@@ -178,7 +168,11 @@ namespace LmbrCentral
         if (triggerName && triggerName[0] != '\0')
         {
             Audio::TAudioControlID triggerID = INVALID_AUDIO_CONTROL_ID;
-            Audio::AudioSystemRequestBus::BroadcastResult(triggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                triggerID = audioSystem->GetAudioTriggerID(triggerName);
+            }
+
             if (triggerID != INVALID_AUDIO_CONTROL_ID)
             {
                 AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::KillTrigger, triggerID);
@@ -209,31 +203,15 @@ namespace LmbrCentral
     }
 
     //=========================================================================
-    // static
-    void AudioTriggerComponent::OnAudioEvent(const Audio::SAudioRequestInfo* const requestInfo)
-    {
-        // look for the 'finished trigger instance' event
-        if (requestInfo->eAudioRequestType == Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST)
-        {
-            const auto notificationType = static_cast<Audio::EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
-            if (notificationType == Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE)
-            {
-                if (requestInfo->eResult == Audio::eARR_SUCCESS)
-                {
-                    AZ::EntityId entityId(reinterpret_cast<AZ::u64>(requestInfo->pUserData));
-                    AudioTriggerComponentNotificationBus::Event(entityId, &AudioTriggerComponentNotificationBus::Events::OnTriggerFinished, requestInfo->nAudioControlID);
-                }
-            }
-        }
-    }
-
-    //=========================================================================
     void AudioTriggerComponent::OnPlayTriggerChanged()
     {
         m_defaultPlayTriggerID = INVALID_AUDIO_CONTROL_ID;
         if (!m_defaultPlayTriggerName.empty())
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(m_defaultPlayTriggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, m_defaultPlayTriggerName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                m_defaultPlayTriggerID = audioSystem->GetAudioTriggerID(m_defaultPlayTriggerName.c_str());
+            }
         }
 
         // "ChangeNotify" sends callbacks on every key press for a text field!
@@ -246,16 +224,17 @@ namespace LmbrCentral
         m_defaultStopTriggerID = INVALID_AUDIO_CONTROL_ID;
         if (!m_defaultStopTriggerName.empty())
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(m_defaultStopTriggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, m_defaultStopTriggerName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                m_defaultStopTriggerID = audioSystem->GetAudioTriggerID(m_defaultStopTriggerName.c_str());
+            }
         }
     }
 
     //=========================================================================
     void AudioTriggerComponent::OnObstructionTypeChanged()
     {
-        // This conversion to legacy enum will be removed eventually:
-        auto legacyObstructionType = static_cast<Audio::EAudioObjectObstructionCalcType>(m_obstructionType);
-        AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::SetObstructionCalcType, legacyObstructionType);
+        AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::SetObstructionCalcType, m_obstructionType);
     }
 
 } // namespace LmbrCentral

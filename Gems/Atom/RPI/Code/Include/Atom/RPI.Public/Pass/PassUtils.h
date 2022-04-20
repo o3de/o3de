@@ -29,6 +29,12 @@ namespace AZ
             //! Retrieves PassData from a PassDescriptor
             const PassData* GetPassData(const PassDescriptor& descriptor);
 
+            //! Finds all PipelineGlobalConnections in the descriptor and adds them to the provided list
+            void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList);
+
+            //! Retrieves PassData from a PassDescriptor
+            AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor);
+
             //! Templated function for retrieving specific data types from a PassDescriptor
             template<typename PassDataType>
             const PassDataType* GetPassData(const PassDescriptor& descriptor)

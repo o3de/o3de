@@ -105,7 +105,7 @@ namespace ScriptCanvasEditor
             auto fileOutcome = LoadFromFile(ModCurrentAsset().Path().c_str());
             if (fileOutcome.IsSuccess())
             {
-                return fileOutcome.GetValue();
+                return fileOutcome.GetValue().handle;
             }
             else
             {

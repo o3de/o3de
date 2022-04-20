@@ -64,6 +64,9 @@ namespace AZ
             //! Sets the opacity of the decal
             void SetDecalOpacity(DecalHandle handle, float opacity) override;
 
+            //! Sets the opacity of the decal normal map
+            void SetDecalNormalMapOpacity(DecalHandle handle, float opacity) override;
+
             //! Sets the decal sort key. Decals with a larger sort key appear over top of smaller sort keys.
             void SetDecalSortKey(DecalHandle handle, uint8_t sortKey) override;
 

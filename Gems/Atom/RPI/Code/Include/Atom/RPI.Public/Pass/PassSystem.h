@@ -85,15 +85,16 @@ namespace AZ
             // PassSystemInterface factory related functions...
             void AddPassCreator(Name className, PassCreator createFunction) override;
             Ptr<Pass> CreatePassFromClass(Name passClassName, Name passName) override;
-            Ptr<Pass> CreatePassFromTemplate(const AZStd::shared_ptr<PassTemplate>& passTemplate, Name passName) override;
+            Ptr<Pass> CreatePassFromTemplate(const AZStd::shared_ptr<const PassTemplate>& passTemplate, Name passName) override;
             Ptr<Pass> CreatePassFromTemplate(Name templateName, Name passName) override;
             Ptr<Pass> CreatePassFromRequest(const PassRequest* passRequest) override;
             bool HasCreatorForClass(Name passClassName) override;
 
             // PassSystemInterface library related functions...
+            bool HasTemplate(const Name& templateName) const override;
             bool HasPassesForTemplateName(const Name& templateName) const override;
             bool AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate) override;
-            const AZStd::shared_ptr<PassTemplate> GetPassTemplate(const Name& name) const override;
+            const AZStd::shared_ptr<const PassTemplate> GetPassTemplate(const Name& name) const override;
             void RemovePassTemplate(const Name& name) override;
             void RemovePassFromLibrary(Pass* pass) override;
             void RegisterPass(Pass* pass) override;

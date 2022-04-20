@@ -11,7 +11,6 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/function/function_fwd.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
                                                                // 4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
 #include <QStyledItemDelegate>
@@ -50,14 +49,11 @@ namespace AzToolsFramework
 
             QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-            //! Set location where thumbnails are located for this instance of asset browser
-            void SetThumbnailContext(const char* thumbnailContext);
             //! Set whether to show source control icons, this is still temporary mainly to support existing functionality of material browser
             void SetShowSourceControlIcons(bool showSourceControl);
 
         protected:
             int m_iconSize;
-            AZStd::string m_thumbnailContext = ThumbnailContext::DefaultContext;
             bool m_showSourceControl = false;
             //! Draw a thumbnail and return its width
             int DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const;

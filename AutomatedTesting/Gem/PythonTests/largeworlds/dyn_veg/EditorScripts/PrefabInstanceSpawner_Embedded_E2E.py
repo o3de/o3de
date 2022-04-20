@@ -29,18 +29,18 @@ class Tests:
     )
 
 
-def DynamicSliceInstanceSpawner_Embedded_E2E():
+def PrefabInstanceSpawner_Embedded_E2E():
     """
     Summary:
     A new temporary level is created. Surface for planting is created. Simple vegetation area is created using
-    Dynamic Slice Instance Spawner type.
+    Prefab Instance Spawner type.
 
     Expected Behavior:
     Instances plant as expected in the assigned area.
 
     Test Steps:
      1) Create level
-     2) Create a Vegetation Layer Spawner setup using Dynamic Slice Instance Spawner type assets
+     2) Create a Vegetation Layer Spawner setup using Prefab Instance Spawner type assets
      3) Create a surface to plant on
      4) Verify expected instance counts
      5) Add a camera component looking at the planting area for visual debugging
@@ -63,13 +63,11 @@ def DynamicSliceInstanceSpawner_Embedded_E2E():
     import azlmbr.entity as entity
     import azlmbr.math as math
     import azlmbr.paths as paths
-    import azlmbr.vegetation as vegetation
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
-
 
     # 1) Create a new, temporary level
     lvl_name = "tmp_level"
@@ -119,4 +117,4 @@ def DynamicSliceInstanceSpawner_Embedded_E2E():
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
-    Report.start_test(DynamicSliceInstanceSpawner_Embedded_E2E)
+    Report.start_test(PrefabInstanceSpawner_Embedded_E2E)

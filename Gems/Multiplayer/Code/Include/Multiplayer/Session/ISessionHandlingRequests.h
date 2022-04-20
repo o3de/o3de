@@ -86,9 +86,19 @@ namespace Multiplayer
         //!         empty string.
         virtual AZ::IO::Path GetExternalSessionCertificate() = 0;
 
+        //! Retrieves the file location of a pem-encoded TLS private key for Client to Server communication
+        //! @return If successful, returns the file location of TLS private key file; if not successful, returns
+        //!         empty string.
+        virtual AZ::IO::Path GetExternalSessionPrivateKey() = 0;
+
         //! Retrieves the file location of a pem-encoded TLS certificate for Server to Server communication
         //! @return If successful, returns the file location of TLS certificate file; if not successful, returns
         //!         empty string.
         virtual AZ::IO::Path GetInternalSessionCertificate() = 0;
+
+        //! Retrieves the file location of a pem-encoded TLS private key for Server to Server communication
+        //! @return If successful, returns the file location of TLS private key file; if not successful, returns
+        //!         empty string.
+        virtual AZ::IO::Path GetInternalSessionPrivateKey() = 0;
     };
 } // namespace Multiplayer

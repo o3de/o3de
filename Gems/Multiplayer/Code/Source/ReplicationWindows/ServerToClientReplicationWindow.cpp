@@ -137,7 +137,7 @@ namespace Multiplayer
         );
 
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();        
-        IFilterEntityManager* filterEntityManager = GetMultiplayer()->GetFilterEntityManager();
+        IFilterEntityManager* filterEntityManager = AZ::Interface<IFilterEntityManager>::Get();
 
         // Add all the neighbours
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
@@ -162,6 +162,15 @@ namespace Multiplayer
             const float priority = (gatherDistanceSquared > 0.0f) ? 1.0f / gatherDistanceSquared : 0.0f;
                 
             AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
+        }
+
+        // Add in all entities that have forced relevancy
+        for (const ConstNetworkEntityHandle& entityHandle : GetNetworkEntityManager()->GetAlwaysRelevantToClientsSet())
+        {
+            if (entityHandle.Exists())
+            {
+                m_replicationSet[entityHandle] = { NetEntityRole::Client, 1.0f };  // Always replicate entities with forced relevancy
+            }
         }
 
         // Add in Autonomous Entities
@@ -229,7 +238,7 @@ namespace Multiplayer
         {
             if (netBindComponent->HasController())
             {
-                if (IFilterEntityManager* filter = GetMultiplayer()->GetFilterEntityManager())
+                if (IFilterEntityManager* filter = AZ::Interface<IFilterEntityManager>::Get())
                 {
                     if (filter->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
                     {

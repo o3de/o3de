@@ -108,6 +108,10 @@ namespace AZ
                 void RunEditorMaterialFunctors();
                 void UpdateMaterialInstanceProperty(const AtomToolsFramework::DynamicProperty& property);
 
+                bool AddEditorMaterialFunctors(
+                    const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders,
+                    const AZ::RPI::MaterialNameContext& nameContext);   
+
                 AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
                 bool IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const;
                 const char* GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const;

@@ -130,7 +130,7 @@ namespace AZ
 
                 if(!imageViews.empty())
                 {
-                    EnableResourceTypeCompilation(ResourceTypeMask::ImageViewMask, ResourceType::ImageView);
+                    EnableResourceTypeCompilation(ResourceTypeMask::ImageViewMask);
                 }
 
                 return isValidAll;
@@ -156,7 +156,7 @@ namespace AZ
 
                 if (!imageViews.empty())
                 {
-                    EnableResourceTypeCompilation(ResourceTypeMask::ImageViewUnboundedArrayMask, ResourceType::ImageViewUnboundedArray);
+                    EnableResourceTypeCompilation(ResourceTypeMask::ImageViewUnboundedArrayMask);
                 }
                 return isValidAll;
             }
@@ -187,7 +187,7 @@ namespace AZ
 
                 if (!bufferViews.empty())
                 {
-                    EnableResourceTypeCompilation(ResourceTypeMask::BufferViewMask, ResourceType::BufferView);
+                    EnableResourceTypeCompilation(ResourceTypeMask::BufferViewMask);
                 }
                 return isValidAll;
             }
@@ -212,7 +212,7 @@ namespace AZ
 
                 if (!bufferViews.empty())
                 {
-                    EnableResourceTypeCompilation(ResourceTypeMask::BufferViewUnboundedArrayMask, ResourceType::BufferViewUnboundedArray);
+                    EnableResourceTypeCompilation(ResourceTypeMask::BufferViewUnboundedArrayMask);
                 }
                 return isValidAll;
             }
@@ -236,7 +236,7 @@ namespace AZ
 
                 if (!samplers.empty())
                 {
-                    EnableResourceTypeCompilation(ResourceTypeMask::SamplerMask, ResourceType::Sampler);
+                    EnableResourceTypeCompilation(ResourceTypeMask::SamplerMask);
                 }
                 return true;
             }
@@ -250,19 +250,19 @@ namespace AZ
 
         bool ShaderResourceGroupData::SetConstantRaw(ShaderInputConstantIndex inputIndex, const void* bytes, uint32_t byteOffset, uint32_t byteCount)
         {
-            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             return m_constantsData.SetConstantRaw(inputIndex, bytes, byteOffset, byteCount);
         }
 
         bool ShaderResourceGroupData::SetConstantData(const void* bytes, uint32_t byteCount)
         {
-            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             return m_constantsData.SetConstantData(bytes, byteCount);
         }
 
         bool ShaderResourceGroupData::SetConstantData(const void* bytes, uint32_t byteOffset, uint32_t byteCount)
         {
-            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             return m_constantsData.SetConstantData(bytes, byteOffset, byteCount);
         }
 
@@ -378,33 +378,20 @@ namespace AZ
             return m_constantsData;
         }
 
-        bool ShaderResourceGroupData::IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const
+        uint32_t ShaderResourceGroupData::GetUpdateMask() const
         {
-            return RHI::CheckBitsAny(m_updateMask, resourceTypeMask);
+            return m_updateMask;
         }
-
-        bool ShaderResourceGroupData::IsAnyResourceTypeUpdated() const
+    
+        void ShaderResourceGroupData::EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask)
         {
-            return m_updateMask != 0;
-        }
-
-        void ShaderResourceGroupData::EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask, ResourceType resourceType)
-        {
-            AZ_Assert(static_cast<uint32_t>(resourceTypeMask) == AZ_BIT(static_cast<uint32_t>(resourceType)), "resourceType and resourceTypeMask should point to the same ResourceType");
             m_updateMask = RHI::SetBits(m_updateMask, static_cast<uint32_t>(resourceTypeMask));
-            m_resourceTypeIteration[static_cast<uint32_t>(resourceType)] = 0;
         }
 
-        void ShaderResourceGroupData::DisableCompilationForAllResourceTypes()
+        void ShaderResourceGroupData::ResetUpdateMask()
         {
-            for (uint32_t i = 0; i < static_cast<uint32_t>(ResourceType::Count); i++)
-            {
-                if (m_resourceTypeIteration[i] == m_updateMaskResetLatency)
-                {
-                    m_updateMask = RHI::ResetBits(m_updateMask, AZ_BIT(i));
-                }
-                m_resourceTypeIteration[i]++;
-            }
+            m_updateMask = 0;
         }
+ 
     } // namespace RHI
 } // namespace AZ

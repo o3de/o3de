@@ -97,6 +97,10 @@ namespace LegacyFramework
     }
 
     Application::Application()
+        : Application(0, nullptr)
+    {}
+    Application::Application(int argc, char** argv)
+        : ComponentApplication(argc, argv)
     {
         m_isPrimary = true;
         m_desiredExitCode = 0;
@@ -191,9 +195,6 @@ namespace LegacyFramework
         ::SetConsoleCtrlHandler(CTRL_BREAK_HandlerRoutine, true);
 #endif
 
-        m_ptrCommandLineParser = aznew AzFramework::CommandLine();
-        m_ptrCommandLineParser->Parse(m_desc.m_argc, m_desc.m_argv);
-
         // If we don't have one create a serialize context
         if (GetSerializeContext() == nullptr)
         {
@@ -206,7 +207,7 @@ namespace LegacyFramework
         m_ptrSystemEntity->Activate();
 
         // If we aren't the primary, RunAsAnotherInstance unless we are being forcestarted
-        if (!m_isPrimary && !m_ptrCommandLineParser->HasSwitch("forcestart"))
+        if (!m_isPrimary && !m_commandLine.HasSwitch("forcestart"))
         {
             // Required for the application component to handle RunAsAnotherInstance
             CreateApplicationComponent();
@@ -246,9 +247,6 @@ namespace LegacyFramework
         ::SetConsoleCtrlHandler(CTRL_BREAK_HandlerRoutine, false);
 #endif
 
-        delete m_ptrCommandLineParser;
-        m_ptrCommandLineParser = nullptr;
-
         CoreMessageBus::Handler::BusDisconnect();
         FrameworkApplicationMessages::Handler::BusDisconnect();
 
@@ -269,11 +267,6 @@ namespace LegacyFramework
             delete m_applicationEntity;
             m_applicationEntity = nullptr;
         }
-    }
-
-    const AzFramework::CommandLine* Application::GetCommandLineParser()
-    {
-        return m_ptrCommandLineParser;
     }
 
     // returns TRUE if the component already existed, FALSE if it had to create one.

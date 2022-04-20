@@ -53,12 +53,10 @@ namespace AzToolsFramework
         const AZ::Vector3& worldRayOrigin,
         const AZ::Vector3& worldRayDirection)
     {
-        const AZ::Transform worldFromLocalUniform = AzToolsFramework::TransformUniformScale(worldFromLocal);
-        const AZ::Transform localFromWorldUniform = worldFromLocalUniform.GetInverse();
+        const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
 
-        return { localFromWorldUniform.TransformPoint(worldRayOrigin),
-                 TransformDirectionNoScaling(localFromWorldUniform, worldRayDirection), NonUniformScaleReciprocal(nonUniformScale),
-                 ScaleReciprocal(worldFromLocalUniform) };
+        return { localFromWorld.TransformPoint(worldRayOrigin), TransformDirectionNoScaling(localFromWorld, worldRayDirection),
+                 NonUniformScaleReciprocal(nonUniformScale), ScaleReciprocal(worldFromLocal) };
     }
 
     struct SnapAdjustment

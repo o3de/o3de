@@ -10,7 +10,7 @@ def DynVegUtils_TempPrefabCreationWorks():
     """
     Summary:
     An existing level is opened. Each Prefab setup to be spawned by Dynamic Vegetation tests is created in memory and
-    validated against existing test slice components/mesh assignments.
+    validated against existing test components/mesh assignments.
 
     Expected Behavior:
     Temporary prefabs contain the expected components/assets.

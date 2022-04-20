@@ -280,6 +280,10 @@ namespace Multiplayer
         void HandleLocalRpcMessage([[maybe_unused]] NetworkEntityRpcMessage& message) override {}
         void HandleEntitiesExitDomain([[maybe_unused]] const NetEntityIdSet& entitiesNotInDomain) override {}
         void ForceAssumeAuthority([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override {}
+        void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle&, bool) override {}
+        void MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle&, bool) override {}
+        const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override { static NetEntityHandleSet value; return value; }
+        const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override { static NetEntityHandleSet value; return value; }
         void SetMigrateTimeoutTimeMs([[maybe_unused]] AZ::TimeMs timeoutTimeMs) override {}
         void DebugDraw() const override {}
 
@@ -309,8 +313,6 @@ namespace Multiplayer
         float GetCurrentBlendFactor() const override { return {}; }
         INetworkTime* GetNetworkTime() override { return {}; }
         INetworkEntityManager* GetNetworkEntityManager() override { return &m_manager; }
-        void SetFilterEntityManager([[maybe_unused]] IFilterEntityManager* entityFilter) override {}
-        IFilterEntityManager* GetFilterEntityManager() override { return {}; }
         void AddClientMigrationStartEventHandler([[maybe_unused]] ClientMigrationStartEvent::Handler& handler) override {}
         void AddClientMigrationEndEventHandler([[maybe_unused]] ClientMigrationEndEvent::Handler& handler) override {}
         void AddNotifyClientMigrationHandler([[maybe_unused]] NotifyClientMigrationEvent::Handler& handler) override {}

@@ -5,11 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 #include <AzCore/Asset/AssetCommon.h>
 
 namespace AZ
@@ -26,8 +28,7 @@ namespace MaterialEditor
     //! UVs are processed in a property group but will be handled differently.
     static constexpr const char UvGroupName[] = "uvSets";
 
-    class MaterialDocumentRequests
-        : public AZ::EBusTraits
+    class MaterialDocumentRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -52,7 +53,7 @@ namespace MaterialEditor
         //! Return property value
         //! If the document is not open or the id can't be found, an invalid value is returned instead.
         virtual const AZStd::any& GetPropertyValue(const AZ::Name& propertyFullName) const = 0;
-   };
+    };
 
     using MaterialDocumentRequestBus = AZ::EBus<MaterialDocumentRequests>;
 } // namespace MaterialEditor

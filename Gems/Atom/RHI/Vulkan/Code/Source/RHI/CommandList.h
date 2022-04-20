@@ -183,8 +183,17 @@ namespace AZ
         {
             const PipelineState* pipelineState = static_cast<const PipelineState*>(item.m_pipelineState);
             AZ_Assert(pipelineState, "Pipeline state is null.");
+            if(!pipelineState)
+            {
+                return false;
+            }
+            
             AZ_Assert(pipelineState->GetPipelineLayout(), "Pipeline layout is null.");
-
+            if(!pipelineState->GetPipelineLayout())
+            {
+                return false;
+            }
+            
             // Set the pipeline state first
             BindPipeline(pipelineState);
             const RHI::PipelineStateType pipelineType = pipelineState->GetType();

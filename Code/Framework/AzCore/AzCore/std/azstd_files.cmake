@@ -20,6 +20,10 @@ set(FILES
     base.h
     config.h
     concepts/concepts.h
+    concepts/concepts_assignable.h
+    concepts/concepts_constructible.h
+    concepts/concepts_copyable.h
+    concepts/concepts_movable.h
     createdestroy.h
     docs.h
     exceptions.h
@@ -34,8 +38,24 @@ set(FILES
     numeric.h
     math.h
     optional.h
+    ranges/all_view.h
+    ranges/elements_view.h
+    ranges/empty_view.h
     ranges/iter_move.h
+    ranges/iter_swap.h
+    ranges/join_view.h
+    ranges/owning_view.h
     ranges/ranges.h
+    ranges/ranges_adaptor.h
+    ranges/ranges_algorithm.h
+    ranges/ranges_functional.h
+    ranges/ref_view.h
+    ranges/single_view.h
+    ranges/subrange.h
+    ranges/split_view.h
+    ranges/swap.h
+    ranges/zip_view.h
+    ranges/zip_view.inl
     ratio.h
     reference_wrapper.h
     sort.h
@@ -89,7 +109,6 @@ set(FILES
     parallel/mutex.h
     parallel/semaphore.h
     parallel/scoped_lock.h
-    parallel/shared_spin_mutex.h
     parallel/shared_mutex.h
     parallel/spin_mutex.h
     parallel/thread.h

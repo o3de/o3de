@@ -7,7 +7,7 @@
 
     "Source" : "./StandardPBR_ForwardPass.azsl",
 
-    "Definitions": [ "QUALITY_LOW_END=1" ],
+    "Definitions": ["QUALITY_LOW_END=1"],
 
     "DepthStencilState" :
     {
@@ -36,10 +36,6 @@
                 "PassOp" : "Replace"
             }
         }
-    },
-
-    "CompilerHints" : { 
-        "DisableOptimizations" : false
     },
 
     "ProgramSettings":

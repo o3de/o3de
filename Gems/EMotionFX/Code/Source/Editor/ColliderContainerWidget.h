@@ -167,17 +167,6 @@ namespace EMotionFX
             EMStudio::RenderPlugin* renderPlugin,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo);
 
-        static void RenderColliders(
-            const AzPhysics::ShapeColliderPairList& colliders,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            const AZ::Color& colliderColor);
-
-        static void RenderColliders(
-            PhysicsSetup::ColliderConfigType colliderConfigType,
-            const AZ::Color& defaultColor,
-            const AZ::Color& selectedColor);
-
         static int s_layoutSpacing;
 
     signals:

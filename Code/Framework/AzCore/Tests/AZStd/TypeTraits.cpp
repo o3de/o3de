@@ -14,11 +14,11 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     /**
      * Tests the AZSTD type traits as much as possible for each target.
      * \cond

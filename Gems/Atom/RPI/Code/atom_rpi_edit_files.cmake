@@ -11,7 +11,6 @@ set(FILES
     Include/Atom/RPI.Edit/Common/AssetAliasesSourceData.h
     Include/Atom/RPI.Edit/Common/ColorUtils.h
     Include/Atom/RPI.Edit/Common/ConvertibleSource.h
-    Include/Atom/RPI.Edit/Common/JsonFileLoadContext.h
     Include/Atom/RPI.Edit/Common/JsonReportingHelper.h
     Include/Atom/RPI.Edit/Common/JsonUtils.h
     Include/Atom/RPI.Edit/Material/LuaMaterialFunctorSourceData.h
@@ -56,7 +55,6 @@ set(FILES
     Source/RPI.Edit/Common/AssetAliasesSourceData.cpp
     Source/RPI.Edit/Common/ColorUtils.cpp
     Source/RPI.Edit/Common/ConvertibleSource.cpp
-    Source/RPI.Edit/Common/JsonFileLoadContext.cpp
     Source/RPI.Edit/Common/JsonReportingHelper.cpp
     Source/RPI.Edit/Common/JsonUtils.cpp
 )

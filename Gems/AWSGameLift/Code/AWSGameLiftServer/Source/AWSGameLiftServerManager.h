@@ -56,6 +56,10 @@ namespace AWSGameLift
         static constexpr const char AWSGameLiftServerPlayerConnectionMissingErrorMessage[] =
             "Player connection id %d does not exist.";
 
+        static constexpr const char AWSGameLiftServerInstanceCertificateErrorMessage[] =
+            "Failed to locate Amazon GameLift TLS certificate file.";
+        static constexpr const char AWSGameLiftServerInstancePrivateKeyErrorMessage[] =
+            "Failed to locate Amazon GameLift TLS private key file.";
         static constexpr const char AWSGameLiftServerInitSDKErrorMessage[] =
             "Failed to initialize Amazon GameLift Server SDK. ErrorMessage: %s";
         static constexpr const char AWSGameLiftServerProcessReadyErrorMessage[] =
@@ -120,7 +124,9 @@ namespace AWSGameLift
         bool ValidatePlayerJoinSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig) override;
         void HandlePlayerLeaveSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig) override;
         AZ::IO::Path GetExternalSessionCertificate() override;
+        AZ::IO::Path GetExternalSessionPrivateKey() override;
         AZ::IO::Path GetInternalSessionCertificate() override;
+        AZ::IO::Path GetInternalSessionPrivateKey() override;
 
     protected:
         void SetGameLiftServerSDKWrapper(AZStd::unique_ptr<GameLiftServerSDKWrapper> gameLiftServerSDKWrapper);

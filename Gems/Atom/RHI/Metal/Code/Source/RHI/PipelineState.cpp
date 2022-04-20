@@ -174,7 +174,7 @@ namespace AZ
             PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);
             if (pipelineLibrary && pipelineLibrary->IsInitialized())
             {
-                m_graphicsPipelineState = pipelineLibrary->CreateGraphicsPipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_renderPipelineDesc);
+                m_graphicsPipelineState = pipelineLibrary->CreateGraphicsPipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_renderPipelineDesc, &error);
             }
             else
             {
@@ -219,7 +219,7 @@ namespace AZ
             PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);
             if (pipelineLibrary && pipelineLibrary->IsInitialized())
             {
-                m_computePipelineState = pipelineLibrary->CreateComputePipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_computePipelineDesc);
+                m_computePipelineState = pipelineLibrary->CreateComputePipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_computePipelineDesc, &error);
             }
             else
             {

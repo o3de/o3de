@@ -51,6 +51,7 @@ namespace ScriptCanvas
 
         if (range.requiresDependencyConstructionParameters)
         {
+            AZ_Assert(!data.variableOverrides.m_dependencies.empty(), "dependencies are empty or null, check the processing of this asset");
             lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&data.variableOverrides.m_dependencies)));
             // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, runtimeDataOverrides
             Execution::PushActivationArgs(lua, range.inputs, range.totalCount);

@@ -32,9 +32,10 @@ namespace EMotionFX::MotionMatching
         : AnimGraphNode()
     {
         // Setup the input ports.
-        InitInputPorts(2);
+        InitInputPorts(3);
         SetupInputPort("Goal Pos", INPUTPORT_TARGETPOS, MCore::AttributeVector3::TYPE_ID, PORTID_INPUT_TARGETPOS);
         SetupInputPort("Goal Facing Dir", INPUTPORT_TARGETFACINGDIR, MCore::AttributeVector3::TYPE_ID, PORTID_INPUT_TARGETFACINGDIR);
+        SetupInputPort("Use Facing Dir", INPUTPORT_USEFACINGDIR, MCore::AttributeBool::TYPE_ID, PORTID_INPUT_USEFACINGDIR);
 
         // Setup the output ports.
         InitOutputPorts(1);
@@ -186,8 +187,10 @@ namespace EMotionFX::MotionMatching
         AZ::Vector3 targetFacingDir = AZ::Vector3::CreateAxisY();
         TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETFACINGDIR, targetFacingDir);
 
+        bool useFacingDir = GetInputNumberAsBool(animGraphInstance, INPUTPORT_USEFACINGDIR);
+
         MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
-        instance->Update(timePassedInSeconds, targetPos, targetFacingDir, m_trajectoryQueryMode, m_pathRadius, m_pathSpeed);
+        instance->Update(timePassedInSeconds, targetPos, targetFacingDir, useFacingDir, m_trajectoryQueryMode, m_pathRadius, m_pathSpeed);
 
         // set the current time to the new calculated time
         uniqueData->ClearInheritFlags();

@@ -25,7 +25,7 @@ namespace ScriptCanvasTestUtilitiesCPP
 {
     const char* k_defaultExtension = "scriptcanvas";
     const char* k_scriptEventExtension = "scriptevents";
-    const char* k_unitTestDirPathRelative = "@engroot@/Gems/ScriptCanvasTesting/Assets/ScriptCanvas/UnitTests";
+    const char* k_unitTestDirPathRelative = "@gemroot:ScriptCanvasTesting@/Assets/ScriptCanvas/UnitTests";
 }
 
 namespace ScriptCanvasTests

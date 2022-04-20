@@ -98,6 +98,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::SurfaceData.Static
                 Gem::LmbrCentral
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Gem::SurfaceData.Tests

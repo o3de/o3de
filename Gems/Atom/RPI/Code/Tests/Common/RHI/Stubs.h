@@ -178,6 +178,7 @@ namespace UnitTest
 
             AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::Buffer&) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode StreamBufferInternal([[maybe_unused]] const AZ::RHI::BufferStreamRequest& request) override { return AZ::RHI::ResultCode::Success; }
+            void ComputeFragmentation() const override {}
         };
 
         class ImagePool
@@ -199,6 +200,8 @@ namespace UnitTest
         {
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+
+            void ComputeFragmentation() const override {}
 
         private:
             AZ::RHI::ResultCode InitImageInternal([[maybe_unused]] const AZ::RHI::StreamingImageInitRequest& request) override { return AZ::RHI::ResultCode::Success; }

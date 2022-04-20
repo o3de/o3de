@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
 #include <SurfaceData/SurfaceTag.h>
@@ -166,7 +167,7 @@ namespace SurfaceData
         //! Check to see if the collection contains any of the given tags.
         //! @param sampleTags - The tags to look for.
         //! @return True if any of the tags is found, false if none are found.
-        bool HasAnyMatchingTags(const SurfaceTagVector& sampleTags) const;
+        bool HasAnyMatchingTags(AZStd::span<const SurfaceTag> sampleTags) const;
 
         //! Check to see if the collection contains the given tag with the given weight range.
         //! The range check is inclusive on both sides of the range: [weightMin, weightMax]
@@ -174,7 +175,7 @@ namespace SurfaceData
         //! @param weightMin - The minimum weight for this tag.
         //! @param weightMax - The maximum weight for this tag.
         //! @return True if any of the tags is found, false if none are found.
-        bool HasAnyMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const;
+        bool HasAnyMatchingTags(AZStd::span<const SurfaceTag> sampleTags, float weightMin, float weightMax) const;
 
     private:
         //! Search for the given tag entry.
@@ -185,79 +186,21 @@ namespace SurfaceData
         AZStd::fixed_vector<AzFramework::SurfaceData::SurfaceTagWeight, AzFramework::SurfaceData::Constants::MaxSurfaceWeights> m_weights;
     };
 
-    //! SurfacePointList stores a collection of surface point data, which consists of positions, normals, and surface tag weights.
-    class SurfacePointList
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(SurfacePointList, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(SurfacePointList, "{DBA02848-2131-4279-BDEF-3581B76AB736}");
-
-        SurfacePointList() = default;
-        ~SurfacePointList() = default;
-
-        //! Constructor for creating a SurfacePointList from a list of SurfacePoint data.
-        //! Primarily used as a convenience for unit tests.
-        //! @param surfacePoints - An initial set of SurfacePoint points to store in the SurfacePointList.
-        SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints);
-
-        //! Add a surface point to the list.
-        //! @param entityId - The entity creating the surface point.
-        //! @param position - The position of the surface point.
-        //! @param normal - The normal for the surface point.
-        //! @param weights - The surface tags and weights for this surface point.
-        void AddSurfacePoint(const AZ::EntityId& entityId,
-            const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& weights);
-
-        //! Clear the surface point list.
-        void Clear();
-
-        //! Preallocate space in the list based on the maximum number of output points per input point we can generate.
-        //! @param maxPointsPerInput - The maximum number of output points per input point.
-        void ReserveSpace(size_t maxPointsPerInput);
-
-        //! Check if the surface point list is empty.
-        //! @return - true if empty, false if it contains points.
-        bool IsEmpty() const;
-
-        //! Get the size of the surface point list.
-        //! @return - The number of valid points in the list.
-        size_t GetSize() const;
-
-        //! Enumerate every surface point and call a callback for each point found.
-        void EnumeratePoints(AZStd::function<
-            bool(const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& surfaceWeights)> pointCallback) const;
-
-        //! Modify the surface weights for each surface point in the list.
-        void ModifySurfaceWeights(
-            const AZ::EntityId& currentEntityId,
-            AZStd::function<void(const AZ::Vector3& position, SurfaceTagWeights& surfaceWeights)> modificationWeightCallback);
-
-        //! Get the surface point with the highest Z value.
-        AzFramework::SurfaceData::SurfacePoint GetHighestSurfacePoint() const;
-
-        //! Remove any points that don't contain any of the provided surface tags.
-        void FilterPoints(const SurfaceTagVector& desiredTags);
-
-    protected:
-        // These are kept in separate parallel vectors instead of a single struct so that it's possible to pass just specific data
-        // "channels" into other methods as span<> without having to pass the full struct into the span<>. Specifically, we want to be
-        // able to pass spans of the positions down through nesting gradient/surface calls.
-        // A side benefit is that profiling showed the data access to be faster than packing all the fields into a single struct.
-        AZStd::vector<AZ::EntityId> m_surfaceCreatorIdList;
-        AZStd::vector<AZ::Vector3> m_surfacePositionList;
-        AZStd::vector<AZ::Vector3> m_surfaceNormalList;
-        AZStd::vector<SurfaceTagWeights> m_surfaceWeightsList;
-
-        AZ::Aabb m_pointBounds = AZ::Aabb::CreateNull();
-    };
-
-    using SurfacePointLists = AZStd::vector<SurfacePointList>;
 
     struct SurfaceDataRegistryEntry
     {
+        //! The entity ID of the surface provider / modifier
         AZ::EntityId m_entityId;
+
+        //! The AABB bounds that this surface provider / modifier can affect, or null if it has infinite bounds.
         AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
+
+        //! The set of surface tags that this surface provider / modifier can create or add to a point.
         SurfaceTagVector m_tags;
+
+        //! The maximum number of surface points that this will create per input position.
+        //! For surface modifiers, this is always expected to be 0, and for surface providers it's expected to be > 0.
+        size_t m_maxPointsCreatedPerInput = 0;
     };
 
     using SurfaceDataRegistryHandle = AZ::u32;

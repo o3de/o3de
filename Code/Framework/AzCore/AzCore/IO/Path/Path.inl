@@ -1398,12 +1398,6 @@ namespace AZ::IO
     }
 
     template <typename PathType>
-    constexpr auto PathIterator<PathType>::operator->() const -> pointer
-    {
-        return &m_stashed_elem;
-    }
-
-    template <typename PathType>
     constexpr auto PathIterator<PathType>::operator++() -> PathIterator&
     {
         AZ_Assert(m_state != Singular, "attempting to increment a singular iterator (i.e a default constructed iterator)");
@@ -1541,4 +1535,14 @@ namespace AZ::IO
         const PathIterator<const Path>& rhs);
     extern template bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
+}
+
+namespace AZStd::ranges
+{
+    // A PathView is a borrowed range, it does not own the content of the Path it is viewing
+    template<>
+    inline constexpr bool enable_borrowed_range<AZ::IO::PathView> = true;
+
+    template<>
+    inline constexpr bool enable_view<AZ::IO::PathView> = true;
 }

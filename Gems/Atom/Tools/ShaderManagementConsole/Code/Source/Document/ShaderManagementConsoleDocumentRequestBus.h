@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
@@ -14,9 +15,7 @@
 
 namespace ShaderManagementConsole
 {
-
-    class ShaderManagementConsoleDocumentRequests
-        : public AZ::EBusTraits
+    class ShaderManagementConsoleDocumentRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -24,7 +23,7 @@ namespace ShaderManagementConsole
         typedef AZ::Uuid BusIdType;
 
         //! Set the shader variant list
-        virtual void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& sourceData) = 0;
+        virtual void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) = 0;
 
         //! Get the shader variant list
         virtual const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const = 0;

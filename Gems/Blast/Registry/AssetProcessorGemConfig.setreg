@@ -16,6 +16,12 @@
                 "RC blastconfiguration": {
                     "glob": "*.blastconfiguration",
                     "params": "copy"
+                },
+                "ScanFolder Blast/Scripts": {
+                    "watch": "@GEMROOT:Blast@/Editor/Scripts",
+                    "display": "Blast/Scripts",
+                    "recursive": 1,
+                    "order": 101
                 }
             }
         }

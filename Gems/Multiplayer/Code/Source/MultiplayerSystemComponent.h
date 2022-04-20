@@ -128,8 +128,6 @@ namespace Multiplayer
         float GetCurrentBlendFactor() const override;
         INetworkTime* GetNetworkTime() override;
         INetworkEntityManager* GetNetworkEntityManager() override;
-        void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
-        IFilterEntityManager* GetFilterEntityManager() override;
         void RegisterPlayerIdentifierForRejoin(uint64_t temporaryUserIdentifier, NetEntityId controlledEntityId) override;
         void CompleteClientMigration(uint64_t temporaryUserIdentifier, AzNetworking::ConnectionId connectionId, const HostId& publicHostId, ClientInputId migratedClientInputId) override;
         void SetShouldSpawnNetworkEntities(bool value) override;
@@ -147,7 +145,6 @@ namespace Multiplayer
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
         void OnAutonomousEntityReplicatorCreated();
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
-        NetworkEntityHandle SpawnDefaultPlayerPrefab(uint64_t temporaryUserIdentifier);
         void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId);
 
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");

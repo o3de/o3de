@@ -8,7 +8,6 @@
 
 #pragma once
 
-// include MCore
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/MemoryFile.h>
@@ -35,36 +34,29 @@ namespace EMStudio
     class PreferencesWindow;
     class RenderPlugin;
 
-    /**
-     *
-     *
-     */
     class EMSTUDIO_API EMStudioPlugin
         : public QObject
     {
+        Q_OBJECT
         MCORE_MEMORYOBJECTCATEGORY(EMStudioPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
 
     public:
         enum EPluginType
         {
-            PLUGINTYPE_DOCKWIDGET   = 0,
-            PLUGINTYPE_TOOLBAR      = 1,
-            PLUGINTYPE_RENDERING    = 2,
-            PLUGINTYPE_INVISIBLE    = 3
+            PLUGINTYPE_WINDOW = 0,
+            PLUGINTYPE_TOOLBAR = 1,
+            PLUGINTYPE_RENDERING = 2
         };
 
         EMStudioPlugin()
             : QObject() {}
-        virtual ~EMStudioPlugin() {}
+        virtual ~EMStudioPlugin() = default;
 
-        virtual const char* GetCompileDate() const { return MCORE_DATE; }
         virtual const char* GetName() const = 0;
         virtual uint32 GetClassID() const = 0;
-        virtual const char* GetCreatorName() const { return "Amazon.com, Inc."; }
-        virtual float GetVersion() const { return 1.0f; }
         virtual void Reflect(AZ::ReflectContext*) {}
         virtual bool Init() = 0;
-        virtual EMStudioPlugin* Clone() = 0;
+        virtual EMStudioPlugin* Clone() const = 0;
         virtual EMStudioPlugin::EPluginType GetPluginType() const = 0;
 
         virtual void OnAfterLoadLayout() {}
@@ -96,7 +88,7 @@ namespace EMStudio
         virtual void LegacyRender(RenderPlugin* renderPlugin, RenderInfo* renderInfo)             { MCORE_UNUSED(renderPlugin); MCORE_UNUSED(renderInfo); }
 
         //! Render function will call atom auxGeom internally to render. This is the replacement for LegacyRender function.
-        virtual void Render(EMotionFX::ActorRenderFlagBitset renderFlags)
+        virtual void Render(EMotionFX::ActorRenderFlags renderFlags)
         {
             AZ_UNUSED(renderFlags);
         };
@@ -124,4 +116,4 @@ namespace EMStudio
 
         virtual void AddWindowMenuEntries([[maybe_unused]] QMenu* parent) { }
     };
-}   // namespace EMStudio
+} // namespace EMStudio

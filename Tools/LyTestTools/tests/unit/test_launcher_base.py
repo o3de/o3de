@@ -195,13 +195,13 @@ class TestLauncherBuilder(object):
     """
     def test_CreateLauncher_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        under_test = ly_test_tools.launchers.launcher_helper.create_launcher(
+        under_test = ly_test_tools.launchers.launcher_helper.create_game_launcher(
             dummy_workspace, ly_test_tools.HOST_OS_EDITOR)
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
 
     def test_CreateDedicateLauncher_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        under_test = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
+        under_test = ly_test_tools.launchers.launcher_helper.create_server_launcher(
             dummy_workspace, ly_test_tools.HOST_OS_DEDICATED_SERVER)
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
 

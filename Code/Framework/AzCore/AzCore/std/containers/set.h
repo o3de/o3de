@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_ORDERED_SET_H
-#define AZSTD_ORDERED_SET_H 1
+#pragma once
 
 #include <AzCore/std/containers/node_handle.h>
 #include <AzCore/std/containers/rbtree.h>
@@ -300,6 +299,26 @@ namespace AZStd
         return originalSize - container.size();
     }
 
+    // deduction guides
+    template<class InputIterator,
+        class Compare = less<iter_value_type<InputIterator>>,
+        class Allocator = allocator>
+        set(InputIterator, InputIterator,
+            Compare = Compare(), Allocator = Allocator())
+        ->set<iter_value_type<InputIterator>, Compare, Allocator>;
+
+    template<class Key, class Compare = less<Key>, class Allocator = allocator>
+    set(initializer_list<Key>, Compare = Compare(), Allocator = Allocator())
+        ->set<Key, Compare, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    set(InputIterator, InputIterator, Allocator)
+        ->set<iter_value_type<InputIterator>,
+        less<iter_value_type<InputIterator>>, Allocator>;
+
+    template<class Key, class Allocator>
+    set(initializer_list<Key>, Allocator)->set<Key, less<Key>, Allocator>;
+
     /**
     * Ordered multiset container is complaint with \ref C++0x (23.4.4)
     * This is an associative container, key can be equivalent (multiple copies of the same key value).
@@ -573,7 +592,24 @@ namespace AZStd
 
         return originalSize - container.size();
     }
-}
 
-#endif // AZSTD_ORDERED_SET_H
-#pragma once
+    // deduction guides
+    template<class InputIterator,
+        class Compare = less<iter_value_type<InputIterator>>,
+        class Allocator = allocator>
+        multiset(InputIterator, InputIterator,
+            Compare = Compare(), Allocator = Allocator())
+        ->multiset<iter_value_type<InputIterator>, Compare, Allocator>;
+
+    template<class Key, class Compare = less<Key>, class Allocator = allocator>
+    multiset(initializer_list<Key>, Compare = Compare(), Allocator = Allocator())
+        ->multiset<Key, Compare, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    multiset(InputIterator, InputIterator, Allocator)
+        ->multiset<iter_value_type<InputIterator>,
+        less<iter_value_type<InputIterator>>, Allocator>;
+
+    template<class Key, class Allocator>
+    multiset(initializer_list<Key>, Allocator)->multiset<Key, less<Key>, Allocator>;
+}

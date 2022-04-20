@@ -43,7 +43,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             // Fetch and use shrinked positions for thin object transmission to ensure they fall onto the object when querying
             DirectionalLightShadow::GetShadowCoords(
                 shadowIndex,
-                surface.position - lightingData.shrinkFactor * surface.vertexNormal,
+                surface.position - surface.transmission.GetShrinkFactor() * surface.vertexNormal,
                 surface.normal,
                 lightingData.shadowCoords);
 

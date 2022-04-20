@@ -12,6 +12,8 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 namespace UnitTest
@@ -31,8 +33,21 @@ namespace UnitTest
         {
             AllocatorsFixture::SetUp();
 
-            m_testImageFolder =
-                AZ::IO::Path(AZ::Test::GetEngineRootPath(), '/') / AZ::IO::Path("Gems/Atom/Utils/Code/Tests/PngTestImages");
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            AZ::SettingsRegistryImpl localRegistry;
+            localRegistry.Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
+
+            // Look up the path to the Atom Gem Folder(don't assume it is in the Engine root)
+            // via searching through the gem paths that are registered in the o3de manifest files
+            // Adding the Atom gem as an active gem allows the alias of @gemroot:atom@ to be
+            // set in the fileIO
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(localRegistry);
+            AZ::Test::AddActiveGem("Atom", localRegistry, AZ::IO::FileIOBase::GetInstance());
+
+            ASSERT_TRUE(localRegistry.Get(m_testImageFolder.Native(), FixedValueString::format("%s/Atom/Path",
+                AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey)));
+
+            m_testImageFolder /= "Utils/Code/Tests/PngTestImages";
             
             m_tempPngFilePath = m_testImageFolder / "temp.png";
                         

@@ -107,10 +107,8 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     18. Add Mesh component to Sphere Entity and set the Mesh Asset property for the Mesh component.
     19. Create a Camera Entity as a child entity of the Default Level Entity then add a Camera component.
     20. Set the Camera Entity rotation value and set the Camera component Field of View value.
-    21. Enter game mode.
-    22. Take screenshot.
-    23. Exit game mode.
-    24. Look for errors.
+    21. Enter/Exit game mode taking screenshot.
+    22. Look for errors.
 
     :return: None
     """
@@ -127,7 +125,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
     from Atom.atom_utils.atom_constants import AtomComponentProperties
     from Atom.atom_utils.atom_component_helper import initial_viewport_setup
-    from Atom.atom_utils.screenshot_utils import ScreenshotHelper
+    from Atom.atom_utils.atom_component_helper import enter_exit_game_mode_take_screenshot
 
     DEGREE_RADIAN_FACTOR = 0.0174533
     SCREENSHOT_NAME = "AtomBasicLevelSetup"
@@ -300,18 +298,10 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         Report.result(Tests.camera_fov_set, camera_component.get_component_property_value(
             AtomComponentProperties.camera('Field of view')) == camera_fov_value)
 
-        # 21. Enter game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
+        # 21. Enter/Exit game mode taking screenshot.
+        enter_exit_game_mode_take_screenshot(f"{SCREENSHOT_NAME}.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
-        # 22. Take screenshot.
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{SCREENSHOT_NAME}.ppm")
-
-        # 23. Exit game mode.
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
-
-        # 24. Look for errors.
+        # 22. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

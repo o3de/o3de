@@ -9,8 +9,7 @@
             "Slots": [
                 {
                     "Name": "Output",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "SlotType": "InputOutput"
                 }
             ],
             "PassRequests": [
@@ -477,13 +476,6 @@
                     "Name": "Ssao",
                     "TemplateName": "SsaoParentTemplate",
                     "Connections": [
-                        {
-                            "LocalSlot": "LinearDepth",
-                            "AttachmentRef": {
-                                "Pass": "DepthPrePass",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
                         {
                             "LocalSlot": "Modulate",
                             "AttachmentRef": {

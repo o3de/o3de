@@ -17,10 +17,10 @@ namespace AZ::Debug
 {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
     void ExceptionHandler(int signal);
-#endif
 
     constexpr int MaxMessageLength = 4096;
     constexpr int MaxStackLines = 100;
+#endif
 
     namespace Platform
     {

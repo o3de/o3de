@@ -73,7 +73,7 @@ namespace ScriptCanvas
             return AZ::Success();
         }
 
-        AZStd::string errorMessage = AZStd::string::format("Connection cannot be created between source slot \"%s\" and target slot \"%s\" as the types do not satisfy the type requirement. (%s)\n\rValid types are:\n\r"
+        AZStd::string errorMessage = AZStd::string::format("Connection cannot be created between source slot \"%s\" and target slot \"%s\" as the types do not satisfy the type requirement. (%s)\nValid types are:\n"
             , sourceSlot.GetName().data()
             , targetSlot.GetName().data()
             , RTTI_GetTypeName());

@@ -258,7 +258,6 @@ namespace ScriptCanvasEditorTools
                 AZStd::string cleanName = GraphCanvas::TranslationKey::Sanitize(methodPair.first);
 
                 methodEntry.m_key = cleanName;
-                methodEntry.m_context = className;
 
                 methodEntry.m_details.m_category = "";
                 methodEntry.m_details.m_tooltip = "";
@@ -1320,7 +1319,7 @@ namespace ScriptCanvasEditorTools
 
         document.AddMember("entries", entries, document.GetAllocator());
 
-        AZ::IO::Path gemPath = Helpers::GetGemPath("ScriptCanvas.Editor");
+        AZ::IO::Path gemPath = Helpers::GetGemPath("ScriptCanvas");
         gemPath = gemPath / AZ::IO::Path("TranslationAssets");
         gemPath = gemPath / filename;
         gemPath.ReplaceExtension(".names");

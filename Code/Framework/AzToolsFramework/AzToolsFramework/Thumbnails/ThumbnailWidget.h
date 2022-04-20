@@ -32,7 +32,7 @@ namespace AzToolsFramework
             ~ThumbnailWidget() override = default;
 
             //! Call this to set what thumbnail widget will display
-            void SetThumbnailKey(SharedThumbnailKey key, const char* contextName = "Default");
+            void SetThumbnailKey(SharedThumbnailKey key);
             //! Remove current thumbnail
             void ClearThumbnail();
 
@@ -44,7 +44,6 @@ namespace AzToolsFramework
 
         private:
             SharedThumbnailKey m_key;
-            AZStd::string m_contextName;
 
         private Q_SLOTS:
             void KeyUpdatedSlot();

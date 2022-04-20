@@ -112,11 +112,6 @@ namespace AzToolsFramework
             }
         }
 
-        void EntryDelegate::SetThumbnailContext(const char* thumbnailContext)
-        {
-            m_thumbnailContext = thumbnailContext;
-        }
-
         void EntryDelegate::SetShowSourceControlIcons(bool showSourceControl)
         {
             m_showSourceControl = showSourceControl;
@@ -125,8 +120,8 @@ namespace AzToolsFramework
         int EntryDelegate::DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const
         {
             SharedThumbnail thumbnail;
-            ThumbnailerRequestsBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey, m_thumbnailContext.c_str());
-            AZ_Assert(thumbnail, "The shared numbernail was not available from the ThumbnailerRequestsBus.");
+            ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey);
+            AZ_Assert(thumbnail, "The shared numbernail was not available from the ThumbnailerRequestBus.");
             AZ_Assert(painter, "A null QPainter was passed in to DrawThumbnail.");
             if (!painter || !thumbnail || thumbnail->GetState() == Thumbnail::State::Failed)
             {
