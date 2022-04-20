@@ -1977,6 +1977,13 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
 
     if (!m_renderGraph.IsEmpty())
     {
+        if (!m_attachmentImageMap.empty())
+        {
+            // Process any queued pass changes to get rtt draw list tags in sync prior to adding draw calls
+            AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
+            passSystem->ProcessQueuedChanges();
+        }
+
         uiRenderer->BeginCanvasRender();
         m_renderGraph.Render(uiRenderer, viewportSize);
         uiRenderer->EndCanvasRender();
