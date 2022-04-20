@@ -225,12 +225,22 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.h
     Include/ScriptCanvas/Libraries/Math/MathGenerics.h
     Include/ScriptCanvas/Libraries/Math/MathRandom.h
-    Include/ScriptCanvas/Libraries/Math/Matrix3x3Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Matrix4x4Nodes.h
+    Include/ScriptCanvas/Libraries/Math/Matrix3x3.h
+    Include/ScriptCanvas/Libraries/Math/Matrix3x3.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Matrix3x3Nodes.h
+    Include/ScriptCanvas/Libraries/Math/Matrix4x4.h
+    Include/ScriptCanvas/Libraries/Math/Matrix4x4.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Matrix4x4Nodes.h
     Include/ScriptCanvas/Libraries/Math/Deprecated/Multiply.h
-    Include/ScriptCanvas/Libraries/Math/OBBNodes.h
-    Include/ScriptCanvas/Libraries/Math/PlaneNodes.h
-    Include/ScriptCanvas/Libraries/Math/RotationNodes.h
+    Include/ScriptCanvas/Libraries/Math/OBB.h
+    Include/ScriptCanvas/Libraries/Math/OBB.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Deprecated/OBBNodes.h
+    Include/ScriptCanvas/Libraries/Math/Plane.h
+    Include/ScriptCanvas/Libraries/Math/Plane.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Deprecated/PlaneNodes.h
+    Include/ScriptCanvas/Libraries/Math/Quaternion.h
+    Include/ScriptCanvas/Libraries/Math/Quaternion.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Deprecated/RotationNodes.h
     Include/ScriptCanvas/Libraries/Math/Deprecated/Subtract.h
     Include/ScriptCanvas/Libraries/Math/Deprecated/Sum.h
     Include/ScriptCanvas/Libraries/Math/TransformNodes.h

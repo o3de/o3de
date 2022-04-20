@@ -134,8 +134,13 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/While.cpp
     Include/ScriptCanvas/Libraries/Math/AABB.cpp
     Include/ScriptCanvas/Libraries/Math/Math.cpp
+    Include/ScriptCanvas/Libraries/Math/Matrix3x3.cpp
+    Include/ScriptCanvas/Libraries/Math/Matrix4x4.cpp
     Include/ScriptCanvas/Libraries/Math/MathExpression.cpp
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.cpp
+    Include/ScriptCanvas/Libraries/Math/OBB.cpp
+    Include/ScriptCanvas/Libraries/Math/Plane.cpp
+    Include/ScriptCanvas/Libraries/Math/Quaternion.cpp
     Include/ScriptCanvas/Libraries/Comparison/Comparison.cpp
     Include/ScriptCanvas/Libraries/Time/Time.cpp
     Include/ScriptCanvas/Libraries/Time/Countdown.cpp
