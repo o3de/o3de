@@ -7,5 +7,6 @@
 #
 
 set(FILES
-    Source/AudioSystemModule_Stub.cpp
+    DPEDebugViewStandalone/main.cpp
+    DPEDebugViewStandalone/DPEDebugWindow.ui
 )

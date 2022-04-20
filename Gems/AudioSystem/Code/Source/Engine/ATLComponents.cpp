@@ -9,15 +9,12 @@
 
 #include <ATLComponents.h>
 
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
-
-#if !defined(AUDIO_RELEASE)
-    #include <AzCore/std/string/conversions.h>
-#endif // !AUDIO_RELEASE
 
 #include <AzFramework/FileFunc/FileFunc.h>
 
@@ -30,12 +27,16 @@
 #include <IAudioSystemImplementation.h>
 
 #include <MathConversion.h>
-#include <IRenderAuxGeom.h>
+
+#if !defined(AUDIO_RELEASE)
+    // Debug Draw
+    #include <AzCore/std/string/conversions.h>
+    #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#endif // !AUDIO_RELEASE
+
 
 namespace Audio
 {
-    extern CAudioLogger g_audioLogger;
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // AudioObjectIDFactory
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,12 +123,6 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventManager::Update([[maybe_unused]] float fUpdateIntervalMS)
-    {
-        //TODO: implement
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     CATLEvent* CAudioEventManager::GetEvent(const EATLSubsystem eSender)
     {
         CATLEvent* pATLEvent = nullptr;
@@ -199,8 +194,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CATLEvent* CAudioEventManager::GetImplInstance()
     {
-        // must be called within a block protected by a critical section!
-
         CATLEvent* pEvent = nullptr;
 
         if (!m_oAudioEventPool.m_cReserved.empty())
@@ -220,10 +213,7 @@ namespace Audio
 
             if (!pEvent)
             {
-                --m_oAudioEventPool.m_nIDCounter;
-
-                g_audioLogger.Log(eALT_WARNING, "Failed to get a new instance of an AudioEvent from the implementation");
-                //failed to get a new instance from the implementation
+                AZLOG_ERROR("Failed to get a new instance of an ATLEvent from the implementation.");
             }
         }
 
@@ -233,8 +223,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioEventManager::ReleaseImplInstance(CATLEvent* const pOldEvent)
     {
-        // must be called within a block protected by a critical section!
-
         if (pOldEvent)
         {
             pOldEvent->Clear();
@@ -257,8 +245,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CATLEvent* CAudioEventManager::GetInternalInstance()
     {
-        // must be called within a block protected by a critical section!
-
         AZ_Assert(false, "GetInternalInstance was called yet it has no implementation!"); // implement when it is needed
         return nullptr;
     }
@@ -266,8 +252,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioEventManager::ReleaseInternalInstance([[maybe_unused]] CATLEvent* const pOldEvent)
     {
-        // must be called within a block protected by a critical section!
-
         AZ_Assert(false, "ReleaseInternalInstance was called yet it has no implementation!"); // implement when it is needed
     }
 
@@ -348,7 +332,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    bool CAudioObjectManager::ReserveID(TAudioObjectID& rAudioObjectID)
+    bool CAudioObjectManager::ReserveID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName)
     {
         CATLAudioObject* const pNewObject = GetInstance();
 
@@ -357,10 +341,12 @@ namespace Audio
 
         if (pNewObject)
         {
-            EAudioRequestStatus eImplResult = eARS_FAILURE;
-            AudioSystemImplementationRequestBus::BroadcastResult(eImplResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pNewObject->GetImplDataPtr(), nullptr);
+            EAudioRequestStatus eImplResult = EAudioRequestStatus::Failure;
+            AudioSystemImplementationRequestBus::BroadcastResult(
+                eImplResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pNewObject->GetImplDataPtr(),
+                sAudioObjectName);
 
-            if (eImplResult == eARS_SUCCESS)
+            if (eImplResult == EAudioRequestStatus::Success)
             {
                 pNewObject->IncrementRefCount();
                 rAudioObjectID = pNewObject->GetID();
@@ -386,7 +372,11 @@ namespace Audio
 
         if (pOldObject)
         {
-            if (pOldObject->GetRefCount() < 2)
+            // If the refcount is one, that means it's the "self" reference and there are no
+            // active events, so we can release/recycle the object back to the pool.
+            // Otherwise we can decrement the "self" reference and let outstanding events
+            // naturally finish and auto-release the object.
+            if (pOldObject->GetRefCount() == 1)
             {
                 bSuccess = ReleaseInstance(pOldObject);
             }
@@ -413,66 +403,34 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioObjectManager::ReportStartedEvent(CATLEvent const* const pEvent)
+    void CAudioObjectManager::ReportEventFinished(const CATLEvent* atlEvent)
     {
-        if (pEvent)
+        if (atlEvent)
         {
-            CATLAudioObject* const pObject = LookupID(pEvent->m_nObjectID);
-
-            if (pObject)
+            if (CATLAudioObject* audioObject = LookupID(atlEvent->m_nObjectID);
+                audioObject != nullptr)
             {
-                pObject->ReportStartedEvent(pEvent);
-            }
-        #if !defined(AUDIO_RELEASE)
-            else
-            {
-                g_audioLogger.Log(
-                    eALT_WARNING,
-                    "Failed to report starting event %u on object %s as it does not exist!",
-                    pEvent->GetID(),
-                    m_pDebugNameStore->LookupAudioObjectName(pEvent->m_nObjectID));
-            }
-        #endif // !AUDIO_RELEASE
-        }
-        else
-        {
-            g_audioLogger.Log(eALT_WARNING, "NULL pEvent in CAudioObjectManager::ReportStartedEvent");
-        }
-    }
+                audioObject->EventFinished(atlEvent);
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioObjectManager::ReportFinishedEvent(const CATLEvent* const pEvent, const bool bSuccess)
-    {
-        if (pEvent)
-        {
-            CATLAudioObject* const pObject = LookupID(pEvent->m_nObjectID);
-
-            if (pObject)
-            {
-                pObject->ReportFinishedEvent(pEvent, bSuccess);
-
-                if (pObject->GetRefCount() == 0)
+                // EventFinished will decr ref count (assuming the event was valid).
+                // This handles a case where ReleaseID was called for the object, but there were
+                // active events.  The object's "self" reference has already been decremented.
+                // So if the event finishing naturally causes refcount to zero, we can recycle the object.
+                if (audioObject->GetRefCount() == 0)
                 {
-                    ReleaseInstance(pObject);
+                    ReleaseInstance(audioObject);
                 }
             }
-        #if !defined(AUDIO_RELEASE)
+#if !defined(AUDIO_RELEASE)
             else
             {
-                g_audioLogger.Log(
-                    eALT_WARNING,
-                    "Removing Event %u from Object %s: Object no longer exists!",
-                    pEvent->GetID(),
-                    m_pDebugNameStore->LookupAudioObjectName(pEvent->m_nObjectID));
+                AZLOG_DEBUG(
+                    "Removing Event %llu from object '%s' - Object no longer exists!", atlEvent->GetID(),
+                    m_pDebugNameStore->LookupAudioObjectName(atlEvent->m_nObjectID));
             }
-        #endif // !AUDIO_RELEASE
-        }
-        else
-        {
-            g_audioLogger.Log(eALT_WARNING, "nullptr pEvent in CAudioObjectManager::ReportFinishedEvent");
+#endif // !AUDIO_RELEASE
         }
     }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CATLAudioObject* CAudioObjectManager::GetInstance()
@@ -509,13 +467,9 @@ namespace Audio
 
             if (!pObject)
             {
-                --m_cObjectPool.m_nIDCounter;
-
-                const char* msg = "Failed to get a new instance of an AudioObject from the implementation. "
+                AZLOG_ERROR("Failed to get a new instance of an AudioObject from the implementation. "
                     "If this limit was reached from legitimate content creation and not a scripting error, "
-                    "try increasing the Capacity of Audio::AudioSystemAllocator.";
-
-                g_audioLogger.Log(eALT_ASSERT, msg);
+                    "try increasing the Capacity of Audio::AudioSystemAllocator.");
                 //failed to get a new instance from the implementation
             }
         }
@@ -538,9 +492,9 @@ namespace Audio
         #endif // !AUDIO_RELEASE
 
             pOldObject->Clear();
-            EAudioRequestStatus eResult = eARS_FAILURE;
+            EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
             AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::UnregisterAudioObject, pOldObject->GetImplDataPtr());
-            bSuccess = (eResult == eARS_SUCCESS);
+            bSuccess = (eResult == EAudioRequestStatus::Success);
 
             if (m_cObjectPool.m_cReserved.size() < m_cObjectPool.m_nReserveSize)
             {
@@ -585,9 +539,9 @@ namespace Audio
             szAudioObjectName = m_pDebugNameStore->LookupAudioObjectName(pAudioObject->GetID());
         #endif // !AUDIO_RELEASE
 
-            EAudioRequestStatus eResult = eARS_FAILURE;
+            EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
             AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pAudioObject->GetImplDataPtr(), szAudioObjectName);
-            AZ_Assert(eResult == eARS_SUCCESS, "RegisterAudioObject failed to register object named '%s'", szAudioObjectName);
+            AZ_Assert(eResult == EAudioRequestStatus::Success, "RegisterAudioObject failed to register object named '%s'", szAudioObjectName);
         }
     }
 
@@ -607,11 +561,11 @@ namespace Audio
             CATLAudioObject* const pAudioObject = audioObjectPair.second;
             if (auto implObject = pAudioObject->GetImplDataPtr())
             {
-                EAudioRequestStatus eResult = eARS_FAILURE;
+                EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
                 AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::UnregisterAudioObject, implObject);
-                AZ_Error("CAudioObjectManager", eResult == eARS_SUCCESS, "Failed to Unregister Audio Object!");
+                AZ_Error("CAudioObjectManager", eResult == EAudioRequestStatus::Success, "Failed to Unregister Audio Object!");
                 AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::ResetAudioObject, implObject);
-                AZ_Error("CAudioObjectManager", eResult == eARS_SUCCESS, "Failed to Reset Audio Object!");
+                AZ_Error("CAudioObjectManager", eResult == EAudioRequestStatus::Success, "Failed to Reset Audio Object!");
                 AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DeleteAudioObjectData, implObject);
                 pAudioObject->SetImplDataPtr(nullptr);
             }
@@ -624,7 +578,7 @@ namespace Audio
     void AudioRaycastManager::PushAudioRaycastRequest(const AudioRaycastRequest& request)
     {
         // [Audio Thread]
-        AZStd::lock_guard<AZStd::mutex> lock(m_raycastRequestsMutex);
+        AZStd::scoped_lock lock(m_raycastRequestsMutex);
         m_raycastRequests.push_back(request);
     }
 
@@ -666,7 +620,7 @@ namespace Audio
 
         // Lock and swap the main request container with a local one for processing...
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_raycastRequestsMutex);
+            AZStd::scoped_lock lock(m_raycastRequestsMutex);
             processingQueue.swap(m_raycastRequests);
         }
 
@@ -693,7 +647,7 @@ namespace Audio
 
         // Lock and swap the local results into the target container (or move-append if necessary)...
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_raycastResultsMutex);
+            AZStd::scoped_lock lock(m_raycastResultsMutex);
             if (m_raycastResults.empty())
             {
                 m_raycastResults.swap(resultsQueue);
@@ -709,7 +663,7 @@ namespace Audio
     void AudioRaycastManager::ProcessRaycastResults([[maybe_unused]] float updateIntervalMs)
     {
         // [Audio Thread]
-        AZStd::scoped_lock<AZStd::mutex> lock(m_raycastResultsMutex);
+        AZStd::scoped_lock lock(m_raycastResultsMutex);
         for (const AudioRaycastResult& result : m_raycastResults)
         {
             AudioRaycastNotificationBus::Event(result.m_audioObjectId, &AudioRaycastNotificationBus::Events::OnAudioRaycastResults, result);
@@ -790,11 +744,6 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioListenerManager::Update([[maybe_unused]] const float fUpdateIntervalMS)
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioListenerManager::ReserveID(TAudioObjectID& rAudioObjectID)
     {
         bool bSuccess = false;
@@ -812,7 +761,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_WARNING, "CAudioListenerManager::ReserveID - Reserved pool of pre-allocated Audio Listeners has been exhausted!");
+            AZLOG_WARN("CAudioListenerManager::ReserveID - Reserved pool of pre-allocated Audio Listeners has been exhausted!");
         }
 
         return bSuccess;
@@ -883,82 +832,6 @@ namespace Audio
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    //  CAudioEventListenerManager
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CAudioEventListenerManager::CAudioEventListenerManager()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CAudioEventListenerManager::~CAudioEventListenerManager()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventListenerManager::AddRequestListener(const SAudioEventListener& listener)
-    {
-        for (const auto& currentListener : m_cListeners)
-        {
-            if (currentListener == listener)
-            {
-            #if !defined(AUDIO_RELEASE)
-                g_audioLogger.Log(eALT_WARNING, "AudioEventListenerManager::AddRequestListener - Request listener being added already exists!");
-            #endif // !AUDIO_RELEASE
-                return;
-            }
-        }
-
-        m_cListeners.push_back(listener);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventListenerManager::RemoveRequestListener(const SAudioEventListener& listener)
-    {
-        for (auto iter = m_cListeners.begin(); iter != m_cListeners.end(); ++iter)
-        {
-            if ((iter->m_fnOnEvent == listener.m_fnOnEvent || listener.m_fnOnEvent == nullptr) && iter->m_callbackOwner == listener.m_callbackOwner)
-            {
-                // Copy the back element into this iter position and pop the back element...
-                (*iter) = m_cListeners.back();
-                m_cListeners.pop_back();
-                return;
-            }
-        }
-
-    #if !defined(AUDIO_RELEASE)
-        g_audioLogger.Log(eALT_WARNING, "AudioEventListenerManager::RemoveRequestListener - Failed to remove a request listener (not found)!");
-    #endif // !AUDIO_RELEASE
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventListenerManager::NotifyListener(const SAudioRequestInfo* const pResultInfo)
-    {
-        // This should always be on the main thread!
-        AZ_PROFILE_FUNCTION(Audio);
-
-        auto found = AZStd::find_if(m_cListeners.begin(), m_cListeners.end(),
-            [pResultInfo](const SAudioEventListener& currentListener)
-            {
-                // 1) Is the listener interested in this request type?
-                // 2) Is the listener interested in this request sub-type?
-                // 3) Is the listener interested in this owner (or any owner)?
-                return ((currentListener.m_requestType == eART_AUDIO_ALL_REQUESTS || currentListener.m_requestType == pResultInfo->eAudioRequestType)
-                    && ((currentListener.m_specificRequestMask & pResultInfo->nSpecificAudioRequest) != 0)
-                    && (currentListener.m_callbackOwner == nullptr || currentListener.m_callbackOwner == pResultInfo->pOwner));
-            }
-        );
-
-        if (found != m_cListeners.end())
-        {
-            found->m_fnOnEvent(pResultInfo);
-        }
-    }
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     //  CATLXMLProcessor
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -985,21 +858,6 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CATLXmlProcessor::~CATLXmlProcessor()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLXmlProcessor::Initialize()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLXmlProcessor::Release()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CATLXmlProcessor::ParseControlsData(const char* const folderPath, const EATLDataScope dataScope)
     {
         AZStd::string searchPath;
@@ -1010,7 +868,7 @@ namespace Audio
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
-            g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Controls Library: '%s'", file.c_str());
+            AZLOG_INFO("Loading Audio Controls Library: '%s'", file.c_str());
 
             Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
@@ -1058,7 +916,7 @@ namespace Audio
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
-            g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Preloads Library: '%s'", file.c_str());
+            AZLOG_INFO("Loading Audio Preloads Library: '%s'", file.c_str());
 
             Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
@@ -1750,34 +1608,20 @@ namespace Audio
     }
 
 
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    //  SATLSharedData
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    SATLSharedData::SATLSharedData()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    SATLSharedData::~SATLSharedData()
-    {
-    }
-
-
-
 #if !defined(AUDIO_RELEASE)
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventManager::DrawDebugInfo(IRenderAuxGeom& rAuxGeom, float fPosX, float fPosY) const
+    void CAudioEventManager::DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float fPosX, float fPosY) const
     {
-        static float const fHeaderColor[4] = { 1.0f, 1.0f, 1.0f, 0.9f };
-        static float const fItemPlayingColor[4] = { 0.3f, 0.6f, 0.3f, 0.9f };
-        static float const fItemLoadingColor[4] = { 0.9f, 0.2f, 0.2f, 0.9f };
-        static float const fItemOtherColor[4] = { 0.8f, 0.8f, 0.8f, 0.9f };
+        static const AZ::Color headerColor{ 1.0f, 1.0f, 1.0f, 0.9f };
+        static const AZ::Color itemPlayingColor{ 0.3f, 0.6f, 0.3f, 0.9f };
+        static const AZ::Color itemLoadingColor{ 0.9f, 0.2f, 0.2f, 0.9f };
+        static const AZ::Color itemOtherColor{ 0.8f, 0.8f, 0.8f, 0.9f };
 
-        rAuxGeom.Draw2dLabel(fPosX, fPosY, 1.6f, fHeaderColor, false, "Audio Events [%zu]", m_cActiveAudioEvents.size());
+        const float textSize = 0.8f;
+        auto headerStr = AZStd::fixed_string<32>::format("Audio Events [%zu]", m_cActiveAudioEvents.size());
+        debugDisplay.SetColor(headerColor);
+        debugDisplay.Draw2dTextLabel(fPosX, fPosY, textSize, headerStr.c_str());
         fPosX += 20.0f;
         fPosY += 17.0f;
 
@@ -1793,25 +1637,23 @@ namespace Audio
 
             if (AudioDebugDrawFilter(triggerName, triggerFilter))
             {
-                const float* pColor = fItemOtherColor;
-
                 if (atlEvent->IsPlaying())
                 {
-                    pColor = fItemPlayingColor;
+                    debugDisplay.SetColor(itemPlayingColor);
                 }
                 else if (atlEvent->m_audioEventState == eAES_LOADING)
                 {
-                    pColor = fItemLoadingColor;
+                    debugDisplay.SetColor(itemLoadingColor);
+                }
+                else
+                {
+                    debugDisplay.SetColor(itemOtherColor);
                 }
 
-                rAuxGeom.Draw2dLabel(fPosX, fPosY, 1.6f,
-                    pColor,
-                    false,
-                    "%s (%llu): %s (%llu)",
-                    m_pDebugNameStore->LookupAudioObjectName(atlEvent->m_nObjectID),
-                    atlEvent->m_nObjectID,
-                    triggerName.c_str(),
-                    atlEvent->GetID());
+                AZStd::string str = AZStd::string::format(
+                    "%s (%llu): %s (%llu)", m_pDebugNameStore->LookupAudioObjectName(atlEvent->m_nObjectID), atlEvent->m_nObjectID,
+                    triggerName.c_str(), atlEvent->GetID());
+                debugDisplay.Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
 
                 fPosY += 16.0f;
             }
@@ -1822,36 +1664,6 @@ namespace Audio
     void CAudioEventManager::SetDebugNameStore(const CATLDebugNameStore* const pDebugNameStore)
     {
         m_pDebugNameStore = pDebugNameStore;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    bool CAudioObjectManager::ReserveID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName)
-    {
-        CATLAudioObject* const pNewObject  = GetInstance();
-
-        bool bSuccess = false;
-        rAudioObjectID = INVALID_AUDIO_OBJECT_ID;
-
-        if (pNewObject)
-        {
-            EAudioRequestStatus eImplResult = eARS_FAILURE;
-            AudioSystemImplementationRequestBus::BroadcastResult(eImplResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pNewObject->GetImplDataPtr(), sAudioObjectName);
-
-            if (eImplResult == eARS_SUCCESS)
-            {
-                pNewObject->IncrementRefCount();
-                rAudioObjectID = pNewObject->GetID();
-                m_cAudioObjects.emplace(rAudioObjectID, pNewObject);
-                bSuccess = true;
-            }
-            else
-            {
-                ReleaseInstance(pNewObject);
-                bSuccess = false;
-            }
-        }
-
-        return bSuccess;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1879,7 +1691,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioObjectManager::DrawPerObjectDebugInfo(IRenderAuxGeom& rAuxGeom, const AZ::Vector3& rListenerPos) const
+    void CAudioObjectManager::DrawPerObjectDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& rListenerPos) const
     {
         auto audioObjectFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioObjectsDebugFilter);
         AZStd::to_lower(audioObjectFilter.begin(), audioObjectFilter.end());
@@ -1897,24 +1709,25 @@ namespace Audio
 
             if (bDraw)
             {
-                audioObject->DrawDebugInfo(rAuxGeom, rListenerPos, m_pDebugNameStore);
+                audioObject->DrawDebugInfo(debugDisplay, rListenerPos, m_pDebugNameStore);
             }
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioObjectManager::DrawDebugInfo(IRenderAuxGeom& rAuxGeom, float fPosX, float fPosY) const
+    void CAudioObjectManager::DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float fPosX, float fPosY) const
     {
-        static const float fHeaderColor[4] = { 1.0f, 1.0f, 1.0f, 0.9f };
-        static const float fItemActiveColor[4] = { 0.3f, 0.6f, 0.3f, 0.9f };
-        static const float fItemInactiveColor[4] = { 0.8f, 0.8f, 0.8f, 0.9f };
-        static const float fOverloadColor[4] = { 1.0f, 0.3f, 0.3f, 0.9f };
+        static const AZ::Color headerColor{ 1.0f, 1.0f, 1.0f, 0.9f };
+        static const AZ::Color itemActiveColor{ 0.3f, 0.6f, 0.3f, 0.9f };
+        static const AZ::Color itemInactiveColor{ 0.8f, 0.8f, 0.8f, 0.9f };
+        static const AZ::Color overloadColor{ 1.0f, 0.3f, 0.3f, 0.9f };
 
+        AZStd::string str;
         size_t activeObjects = 0;
         size_t aliveObjects = m_cAudioObjects.size();
         size_t remainingObjects = (m_cObjectPool.m_nReserveSize > aliveObjects ? m_cObjectPool.m_nReserveSize - aliveObjects : 0);
         const float fHeaderPosY = fPosY;
-
+        const float textSize = 0.8f;
         fPosX += 20.0f;
         fPosY += 17.0f;
 
@@ -1938,17 +1751,12 @@ namespace Audio
                 SATLSoundPropagationData propData;
                 audioObject->GetObstOccData(propData);
 
-                rAuxGeom.Draw2dLabel(fPosX, fPosY, 1.6f,
-                    hasActiveEvents ? fItemActiveColor : fItemInactiveColor,
-                    false,
+                str = AZStd::string::format(
                     "[%.2f  %.2f  %.2f] (ID: %llu  Obst: %.2f  Occl: %.2f): %s",
-                    static_cast<float>(position.GetX()),
-                    static_cast<float>(position.GetY()),
-                    static_cast<float>(position.GetZ()),
-                    audioObject->GetID(),
-                    propData.fObstruction,
-                    propData.fOcclusion,
-                    audioObjectName.c_str());
+                    position.GetX(), position.GetY(), position.GetZ(), audioObject->GetID(),
+                    propData.fObstruction, propData.fOcclusion, audioObjectName.c_str());
+                debugDisplay.SetColor(hasActiveEvents ? itemActiveColor : itemInactiveColor);
+                debugDisplay.Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
 
                 fPosY += 16.0f;
             }
@@ -1961,18 +1769,10 @@ namespace Audio
 
         static const char* headerFormat = "Audio Objects [Active : %3zu | Alive: %3zu | Pool: %3zu | Remaining: %3zu]";
         const bool overloaded = (m_cAudioObjects.size() > m_cObjectPool.m_nReserveSize);
-
-        rAuxGeom.Draw2dLabel(
-            fPosX,
-            fHeaderPosY,
-            1.6f,
-            overloaded ? fOverloadColor : fHeaderColor,
-            false,
-            headerFormat,
-            activeObjects,
-            aliveObjects,
-            m_cObjectPool.m_nReserveSize,
-            remainingObjects);
+        str = AZStd::string::format(headerFormat, activeObjects, aliveObjects,
+            m_cObjectPool.m_nReserveSize, remainingObjects);
+        debugDisplay.SetColor(overloaded ? overloadColor : headerColor);
+        debugDisplay.Draw2dTextLabel(fPosX, fHeaderPosY, textSize, str.c_str());
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1997,7 +1797,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioListenerManager::DrawDebugInfo(IRenderAuxGeom& rAuxGeom) const
+    void CAudioListenerManager::DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         static const AZ::Color audioListenerColor(0.2f, 0.6f, 0.9f, 0.9f);
         static const AZ::Color xAxisColor(1.f, 0.f, 0.f, 0.9f);
@@ -2008,24 +1808,18 @@ namespace Audio
         {
             AZ::Vector3 vListenerPos = m_pDefaultListenerObject->oPosition.GetPositionVec();
 
-            const SAuxGeomRenderFlags previousAuxGeomRenderFlags = rAuxGeom.GetRenderFlags();
-            SAuxGeomRenderFlags newAuxGeomRenderFlags(e_Def3DPublicRenderflags | e_AlphaBlended);
-            newAuxGeomRenderFlags.SetCullMode(e_CullModeNone);
-            rAuxGeom.SetRenderFlags(newAuxGeomRenderFlags);
-
             // Draw Axes...
-            rAuxGeom.DrawLine(AZVec3ToLYVec3(vListenerPos), AZColorToLYColorB(xAxisColor),
-                AZVec3ToLYVec3(vListenerPos + m_pDefaultListenerObject->oPosition.GetRightVec()), AZColorToLYColorB(xAxisColor));
-            rAuxGeom.DrawLine(AZVec3ToLYVec3(vListenerPos), AZColorToLYColorB(yAxisColor),
-                AZVec3ToLYVec3(vListenerPos + m_pDefaultListenerObject->oPosition.GetForwardVec()), AZColorToLYColorB(yAxisColor));
-            rAuxGeom.DrawLine(AZVec3ToLYVec3(vListenerPos), AZColorToLYColorB(zAxisColor),
-                AZVec3ToLYVec3(vListenerPos + m_pDefaultListenerObject->oPosition.GetUpVec()), AZColorToLYColorB(zAxisColor));
+            debugDisplay.SetColor(xAxisColor);
+            debugDisplay.DrawLine(vListenerPos, vListenerPos + m_pDefaultListenerObject->oPosition.GetRightVec());
+            debugDisplay.SetColor(yAxisColor);
+            debugDisplay.DrawLine(vListenerPos, vListenerPos + m_pDefaultListenerObject->oPosition.GetForwardVec());
+            debugDisplay.SetColor(zAxisColor);
+            debugDisplay.DrawLine(vListenerPos, vListenerPos + m_pDefaultListenerObject->oPosition.GetUpVec());
 
             // Draw Sphere...
-            const float radius = 0.15f; // 0.15 meters
-            rAuxGeom.DrawSphere(AZVec3ToLYVec3(vListenerPos), radius, AZColorToLYColorB(audioListenerColor));
-
-            rAuxGeom.SetRenderFlags(previousAuxGeomRenderFlags);
+            const float radius = 0.05f; // 0.15 meters
+            debugDisplay.SetColor(audioListenerColor);
+            debugDisplay.DrawWireSphere(vListenerPos, radius);
         }
     }
 

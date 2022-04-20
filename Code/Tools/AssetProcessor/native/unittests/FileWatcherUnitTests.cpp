@@ -36,7 +36,7 @@ void FileWatcherUnitTestRunner::StartTest()
         });
 
         // give the file watcher thread a moment to get started
-        QThread::sleep(1);
+        QThread::msleep(50);
 
         QFile testTif(tempPath + "/test.tif");
         bool open = testTif.open(QFile::WriteOnly);
@@ -46,10 +46,9 @@ void FileWatcherUnitTestRunner::StartTest()
         testTif.write("0");
         testTif.close();
 
-
         // Wait for file change to be found, timeout, and be delivered
         unsigned int tries = 0;
-        while (!foundFile && tries++ < 100)
+        while (!foundFile && tries++ < 10)
         {
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
             QThread::msleep(10);
@@ -61,7 +60,7 @@ void FileWatcherUnitTestRunner::StartTest()
 
     { // test a whole bunch of files created/written
       // send enough files such that main thread is likely to be blocked:
-        const unsigned long maxFiles = 10000;
+        const unsigned long maxFiles = 1000;
         QSet<QString> outstandingFiles;
 
         auto connection = QObject::connect(&fileWatcher, &FileWatcher::fileAdded, this, [&](QString filename)
@@ -71,11 +70,11 @@ void FileWatcherUnitTestRunner::StartTest()
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Performing multi-file test...\n");
 
         // give the file watcher thread a moment to get started
-        QThread::sleep(1);
+        QThread::msleep(50);
 
         for (unsigned long fileIndex = 0; fileIndex < maxFiles; ++fileIndex)
         {
-            if (fileIndex % 1000 == 0)
+            if (fileIndex % 100 == 0)
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Performing multi-file test... creating file  %d / %d\n", fileIndex, maxFiles);
             }
@@ -116,6 +115,7 @@ void FileWatcherUnitTestRunner::StartTest()
         QObject::disconnect(connection);
     }
 
+
     AZ_TracePrintf(AssetProcessor::DebugChannel, "Deletion test ... \n");
 
     { // test deletion
@@ -127,7 +127,7 @@ void FileWatcherUnitTestRunner::StartTest()
         });
 
         // give the file watcher thread a moment to get started
-        QThread::sleep(1);
+        QThread::msleep(50);
 
         QString filename(tempPath + "/test.tif");
         bool removed = QFile::remove(filename);
@@ -176,7 +176,7 @@ void FileWatcherUnitTestRunner::StartTest()
         });
 
         // give the file watcher thread a moment to get started
-        QThread::sleep(1);
+        QThread::msleep(50);
 
         QDir tempDirPath(tempPath);
         tempDirPath.mkpath("dir1");
@@ -192,7 +192,7 @@ void FileWatcherUnitTestRunner::StartTest()
         UNIT_TEST_EXPECT_TRUE(UnitTestUtils::CreateDummyFile(originalName));
 
         int tries = 0;
-        while (!(fileAddCalled && fileRemoveCalled && fileModifiedCalled) && tries++ < 100)
+        while (!(fileAddCalled && fileModifiedCalled) && tries++ < 100)
         {
             QThread::msleep(10);
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -286,7 +286,7 @@ void FileWatcherUnitTestRunner::StartTest()
         UNIT_TEST_EXPECT_TRUE(renamer.rename(tempDirPath.absoluteFilePath("dir3"), tempDirPath.absoluteFilePath("dir4")));
 
         tries = 0;
-        while (!(fileAddCalled && fileRemoveCalled && fileModifiedCalled) && tries++ < 100)
+        while (!(fileAddCalled && fileRemoveCalled) && tries++ < 100)
         {
             QThread::msleep(10);
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);

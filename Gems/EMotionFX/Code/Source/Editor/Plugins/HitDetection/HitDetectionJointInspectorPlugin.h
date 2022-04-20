@@ -38,7 +38,7 @@ namespace EMotionFX
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override              { return new HitDetectionJointInspectorPlugin(); }
 
         // SkeletonOutlinerNotificationBus overrides
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;

@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
@@ -76,7 +77,7 @@ namespace GradientSignal
         PerlinGradientConfig m_configuration;
         AZStd::unique_ptr<PerlinImprovedNoise> m_perlinImprovedNoise;
         GradientTransform m_gradientTransform;
-        mutable AZStd::shared_mutex m_transformMutex;
+        mutable AZStd::shared_mutex m_queryMutex;
 
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;

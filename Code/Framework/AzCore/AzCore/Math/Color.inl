@@ -309,6 +309,10 @@ namespace AZ
         return IsClose(CreateZero(), tolerance);
     }
 
+    AZ_MATH_INLINE bool Color::IsFinite() const
+    {
+        return m_color.IsFinite();
+    }
 
     AZ_MATH_INLINE bool Color::operator==(const Color& rhs) const
     {

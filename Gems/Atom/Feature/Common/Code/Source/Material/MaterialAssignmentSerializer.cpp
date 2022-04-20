@@ -9,6 +9,8 @@
 #include <Material/MaterialAssignmentSerializer.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
 
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+
 namespace AZ
 {
     namespace Render
@@ -80,6 +82,7 @@ namespace AZ
                             LoadAny<AZ::Data::AssetId>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::Data::AssetData>>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, inputPropertyPair.value, context, result) ||
+                            LoadAny<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(propertyValue, inputPropertyPair.value, context, result))
                         {
                             materialAssignment->m_propertyOverrides[propertyName] = propertyValue;
@@ -178,6 +181,7 @@ namespace AZ
                                 StoreAny<AZ::Data::AssetId>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::Data::AssetData>>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, outputPropertyValue, context, result) ||
+                                StoreAny<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(
                                     propertyValue, outputPropertyValue, context, result))
                             {
@@ -251,3 +255,4 @@ namespace AZ
         }
     } // namespace Render
 } // namespace AZ
+
