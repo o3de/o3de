@@ -18,8 +18,8 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
-#include <BlastMaterial/MaterialConfiguration.h>
-#include <BlastMaterial/MaterialAsset.h>
+#include <Material/BlastMaterialConfiguration.h>
+#include <Material/BlastMaterialAsset.h>
 
 namespace Blast
 {

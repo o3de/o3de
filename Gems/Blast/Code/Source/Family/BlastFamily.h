@@ -14,7 +14,7 @@
 #include <Blast/BlastActor.h>
 #include <Blast/BlastActorConfiguration.h>
 #include <Blast/BlastDebug.h>
-#include <BlastMaterial/Material.h>
+#include <Material/BlastMaterial.h>
 #include <Common/BlastInterfaces.h>
 
 struct NvBlastExtMaterial;

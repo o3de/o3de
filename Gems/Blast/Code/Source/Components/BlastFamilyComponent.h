@@ -16,7 +16,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastFamilyComponentBus.h>
-#include <BlastMaterial/MaterialAsset.h>
+#include <Material/BlastMaterialAsset.h>
 #include <Common/BlastInterfaces.h>
 #include <Family/ActorRenderManager.h>
 #include <Family/BlastFamily.h>

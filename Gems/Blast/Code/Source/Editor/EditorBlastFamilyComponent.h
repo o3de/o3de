@@ -12,7 +12,7 @@
 #include <AzFramework/Physics/Material.h>
 #include <Blast/BlastActorConfiguration.h>
 #include <Blast/BlastDebug.h>
-#include <BlastMaterial/MaterialAsset.h>
+#include <Material/BlastMaterialAsset.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 

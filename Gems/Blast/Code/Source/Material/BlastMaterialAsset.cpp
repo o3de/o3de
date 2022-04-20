@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <BlastMaterial/MaterialAsset.h>
+#include <Material/BlastMaterialAsset.h>
 
 namespace Blast
 {

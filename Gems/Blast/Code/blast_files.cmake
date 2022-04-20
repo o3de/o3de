@@ -47,10 +47,10 @@ set(FILES
     Source/Family/DamageManager.cpp
     Source/Common/BlastInterfaces.h
     Source/Common/Utils.h
-    Source/BlastMaterial/Material.h
-    Source/BlastMaterial/Material.cpp
-    Source/BlastMaterial/MaterialAsset.h
-    Source/BlastMaterial/MaterialAsset.cpp
-    Source/BlastMaterial/MaterialConfiguration.h
-    Source/BlastMaterial/MaterialConfiguration.cpp
+    Source/Material/BlastMaterial.h
+    Source/Material/BlastMaterial.cpp
+    Source/Material/BlastMaterialAsset.h
+    Source/Material/BlastMaterialAsset.cpp
+    Source/Material/BlastMaterialConfiguration.h
+    Source/Material/BlastMaterialConfiguration.cpp
 )

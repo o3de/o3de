@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 
-#include <BlastMaterial/MaterialConfiguration.h>
+#include <Material/BlastMaterialConfiguration.h>
 
 namespace Blast
 {
