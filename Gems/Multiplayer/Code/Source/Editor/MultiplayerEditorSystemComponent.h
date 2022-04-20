@@ -20,6 +20,7 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzFramework/Spawnable/SpawnableAssetBus.h>
 
 namespace AzNetworking
 {
@@ -51,6 +52,7 @@ namespace Multiplayer
         , private IEditorNotifyListener
         , private MultiplayerEditorServerRequestBus::Handler
         , private AZ::TickBus::Handler
+        , private AzFramework::SpawnableAssetEventsBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerEditorSystemComponent, "{9F335CC0-5574-4AD3-A2D8-2FAEF356946C}");
@@ -87,6 +89,11 @@ namespace Multiplayer
         void LaunchEditorServer();
         bool FindServerLauncher(AZ::IO::FixedMaxPath& serverPath);
         void Connect();
+
+        //! AzFramework::SpawnableAssetEventsBus::Handler overrides
+        //! @{
+        void OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZ::Data::AssetId& id) override;
+        //! @
         
         //! EditorEvents::Handler overrides
         //! @{

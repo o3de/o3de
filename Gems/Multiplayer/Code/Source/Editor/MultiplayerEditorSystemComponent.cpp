@@ -491,4 +491,10 @@ namespace Multiplayer
         }
     }
 
+    void MultiplayerEditorSystemComponent::OnPreparingSpawnable(
+        [[maybe_unused]] const AzFramework::Spawnable& spawnable, [[maybe_unused]] const AZ::Data::AssetId& id)
+    {
+        
+    }
+
 }
