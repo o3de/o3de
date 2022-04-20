@@ -2623,10 +2623,6 @@ namespace EMotionFX
                     continue;
                 }
 
-                EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer =
-                    static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(vertexAttributeLayer);
-                const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
-
                 const uint16 numLocalJoints = mesh->GetNumUniqueJoints();
                 const uint16 highestJointIndex = mesh->GetHighestJointIndex();
 
