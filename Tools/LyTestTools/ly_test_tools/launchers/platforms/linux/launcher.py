@@ -262,7 +262,7 @@ class LinuxMaterialEditor(LinuxLauncher):
         """
         Return full path to the Editor for this build's configuration and project
 
-        :return: full path to Editor
+        :return: full path to MaterialEditor
         """
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), "MaterialEditor")
