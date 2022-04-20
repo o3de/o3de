@@ -54,6 +54,7 @@ namespace AzFramework
         AZ::ObjectStream::FilterDescriptor filter(assetLoadFilterCB);
         if (AZ::Utils::LoadObjectFromStreamInPlace(*stream, *spawnable, nullptr /*SerializeContext*/, filter))
         {
+            SpawnableAssetEventsBus::Broadcast(&SpawnableAssetEventsBus::Events::OnPreparingSpawnable, *spawnable, asset.GetId());
             ResolveEntityAliases(spawnable, asset, stream->GetStreamingDeadline(), stream->GetStreamingPriority(), assetLoadFilterCB);
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
         }
