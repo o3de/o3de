@@ -52,7 +52,7 @@ public:
     void SetViewPane(CLayoutViewPane* pViewPane);
     void SetTitle(const QString& title);
     void OnViewportSizeChanged(int width, int height);
-    void OnViewportFOVChanged(float fov);
+    void OnViewportFOVChanged(float fovRadians);
 
     static void AddFOVMenus(QMenu* menu, std::function<void(float)> callback, const QStringList& customPresets);
     static void AddAspectRatioMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets);

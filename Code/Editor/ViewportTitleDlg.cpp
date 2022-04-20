@@ -561,14 +561,13 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 void CViewportTitleDlg::OnMenuFOVCustom()
 {
     bool ok;
-    int fov = QInputDialog::getInt(this, tr("Custom FOV"), QString(), 60, 1, 120, 1, &ok);
+    int fovDegrees = QInputDialog::getInt(this, tr("Custom FOV"), QString(), 60, 1, 120, 1, &ok);
 
     if (ok)
     {
-        m_pViewPane->SetViewportFOV(aznumeric_cast<float>(fov));
-        OnViewportFOVChanged(AZ::DegToRad(fov));
+        m_pViewPane->SetViewportFOV(aznumeric_cast<float>(fovDegrees));
         // Update the custom presets.
-        const QString text = QString::number(fov);
+        const QString text = QString::number(fovDegrees);
         UpdateCustomPresets(text, m_customFOVPresets);
         SaveCustomPresets("FOVPresets", "FOVPreset", m_customFOVPresets);
     }
@@ -586,12 +585,12 @@ void CViewportTitleDlg::CreateFOVMenu()
 
     AddFOVMenus(
         m_fovMenu,
-        [this](float f)
+        [this](const float fovDegrees)
         {
-            m_pViewPane->SetViewportFOV(f);
-            OnViewportFOVChanged(AZ::DegToRad(f));
+            m_pViewPane->SetViewportFOV(fovDegrees);
         },
         m_customFOVPresets);
+
     if (!m_fovMenu->isEmpty())
     {
         m_fovMenu->addSeparator();
@@ -856,12 +855,13 @@ void CViewportTitleDlg::OnViewportSizeChanged(int width, int height)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CViewportTitleDlg::OnViewportFOVChanged(float fov)
+void CViewportTitleDlg::OnViewportFOVChanged(const float fovRadians)
 {
-    const float degFOV = AZ::RadToDeg(fov);
     if (m_fovMenu)
     {
-        m_fovMenu->setTitle(QString::fromLatin1("FOV:  %1%2").arg(qRound(degFOV)).arg(QString(QByteArray::fromPercentEncoding("%C2%B0"))));
+        const float fovDegrees = AZ::RadToDeg(fovRadians);
+        m_fovMenu->setTitle(
+            QString::fromLatin1("FOV:  %1%2").arg(qRound(fovDegrees)).arg(QString(QByteArray::fromPercentEncoding("%C2%B0"))));
     }
 }
 
