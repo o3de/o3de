@@ -109,10 +109,6 @@ namespace EMotionFX
     {
         // if we have deformers in the stack
         const size_t numDeformers = m_deformers.size();
-
-        EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer =
-            (SkinningInfoVertexAttributeLayer*)m_mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
-        const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
         
         const uint16 highestJointIndex = m_mesh->GetHighestJointIndex();
 
