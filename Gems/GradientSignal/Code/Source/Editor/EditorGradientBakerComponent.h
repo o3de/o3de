@@ -80,26 +80,17 @@ namespace GradientSignal
         //! GradientPreviewContextRequestBus overrides ...
         AZ::EntityId GetPreviewEntity() const override;
         AZ::Aabb GetPreviewBounds() const override;
-        bool GetConstrainToShape() const override;
 
         void OnConfigurationChanged();
 
         // This is used by the preview so we can pass an invalid entity Id if our component is disabled
         AZ::EntityId GetGradientEntityId() const;
 
-        AZ::u32 GetPreviewPositionVisibility() const;
-        AZ::u32 GetPreviewSizeVisibility() const;
-        AZ::u32 GetPreviewConstrainToShapeVisibility() const;
-        AZ::u32 PreviewSettingsAndSettingsVisibilityChanged() const;
         void UpdatePreviewSettings() const;
         AzToolsFramework::EntityIdList CancelPreviewRendering() const;
 
     private:
         GradientBakerConfig m_configuration;
-        AZ::EntityId m_previewEntityId;
-        AZ::Vector3 m_previewPosition = AZ::Vector3(0.0f);
-        AZ::Vector3 m_previewSize = AZ::Vector3(1.0f);
-        bool m_constrainToShape = false;
         AZ::EntityId m_gradientEntityId;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };
