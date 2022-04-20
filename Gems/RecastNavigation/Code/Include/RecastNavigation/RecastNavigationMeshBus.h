@@ -9,8 +9,8 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
-#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 class dtNavMeshQuery;
 class dtNavMesh;
@@ -35,9 +35,23 @@ namespace RecastNavigation
     {
     public:
 
-        virtual void OnNavigationMeshUpdated() = 0;
+        virtual void OnNavigationMeshUpdated(AZ::EntityId navigationMeshEntity) = 0;
     };
 
     using RecastNavigationMeshNotificationBus = AZ::EBus<RecastNavigationMeshNotifications>;
 
+    class RecastNavigationNotificationHandler
+        : public RecastNavigationMeshNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(RecastNavigationNotificationHandler,
+            "{819FF083-C28A-4620-B59E-78EB7D2CB432}", 
+            AZ::SystemAllocator, OnNavigationMeshUpdated);
+
+        void OnNavigationMeshUpdated(AZ::EntityId navigationMeshEntity) override
+        {
+            Call(FN_OnNavigationMeshUpdated, navigationMeshEntity);
+        }
+    };
 } // namespace RecastNavigation

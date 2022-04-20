@@ -1,0 +1,102 @@
+{
+    "entries": [
+        {
+            "base": "RecastNavigationMeshRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Recast Navigation Mesh Request Bus"
+            },
+            "methods": [
+                {
+                    "base": "UpdateNavigationMesh",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Update Navigation Mesh"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Update Navigation Mesh is invoked"
+                    },
+                    "details": {
+                        "name": "Update Navigation Mesh"
+                    }
+                },
+                {
+                    "base": "FindPathToEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find Path To Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find Path To Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Find Path To Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "From Entity",
+                                "tooltip": "A path starting at this entity"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "To Entity",
+                                "tooltip": "A path ending at this entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4599647A-45DD-585B-AFC0-4BAD29EB49A7}",
+                            "details": {
+                                "name": "Container of AZ::Vector3's"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FindPathToPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find Path To Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find Path To Position is invoked"
+                    },
+                    "details": {
+                        "name": "Find Path To Position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4599647A-45DD-585B-AFC0-4BAD29EB49A7}",
+                            "details": {
+                                "name": "AZ Std::vector"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

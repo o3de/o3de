@@ -1,0 +1,30 @@
+{
+    "entries": [
+        {
+            "base": "RecastNavigationMeshNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Recast Navigation Mesh Notification Bus",
+                "category": "EBus Handlers"
+            },
+            "methods": [
+                {
+                    "base": "OnNavigationMeshUpdated",
+                    "details": {
+                        "name": "On Navigation Mesh Updated"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Navigation Mesh Entity",
+                                "tooltip": "Entity Id of the Entity with Navigation Mesh Component that updated its navigation data"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -63,6 +63,9 @@ namespace RecastNavigation
                 ;
 
             behaviorContext->Class<RecastNavigationMeshComponent>()->RequestBus("RecastNavigationMeshRequestBus");
+
+            behaviorContext->EBus<RecastNavigationMeshNotificationBus>("RecastNavigationMeshNotificationBus")
+                ->Handler<RecastNavigationNotificationHandler>();
         }
     }
 
@@ -145,7 +148,7 @@ namespace RecastNavigation
                 if (TaskUpdateNavigationMesh())
                 {
                     m_navMeshReady = true;
-                    RecastNavigationMeshNotificationBus::Broadcast(&RecastNavigationMeshNotificationBus::Events::OnNavigationMeshUpdated);
+                    RecastNavigationMeshNotificationBus::Broadcast(&RecastNavigationMeshNotificationBus::Events::OnNavigationMeshUpdated, GetEntityId());
                 }
 
                 m_waitingOnNavMeshRebuild = false;
@@ -624,15 +627,7 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (m_waitingOnNavMeshRebuild)
-        {
-            if (m_navMeshReady)
-            {
-                m_waitingOnNavMeshRebuild = false;
-                RecastNavigationMeshNotificationBus::Event(GetEntityId(), &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshUpdated);
-            }
-        }
-        else if (m_navMeshReady && cl_navmesh_debug)
+        if (m_navMeshReady && cl_navmesh_debug)
         {
             m_customDebugDraw.SetColor(AZ::Color(0.F, 0.9f, 0, 1));
             duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);

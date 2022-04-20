@@ -116,7 +116,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME RecastNavigation.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
-                recastnavigation_files.cmake
                 recastnavigation_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE

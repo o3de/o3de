@@ -23,7 +23,11 @@
                     "Entity_[689399540125]",
                     "Entity_[693694507421]",
                     "Entity_[450911616725]",
-                    "Entity_[561843407855]"
+                    "Entity_[121152888255751]",
+                    "Entity_[148722283328775]",
+                    "Entity_[561843407855]",
+                    "Entity_[616398531477]",
+                    "Entity_[43401095296263]"
                 ]
             },
             "Component_[15230859088967841193]": {
@@ -212,7 +216,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 6920109702438769333
+                            "EditorEntityId": 3745874585993380078
                         }
                     }
                 },
@@ -486,6 +490,311 @@
                 }
             }
         },
+        "Entity_[121152888255751]": {
+            "Id": "Entity_[121152888255751]",
+            "Name": "Walkable Ground",
+            "Components": {
+                "Component_[11292043037594988550]": {
+                    "$type": "SelectionComponent",
+                    "Id": 11292043037594988550
+                },
+                "Component_[12482982358099081483]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 12482982358099081483,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": {
+                                "{}": {
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{82FD41F3-1BD4-5A4F-8EA2-DDEFC1B0F2CD}"
+                                        },
+                                        "assetHint": "materials/presets/macbeth/16_yellow_tex.azmaterial"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "Component_[12609543496009019220]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 12609543496009019220
+                },
+                "Component_[12633702391359586668]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 12633702391359586668
+                },
+                "Component_[15218674107800691520]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 15218674107800691520,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{C15CD465-9589-56ED-945F-8416FA4798A3}",
+                                    "subId": 284301017
+                                },
+                                "assetHint": "objects/_primitives/_box_1x1.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[15452482044783842847]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15452482044783842847
+                },
+                "Component_[15824416766761593319]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 15824416766761593319
+                },
+                "Component_[16025874304388479904]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 16025874304388479904
+                },
+                "Component_[168254914237457004]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 168254914237457004,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            16.331573486328125,
+                            -1.6495599746704102,
+                            -1.3466978073120117
+                        ],
+                        "UniformScale": 10.0
+                    }
+                },
+                "Component_[17891477845271769815]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 17891477845271769815
+                },
+                "Component_[3100900185066405258]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 3100900185066405258
+                },
+                "Component_[7883161033135576251]": {
+                    "$type": "EditorColliderComponent",
+                    "Id": 7883161033135576251,
+                    "ColliderConfiguration": {
+                        "MaterialSelection": {
+                            "MaterialIds": [
+                                {}
+                            ]
+                        }
+                    },
+                    "ShapeConfiguration": {
+                        "ShapeType": 1,
+                        "Box": {
+                            "Scale": [
+                                10.0,
+                                10.0,
+                                10.0
+                            ]
+                        }
+                    }
+                },
+                "Component_[969952627813668729]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 969952627813668729
+                }
+            }
+        },
+        "Entity_[148722283328775]": {
+            "Id": "Entity_[148722283328775]",
+            "Name": "Walkable Ground",
+            "Components": {
+                "Component_[11292043037594988550]": {
+                    "$type": "SelectionComponent",
+                    "Id": 11292043037594988550
+                },
+                "Component_[12609543496009019220]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 12609543496009019220
+                },
+                "Component_[12633702391359586668]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 12633702391359586668
+                },
+                "Component_[15218674107800691520]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 15218674107800691520,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{C15CD465-9589-56ED-945F-8416FA4798A3}",
+                                    "subId": 284301017
+                                },
+                                "assetHint": "objects/_primitives/_box_1x1.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[15452482044783842847]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15452482044783842847
+                },
+                "Component_[15824416766761593319]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 15824416766761593319
+                },
+                "Component_[16025874304388479904]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 16025874304388479904
+                },
+                "Component_[168254914237457004]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 168254914237457004,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            16.331573486328125,
+                            -11.43963623046875,
+                            -1.4344921112060547
+                        ],
+                        "UniformScale": 10.0
+                    }
+                },
+                "Component_[17891477845271769815]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 17891477845271769815
+                },
+                "Component_[3100900185066405258]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 3100900185066405258
+                },
+                "Component_[4110958663722161591]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 4110958663722161591,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": {
+                                "{}": {
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{82FD41F3-1BD4-5A4F-8EA2-DDEFC1B0F2CD}"
+                                        },
+                                        "assetHint": "materials/presets/macbeth/16_yellow_tex.azmaterial"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "Component_[7883161033135576251]": {
+                    "$type": "EditorColliderComponent",
+                    "Id": 7883161033135576251,
+                    "ColliderConfiguration": {
+                        "MaterialSelection": {
+                            "MaterialIds": [
+                                {}
+                            ]
+                        }
+                    },
+                    "ShapeConfiguration": {
+                        "ShapeType": 1,
+                        "Box": {
+                            "Scale": [
+                                10.0,
+                                10.0,
+                                10.0
+                            ]
+                        }
+                    }
+                },
+                "Component_[969952627813668729]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 969952627813668729
+                }
+            }
+        },
+        "Entity_[43401095296263]": {
+            "Id": "Entity_[43401095296263]",
+            "Name": "Navigation Goal",
+            "Components": {
+                "Component_[11061624444630851527]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 11061624444630851527,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            0.6346440315246582,
+                            -1.6473875045776367,
+                            0.28966307640075684
+                        ]
+                    }
+                },
+                "Component_[11465493777516340697]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11465493777516340697
+                },
+                "Component_[11648206481031157905]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 11648206481031157905
+                },
+                "Component_[14237648130347449481]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 14237648130347449481
+                },
+                "Component_[14958164634508504662]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 14958164634508504662
+                },
+                "Component_[16265625926778227103]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 16265625926778227103
+                },
+                "Component_[17386271197770416398]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 17386271197770416398,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{8E6D29E3-0019-5C5A-9F5D-61656BC02DD7}",
+                                    "subId": 284874770
+                                },
+                                "assetHint": "materialeditor/viewportmodels/cone.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[17516301765383555764]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 17516301765383555764
+                },
+                "Component_[236379783055849837]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 236379783055849837
+                },
+                "Component_[5056651525053576226]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 5056651525053576226,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": {
+                                "{}": {
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{F4DF12BC-C818-550C-AA95-F4BE4A457772}"
+                                        },
+                                        "assetHint": "materials/presets/macbeth/14_green_tex.azmaterial"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "Component_[9620504648384093399]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 9620504648384093399
+                },
+                "Component_[9866907030339049581]": {
+                    "$type": "SelectionComponent",
+                    "Id": 9866907030339049581
+                }
+            }
+        },
         "Entity_[450911616725]": {
             "Id": "Entity_[450911616725]",
             "Name": "Walkable Ground",
@@ -550,6 +859,24 @@
                 "Component_[17891477845271769815]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 17891477845271769815
+                },
+                "Component_[2168983699202106687]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 2168983699202106687,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": {
+                                "{}": {
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{82FD41F3-1BD4-5A4F-8EA2-DDEFC1B0F2CD}"
+                                        },
+                                        "assetHint": "materials/presets/macbeth/16_yellow_tex.azmaterial"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
                 "Component_[3100900185066405258]": {
                     "$type": "EditorEntityIconComponent",
@@ -692,6 +1019,365 @@
                 }
             }
         },
+        "Entity_[616398531477]": {
+            "Id": "Entity_[616398531477]",
+            "Name": "Find Navigation Path Example",
+            "Components": {
+                "Component_[11554795048048889509]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 11554795048048889509
+                },
+                "Component_[12982575036807639241]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 12982575036807639241
+                },
+                "Component_[1327276505531494889]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 1327276505531494889
+                },
+                "Component_[15905743192823553527]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 15905743192823553527,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{C15CD465-9589-56ED-945F-8416FA4798A3}",
+                                    "subId": 284301017
+                                },
+                                "assetHint": "objects/_primitives/_box_1x1.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[16022479472750688113]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 16022479472750688113,
+                    "Child Entity Order": [
+                        "Entity_[43401095296263]"
+                    ]
+                },
+                "Component_[16560055133557322347]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 16560055133557322347,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            15.254203796386719,
+                            -15.49557113647461,
+                            4.241723537445068
+                        ]
+                    }
+                },
+                "Component_[17705178818728710275]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 17705178818728710275
+                },
+                "Component_[3094692785004681899]": {
+                    "$type": "SelectionComponent",
+                    "Id": 3094692785004681899
+                },
+                "Component_[4943753206567059416]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 4943753206567059416,
+                    "m_name": "find_navigation_path_example.scriptcanvas",
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "id": "{CCC5174E-B1C9-53D5-BD13-8ECE3087910A}",
+                            "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/find_navigation_path_example.scriptcanvas"
+                        },
+                        "variables": [
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 12
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "Color",
+                                    "value": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                    ]
+                                },
+                                "VariableId": {
+                                    "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
+                                },
+                                "VariableName": "Draw Path Color",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 3
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "double",
+                                    "value": 0.0
+                                },
+                                "VariableId": {
+                                    "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
+                                },
+                                "VariableName": "Draw Path Duration",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 12
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "Color",
+                                    "value": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                    ]
+                                },
+                                "VariableId": {
+                                    "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
+                                },
+                                "VariableName": "Draw Path Color",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 3
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "double",
+                                    "value": 0.0
+                                },
+                                "VariableId": {
+                                    "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
+                                },
+                                "VariableName": "Draw Path Duration",
+                                "InitialValueSource": 1
+                            }
+                        ],
+                        "entityId": [
+                            [
+                                {
+                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                },
+                                ""
+                            ],
+                            [
+                                {
+                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                },
+                                ""
+                            ],
+                            [
+                                {
+                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                },
+                                ""
+                            ],
+                            [
+                                {
+                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                },
+                                ""
+                            ]
+                        ],
+                        "overrides": [
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 12
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "Color",
+                                    "value": [
+                                        0.8095216155052185,
+                                        0.10794232040643692,
+                                        0.10794232040643692,
+                                        1.0
+                                    ]
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
+                                },
+                                "VariableName": "Draw Path Color",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 3
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "double",
+                                    "value": 30.0
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
+                                },
+                                "VariableName": "Draw Path Duration",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 1
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "EntityId",
+                                    "value": "Entity_[689399540125]"
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                },
+                                "VariableName": "Navigation Mesh",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 1
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "EntityId",
+                                    "value": "Entity_[43401095296263]"
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                },
+                                "VariableName": "Goal Entity",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 12
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "Color",
+                                    "value": [
+                                        0.8707408308982849,
+                                        0.10449378192424774,
+                                        0.2705119550228119,
+                                        1.0
+                                    ]
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
+                                },
+                                "VariableName": "Draw Path Color",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 3
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "double",
+                                    "value": 30.0
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
+                                },
+                                "VariableName": "Draw Path Duration",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 1
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "EntityId",
+                                    "value": "Entity_[689399540125]"
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                },
+                                "VariableName": "Navigation Mesh",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 1
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "EntityId",
+                                    "value": "Entity_[43401095296263]"
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                },
+                                "VariableName": "Goal Entity",
+                                "InitialValueSource": 1
+                            }
+                        ]
+                    },
+                    "sourceHandle": {
+                        "id": "{CCC5174E-B1C9-53D5-BD13-8ECE3087910A}",
+                        "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/find_navigation_path_example.scriptcanvas"
+                    }
+                },
+                "Component_[602188882902659475]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 602188882902659475
+                },
+                "Component_[7201194374592077604]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 7201194374592077604
+                },
+                "Component_[7531668866501227231]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 7531668866501227231
+                },
+                "Component_[8600220737029475472]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 8600220737029475472,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": {
+                                "{}": {
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{F4DF12BC-C818-550C-AA95-F4BE4A457772}"
+                                        },
+                                        "assetHint": "materials/presets/macbeth/14_green_tex.azmaterial"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "Entity_[689399540125]": {
             "Id": "Entity_[689399540125]",
             "Name": "Navigation Mesh",
@@ -711,12 +1397,14 @@
                 "Component_[18213539476955925626]": {
                     "$type": "EditorAxisAlignedBoxShapeComponent",
                     "Id": 18213539476955925626,
+                    "DisplayFilled": false,
                     "AxisAlignedBoxShape": {
                         "Configuration": {
+                            "IsFilled": false,
                             "Dimensions": [
-                                39.32768249511719,
+                                76.5702896118164,
                                 31.22234344482422,
-                                20.0
+                                11.336971282958984
                             ]
                         }
                     }
@@ -836,6 +1524,24 @@
                 "Component_[3100900185066405258]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 3100900185066405258
+                },
+                "Component_[3361229806849089711]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 3361229806849089711,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": {
+                                "{}": {
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{82FD41F3-1BD4-5A4F-8EA2-DDEFC1B0F2CD}"
+                                        },
+                                        "assetHint": "materials/presets/macbeth/16_yellow_tex.azmaterial"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
                 "Component_[7883161033135576251]": {
                     "$type": "EditorColliderComponent",
