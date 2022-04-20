@@ -6,6 +6,7 @@
  *
  */
 #include "AssetProcessorServerUnitTests.h"
+#include "UnitTestRunner.h"
 
 #include "native/connection/connection.h"
 #include "native/connection/connectionManager.h"
@@ -264,12 +265,7 @@ namespace UnitTest
     void AssetProcessorServerUnitTest::SetUp()
     {
         ScopedAllocatorSetupFixture::SetUp();
-        m_app.reset(aznew AZ::ComponentApplication());
-        AZ::ComponentApplication::Descriptor desc;
-        desc.m_useExistingAllocator = true;
-        AZ::Entity* systemEntity = m_app->Create(desc);
-        systemEntity->Init();
-        systemEntity->Activate();
+        m_application = AZStd::make_unique<AzFramework::Application>();
 
         static int numParams = 1;
         static char processName[] = { "AssetProcessorBatch" };
@@ -299,15 +295,12 @@ namespace UnitTest
         m_applicationServer = AZStd::make_unique<BatchApplicationServer>();
         m_applicationServer->startListening(FEATURE_TEST_LISTEN_PORT); // a port that is not the normal port
         connect(m_applicationServer.get(), SIGNAL(newIncomingConnection(qintptr)), ConnectionManager::Get(), SLOT(NewConnection(qintptr)));
-
     }
 
     void AssetProcessorServerUnitTest::TearDown()
     {
         m_batchApplicationManager.reset();
-
-        m_app->Destroy();
-
+        m_application.reset();
         ScopedAllocatorSetupFixture::TearDown();
     }
 
@@ -406,19 +399,19 @@ namespace UnitTest
     {
         // UnitTest for testing the AssetProcessorConnection by creating lot of connections that connects to AP and then disconnecting them
         // at different times This test should detect any deadlocks that can arise due to rapidly connecting/disconnecting connections
-        //UnitTestUtils::AssertAbsorber assertAbsorber;
+        UnitTestUtils::AssertAbsorber assertAbsorber;
 
         // Testing the case when negotiation succeeds
         RunAssetProcessorConnectionStressTest(false);
 
-        //EXPECT_EQ(assertAbsorber.m_numErrorsAbsorbed, 0);
-        //EXPECT_EQ(assertAbsorber.m_numAssertsAbsorbed, 0);
+        EXPECT_EQ(assertAbsorber.m_numErrorsAbsorbed, 0);
+        EXPECT_EQ(assertAbsorber.m_numAssertsAbsorbed, 0);
 
         // Testing the case when negotiation fails
         RunAssetProcessorConnectionStressTest(true);
 
-        //EXPECT_EQ(assertAbsorber.m_numErrorsAbsorbed, 0);
-        //EXPECT_EQ(assertAbsorber.m_numAssertsAbsorbed, 0);
+        EXPECT_EQ(assertAbsorber.m_numErrorsAbsorbed, 0);
+        EXPECT_EQ(assertAbsorber.m_numAssertsAbsorbed, 0);
     }
 
     void AssetProcessorServerUnitTest::ConnectionErrorForNonProxyMode(unsigned int connId, QString error)

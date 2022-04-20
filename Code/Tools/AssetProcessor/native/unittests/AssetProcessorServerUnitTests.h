@@ -64,6 +64,16 @@ namespace AZ
     class ComponentApplication;
 }
 
+namespace AzFramework
+{
+    class Application;
+}
+
+namespace UnitTestUtils
+{
+    class AssertAbsorber;
+}
+
 namespace UnitTest
 {
     class UnitTestAppManager;
@@ -87,9 +97,7 @@ namespace UnitTest
 
         void RunAssetProcessorConnectionStressTest(bool failNegotiation);
         AZStd::unique_ptr<ApplicationServer> m_applicationServer;
-        //AZStd::unique_ptr<ConnectionManager> m_connectionManager;
-        //AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_platformConfig;
-        AZStd::unique_ptr<AZ::ComponentApplication> m_app;
+        AZStd::unique_ptr<AzFramework::Application> m_application;
         IniConfiguration m_iniConfiguration;
 
         AZStd::unique_ptr<UnitTestAppManager> m_batchApplicationManager;
