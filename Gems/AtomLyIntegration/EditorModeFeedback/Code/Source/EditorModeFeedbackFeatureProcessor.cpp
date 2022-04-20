@@ -41,6 +41,11 @@ namespace AZ
 
         void EditorModeFeatureProcessor::ApplyRenderPipelineChange([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
         {
+            // Attempt to inject the EditorModeFeedback pass system into the pipeline
+            // It is unclear how failures to do so should be handled, ultimately if there is an issue with the pass
+            // files (for whatever reason) there isn't really much that can be done to recover
+
+            // Load the pass request file containing the editor EditorModeFeadback parent pass
             const AZ::RPI::PassRequest* passRequest = nullptr;
             const char* passRequestAssetFilePath = "Passes/EditorModeFeedback_PassRequest.azasset";
             m_parentPassRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
@@ -57,7 +62,6 @@ namespace AZ
                 return;
             }
 
-            // Create the pass
             RPI::Ptr<RPI::Pass> parentPass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
             if (!parentPass)
             {
@@ -65,7 +69,7 @@ namespace AZ
                 return;
             }
 
-            // only create pass resources if it was success
+            // Inject the parent pass after the PostProcess pass
             if (!renderPipeline->AddPassAfter(parentPass, Name("PostProcessPass")))
             {
                 AZ_Error(Window, false, "Add editor mode feedback parent pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());

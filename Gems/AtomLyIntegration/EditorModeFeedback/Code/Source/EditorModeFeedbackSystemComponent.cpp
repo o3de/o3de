@@ -278,7 +278,6 @@ namespace AZ
                 for (auto& [componentId, meshHandleDrawPackets] : componentMeshHandleDrawPackets)
                 {
                     const auto scene = RPI::Scene::GetSceneForEntityId(entityId);
-                    //auto editorModeFeatureProcessor = scene->GetFeatureProcessor<EditorModeFeatureProcessor>();
                     if (const auto* featureProcessor = scene->GetFeatureProcessor<MeshFeatureProcessorInterface>())
                     {
                         const auto view = GetViewFromScene(scene);

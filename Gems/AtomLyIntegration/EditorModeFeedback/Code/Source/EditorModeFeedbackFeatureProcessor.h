@@ -30,7 +30,7 @@ namespace AZ
             void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
 
         private:
-            // Cache the pass request data for creating an editor mode feedback parent pass
+            //! Cache the pass request data for creating an editor mode feedback parent pass.
             AZ::Data::Asset<AZ::RPI::AnyAsset> m_parentPassRequestAsset;
         };
     } // namespace Render
