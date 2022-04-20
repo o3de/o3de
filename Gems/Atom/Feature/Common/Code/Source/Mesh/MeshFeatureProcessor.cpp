@@ -240,6 +240,13 @@ namespace AZ
 
             return {};
         }
+        
+        const MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
+        {
+            static MeshDrawPacketLods empty;
+
+            return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : empty;
+        }
 
         const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
         {
@@ -687,8 +694,8 @@ namespace AZ
         {
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
-
-            ModelDataInstance::DrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
+            
+            MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
 
