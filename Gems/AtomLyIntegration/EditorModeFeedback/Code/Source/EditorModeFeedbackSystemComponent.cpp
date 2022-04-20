@@ -154,7 +154,7 @@ namespace AZ
             m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler(
                 [this]()
                 {
-                    this->LoadPassTemplateMappings();
+                    LoadPassTemplateMappings();
                 });
            
             passSystem->AddPassCreator(Name("EditorModeFeedbackParentPass"), &EditorModeFeedbackParentPass::Create);

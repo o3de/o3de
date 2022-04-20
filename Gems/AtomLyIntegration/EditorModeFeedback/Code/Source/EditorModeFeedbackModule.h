@@ -15,6 +15,7 @@ namespace AZ
 {
     namespace Render
     {
+        //! Module for the editor mode visual feedback gem.
         class EditorModeFeedbackModule
             : public AZ::Module
         {
