@@ -29,6 +29,8 @@ namespace AzFramework
 {
     // Only localhost is supported presently
     static constexpr const char* TargetServerAddress = "127.0.0.1";
+    // Sleep time for outbox processing thread to prevent constant spin
+    static constexpr uint8_t OutboxThreadTick = 50;
 
     AZ_CVAR(bool, target_autoconnect, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable autoconnecting to target host.");
     AZ_CVAR(uint16_t, target_autoconnect_interval, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The interval to attempt automatic connecitons.");
@@ -713,6 +715,7 @@ namespace AzFramework
                     m_outboxMutex.unlock();
                 }
             }
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(OutboxThreadTick));
         }
     }
 
