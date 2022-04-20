@@ -6,18 +6,6 @@
  *
  */
 
-#include <StarsModuleInterface.h>
-#include <StarsSystemComponent.h>
-
-namespace AZ::Render
-{
-    class StarsModule
-        : public StarsModuleInterface
-    {
-    public:
-        AZ_RTTI(StarsModule, "{962F1F0F-AEEB-4E98-87A0-E7E0403D37AC}", StarsModuleInterface);
-        AZ_CLASS_ALLOCATOR(StarsModule, AZ::SystemAllocator, 0);
-    };
-}// namespace AZ::Render
+#include <StarsModule.h>
 
 AZ_DECLARE_MODULE_CLASS(Gem_Stars, AZ::Render::StarsModule)

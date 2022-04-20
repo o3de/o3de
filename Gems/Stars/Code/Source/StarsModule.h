@@ -13,14 +13,14 @@
 
 namespace AZ::Render
 {
-    class StarsModuleInterface
+    class StarsModule
         : public AZ::Module
     {
     public:
-        AZ_RTTI(StarsModuleInterface, "{1C13B38B-BAD5-4C42-AB75-9038596CBF3E}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(StarsModuleInterface, AZ::SystemAllocator, 0);
+        AZ_RTTI(StarsModule, "{1C13B38B-BAD5-4C42-AB75-9038596CBF3E}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(StarsModule, AZ::SystemAllocator, 0);
 
-        StarsModuleInterface()
+        StarsModule()
         {
             m_descriptors.insert(m_descriptors.end(), {
                 StarsSystemComponent::CreateDescriptor(),

@@ -9,7 +9,7 @@ set(FILES
     Source/StarsComponentController.h
     Source/StarsFeatureprocessor.cpp
     Source/StarsFeatureprocessor.h
-    Source/StarsModuleInterface.h
+    Source/StarsModule.h
     Source/StarsSystemComponent.cpp
     Source/StarsSystemComponent.h
 )
