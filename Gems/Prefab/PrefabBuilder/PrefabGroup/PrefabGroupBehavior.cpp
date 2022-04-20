@@ -47,21 +47,6 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 
-//#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-//#include <AzCore/IO/Path/Path.h>
-//#include <AzCore/RTTI/BehaviorContext.h>
-//#include <AzCore/Serialization/SerializeContext.h>
-//#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-//#include <AzCore/std/smart_ptr/make_shared.h>
-//#include <AzFramework/API/ApplicationAPI.h>
-//#include <AzFramework/Asset/AssetSystemComponent.h>
-//#include <AzFramework/StringFunc/StringFunc.h>
-//#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-//#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-//#include <Entity/EntityUtilityComponent.h>
-//#include <Prefab/PrefabSystemComponentInterface.h>
-//#include <Prefab/PrefabSystemScriptingBus.h>
-
 namespace AZStd
 {
     template<> struct hash<AZ::SceneAPI::Containers::SceneGraph::NodeIndex>
