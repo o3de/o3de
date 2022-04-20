@@ -216,15 +216,21 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Deprecated/AABBNodes.h
     Include/ScriptCanvas/Libraries/Math/AABB.h
     Include/ScriptCanvas/Libraries/Math/AABB.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Math/ColorNodes.h
-    Include/ScriptCanvas/Libraries/Math/CRCNodes.h
+    Include/ScriptCanvas/Libraries/Math/Color.h
+    Include/ScriptCanvas/Libraries/Math/Color.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Deprecated/ColorNodes.h
+    Include/ScriptCanvas/Libraries/Math/CRC.h
+    Include/ScriptCanvas/Libraries/Math/CRC.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Deprecated/CRCNodes.h
     Include/ScriptCanvas/Libraries/Math/Deprecated/Divide.h
     Include/ScriptCanvas/Libraries/Math/Math.h
     Include/ScriptCanvas/Libraries/Math/MathExpression.h
     Include/ScriptCanvas/Libraries/Math/MathExpression.ScriptCanvasGrammar.xml
+    Include/ScriptCanvas/Libraries/Math/MathFunctions.h
+    Include/ScriptCanvas/Libraries/Math/MathFunctions.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.h
-    Include/ScriptCanvas/Libraries/Math/MathGenerics.h
-    Include/ScriptCanvas/Libraries/Math/MathRandom.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/MathGenerics.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/MathRandom.h
     Include/ScriptCanvas/Libraries/Math/Matrix3x3.h
     Include/ScriptCanvas/Libraries/Math/Matrix3x3.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Deprecated/Matrix3x3Nodes.h

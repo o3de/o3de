@@ -11,10 +11,6 @@
 // This header is only meant to include the nodes and should not contain
 // shared code
 
-#include "ColorNodes.h"
-#include "CRCNodes.h"
-#include "MathGenerics.h"
-#include "MathRandom.h"
 #include "MathExpression.h"
 #include "TransformNodes.h"
 #include "Vector2Nodes.h"
@@ -23,6 +19,10 @@
 
 // Deprecated math nodes
 #include "Deprecated/AABBNodes.h"
+#include "Deprecated/ColorNodes.h"
+#include "Deprecated/CRCNodes.h"
+#include "Deprecated/MathGenerics.h"
+#include "Deprecated/MathRandom.h"
 #include "Deprecated/Divide.h"
 #include "Deprecated/Multiply.h"
 #include "Deprecated/Matrix3x3Nodes.h"
