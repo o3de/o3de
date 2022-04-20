@@ -2,8 +2,11 @@
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "properties": {
+        "general": {
+            "doubleSided": true
+        },
         "baseColor": {
             "color": [
                 0.8207980394363403,
@@ -14,7 +17,6 @@
         },
         "opacity": {
             "alphaSource": "None",
-            "doubleSided": true,
             "factor": 1.0,
             "mode": "Cutout"
         }

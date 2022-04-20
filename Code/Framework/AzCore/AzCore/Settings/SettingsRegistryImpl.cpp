@@ -413,7 +413,7 @@ namespace AZ
         return GetValueInternal(result, path);
     }
 
-    bool SettingsRegistryImpl::GetObject(void* result, Uuid resultTypeID, AZStd::string_view path) const
+    bool SettingsRegistryImpl::GetObject(void* result, AZ::Uuid resultTypeID, AZStd::string_view path) const
     {
         if (path.empty())
         {
@@ -492,7 +492,7 @@ namespace AZ
         return Set(path, AZStd::string_view{ value });
     }
 
-    bool SettingsRegistryImpl::SetObject(AZStd::string_view path, const void* value, Uuid valueTypeID)
+    bool SettingsRegistryImpl::SetObject(AZStd::string_view path, const void* value, AZ::Uuid valueTypeID)
     {
         if (path.empty())
         {

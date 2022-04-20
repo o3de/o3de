@@ -26,6 +26,9 @@ namespace AZ
     {
         class Shader;
 
+        // If the RPI system using null renderer
+        bool IsNullRenderer();
+
         //! Get the asset ID for a given shader file path
         Data::AssetId GetShaderAssetId(const AZStd::string& shaderFilePath, bool isCritical = false);
 

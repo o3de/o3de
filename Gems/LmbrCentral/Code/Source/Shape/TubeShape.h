@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <Cry_Math.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/TubeShapeComponentBus.h>
@@ -30,6 +31,8 @@ namespace LmbrCentral
         AZ_RTTI(TubeShape, "{8DF865F3-D155-402D-AF64-9342CE9E9E60}")
         AZ_CLASS_ALLOCATOR(TubeShape, AZ::SystemAllocator, 0)
 
+        TubeShape() = default;
+        TubeShape(const TubeShape& rhs);
         static void Reflect(AZ::SerializeContext& context);
 
         void Activate(AZ::EntityId entityId);
@@ -74,6 +77,7 @@ namespace LmbrCentral
         AZ::Transform m_currentTransform; ///< Caches the current World transform.
         AZ::EntityId m_entityId; ///< The Id of the entity the shape is attached to.
         float m_radius = 1.f; ///< Radius of the tube.
+        mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety
     };
 
     /// Generates a Tube mesh with filled surface and outlines.

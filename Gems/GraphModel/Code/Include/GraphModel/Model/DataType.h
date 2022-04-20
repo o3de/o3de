@@ -42,7 +42,7 @@ namespace GraphModel
         DataType();
 
         //! Constructs a new DataType object.
-        //! @param typeEnum - The main unique ID used by the GraphModel framework for this DataType object.Every DataType in the IGraphContext must have a unique enum value.
+        //! @param typeEnum - The main unique ID used by the GraphModel framework for this DataType object.Every DataType in the GraphContext must have a unique enum value.
         //! @param typeUuid - An alternate unique ID that is used by the node graph UI system. (This is not necessarily the same thing as an RTTI TypeId.The only requirement is that it maps 1:1 with the typeEnum).
         //! @param defaultValue - The default value assigned to any slot that uses this data type upon creation.
         //! @param typeDisplayName - Used for tooltips or other UI elements as well as debug messages.This should be unique, and similar to typeEnum.

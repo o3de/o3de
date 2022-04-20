@@ -208,7 +208,6 @@ namespace UnitTest
     public:
         ToolsApplicationMessageHandler();
     private:
-        AZStd::unique_ptr<ErrorHandler> m_gridMateMessageHandler;
         AZStd::unique_ptr<ErrorHandler> m_enginePathMessageHandler;
         AZStd::unique_ptr<ErrorHandler> m_skippingDriveMessageHandler;
         AZStd::unique_ptr<ErrorHandler> m_storageDriveMessageHandler;
