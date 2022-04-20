@@ -8,7 +8,7 @@
 
 #include <StarsSystemComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <StarsComponentConfig.h>
+#include <StarsAsset.h>
 #include <StarsFeatureProcessor.h>
 
 namespace AZ::Render

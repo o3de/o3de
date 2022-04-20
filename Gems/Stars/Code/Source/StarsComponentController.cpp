@@ -164,8 +164,8 @@ namespace AZ::Render
 
                 for (int k = 0; k < verticesPerStar; k++)
                 {
-                    stars[6 * i + k].m_position = position;
-                    stars[6 * i + k].m_color = (star.magnitude << 24) + (star.blue << 16) + (star.green << 8) + star.red;
+                    stars[verticesPerStar * i + k].m_position = position;
+                    stars[verticesPerStar * i + k].m_color = (star.magnitude << 24) + (star.blue << 16) + (star.green << 8) + star.red;
                 }
             }
 
