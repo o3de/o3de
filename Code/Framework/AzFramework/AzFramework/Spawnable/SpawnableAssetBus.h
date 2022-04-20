@@ -31,7 +31,9 @@ namespace AzFramework
         //!     loading and no job threads become free as they're all waiting for assets to complete. It is however safe to queue
         //!     an asset for loading.
         virtual void OnResolveAliases(
-            Spawnable::EntityAliasVisitor& aliases, const SpawnableMetaData& metadata, const Spawnable::EntityList& entities) = 0;
+            [[maybe_unused]] Spawnable::EntityAliasVisitor& aliases,
+            [[maybe_unused]] const SpawnableMetaData& metadata,
+            [[maybe_unused]] const Spawnable::EntityList& entities){};
 
         //! Notification to allow systems to access a spawnable before it's been modified by aliasing.
         //! This ebus function will be called for all spawnables, even if there are no aliases on the spawnable.
