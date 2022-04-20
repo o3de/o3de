@@ -56,7 +56,7 @@ namespace UnitTest
                 return false;
             }
 
-            // tests which use the builder bus plug in their own mock version, so disconnect ours.
+            // Not needed for this test, so disconnect
             AssetProcessor::AssetBuilderInfoBus::Handler::BusDisconnect();
 
             // Disable saving global user settings to prevent failure due to detecting file updates
@@ -265,6 +265,9 @@ namespace UnitTest
         QElapsedTimer time;
         time.start();
 
+        // This is still time out based because it's waiting on a few error events to continue.
+        // The actual test runs when ConnectionErrorForNonProxyMode is triggered with the expected
+        // error messages. A shorter timeout can make this get missed in some environments.
         const int testTimeoutMS = 120 * 1000;
         while (time.elapsed() < testTimeoutMS && !m_eventWasPosted)
         {
