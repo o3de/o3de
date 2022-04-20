@@ -1129,12 +1129,6 @@ namespace UnitTest
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
 
-                auto perPositionCallback =
-                    [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
-                {
-                    benchmark::DoNotOptimize(surfacePoint);
-                };
-
                 constexpr uint32_t MaxParallelQueries = 16;
                 AZStd::thread threads[MaxParallelQueries];
                 AZStd::semaphore syncThreads;
