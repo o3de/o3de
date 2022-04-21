@@ -9,6 +9,4 @@
 
 Print('Hello World')
 Warning('Hello World')
-
--- this error line will unfortunately cause the test to fail
--- Error('Hello World')
+Error('Hello World')

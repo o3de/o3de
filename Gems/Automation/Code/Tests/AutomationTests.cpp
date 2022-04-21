@@ -49,7 +49,6 @@ namespace UnitTest
         {
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
-            m_automationErrors.set_capacity(0);
             m_automationWarnings.set_capacity(0);
             m_automationLogs.set_capacity(0);
 
@@ -60,10 +59,11 @@ namespace UnitTest
         // AZ::Debug::TraceMessageBus implementation
         bool OnError(const char* window, const char* message) override
         {
-            if (azstricmp(window, "Automation") == 0)
-            {
-                m_automationErrors.push_back(message);
-            }
+            AZ_UNUSED(window);
+            AZ_UNUSED(message);
+            // Do nothing. Errors will cause the test to fail. If we suppress errors,
+            // this function won't get called. We test errors by suppressing them and 
+            // then counting how many errors were suppressed.
             return false;
         }
 
@@ -85,8 +85,6 @@ namespace UnitTest
             return false;
         }
 
-
-        AZStd::vector<AZStd::string> m_automationErrors;
         AZStd::vector<AZStd::string> m_automationWarnings;
         AZStd::vector<AZStd::string> m_automationLogs;
     };
@@ -96,7 +94,11 @@ namespace UnitTest
         const char* scriptPath = "@gemroot:Automation@/Code/Tests/Scripts/PrintTest.lua";
         auto application = CreateApplication(scriptPath);
 
+        // We expect our "Hello World" error message to be printed by the test script.
+        // There should be exactly one error message.
+        AZ_TEST_START_TRACE_SUPPRESSION;
         application->RunMainLoop();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         AZStd::string executeScriptLog = AZStd::string::format("Running script '%s'...\n", scriptPath);
         const char* scriptLog = "Script: Hello World\n";
@@ -107,9 +109,6 @@ namespace UnitTest
 
         ASSERT_EQ(m_automationWarnings.size(), 1);
         EXPECT_STREQ(m_automationWarnings[0].c_str(), scriptLog);
-
-        //ASSERT_EQ(m_automationErrors.size(), 1);
-        //EXPECT_STREQ(m_automationErrors[0].c_str(), scriptLog);
     }
 
     TEST_F(TrackedAutomationFixture, ScriptCommandLineArgument_UsesIdleFramesMethod_AllOperationsLogged)
