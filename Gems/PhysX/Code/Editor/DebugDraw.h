@@ -62,6 +62,8 @@ namespace PhysX
             bool HasCachedGeometry() const;
             void ClearCachedGeometry();
 
+            void SetDisplayFlag(bool enable);
+
             void BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const;
 
             struct ElementDebugInfo
