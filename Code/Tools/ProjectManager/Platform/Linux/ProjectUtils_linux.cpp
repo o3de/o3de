@@ -26,32 +26,76 @@ namespace O3DE::ProjectManager
             return AZ::Success();
         }
 
-        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
+        AZ::Outcome<QString, QString> FindSupportedCMake()
         {
             // Validate that cmake is installed and is in the command line
-            auto whichCMakeResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ProjectCMakeCommand});
+            auto whichCMakeResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ ProjectCMakeCommand });
             if (!whichCMakeResult.IsSuccess())
             {
-                return AZ::Failure(QObject::tr("CMake not found. <br><br>"
-                    "Make sure that the minimum version of CMake is installed and available from the command prompt. "
-                    "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> page for more information."));
+                return AZ::Failure(
+                    QObject::tr("CMake not found. <br><br>"
+                                "Make sure that the minimum version of CMake is installed and available from the command prompt. "
+                                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE "
+                                "requirements</a> page for more information."));
             }
 
-            // Look for the first compatible version of clang. The list below will contain the known clang compilers that have been tested for O3DE.
+            QString cmakeInstalledPath = whichCMakeResult.GetValue().split("\n")[0];
+
+            // Query the version of the installed cmake
+            auto queryCmakeVersionQuery = ExecuteCommandResult(cmakeInstalledPath, QStringList{ "--version" });
+            if (queryCmakeVersionQuery.IsSuccess())
+            {
+                AZ_TracePrintf(
+                    "Project Manager", "\"%s\" detected.", queryCmakeVersionQuery.GetValue().split("\n")[0].toUtf8().constData());
+            }
+
+            return AZ::Success(QString{ cmakeInstalledPath });
+        }
+
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
+        {
+            // Query the version of cmake that is installed
+            if (auto queryCmakeVersionQuery = FindSupportedCMake(); !queryCmakeVersionQuery.IsSuccess())
+            {
+                return queryCmakeVersionQuery;
+            }
+
+            // Look for the first compatible version of clang. The list below will contain the known clang compilers that have been tested
+            // for O3DE.
             for (const QString& supportClangVersion : SupportedClangVersions)
             {
-                auto whichClangResult = ProjectUtils::ExecuteCommandResult("which", QStringList{QString("clang-%1").arg(supportClangVersion)});
-                auto whichClangPPResult = ProjectUtils::ExecuteCommandResult("which", QStringList{QString("clang++-%1").arg(supportClangVersion)});
+                auto whichClangResult =
+                    ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang-%1").arg(supportClangVersion) });
+                auto whichClangPPResult =
+                    ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang++-%1").arg(supportClangVersion) });
                 if (whichClangResult.IsSuccess() && whichClangPPResult.IsSuccess())
                 {
                     return AZ::Success(QString("clang-%1").arg(supportClangVersion));
                 }
             }
-            return AZ::Failure(QObject::tr("Clang not found. <br><br>"
-                "Make sure that the clang is installed and available from the command prompt. "
-                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> page for more information."));
-        }
 
+            // Next detect clang executables without a compiler version as a backup
+            // Only Ubuntu has clang++-<version> symlinks, other linux distros do not
+            auto whichClangNoVersionResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang") });
+            auto whichClangPPNoVersionResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang++") });
+            if (whichClangNoVersionResult.IsSuccess() && whichClangPPNoVersionResult.IsSuccess())
+            {
+                return AZ::Success(QString("clang"));
+            }
+
+            // Finally fallback to trying to detect gcc executables without a compiler version
+            auto whichGccNoVersionResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("gcc") });
+            auto whichGPlusPlusNoVersionResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("g++") });
+            if (whichGccNoVersionResult.IsSuccess() && whichGPlusPlusNoVersionResult.IsSuccess())
+            {
+                return AZ::Success(QString("gcc"));
+            }
+
+            return AZ::Failure(QObject::tr("Neither clang nor gcc not found. <br><br>"
+                                           "Make sure that the clang or gcc is installed and available from the command prompt. "
+                                           "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE "
+                                           "requirements</a> page for more information."));
+        }
 
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
         {
