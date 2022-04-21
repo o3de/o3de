@@ -13,16 +13,6 @@
 
 namespace UnitTest
 {
-    // there is an issue when running multiple script tests where the second test will
-    // consistently deadlock on loading the script asset, so until that can get sorted
-    // only one script test can be enabled.
-    #define ScriptTest_Print 1
-    #define ScriptTest_IdleFrames 2
-    #define ScriptTest_IdleSeconds 3
-
-    #define ENABLE_SCRIPT_TEST ScriptTest_Print
-
-
     TEST_F(AutomationApplicationFixture, GetAutomationContext_FromAutomationInterface_HasCoreMethods)
     {
         CreateApplication({ });
@@ -101,11 +91,7 @@ namespace UnitTest
         AZStd::vector<AZStd::string> m_automationLogs;
     };
 
-#if ENABLE_SCRIPT_TEST == ScriptTest_Print
     TEST_F(TrackedAutomationFixture, ScriptCommandLineArgument_UsesPrintMethods_AllOperationsLogged)
-#else
-    TEST_F(TrackedAutomationFixture, DISABLED_ScriptCommandLineArgument_UsesPrintMethods_AllOperationsLogged)
-#endif
     {
         const char* scriptPath = "@gemroot:Automation@/Code/Tests/Scripts/PrintTest.lua";
         auto application = CreateApplication(scriptPath);
@@ -126,11 +112,7 @@ namespace UnitTest
         //EXPECT_STREQ(m_automationErrors[0].c_str(), scriptLog);
     }
 
-#if ENABLE_SCRIPT_TEST == ScriptTest_IdleFrames
     TEST_F(TrackedAutomationFixture, ScriptCommandLineArgument_UsesIdleFramesMethod_AllOperationsLogged)
-#else
-    TEST_F(TrackedAutomationFixture, DISABLED_ScriptCommandLineArgument_UsesIdleFramesMethod_AllOperationsLogged)
-#endif
     {
         auto application = CreateApplication("@gemroot:Automation@/Code/Tests/Scripts/IdleFiveFramesTest.lua");
 
@@ -143,11 +125,7 @@ namespace UnitTest
     }
 
 
-#if ENABLE_SCRIPT_TEST == ScriptTest_IdleSeconds
     TEST_F(TrackedAutomationFixture, ScriptCommandLineArgument_UsesIdleSecondsMethod_AllOperationsLogged)
-#else
-    TEST_F(TrackedAutomationFixture, DISABLED_ScriptCommandLineArgument_UsesIdleSecondsMethod_AllOperationsLogged)
-#endif
     {
         auto application = CreateApplication("@gemroot:Automation@/Code/Tests/Scripts/IdleOneSecondTest.lua");
 
