@@ -779,8 +779,6 @@ namespace AssetProcessor
             return;
         }
 
-        const auto intermediateDir = AssetUtilities::GetIntermediateAssetsFolder(m_cacheRootDir.absolutePath().toUtf8().constData());
-
         // Note: if we get here, the scanning / createjobs phase has finished
         // because we no longer start any jobs until it has finished.  So there is no reason
         // to delay notification or processing.
