@@ -45,7 +45,7 @@ namespace AZ
                 s_instance->m_deferredHead.m_nextName = Name::s_staticNameBegin;
                 Name::s_staticNameBegin->m_previousName = &s_instance->m_deferredHead;
             }
-            Name* current = &s_instance->m_deferredHead;
+            Name* current = s_instance->m_deferredHead.m_nextName;
             while (current != nullptr)
             {
                 current->m_linkedToDictionary = true;
