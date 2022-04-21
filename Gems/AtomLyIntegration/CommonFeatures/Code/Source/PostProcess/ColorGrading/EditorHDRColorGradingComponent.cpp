@@ -19,6 +19,28 @@ namespace AZ
 {
     namespace Render
     {
+        namespace Internal
+        {
+            struct EditorHDRColorGradingNotificationBusHandler final
+                : public EditorHDRColorGradingNotificationBus::Handler
+                , public AZ::BehaviorEBusHandler
+            {
+                AZ_EBUS_BEHAVIOR_BINDER(
+                    EditorHDRColorGradingNotificationBusHandler, "{61FFB210-C2F9-4A82-9088-4C974C3E0EE7}", AZ::SystemAllocator
+                        , OnGenerateLutCompleted, OnActivateLutCompleted);
+
+                void OnGenerateLutCompleted(const AZStd::string& lutAssetAbsolutePath) override
+                {
+                    Call(FN_OnGenerateLutCompleted, lutAssetAbsolutePath);
+                }
+
+                void OnActivateLutCompleted() override
+                {
+                    Call(FN_OnActivateLutCompleted);
+                }
+            };
+        }
+
         void EditorHDRColorGradingComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
@@ -186,11 +208,41 @@ namespace AZ
                         ;
                 }
             }
+
+            if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->EBus<EditorHDRColorGradingRequestBus>("EditorHDRColorGradingRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Event("GenerateLutAsync", &EditorHDRColorGradingRequests::GenerateLutAsync)
+                    ->Event("ActivateLutAsync", &EditorHDRColorGradingRequests::ActivateLutAsync)
+                    ;
+
+                behaviorContext->EBus<EditorHDRColorGradingNotificationBus>("EditorHDRColorGradingNotificationBus")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Handler<Internal::EditorHDRColorGradingNotificationBusHandler>()
+                    ->Event("OnGenerateLutCompleted", &EditorHDRColorGradingNotificationBus::Events::OnGenerateLutCompleted)
+                    ->Event("OnActivateLutCompleted", &EditorHDRColorGradingNotificationBus::Events::OnActivateLutCompleted)
+                    ;
+            }
         }
 
         EditorHDRColorGradingComponent::EditorHDRColorGradingComponent(const HDRColorGradingComponentConfig& config)
             : BaseClass(config)
         {
+        }
+
+        void EditorHDRColorGradingComponent::Activate()
+        {
+            BaseClass::Activate();
+            EditorHDRColorGradingRequestBus::Handler::BusConnect(GetEntityId());
+        }
+
+        void EditorHDRColorGradingComponent::Deactivate()
+        {
+            BaseClass::Deactivate();
+            EditorHDRColorGradingRequestBus::Handler::BusDisconnect();
         }
 
         void EditorHDRColorGradingComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -265,6 +317,8 @@ namespace AZ
                 AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
 
             AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+
+            EditorHDRColorGradingNotificationBus::Event(GetEntityId(), &EditorHDRColorGradingNotificationBus::Handler::OnGenerateLutCompleted, m_generatedLutAbsolutePath);
         }
 
         void EditorHDRColorGradingComponent::GenerateLut()
@@ -306,6 +360,11 @@ namespace AZ
                 ActivateLutAssetPythonScriptPath,
                 pythonArgs);
 
+            // Remark, when LUT activation is complete, a notification should be sent
+            // via EditorHDRColorGradingNotificationBus::OnActivateLutCompleted, but the completion will occur
+            // inside the python script @ActivateLutAssetPythonScriptPath, so the
+            // responsibility to send this notification is on @ActivateLutAssetPythonScriptPath.
+
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }
 
@@ -319,5 +378,18 @@ namespace AZ
             m_controller.OnConfigChanged();
             return Edit::PropertyRefreshLevels::AttributesAndValues;
         }
+
+        //! EditorHDRColorGradingRequestBus overrides...
+        void EditorHDRColorGradingComponent::GenerateLutAsync()
+        {
+            GenerateLut();
+        }
+
+        void EditorHDRColorGradingComponent::ActivateLutAsync()
+        {
+            ActivateLut();
+        }
+        ////////////////////////////////////////////////
+
     } // namespace Render
 } // namespace AZ
