@@ -103,7 +103,7 @@ namespace LandscapeCanvasEditor
         ~MainWindow() override;
 
     private:
-        GraphModel::IGraphContextPtr GetGraphContext() const override;
+        GraphModel::GraphContextPtr GetGraphContext() const override;
 
         ////////////////////////////////////////////////////////////////////////
         // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides

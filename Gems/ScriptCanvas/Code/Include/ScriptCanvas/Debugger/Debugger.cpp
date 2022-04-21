@@ -55,7 +55,7 @@ namespace ScriptCanvas
             AzFramework::TargetManager::Bus::BroadcastResult(client, &AzFramework::TargetManager::GetTargetInfo, msg->GetSenderTargetId());
 
             // cull messages without a target match
-            if (m_client.m_info.GetNetworkId() != client.GetNetworkId())
+            if (!m_client.m_info.IsIdentityEqualTo(client))
             {
                 if (auto connection = azrtti_cast<Message::ConnectRequest*>(msg.get()))
                 {

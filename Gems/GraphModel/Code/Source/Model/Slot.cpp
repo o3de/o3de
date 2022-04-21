@@ -21,7 +21,7 @@
 #include <GraphModel/Model/Slot.h>
 #include <GraphModel/Model/Node.h>
 #include <GraphModel/Model/Graph.h>
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 
 namespace GraphModel
 {
