@@ -1783,7 +1783,7 @@ namespace AZ
             /// Returns true if the container is a smart pointer.
             bool IsSmartPointer() const override             { return true; }
 
-            /// Returns true if the container elements can be addressesd by index, otherwise false.
+            /// Returns true if the container elements can be addressed by index, otherwise false.
             bool CanAccessElementsByIndex() const override   { return false; }
 
             /// Reserve element
