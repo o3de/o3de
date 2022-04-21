@@ -15,6 +15,10 @@ namespace ScriptCanvas
 {
     BEGIN_METHOD_NODE_REPLACEMENT
     REPLACE_METHOD("Entity Transform::Rotate", "", "ScriptCanvas_EntityFunctions_Rotate")
+    REPLACE_METHOD("String::Is Valid Find Position", "", "ScriptCanvas_StringFunctions_IsValidFindPosition")
+    REPLACE_METHOD("String::Contains String", "", "ScriptCanvas_StringFunctions_ContainsString")
+    REPLACE_METHOD("String::Starts With", "", "ScriptCanvas_StringFunctions_StartsWith")
+    REPLACE_METHOD("String::Ends With", "", "ScriptCanvas_StringFunctions_EndsWith")
     REPLACE_METHOD("String::Split", "", "ScriptCanvas_StringFunctions_Split")
     REPLACE_METHOD("String::Join", "", "ScriptCanvas_StringFunctions_Join")
     REPLACE_METHOD("String::Replace String", "", "ScriptCanvas_StringFunctions_ReplaceString")

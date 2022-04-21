@@ -44,10 +44,45 @@
                                                 </xs:attribute>
                                             </xs:complexType>
                                         </xs:element>
+                                        <xs:sequence minOccurs="0" maxOccurs="1">
+                                            <xs:element minOccurs="2" maxOccurs="2" name="Out">
+                                                <xs:annotation>
+                                                    <xs:documentation>The function out branch to provide detailed information, including its name and description.</xs:documentation>
+                                                    <xs:documentation>Note: The order follows first True second False.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:complexType>
+                                                    <xs:attribute name="Name" type="NonEmptyString" use="required">
+                                                        <xs:annotation>
+                                                            <xs:documentation>The name of function branch out slot.</xs:documentation>
+                                                        </xs:annotation>
+                                                    </xs:attribute>
+                                                    <xs:attribute name="Description" type="NonEmptyString" use="optional">
+                                                        <xs:annotation>
+                                                            <xs:documentation>The description of function branch out slot.</xs:documentation>
+                                                        </xs:annotation>
+                                                    </xs:attribute>
+                                                </xs:complexType>
+                                            </xs:element>
+                                        </xs:sequence>
                                     </xs:sequence>
                                     <xs:attribute name="Name" type="NonEmptyString" use="required">
                                         <xs:annotation>
                                             <xs:documentation>The name of function, it must match with function signature in given namespace.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="Branch" type="NonEmptyString" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation>The tag to indicate how to branch function result, either Boolean or custom check function.</xs:documentation>
+                                            <xs:documentation>Note: Boolean assumes the function result type is boolean.</xs:documentation>
+                                            <xs:documentation>Note: The check function must get registered within same namesapce in this autogen input file.</xs:documentation>
+                                            <xs:documentation>Note: The check function input parameter type must match with the function result type.</xs:documentation>
+                                            <xs:documentation>Note: The check function must return a boolean result.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="BranchWithValue" type="NonEmptyString" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation>The tag to indicate whether return result with branches.</xs:documentation>
+                                            <xs:documentation>Options: True/False. Default is False.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
                                 </xs:complexType>

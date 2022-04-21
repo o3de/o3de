@@ -6,13 +6,19 @@
  *
  */
 
+#include <limits.h>
+
 #include "StringFunctions.h"
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#define LUA_BACKEND
+
 namespace ScriptCanvas
 {
+    static const size_t k_LuaNpos = UINT_MAX;
+
     namespace StringFunctions
     {
         AZStd::string ToLower(AZStd::string sourceString)
@@ -37,6 +43,40 @@ namespace ScriptCanvas
             }
 
             return sourceString.substr(index, length);
+        }
+
+        bool IsValidFindPosition(size_t findPosition)
+        {
+#if defined(LUA_BACKEND)
+            return findPosition != k_LuaNpos;
+#else
+            return findPosition != AZStd::string::npos;
+#endif
+        }
+
+        size_t ContainsString(
+            const AZStd::string& sourceString, const AZStd::string& patternString, bool searchFromEnd, bool caseSensitive)
+        {
+#if defined(LUA_BACKEND)
+            AZ_Warning(
+                "ScriptCanvas", sourceString.size() <= k_LuaNpos && patternString.size() <= k_LuaNpos,
+                "Source or Pattern string is too long, lua may lose precision on the position value.");
+            size_t findPosition =
+                AzFramework::StringFunc::Find(sourceString.c_str(), patternString.c_str(), 0, searchFromEnd, caseSensitive);
+            return findPosition > k_LuaNpos ? k_LuaNpos : findPosition;
+#else
+            return AzFramework::StringFunc::Find(sourceString.c_str(), patternString.c_str(), 0, searchFromEnd, caseSensitive);
+#endif
+        }
+
+        bool StartsWith(const AZStd::string& sourceString, const AZStd::string& patternString, bool caseSensitive)
+        {
+            return AzFramework::StringFunc::StartsWith(sourceString.c_str(), patternString.c_str(), caseSensitive);
+        }
+
+        bool EndsWith(const AZStd::string& sourceString, const AZStd::string& patternString, bool caseSensitive)
+        {
+            return AzFramework::StringFunc::EndsWith(sourceString.c_str(), patternString.c_str(), caseSensitive);
         }
 
         AZStd::string Join(const AZStd::vector<AZStd::string>& sourceArray, const AZStd::string& separatorString)

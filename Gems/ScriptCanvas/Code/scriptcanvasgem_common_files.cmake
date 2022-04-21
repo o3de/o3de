@@ -161,10 +161,10 @@ set(FILES
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.cpp
     Include/ScriptCanvas/Libraries/String/Deprecated/Contains.cpp
     Include/ScriptCanvas/Libraries/String/Deprecated/Replace.cpp
+    Include/ScriptCanvas/Libraries/String/Deprecated/StringMethods.cpp
     Include/ScriptCanvas/Libraries/String/Deprecated/Utilities.cpp
     Include/ScriptCanvas/Libraries/String/String.cpp
     Include/ScriptCanvas/Libraries/String/StringFunctions.cpp
-    Include/ScriptCanvas/Libraries/String/StringMethods.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectEqual.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectFalse.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectGreaterThan.cpp

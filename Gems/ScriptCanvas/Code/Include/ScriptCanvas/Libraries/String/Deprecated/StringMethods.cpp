@@ -111,24 +111,28 @@ namespace ScriptCanvas
 
             behaviorContext->Class<StringMethods>("String")
                 ->Method("Is Valid Find Position", &IsValidFindPosition)
+                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
                 ->Method("Contains String", &Find,
                     { { {"Source", "The string to search in."}, {"Pattern", "The substring to search for."}, {"Search From End", "Start the match checking from the end of a string."}, { "Case Sensitive", "Take into account the case of the string when searching." } } })
                     ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, nonBooleanResultInfo)
+                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
                 ->Method("Starts With", &StartsWith,
                     { { {"Source", "The string to search in."}, {"Pattern", "The substring to search for."}, {"Case Sensitive", "Take into account the case of the string when searching."} } })
                     ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, booleanResultInfo)
+                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
                 ->Method("Ends With", &EndsWith,
                     { { {"Source", "The string to search in."}, {"Pattern", "The substring to search for."}, {"Case Sensitive", "Take into account the case of the string when searching."} } })
                     ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, booleanResultInfo)
+                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
                 ->Method("Split", &Split,
                     { { {"Source", "The string to search in."}, {"Delimiters", "The characters that can be used as delimiters."} } })
-                ->Attribute(AZ::Script::Attributes::Deprecated, true)
+                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
                 ->Method("Join", &Join,
                     { { {"String Array", "The array of strings to join."}, {"Separator", "Will use this string when concatenating the strings from the array."} } })
-                ->Attribute(AZ::Script::Attributes::Deprecated, true)
+                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
                 ->Method("Replace String", &Replace,
                     { { {"Source", "The string to search in."}, {"Replace", "The substring to search for."}, {"With", "The string to replace the substring with."}, {"Case Sensitive", "Take into account the case of the string when searching."} } })
-                ->Attribute(AZ::Script::Attributes::Deprecated, true)
+                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
                 ;
         }
     }

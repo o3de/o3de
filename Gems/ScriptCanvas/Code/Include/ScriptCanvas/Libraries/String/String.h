@@ -13,10 +13,10 @@
 
 #include "Format.h"
 #include "Print.h"
-#include "StringMethods.h"
 
 // Deprecated string nodes
 #include "Deprecated/Replace.h"
 #include "Deprecated/Contains.h"
 #include "Deprecated/Utilities.h"
 #include "Deprecated/StringGenerics.h"
+#include "Deprecated/StringMethods.h"

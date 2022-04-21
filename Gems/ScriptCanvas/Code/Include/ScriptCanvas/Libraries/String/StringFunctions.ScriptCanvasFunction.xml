@@ -20,6 +20,29 @@
             <Parameter Name="From" Description="Position of the first character to be copied as a substring."/>
             <Parameter Name="Length" Description="Number of characters to include in the substring."/>
         </Function>
+        
+        <Function Name="IsValidFindPosition">
+            <Parameter Name="Position" Description="The string find position to check against"/>
+        </Function>
+
+        <Function Name="ContainsString" Branch="IsValidFindPosition" BranchWithValue="True">
+            <Parameter Name="Source" Description="The string to search in."/>
+            <Parameter Name="Pattern" Description="The substring to search for."/>
+            <Parameter Name="Search From End" Description="Start the match checking from the end of a string."/>
+            <Parameter Name="Case Sensitive" Description="Take into account the case of the string when searching."/>
+        </Function>
+
+        <Function Name="StartsWith" Branch="Boolean">
+            <Parameter Name="Source" Description="The string to search in."/>
+            <Parameter Name="Pattern" Description="The substring to search for."/>
+            <Parameter Name="Case Sensitive" Description="Take into account the case of the string when searching."/>
+        </Function>
+
+        <Function Name="EndsWith" Branch="Boolean">
+            <Parameter Name="Source" Description="The string to search in."/>
+            <Parameter Name="Pattern" Description="The substring to search for."/>
+            <Parameter Name="Case Sensitive" Description="Take into account the case of the string when searching."/>
+        </Function>
 
         <Function Name="Join">
             <Parameter Name="String Array" Description="The array of strings to join."/>
