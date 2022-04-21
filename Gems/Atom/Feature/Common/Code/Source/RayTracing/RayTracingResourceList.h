@@ -17,7 +17,15 @@ namespace AZ
 {
     namespace Render
     {
-        //! Manages a resource list used by RayTracing
+        //! Manages a resource list used by RayTracing.
+        //!
+        //! Resources are stored in a flat array.  There is also a map that stores the index of the resource
+        //! in the array, its reference count, and the index in the indirection list.  This map is used to determine
+        //! if the resource is already known, and how to locate its entries in the resource and indirection lists.
+        //! 
+        //! The indirection list provides a stable index for resources, and is returned to clients of this class.
+        //! This allows resources to be moved in the resource array without affecting externally held indices,
+        //! since these refer to the indirection list, which in turn points to the resource list.
         template<class TResource>
         class RayTracingResourceList
         {

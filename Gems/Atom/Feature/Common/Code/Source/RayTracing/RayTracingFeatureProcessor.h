@@ -263,12 +263,12 @@ namespace AZ
             struct MeshInfo
             {
                 // byte offsets into the mesh buffer views
-                uint32_t m_indexByteOffset;
-                uint32_t m_positionByteOffset;
-                uint32_t m_normalByteOffset;
-                uint32_t m_tangentByteOffset;
-                uint32_t m_bitangentByteOffset;
-                uint32_t m_uvByteOffset;
+                uint32_t m_indexByteOffset = 0;
+                uint32_t m_positionByteOffset = 0;
+                uint32_t m_normalByteOffset = 0;
+                uint32_t m_tangentByteOffset = 0;
+                uint32_t m_bitangentByteOffset = 0;
+                uint32_t m_uvByteOffset = 0;
 
                 RayTracingSubMeshBufferFlags m_bufferFlags = RayTracingSubMeshBufferFlags::None;
                 uint32_t m_bufferStartIndex = 0;
@@ -282,7 +282,7 @@ namespace AZ
             MeshInfoVector m_meshInfos;
             static const uint32_t BufferFrameCount = 3;
             Data::Instance<RPI::Buffer> m_meshInfoGpuBuffer[BufferFrameCount];
-            uint32_t m_currentMeshInfoFrameIndex;
+            uint32_t m_currentMeshInfoFrameIndex = 0;
 
             // structure for data in the m_materialInfoBuffer, shaders that use the buffer must match this type
             struct MaterialInfo
@@ -298,7 +298,7 @@ namespace AZ
             using MaterialInfoVector = AZStd::vector<MaterialInfo>;
             MaterialInfoVector m_materialInfos;
             Data::Instance<RPI::Buffer> m_materialInfoGpuBuffer[BufferFrameCount];
-            uint32_t m_currentMaterialInfoFrameIndex;
+            uint32_t m_currentMaterialInfoFrameIndex = 0;
 
             // update flags
             bool m_meshInfoBufferNeedsUpdate = false;

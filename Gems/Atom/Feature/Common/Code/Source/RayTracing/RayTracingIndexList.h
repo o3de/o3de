@@ -18,7 +18,14 @@ namespace AZ
     {
         static const uint32_t InvalidIndex = aznumeric_cast<uint32_t>(-1);
 
-        //! Manages an index list used by RayTracing, with an internal freelist chain
+        //! Manages an index list used by RayTracing, with an internal freelist chain.
+        //! 
+        //! Indices are stored in a flat array, and new indices are either added to the end
+        //! or in the first available free index.
+        //! 
+        //! The freelist chain is stored inside array itself, with each entry in the chain pointing
+        //! to the next free index, and terminated with InvalidIndex.  Free list entries have
+        //! FreeListThreshold added to their value to indicate they are part of the freelist.
         template<uint32_t BlockSize>
         class RayTracingIndexList
         {
