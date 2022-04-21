@@ -85,7 +85,7 @@ namespace AzNetworking
         //! @param connectionListener reference to the connection listener responsible for handling all connection events
         //! @param trustZone          the trust level assigned to this network interface, server to server or client to server
         //! @param readerThread       pointer to the reader thread to be bound to this network interface
-        UdpNetworkInterface(AZ::Name name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread);
+        UdpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread);
         ~UdpNetworkInterface() override;
 
         //! INetworkInterface interface.
@@ -106,15 +106,9 @@ namespace AzNetworking
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
         void SetTimeoutMs(AZ::TimeMs timeoutMs) override;
         AZ::TimeMs GetTimeoutMs() const override;
+        bool IsEncrypted() const override;
+        bool IsOpen() const override;
         //! @}
-
-        //! Returns true if this is an encrypted socket, false if not.
-        //! @return boolean true if this is an encrypted socket, false if not
-        bool IsEncrypted() const;
-
-        //! Returns true if this connection instance is in an open state, and is capable of actively sending and receiving packets.
-        //! @return boolean true if this connection instance is in an open state
-        bool IsOpen() const;
 
     private:
 

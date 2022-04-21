@@ -392,7 +392,8 @@ namespace EMotionFX
                         while (childNodeIndex.IsValid())
                         {
                             auto childContent = graph.GetNodeContent(childNodeIndex);
-                            if (azrtti_istypeof<const SceneDataTypes::IMeshData*>(childContent) || azrtti_istypeof<const SceneDataTypes::IBoneData*>(childContent))
+                            if (childContent->RTTI_IsTypeOf(SceneDataTypes::IBoneData::TYPEINFO_Uuid())
+                                || childContent->RTTI_IsTypeOf(SceneDataTypes::IMeshData::TYPEINFO_Uuid()))
                             {
                                 hasJointOrMeshChildren = true;
                                 break;
