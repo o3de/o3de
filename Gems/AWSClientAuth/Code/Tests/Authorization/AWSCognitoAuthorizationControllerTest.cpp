@@ -236,7 +236,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, AddRemoveLogins_Succuess)
     ASSERT_TRUE(m_mockController->m_persistentCognitoIdentityProvider->GetLogins().size() == 0);
 
     AWSClientAuth::AuthenticationTokens lwaTokens(
-        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ACCESS_TOKEN,
         AWSClientAuth::ProviderNameEnum::LoginWithAmazon, 60);
 
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnPasswordGrantMultiFactorConfirmSignInSuccess(testing::_)).Times(1);

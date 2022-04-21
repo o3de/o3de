@@ -423,13 +423,14 @@ namespace AWSClientAuthUnitTest
         MOCK_METHOD1(OnSignOut, void(const AWSClientAuth::ProviderNameEnum& providerName));
 
     private:
-        void AssertAuthenticationTokensPopulated(const AWSClientAuth::AuthenticationTokens& authenticationToken)
+        void AssertAuthenticationTokensPopulated([[maybe_unused]] const AWSClientAuth::AuthenticationTokens& authenticationToken)
         {
             AZ_Assert(
                 authenticationToken.GetAccessToken() == TEST_ACCESS_TOKEN,
                 "Access token expected to match");
             AZ_Assert(
-                authenticationToken.GetOpenIdToken() == TEST_ID_TOKEN,
+                authenticationToken.GetProviderName() == AWSClientAuth::ProviderNameEnum::LoginWithAmazon ?
+                authenticationToken.GetOpenIdToken() == TEST_ACCESS_TOKEN : authenticationToken.GetOpenIdToken() == TEST_ID_TOKEN,
                 "Id token expected to match");
             AZ_Assert(
                 authenticationToken.GetRefreshToken() == TEST_REFRESH_TOKEN,
