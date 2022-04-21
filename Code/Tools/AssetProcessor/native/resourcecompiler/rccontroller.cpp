@@ -35,6 +35,7 @@ namespace AssetProcessor
         // regardless of whether they have chosen something bad or not - they would have had to explicitly
         // pick this value (we ship with default 0 meaning auto), so if they've changed it, they intend it that way
         m_maxJobs = cfg_maxJobs ? qMax(cfg_minJobs, cfg_maxJobs) :  maxJobs;
+m_maxJobs = 2;
 
         m_RCQueueSortModel.AttachToModel(&m_RCJobListModel);
 
