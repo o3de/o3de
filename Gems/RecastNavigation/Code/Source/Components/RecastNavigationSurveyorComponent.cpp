@@ -9,8 +9,11 @@
 #include "RecastNavigationSurveyorComponent.h"
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>

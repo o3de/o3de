@@ -12,9 +12,6 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-class dtNavMeshQuery;
-class dtNavMesh;
-
 namespace RecastNavigation
 {
     class RecastNavigationMeshRequests

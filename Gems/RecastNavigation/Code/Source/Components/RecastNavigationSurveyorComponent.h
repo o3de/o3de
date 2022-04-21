@@ -21,7 +21,7 @@ namespace RecastNavigation
 {
     class RecastNavigationSurveyorComponent final
         : public AZ::Component
-        , protected RecastNavigationSurveyorRequestBus::Handler
+        , public RecastNavigationSurveyorRequestBus::Handler
     {
     public:
         AZ_COMPONENT(RecastNavigationSurveyorComponent, "{202de120-29f3-4b64-b95f-268323d86349}");

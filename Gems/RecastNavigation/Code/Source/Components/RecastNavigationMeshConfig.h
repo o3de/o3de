@@ -8,16 +8,8 @@
 
 #pragma once
 
-#include <DetourNavMesh.h>
-#include <DetourNavMeshQuery.h>
-#include <Recast.h>
-
-#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/containers/vector.h>
-#include <Components/RecastHelpers.h>
-#include <Components/RecastSmartPointer.h>
 
 namespace RecastNavigation
 {

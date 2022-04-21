@@ -94,7 +94,7 @@ namespace RecastNavigation
                     m_verticesToDraw[i - 1].first, m_verticesToDraw[i - 0].first);
             }
             break;
-        //case DU_DRAW_LINES:
+        case DU_DRAW_LINES:
         //    for (size_t i = 1; i < m_verticesToDraw.size(); i++)
         //    {
         //        AZ::Color color0 = AZ::Color::CreateZero();
@@ -106,7 +106,7 @@ namespace RecastNavigation
         //        debugDisplay->DrawLine(m_verticesToDraw[i - 1].first, m_verticesToDraw[i].first,
         //            color0.GetAsVector4(), color1.GetAsVector4());
         //    }
-        //    break;
+            break;
         }
     }
 

@@ -15,7 +15,6 @@
 #include <Recast.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Math/Aabb.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
@@ -28,8 +27,8 @@ namespace RecastNavigation
 {
     class RecastNavigationMeshComponent final
         : public AZ::Component
-        , protected RecastNavigationMeshRequestBus::Handler
         , public AZ::TickBus::Handler
+        , public RecastNavigationMeshRequestBus::Handler
     {
     public:
         AZ_COMPONENT(RecastNavigationMeshComponent, "{a281f314-a525-4c05-876d-17eb632f14b4}");
