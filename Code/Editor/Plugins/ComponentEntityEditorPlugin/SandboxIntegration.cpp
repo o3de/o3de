@@ -27,7 +27,6 @@
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Visibility/BoundsBus.h>
-#include <AzQtComponents/Actions/ActionManagerConstants.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
@@ -39,6 +38,7 @@
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Commands/SliceDetachEntityCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -171,12 +171,6 @@ SandboxIntegrationManager::~SandboxIntegrationManager()
 
 void SandboxIntegrationManager::Setup()
 {
-    // Retrieve new action manager setting
-    if (auto* registry = AZ::SettingsRegistry::Get())
-    {
-        registry->GetObject(m_enableNewActionManager, s_actionManagerToggleKey);
-    }
-
     AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
@@ -187,7 +181,7 @@ void SandboxIntegrationManager::Setup()
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
 
-    if (!m_enableNewActionManager)
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
     {
         MainWindow::instance()->GetActionManager()->RegisterActionHandler(
             ID_FILE_SAVE_SLICE_TO_ROOT,

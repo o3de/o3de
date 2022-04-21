@@ -149,8 +149,6 @@ protected:
 
     void UpdateOverFlowMenuState();
 
-    bool m_enableNewActionManager = false;
-
     QMenu* m_fovMenu = nullptr;
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;

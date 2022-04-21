@@ -21,30 +21,28 @@
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
 // Editor
-#include "Settings.h"
-#include "ViewPane.h"
-#include "DisplaySettings.h"
-#include "CustomResolutionDlg.h"
-#include "CustomAspectRatioDlg.h"
-#include "Include/IObjectManager.h"
-#include "UsedResources.h"
-#include "Objects/SelectionGroup.h"
-#include "UsedResources.h"
-#include "Include/IObjectManager.h"
 #include "ActionManager.h"
-#include "MainWindow.h"
-#include "GameEngine.h"
-#include "MathConversion.h"
+#include "CustomAspectRatioDlg.h"
+#include "CustomResolutionDlg.h"
+#include "DisplaySettings.h"
 #include "EditorViewportSettings.h"
+#include "GameEngine.h"
+#include "Include/IObjectManager.h"
+#include "MainWindow.h"
+#include "MathConversion.h"
+#include "Objects/SelectionGroup.h"
+#include "Settings.h"
+#include "UsedResources.h"
+#include "ViewPane.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzQtComponents/Actions/ActionManagerConstants.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
@@ -88,12 +86,6 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)
     , m_ui(new Ui::ViewportTitleDlg)
 {
-    // Retrieve new action manager setting
-    if (auto* registry = AZ::SettingsRegistry::Get())
-    {
-        registry->GetObject(m_enableNewActionManager, s_actionManagerToggleKey);
-    }
-
     auto container = new QWidget(this);
     m_ui->setupUi(container);
     auto layout = new QVBoxLayout(this);
@@ -115,7 +107,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
 
-    if (!m_enableNewActionManager)
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
     {
         SetupHelpersButton();
     }

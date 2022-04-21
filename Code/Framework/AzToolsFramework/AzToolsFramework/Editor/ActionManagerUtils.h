@@ -8,4 +8,10 @@
 
 #pragma once
 
-static constexpr const char s_actionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
+namespace AzToolsFramework
+{
+    static constexpr const char s_actionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
+
+    bool IsNewActionManagerEnabled();
+
+} // namespace AzToolsFramework

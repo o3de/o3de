@@ -42,18 +42,18 @@
 #include <AzFramework/Viewport/CameraInput.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
-#include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzToolsFramework/API/EditorCameraBus.h>
-#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 
 // AzQtComponents
-#include <AzQtComponents/Actions/ActionManagerConstants.h>
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
@@ -307,14 +307,8 @@ MainWindow::MainWindow(QWidget* parent)
     , m_backgroundUpdateTimer(nullptr)
     , m_connectionLostTimer(new QTimer(this))
 {
-    // Retrieve new action manager setting
-    if (auto* registry = AZ::SettingsRegistry::Get())
-    {
-        registry->GetObject(m_enableNewActionManager, s_actionManagerToggleKey);
-    }
-
     // Determine which action manager classes should be enabled based on the current setting.
-    if (!m_enableNewActionManager)
+    if (!IsNewActionManagerEnabled())
     {
         m_shortcutDispatcher = new ShortcutDispatcher(this);
         m_actionManager = new ActionManager(this, QtViewPaneManager::instance(), m_shortcutDispatcher);
@@ -464,7 +458,7 @@ void MainWindow::Initialize()
 {
     m_viewPaneManager->SetMainWindow(m_viewPaneHost, &m_settings, /*unused*/ QByteArray());
 
-    if (!m_enableNewActionManager)
+    if (!IsNewActionManagerEnabled())
     {
         InitActions();
     }
@@ -475,16 +469,13 @@ void MainWindow::Initialize()
     // load toolbars ("shelves") and macros
     GetIEditor()->GetToolBoxManager()->Load(m_actionManager);
 
-    if (!m_enableNewActionManager)
+    if (!IsNewActionManagerEnabled())
     {
         InitToolActionHandlers();
 
         // Initialize toolbars before we setup the menu so that any tools can be added to the toolbar as needed
         InitToolBars();
-    }
 
-    if (!m_enableNewActionManager)
-    {
         m_levelEditorMenuHandler->Initialize();
     }
 
@@ -1988,7 +1979,7 @@ void MainWindow::OnViewPaneCreated(const QtViewPane* pane)
         id = pane->m_options.builtInActionId;
     }
 
-    if (!m_enableNewActionManager && m_actionManager->HasAction(id))
+    if (!IsNewActionManagerEnabled() && m_actionManager->HasAction(id))
     {
         action = m_actionManager->GetAction(id);
         action->setChecked(true);

@@ -9,35 +9,34 @@
 #include "EditorDefs.h"
 
 // Editor
-#include "Resource.h"
-#include "LevelEditorMenuHandler.h"
 #include "CryEdit.h"
-#include "MainWindow.h"
-#include "QtViewPaneManager.h"
-#include "ToolBox.h"
 #include "Include/IObjectManager.h"
+#include "LevelEditorMenuHandler.h"
+#include "MainWindow.h"
 #include "Objects/SelectionGroup.h"
+#include "QtViewPaneManager.h"
+#include "Resource.h"
+#include "ToolBox.h"
 #include "ViewManager.h"
 
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 
 // Qt
-#include <QMenuBar>
-#include <QUrlQuery>
 #include <QDesktopServices>
 #include <QHBoxLayout>
+#include <QMenuBar>
 #include <QUrl>
+#include <QUrlQuery>
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
-#include <AzQtComponents/Actions/ActionManagerConstants.h>
 #include <AzQtComponents/Components/SearchLineEdit.h>
 
 using namespace AZ;
@@ -175,12 +174,6 @@ LevelEditorMenuHandler::LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPan
     m_mainWindow->menuBar()->setNativeMenuBar(true);
 #endif
 
-    // Retrieve new action manager setting
-    if (auto* registry = AZ::SettingsRegistry::Get())
-    {
-        registry->GetObject(m_enableNewActionManager, s_actionManagerToggleKey);
-    }
-
     ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
     EditorMenuRequestBus::Handler::BusConnect();
 }
@@ -193,7 +186,7 @@ LevelEditorMenuHandler::~LevelEditorMenuHandler()
 
 void LevelEditorMenuHandler::Initialize()
 {
-    if (m_enableNewActionManager)
+    if (IsNewActionManagerEnabled())
     {
         return;
     }
@@ -1208,7 +1201,7 @@ void LevelEditorMenuHandler::AddDisableActionInSimModeListener(QAction* action)
 void LevelEditorMenuHandler::OnEditorModeActivated(
     [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
-    if (m_enableNewActionManager)
+    if (IsNewActionManagerEnabled())
     {
         return;
     }
@@ -1246,7 +1239,7 @@ void LevelEditorMenuHandler::OnEditorModeDeactivated(
 
 void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
 {
-    if (m_enableNewActionManager)
+    if (IsNewActionManagerEnabled())
     {
         return;
     }
@@ -1260,7 +1253,7 @@ void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
 
 void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar)
 {
-    if (m_enableNewActionManager)
+    if (IsNewActionManagerEnabled())
     {
         return;
     }
@@ -1281,7 +1274,7 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()
 {
-    if (m_enableNewActionManager)
+    if (IsNewActionManagerEnabled())
     {
         return;
     }

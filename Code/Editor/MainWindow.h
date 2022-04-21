@@ -30,25 +30,27 @@
 #include "IEditor.h"
 #endif
 
+class ActionManager;
 class AssetImporterManager;
-class LevelEditorMenuHandler;
-class CMainFrame;
-class UndoStackStateAdapter;
-class QComboBox;
-class KeyboardCustomizationSettings;
-class QToolButton;
-class MainStatusBar;
-class CLayoutWnd;
-struct QtViewPane;
 class CLayoutViewPane;
-class QtViewport;
-class QtViewPaneManager;
+class CLayoutWnd;
+class CMainFrame;
 class EngineConnectionListener;
+class KeyboardCustomizationSettings;
+class LevelEditorMenuHandler;
+class MainStatusBar;
+class ShortcutDispatcher;
 class ToolbarManager;
 class ToolbarCustomizationDialog;
+class UndoStackStateAdapter;
+
+class QComboBox;
+class QToolButton;
+class QtViewport;
+class QtViewPaneManager;
 class QWidgetAction;
-class ActionManager;
-class ShortcutDispatcher;
+
+struct QtViewPane;
 
 namespace AzQtComponents
 {
@@ -270,8 +272,6 @@ private:
     bool m_connectedToAssetProcessor = false;
     bool m_showAPDisconnectDialog = false;
     bool m_selectedEntityHasRoot = false;
-
-    bool m_enableNewActionManager = false;
 
     friend class ToolbarManager;
     friend class WidgetAction;

@@ -8,7 +8,6 @@
 
 set(FILES
     AzQtComponentsAPI.h
-    Actions/ActionManagerConstants.h
     Application/AzQtApplication.cpp
     Application/AzQtApplication.h
     Buses/DragAndDrop.h

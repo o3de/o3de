@@ -117,8 +117,6 @@ private:
     const char* m_levelExtension = nullptr;
     int m_viewPaneVersion = 0;
 
-    bool m_enableNewActionManager = false;
-
     QList<QMenu*> m_topLevelMenus;
 };
 
