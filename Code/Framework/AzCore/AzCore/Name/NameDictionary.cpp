@@ -40,18 +40,18 @@ namespace AZ
             s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
 
             // Load any deferred names stored in our module's deferred name list, if it isn't already pointing at the dictionary's list
-            if (Name::s_staticNameBegin != nullptr && s_instance->m_deferredHead != Name::s_staticNameBegin)
+            if (Name::s_staticNameBegin != nullptr && &s_instance->m_deferredHead != Name::s_staticNameBegin)
             {
-                s_instance->m_deferredHead->m_nextName = Name::s_staticNameBegin;
-                Name::s_staticNameBegin->m_previousName = s_instance->m_deferredHead;
+                s_instance->m_deferredHead.m_nextName = Name::s_staticNameBegin;
+                Name::s_staticNameBegin->m_previousName = &s_instance->m_deferredHead;
             }
-            Name* current = s_instance->m_deferredHead;
+            Name* current = &s_instance->m_deferredHead;
             while (current != nullptr)
             {
                 current->m_linkedToDictionary = true;
                 current = current->m_nextName;
             }
-            s_instance->LoadDeferredNames(s_instance->m_deferredHead);
+            s_instance->LoadDeferredNames(&s_instance->m_deferredHead);
         }
     }
 
@@ -111,18 +111,17 @@ namespace AZ
     }
 
     NameDictionary::NameDictionary()
-        : m_deferredHeadValue(Name::FromStringLiteral("-fixed name dictionary deferred head-"))
+        : m_deferredHead(Name::FromStringLiteral("-fixed name dictionary deferred head-"))
     {
         // Ensure a Name that is valid for the life-cycle of this dictionary is the head of our literal linked list
         // This prevents our list head from being destroyed from a module that has shut down its AZ::Environment and
         // invalidating our list.
-        m_deferredHead = &m_deferredHeadValue;
-        m_deferredHead->m_linkedToDictionary = true;
+        m_deferredHead.m_linkedToDictionary = true;
     }
     
     NameDictionary::~NameDictionary()
     {
-        Name::s_staticNameBegin = m_deferredHead->m_nextName;
+        Name::s_staticNameBegin = m_deferredHead.m_nextName;
 
         [[maybe_unused]] bool leaksDetected = false;
 
@@ -180,15 +179,15 @@ namespace AZ
         {
             deferredName.m_linkedToDictionary = true;
             // If there's an entry in our deferred list, prepend this name there so that we keep m_deferredHead unchanged
-            if (m_deferredHead->m_nextName != nullptr)
+            if (m_deferredHead.m_nextName != nullptr)
             {
-                deferredName.LinkStaticName(&m_deferredHead->m_nextName);
+                deferredName.LinkStaticName(&m_deferredHead.m_nextName);
             }
             // Otherwise, simply append the name to our deferred head
             else
             {
-                m_deferredHead->m_nextName = &deferredName;
-                deferredName.m_previousName = m_deferredHead;
+                m_deferredHead.m_nextName = &deferredName;
+                deferredName.m_previousName = &m_deferredHead;
                 deferredName.m_linkedToDictionary = true;
             }
         }
@@ -219,7 +218,7 @@ namespace AZ
     {
         // Iterate through all names that still exist at static scope and clear their data
         // They'll retain m_view, so will be able to be recreated by LoadDeferredName
-        Name* staticName = m_deferredHead;
+        Name* staticName = &m_deferredHead;
         while (staticName != nullptr)
         {
             staticName->m_data = nullptr;

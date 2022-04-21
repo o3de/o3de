@@ -107,7 +107,6 @@ namespace AZ
         AZStd::unordered_map<Name::Hash, Internal::NameData*> m_dictionary;
         mutable AZStd::shared_mutex m_sharedMutex;
 
-        Name* m_deferredHead;
-        Name m_deferredHeadValue;
+        Name m_deferredHead;
     };
 }
