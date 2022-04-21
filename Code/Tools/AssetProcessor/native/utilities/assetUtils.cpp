@@ -1727,11 +1727,6 @@ namespace AssetUtilities
     {
         AZ_Assert(AZ::IO::PathView(scanfolderRelativeProductPath).IsRelative(), "scanfolderRelativeProductPath is not relative: %s", scanfolderRelativeProductPath.c_str());
 
-        if(AZ::IO::PathView(scanfolderRelativeProductPath).IsAbsolute())
-        {
-            __debugbreak();
-        }
-
         QDir cacheDir;
         [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
 
