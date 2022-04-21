@@ -72,7 +72,7 @@ namespace AZ
         //! @return A Name instance. If the hash was not found, the Name will be empty.
         Name FindName(Name::Hash hash) const;
 
-        NameDictionary() = default;
+        NameDictionary();
 
         //! Loads a list of names, starting at a given list head, and ensures they're all created and linked
         //! into our list of deferred load names.
@@ -101,8 +101,6 @@ namespace AZ
         //! Loads a name that was potentially created before this dictionary, ensuring its name data
         //! is loaded and that it is linked into our list of deferred load names to be released later.
         void LoadDeferredName(Name& deferredName);
-        //! Called when a deferred name is destroyed, unregisters the name if it happens to be our m_deferredHead.
-        void UnregisterDeferredHead(Name& name);
         //! Unloads the data with all deferred names registered using LoadDeferredName.
         void UnloadDeferredNames();
 
@@ -110,5 +108,6 @@ namespace AZ
         mutable AZStd::shared_mutex m_sharedMutex;
 
         Name* m_deferredHead;
+        Name m_deferredHeadValue;
     };
 }
