@@ -6,6 +6,7 @@
  *
  */
 
+#include <Automation/AutomationBus.h>
 #include <AutomationApplicationFixture.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
