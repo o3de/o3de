@@ -14,8 +14,8 @@ set(FILES
     Source/StarsComponentConfig.h
     Source/StarsComponentController.cpp
     Source/StarsComponentController.h
-    Source/StarsFeatureprocessor.cpp
-    Source/StarsFeatureprocessor.h
+    Source/StarsFeatureProcessor.cpp
+    Source/StarsFeatureProcessor.h
     Source/StarsModule.h
     Source/StarsSystemComponent.cpp
     Source/StarsSystemComponent.h
