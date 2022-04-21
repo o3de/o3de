@@ -113,7 +113,7 @@ namespace Terrain
 
         void NotifyListenersOfHeightfieldDataChange(
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask,
-            const AZ::Aabb* dirtyRegion = nullptr);
+            const AZ::Aabb& dirtyRegion);
 
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;

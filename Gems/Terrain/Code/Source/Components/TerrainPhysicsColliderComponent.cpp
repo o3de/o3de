@@ -44,11 +44,6 @@ namespace Terrain
             result |= HeightfieldProviderNotifications::HeightfieldChangeMask::HeightData;
         }
 
-        if (mask & TerrainDataNotifications::ColorData)
-        {
-            result |= HeightfieldProviderNotifications::HeightfieldChangeMask::MaterialData;
-        }
-
         if (mask & TerrainDataNotifications::SurfaceData)
         {
             result |= HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceData;
@@ -170,13 +165,13 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::NotifyListenersOfHeightfieldDataChange(
         const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask,
-        const AZ::Aabb* dirtyRegion)
+        const AZ::Aabb& dirtyRegion)
     {
         AZ::Aabb worldSize = AZ::Aabb::CreateNull();
 
-        if (dirtyRegion)
+        if (dirtyRegion.IsValid())
         {
-            worldSize = *dirtyRegion;
+            worldSize = dirtyRegion;
         }
         else
         {
@@ -197,7 +192,7 @@ namespace Terrain
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings |
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::HeightData;
 
-        NotifyListenersOfHeightfieldDataChange(changeMask);
+        NotifyListenersOfHeightfieldDataChange(changeMask, AZ::Aabb::CreateNull());
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataCreateEnd()
@@ -205,7 +200,8 @@ namespace Terrain
         m_terrainDataActive = true;
 
         // The terrain system has finished creating itself, so we should now have data for creating a heightfield.
-        NotifyListenersOfHeightfieldDataChange(Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd, nullptr);
+        NotifyListenersOfHeightfieldDataChange(
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd, AZ::Aabb::CreateNull());
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataDestroyBegin()
@@ -214,7 +210,8 @@ namespace Terrain
 
         // The terrain system is starting to destroy itself, so notify listeners of a change since the heightfield
         // will no longer have any valid data.
-        NotifyListenersOfHeightfieldDataChange(Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyBegin, nullptr);
+        NotifyListenersOfHeightfieldDataChange(
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyBegin, AZ::Aabb::CreateNull());
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataChanged(
@@ -225,7 +222,7 @@ namespace Terrain
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask
                 = TerrainToPhysicsHeightfieldChangeMask(dataChangedMask);
 
-            NotifyListenersOfHeightfieldDataChange(physicsMask, &dirtyRegion);
+            NotifyListenersOfHeightfieldDataChange(physicsMask, dirtyRegion);
         }
     }
 
