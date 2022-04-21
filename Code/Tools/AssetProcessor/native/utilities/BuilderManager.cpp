@@ -135,7 +135,12 @@ namespace AssetProcessor
     {
         if (m_processWatcher)
         {
+            AZ_TracePrintf(AssetProcessor::DebugChannel, "TerminateProcess waiting for builder connectionId %d \n", m_connectionId.load());
             m_processWatcher->TerminateProcess(exitCode);
+        }
+        else
+        {
+            AZ_Warning("Builder", false, "BuilderManager attempted to terminat an invalid process watcher with exit code %d", exitCode);
         }
     }
 
