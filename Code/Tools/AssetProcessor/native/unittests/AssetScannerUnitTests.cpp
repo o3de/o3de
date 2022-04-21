@@ -7,12 +7,13 @@
  */
 
 #include "AssetScannerUnitTests.h"
+#include <AzCore/std/chrono/clocks.h>
+#include <AzTest/Utils.h>
 #include <native/AssetManager/assetScanner.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <native/unittests/UnitTestRunner.h> // for CreateDummyFile
 #include <QApplication>
 #include <QElapsedTimer>
-#include <QSharedPointer>
 #include <QTemporaryDir>
 
 namespace UnitTest
@@ -20,7 +21,7 @@ namespace UnitTest
     TEST_F(AssetScannerUnitTest, AssetScanner_ScanMultipleFolders_ExpectedFilesAndFoldersFound)
     {
         using namespace AssetProcessor;
-        QSharedPointer<QCoreApplication> m_qApp;
+        AZStd::shared_ptr<QCoreApplication> m_qApp;
 
         // QApplications require command line arguments, so create something to meet that requirement.
         int argC{ 1 };
@@ -30,59 +31,60 @@ namespace UnitTest
 
         m_qApp.reset(new QApplication(argC, &commandLineBufferAddress));
 
-        QTemporaryDir tempEngineRoot;
-        QDir tempPath(tempEngineRoot.path());
+        AZ::Test::ScopedAutoTempDirectory tempEngineRoot;
+        //const char* tempPath(tempEngineRoot.GetDirectory());
+        //QDir tempPath(tempEngineRoot.path());
 
-        QSet<QString> expectedFiles;
+        AZStd::set<AZ::IO::Path> expectedFiles;
         // set up some interesting files:
-        expectedFiles << tempPath.absoluteFilePath("rootfile2.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder1/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder2/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath(
-            "subfolder2/aaa/bbb/ccc/ddd/eee.fff.ggg/basefile.txt"); // adding a folder name containing dots
-        expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/eee.fff.ggg/basefile1.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder3/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder3/aaa/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder3/aaa/bbb/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder3/aaa/bbb/ccc/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("rootfile1.txt");
+        expectedFiles.insert(tempEngineRoot.Resolve("rootfile2.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder1/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder2/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder2/aaa/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder2/aaa/bbb/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder2/aaa/bbb/ccc/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder2/aaa/bbb/ccc/ddd/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve(
+            "subfolder2/aaa/bbb/ccc/ddd/eee.fff.ggg/basefile.txt")); // adding a folder name containing dots
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder2/aaa/bbb/ccc/ddd/eee.fff.ggg/basefile1.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder3/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder3/aaa/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder3/aaa/bbb/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("subfolder3/aaa/bbb/ccc/basefile.txt"));
+        expectedFiles.insert(tempEngineRoot.Resolve("rootfile1.txt"));
 
-        for (const QString& expect : expectedFiles)
+        for (const AZ::IO::Path& expect : expectedFiles)
         {
-            EXPECT_TRUE(UnitTestUtils::CreateDummyFile(expect));
+            EXPECT_TRUE(UnitTestUtils::CreateDummyFile(expect.c_str()));
         }
 
         // but we're going to not watch subfolder3 recursively, so... remove these files (even though they're on disk)
         // if this causes a failure it means that its ignoring the "do not recurse" flag:
-        expectedFiles.remove(tempPath.absoluteFilePath("subfolder3/aaa/basefile.txt"));
-        expectedFiles.remove(tempPath.absoluteFilePath("subfolder3/aaa/bbb/basefile.txt"));
-        expectedFiles.remove(tempPath.absoluteFilePath("subfolder3/aaa/bbb/ccc/basefile.txt"));
+        expectedFiles.erase(tempEngineRoot.Resolve("subfolder3/aaa/basefile.txt"));
+        expectedFiles.erase(tempEngineRoot.Resolve("subfolder3/aaa/bbb/basefile.txt"));
+        expectedFiles.erase(tempEngineRoot.Resolve("subfolder3/aaa/bbb/ccc/basefile.txt"));
 
-        QSet<QString> expectedFolders;
-        expectedFolders << tempPath.absoluteFilePath("subfolder2/aaa");
-        expectedFolders << tempPath.absoluteFilePath("subfolder2/aaa/bbb");
-        expectedFolders << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc");
-        expectedFolders << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd");
-        expectedFolders << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/eee.fff.ggg");
+        AZStd::set<AZ::IO::Path> expectedFolders;
+        expectedFolders.insert(tempEngineRoot.Resolve("subfolder2/aaa"));
+        expectedFolders.insert(tempEngineRoot.Resolve("subfolder2/aaa/bbb"));
+        expectedFolders.insert(tempEngineRoot.Resolve("subfolder2/aaa/bbb/ccc"));
+        expectedFolders.insert(tempEngineRoot.Resolve("subfolder2/aaa/bbb/ccc/ddd"));
+        expectedFolders.insert(tempEngineRoot.Resolve("subfolder2/aaa/bbb/ccc/ddd/eee.fff.ggg"));
 
         PlatformConfiguration config;
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);
         // PATH, DisplayName, PortKey, outputfolder, root, recurse, platforms
         config.AddScanFolder(
-            ScanFolderInfo(tempPath.absolutePath(), "temp", "ap1", true, false, platforms)); // note:  "Recurse" set to false.
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "", "ap2", false, true, platforms));
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "", "ap3", false, true, platforms));
+            ScanFolderInfo(tempEngineRoot.GetDirectory(), "temp", "ap1", true, false, platforms)); // note:  "Recurse" set to false.
+        config.AddScanFolder(ScanFolderInfo(tempEngineRoot.Resolve("subfolder1").c_str(), "", "ap2", false, true, platforms));
+        config.AddScanFolder(ScanFolderInfo(tempEngineRoot.Resolve("subfolder2").c_str(), "", "ap3", false, true, platforms));
         config.AddScanFolder(
-            ScanFolderInfo(tempPath.filePath("subfolder3"), "", "ap4", false, false, platforms)); // note:  "Recurse" set to false.
+            ScanFolderInfo(tempEngineRoot.Resolve("subfolder3").c_str(), "", "ap4", false, false, platforms)); // note:  "Recurse" set to false.
         AssetScanner scanner(&config);
 
-        QList<AssetFileInfo> filesFound;
-        QList<AssetFileInfo> foldersFound;
+        AZStd::list<AssetFileInfo> filesFound;
+        AZStd::list<AssetFileInfo> foldersFound;
 
         bool doneScan = false;
 
@@ -121,29 +123,30 @@ namespace UnitTest
         // it makes sure that if a folder is added NON-recursively, child folder files are not found.
 
         scanner.StartScan();
-        QElapsedTimer nowTime;
-        nowTime.start();
+        auto startTime = AZStd::chrono::system_clock::now();
         while (!doneScan)
         {
             QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
 
-            if (nowTime.elapsed() > 10000)
+            auto millisecondsSpentScanning =
+                AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - startTime);
+            if (millisecondsSpentScanning > AZStd::chrono::milliseconds(10000))
             {
                 break;
             }
         }
 
         EXPECT_TRUE(doneScan);
-        EXPECT_TRUE(filesFound.count() == expectedFiles.count());
+        EXPECT_TRUE(filesFound.size() == expectedFiles.size());
 
         for (const AssetFileInfo& file : filesFound)
         {
-            EXPECT_TRUE(expectedFiles.find(file.m_filePath) != expectedFiles.end());
+            EXPECT_TRUE(expectedFiles.find(file.m_filePath.toUtf8().constData()) != expectedFiles.end());
         }
 
         for (const AssetFileInfo& folder : foldersFound)
         {
-            EXPECT_TRUE(expectedFolders.find(folder.m_filePath) != expectedFolders.end());
+            EXPECT_TRUE(expectedFolders.find(folder.m_filePath.toUtf8().constData()) != expectedFolders.end());
         }
 
     }
