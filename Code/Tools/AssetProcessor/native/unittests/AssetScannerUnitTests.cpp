@@ -137,16 +137,16 @@ namespace UnitTest
         }
 
         EXPECT_TRUE(doneScan);
-        EXPECT_TRUE(filesFound.size() == expectedFiles.size());
+        EXPECT_EQ(filesFound.size(), expectedFiles.size());
 
         for (const AssetFileInfo& file : filesFound)
         {
-            EXPECT_TRUE(expectedFiles.find(file.m_filePath.toUtf8().constData()) != expectedFiles.end());
+            EXPECT_NE(expectedFiles.find(file.m_filePath.toUtf8().constData()), expectedFiles.end());
         }
 
         for (const AssetFileInfo& folder : foldersFound)
         {
-            EXPECT_TRUE(expectedFolders.find(folder.m_filePath.toUtf8().constData()) != expectedFolders.end());
+            EXPECT_NE(expectedFolders.find(folder.m_filePath.toUtf8().constData()), expectedFolders.end());
         }
 
     }
