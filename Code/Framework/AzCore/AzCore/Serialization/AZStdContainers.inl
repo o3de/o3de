@@ -1808,7 +1808,13 @@ namespace AZ
                     return false;
                 };
                 EnumElements(instance, captureValue);
-                typename T::value_type *valuePtr = *reinterpret_cast<typename T::value_type**>(ptrToRawPtr);
+
+                if (!ptrToRawPtr)
+                {
+                    return nullptr;
+                }
+
+                typename T::value_type* valuePtr = *reinterpret_cast<typename T::value_type**>(ptrToRawPtr);
                 return valuePtr;
             }
 
