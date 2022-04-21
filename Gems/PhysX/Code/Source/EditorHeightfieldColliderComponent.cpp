@@ -208,11 +208,13 @@ namespace PhysX
     }
 
     void EditorHeightfieldColliderComponent::RefreshHeightfield(
-        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
         const AZ::Aabb& dirtyRegion)
     {
-        if (changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyBegin ||
-            changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyEnd)
+        using Physics::HeightfieldProviderNotifications;
+
+        if (HeightfieldChangeMask::DestroyBegin == (changeMask & HeightfieldChangeMask::DestroyBegin) ||
+            HeightfieldChangeMask::DestroyEnd == (changeMask & HeightfieldChangeMask::DestroyEnd))
         {
             // Clear the entire terrain if destroying
             ClearHeightfield();
@@ -238,9 +240,8 @@ namespace PhysX
         requestRegion.Clamp(heightfieldAabb);
 
         // if dirty region invalid, recreate the entire heightfield, otherwise request samples
-        bool shouldRecreateHeightfield = (m_shapeConfig == nullptr)
-            || ((changeMask & Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd)
-                == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
+        bool shouldRecreateHeightfield = (m_shapeConfig == nullptr) ||
+            (HeightfieldChangeMask::CreateEnd == (changeMask & HeightfieldChangeMask::CreateEnd));
 
         // Check if dirtyRegion covers the entire terrain
         shouldRecreateHeightfield = shouldRecreateHeightfield || (requestRegion == heightfieldAabb);

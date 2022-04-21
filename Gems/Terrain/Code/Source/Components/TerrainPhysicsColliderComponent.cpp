@@ -30,28 +30,28 @@ namespace Terrain
     Physics::HeightfieldProviderNotifications::HeightfieldChangeMask TerrainToPhysicsHeightfieldChangeMask(AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask mask)
     {
         using AzFramework::Terrain::TerrainDataNotifications;
+        using Physics::HeightfieldProviderNotifications;
 
-        Physics::HeightfieldProviderNotifications::HeightfieldChangeMask result
-            = Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::None;
+        HeightfieldProviderNotifications::HeightfieldChangeMask result = HeightfieldProviderNotifications::HeightfieldChangeMask::None;
 
         if (mask & TerrainDataNotifications::Settings)
         {
-            result |= Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings;
+            result |= HeightfieldProviderNotifications::HeightfieldChangeMask::Settings;
         }
 
         if (mask & TerrainDataNotifications::HeightData)
         {
-            result |= Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::HeightData;
+            result |= HeightfieldProviderNotifications::HeightfieldChangeMask::HeightData;
         }
 
         if (mask & TerrainDataNotifications::ColorData)
         {
-            result |= Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::MaterialData;
+            result |= HeightfieldProviderNotifications::HeightfieldChangeMask::MaterialData;
         }
 
         if (mask & TerrainDataNotifications::SurfaceData)
         {
-            result |= Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceData;
+            result |= HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceData;
         }
 
         return result;

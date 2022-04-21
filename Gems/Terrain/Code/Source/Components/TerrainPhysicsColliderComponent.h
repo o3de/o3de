@@ -124,6 +124,6 @@ namespace Terrain
 
     private:
         TerrainPhysicsColliderConfig m_configuration;
-        bool m_terrainDataActive = true;
+        bool m_terrainDataActive = false;
     };
 }
