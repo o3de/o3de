@@ -423,7 +423,17 @@ namespace AZ
             m_latestCaptureInfo.clear();
 
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<RPI::ImageAttachmentPreviewPass>();
-            AZ::RPI::ImageAttachmentPreviewPass* previewPass = azrtti_cast<AZ::RPI::ImageAttachmentPreviewPass*>(RPI::PassSystemInterface::Get()->FindFirstPass(passFilter));
+            AZ::RPI::ImageAttachmentPreviewPass* previewPass = nullptr;
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&previewPass](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+                {
+                    if (pass->GetParent() != nullptr && pass->IsEnabled())
+                    {
+                        previewPass = azrtti_cast<AZ::RPI::ImageAttachmentPreviewPass*>(pass);
+                        return  AZ::RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                    }
+                    return  AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
+
             if (!previewPass)
             {
                 AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find an ImageAttachmentPreviewPass");
