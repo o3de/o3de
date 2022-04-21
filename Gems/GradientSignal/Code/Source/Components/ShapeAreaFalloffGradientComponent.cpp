@@ -25,6 +25,7 @@ namespace GradientSignal
                 ->Field("ShapeEntityId", &ShapeAreaFalloffGradientConfig::m_shapeEntityId)
                 ->Field("FalloffWidth", &ShapeAreaFalloffGradientConfig::m_falloffWidth)
                 ->Field("FalloffType", &ShapeAreaFalloffGradientConfig::m_falloffType)
+                ->Field("Is3dFalloff", &ShapeAreaFalloffGradientConfig::m_is3dFalloff)
                 ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -47,6 +48,9 @@ namespace GradientSignal
                     //->EnumAttribute(ShapeAreaFalloffGradientConfig::FalloffType::Inner, "Inner")
                     ->EnumAttribute(FalloffType::Outer, "Outer")
                     //->EnumAttribute(ShapeAreaFalloffGradientConfig::FalloffType::InnerOuter, "InnerOuter")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &ShapeAreaFalloffGradientConfig::m_is3dFalloff, "3D Falloff",
+                        "Either calculate the falloff in the XY plane or in 3D space.")
                     ;
             }
         }
@@ -61,6 +65,7 @@ namespace GradientSignal
                 ->Property("falloffType",
                     [](ShapeAreaFalloffGradientConfig* config) { return (AZ::u8&)(config->m_falloffType); },
                     [](ShapeAreaFalloffGradientConfig* config, const AZ::u8& i) { config->m_falloffType = (FalloffType)i; })
+                ->Property("is3dFalloff", BehaviorValueProperty(&ShapeAreaFalloffGradientConfig::m_is3dFalloff))
                 ;
         }
     }
@@ -110,7 +115,9 @@ namespace GradientSignal
                 ->Event("GetFalloffType", &ShapeAreaFalloffGradientRequestBus::Events::GetFalloffType)
                 ->Event("SetFalloffType", &ShapeAreaFalloffGradientRequestBus::Events::SetFalloffType)
                 ->VirtualProperty("FalloffType", "GetFalloffType", "SetFalloffType")
-                ;
+                ->Event("Get3dFalloff", &ShapeAreaFalloffGradientRequestBus::Events::Get3dFalloff)
+                ->Event("Set3dFalloff", &ShapeAreaFalloffGradientRequestBus::Events::Set3dFalloff)
+                ->VirtualProperty("Is3dFalloff", "Get3dFalloff", "Set3dFalloff");
         }
     }
 
@@ -173,9 +180,14 @@ namespace GradientSignal
     {
         AZStd::shared_lock lock(m_queryMutex);
 
-        // Calculate the shape falloff distance in the XY plane only by using the shape center as our Z location.
         float distance = 0.0f;
-        AZ::Vector3 queryPoint(sampleParams.m_position.GetX(), sampleParams.m_position.GetY(), m_cachedShapeCenter.GetZ());
+        AZ::Vector3 queryPoint = sampleParams.m_position;
+        if (!m_configuration.m_is3dFalloff)
+        {
+            // Calculate the shape falloff distance in the XY plane only by using the shape center as our Z location.
+            queryPoint.SetZ(m_cachedShapeCenter.GetZ());
+        }
+
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             distance, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, queryPoint);
 
@@ -208,8 +220,13 @@ namespace GradientSignal
 
                 for (size_t index = 0; index < positions.size(); index++)
                 {
-                    // Calculate the shape falloff distance in the XY plane only by using the shape center as our Z location.
-                    AZ::Vector3 queryPoint(positions[index].GetX(), positions[index].GetY(), m_cachedShapeCenter.GetZ());
+                    AZ::Vector3 queryPoint = positions[index];
+                    if (!m_configuration.m_is3dFalloff)
+                    {
+                        // Calculate the shape falloff distance in the XY plane only by using the shape center as our Z location.
+                        queryPoint.SetZ(m_cachedShapeCenter.GetZ());
+                    }
+
                     float distance = shapeRequests->DistanceFromPoint(queryPoint);
 
                     // Since this is outer falloff, distance should give us values from 1.0 at the minimum distance to 0.0 at the maximum
@@ -297,6 +314,23 @@ namespace GradientSignal
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
+    bool ShapeAreaFalloffGradientComponent::Get3dFalloff() const
+    {
+        return m_configuration.m_is3dFalloff;
+    }
+
+    void ShapeAreaFalloffGradientComponent::Set3dFalloff(bool is3dFalloff)
+    {
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_is3dFalloff = is3dFalloff;
+        }
+
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+    }
+    
     void ShapeAreaFalloffGradientComponent::OnShapeChanged(
         [[maybe_unused]] LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons reasons)
     {

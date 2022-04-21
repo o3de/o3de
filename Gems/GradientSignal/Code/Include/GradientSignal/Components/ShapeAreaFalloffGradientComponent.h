@@ -34,8 +34,8 @@ namespace GradientSignal
 
         AZ::EntityId m_shapeEntityId;
         float m_falloffWidth = 1.0f;
-
         FalloffType m_falloffType = FalloffType::Outer;
+        bool m_is3dFalloff = false;
     };
 
     static const AZ::Uuid ShapeAreaFalloffGradientComponentTypeId = "{F32A108B-7612-4AC2-B436-96DDDCE9E70B}";
@@ -89,8 +89,10 @@ namespace GradientSignal
         FalloffType GetFalloffType() const override;
         void SetFalloffType(FalloffType type) override;
 
-        void CacheShapeBounds();
+        bool Get3dFalloff() const override;
+        void Set3dFalloff(bool is3dFalloff) override;
 
+        void CacheShapeBounds();
     private:
         ShapeAreaFalloffGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
