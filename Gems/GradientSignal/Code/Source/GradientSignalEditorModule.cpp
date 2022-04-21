@@ -7,6 +7,7 @@
  */
 
 #include <GradientSignalEditorModule.h>
+#include <Editor/EditorGradientBakerComponent.h>
 #include <Editor/EditorSurfaceAltitudeGradientComponent.h>
 #include <Editor/EditorSmoothStepGradientComponent.h>
 #include <Editor/EditorSurfaceSlopeGradientComponent.h>
@@ -36,6 +37,7 @@ namespace GradientSignal
         m_descriptors.insert(m_descriptors.end(), {
             GradientSignalEditorSystemComponent::CreateDescriptor(),
 
+            EditorGradientBakerComponent::CreateDescriptor(),
             EditorSurfaceAltitudeGradientComponent::CreateDescriptor(),
             EditorSmoothStepGradientComponent::CreateDescriptor(),
             EditorSurfaceSlopeGradientComponent::CreateDescriptor(),
