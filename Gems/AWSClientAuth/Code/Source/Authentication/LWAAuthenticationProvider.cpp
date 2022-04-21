@@ -125,7 +125,7 @@ namespace AWSClientAuth
 
                     AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnDeviceCodeGrantConfirmSignInSuccess,
                         AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
-                            jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(), jsonView.GetString(OAuthIdTokenResponseKey).c_str(),
+                            jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(), jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
                             ProviderNameEnum::LoginWithAmazon, jsonView.GetInteger(OAuthExpiresInResponseKey)));
                     m_cachedUserCode = "";
                     m_cachedDeviceCode = "";
@@ -160,7 +160,7 @@ namespace AWSClientAuth
 
                 AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnRefreshTokensSuccess,
                     AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
-                        jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(), jsonView.GetString(OAuthIdTokenResponseKey).c_str(),
+                        jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(), jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
                         ProviderNameEnum::LoginWithAmazon, jsonView.GetInteger(OAuthExpiresInResponseKey)));
             }
             else
