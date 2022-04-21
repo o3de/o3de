@@ -21,19 +21,19 @@ class Tests:
 
 
 
-def Atom_LevelLoadTest():
+def Atom_Editor_LevelLoad_macbeth_shaderballs():
     """
     Summary:
-    Loads all graphics levels within the AutomatedTesting project in editor. For each level this script will verify that
-    the level loads, and can enter/exit gameplay without crashing the editor.
+    Loads the "macbeth_shaderballs" level within an instance of Editor.exe using the null renderer. Test verifies that
+    the level loads, can enter/exit gameplay, and that Editor.exe remains stable throughout this process.
 
     Test setup:
-    - Launch editor
+    - Launch Editor.exe
 
     Expected Behavior:
     Test verifies that level loads, enters/exits game mode, and editor remains stable.
 
-    Test Steps for each level:
+    Test Steps:
     1) Load level, confirm that correct level is loaded, and report results
     2) Validate that editor can enter gameplay successfully
     3) Validate that editor can exit gameplay successfully
@@ -49,7 +49,7 @@ def Atom_LevelLoadTest():
 
     with Tracer() as error_tracer:
 
-        # 1. Load macbeth_shaderballs level, enter gameplay, validate and report results
+        # 1. Load level macbeth_shaderballs, confirm that correct level is loaded, and report results
         TestHelper.init_idle()
         TestHelper.open_level("Graphics", "macbeth_shaderballs")
         Report.result(Tests.macbeth_shaderballs_level_load, "macbeth_shaderballs" == general.get_current_level_name())
@@ -76,4 +76,4 @@ def Atom_LevelLoadTest():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(Atom_LevelLoadTest)
+    Report.start_test(Atom_Editor_LevelLoad_macbeth_shaderballs)

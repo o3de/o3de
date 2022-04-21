@@ -6,13 +6,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 class Tests:
-    PbrMaterialChart_high_level_load = (
+    pbrmaterialchart_high_level_load = (
         "PbrMaterialChart level loaded",
         "P0: PbrMaterialChart level failed to load")
-    PbrMaterialChart_enter_game_mode = (
+    pbrmaterialchart_enter_game_mode = (
         "PbrMaterialChart entered gameplay successfully",
         "P0: PbrMaterialChart failed to enter gameplay")
-    PbrMaterialChart_exit_game_mode = (
+    pbrmaterialchart_exit_game_mode = (
         "PbrMaterialChart exited gameplay successfully",
         "P0: PbrMaterialChart failed to exit gameplay")
     empty_level_load = (
@@ -21,19 +21,19 @@ class Tests:
 
 
 
-def Atom_LevelLoadTest():
+def Atom_Editor_LevelLoad_PbrMaterialChart():
     """
     Summary:
-    Loads all graphics levels within the AutomatedTesting project in editor. For each level this script will verify that
-    the level loads, and can enter/exit gameplay without crashing the editor.
+    Loads the "PbrMaterialChart" level within an instance of Editor.exe using the null renderer. Test verifies that
+    the level loads, can enter/exit gameplay, and that Editor.exe remains stable throughout this process.
 
     Test setup:
-    - Launch editor
+    - Launch Editor.exe
 
     Expected Behavior:
     Test verifies that level loads, enters/exits game mode, and editor remains stable.
 
-    Test Steps for each level:
+    Test Steps:
     1) Load level, confirm that correct level is loaded, and report results
     2) Validate that editor can enter gameplay successfully
     3) Validate that editor can exit gameplay successfully
@@ -49,17 +49,17 @@ def Atom_LevelLoadTest():
 
     with Tracer() as error_tracer:
 
-        # 1. Load PbrMaterialChart level, enter gameplay, validate and report results
+        # 1. Load level PbrMaterialChart, confirm that correct level is loaded, and report results
         TestHelper.init_idle()
         TestHelper.open_level("Graphics", "PbrMaterialChart")
-        Report.result(Tests.PbrMaterialChart_high_level_load, "PbrMaterialChart" == general.get_current_level_name())
+        Report.result(Tests.pbrmaterialchart_high_level_load, "PbrMaterialChart" == general.get_current_level_name())
 
         # 2. Validate that editor can enter gameplay successfully.
-        TestHelper.enter_game_mode(Tests.PbrMaterialChart_enter_game_mode)
+        TestHelper.enter_game_mode(Tests.pbrmaterialchart_enter_game_mode)
         general.idle_wait_frames(1)
 
         # 3. Validate that editor can exit gameplay successfully.
-        TestHelper.exit_game_mode(Tests.PbrMaterialChart_exit_game_mode)
+        TestHelper.exit_game_mode(Tests.pbrmaterialchart_exit_game_mode)
         general.idle_wait_frames(1)
 
         # 4. Open an empty level to verify editor remains stable.
@@ -76,4 +76,4 @@ def Atom_LevelLoadTest():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(Atom_LevelLoadTest)
+    Report.start_test(Atom_Editor_LevelLoad_PbrMaterialChart)
