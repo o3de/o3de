@@ -34,7 +34,10 @@ namespace O3DE::ProjectManager
         bool FindSupportedCompiler(QWidget* parent = nullptr);
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform();
 
-        //! Detect if cmake is installed and is the minimum version for O3DE
+        //! Detect if cmake is installed
+        //! Does NOT detect if the version of cmake required to run O3DE
+        //! The cmake exeuctable is only tool suitable for detecting the minimum cmake version
+        //! required, so it is left up to it to detect the version and error out.
         AZ::Outcome<QString, QString> FindSupportedCMake();
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
