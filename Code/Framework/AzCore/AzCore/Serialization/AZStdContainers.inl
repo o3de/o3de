@@ -1796,6 +1796,7 @@ namespace AZ
             }
 
             /// Get an element's address by its index (called before the element is loaded).
+            /// Caller should ensure CanAccessElementsByIndex returns true for this to be valid.
             void* GetElementByIndex(void* instance, const SerializeContext::ClassElement* classElement, size_t index) override
             {
                 (void)classElement;
@@ -1808,12 +1809,6 @@ namespace AZ
                     return false;
                 };
                 EnumElements(instance, captureValue);
-
-                if (!ptrToRawPtr)
-                {
-                    return nullptr;
-                }
-
                 typename T::value_type* valuePtr = *reinterpret_cast<typename T::value_type**>(ptrToRawPtr);
                 return valuePtr;
             }
