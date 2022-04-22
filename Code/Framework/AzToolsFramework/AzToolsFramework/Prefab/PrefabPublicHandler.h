@@ -173,7 +173,7 @@ namespace AzToolsFramework
 
             static void Internal_HandleContainerOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
-                const LinkId linkId, InstanceOptionalReference parentInstance = AZStd::nullopt);
+                const LinkId linkId);
             static void Internal_HandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
                 PrefabDom& afterState);

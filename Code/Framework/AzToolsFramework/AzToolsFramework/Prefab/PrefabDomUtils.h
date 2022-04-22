@@ -31,6 +31,11 @@ namespace AzToolsFramework
             inline static const char* ComponentsName = "Components";
             inline static const char* EntityOrderName = "Child Entity Order";
             inline static const char* TypeName = "$type";
+            inline static const char* PathMatchingEntities = "/Entities";
+            inline static const char* PathMatchingInstances = "/Instances";
+            inline static const char* PathStartingWithEntities = "/Entities/";
+            inline static const char* PathStartingWithInstances = "/Instances/";
+            inline static const char* PathMatchingContainerEntity = "/ContainerEntity";
 
             /**
             * Find Prefab value from given parent value and target value's name.
@@ -55,6 +60,18 @@ namespace AzToolsFramework
                 StripLinkIds = 1 << 1
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreFlags);
+
+            struct PatchesMetadata
+            {
+                AZStd::unordered_set<EntityAlias> entitiesToReload;
+                AZStd::unordered_set<EntityAlias> entitiesToRemove;
+                AZStd::unordered_set<InstanceAlias> instancesToRemove;
+                AZStd::unordered_set<InstanceAlias> instancesToAdd;
+                AZStd::unordered_set<InstanceAlias> instancesToReload;
+                bool shouldReloadContainerEntity = false;
+                bool clearAndLoadAllEntities = false;
+                bool clearAndLoadAllInstances = false;
+            };
 
             /**
             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates.
@@ -164,6 +181,8 @@ namespace AzToolsFramework
                 PrefabDomValue& prefabDomToApplyPatchesOn,
                 PrefabDom::AllocatorType& allocator,
                 const PrefabDomValue& patches);
+
+            PatchesMetadata IdentifyModifiedInstanceMembers(const PrefabDom& patches);
 
             /**
              * Prints the contents of the given prefab DOM value to the debug output console in a readable format.
