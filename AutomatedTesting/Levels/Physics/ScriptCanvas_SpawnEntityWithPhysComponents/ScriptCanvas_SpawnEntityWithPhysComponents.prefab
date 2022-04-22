@@ -170,6 +170,21 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 10841247711583713947
                 },
+                "Component_[1281440710466199957]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 1281440710466199957,
+                    "m_name": "ScriptCanvas_SpawnEntityWithPhysComponents.scriptcanvas",
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "id": "{D45DEDB9-C827-5569-9565-5B182F747193}",
+                            "path": "git/o3de/AutomatedTesting/ScriptCanvas/ScriptCanvas_SpawnEntityWithPhysComponents.scriptcanvas"
+                        }
+                    },
+                    "sourceHandle": {
+                        "id": "{D45DEDB9-C827-5569-9565-5B182F747193}",
+                        "path": "git/o3de/AutomatedTesting/ScriptCanvas/ScriptCanvas_SpawnEntityWithPhysComponents.scriptcanvas"
+                    }
+                },
                 "Component_[13297798007423143323]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 13297798007423143323,
@@ -180,113 +195,6 @@
                             514.0,
                             125.0
                         ]
-                    }
-                },
-                "Component_[1442269132242913852]": {
-                    "$type": "EditorScriptCanvasComponent",
-                    "Id": 1442269132242913852,
-                    "m_name": "ScriptCanvas_SpawnEntityWithPhysComponents.scriptcanvas",
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{D45DEDB9-C827-5569-9565-5B182F747193}",
-                            "path": "gws/o3de/AutomatedTesting/ScriptCanvas/ScriptCanvas_SpawnEntityWithPhysComponents.scriptcanvas"
-                        },
-                        "variables": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 4,
-                                        "m_azType": "{A96A5037-AD0D-43B6-9948-ED63438C4A52}"
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "SpawnableAsset"
-                                },
-                                "VariableId": {
-                                    "m_id": "{217D1387-6673-4C63-8309-39294FBE8ACF}"
-                                },
-                                "VariableName": "Ball_0",
-                                "InitialValueSource": 1
-                            }
-                        ],
-                        "entityId": [
-                            [
-                                {
-                                    "m_id": "{BC1B8218-3FC5-4AD3-B72D-8F00F61B98CE}"
-                                },
-                                ""
-                            ]
-                        ],
-                        "overrides": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 4,
-                                        "m_azType": "{A96A5037-AD0D-43B6-9948-ED63438C4A52}"
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "SpawnableAsset",
-                                    "value": {
-                                        "Asset": {
-                                            "assetId": {
-                                                "guid": "{7F3AB9F8-4866-5C85-BEE8-C4FCC37B80CC}",
-                                                "subId": 1403532424
-                                            },
-                                            "assetHint": "levels/physics/scriptcanvas_spawnentitywithphyscomponents/ball_0.spawnable"
-                                        }
-                                    }
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{217D1387-6673-4C63-8309-39294FBE8ACF}"
-                                },
-                                "VariableName": "Ball_0",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[3721848391988]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{BC1B8218-3FC5-4AD3-B72D-8F00F61B98CE}"
-                                },
-                                "VariableName": "Spawn_Point",
-                                "InitialValueSource": 1
-                            }
-                        ],
-                        "overridesUnused": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[1159459292531]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{1161F1B3-EC72-4300-8A3E-2AF55E1A449F}"
-                                },
-                                "VariableName": "Terrain",
-                                "InitialValueSource": 1
-                            }
-                        ]
-                    },
-                    "sourceHandle": {
-                        "id": "{D45DEDB9-C827-5569-9565-5B182F747193}",
-                        "path": "gws/o3de/AutomatedTesting/ScriptCanvas/ScriptCanvas_SpawnEntityWithPhysComponents.scriptcanvas"
                     }
                 },
                 "Component_[17538867339490130478]": {

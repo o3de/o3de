@@ -171,12 +171,13 @@ namespace GradientSignal
         m_gradientSampler.m_ownerEntityId = GetEntityId();
 
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        GradientSurfaceDataRequestBus::Handler::BusConnect(GetEntityId());
 
         if (m_configuration.m_shapeConstraintEntityId.IsValid())
         {
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(m_configuration.m_shapeConstraintEntityId);
         }
+
+        GradientSurfaceDataRequestBus::Handler::BusConnect(GetEntityId());
 
         // Register with the SurfaceData system and update our cached shape information if necessary.
         m_modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
@@ -186,12 +187,13 @@ namespace GradientSignal
 
     void GradientSurfaceDataComponent::Deactivate()
     {
+        GradientSurfaceDataRequestBus::Handler::BusDisconnect();
+
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataModifier, m_modifierHandle);
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataModifier(m_modifierHandle);
         SurfaceData::SurfaceDataModifierRequestBus::Handler::BusDisconnect();
         m_modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
-        GradientSurfaceDataRequestBus::Handler::BusDisconnect();
     }
 
     bool GradientSurfaceDataComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -363,16 +365,12 @@ namespace GradientSignal
         if (registryHandle == SurfaceData::InvalidSurfaceDataRegistryHandle)
         {
             // Register with the SurfaceData system and get a valid registryHandle.
-            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(registryHandle,
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataModifier, registryEntry);
+            registryHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataModifier(registryEntry);
         }
         else
         {
             // Update the registry entry with the SurfaceData system using the existing registryHandle.
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::UpdateSurfaceDataModifier,
-                registryHandle, registryEntry);
-
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UpdateSurfaceDataModifier(registryHandle, registryEntry);
         }
     }
 

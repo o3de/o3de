@@ -115,7 +115,7 @@ function(ly_generate_project_build_path_setreg project_real_path)
     set(project_bin_path ${CMAKE_BINARY_DIR})
     string(CONFIGURE ${project_build_path_template} project_build_path_setreg_content @ONLY)
     set(project_user_build_path_setreg_file ${project_real_path}/user/Registry/Platform/${PAL_PLATFORM_NAME}/build_path.setreg)
-    file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT ${project_build_path_setreg_content})
+    file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT "${project_build_path_setreg_content}")
 endfunction()
 
 function(install_project_asset_artifacts project_real_path)

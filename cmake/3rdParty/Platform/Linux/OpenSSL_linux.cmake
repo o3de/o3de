@@ -17,3 +17,13 @@ else()
     # Alias the O3DE name to the official name
     add_library(3rdParty::OpenSSL ALIAS OpenSSL::SSL)
 endif()
+
+# include Install.cmake to get access to the ly_install function
+include(cmake/Install.cmake)
+
+# Copies over the OpenSSL_linux.cmake to the same location in the SDK layout.
+cmake_path(RELATIVE_PATH CMAKE_CURRENT_LIST_DIR BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE openssl_cmake_rel_directory)
+ly_install(FILES "${CMAKE_CURRENT_LIST_FILE}"
+    DESTINATION "${openssl_cmake_rel_directory}"
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)

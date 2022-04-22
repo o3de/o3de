@@ -366,7 +366,46 @@ namespace EMotionFX
                 auto mesh = azrtti_cast<const SceneDataTypes::IMeshData*>(it->second);
                 if (mesh)
                 {
-                    outMeshIndices.push_back(nodeIndex);
+                    outMeshIndices.emplace_back(nodeIndex);
+
+                    // Don't need to add a mesh node except if it is a parent of another joint / mesh node.
+                    // Example:
+                    // joint_1
+                    //   |____transform
+                    //   |____mesh_1 (keep)
+                    //         |____transform
+                    //         |____mesh_2 (remove)
+                    //         |      |____transform
+                    //         |_______joint_2
+                    //                |____transform
+                    // emfx doesn't need to contain the "end-point" mesh node because mesh buffers are ultimately stored in a single atom mesh.
+                    // NOTE: Joint and mesh node often have a transform node as the children. To correctly detect whether a mesh node has a joint
+                    // or mesh children, we need to check the type id of the children as well.
+                    if (!graph.HasNodeChild(nodeIndex))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        bool hasJointOrMeshChildren = false;
+                        SceneContainers::SceneGraph::NodeIndex childNodeIndex = graph.GetNodeChild(nodeIndex);
+                        while (childNodeIndex.IsValid())
+                        {
+                            auto childContent = graph.GetNodeContent(childNodeIndex);
+                            if (childContent->RTTI_IsTypeOf(SceneDataTypes::IBoneData::TYPEINFO_Uuid())
+                                || childContent->RTTI_IsTypeOf(SceneDataTypes::IMeshData::TYPEINFO_Uuid()))
+                            {
+                                hasJointOrMeshChildren = true;
+                                break;
+                            }
+                            childNodeIndex = graph.GetNodeSibling(childNodeIndex);
+                        }
+
+                        if (!hasJointOrMeshChildren)
+                        {
+                            continue;
+                        }
+                    }
                 }
 
                 auto bone = azrtti_cast<const SceneDataTypes::IBoneData*>(it->second);
@@ -375,7 +414,7 @@ namespace EMotionFX
                     outBoneNameEmfxIndexMap[it->first.GetName()] = aznumeric_cast<AZ::u32>(outNodeIndices.size());
                 }
 
-                // Add bones and mesh nodes to our list of nodes we want to export.
+                // Add bones, or mesh (that has a child mesh or joint) to our list of nodes we want to export.
                 outNodeIndices.push_back(nodeIndex);
             }
         }

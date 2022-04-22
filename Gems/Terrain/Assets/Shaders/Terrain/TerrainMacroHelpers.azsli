@@ -1,0 +1,76 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/RPI/TangentSpace.azsli>
+
+void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positionDdy, out float3 macroColor, out float3 macroNormal)
+{
+    macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+    macroNormal = float3(0.0, 0.0, 1.0);
+
+    // ------- Macro Data -------
+    uint2 macroGridResolution = TerrainSrg::GetMacroGridResolution();
+    float macroTileSize = TerrainSrg::m_macroMaterialGrid.m_tileSize;
+    float2 macroGridOffset = TerrainSrg::m_macroMaterialGrid.m_offset;
+    uint2 macroGridPosition = (worldPosition - macroGridOffset) / macroTileSize;
+
+    uint macroTileIndex = macroGridResolution.x * macroGridPosition.y + macroGridPosition.x;
+    static const uint NumMacroMaterialsPerTile = 4;
+    macroTileIndex *= NumMacroMaterialsPerTile;
+
+    for (uint i = 0; i < NumMacroMaterialsPerTile; ++i)
+    {
+        TerrainSrg::MacroMaterialData macroMaterialData = TerrainSrg::m_macroMaterialData[macroTileIndex + i];
+        if ((macroMaterialData.m_flags & 1) == 0)
+        {
+            break; // No more macro materials for this tile
+        }
+
+        if (any(worldPosition < macroMaterialData.m_boundsMin) || any (worldPosition > macroMaterialData.m_boundsMax))
+        {
+            continue; // Macro material exists for this tile but is out of the bounds of this particular position
+        }
+
+        float2 macroUvSize = macroMaterialData.m_boundsMax - macroMaterialData.m_boundsMin;
+        macroUvSize.x = -macroUvSize.x;
+        float2 macroUv = (macroMaterialData.m_boundsMin - worldPosition) / macroUvSize;
+
+        // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
+        // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
+        float2 macroUvScale = worldPosition / macroUvSize;
+        float2 ddx_macroUv = positionDdx / macroUvSize;
+        float2 ddy_macroUv = positionDdx / macroUvSize;
+
+        if (macroMaterialData.m_colorMapId != 0xFFFF)
+        {
+            macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
+            macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+        }
+
+        if (macroMaterialData.m_normalMapId != 0xFFFF)
+        {
+            bool flipX = macroMaterialData.m_flags & 2;
+            bool flipY = macroMaterialData.m_flags & 4;
+            float factor = macroMaterialData.m_normalFactor;
+
+            // Because of lacking derivatives in compute shader, manually sample and convert
+            // Equivalent to SampleNormalXY in <../Materials/Types/MaterialInputs/NormalInput.azsli>
+            float2 sampledValue = TerrainSrg::m_textures[macroMaterialData.m_normalMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).xy;
+#if AZ_TRAIT_ASTC_COMPRESSION
+            //Astc compression is unorm (0 to 1) so we need to accomodate for that. We are using BC5_SNORM (-1 - +1)for other platforms like pc
+            //[GFX TODO][ATOM-13435] - Look into moving this offline as part of image processing.
+            sampledValue =  (sampledValue * 2) - 1;
+#endif
+            sampledValue.x *= flipY ? -1.0 : 1.0;
+            sampledValue.y *= flipX ? -1.0 : 1.0;
+            macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue, factor));
+        }
+        break;
+    }
+}

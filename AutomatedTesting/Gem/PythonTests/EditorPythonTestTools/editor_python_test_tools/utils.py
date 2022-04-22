@@ -31,8 +31,6 @@ class TestHelper:
     @staticmethod
     def init_idle():
         general.idle_enable(True)
-        # JIRA: SPEC-2880
-        # general.idle_wait_frames(1)
 
     @staticmethod
     def create_level(level_name: str) -> bool:
@@ -173,7 +171,7 @@ class TestHelper:
             # make sure the server launcher is running
             waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher has NOT launched!"), interval=1.0)
 
-            TestHelper.succeed_if_log_line_found("EditorServer", "MultiplayerEditorConnection: Editor-server activation has found and connected to the editor.", section_tracer.prints, 15.0)
+            TestHelper.succeed_if_log_line_found("MultiplayerEditor", "Editor has connected to the editor-server.", section_tracer.prints, 120.0)
 
             TestHelper.succeed_if_log_line_found("MultiplayerEditor", "Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
 

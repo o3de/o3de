@@ -9,6 +9,7 @@
 
 #include <FileCacheManager.h>
 
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
@@ -19,16 +20,29 @@
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AudioAllocators.h>
-#include <AudioInternalInterfaces.h>
 #include <IAudioSystemImplementation.h>
 #include <SoundCVars.h>
 #include <AudioSystem_Traits_Platform.h>
 
-#include <IRenderAuxGeom.h>
+#if !defined(AUDIO_RELEASE)
+    // Debug Draw
+    #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#endif // !AUDIO_RELEASE
 
 namespace Audio
 {
-    extern CAudioLogger g_audioLogger;
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    enum EAudioFileFlags : TATLEnumFlagsType
+    {
+        eAFF_NOTFOUND                       = AUDIO_BIT(0),
+        eAFF_CACHED                         = AUDIO_BIT(1),
+        eAFF_MEMALLOCFAIL                   = AUDIO_BIT(2),
+        eAFF_REMOVABLE                      = AUDIO_BIT(3),
+        eAFF_LOADING                        = AUDIO_BIT(4),
+        eAFF_USE_COUNTED                    = AUDIO_BIT(5),
+        eAFF_NEEDS_RESET_TO_MANUAL_LOADING  = AUDIO_BIT(6),
+        eAFF_LOCALIZED                      = AUDIO_BIT(7),
+    };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     CFileCacheManager::CFileCacheManager(TATLPreloadRequestLookup& preloadRequests)
@@ -84,9 +98,9 @@ namespace Audio
         TAudioFileEntryID fileEntryId = INVALID_AUDIO_FILE_ENTRY_ID;
         SATLAudioFileEntryInfo fileEntryInfo;
 
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::None;
         AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::ParseAudioFileEntry, fileXmlNode, &fileEntryInfo);
-        if (result == eARS_SUCCESS)
+        if (result == EAudioRequestStatus::Success)
         {
             const char* fileLocation = nullptr;
             AudioSystemImplementationRequestBus::BroadcastResult(fileLocation, &AudioSystemImplementationRequestBus::Events::GetAudioFileLocation, &fileEntryInfo);
@@ -134,7 +148,7 @@ namespace Audio
                         // This file entry is upgraded from "manual loading" to "auto loading" but needs a reset to "manual loading" again!
                         it->second->m_flags.AddFlags(eAFF_NEEDS_RESET_TO_MANUAL_LOADING);
                         it->second->m_flags.ClearFlags(eAFF_USE_COUNTED);
-                        g_audioLogger.Log(eALT_COMMENT, "Upgraded file entry from 'Manual' to 'Auto' loading: %s", it->second->m_filePath.c_str());
+                        AZLOG_DEBUG("FileCacheManager - Upgraded file entry from 'Manual' to 'Auto' loading: %s", it->second->m_filePath.c_str());
                     }
 
                     // Entry already exists, free the memory!
@@ -168,7 +182,7 @@ namespace Audio
             {
                 audioFileEntry->m_flags.AddFlags(eAFF_USE_COUNTED);
                 audioFileEntry->m_flags.ClearFlags(eAFF_NEEDS_RESET_TO_MANUAL_LOADING);
-                g_audioLogger.Log(eALT_COMMENT, "Downgraded file entry from 'Auto' to 'Manual' loading: %s", audioFileEntry->m_filePath.c_str());
+                AZLOG_DEBUG("FileCacheManager - Downgraded file entry from 'Auto' to 'Manual' loading: %s", audioFileEntry->m_filePath.c_str());
             }
         }
 
@@ -187,8 +201,8 @@ namespace Audio
                 if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_CACHED | eAFF_LOADING))
                 {
                     // The file needs to be unloaded first.
-                    const size_t useCount = audioFileEntry->m_useCount;
-                    audioFileEntry->m_useCount = 0;// Needed to uncache without an error.
+                    const AZ::u32 useCount = audioFileEntry->m_useCount;
+                    audioFileEntry->m_useCount = 0; // Needed to uncache without an error.
                     UncacheFile(audioFileEntry);
 
                     UpdateLocalizedFileEntryData(audioFileEntry);
@@ -236,7 +250,9 @@ namespace Audio
             }
         }
 
-        return (fullSuccess ? eARS_SUCCESS : (fullFailure ? eARS_FAILURE : eARS_PARTIAL_SUCCESS));
+        return (
+            fullSuccess ? EAudioRequestStatus::Success
+                        : (fullFailure ? EAudioRequestStatus::Failure : EAudioRequestStatus::PartialSuccess));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,7 +287,9 @@ namespace Audio
             }
         }
 
-        return (fullSuccess ? eARS_SUCCESS : (fullFailure ? eARS_FAILURE : eARS_PARTIAL_SUCCESS));
+        return (
+            fullSuccess ? EAudioRequestStatus::Success
+                        : (fullFailure ? EAudioRequestStatus::Failure : EAudioRequestStatus::PartialSuccess));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -293,7 +311,7 @@ namespace Audio
             ++it;
         }
 
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -325,7 +343,7 @@ namespace Audio
             }
             else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_LOADING | eAFF_MEMALLOCFAIL))
             {
-                g_audioLogger.Log(eALT_ALWAYS, "FileCacheManager - Trying to remove a loading or mem-failed file cache entry '%s'", audioFileEntry->m_filePath.c_str());
+                AZLOG_DEBUG("FileCacheManager - Trying to remove a loading or mem-failed entry '%s'", audioFileEntry->m_filePath.c_str());
 
                 // Reset the entry in case it's still loading or was a memory allocation fail.
                 UncacheFile(audioFileEntry);
@@ -340,44 +358,50 @@ namespace Audio
 
 #if !defined(AUDIO_RELEASE)
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, const float posX, const float posY)
+    void CFileCacheManager::DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const float posX, const float posY)
     {
-        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::FileCacheInfo))
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(DebugDraw::Options::FileCacheInfo)))
         {
             const auto frameTime = AZStd::chrono::system_clock::now();
 
-            const float entryDrawSize = 1.5f;
+            const float entryDrawSize = 0.8f;
             const float entryStepSize = 15.0f;
             float positionY = posY + 20.0f;
             float positionX = posX + 20.0f;
             float time = 0.0f;
             float ratio = 0.0f;
             float originalAlpha = 0.7f;
-            float* color = nullptr;
 
             // The colors.
-            float white[4] = { 1.0f, 1.0f, 1.0f, originalAlpha };
-            float cyan[4] = { 0.0f, 1.0f, 1.0f, originalAlpha };
-            float orange[4] = { 1.0f, 0.5f, 0.0f, originalAlpha };
-            float green[4] = { 0.0f, 1.0f, 0.0f, originalAlpha };
-            float red[4] = { 1.0f, 0.0f, 0.0f, originalAlpha };
-            float redish[4] = { 0.7f, 0.0f, 0.0f, originalAlpha };
-            float blue[4] = { 0.1f, 0.2f, 0.8f, originalAlpha };
-            float yellow[4] = { 1.0f, 1.0f, 0.0f, originalAlpha };
-            float darkish[4] = { 0.3f, 0.3f, 0.3f, originalAlpha };
-
-            auxGeom.Draw2dLabel(posX, positionY, 1.6f, orange, false,
-                "FileCacheManager (%zu of %zu KiB) [Entries: %zu]", m_currentByteTotal >> 10, m_maxByteTotal >> 10, m_audioFileEntries.size());
-            positionY += 15.0f;
+            AZ::Color white{ 1.0f, 1.0f, 1.0f, originalAlpha };     // file is use-counted
+            AZ::Color cyan{ 0.0f, 1.0f, 1.0f, originalAlpha };      // file is global scope
+            AZ::Color orange{ 1.0f, 0.5f, 0.0f, originalAlpha };    // header color
+            AZ::Color green{ 0.0f, 1.0f, 0.0f, originalAlpha };     // file is removable
+            AZ::Color red{ 1.0f, 0.0f, 0.0f, originalAlpha };       // memory allocation failed
+            AZ::Color redish{ 0.7f, 0.0f, 0.0f, originalAlpha };    // file not found
+            AZ::Color blue{ 0.1f, 0.2f, 0.8f, originalAlpha };      // file is loading
+            AZ::Color yellow{ 1.0f, 1.0f, 0.0f, originalAlpha };    // file is level scope
+            AZ::Color darkish{ 0.3f, 0.3f, 0.3f, originalAlpha };   // file is not loaded
 
             const bool displayAll = CVars::s_fcmDrawOptions.GetRawFlags() == 0;
-            const bool displayGlobals = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Global);
-            const bool displayLevels = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::LevelSpecific);
-            const bool displayUseCounted = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::UseCounted);
-            const bool displayLoaded = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Loaded);
+            const bool displayGlobals = CVars::s_fcmDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::Global));
+            const bool displayLevels = CVars::s_fcmDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::LevelSpecific));
+            const bool displayUseCounted =
+                CVars::s_fcmDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::UseCounted));
+            const bool displayLoaded = CVars::s_fcmDrawOptions.AreAllFlagsActive(static_cast<AZ::u32>(FileCacheManagerDebugDraw::Options::Loaded));
+
+            // The text
+            AZStd::string str = AZStd::string::format(
+                "File Cache Mgr (%zu of %zu KiB) [Total Entries: %zu]", m_currentByteTotal >> 10, m_maxByteTotal >> 10,
+                m_audioFileEntries.size());
+            debugDisplay.SetColor(orange);
+            debugDisplay.Draw2dTextLabel(posX, positionY, entryDrawSize, str.c_str());
+            positionY += entryStepSize;
 
             for (auto& audioFileEntryPair : m_audioFileEntries)
             {
+                AZ::Color& color = white;
+
                 CATLAudioFileEntry* const audioFileEntry = audioFileEntryPair.second;
 
                 bool isGlobal = (audioFileEntry->m_dataScope == eADS_GLOBAL);
@@ -399,7 +423,7 @@ namespace Audio
                     {
                         color = green;
                     }
-                    else if (!audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_CACHED))
+                    else if (!isLoaded)
                     {
                         color = darkish;
                     }
@@ -415,17 +439,14 @@ namespace Audio
                     {
                         color = yellow;
                     }
-                    else  // isUseCounted
-                    {
-                        color = white;
-                    }
+                    //else  isUseCounted
 
                     using duration_sec = AZStd::chrono::duration<float>;
                     time = AZStd::chrono::duration_cast<duration_sec>(frameTime - audioFileEntry->m_timeCached).count();
 
                     ratio = time / 5.0f;
-                    originalAlpha = color[3];
-                    color[3] *= AZ::GetClamp(ratio, 0.2f, 1.0f);
+                    originalAlpha = color.GetA();
+                    color.SetA(originalAlpha * AZ::GetClamp(ratio, 0.2f, 1.0f));
 
                     bool kiloBytes = false;
                     size_t fileSize = audioFileEntry->m_fileSize;
@@ -436,14 +457,13 @@ namespace Audio
                     }
 
                     // Format: "relative/path/filename.ext (230 KiB) [2]"
-                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false,
-                        "%s (%zu %s) [%zu]",
-                        audioFileEntry->m_filePath.c_str(),
-                        fileSize,
-                        kiloBytes ? "KiB" : "Bytes",
+                    str = AZStd::string::format(
+                        "%s (%zu %s) [%u]", audioFileEntry->m_filePath.c_str(), fileSize, kiloBytes ? "KiB" : "Bytes",
                         audioFileEntry->m_useCount);
+                    debugDisplay.SetColor(color);
+                    debugDisplay.Draw2dTextLabel(positionX, positionY, entryDrawSize, str.c_str());
 
-                    color[3] = originalAlpha;
+                    color.SetA(originalAlpha);
                     positionY += entryStepSize;
                 }
             }
@@ -562,19 +582,19 @@ namespace Audio
                     AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::RegisterInMemoryFile, &fileEntryInfo);
                     success = true;
 
-                    g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - File Cached: '%s'\n", fileEntryInfo.sFileName);
+                    AZLOG_DEBUG("FileCacheManager - File Cached: '%s'", fileEntryInfo.sFileName);
                 }
                 break;
             }
             case AZ::IO::IStreamerTypes::RequestStatus::Failed:
             {
-                AZ_Error("FileCacheManager", false, "FileCacheManager - Async file stream '%s' failed during operation!", audioFileEntry->m_filePath.c_str());
+                AZLOG_ERROR("FileCacheManager - Async file stream '%s' failed during operation!", audioFileEntry->m_filePath.c_str());
                 UncacheFileCacheEntryInternal(audioFileEntry, true, true);
                 break;
             }
             case AZ::IO::IStreamerTypes::RequestStatus::Canceled:
             {
-                g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - Async file stream '%s' was canceled by user!", audioFileEntry->m_filePath.c_str());
+                AZLOG_DEBUG("FileCacheManager - Async file stream '%s' was canceled by user!", audioFileEntry->m_filePath.c_str());
                 UncacheFileCacheEntryInternal(audioFileEntry, true, true);
                 break;
             }
@@ -692,15 +712,15 @@ namespace Audio
             AZ::IO::PathView filePath{ audioFileEntry->m_filePath };
             fileEntryInfo.sFileName = filePath.Filename().Native().data();
 
-            EAudioRequestStatus result = eARS_SUCCESS;
+            EAudioRequestStatus result = EAudioRequestStatus::None;
             AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::UnregisterInMemoryFile, &fileEntryInfo);
-            if (result == eARS_SUCCESS)
+            if (result == EAudioRequestStatus::Success)
             {
-                g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - File Uncached: '%s'\n", fileEntryInfo.sFileName);
+                AZLOG_DEBUG("FileCacheManager - File Uncached: '%s'", fileEntryInfo.sFileName);
             }
             else
             {
-                g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - Unable to uncache file '%s'\n", fileEntryInfo.sFileName);
+                AZLOG_NOTICE("FileCacheManager - Unable to uncache file '%s'", fileEntryInfo.sFileName);
                 return;
             }
         }
@@ -775,7 +795,7 @@ namespace Audio
         [[maybe_unused]] const TAudioFileEntryID fileEntryId,
         [[maybe_unused]] const bool loadSynchronously,
         const bool overrideUseCount /* = false */,
-        const size_t useCount /* = 0 */)
+        const AZ::u32 useCount /* = 0 */)
     {
         AZ_PROFILE_FUNCTION(Audio);
 
@@ -861,17 +881,20 @@ namespace Audio
                 audioFileEntry->m_flags.AddFlags(eAFF_MEMALLOCFAIL);
 
                 // The user should be made aware of it.
-                g_audioLogger.Log(eALT_ERROR, "FileCacheManager - Could not cache '%s' - out of memory or fragmented memory!", audioFileEntry->m_filePath.c_str());
+                AZLOG_ERROR(
+                    "FileCacheManager - Could not cache '%s' - out of memory or fragmented memory!", audioFileEntry->m_filePath.c_str());
             }
         }
         else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_CACHED | eAFF_LOADING))
         {
-            g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - Skipping '%s' - it's either already loaded or currently loading!", audioFileEntry->m_filePath.c_str());
+            AZLOG_DEBUG(
+                "FileCacheManager - Skipping '%s' - it's either already loaded or currently loading!", audioFileEntry->m_filePath.c_str());
             success = true;
         }
         else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_NOTFOUND))
         {
-            g_audioLogger.Log(eALT_WARNING, "FileCacheManager - Could not cache '%s' - file was not found at that location!", audioFileEntry->m_filePath.c_str());
+            AZLOG_WARN(
+                "FileCacheManager - Could not cache '%s' - file was not found at that location!", audioFileEntry->m_filePath.c_str());
         }
 
         // Increment the used count on manually-loaded files.

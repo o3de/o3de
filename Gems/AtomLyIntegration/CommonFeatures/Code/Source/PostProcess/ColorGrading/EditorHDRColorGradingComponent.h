@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
 #include <PostProcess/ColorGrading/HDRColorGradingComponent.h>
+#include <AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/EditorHDRColorGradingBus.h>
 
 namespace AZ
 {
@@ -27,6 +28,7 @@ namespace AZ
                   EditorComponentAdapter<HDRColorGradingComponentController, HDRColorGradingComponent, HDRColorGradingComponentConfig>
             , private TickBus::Handler
             , private FrameCaptureNotificationBus::Handler
+            , private EditorHDRColorGradingRequestBus::Handler
         {
         public:
             using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<HDRColorGradingComponentController, HDRColorGradingComponent, HDRColorGradingComponentConfig>;
@@ -36,6 +38,9 @@ namespace AZ
 
             EditorHDRColorGradingComponent() = default;
             EditorHDRColorGradingComponent(const HDRColorGradingComponentConfig& config);
+
+            void Activate() override;
+            void Deactivate() override;
 
             //! EditorRenderComponentAdapter overrides...
             AZ::u32 OnConfigurationChanged() override;
@@ -47,8 +52,13 @@ namespace AZ
             // FrameCaptureNotificationBus overrides ...
             void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
+            //! EditorHDRColorGradingRequestBus overrides...
+            void GenerateLutAsync() override;
+            void ActivateLutAsync() override;
+
             void GenerateLut();
             AZ::u32 ActivateLut();
+
             bool GetGeneratedLutVisibilitySettings();
 
             bool m_waitOneFrame = false;

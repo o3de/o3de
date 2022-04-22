@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/RandomGradientRequestBus.h>
@@ -21,8 +22,6 @@ namespace LmbrCentral
 
 namespace GradientSignal
 {
-    class PerlinImprovedNoise;
-
     class RandomGradientConfig
         : public AZ::ComponentConfig
     {
@@ -66,7 +65,7 @@ namespace GradientSignal
     private:
         RandomGradientConfig m_configuration;
         GradientTransform m_gradientTransform;
-        mutable AZStd::shared_mutex m_transformMutex;
+        mutable AZStd::shared_mutex m_queryMutex;
 
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;

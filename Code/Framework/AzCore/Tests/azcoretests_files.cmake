@@ -17,6 +17,7 @@ set(FILES
     Asset/MockLoadAssetCatalogAndHandler.h
     Asset/TestAssetTypes.h
     AssetJsonSerializerTests.cpp
+    EBus/EBusSharedDispatchMutexTests.cpp
     EBus/ScheduledEventTests.cpp
     AssetManager.cpp
     TestCatalog.h
