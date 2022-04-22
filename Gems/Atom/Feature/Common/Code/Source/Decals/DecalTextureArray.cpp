@@ -23,7 +23,7 @@ namespace AZ
     {
         namespace
         {
-            static AZ::Name GetMapName(const DecalMapType mapType)
+            static const AZ::Name& GetMapName(const DecalMapType mapType)
             {
                 switch (mapType)
                 {
@@ -32,7 +32,7 @@ namespace AZ
                 case DecalMapType_Normal:
                     return AZ_NAME_LITERAL("normal.textureMap");
                 default:
-                    return Name{};
+                    return AZ_NAME_LITERAL("");
                 }
             }
 

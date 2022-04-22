@@ -107,6 +107,10 @@ namespace AZ
         AZStd::unordered_map<Name::Hash, Internal::NameData*> m_dictionary;
         mutable AZStd::shared_mutex m_sharedMutex;
 
+        //! A fixced Name used as the head of a linked list of Name literals.
+        //! These literals can be static and have lifecycles not coupled to the name dictionary,
+        //! so we keep track of them here to ensure their name data gets correctly cleaned up
+        //! when this dictionary is shut down.
         Name m_deferredHead;
     };
 }

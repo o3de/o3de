@@ -40,6 +40,8 @@ namespace AZ
             s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
 
             // Load any deferred names stored in our module's deferred name list, if it isn't already pointing at the dictionary's list
+            // If Name::s_staticNameBegin is equal to m_deferredHead we can skip this check, as that would make the freshly created name the only
+            // entry in the list.
             if (Name::s_staticNameBegin != nullptr && &s_instance->m_deferredHead != Name::s_staticNameBegin)
             {
                 s_instance->m_deferredHead.m_nextName = Name::s_staticNameBegin;
@@ -121,6 +123,9 @@ namespace AZ
     
     NameDictionary::~NameDictionary()
     {
+        // Ensure our module's static name list is up-to-date with what's in our deferred list.
+        // This allows the NameDictionary to be recreated and restore and name literals that still exist
+        // in e.g. unit tests.
         Name::s_staticNameBegin = m_deferredHead.m_nextName;
 
         [[maybe_unused]] bool leaksDetected = false;
