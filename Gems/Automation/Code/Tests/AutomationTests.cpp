@@ -92,7 +92,7 @@ namespace UnitTest
 
     TEST_F(TrackedAutomationFixture, ScriptCommandLineArgument_UsesPrintMethods_AllOperationsLogged)
     {
-        const char* scriptPath = "@gemroot:Automation@/Code/Tests/Scripts/PrintTest.lua";
+        const char* scriptPath = "Scripts/PrintTest.lua";
         auto application = CreateApplication(scriptPath);
 
         // We expect our "Hello World" error message to be printed by the test script.
@@ -114,7 +114,7 @@ namespace UnitTest
 
     TEST_F(TrackedAutomationFixture, ScriptCommandLineArgument_UsesIdleFramesMethod_AllOperationsLogged)
     {
-        auto application = CreateApplication("@gemroot:Automation@/Code/Tests/Scripts/IdleFiveFramesTest.lua");
+        auto application = CreateApplication("Scripts/IdleFiveFramesTest.lua");
 
         application->RunMainLoop();
 
@@ -127,7 +127,7 @@ namespace UnitTest
 
     TEST_F(TrackedAutomationFixture, ScriptCommandLineArgument_UsesIdleSecondsMethod_AllOperationsLogged)
     {
-        auto application = CreateApplication("@gemroot:Automation@/Code/Tests/Scripts/IdleOneSecondTest.lua");
+        auto application = CreateApplication("Scripts/IdleOneSecondTest.lua");
 
         application->RunMainLoop();
 
