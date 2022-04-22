@@ -18,10 +18,6 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
 
-    @pytest.mark.test_case_id("C36529679")
-    class AtomLevelLoadTest_Editor(EditorSharedTest):
-        from Atom.tests import hydra_Atom_LevelLoadTest as test_module
-
     @pytest.mark.test_case_id("C36530722")
     class Editor_levelLoad_Atom_hermanubis(EditorSharedTest):
         from Atom.tests import levelLoad_Atom_hermanubis as test_module
