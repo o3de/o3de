@@ -19,7 +19,9 @@ namespace O3DE::ProjectManager
     namespace ProjectUtils
     {
         // The list of clang C/C++ compiler command lines to validate on the host Linux system
-        const QStringList SupportedClangVersions = {"13", "12", "11", "10", "9", "8", "7", "6.0"};
+        // Only Ubuntu has clang++-<version> symlinks, other linux distros do not,
+        // so a empty string entry is added to the end
+        const QStringList SupportedClangVersions = {"-13", "-12", "-11", "-10", "-9", "-8", "-7", "-6.0", ""};
 
         AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
@@ -65,22 +67,13 @@ namespace O3DE::ProjectManager
             for (const QString& supportClangVersion : SupportedClangVersions)
             {
                 auto whichClangResult =
-                    ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang-%1").arg(supportClangVersion) });
+                    ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang%1").arg(supportClangVersion) });
                 auto whichClangPPResult =
-                    ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang++-%1").arg(supportClangVersion) });
+                    ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang++%1").arg(supportClangVersion) });
                 if (whichClangResult.IsSuccess() && whichClangPPResult.IsSuccess())
                 {
-                    return AZ::Success(QString("clang-%1").arg(supportClangVersion));
+                    return AZ::Success(QString("clang%1").arg(supportClangVersion));
                 }
-            }
-
-            // Next detect clang executables without a compiler version as a backup
-            // Only Ubuntu has clang++-<version> symlinks, other linux distros do not
-            auto whichClangNoVersionResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang") });
-            auto whichClangPPNoVersionResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang++") });
-            if (whichClangNoVersionResult.IsSuccess() && whichClangPPNoVersionResult.IsSuccess())
-            {
-                return AZ::Success(QString("clang"));
             }
 
             // Finally fallback to trying to detect gcc executables without a compiler version
