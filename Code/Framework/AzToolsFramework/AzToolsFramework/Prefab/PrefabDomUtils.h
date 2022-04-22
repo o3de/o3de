@@ -21,21 +21,21 @@ namespace AzToolsFramework
         class Instance;
         namespace PrefabDomUtils
         {
-            inline static const char* InstancesName = "Instances";
-            inline static const char* PatchesName = "Patches";
-            inline static const char* SourceName = "Source";
-            inline static const char* LinkIdName = "LinkId";
-            inline static const char* EntityIdName = "Id";
-            inline static const char* EntitiesName = "Entities";
-            inline static const char* ContainerEntityName = "ContainerEntity";
-            inline static const char* ComponentsName = "Components";
-            inline static const char* EntityOrderName = "Child Entity Order";
-            inline static const char* TypeName = "$type";
-            inline static const char* PathMatchingEntities = "/Entities";
-            inline static const char* PathMatchingInstances = "/Instances";
-            inline static const char* PathStartingWithEntities = "/Entities/";
-            inline static const char* PathStartingWithInstances = "/Instances/";
-            inline static const char* PathMatchingContainerEntity = "/ContainerEntity";
+            inline static constexpr const char* InstancesName = "Instances";
+            inline static constexpr const char* PatchesName = "Patches";
+            inline static constexpr const char* SourceName = "Source";
+            inline static constexpr const char* LinkIdName = "LinkId";
+            inline static constexpr const char* EntityIdName = "Id";
+            inline static constexpr const char* EntitiesName = "Entities";
+            inline static constexpr const char* ContainerEntityName = "ContainerEntity";
+            inline static constexpr const char* ComponentsName = "Components";
+            inline static constexpr const char* EntityOrderName = "Child Entity Order";
+            inline static constexpr const char* TypeName = "$type";
+            inline static constexpr const char* PathMatchingEntities = "/Entities";
+            inline static constexpr const char* PathMatchingInstances = "/Instances";
+            inline static constexpr const char* PathStartingWithEntities = "/Entities/";
+            inline static constexpr const char* PathStartingWithInstances = "/Instances/";
+            inline static constexpr const char* PathMatchingContainerEntity = "/ContainerEntity";
 
             /**
             * Find Prefab value from given parent value and target value's name.
@@ -64,14 +64,14 @@ namespace AzToolsFramework
             //! The metadata about patches indicating information about the modified instance members.
             struct PatchesMetadata
             {
-                AZStd::unordered_set<EntityAlias> entitiesToReload;
-                AZStd::unordered_set<EntityAlias> entitiesToRemove;
-                AZStd::unordered_set<InstanceAlias> instancesToRemove;
-                AZStd::unordered_set<InstanceAlias> instancesToAdd;
-                AZStd::unordered_set<InstanceAlias> instancesToReload;
-                bool shouldReloadContainerEntity = false;
-                bool clearAndLoadAllEntities = false;
-                bool clearAndLoadAllInstances = false;
+                AZStd::unordered_set<EntityAlias> m_entitiesToReload;
+                AZStd::unordered_set<EntityAlias> m_entitiesToRemove;
+                AZStd::unordered_set<InstanceAlias> m_instancesToRemove;
+                AZStd::unordered_set<InstanceAlias> m_instancesToAdd;
+                AZStd::unordered_set<InstanceAlias> m_instancesToReload;
+                bool m_shouldReloadContainerEntity = false;
+                bool m_clearAndLoadAllEntities = false;
+                bool m_clearAndLoadAllInstances = false;
             };
 
             /**

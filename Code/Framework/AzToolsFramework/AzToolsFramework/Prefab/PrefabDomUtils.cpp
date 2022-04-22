@@ -380,11 +380,11 @@ namespace AzToolsFramework
 
                         if (patchPath == PathMatchingEntities) // Path is /Entities
                         {
-                            patchesMetadata.clearAndLoadAllEntities = true;
+                            patchesMetadata.m_clearAndLoadAllEntities = true;
                         }
                         else if (patchPath.starts_with(PathStartingWithEntities)) // Path begins with /Entities/
                         {
-                            if (patchesMetadata.clearAndLoadAllEntities)
+                            if (patchesMetadata.m_clearAndLoadAllEntities)
                             {
                                 continue;
                             }
@@ -393,21 +393,21 @@ namespace AzToolsFramework
                             AZStd::size_t pathSeparatorIndex = patchPath.find('/');
                             if (pathSeparatorIndex != AZStd::string::npos) // Path begins with /Entities/{someString}/
                             {
-                                patchesMetadata.entitiesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
+                                patchesMetadata.m_entitiesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
                             }
                             else // Path is with /Entities/{someString}
                             {
                                 Internal::IdentifyInstanceMembersToAddAndRemove(
-                                    patchEntry, patchesMetadata.entitiesToReload, patchesMetadata.entitiesToRemove, AZStd::move(patchPath));
+                                    patchEntry, patchesMetadata.m_entitiesToReload, patchesMetadata.m_entitiesToRemove, AZStd::move(patchPath));
                             }
                         }
                         else if (patchPath == PathMatchingInstances) // Path is /Instances
                         {
-                            patchesMetadata.clearAndLoadAllInstances = true;
+                            patchesMetadata.m_clearAndLoadAllInstances = true;
                         }
-                        else if (patchPath.starts_with(PathStartingWithInstances))// Path begins with /Entities/
+                        else if (patchPath.starts_with(PathStartingWithInstances))// Path begins with /Instances/
                         {
-                            if (patchesMetadata.clearAndLoadAllInstances)
+                            if (patchesMetadata.m_clearAndLoadAllInstances)
                             {
                                 continue;
                             }
@@ -416,24 +416,23 @@ namespace AzToolsFramework
                             AZStd::size_t pathSeparatorIndex = patchPath.find('/');
                             if (pathSeparatorIndex != AZStd::string::npos) // Path begins with /Instances/{someString}/
                             {
-                                patchesMetadata.instancesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
+                                patchesMetadata.m_instancesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
                             }
                             else // Path is /Instances/{someString}
                             {
                                 Internal::IdentifyInstanceMembersToAddAndRemove(
-                                    patchEntry, patchesMetadata.instancesToAdd, patchesMetadata.instancesToRemove, AZStd::move(patchPath));
+                                    patchEntry, patchesMetadata.m_instancesToAdd, patchesMetadata.m_instancesToRemove, AZStd::move(patchPath));
                             }
                         }
                         else if (patchPath.starts_with(PathMatchingContainerEntity)) // Path begins with /ContainerEntity
                         {
-                            patchesMetadata.shouldReloadContainerEntity = true;
+                            patchesMetadata.m_shouldReloadContainerEntity = true;
                         }
                         else
                         {
                             AZ_Warning(
                                 "Prefab", false,
-                                "A patch starting with the keyword '%s' is identified. This is currently not a supported path for "
-                                "patching a prefab.",
+                                "A patch targeting '%s' is identified. Patches must be routed to Entities, Instances, or ContainerEntity.",
                                 patchPath);
                         }
                     }
