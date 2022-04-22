@@ -311,7 +311,7 @@ namespace AZ::SceneAPI::Behaviors
 
                 AZStd::string meshGroupName = "default_";
                 meshGroupName += scene.GetName();
-                meshGroupName += meshSubId.ToFixedString().c_str();
+                meshGroupName += meshSubId.ToString<AZStd::string>().c_str();
 
                 // clean up the mesh group name
                 AZStd::replace_if(
