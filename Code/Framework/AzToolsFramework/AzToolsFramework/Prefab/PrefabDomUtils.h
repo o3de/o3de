@@ -61,6 +61,7 @@ namespace AzToolsFramework
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreFlags);
 
+            //! The metadata about patches indicating information about the modified instance members.
             struct PatchesMetadata
             {
                 AZStd::unordered_set<EntityAlias> entitiesToReload;
@@ -182,6 +183,9 @@ namespace AzToolsFramework
                 PrefabDom::AllocatorType& allocator,
                 const PrefabDomValue& patches);
 
+            //! Identifies instance members modified by inspecting the patches provided.
+            //! @param patches The patches to inspect.
+            //! @return PatchesMetada The metadata object indicating which instance members get modified with the provided patches.
             PatchesMetadata IdentifyModifiedInstanceMembers(const PrefabDom& patches);
 
             /**

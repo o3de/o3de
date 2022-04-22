@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma optimize("", off)
+
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/PrefabTestFixture.h>
@@ -358,7 +358,10 @@ namespace UnitTest
         createdPrefab->AddInstance(AZStd::move(nestedPrefab));
         GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
 
+        // Validate that the entity remains in active state throughout the reloading process. This indicates that it is untouched.
         ValidateEntityState(instantiatedPrefab, "Entity1", AZ::Entity::State::Active);
+
+        // Validate that there is one instance after reloading the instantiated prefab.
         EXPECT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 1);
     }
 
@@ -379,6 +382,7 @@ namespace UnitTest
             m_prefabSystemComponent);
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+        ASSERT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 1);
 
         InstanceUniquePointer nestedInstanceToAdd = m_prefabSystemComponent->InstantiatePrefab(nestedPrefabTemplateId);
         Instance& instanceAdded = createdPrefab->AddInstance(AZStd::move(nestedInstanceToAdd));
@@ -386,17 +390,22 @@ namespace UnitTest
 
         GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
 
+        // Validate that the entity remains in active state throughout the reloading process. This indicates that it is untouched.
         ValidateEntityState(instantiatedPrefab, "EntityUnderParentPrefab", AZ::Entity::State::Active);
+
+        // Validate that there are two instances after reloading the instantiated prefab.
         EXPECT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 2);
         instantiatedPrefab->GetNestedInstances(
             [&aliasOfInstanceAdded](AZStd::unique_ptr<Instance>& nestedInstance)
             {
                 if (nestedInstance->GetInstanceAlias() == aliasOfInstanceAdded)
                 {
+                    // Entities under a newly deserialized instance should be in constructed state.
                     ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Constructed);
                 }
                 else
                 {
+                    // Entities under an existing nested instance should be in active state. This indicates that the instance is untouched.
                     ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Active);
                 }
                 
@@ -427,7 +436,10 @@ namespace UnitTest
 
         GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
 
+        // Validate that the entity remains in active state throughout the reloading process. This indicates that it is untouched.
         ValidateEntityState(instantiatedPrefab, "EntityUnderParentPrefab", AZ::Entity::State::Active);
+
+        // Validate that the only nested instance was removed.
         EXPECT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 0);
     }
 
@@ -458,16 +470,19 @@ namespace UnitTest
 
         GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
 
+        // Validate that the entity remains in active state throughout the reloading process. This indicates that it is untouched.
         ValidateEntityState(instantiatedPrefab, "EntityUnderParentPrefab", AZ::Entity::State::Active);
+
+        // Validate that the number of instances came down to just one.
         EXPECT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 1);
         instantiatedPrefab->GetNestedInstances(
             [&nestedInstanceAliases](AZStd::unique_ptr<Instance>& nestedInstance)
             {
                 if (nestedInstance->GetInstanceAlias() == nestedInstanceAliases.back())
                 {
+                    // Entities under an existing nested instance should be in active state. This indicates that the instance is untouched.
                     ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Active);
                 }
             });
     }
 } // namespace UnitTest
-#pragma optimize("", on)

@@ -178,6 +178,11 @@ namespace AzToolsFramework
                     return true;
                 }
 
+                //! Identifies instance members to be added or removed by inspecting the patch entry provided.
+                //! @param patchEntry The patch entry to inspect.
+                //! @param membersToAdd The set to add the instance member to if an addition operation is detected.
+                //! @param membersToRemove The set to add the instance member to if a remove operation is detected.
+                //! @param memberName The name of the instance member found in the patch.
                 static void IdentifyInstanceMembersToAddAndRemove(
                     const PrefabDomValue& patchEntry,
                     AZStd::unordered_set<AZStd::string>& membersToAdd,
