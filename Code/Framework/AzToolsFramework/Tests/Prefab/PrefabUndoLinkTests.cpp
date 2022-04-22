@@ -143,7 +143,6 @@ namespace UnitTest
         nestedInstance->ActivateContainerEntity();
 
         AZ::EntityId nestedContainerEntityId = nestedInstance->GetContainerEntityId();
-        AZ::EntityId rootContainerEntityId = rootInstance->GetContainerEntityId();
 
         AZ::Entity* nestedContainerEntity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(nestedContainerEntity, &AZ::ComponentApplicationBus::Events::FindEntity, nestedContainerEntityId);

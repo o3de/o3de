@@ -133,7 +133,7 @@ namespace UnitTest
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTester;
     };
 
-    TEST_F(EntityOutlinerTest, DISABLED_TestCreateFlatHierarchyUndoAndRedoWorks)
+    TEST_F(EntityOutlinerTest, TestCreateFlatHierarchyUndoAndRedoWorks)
     {
         constexpr size_t entityCount = 10;
 
@@ -156,7 +156,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(EntityOutlinerTest, DISABLED_TestCreateNestedHierarchyUndoAndRedoWorks)
+    TEST_F(EntityOutlinerTest, TestCreateNestedHierarchyUndoAndRedoWorks)
     {
         constexpr size_t depth = 5;
 
