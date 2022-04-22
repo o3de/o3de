@@ -221,7 +221,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
         general.idle_wait_frames(1)
         # Update mesh asset to a model with 5 LOD materials
-        model_path = os.path.join('Objects', 'sphere_5lods_fbx_psphere_base_1.azmodel')
+        model_path = os.path.join('Objects', 'sphere_5lods_fbx_psphere_base.azmodel')
         model = Asset.find_asset_by_path(model_path)
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
         general.idle_wait_frames(1)
