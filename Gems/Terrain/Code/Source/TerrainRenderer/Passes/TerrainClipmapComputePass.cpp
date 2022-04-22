@@ -102,7 +102,10 @@ namespace Terrain
             AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailColor]),
             AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailNormal]),
             AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailHeight]),
-            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailMisc]),
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailRoughness]),
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailSpecularF0]),
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailMetalness]),
+            AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::DetailOcclusion])
         }
     {
     }
@@ -119,14 +122,20 @@ namespace Terrain
             clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailColor, attachmentDatabase);
             clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailNormal, attachmentDatabase);
             clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailHeight, attachmentDatabase);
-            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailMisc, attachmentDatabase);
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailRoughness, attachmentDatabase);
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailSpecularF0, attachmentDatabase);
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailMetalness, attachmentDatabase);
+            clipmapManager.ImportClipmap(TerrainClipmapManager::ClipmapName::DetailOcclusion, attachmentDatabase);
 
             clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::MacroColor, AZ::RHI::ScopeAttachmentAccess::Read, frameGraph);
             clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::MacroNormal, AZ::RHI::ScopeAttachmentAccess::Read, frameGraph);
             clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailColor, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
             clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailNormal, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
             clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailHeight, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
-            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailMisc, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailRoughness, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailSpecularF0, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailMetalness, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
+            clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailOcclusion, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
         }
 
         ComputePass::SetupFrameGraphDependencies(frameGraph);
