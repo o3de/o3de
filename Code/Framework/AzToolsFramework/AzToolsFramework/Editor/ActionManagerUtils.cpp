@@ -12,6 +12,8 @@
 
 namespace AzToolsFramework
 {
+    constexpr const char ActionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
+
     bool IsNewActionManagerEnabled()
     {
         bool isNewActionManagerEnabled = false;
@@ -19,7 +21,7 @@ namespace AzToolsFramework
         // Retrieve new action manager setting
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
-            registry->Get(isNewActionManagerEnabled, s_actionManagerToggleKey);
+            registry->Get(isNewActionManagerEnabled, ActionManagerToggleKey);
         }
 
         return isNewActionManagerEnabled;
