@@ -22,7 +22,7 @@
 #include <RecastNavigation/RecastNavigationSurveyorBus.h>
 
 AZ_CVAR(
-    bool, cl_navmesh_debug, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+    bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, draw debug visual information about Navigation Mesh");
 
 #pragma optimize("", off)
@@ -37,6 +37,7 @@ namespace RecastNavigation
         {
             serialize->Class<RecastNavigationMeshComponent, AZ::Component>()
                 ->Field("Config", &RecastNavigationMeshComponent::m_meshConfig)
+                ->Field("Show NavMesh in Game", &RecastNavigationMeshComponent::m_showNavigationMesh)
                 ->Version(1)
                 ;
 
@@ -46,6 +47,8 @@ namespace RecastNavigation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(nullptr, &RecastNavigationMeshComponent::m_showNavigationMesh,
+                        "Show NavMesh in Game", "if true, draws a helper overlay over the navigation mesh area")
                     ->DataElement(nullptr, &RecastNavigationMeshComponent::m_meshConfig, "Config", "Navigation Mesh configuration")
                     ;
             }
@@ -139,7 +142,7 @@ namespace RecastNavigation
         // Get geometry
         m_geom.clear();
         RecastNavigationSurveyorRequestBus::Event(GetEntityId(), &RecastNavigationSurveyorRequestBus::Events::CollectGeometry, m_geom);
-  
+
         m_taskGraph.Reset();
         m_taskGraph.AddTask(
             m_taskDescriptor,
@@ -559,7 +562,7 @@ namespace RecastNavigation
             int detailedPathCount = 0;
 
             m_navQuery->findStraightPath(startRecast.data(), endRecast.data(), path, pathLength, detailedPath[0].data(), detailedPathFlags, detailedPolyPathRefs,
-                &detailedPathCount, maxDetailedPathLength);
+                &detailedPathCount, maxDetailedPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
 
             if (cl_navmesh_debug)
             {
@@ -627,7 +630,7 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (m_navMeshReady && cl_navmesh_debug)
+        if (m_navMeshReady && (cl_navmesh_debug || m_showNavigationMesh))
         {
             m_customDebugDraw.SetColor(AZ::Color(0.F, 0.9f, 0, 1));
             duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);

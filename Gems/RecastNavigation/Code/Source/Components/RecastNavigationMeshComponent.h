@@ -52,6 +52,7 @@ namespace RecastNavigation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
     private:
+        bool m_showNavigationMesh = true;
 
         static RecastVector3 GetPolyCenter(const dtNavMesh* navMesh, dtPolyRef ref);
         
