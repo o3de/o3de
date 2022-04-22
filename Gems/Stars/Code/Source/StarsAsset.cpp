@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <StarsAsset.h>
 
 namespace AZ::Render
