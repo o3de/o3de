@@ -9,6 +9,7 @@
 
 // AZ
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/any.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 
