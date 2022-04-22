@@ -544,7 +544,7 @@ namespace LegacyLevelSystem
 
         OnUnloadComplete(m_lastLevelName.c_str());
 
-        // Delete level entities and prefab instances and remove them from the game entity context
+        // Delete level entities and remove them from the game entity context
         AzFramework::RootSpawnableInterface::Get()->ReleaseRootSpawnable();
 
         m_lastLevelName.clear();
