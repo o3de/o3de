@@ -21,15 +21,12 @@ namespace UnitTest
     TEST_F(AssetScannerUnitTest, AssetScanner_ScanMultipleFolders_ExpectedFilesAndFoldersFound)
     {
         using namespace AssetProcessor;
-        AZStd::shared_ptr<QCoreApplication> m_qApp;
+        AZStd::unique_ptr<QCoreApplication> m_qApp;
 
-        // QApplications require command line arguments, so create something to meet that requirement.
-        int argC{ 1 };
-        char commandLineBuffer[AZ_MAX_PATH_LEN];
-        char* commandLineBufferAddress{ commandLineBuffer };
-        azstrcpy(commandLineBuffer, AZ_ARRAY_SIZE(commandLineBuffer), "no_argv_supplied");
-
-        m_qApp.reset(new QApplication(argC, &commandLineBufferAddress));
+        // Qt documentation claims QCoreApplication's constructor requires a greater than zero argC
+        // and a valid argV, however the version of Qt in use works fine with 0 and nullptr.
+        int argC = 0;
+        m_qApp.reset(new QApplication(argC, nullptr));
 
         AZ::Test::ScopedAutoTempDirectory tempEngineRoot;
         //const char* tempPath(tempEngineRoot.GetDirectory());
@@ -138,6 +135,7 @@ namespace UnitTest
 
         EXPECT_TRUE(doneScan);
         EXPECT_EQ(filesFound.size(), expectedFiles.size());
+
 
         for (const AssetFileInfo& file : filesFound)
         {
