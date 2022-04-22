@@ -430,7 +430,7 @@ namespace AWSClientAuthUnitTest
                 "Access token expected to match");
             AZ_Assert(
                 authenticationToken.GetProviderName() == AWSClientAuth::ProviderNameEnum::LoginWithAmazon ?
-                authenticationToken.GetOpenIdToken() == TEST_ACCESS_TOKEN : authenticationToken.GetOpenIdToken() == TEST_ID_TOKEN,
+                    authenticationToken.GetOpenIdToken() == TEST_ACCESS_TOKEN : authenticationToken.GetOpenIdToken() == TEST_ID_TOKEN,
                 "Id token expected to match");
             AZ_Assert(
                 authenticationToken.GetRefreshToken() == TEST_REFRESH_TOKEN,
