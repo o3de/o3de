@@ -12,7 +12,7 @@
 
 namespace AzToolsFramework
 {
-    constexpr const char ActionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
+    static constexpr AZStd::string_view ActionManagerToggleKey = "/O3DE/ActionManager/EnableNewActionManager";
 
     bool IsNewActionManagerEnabled()
     {
