@@ -674,14 +674,14 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip(reason="update assets from .slice to a different type to test preload cyclical dependencies")
+    @pytest.mark.skip(reason="GHI: 8,365 Update assets from .prefab to a different type to test preload cyclical dependencies")
     def test_validateDirectPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
         """
         Tests processing an asset with a circular dependency and verifies that Asset Processor will return an error
         notifying the user about a circular dependency.
 
         Test Steps:
-        1. Create test environment with an asset that has a circular dependency
+        1. Create test environment with an asset that has a preload circular dependency
         2. Launch asset processor
         3. Verify that error is returned informing the user that the asset has a circular dependency
         """
@@ -692,23 +692,23 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         success, output = asset_processor.batch_process(capture_output=True, expect_failure=False)
         log = APOutputParser(output)
-        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testc.dynamicslice"]):
+        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testc.prefab"]):
             error_line_found = True
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip(reason="need to change assets from .slice files to an asset type that can have nested dependencies")
+    @pytest.mark.skip(reason="GHI: 8,365 Update assets from .prefab to an asset type that can have nested preload dependencies")
     def test_validateNestedPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
         """
-        Tests processing of a nested circular dependency and verifies that Asset Processor will return an error
+        Tests processing of a nested preload circular dependency and verifies that Asset Processor will return an error
         notifying the user about a circular dependency.
 
         Test Steps:
-        1. Create test environment with an asset that has a nested circular dependency
+        1. Create test environment with an asset that has a nested preload circular dependency
         2. Launch asset processor
-        3. Verify that error is returned informing the user that the asset has a circular dependency
+        3. Verify that error is returned informing the user that the asset has a preload circular dependency
         """
 
         env = ap_setup_fixture
@@ -718,7 +718,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         success, output = asset_processor.batch_process(capture_output=True, expect_failure=False)
         log = APOutputParser(output)
-        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testa.dynamicslice"]):
+        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testa.prefab"]):
             error_line_found = True
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."

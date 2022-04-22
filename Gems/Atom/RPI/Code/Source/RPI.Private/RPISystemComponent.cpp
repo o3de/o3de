@@ -17,8 +17,12 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/IOUtils.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/CommandLine/CommandLine.h>
 
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
@@ -87,25 +91,60 @@ namespace AZ
         void RPISystemComponent::Activate()
         {
             auto settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry)
+            const char* settingPath = "/O3DE/Atom/RPI/Initialization";
+
+            // if the command line contains -NullRenderer, merge it to setting registry
+            const char* nullRendererOption = "NullRenderer"; // command line option name
+            const char* setregName = "NullRenderer"; // same as serialization context name for RPISystemDescriptor::m_isNullRenderer
+            const AzFramework::CommandLine* commandLine = nullptr;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
+
+            AZStd::string commandLineValue;
+            if (commandLine)
             {
-                settingsRegistry->GetObject(m_rpiDescriptor, "/O3DE/Atom/RPI/Initialization");
+                if (commandLine->GetNumSwitchValues(nullRendererOption) > 0)
+                {
+                    // add it to setting registry
+                    auto overrideArg = AZStd::string::format("%s/%s=true", settingPath, setregName);
+                    settingsRegistry->MergeCommandLineArgument(overrideArg, "");
+                }
             }
+
+            // load rpi desriptor from setting registry
+            settingsRegistry->GetObject(m_rpiDescriptor, settingPath);
 
             m_rpiSystem.Initialize(m_rpiDescriptor);
             AZ::SystemTickBus::Handler::BusConnect();
+            AZ::RHI::RHISystemNotificationBus::Handler::BusConnect();
         }
 
         void RPISystemComponent::Deactivate()
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_rpiSystem.Shutdown();
+            AZ::RHI::RHISystemNotificationBus::Handler::BusDisconnect();
         }
 
         void RPISystemComponent::OnSystemTick()
         {
             m_rpiSystem.SimulationTick();
             m_rpiSystem.RenderTick();
+        }
+        
+        void RPISystemComponent::OnDeviceRemoved([[maybe_unused]] RHI::Device* device)
+        {
+            const AZStd::string errorMessage = "GPU device was removed. Check the log file for more detail.";
+            if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+            {
+                nativeUI->DisplayOkDialog("O3DE Fatal Error", errorMessage.c_str(), false);
+            }
+            else
+            {
+                AZ_Error("Atom", false, "O3DE Fatal Error: %s\n", errorMessage.c_str());
+            }
+
+            // Stop execution since we can't recover from device removal error
+            Debug::Trace::Crash();
         }
 
     } // namespace RPI

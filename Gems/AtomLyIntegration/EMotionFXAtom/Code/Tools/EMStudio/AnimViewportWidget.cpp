@@ -262,11 +262,16 @@ namespace EMStudio
 
     void AnimViewportWidget::RenderCustomPluginData()
     {
-        const size_t numPlugins = GetPluginManager()->GetNumActivePlugins();
-        for (size_t i = 0; i < numPlugins; ++i)
+        const EMotionFX::ActorRenderFlagsNamespace::ActorRenderFlags renderFlags = m_plugin->GetRenderOptions()->GetRenderFlags();
+
+        for (EMStudioPlugin* plugin : GetPluginManager()->GetActivePlugins())
         {
-            EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
-            plugin->Render(m_plugin->GetRenderOptions()->GetRenderFlags());
+            plugin->Render(renderFlags);
+        }
+
+        for (const AZStd::unique_ptr<PersistentPlugin>& plugin : GetPluginManager()->GetPersistentPlugins())
+        {
+            plugin->Render(renderFlags);
         }
     }
 

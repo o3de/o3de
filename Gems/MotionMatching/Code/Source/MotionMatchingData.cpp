@@ -6,10 +6,14 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Task/TaskGraph.h>
 
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/AnimGraphPose.h>
@@ -25,6 +29,8 @@
 
 namespace EMotionFX::MotionMatching
 {
+    AZ_CVAR_EXTERNED(bool, mm_multiThreadedInitialization);
+
     AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingData, MotionMatchAllocator, 0)
 
     MotionMatchingData::MotionMatchingData(const FeatureSchema& featureSchema)
@@ -65,37 +71,67 @@ namespace EMotionFX::MotionMatching
             featureComponentCount += feature->GetNumDimensions();
         }
 
-        const auto& frames = frameDatabase->GetFrames();
-
         // Allocate memory for the feature matrix
         m_featureMatrix.resize(/*rows=*/numFrames, /*columns=*/featureComponentCount);
 
-        // Iterate over all frames and extract the data for this frame.
-        AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
-        AnimGraphPose* pose = posePool.RequestPose(actorInstance);
-
-        Feature::ExtractFeatureContext context(m_featureMatrix);
-        context.m_frameDatabase = frameDatabase;
-        context.m_framePose = &pose->GetPose();
-        context.m_actorInstance = actorInstance;
-
-        for (const Frame& frame : frames)
+        // Multi-threaded
+        if (mm_multiThreadedInitialization)
         {
-            context.m_frameIndex = frame.GetFrameIndex();
+            const size_t numBatches = aznumeric_caster(ceilf(aznumeric_cast<float>(numFrames) / aznumeric_cast<float>(s_numFramesPerBatch)));
 
-            // Pre-sample the frame pose as that will be needed by many of the feature extraction calculations.
-            frame.SamplePose(const_cast<Pose*>(context.m_framePose));
-
-            // Extract all features for the given frame.
+            AZ::TaskGraphActiveInterface* taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+            const bool useTaskGraph = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
+            if (useTaskGraph)
             {
-                for (Feature* feature : m_featureSchema.GetFeatures())
+                AZ::TaskGraph m_taskGraph;
+
+                // Split-up the motion database into batches of frames and extract the feature values for each batch simultaneously.
+                for (size_t batchIndex = 0; batchIndex < numBatches; ++batchIndex)
                 {
-                    feature->ExtractFeatureValues(context);
+                    const size_t startFrame = batchIndex * s_numFramesPerBatch;
+                    const size_t endFrame = AZStd::min(startFrame + s_numFramesPerBatch, numFrames);
+
+                    // Create a task for every batch and extract the features simultaneously.
+                    AZ::TaskDescriptor taskDescriptor{ "ExtractFeatures", "MotionMatching" };
+                    m_taskGraph.AddTask(
+                        taskDescriptor,
+                        [this, actorInstance, startFrame, endFrame]()
+                        {
+                            ExtractFeatureValuesRange(actorInstance, m_frameDatabase, m_featureSchema, m_featureMatrix, startFrame, endFrame);
+                        });
                 }
+
+                AZ::TaskGraphEvent finishedEvent;
+                m_taskGraph.Submit(&finishedEvent);
+                finishedEvent.Wait();
+            }
+            else // job system
+            {
+                AZ::JobCompletion jobCompletion;
+
+                // Split-up the motion database into batches of frames and extract the feature values for each batch simultaneously.
+                for (size_t batchIndex = 0; batchIndex < numBatches; ++batchIndex)
+                {
+                    const size_t startFrame = batchIndex * s_numFramesPerBatch;
+                    const size_t endFrame = AZStd::min(startFrame + s_numFramesPerBatch, numFrames);
+
+                    // Create a job for every batch and extract the features simultaneously.
+                    AZ::JobContext* jobContext = nullptr;
+                    AZ::Job* job = AZ::CreateJobFunction([this, actorInstance, startFrame, endFrame]()
+                        {
+                            ExtractFeatureValuesRange(actorInstance, m_frameDatabase, m_featureSchema, m_featureMatrix, startFrame, endFrame);
+                        }, /*isAutoDelete=*/true, jobContext);
+                    job->SetDependent(&jobCompletion);
+                    job->Start();
+                }
+
+                jobCompletion.StartAndWaitForCompletion();
             }
         }
-
-        posePool.FreePose(pose);
+        else // Single-threaded
+        {
+            ExtractFeatureValuesRange(actorInstance, m_frameDatabase, m_featureSchema, m_featureMatrix, /*startFrame=*/0, numFrames);
+        }
 
         const float extractFeaturesTime = timer.GetDeltaTimeInSeconds();
         timer.Stamp();
@@ -117,6 +153,38 @@ namespace EMotionFX::MotionMatching
             initKdTreeTimer * 1000.0f);
 
         return true;
+    }
+
+    void MotionMatchingData::ExtractFeatureValuesRange(ActorInstance* actorInstance, FrameDatabase& frameDatabase, const FeatureSchema& featureSchema, FeatureMatrix& featureMatrix, size_t startFrame, size_t endFrame)
+    {
+        // Iterate over all frames and extract the data for this frame.
+        AnimGraphPosePool posePool;
+        AnimGraphPose* pose = posePool.RequestPose(actorInstance);
+
+        Feature::ExtractFeatureContext context(featureMatrix, posePool);
+        context.m_frameDatabase = &frameDatabase;
+        context.m_framePose = &pose->GetPose();
+        context.m_actorInstance = actorInstance;
+        const auto& frames = frameDatabase.GetFrames();
+
+        for (size_t frameIndex = startFrame; frameIndex < endFrame; ++frameIndex)
+        {
+            const Frame& frame = frames[frameIndex];
+            context.m_frameIndex = frame.GetFrameIndex();
+
+            // Pre-sample the frame pose as that will be needed by many of the feature extraction calculations.
+            frame.SamplePose(const_cast<Pose*>(context.m_framePose));
+
+            // Extract all features for the given frame.
+            {
+                for (Feature* feature : featureSchema.GetFeatures())
+                {
+                    feature->ExtractFeatureValues(context);
+                }
+            }
+        }
+
+        posePool.FreePose(pose);
     }
 
     bool MotionMatchingData::Init(const InitSettings& settings)

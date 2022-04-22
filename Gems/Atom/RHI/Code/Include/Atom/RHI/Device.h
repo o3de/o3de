@@ -142,7 +142,12 @@ namespace AZ
                 return RHI::ResultCode::Success;
             };
 
+            bool WasDeviceRemoved();
+
         protected:
+
+            void SetDeviceRemoved();
+
             DeviceFeatures m_features;
             DeviceLimits m_limits;
             ResourcePoolDatabase m_resourcePoolDatabase;
@@ -207,6 +212,8 @@ namespace AZ
             AZStd::array<Format, static_cast<uint32_t>(Format::Count)> m_nearestSupportedFormats;
 
             FormatCapabilitiesList m_formatsCapabilities;
+
+            bool m_wasDeviceRemoved = false;
         };
     }
 }

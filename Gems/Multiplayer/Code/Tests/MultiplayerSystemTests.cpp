@@ -144,4 +144,3 @@ namespace UnitTest
         AZ::Interface<Multiplayer::IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
     }
 }
-

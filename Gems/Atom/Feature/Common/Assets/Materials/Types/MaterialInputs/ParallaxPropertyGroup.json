@@ -109,7 +109,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_ParallaxState.lua"
+                "file": "Materials/Types/StandardPBR_ParallaxState.lua"
             }
         }
     ]

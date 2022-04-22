@@ -559,7 +559,7 @@ namespace NvCloth
 
             if (!destVerticesBuffer)
             {
-                AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRenderer(),
+                AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRHI(),
                     "Invalid vertex position buffer obtained from the render mesh to be modified.");
                 continue;
             }

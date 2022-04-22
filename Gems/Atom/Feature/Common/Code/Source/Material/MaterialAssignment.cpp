@@ -34,9 +34,10 @@ namespace AZ
                 serializeContext->RegisterGenericType<MaterialPropertyOverrideMap>();
 
                 serializeContext->Class<MaterialAssignment>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("MaterialAsset", &MaterialAssignment::m_materialAsset)
                     ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides)
+                    ->Field("ModelUvOverrides", &MaterialAssignment::m_matModUvOverrides)
                     ;
 
                 if (auto editContext = serializeContext->GetEditContext())
@@ -113,12 +114,18 @@ namespace AZ
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+                return;
             }
-            else if (m_defaultMaterialAsset.IsReady())
+
+            if (m_defaultMaterialAsset.IsReady())
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+                return;
             }
+
+            // Clear the existing material instance if no asset was ready
+            m_materialInstance = nullptr;
         }
 
         void MaterialAssignment::Release()

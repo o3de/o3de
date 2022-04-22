@@ -112,7 +112,7 @@
                 // Applied the box blur effect to entities not of interest
                 {
                     "Name": "BlurPass",
-                    "TemplateName": "EditorModeBlurTemplate",
+                    "TemplateName": "EditorModeBlurParentTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "InputDepth",

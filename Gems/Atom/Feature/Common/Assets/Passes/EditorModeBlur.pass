@@ -1,5 +1,5 @@
 {
-    // Applies a box blur effect as controlled by the box width
+    // Applies a box blur effect in the vertical direction as controlled by the box width
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",
@@ -18,7 +18,8 @@
                     "Name": "InputEntityMask",
                     "SlotType": "Input",
                     "ShaderInputName": "m_entityMask",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_maskDimensions"
                 },
                 {
                     "Name": "InputColor",
@@ -64,14 +65,7 @@
                     "Input" : "InputColor",
                     "Output" : "OutputColor"
                 }
-            ],
-            "PassData": {
-                "$type": "FullscreenTrianglePassData",
-                "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
-                },
-                "PipelineViewTag": "MainCamera"
-            }
+            ]
         }
     }
 }

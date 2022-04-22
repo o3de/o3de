@@ -205,7 +205,7 @@ namespace AssetProcessorMessagesTests
             AZStd::atomic_bool finished = false;
             auto start = AZStd::chrono::monotonic_clock::now();
 
-            auto thread = AZStd::thread([&finished, &func]()
+            auto thread = AZStd::thread({/*m_name =*/ "MessageTests"}, [&finished, &func]()
                 {
                     func();
                     finished = true;

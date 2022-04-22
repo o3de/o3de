@@ -222,14 +222,27 @@ namespace AtomToolsFramework
         switch (event->type()) 
         {
             case QEvent::Resize:
+            case QEvent::ShowToParent: //This event exists to capture the case where a resize event is missed "after" the underlying surface is modified by Qt (Seen during level load in Editor)
+            {
                 SendWindowResizeEvent();
                 break;
-
+            }
+           case QEvent::PlatformSurface:
+            {
+                //Surface is about to be destroyed by QT. Lets close the window
+                QPlatformSurfaceEvent* surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
+                if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
+                {
+                    SendWindowCloseEvent();
+                }
+                break;
+            }
             default:
                 break;
         }
         return QWidget::event(event);
     }
+
 
     void RenderViewportWidget::enterEvent(QEvent* event)
     {
@@ -262,6 +275,13 @@ namespace AtomToolsFramework
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+    }
+
+    void RenderViewportWidget::SendWindowCloseEvent()
+    {
+        const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotifications::OnWindowClosed);
     }
 
     AZ::Name RenderViewportWidget::GetCurrentContextName() const

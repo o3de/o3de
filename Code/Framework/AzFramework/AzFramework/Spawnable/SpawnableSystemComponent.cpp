@@ -9,10 +9,13 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 
 namespace AzFramework
 {
@@ -20,6 +23,8 @@ namespace AzFramework
     {
         Spawnable::Reflect(context);
         SpawnableMetaData::Reflect(context);
+        EntitySpawnTicket::Reflect(context);
+        Scripts::SpawnableScriptMediator::Reflect(context);
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
@@ -188,6 +193,7 @@ namespace AzFramework
 
         AZ::TickBus::Handler::BusDisconnect();
         RootSpawnableNotificationBus::Handler::BusDisconnect();
+
         // Unregister Lifecycle event handler
         m_criticalAssetsHandler = {};
 

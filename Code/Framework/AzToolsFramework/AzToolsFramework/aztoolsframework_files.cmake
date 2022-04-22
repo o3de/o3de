@@ -326,6 +326,8 @@ set(FILES
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h
+    UI/DPEDebugViewer/DPEDebugModel.cpp
+    UI/DPEDebugViewer/DPEDebugModel.h
     UI/Layer/AddToLayerMenu.cpp
     UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h
@@ -487,6 +489,15 @@ set(FILES
     Viewport/EditorContextMenu.cpp
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
+    Viewport/LocalViewBookmarkComponent.h
+    Viewport/LocalViewBookmarkComponent.cpp
+    Viewport/SharedViewBookmarkComponent.h
+    Viewport/SharedViewBookmarkComponent.cpp
+    Viewport/LocalViewBookmarkLoader.h
+    Viewport/LocalViewBookmarkLoader.cpp
+    Viewport/ViewBookmarkLoaderInterface.h
+    Viewport/ViewBookmarkSystemComponent.h
+    Viewport/ViewBookmarkSystemComponent.cpp
     Viewport/ViewportInteractionHelpers.h
     Viewport/ViewportInteractionHelpers.cpp
     Viewport/ViewportMessages.h
@@ -530,6 +541,8 @@ set(FILES
     ComponentModes/BoxComponentMode.cpp
     ComponentModes/BoxViewportEdit.h
     ComponentModes/BoxViewportEdit.cpp
+    ComponentModes/CapsuleViewportEdit.h
+    ComponentModes/CapsuleViewportEdit.cpp
     ViewportSelection/EditorBoxSelect.h
     ViewportSelection/EditorBoxSelect.cpp
     ViewportSelection/EditorDefaultSelection.h

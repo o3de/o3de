@@ -568,7 +568,7 @@ struct {{ UpperFirst(Property.attrib['Name']) }}RpcStruct
     }
 
 {%    endif %}
-    bool Serialize(AzNetworking::ISerializer& serializer)
+    bool Serialize(AzNetworking::ISerializer& serializer) override
     {
         bool ret(true);
 {%    for Param in Property.iter('Param') %}

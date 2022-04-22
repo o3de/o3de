@@ -1,0 +1,20 @@
+{
+    "O3DE": {
+        "Atom": {
+            "Tools": {
+                "EditablePathSettings": {
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/ReflectionProbe/ReflectionProbeVisualization.material": false,
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/ReflectionProbe/ReflectionProbeVisualization.materialtype": false,
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Special/ShadowCatcher.material": false,
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Special/ShadowCatcher.materialtype": false
+                },
+                "PreviewablePathSettings": {
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/ReflectionProbe/ReflectionProbeVisualization.material": false,
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/ReflectionProbe/ReflectionProbeVisualization.materialtype": false,
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Special/ShadowCatcher.material": false,
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Special/ShadowCatcher.materialtype": false
+                }
+            }
+        }
+    }
+}

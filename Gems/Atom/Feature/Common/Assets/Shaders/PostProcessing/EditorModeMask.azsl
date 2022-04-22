@@ -6,6 +6,8 @@
  *
  */
 
+#include <Atom/Features/SrgSemantics.azsli>
+
 #include <viewsrg.srgi>
 #include <scenesrg.srgi>
 
@@ -24,6 +26,25 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     }
 }
 
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    //! The depth buffer data for existing fragments in the color buffer.
+    Texture2D<float> m_existingDepth;
+
+    //! Dimensions of depth buffer texture (xy is width and height, zw is 1/width and 1/height).
+    float4 m_existingDepthDimensions;
+    
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
 struct VSInput
 {
     // Base fields (required by the template azsli file)...
@@ -35,45 +56,60 @@ struct VSOutput
     // Base fields (required by the template azsli file)...
     // "centroid" is needed for SV_Depth to compile
     precise linear centroid float4 m_position : SV_Position;
+
+    // Fragment depth
+    float m_depth : UV0;
 };
 
 VSOutput MainVS(VSInput IN)
 {
-    VSOutput OUT;    
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    VSOutput OUT;
+
+    const float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
-
-    // Offset the depth of redrawn entities to avoid z fighting with the underlying entity rendered data
-    // A proper programatic solution will be investigated in LYN-10304
-    OUT.m_position.z += 0.001;
-
-/*
-    For use in LYN-9929
-
-    // NDCs
-    float3 ndc = float3(OUT.m_position.x / OUT.m_position.w, OUT.m_position. y/ OUT.m_position.w, OUT.m_position.z / OUT.m_position.w);
-
-    // Normalized screenspace UVs
-    float2 uv = float2((ndc.x + 1.0) * 0.5, (ndc.y + 1.0) * 0.5);
+    
+    // The existing depth buffer contents are the result of the resolved MSAA depth buffer so contain depth contributions
+    // from surrounding sub-fragments so we need to pull the current fragment towards the viewer slightly in order to reduce
+    // z fighting with the sub-fragment depth contributions
+    OUT.m_position.z *= 1.01;
 
     // Fragment depth
-    float depth = ndc.z;
-*/
-
+    OUT.m_depth = OUT.m_position.z / OUT.m_position.w;
     return OUT;
 }
 
 struct PixelOutput
 {
-    float4 m_color : SV_Target0;
+    float2 m_mask : SV_Target0;
 };
+
+//! Returns the linearized depth of the specified non-linear depth value.
+float LinearizeDepth(const float depth)
+{
+    return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * depth - ViewSrg::GetFarZ())));
+}
 
 PixelOutput MainPS(VSOutput IN)
 {
     PixelOutput OUT;
 
-    // Ignore m_maskId for now until LYN-9878 is resolved
-    OUT.m_color = float4(1., 1., 1., 1.);
+    const float2 screenUV = IN.m_position.xy * PassSrg::m_existingDepthDimensions.zw;
+    const float existingLinearDepth = LinearizeDepth(PassSrg::m_existingDepth.Sample(PassSrg::LinearSampler, screenUV).r);
+    const float linearDepth = LinearizeDepth(IN.m_depth);
+
+    // Do not write out any visible fragments to the red channel unless the depth test below passes
+    OUT.m_mask.r = 0.0;
+
+    // Write out all visible and occluded fragments to the green channel
+    OUT.m_mask.g = 1.0;
+
+    // Performing a equal or greater than depth test is still to flakey so we will instead perform a depth test within a small
+    // tolerance range in order for this fragment to pass the test
+    if((linearDepth - existingLinearDepth) <= 0.0001)
+    {
+        // Depth test passed, update the mask with this closest value
+        OUT.m_mask.r = 1.0;
+    }
 
     return OUT;
-} 
+}

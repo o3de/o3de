@@ -27,6 +27,8 @@
 #include <TerrainRaycast/TerrainRaycastContext.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
+AZ_DECLARE_BUDGET(Terrain);
+
 namespace Terrain
 {
     struct TerrainLayerPriorityComparator
@@ -57,6 +59,8 @@ namespace Terrain
         // TerrainDataRequestBus::Handler Impl
         float GetTerrainHeightQueryResolution() const override;
         void SetTerrainHeightQueryResolution(float queryResolution) override;
+        float GetTerrainSurfaceDataQueryResolution() const override;
+        void SetTerrainSurfaceDataQueryResolution(float queryResolution) override;
 
         AZ::Aabb GetTerrainAabb() const override;
         void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
@@ -75,119 +79,119 @@ namespace Terrain
         //! HOLE then *terrainExistsPtr will be set to false,
         //!                  otherwise *terrainExistsPtr will be set to true.
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(
-            const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(
-            const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const override;
+            const AZ::Vector2& inPosition, Sampler sampler = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const override;
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(
-            const float x, const float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const float x, const float y, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
         void GetSurfaceWeights(
             const AZ::Vector3& inPosition,
             AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             bool* terrainExistsPtr = nullptr) const override;
         void GetSurfaceWeightsFromVector2(
             const AZ::Vector2& inPosition,
             AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             bool* terrainExistsPtr = nullptr) const override;
         void GetSurfaceWeightsFromFloats(
             float x,
             float y,
             AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             bool* terrainExistsPtr = nullptr) const override;
 
         //! Convenience function for  low level systems that can't do a reverse lookup from Crc to string. Everyone else should use
         //! GetMaxSurfaceWeight or GetMaxSurfaceWeightFromFloats. Not available in the behavior context. Returns nullptr if the position is
         //! inside a hole or outside of the terrain boundaries.
         const char* GetMaxSurfaceName(
-            const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
         //! Returns true if there's a hole at location x,y.
         //! Also returns true if there's no terrain data at location x,y.
-        bool GetIsHole(const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR) const override;
-        bool GetIsHoleFromVector2(const AZ::Vector2& position, Sampler sampleFilter = Sampler::BILINEAR) const override;
-        bool GetIsHoleFromFloats(float x, float y, Sampler sampleFilter = Sampler::BILINEAR) const override;
+        bool GetIsHole(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR) const override;
+        bool GetIsHoleFromVector2(const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR) const override;
+        bool GetIsHoleFromFloats(float x, float y, Sampler sampler = Sampler::BILINEAR) const override;
 
         // Given an XY coordinate, return the surface normal.
         //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain
         //! HOLE then *terrainExistsPtr will be set to false,
         //!                  otherwise *terrainExistsPtr will be set to true.
         AZ::Vector3 GetNormal(
-            const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
         AZ::Vector3 GetNormalFromVector2(
-            const AZ::Vector2& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
         AZ::Vector3 GetNormalFromFloats(
-            float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            float x, float y, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
         void GetSurfacePoint(
             const AZ::Vector3& inPosition,
             AzFramework::SurfaceData::SurfacePoint& outSurfacePoint,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             bool* terrainExistsPtr = nullptr) const override;
         void GetSurfacePointFromVector2(
             const AZ::Vector2& inPosition,
             AzFramework::SurfaceData::SurfacePoint& outSurfacePoint,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             bool* terrainExistsPtr = nullptr) const override;
         void GetSurfacePointFromFloats(
             float x,
             float y,
             AzFramework::SurfaceData::SurfacePoint& outSurfacePoint,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             bool* terrainExistsPtr = nullptr) const override;
 
         //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
         //! XY coordinate in the list.
-        virtual void ProcessHeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
+        void ProcessHeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessNormalsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessNormalsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfaceWeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessSurfaceWeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfacePointsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessSurfacePointsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessHeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessHeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessNormalsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessNormalsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfacePointsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessSurfacePointsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
+            Sampler sampler = Sampler::DEFAULT) const override;
 
         //! Returns the number of samples for a given region and step size. The first and second
         //! elements of the pair correspond to the X and Y sample counts respectively.
-        virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize) const override;
+        AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize, Sampler sampler) const override;
 
         //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
         //! coordinates in the region.
-        virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
+        void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
+            Sampler sampler = Sampler::DEFAULT) const override;
+        void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT) const override;
+            Sampler sampler = Sampler::DEFAULT) const override;
 
         AzFramework::EntityContextId GetTerrainRaycastEntityContextId() const override;
         AzFramework::RenderGeometry::RayResult GetClosestIntersection(
@@ -196,66 +200,66 @@ namespace Terrain
         AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListAsync(
             const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListAsync(
             const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListAsync(
             const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListAsync(
             const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListOfVector2Async(
             const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListOfVector2Async(
             const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListOfVector2Async(
             const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListOfVector2Async(
             const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromRegionAsync(
             const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromRegionAsync(
             const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromRegionAsync(
             const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromRegionAsync(
             const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
 
     private:
@@ -264,7 +268,7 @@ namespace Terrain
             SynchronousFunctionType synchronousFunction,
             const AZStd::span<const VectorType>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const;
 
         template<typename SynchronousFunctionType>
@@ -273,7 +277,7 @@ namespace Terrain
             const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampleFilter = Sampler::DEFAULT,
+            Sampler sampler = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const;
 
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
@@ -320,7 +324,8 @@ namespace Terrain
             Sampler sampler) const;
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromRegion(
             const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize) const;
+            const AZ::Vector2& stepSize,
+            Sampler sampler) const;
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromListOfVector2(
             const AZStd::span<const AZ::Vector2> inPositionsVec2) const;
 
@@ -331,6 +336,7 @@ namespace Terrain
         {
             AZ::Aabb m_worldBounds;
             float m_heightQueryResolution{ 1.0f };
+            float m_surfaceDataQueryResolution{ 1.0f };
             bool m_systemActive{ false };
         };
 
@@ -365,9 +371,11 @@ namespace Terrain
         SynchronousFunctionType synchronousFunction,
         const AZStd::span<const VectorType>& inPositions,
         AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-        Sampler sampleFilter,
+        Sampler sampler,
         AZStd::shared_ptr<ProcessAsyncParams> params) const
     {
+        AZ_PROFILE_FUNCTION(Terrain);
+
         // Determine the number of jobs to split the work into based on:
         // 1. The number of available worker threads.
         // 2. The desired number of jobs as passed in.
@@ -400,12 +408,12 @@ namespace Terrain
 
             // Define the job function using the sub span of positions to process.
             const AZStd::span<const VectorType>& positionsToProcess = inPositions.subspan(subSpanOffset, subSpanCount);
-            auto jobFunction = [this, synchronousFunction, positionsToProcess, perPositionCallback, sampleFilter, jobContext, params]()
+            auto jobFunction = [this, synchronousFunction, positionsToProcess, perPositionCallback, sampler, jobContext, params]()
             {
                 // Process the sub span of positions, unless the associated job context has been cancelled.
                 if (!jobContext->IsCancelled())
                 {
-                    synchronousFunction(positionsToProcess, perPositionCallback, sampleFilter);
+                    synchronousFunction(positionsToProcess, perPositionCallback, sampler);
                 }
 
                 // Decrement the number of completions remaining, invoke the completion callback if this happens
@@ -442,9 +450,11 @@ namespace Terrain
         const AZ::Aabb& inRegion,
         const AZ::Vector2& stepSize,
         AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-        Sampler sampleFilter,
+        Sampler sampler,
         AZStd::shared_ptr<ProcessAsyncParams> params) const
     {
+        AZ_PROFILE_FUNCTION(Terrain);
+
         // ToDo: Determine the number of jobs to split the work into based on:
         // 1. The number of available worker threads.
         // 2. The desired number of jobs as passed in.
@@ -480,12 +490,12 @@ namespace Terrain
         {
             // Define the job function using the sub region of positions to process.
             const AZ::Aabb& subRegion = inRegion; // ToDo: Figure out how to break up the region.
-            auto jobFunction = [this, synchronousFunction, subRegion, stepSize, perPositionCallback, sampleFilter, jobContext, params]()
+            auto jobFunction = [this, synchronousFunction, subRegion, stepSize, perPositionCallback, sampler, jobContext, params]()
             {
                 // Process the sub region of positions, unless the associated job context has been cancelled.
                 if (!jobContext->IsCancelled())
                 {
-                    synchronousFunction(subRegion, stepSize, perPositionCallback, sampleFilter);
+                    synchronousFunction(subRegion, stepSize, perPositionCallback, sampler);
                 }
 
                 // Decrement the number of completions remaining, invoke the completion callback if this happens

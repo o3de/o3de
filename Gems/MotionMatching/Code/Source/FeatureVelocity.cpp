@@ -29,7 +29,7 @@ namespace EMotionFX::MotionMatching
 
     void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
     {
-        PoseDataJointVelocities* velocityPoseData = static_cast<PoseDataJointVelocities*>(context.m_currentPose.GetPoseDataByType(azrtti_typeid<PoseDataJointVelocities>()));
+        PoseDataJointVelocities* velocityPoseData = context.m_currentPose.GetPoseData<PoseDataJointVelocities>();
         AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
         const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_jointIndex);
 
@@ -43,12 +43,12 @@ namespace EMotionFX::MotionMatching
         const ActorInstance* actorInstance = context.m_actorInstance;
         const Frame& frame = context.m_frameDatabase->GetFrame(context.m_frameIndex);
 
-        AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
-        AnimGraphPose* tempPose = posePool.RequestPose(actorInstance);
+        AnimGraphPose* tempPose = context.m_posePool.RequestPose(actorInstance);
         {
             // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
             PoseDataJointVelocities* velocityPoseData = tempPose->GetPose().GetAndPreparePoseData<PoseDataJointVelocities>(actorInstance);
             velocityPoseData->CalculateVelocity(actorInstance,
+                context.m_posePool,
                 frame.GetSourceMotion(),
                 frame.GetSampleTime(),
                 m_relativeToNodeIndex);
@@ -56,7 +56,23 @@ namespace EMotionFX::MotionMatching
             const AZ::Vector3& velocity = velocityPoseData->GetVelocities()[m_jointIndex];
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
         }
-        posePool.FreePose(tempPose);
+        context.m_posePool.FreePose(tempPose);
+    }
+
+    void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+        const Pose& pose,
+        const AZ::Vector3& velocity,
+        size_t jointIndex,
+        size_t relativeToJointIndex,
+        const AZ::Color& color)
+    {
+        const Transform jointModelTM = pose.GetModelSpaceTransform(jointIndex);
+        const Transform relativeToWorldTM = pose.GetWorldSpaceTransform(relativeToJointIndex);
+
+        const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
+        const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity);
+
+        DebugDrawVelocity(debugDisplay, jointPosition, velocityWorldSpace * mm_debugDrawVelocityScale, color);
     }
 
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
@@ -68,13 +84,7 @@ namespace EMotionFX::MotionMatching
     {
         const ActorInstance* actorInstance = instance->GetActorInstance();
         const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-        const Transform jointModelTM = pose->GetModelSpaceTransform(jointIndex);
-        const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(relativeToJointIndex);
-
-        const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
-        const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity);
-
-        DebugDrawVelocity(debugDisplay, jointPosition, velocityWorldSpace * mm_debugDrawVelocityScale, color);
+        DebugDraw(debugDisplay, *pose, velocity, jointIndex, relativeToJointIndex, color);
     }
 
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
@@ -93,7 +103,7 @@ namespace EMotionFX::MotionMatching
 
     float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
     {
-        PoseDataJointVelocities* velocityPoseData = static_cast<PoseDataJointVelocities*>(context.m_currentPose.GetPoseDataByType(azrtti_typeid<PoseDataJointVelocities>()));
+        PoseDataJointVelocities* velocityPoseData = context.m_currentPose.GetPoseData<PoseDataJointVelocities>();
         AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
 
         const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_jointIndex);

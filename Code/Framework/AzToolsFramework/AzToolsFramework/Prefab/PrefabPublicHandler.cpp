@@ -373,7 +373,8 @@ namespace AzToolsFramework
 
             if (!instanceToParentUnder.has_value())
             {
-                instanceToParentUnder = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+                AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
+                instanceToParentUnder = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
                 parent = instanceToParentUnder->get().GetContainerEntityId();
             }
 
@@ -733,9 +734,6 @@ namespace AzToolsFramework
                 bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
                 bool isNewParentOwnedByDifferentInstance = false;
 
-                bool isInFocusTree = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId);
-                bool isOwnedByFocusedPrefabInstance = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
-
                 if (beforeParentId != afterParentId)
                 {
                     // If the entity parent changed, verify if the owning instance changed too
@@ -789,7 +787,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
+                if (isInstanceContainerEntity)
                 {
                     if (isNewParentOwnedByDifferentInstance)
                     {

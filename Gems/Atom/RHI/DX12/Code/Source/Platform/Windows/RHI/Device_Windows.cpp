@@ -25,23 +25,6 @@ namespace AZ
     {
         namespace Platform
         {
-            void DeviceShutdownInternal(ID3D12DeviceX* device)
-            {
-                AZ_UNUSED(device);
-#ifdef AZ_DEBUG_BUILD
-                ID3D12DebugDevice* dx12DebugDevice = nullptr;
-                if (device)
-                {
-                    device->QueryInterface(&dx12DebugDevice);
-                }
-                if (dx12DebugDevice)
-                {
-                    dx12DebugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
-                    dx12DebugDevice->Release();
-                }
-#endif
-            }
-
             void DeviceCompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder, IDXGIAdapterX* dxgiAdapter)
             {
                 DXGI_QUERY_VIDEO_MEMORY_INFO memoryInfo;
@@ -222,16 +205,320 @@ namespace AZ
             {
                 EnableDebugDeviceFeatures(dx12Device);
                 EnableBreakOnD3DError(dx12Device);
-
                 AddDebugFilters(dx12Device, validationMode);
+            }
+
+            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
+            if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
+            {
+                // Turn on auto-breadcrumbs and page fault reporting.
+                pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
             }
 
             m_dx12Device = dx12Device.Get();
             m_dxgiFactory = physicalDevice.GetFactory();
             m_dxgiAdapter = physicalDevice.GetAdapter();
+            
+            InitDeviceRemovalHandle();
 
             m_isAftermathInitialized = Aftermath::InitializeAftermath(m_dx12Device);
+
             return RHI::ResultCode::Success;
+        }
+
+        void Device::ShutdownSubPlatform()
+        {
+            UnregisterWait(m_waitHandle);
+            m_deviceFence.reset();
+
+#ifdef AZ_DEBUG_BUILD
+            ID3D12DebugDevice* dx12DebugDevice = nullptr;
+            if (m_dx12Device)
+            {
+                m_dx12Device->QueryInterface(&dx12DebugDevice);
+            }
+            if (dx12DebugDevice)
+            {
+                dx12DebugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
+                dx12DebugDevice->Release();
+            }
+#endif
+        }
+
+        const char* GetBreadcrumpOpString(D3D12_AUTO_BREADCRUMB_OP op)
+        {
+            switch (op)
+            {
+            case D3D12_AUTO_BREADCRUMB_OP_SETMARKER:
+                return "D3D12_AUTO_BREADCRUMB_OP_SETMARKER";
+            case D3D12_AUTO_BREADCRUMB_OP_BEGINEVENT:
+                return "D3D12_AUTO_BREADCRUMB_OP_BEGINEVENT";
+            case D3D12_AUTO_BREADCRUMB_OP_ENDEVENT:
+                return "D3D12_AUTO_BREADCRUMB_OP_ENDEVENT";
+            case D3D12_AUTO_BREADCRUMB_OP_DRAWINSTANCED:
+                return "D3D12_AUTO_BREADCRUMB_OP_DRAWINSTANCED";
+            case D3D12_AUTO_BREADCRUMB_OP_DRAWINDEXEDINSTANCED:
+                return "D3D12_AUTO_BREADCRUMB_OP_DRAWINDEXEDINSTANCED";
+            case D3D12_AUTO_BREADCRUMB_OP_EXECUTEINDIRECT:
+                return "D3D12_AUTO_BREADCRUMB_OP_EXECUTEINDIRECT";
+            case D3D12_AUTO_BREADCRUMB_OP_DISPATCH:
+                return "D3D12_AUTO_BREADCRUMB_OP_DISPATCH";
+            case D3D12_AUTO_BREADCRUMB_OP_COPYBUFFERREGION:
+                return "D3D12_AUTO_BREADCRUMB_OP_COPYBUFFERREGION";
+            case D3D12_AUTO_BREADCRUMB_OP_COPYTEXTUREREGION:
+                return "D3D12_AUTO_BREADCRUMB_OP_COPYTEXTUREREGION";
+            case D3D12_AUTO_BREADCRUMB_OP_COPYRESOURCE:
+                return "D3D12_AUTO_BREADCRUMB_OP_COPYRESOURCE";
+            case D3D12_AUTO_BREADCRUMB_OP_COPYTILES:
+                return "D3D12_AUTO_BREADCRUMB_OP_COPYTILES";
+            case D3D12_AUTO_BREADCRUMB_OP_RESOLVESUBRESOURCE:
+                return "D3D12_AUTO_BREADCRUMB_OP_RESOLVESUBRESOURCE";
+            case D3D12_AUTO_BREADCRUMB_OP_CLEARRENDERTARGETVIEW:
+                return "D3D12_AUTO_BREADCRUMB_OP_CLEARRENDERTARGETVIEW";
+            case D3D12_AUTO_BREADCRUMB_OP_CLEARUNORDEREDACCESSVIEW:
+                return "D3D12_AUTO_BREADCRUMB_OP_CLEARUNORDEREDACCESSVIEW";
+            case D3D12_AUTO_BREADCRUMB_OP_CLEARDEPTHSTENCILVIEW:
+                return "D3D12_AUTO_BREADCRUMB_OP_CLEARDEPTHSTENCILVIEW";
+            case D3D12_AUTO_BREADCRUMB_OP_RESOURCEBARRIER:
+                return "D3D12_AUTO_BREADCRUMB_OP_RESOURCEBARRIER";
+            case D3D12_AUTO_BREADCRUMB_OP_EXECUTEBUNDLE:
+                return "D3D12_AUTO_BREADCRUMB_OP_EXECUTEBUNDLE";
+            case D3D12_AUTO_BREADCRUMB_OP_PRESENT:
+                return "D3D12_AUTO_BREADCRUMB_OP_PRESENT";
+            case D3D12_AUTO_BREADCRUMB_OP_RESOLVEQUERYDATA:
+                return "D3D12_AUTO_BREADCRUMB_OP_RESOLVEQUERYDATA";
+            case D3D12_AUTO_BREADCRUMB_OP_BEGINSUBMISSION:
+                return "D3D12_AUTO_BREADCRUMB_OP_BEGINSUBMISSION";
+            case D3D12_AUTO_BREADCRUMB_OP_ENDSUBMISSION:
+                return "D3D12_AUTO_BREADCRUMB_OP_ENDSUBMISSION";
+            case D3D12_AUTO_BREADCRUMB_OP_DECODEFRAME:
+                return "D3D12_AUTO_BREADCRUMB_OP_DECODEFRAME";
+            case D3D12_AUTO_BREADCRUMB_OP_PROCESSFRAMES:
+                return "D3D12_AUTO_BREADCRUMB_OP_PROCESSFRAMES";
+            case D3D12_AUTO_BREADCRUMB_OP_ATOMICCOPYBUFFERUINT:
+                return "D3D12_AUTO_BREADCRUMB_OP_ATOMICCOPYBUFFERUINT";
+            case D3D12_AUTO_BREADCRUMB_OP_ATOMICCOPYBUFFERUINT64:
+                return "D3D12_AUTO_BREADCRUMB_OP_ATOMICCOPYBUFFERUINT64";
+            case D3D12_AUTO_BREADCRUMB_OP_RESOLVESUBRESOURCEREGION:
+                return "D3D12_AUTO_BREADCRUMB_OP_RESOLVESUBRESOURCEREGION";
+            case D3D12_AUTO_BREADCRUMB_OP_WRITEBUFFERIMMEDIATE:
+                return "D3D12_AUTO_BREADCRUMB_OP_WRITEBUFFERIMMEDIATE";
+            case D3D12_AUTO_BREADCRUMB_OP_DECODEFRAME1:
+                return "D3D12_AUTO_BREADCRUMB_OP_DECODEFRAME1";
+            case D3D12_AUTO_BREADCRUMB_OP_SETPROTECTEDRESOURCESESSION:
+                return "D3D12_AUTO_BREADCRUMB_OP_SETPROTECTEDRESOURCESESSION";
+            case D3D12_AUTO_BREADCRUMB_OP_DECODEFRAME2:
+                return "D3D12_AUTO_BREADCRUMB_OP_DECODEFRAME2";
+            case D3D12_AUTO_BREADCRUMB_OP_PROCESSFRAMES1:
+                return "D3D12_AUTO_BREADCRUMB_OP_PROCESSFRAMES1";
+            case D3D12_AUTO_BREADCRUMB_OP_BUILDRAYTRACINGACCELERATIONSTRUCTURE:
+                return "D3D12_AUTO_BREADCRUMB_OP_BUILDRAYTRACINGACCELERATIONSTRUCTURE";
+            case D3D12_AUTO_BREADCRUMB_OP_EMITRAYTRACINGACCELERATIONSTRUCTUREPOSTBUILDINFO:
+                return "D3D12_AUTO_BREADCRUMB_OP_EMITRAYTRACINGACCELERATIONSTRUCTUREPOSTBUILDINFO";
+            case D3D12_AUTO_BREADCRUMB_OP_COPYRAYTRACINGACCELERATIONSTRUCTURE:
+                return "D3D12_AUTO_BREADCRUMB_OP_COPYRAYTRACINGACCELERATIONSTRUCTURE";
+            case D3D12_AUTO_BREADCRUMB_OP_DISPATCHRAYS:
+                return "D3D12_AUTO_BREADCRUMB_OP_DISPATCHRAYS";
+            case D3D12_AUTO_BREADCRUMB_OP_INITIALIZEMETACOMMAND:
+                return "D3D12_AUTO_BREADCRUMB_OP_INITIALIZEMETACOMMAND";
+            case D3D12_AUTO_BREADCRUMB_OP_EXECUTEMETACOMMAND:
+                return "D3D12_AUTO_BREADCRUMB_OP_EXECUTEMETACOMMAND";
+            case D3D12_AUTO_BREADCRUMB_OP_ESTIMATEMOTION:
+                return "D3D12_AUTO_BREADCRUMB_OP_ESTIMATEMOTION";
+            case D3D12_AUTO_BREADCRUMB_OP_RESOLVEMOTIONVECTORHEAP:
+                return "D3D12_AUTO_BREADCRUMB_OP_RESOLVEMOTIONVECTORHEAP";
+            case D3D12_AUTO_BREADCRUMB_OP_SETPIPELINESTATE1:
+                return "D3D12_AUTO_BREADCRUMB_OP_SETPIPELINESTATE1";
+            case D3D12_AUTO_BREADCRUMB_OP_INITIALIZEEXTENSIONCOMMAND:
+                return "D3D12_AUTO_BREADCRUMB_OP_INITIALIZEEXTENSIONCOMMAND";
+            case D3D12_AUTO_BREADCRUMB_OP_EXECUTEEXTENSIONCOMMAND:
+                return "D3D12_AUTO_BREADCRUMB_OP_EXECUTEEXTENSIONCOMMAND";
+
+            // Disable due to the current minimum windows version doesn't have this enum
+            // case D3D12_AUTO_BREADCRUMB_OP_DISPATCHMESH:
+                // return "D3D12_AUTO_BREADCRUMB_OP_DISPATCHMESH";
+            }
+            return "unkown op";
+        }
+
+        bool Device::AssertSuccess(HRESULT hr)
+        {
+            if (hr == DXGI_ERROR_DEVICE_REMOVED)
+            {
+                OnDeviceRemoved();
+            }
+
+            bool success = SUCCEEDED(hr);
+            AZ_Assert(success, "HRESULT not a success %x", hr);
+            return success;
+        }
+
+        void Device::OnDeviceRemoved()
+        {
+            // It's possible this function is called many times at same time from different threads.
+            // We want the other threads are blocked until the device removal is fully handled. 
+            AZStd::lock_guard<AZStd::mutex> lock(m_onDeviceRemovedMutex);
+
+            if (m_onDeviceRemoved)
+            {
+                return;
+            }
+            m_onDeviceRemoved = true;
+
+            ID3D12Device* removedDevice = m_dx12Device.get();
+            HRESULT removedReason = removedDevice->GetDeviceRemovedReason();
+            
+            AZ_TracePrintf("Device", "Device was removed because of the following reason:\n");
+
+            switch (removedReason)
+            {
+            case DXGI_ERROR_DEVICE_HUNG:
+                AZ_TracePrintf(
+                    "DX12",
+                    "DXGI_ERROR_DEVICE_HUNG - The application's device failed due to badly formed commands sent by the "
+                    "application. This is an design-time issue that should be investigated and fixed.\n");
+                break;
+            case DXGI_ERROR_DEVICE_REMOVED:
+                AZ_TracePrintf(
+                    "DX12",
+                    "DXGI_ERROR_DEVICE_REMOVED - The video card has been physically removed from the system, or a driver upgrade "
+                    "for the video card has occurred. The application should destroy and recreate the device. For help debugging "
+                    "the problem, call ID3D10Device::GetDeviceRemovedReason.\n");
+                break;
+            case DXGI_ERROR_DEVICE_RESET:
+                AZ_TracePrintf(
+                    "DX12",
+                    "DXGI_ERROR_DEVICE_RESET - The device failed due to a badly formed command. This is a run-time issue; The "
+                    "application should destroy and recreate the device.\n");
+                break;
+            case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
+                AZ_TracePrintf(
+                    "DX12",
+                    "DXGI_ERROR_DRIVER_INTERNAL_ERROR - The driver encountered a problem and was put into the device removed "
+                    "state.\n");
+                break;
+            case DXGI_ERROR_INVALID_CALL:
+                AZ_TracePrintf(
+                    "DX12",
+                    "DXGI_ERROR_INVALID_CALL - The application provided invalid parameter data; this must be debugged and fixed "
+                    "before the application is released.\n");
+                break;
+            case DXGI_ERROR_ACCESS_DENIED:
+                AZ_TracePrintf(
+                    "DX12",
+                    "DXGI_ERROR_ACCESS_DENIED - You tried to use a resource to which you did not have the required access "
+                    "privileges. This error is most typically caused when you write to a shared resource with read-only access.\n");
+                break;
+            case S_OK:
+                AZ_TracePrintf("DX12", "S_OK - The method succeeded without an error.\n");
+                break;
+            default:
+                AZ_TracePrintf(
+                    "DX12",
+                    "DXGI error code: %X\n", removedReason);
+                break;
+            }
+           
+            // Perform app-specific device removed operation, such as logging or inspecting DRED output
+            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedData> pDred;
+            if (SUCCEEDED(removedDevice->QueryInterface(IID_PPV_ARGS(&pDred))))
+            {
+                D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT dredAutoBreadcrumbsOutput;
+
+                if (SUCCEEDED(pDred->GetAutoBreadcrumbsOutput(&dredAutoBreadcrumbsOutput)))
+                {
+                    auto* currentNode = dredAutoBreadcrumbsOutput.pHeadAutoBreadcrumbNode;
+                    while (currentNode)
+                    {
+                        bool hasError = false;
+                        bool isWide = currentNode->pCommandListDebugNameW;
+                        uint32_t completedBreadcrumbCount = currentNode->pLastBreadcrumbValue? (*currentNode->pLastBreadcrumbValue):0;
+                        if (completedBreadcrumbCount < currentNode->BreadcrumbCount && completedBreadcrumbCount > 0)
+                        {
+                            AZ_TracePrintf("Device", "[Error]");
+                            hasError = true;
+                        }
+                        AZStd::string info;
+                        if (isWide)
+                        {
+                            info = AZStd::string::format(
+                                "CommandList name: [%S] address [%p] CommandQueue name: [%S] address [%p] BreadcrumbCount: %d Completed BreadcrumbCount %d \n",
+                                currentNode->pCommandListDebugNameW, currentNode->pCommandList, currentNode->pCommandQueueDebugNameW,
+                                currentNode->pCommandQueue, currentNode->BreadcrumbCount, completedBreadcrumbCount);
+                        }
+                        else
+                        {
+                            info = AZStd::string::format(
+                                "CommandList name: [%s] address [%p] CommandQueue name: [%s] address [%p] BreadcrumbCount: %d  Completed BreadcrumbCount %d\n",
+                                currentNode->pCommandListDebugNameA, currentNode->pCommandList, currentNode->pCommandQueueDebugNameA,
+                                currentNode->pCommandQueue, currentNode->BreadcrumbCount, completedBreadcrumbCount);
+                        }
+
+                        AZ_TracePrintf("Device", info.c_str());
+
+                        AZ_TracePrintf("Device", "Context\n");
+                        
+                        for (uint32_t index = 0; index < currentNode->BreadcrumbCount; index++)
+                        {
+                            if (hasError && index == completedBreadcrumbCount)
+                            {
+                                // where the error happened
+                                AZ_TracePrintf("Device", " ==========================Error start==================================\n");
+                            }
+                            AZ_TracePrintf("Device", "      %d %s\n", index, GetBreadcrumpOpString(currentNode->pCommandHistory[index]));
+                            if (hasError && index == completedBreadcrumbCount)
+                            {
+                                // where the error happened
+                                AZ_TracePrintf("Device", " ==========================Error end=============================\n");
+                            }
+                        }
+                        
+                        AZ_TracePrintf("Device", " ==================================================================\n");
+
+                        currentNode = currentNode->pNext;
+                    }
+                }
+            }
+
+            AZ_TracePrintf("Device", " ===========================End of OnDeviceRemoved================================\n");
+
+            if (IsAftermathInitialized())
+            {
+                // Try outputting the name of the last scope that was executing on the GPU
+                // There is a good chance that is the cause of the GPU crash and should be investigated first
+                Aftermath::OutputLastScopeExecutingOnGPU(GetAftermathGPUCrashTracker());
+            }
+
+            SetDeviceRemoved();
+        }
+
+        void HandleDeviceRemoved(PVOID context, BOOLEAN)
+        {
+            Device* removedDevice = (Device*)context;
+            removedDevice->OnDeviceRemoved();
+        }
+
+        void Device::InitDeviceRemovalHandle()
+        {
+            // Create fence to detect device removal
+            Microsoft::WRL::ComPtr<ID3D12Fence> fencePtr;
+            if (FAILED(m_dx12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
+            {
+                return;
+            }
+            m_deviceFence = fencePtr.Get();
+            HANDLE deviceRemovedEvent = CreateEventW(NULL, FALSE, FALSE, NULL);
+            m_deviceFence->SetEventOnCompletion(UINT64_MAX, deviceRemovedEvent);
+
+            RegisterWaitForSingleObject(
+              &m_waitHandle,
+              deviceRemovedEvent,
+              HandleDeviceRemoved,
+              this, // Pass the device as our context
+              INFINITE, // No timeout
+              0 // No flags
+            );
         }
 
         RHI::ResultCode Device::CreateSwapChain(
@@ -337,3 +624,4 @@ namespace AZ
         }
     }
 }
+

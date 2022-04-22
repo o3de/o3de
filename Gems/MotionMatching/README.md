@@ -199,6 +199,17 @@ for_all (nearest frames found in the broad-phase)
 StartTransition(newBestMatchingFrame);
 ```
 
+## Demo Levels & Prefabs
+
+There are two demo levels available in the `Gems/MotionMatching/Assets/Levels/`. Copy & paste the content of the `/Levels/` folder to your project levels folder to give them a test run.
+
+There are also two prefabs available that you can instantiate into any of your existing levels or an empty new one for a quick try:
+
+- `/Assets/AutomaticDemo/MotionMatching_AutoDemoCharacter.prefab`: Motion matching demo where the character will move around and follow a path in the level automatically.
+- `/Assets/AutomaticDemo/MotionMatching_ControllableCharacter.prefab`: Motion matching demo where you can use a gamepad to move the character around.
+
+https://user-images.githubusercontent.com/43751992/158962835-22a769a4-183b-438d-b7a9-f782e086b600.mp4
+
 ## Jupyter notebook
 
 ### Feature histograms

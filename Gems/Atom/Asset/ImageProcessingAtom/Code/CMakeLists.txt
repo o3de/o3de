@@ -41,6 +41,7 @@ ly_add_target(
     NAMESPACE Gem
     AUTOMOC
     AUTOUIC
+    AUTORCC
     FILES_CMAKE
         imageprocessing_files.cmake
         ${pal_tools_include_files}

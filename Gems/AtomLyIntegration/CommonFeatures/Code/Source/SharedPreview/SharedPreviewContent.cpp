@@ -147,7 +147,7 @@ namespace AZ
 
                     preset->ApplyLightingPreset(
                         iblFeatureProcessor, skyboxFeatureProcessor, exposureControlSettingInterface, directionalLightFeatureProcessor,
-                        cameraConfig, lightHandles);
+                        cameraConfig, lightHandles, false);
                 }
             }
         }

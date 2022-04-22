@@ -58,7 +58,7 @@ protected:
     void ProcessRegionLoop(const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
         AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
         AzFramework::SurfaceData::SurfaceTagWeightList* surfaceTags,
-        float mockHeight)
+        const AZStd::function<float(size_t, size_t)>& heightGenerator)
     {
         if (!perPositionCallback)
         {
@@ -76,7 +76,7 @@ protected:
             {
                 bool terrainExists = false;
                 float fx = aznumeric_cast<float>(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
-                surfacePoint.m_position.Set(fx, fy, mockHeight);
+                surfacePoint.m_position.Set(fx, fy, heightGenerator(x, y));
                 if (surfaceTags)
                 {
                     surfacePoint.m_surfaceTags.clear();
@@ -111,7 +111,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderTransformChang
     ActivateEntity(m_entity.get());
 
     NiceMock<UnitTest::MockHeightfieldProviderNotificationBusListener> heightfieldListener(m_entity->GetId());
-    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_)).Times(1);
+    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_,_)).Times(1);
 
     // The component gets transform change notifications via the shape bus.
     LmbrCentral::ShapeComponentNotificationsBus::Event(
@@ -126,7 +126,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderShapeChangedNo
     ActivateEntity(m_entity.get());
 
     NiceMock<UnitTest::MockHeightfieldProviderNotificationBusListener> heightfieldListener(m_entity->GetId());
-    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_)).Times(1);
+    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_,_)).Times(1);
 
     LmbrCentral::ShapeComponentNotificationsBus::Event(
         m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
@@ -236,7 +236,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
         {
-            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr, 0.0f);
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr,
+                []([[maybe_unused]]size_t x, [[maybe_unused]]size_t y){ return 0.0f; });
         }
     );
 
@@ -273,7 +274,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             [[maybe_unused]]  AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
         {
-            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr, mockHeight);
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr,
+                [mockHeight]([[maybe_unused]]size_t x, [[maybe_unused]]size_t y){ return mockHeight; });
         }
     );
 
@@ -370,7 +372,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     config.m_surfaceMaterialMappings.emplace_back(mapping2);
 
     AddTerrainPhysicsColliderToEntity(config);
-    ActivateEntity(m_entity.get());
 
     const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
     const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
@@ -394,9 +395,12 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
         {
-            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags, mockHeight);
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags,
+                [mockHeight]([[maybe_unused]]size_t x, [[maybe_unused]]size_t y){ return mockHeight; });
         }
     );
+
+    ActivateEntity(m_entity.get());
 
     AZStd::vector<Physics::HeightMaterialPoint> heightsAndMaterials;
 
@@ -473,7 +477,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
     {
-        ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags, mockHeight);
+        ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags,
+            [mockHeight]([[maybe_unused]]size_t x, [[maybe_unused]]size_t y){ return mockHeight; });
     }
     );
 
@@ -539,7 +544,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
     {
-        ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags, mockHeight);
+        ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags,
+            [mockHeight]([[maybe_unused]]size_t x, [[maybe_unused]]size_t y){ return mockHeight; });
     }
     );
 
@@ -558,4 +564,65 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
         // Check an entry from the second half of the list. Should be the default material index 0.
         EXPECT_EQ(heightsAndMaterials[256 * 128].m_materialIndex, 0);
     }
+}
+
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderRequestSubpartForDirtyRegion)
+{
+    // The test validates the requested sub-part of terrain collider matches the source data
+    AddTerrainPhysicsColliderToEntity(Terrain::TerrainPhysicsColliderConfig());
+
+    const int32_t terrainSize = 256;
+
+    const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
+    const AZ::Vector3 boundsMax = AZ::Vector3(terrainSize, terrainSize, 512.0f);
+
+    NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
+    const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(boundsMin, boundsMax);
+    ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
+
+    AzFramework::SurfaceData::SurfaceTagWeight tagWeight1(AZ::Crc32("tag1"), 1.0f);
+    AzFramework::SurfaceData::SurfaceTagWeight tagWeight2(AZ::Crc32("tag2"), 1.0f);
+
+    AzFramework::SurfaceData::SurfaceTagWeightList surfaceTags = { tagWeight1, tagWeight2 };
+    float mockHeightResolution = 1.0f;
+
+    NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
+    ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+    ON_CALL(terrainListener, ProcessSurfacePointsFromRegion).WillByDefault(
+        [this, &surfaceTags](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+    {
+        // Assign a variety of heights across the terrain
+        ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags,
+            [](size_t x, size_t y){ return float(x + y); });
+    }
+    );
+
+    ActivateEntity(m_entity.get());
+
+    // Get the entire array of points
+    AZStd::vector<Physics::HeightMaterialPoint> heightsMaterials = m_colliderComponent->GetHeightsAndMaterials();
+    EXPECT_EQ(heightsMaterials.size(), terrainSize * terrainSize);
+
+    // Request a sub-part of the terrain and validate the points match the original data
+    int32_t callCounter = 0;
+    Physics::UpdateHeightfieldSampleFunction validateDataCallback = [&callCounter, &heightsMaterials](int32_t row,
+        int32_t column, const Physics::HeightMaterialPoint& dataPoint)
+    {
+        size_t lookUpIndex = row * terrainSize + column;
+        EXPECT_LT(lookUpIndex, heightsMaterials.size());
+        EXPECT_EQ(heightsMaterials[lookUpIndex].m_height, dataPoint.m_height);
+        ++callCounter;
+    };
+
+    AZ::Vector3 regionMin(AZ::Vector3(10.0f));
+    AZ::Vector3 regionMax(AZ::Vector3(200.0f));
+    int32_t dx = int32_t(regionMax.GetX() - regionMin.GetX());
+    int32_t dy = int32_t(regionMax.GetY() - regionMin.GetY());
+            
+    m_colliderComponent->UpdateHeightsAndMaterials(validateDataCallback, AZ::Aabb::CreateFromMinMax(regionMin, regionMax));
+
+    // Validate update heightfield callback was called the exact amount of times required for the region
+    EXPECT_EQ(dx * dy, callCounter);
 }

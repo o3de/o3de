@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "textureMap": "../Textures/vase_1k_basecolor.png"
@@ -11,7 +11,8 @@
             "applySpecularAA": true
         },
         "irradiance": {
-            "color": [
+            "irradianceColorSource": "Manual",
+            "manualColor": [
                 1.0,
                 0.8713664412498474,
                 0.6021667718887329,
