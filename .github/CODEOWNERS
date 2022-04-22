@@ -55,3 +55,14 @@
 /Code/Tools/AssetProcessor/ @o3de/sig-content-maintainers
 /Code/Tools/SceneAPI/ @o3de/sig-content-maintainers
 /Gems/SceneProcessing/ @o3de/sig-content-maintainers
+
+# SIG-Networking ownership areas
+/Code/Framework/AzFramework/AzFramework/Network/ @o3de/sig-network-maintainers
+/Code/Framework/AzNetworking/ @o3de/sig-network-maintainers
+/Gems/AWSClientAuth/ @o3de/sig-network-maintainers
+/Gems/AWSCore/ @o3de/sig-network-maintainers
+/Gems/AWSGameLift/ @o3de/sig-network-maintainers
+/Gems/AWSMetrics/ @o3de/sig-network-maintainers
+/Gems/Multiplayer/ @o3de/sig-network-maintainers
+/Gems/MultiplayerCompression/ @o3de/sig-network-maintainers
+/Gems/Twitch/ @o3de/sig-network-maintainers
