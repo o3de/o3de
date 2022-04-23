@@ -50,10 +50,15 @@ namespace AtomToolsFramework
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
 
-        // Do a blocking load to prepare all of the assets and get the configuration data out of them.
+        // Initiate loading of all of the configuration assets
         for (auto& dynamicNodeConfigAsset : dynamicNodeConfigAssets)
         {
             dynamicNodeConfigAsset.QueueLoad();
+        }
+
+        for (auto& dynamicNodeConfigAsset : dynamicNodeConfigAssets)
+        {
+            // Block until each of the assets is ready so configuration data can be registered immediately
             dynamicNodeConfigAsset.BlockUntilLoadComplete();
             if (dynamicNodeConfigAsset.IsReady())
             {
