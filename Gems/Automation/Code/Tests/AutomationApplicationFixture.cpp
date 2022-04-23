@@ -76,7 +76,7 @@ namespace UnitTest
             const auto gemPathKey = AZ::StringFunc::Path::FixedString::format("%s/Automation/Path", AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
             if (AZ::IO::Path gemRootPath; registry->Get(gemRootPath.Native(), gemPathKey))
             {
-                AZ::IO::Path cachePath = gemRootPath / "Code/Tests";
+                AZ::IO::Path cachePath = gemRootPath / "Code/Tests/Scripts";
                 const auto cachePathKey = AZ::StringFunc::Path::FixedString::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
                 registry->Set(cachePathKey, cachePath.Native());
             }
