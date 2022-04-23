@@ -25,8 +25,6 @@ AZ_CVAR(
     bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, draw debug visual information about Navigation Mesh");
 
-#pragma optimize("", off)
-
 namespace RecastNavigation
 {
     void RecastNavigationMeshComponent::Reflect(AZ::ReflectContext* context)
@@ -462,7 +460,6 @@ namespace RecastNavigation
 
             if (cl_navmesh_debug)
             {
-                m_customDebugDraw.SetColor(AZ::Color(0.F, 0.9f, 0, 1));
                 duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);
             }
 
@@ -632,10 +629,8 @@ namespace RecastNavigation
     {
         if (m_navMeshReady && (cl_navmesh_debug || m_showNavigationMesh))
         {
-            m_customDebugDraw.SetColor(AZ::Color(0.F, 0.9f, 0, 1));
+            //m_customDebugDraw.SetColor(AZ::Color(0.F, 0.9f, 0, 1));
             duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);
         }
     }
 } // namespace RecastNavigation
-
-#pragma optimize("", on)

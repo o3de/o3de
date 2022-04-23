@@ -7,12 +7,13 @@
  */
 
 #pragma once
-
 #include <AzCore/Math/Color.h>
 #include <AzCore/RTTI/RTTI.h>
 
 namespace RecastNavigation
 {
+    //! See @rcConfig from Recast library for documentation on these parameters.
+    //! @Reflect method provides that documentation as tooltips in the Editor.
     class RecastNavigationMeshConfig final
     {
     public:

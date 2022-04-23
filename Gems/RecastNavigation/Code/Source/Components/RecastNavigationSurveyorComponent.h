@@ -19,6 +19,12 @@
 
 namespace RecastNavigation
 {
+    //! This component requires a box shape component that defines a world space to collect geometry from
+    //! static physical colliders present within the bounds of a shape component on the same entity.
+    //!
+    //! @note You can provide your implementation of collecting geometry instead of this component.
+    //!       If you do, in @GetProvidedServices specify AZ_CRC_CE("RecastNavigationSurveyorService"),
+    //!       which is needed by @RecastNavigationMeshComponent.
     class RecastNavigationSurveyorComponent final
         : public AZ::Component
         , public RecastNavigationSurveyorRequestBus::Handler
@@ -41,7 +47,7 @@ namespace RecastNavigation
         AZ::Aabb GetWorldBounds() override;
 
     private:
-        // Append the geometry within the world volume
+        // Append the geometry within a volume
         void AppendColliderGeometry(BoundedGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
     };
 } // namespace RecastNavigation

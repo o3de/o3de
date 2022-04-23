@@ -9,43 +9,45 @@
 #pragma once
 
 #include <DebugDraw.h>
-#include <AzCore/Math/Color.h>
 #include <AzCore/std/containers/vector.h>
 #include <Components/RecastHelpers.h>
 #include <Components/RecastSmartPointer.h>
 
 namespace RecastNavigation
 {
+    //! Recast library specific debug draw that captures and draws the various debug overlays.
+    //! See @duDebugDraw for documentation of the methods.
     class RecastNavigationDebugDraw final : public duDebugDraw
     {
     public:
+        //! Some debug lines from Recast tools are too noisy.
+        explicit RecastNavigationDebugDraw(bool drawLines = false);
         ~RecastNavigationDebugDraw() override = default;
 
-        void depthMask(bool state) override;
-
-        void texture(bool state) override;
+        //! duDebugDraw overrides
+        //! @{
+        //! Not implemented
+        void depthMask([[maybe_unused]] bool state) override {}
+        //! Not implemented
+        void texture([[maybe_unused]] bool state) override {}
 
         void begin(duDebugDrawPrimitives prim, float size = 1.0f) override;
-
         void vertex(const float* pos, unsigned int color) override;
-
         void vertex(const float x, const float y, const float z, unsigned int color) override;
-
         void vertex(const float* pos, unsigned int color, const float* uv) override;
-
         void vertex(const float x, const float y, const float z, unsigned int color, const float u, const float v) override;
-
         void end() override;
+        //! @}
 
-        void SetColor(const AZ::Color& color);
-
-    protected:
-        void AddVertex(float x, float y, float z, unsigned int color);
-
-        AZ::Color m_currentColor{ 1.F, 1, 1, 1 };
-
+    protected:        
         duDebugDrawPrimitives m_currentPrim = DU_DRAW_POINTS;
 
+        //! Vertices with color information.
         AZStd::vector<AZStd::pair<AZ::Vector3, AZ::u32>> m_verticesToDraw;
+
+        void AddVertex(float x, float y, float z, unsigned int color);
+
+        //! If true, debug lines from Recast will be drawn.
+        bool m_drawLines = false;
     };
 } // namespace RecastNavigation

@@ -25,6 +25,8 @@
 
 namespace RecastNavigation
 {
+    //! Calculates a navigation mesh with the triangle data provided by @RecastNavigationSurveyorComponent.
+    //! Provides APIs to find a path between two entities or two world positions.
     class RecastNavigationMeshComponent final
         : public AZ::Component
         , public AZ::TickBus::Handler
@@ -48,7 +50,7 @@ namespace RecastNavigation
         void Activate() override;
         void Deactivate() override;
 
-        // TickBus
+        // TickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
     private:

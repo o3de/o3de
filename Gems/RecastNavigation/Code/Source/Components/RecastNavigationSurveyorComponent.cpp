@@ -18,8 +18,6 @@
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
-#pragma optimize("", off)
-
 namespace RecastNavigation
 {
     void RecastNavigationSurveyorComponent::Reflect(AZ::ReflectContext* context)
@@ -32,7 +30,8 @@ namespace RecastNavigation
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<RecastNavigationSurveyorComponent>("Recast Navigation Surveyor", "[Collects the geometry for navigation mesh]")
+                ec->Class<RecastNavigationSurveyorComponent>("Recast Navigation Surveyor",
+                    "[Collects the geometry for navigation mesh within the area defined by a shape component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -168,5 +167,3 @@ namespace RecastNavigation
         return worldBounds;
     }
 } // namespace RecastNavigation
-
-#pragma optimize("", on)

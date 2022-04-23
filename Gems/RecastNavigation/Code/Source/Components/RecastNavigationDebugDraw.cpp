@@ -12,11 +12,9 @@
 
 namespace RecastNavigation
 {
-    void RecastNavigationDebugDraw::depthMask([[maybe_unused]] bool state)
-    {}
-
-    void RecastNavigationDebugDraw::texture([[maybe_unused]] bool state)
-    {}
+    RecastNavigationDebugDraw::RecastNavigationDebugDraw(bool drawLines) : m_drawLines(drawLines)
+    {
+    }
 
     void RecastNavigationDebugDraw::begin(duDebugDrawPrimitives prim, [[maybe_unused]] float size)
     {
@@ -95,24 +93,22 @@ namespace RecastNavigation
             }
             break;
         case DU_DRAW_LINES:
-        //    for (size_t i = 1; i < m_verticesToDraw.size(); i++)
-        //    {
-        //        AZ::Color color0 = AZ::Color::CreateZero();
-        //        color0.FromU32(m_verticesToDraw[i].second);
+            if (m_drawLines)
+            {
+                for (size_t i = 1; i < m_verticesToDraw.size(); i++)
+                {
+                    AZ::Color color0 = AZ::Color::CreateZero();
+                    color0.FromU32(m_verticesToDraw[i].second);
 
-        //        AZ::Color color1 = AZ::Color::CreateZero();
-        //        color1.FromU32(m_verticesToDraw[i].second);
+                    AZ::Color color1 = AZ::Color::CreateZero();
+                    color1.FromU32(m_verticesToDraw[i].second);
 
-        //        debugDisplay->DrawLine(m_verticesToDraw[i - 1].first, m_verticesToDraw[i].first,
-        //            color0.GetAsVector4(), color1.GetAsVector4());
-        //    }
+                    debugDisplay->DrawLine(m_verticesToDraw[i - 1].first, m_verticesToDraw[i].first,
+                        color0.GetAsVector4(), color1.GetAsVector4());
+                }
+            }
             break;
         }
-    }
-
-    void RecastNavigationDebugDraw::SetColor(const AZ::Color& color)
-    {
-        m_currentColor = color;
     }
 
     void RecastNavigationDebugDraw::AddVertex(float x, float y, float z, unsigned color)

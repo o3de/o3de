@@ -55,6 +55,17 @@ set_property(TARGET DetourCrowd PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
 set_property(TARGET DetourTileCache PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
 set_property(TARGET Recast PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
 
+# Header-only target to avoid linking
+ly_add_target(
+    NAME RecastNavigation.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        recastnavigation_headers_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            Include
+)
+
 # Add the RecastNavigation.Static target
 # Note: We include the common files and the platform specific files which are set in recastnavigation_common_files.cmake
 # and in ${pal_dir}/recastnavigation_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

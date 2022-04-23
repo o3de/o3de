@@ -7,7 +7,6 @@
  */
 
 #pragma once
-
 #include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
 #include <Recast.h>
@@ -18,6 +17,7 @@ namespace RecastNavigation
     template <typename T>
     struct CustomRecastDeleter;
 
+    //! A memory management helper for various Recast objects that require different methods to free memory.
     template <typename T>
     using RecastPointer = AZStd::unique_ptr<T, CustomRecastDeleter<T>>;
 

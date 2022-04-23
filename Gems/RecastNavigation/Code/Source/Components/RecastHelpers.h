@@ -13,30 +13,33 @@
 
 namespace RecastNavigation
 {
-    // +Y is up
+    //! A helper class to manage different coordinate systems between O3DE and Recast Navigation library.
+    //! In O3DE, +Z is up. In Recast library, +Y is up.
     class RecastVector3
     {
     public:
         RecastVector3() = default;
 
-        // O3DE coordinate space
+        //! A constructor from O3DE coordinate values.
         explicit RecastVector3(const AZ::Vector3& in)
         {
             m_x = in.GetX();
-            m_y = in.GetZ();
+            m_y = in.GetZ(); // swapping y and z
             m_z = in.GetY();
         }
 
-        // Recast coordinate space
+        //! A constructor from Recast coordinate values.
         explicit RecastVector3(const float* data)
         {
             m_x = data[0];
             m_y = data[1];
             m_z = data[2];
         }
-
+        
+        //! @return raw data without any conversion between coordinate systems.
         float* data() { return &m_x; }
-
+        
+        //! @return vector in O3DE coordinate space, with +Z being up
         [[nodiscard]] AZ::Vector3 AsVector3() const
         {
             return { m_x, m_z, m_y };
@@ -54,12 +57,15 @@ namespace RecastNavigation
         }
     };
     
-    struct BoundedGeometry
+    //! A collection of triangle data within a volume defined by an axis aligned bounding box.
+    class BoundedGeometry
     {
-        AZ::Aabb m_worldBounds;
+    public:
+        AZ::Aabb m_worldBounds = AZ::Aabb::CreateNull();
         AZStd::vector<RecastVector3> m_verts;
         AZStd::vector<AZ::s32> m_indices;
 
+        //! Reset and clear geometry and the volume.
         void clear()
         {
             m_worldBounds.SetNull();
