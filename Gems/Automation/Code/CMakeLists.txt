@@ -64,15 +64,4 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME Gem::Automation.Tests
     )
-
-    ly_add_target_files(
-        TARGETS
-            Automation.Tests
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Scripts/PrintTest.lua
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Scripts/IdleOneSecondTest.lua
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Scripts/IdleFiveFramesTest.lua
-        OUTPUT_SUBDIRECTORY
-            Automation/Tests/${PAL_PLATFORM_NAME}/Scripts
-    )
 endif()

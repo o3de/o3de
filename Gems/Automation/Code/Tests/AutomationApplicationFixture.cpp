@@ -38,12 +38,12 @@ namespace UnitTest
         // the cache root folder. If we pass in an abosolute path to the asset, the AssetManager ends up removing the leading slash on MacOS 
         // and Linux in the call to Application::MakePathRelative. So we need to override the cache path for these tests. First, we override 
         // the asset platform folder since we're going to be reading from the gem tests folder for all platforms.
-        //const auto cachePlatformOverride = 
-        //    AZ::StringFunc::Path::FixedString::format("--regset=%s/%s_assets=.", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER);
+        const auto cachePlatformOverride = 
+            AZ::StringFunc::Path::FixedString::format("--regset=%s/%s_assets=.", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER);
         
         if (scriptPath)
         {
-            //m_args.push_back(cachePlatformOverride.c_str());
+            m_args.push_back(cachePlatformOverride.c_str());
             m_args.push_back("--run-automation-suite");
             m_args.push_back(scriptPath);
 
@@ -68,18 +68,15 @@ namespace UnitTest
         dynamicModuleDescriptor.m_dynamicLibraryPath = "Automation";
         appDesc.m_modules.push_back(dynamicModuleDescriptor);
 
-        AZ::IO::Path resolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder", resolvedPath.Native().data(), AZ_MAX_PATH_LEN);
-
         // We need the resolved gem root folder since storing aliases in the settings registry will cause StorageDrive to try to read from 
         // unresolved paths. The resolved gem root can only be found after the Application is instantiated. So we override the project cache 
         // path here instead of passing it as a command line parameter above. The cache root folder is the <project_cache_path>/<asset_platform_folder>.
         if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
         {
-            //const auto gemPathKey = AZ::StringFunc::Path::FixedString::format("%s/Automation/Path", AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
-            //if (AZ::IO::Path gemRootPath; registry->Get(gemRootPath.Native(), gemPathKey))
+            const auto gemPathKey = AZ::StringFunc::Path::FixedString::format("%s/Automation/Path", AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
+            if (AZ::IO::Path gemRootPath; registry->Get(gemRootPath.Native(), gemPathKey))
             {
-                AZ::IO::Path cachePath = resolvedPath / "Automation/Tests";
+                AZ::IO::Path cachePath = gemRootPath / "Code/Tests";
                 const auto cachePathKey = AZ::StringFunc::Path::FixedString::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
                 registry->Set(cachePathKey, cachePath.Native());
             }
