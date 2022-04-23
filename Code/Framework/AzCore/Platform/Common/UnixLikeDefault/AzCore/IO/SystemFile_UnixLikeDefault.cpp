@@ -228,7 +228,6 @@ namespace Platform
 
     bool Exists(const char* fileName)
     {
-        AZ_Error("SystemFile", false, "File path: %s", fileName);
         return access(fileName, F_OK) == 0;
     }
 
