@@ -33,8 +33,6 @@ namespace Automation
             char resolvedPath[AZ_MAX_PATH_LEN] = {0};
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(productPath, resolvedPath, AZ_MAX_PATH_LEN);
 
-            AZ_Error("Automation", false, "Script: Resolved path to script '%s'.", resolvedPath);
-
             AZ::Data::AssetId assetId;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                 assetId,
