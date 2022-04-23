@@ -117,9 +117,9 @@ def AtomEditorComponents_ReflectionProbe_AddedToEntity():
     9) Toggle Use Baked Cubemap (default True)
     10) Toggle Show Visualization (default True)
     11) Bake Exposure (float range -20.0 to 20.0)
-    12) Inner Extents|Height
-    13) Inner Extents|Length
-    14) Inner Extents|Width float dimensions constrained by shape
+    12) Inner Extents|Height (float 0.0 to required shape dimension constraint default 8.0)
+    13) Inner Extents|Length (float 0.0 to required shape dimension constraint default 8.0)
+    14) Inner Extents|Width (float 0.0 to required shape dimension constraint default 8.0)
     15) Settings|Exposure (float range -20.0 to 20.0)
     16) Baked Cubemap Quality (unsigned int use dictionary constant)
     17) Enter/Exit game mode.
@@ -205,8 +205,6 @@ def AtomEditorComponents_ReflectionProbe_AddedToEntity():
         # 8. Toggle Parallax Correction (default True)
         reflection_probe_component.set_component_property_value(
             AtomComponentProperties.reflection_probe('Parallax Correction'), False)
-        reflection_probe_component.get_component_property_value(
-            AtomComponentProperties.reflection_probe('Parallax Correction'))
         Report.result(
             Tests.parallax_correction,
             reflection_probe_component.get_component_property_value(
@@ -269,7 +267,7 @@ def AtomEditorComponents_ReflectionProbe_AddedToEntity():
         reflection_probe_component.set_component_property_value(
             AtomComponentProperties.reflection_probe('Bake Exposure'), 0.0)
 
-        # 12. Inner Extents|Height
+        # 12. Inner Extents|Height (float 0.0 to required shape dimension constraint default 8.0)
         reflection_probe_component.set_component_property_value(
             AtomComponentProperties.reflection_probe('Height'), 0.0)
         Report.result(
@@ -286,7 +284,7 @@ def AtomEditorComponents_ReflectionProbe_AddedToEntity():
                 reflection_probe_component.get_component_property_value(
                     AtomComponentProperties.reflection_probe('Height')), 8.0))
 
-        # 13. Inner Extents|Length
+        # 13. Inner Extents|Length (float 0.0 to required shape dimension constraint default 8.0)
         reflection_probe_component.set_component_property_value(
             AtomComponentProperties.reflection_probe('Length'), 0.0)
         Report.result(
@@ -303,7 +301,7 @@ def AtomEditorComponents_ReflectionProbe_AddedToEntity():
                 reflection_probe_component.get_component_property_value(
                     AtomComponentProperties.reflection_probe('Length')), 8.0))
 
-        # 14. Inner Extents|Width float dimensions constrained by shape
+        # 14. Inner Extents|Width (float 0.0 to required shape dimension constraint default 8.0)
         reflection_probe_component.set_component_property_value(
             AtomComponentProperties.reflection_probe('Width'), 0.0)
         Report.result(
