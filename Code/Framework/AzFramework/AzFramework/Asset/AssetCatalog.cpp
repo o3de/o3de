@@ -270,6 +270,7 @@ namespace AzFramework
             if (fileIo->Exists(m_pathBuffer.c_str()))
             {
                 fileIo->Size(m_pathBuffer.c_str(), fileSize);
+                AZ_Error("AssetCatalog", false, "File size: %d", fileSize);
             }
 
             AZ::Data::AssetInfo newInfo;
@@ -720,6 +721,7 @@ namespace AzFramework
         {
             AZ::Data::AssetStreamInfo streamInfo;
             streamInfo.m_dataLen = info.m_sizeBytes;
+            AZ_Error("AssetCatalog", false, "stream info data length: %d", streamInfo.m_dataLen);
 
             // All asset handlers are presently required to use the LoadAssetData override
             // that takes a stream.

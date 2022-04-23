@@ -104,8 +104,10 @@ namespace AZ::IO
     AZStd::optional<AZ::IO::FixedMaxPath> FileIOBase::ResolvePath(const AZ::IO::PathView& path) const
     {
         AZ::IO::FixedMaxPath resolvedPath;
+        AZ_Error("FileIO", false, "relative path %s", path.FixedMaxPathString().c_str());
         if (ResolvePath(resolvedPath, path))
         {
+            AZ_Error("FileIO", false, "resolved path %s", resolvedPath.Native().c_str());
             return resolvedPath;
         }
 
