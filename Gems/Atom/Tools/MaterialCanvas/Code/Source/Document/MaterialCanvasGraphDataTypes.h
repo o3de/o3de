@@ -16,11 +16,8 @@ namespace MaterialCanvas
     {
         Invalid = GraphModel::DataType::ENUM_INVALID,
         Int32,
-        Int64,
         Uint32,
-        Uint64,
         Float32,
-        Float64,
         Vector2,
         Vector3,
         Vector4,

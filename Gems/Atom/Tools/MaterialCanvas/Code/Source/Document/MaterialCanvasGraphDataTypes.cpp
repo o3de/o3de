@@ -19,28 +19,14 @@ namespace MaterialCanvas
     GraphModel::DataTypeList CreateAllDataTypes()
     {
         return {
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Int32, azrtti_typeid<int32_t>(), AZStd::any(int32_t{}), "int32_t", "int32_t"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Int64, azrtti_typeid<int64_t>(), AZStd::any(int64_t{}), "int64_t", "int64_t"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Uint32, azrtti_typeid<uint32_t>(), AZStd::any(uint32_t{}), "uint32_t", "uint32_t"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Uint64, azrtti_typeid<uint64_t>(), AZStd::any(uint64_t{}), "uint64_t", "uint64_t"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Float32, azrtti_typeid<float>(), AZStd::any(float{}), "float", "float"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Float64, azrtti_typeid<double>(), AZStd::any(double{}), "double", "double"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Vector2, azrtti_typeid<AZ::Vector2>(), AZStd::any(AZ::Vector2{}), "Vector2", "AZ::Vector2"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Vector3, azrtti_typeid<AZ::Vector3>(), AZStd::any(AZ::Vector3{}), "Vector3", "AZ::Vector3"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Vector4, azrtti_typeid<AZ::Vector4>(), AZStd::any(AZ::Vector4{}), "Vector4", "AZ::Vector4"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::Color, azrtti_typeid<AZ::Color>(), AZStd::any(AZ::Color::CreateOne()), "Color", "AZ::Color"),
-            AZStd::make_shared<GraphModel::DataType>(
-                MaterialCanvasDataTypeEnum::String, azrtti_typeid<AZStd::string>(), AZStd::any(AZStd::string{}), "String", "AZStd::string")
+            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Int32, int32_t{}, "int32"),
+            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Uint32, uint32_t{}, "uint32"),
+            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Float32, float{}, "float"),
+            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Vector2, AZ::Vector2::CreateZero(), "Vector2"),
+            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Vector3, AZ::Vector3::CreateZero(), "Vector3"),
+            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Vector4, AZ::Vector4::CreateZero(), "Vector4"),
+            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Color, AZ::Color::CreateOne(), "Color"),
+            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::String, AZStd::string{}, "String"),
         };
     }
 } // namespace MaterialCanvas

@@ -26,7 +26,7 @@ namespace GraphModel
     //! Provides a way for client systems to describe each data type that they support, including a 
     //! unique enum value, the AZ type Uuid, and a user-friendly display name. Client systems may 
     //! subclass DataType if desired, for example to provide additional name formats.
-    class DataType
+    class DataType /*final*/
     {
     public:
         AZ_CLASS_ALLOCATOR(DataType, AZ::SystemAllocator, 0);
@@ -48,13 +48,22 @@ namespace GraphModel
         //! @param defaultValue - The default value assigned to any slot that uses this data type upon creation.
         //! @param typeDisplayName - Used for tooltips or other UI elements as well as debug messages.This should be unique, and similar to typeEnum.
         //! @param cppTypeName - The name of the c++ class that the DataType maps to.This is only used for debug messages.
-        DataType(Enum typeEnum, AZ::Uuid typeUuid, AZStd::any defaultValue, AZStd::string_view typeDisplayName, AZStd::string_view cppTypeName);
+        DataType(
+            Enum typeEnum,
+            const AZ::Uuid& typeUuid,
+            const AZStd::any& defaultValue,
+            AZStd::string_view typeDisplayName,
+            AZStd::string_view cppTypeName);
 
-        DataType(const DataType& other);
-        virtual ~DataType() = default;
+        template<typename T>
+        DataType(Enum typeEnum, const T& defaultValue, AZStd::string_view typeDisplayName)
+            : DataType(typeEnum, AZ::AzTypeInfo<T>::Uuid(), AZStd::any(defaultValue), typeDisplayName, AZ::AzTypeInfo<T>::Name()){};
 
-        // Because the DataType class is supposed to be immutable
-        bool operator=(const DataType& other) = delete;
+        template<typename T>
+        DataType(Enum typeEnum, const T& defaultValue)
+            : DataType(typeEnum, AZ::AzTypeInfo<T>::Uuid(), AZStd::any(defaultValue), AZ::AzTypeInfo<T>::Name(), AZ::AzTypeInfo<T>::Name()){};
+
+        virtual ~DataType() = default; // This class should be final and not inherited
 
         bool operator==(const DataType& other) const;
         bool operator!=(const DataType& other) const;
@@ -62,22 +71,22 @@ namespace GraphModel
         bool IsValid() const;
 
         //! Return the enum value that identifies this DataType
-        Enum GetTypeEnum() const { return m_typeEnum; }
+        Enum GetTypeEnum() const;
 
         //! Return the type Uuid that corresponds to this DataType
-        AZ::Uuid GetTypeUuid() const;
+        const AZ::Uuid& GetTypeUuid() const;
 
         //! Returns GetTypeUuid() as a string (for convenience)
         AZStd::string GetTypeUuidString() const;
 
         //! Returns a default value for data of this type
-        AZStd::any GetDefaultValue() const;
+        const AZStd::any& GetDefaultValue() const;
 
         //! Returns the C++ type name
-        AZStd::string GetCppName() const;
+        const AZStd::string& GetCppName() const;
 
         //! Returns a user friently type name, for UI display
-        AZStd::string GetDisplayName() const;
+        const AZStd::string& GetDisplayName() const;
 
     private:
         Enum m_typeEnum;
