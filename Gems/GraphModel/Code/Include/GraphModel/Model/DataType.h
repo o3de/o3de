@@ -26,7 +26,7 @@ namespace GraphModel
     //! Provides a way for client systems to describe each data type that they support, including a 
     //! unique enum value, the AZ type Uuid, and a user-friendly display name. Client systems may 
     //! subclass DataType if desired, for example to provide additional name formats.
-    class DataType /*final*/
+    class DataType
     {
     public:
         AZ_CLASS_ALLOCATOR(DataType, AZ::SystemAllocator, 0);
@@ -63,7 +63,7 @@ namespace GraphModel
         DataType(Enum typeEnum, const T& defaultValue)
             : DataType(typeEnum, AZ::AzTypeInfo<T>::Uuid(), AZStd::any(defaultValue), AZ::AzTypeInfo<T>::Name(), AZ::AzTypeInfo<T>::Name()){};
 
-        virtual ~DataType() = default; // This class should be final and not inherited
+        virtual ~DataType() = default;
 
         bool operator==(const DataType& other) const;
         bool operator!=(const DataType& other) const;
