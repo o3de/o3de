@@ -29,8 +29,6 @@ namespace UnitTest
         m_qApp.reset(new QApplication(argC, nullptr));
 
         AZ::Test::ScopedAutoTempDirectory tempEngineRoot;
-        //const char* tempPath(tempEngineRoot.GetDirectory());
-        //QDir tempPath(tempEngineRoot.path());
 
         AZStd::set<AZ::IO::Path> expectedFiles;
         // set up some interesting files:
@@ -135,7 +133,6 @@ namespace UnitTest
 
         EXPECT_TRUE(doneScan);
         EXPECT_EQ(filesFound.size(), expectedFiles.size());
-
 
         for (const AssetFileInfo& file : filesFound)
         {
