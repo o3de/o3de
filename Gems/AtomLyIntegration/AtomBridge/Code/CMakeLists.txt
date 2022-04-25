@@ -119,6 +119,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::MaterialCanvas.Builders
             Gem::MaterialEditor.Builders
             Gem::ShaderManagementConsole.Builders
+            Gem::EditorModeFeedback.Editor
     )
 
 
