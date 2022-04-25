@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <PostProcessing/EditorModeFeedbackPassBase.h>
+#include <Pass/EditorModeFeedbackPassBase.h>
 
 namespace AZ
 {

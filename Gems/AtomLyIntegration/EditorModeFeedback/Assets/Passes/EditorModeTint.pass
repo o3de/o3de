@@ -68,7 +68,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeTint.shader"
+                    "FilePath": "Shaders/EditorModeTint.shader"
                 },
                 "PipelineViewTag": "MainCamera"
             }

@@ -36,27 +36,12 @@
                     }
                 }
             ],
-            "ImageAttachments": [
-                {
-                    "Name": "OutputAttachment",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "This",
-                            "Attachment": "InputColor"
-                        }
-                    },
-                    "FormatSource": {
-                        "Pass": "This",
-                        "Attachment": "InputColor"
-                    }
-                }
-            ],
             "Connections": [
                 {
                     "LocalSlot": "OutputColor",
                     "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "OutputAttachment"
+                        "Pass": "Parent",
+                        "Attachment": "ColorInputOutput"
                     }
                 }
             ],
@@ -69,7 +54,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeOutline.shader"
+                    "FilePath": "Shaders/EditorModeOutline.shader"
                 },
                 "PipelineViewTag": "MainCamera"
             }

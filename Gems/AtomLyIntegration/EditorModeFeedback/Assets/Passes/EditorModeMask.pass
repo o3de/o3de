@@ -65,7 +65,7 @@
                 "DrawListTag": "editormodemask",
                 "PipelineViewTag": "MainCamera",
                 "PassSrgShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeMask.shader"
+                    "FilePath": "Shaders/EditorModeMask.shader"
                 }
             }
         }
