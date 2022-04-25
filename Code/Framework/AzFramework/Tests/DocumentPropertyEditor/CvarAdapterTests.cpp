@@ -51,7 +51,7 @@ namespace AZ::DocumentPropertyEditor::Tests
             Dom::Value rows = m_adapter->GetContents();
             for (auto it = rows.ArrayBegin(); it != rows.ArrayEnd(); ++it)
             {
-                Dom::Value label = (*it)[0].GetNodeValue();
+                Dom::Value label = (*it)[0][Nodes::Label::Value.GetName()];
                 if (label.GetString() == cvarName)
                 {
                     return *it;
@@ -64,7 +64,7 @@ namespace AZ::DocumentPropertyEditor::Tests
         {
             Dom::Value row = GetEntryRow(cvarName);
             EXPECT_FALSE(row.IsNull());
-            return row[1].GetNodeValue();
+            return row[1][Nodes::PropertyEditor::Value.GetName()];
         }
 
         void SetEntryValue(AZStd::string_view cvarName, Dom::Value value)
