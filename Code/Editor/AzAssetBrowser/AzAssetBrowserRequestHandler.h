@@ -37,6 +37,7 @@ class AzAssetBrowserRequestHandler
     : protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     , protected AzQtComponents::DragAndDropEventsBus::Handler
 {
+    Q_DECLARE_TR_FUNCTIONS(AzAssetBrowserRequestHandler)
 public:
     AzAssetBrowserRequestHandler();
     ~AzAssetBrowserRequestHandler() override;

@@ -42,6 +42,7 @@
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
@@ -378,7 +379,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         {
             if (success)
             {
-                QMessageBox::information(nullptr, "Asset deleted", "Asset name %s", fullFilePath.c_str());
+                QMessageBox::information(AzToolsFramework::GetActiveWindow(), "Asset deleted", "Asset name %s", fullFilePath.c_str());
             }
             else
             {
@@ -388,15 +389,15 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     if (info.HasFlag(AzToolsFramework::SourceControlFlags::SCF_OutOfDate))
                     {
                         QMessageBox::information(
-                            nullptr, "Asset not deleted",
-                            QString("Source Control Issue - You do not have latest changes from source control for file\n%1")
+                            AzToolsFramework::GetActiveWindow(), tr("Asset not deleted"),
+                            QString(tr("Source Control Issue - You do not have latest changes from source control for file\n%1"))
                                 .arg(fullFilePath.c_str()));
                     }
                     else if (info.IsLockedByOther())
                     {
                         QMessageBox::information(
-                            nullptr, "Asset not deleted",
-                            QString("Source Control Issue - File exclusively opened by another user %1 ->\n%2")
+                            AzToolsFramework::GetActiveWindow(), tr("Asset not deleted"),
+                            QString(tr("Source Control Issue - File exclusively opened by another user %1 ->\n%2"))
                                 .arg(info.m_StatusUser.c_str(), fullFilePath.c_str()));
                     }
                     else if (
@@ -405,22 +406,23 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                         info.m_status == AzToolsFramework::SourceControlStatus::SCS_ProviderError)
                     {
                         QMessageBox::information(
-                            nullptr, "Asset not deleted",
-                            QString("Source Control Issue - Failed to remove file from source control, check your connection to your "
-                                    "source control service.\n%1")
+                            AzToolsFramework::GetActiveWindow(), tr("Asset not deleted"),
+                            QString(tr("Source Control Issue - Failed to remove file from source control, check your connection to your "
+                                    "source control service.\n%1"))
                                 .arg(fullFilePath.c_str()));
                     }
                     else
                     {
                         QMessageBox::information(
-                            nullptr, "Asset not deleted", QString("Unknown Issue with source control.\n%1").arg(fullFilePath.c_str()));
+                            AzToolsFramework::GetActiveWindow(), tr("Asset not deleted"),
+                            QString(tr("Unknown Issue with source control.\n%1")).arg(fullFilePath.c_str()));
                     }
                 }
                 else
                 {
                     QMessageBox::information(
-                        nullptr, "Asset not deleted",
-                        QString("Source Control Issue - File marked as 'Open By User' but still failed.\n%1").arg(fullFilePath.c_str()));
+                        AzToolsFramework::GetActiveWindow(), tr("Asset not deleted"),
+                        QString(tr("Source Control Issue - File marked as 'Open By User' but still failed.\n%1")).arg(fullFilePath.c_str()));
                 }
             }
         };
