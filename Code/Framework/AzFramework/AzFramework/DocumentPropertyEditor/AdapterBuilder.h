@@ -52,7 +52,7 @@ namespace AZ::DocumentPropertyEditor
         void EndPropertyEditor();
 
         //! Inserts a Label node with the specified text.
-        void Label(AZStd::string_view text, bool copy = true);
+        void Label(AZStd::string_view text);
 
         //! Sets the value of the last node. Used for setting the current value of a property editor.
         void Value(Dom::Value value);

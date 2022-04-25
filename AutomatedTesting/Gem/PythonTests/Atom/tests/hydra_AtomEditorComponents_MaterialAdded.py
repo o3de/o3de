@@ -221,7 +221,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
         general.idle_wait_frames(1)
         # Update mesh asset to a model with 5 LOD materials
-        model_path = os.path.join('Objects', 'sphere_5lods_fbx_psphere_base_1.azmodel')
+        model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.azmodel')
         model = Asset.find_asset_by_path(model_path)
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
         general.idle_wait_frames(1)
@@ -243,7 +243,9 @@ def AtomEditorComponents_Material_AddedToEntity():
         # Asset path for lambert0 is 'objects/sphere_5lods_lambert0_11781189446760285338.azmaterial'; numbers may vary
         default_asset = Asset(item.GetDefaultAssetId())
         default_asset_path = default_asset.get_path()
-        Report.result(Tests.model_material_asset_path, default_asset_path.startswith('objects/sphere_5lods_lambert0_'))
+        Report.result(
+            Tests.model_material_asset_path,
+            default_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_lambert0_'))
 
         # 15. Enable the use of LOD materials
         material_component.set_component_property_value(AtomComponentProperties.material('Enable LOD Materials'), True)
@@ -265,7 +267,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         active_asset_path = active_asset.get_path()
         Report.result(
             Tests.lod_material_asset_path,
-            active_asset_path.startswith('objects/sphere_5lods_lambert0_'))
+            active_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_lambert0_'))
 
         # Setup a material for overrides in further testing
         material_path = os.path.join('Materials', 'Presets', 'PBR', 'metal_gold.azmaterial')
@@ -290,7 +292,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         active_asset_path = active_asset.get_path()
         Report.result(
             Tests.lod_material_asset_path,
-            active_asset_path.startswith('objects/sphere_5lods_lambert0_'))
+            active_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_lambert0_'))
 
         # 20. Set the Default Material asset to an override using set component property by path
         material_component.set_component_property_value(
