@@ -578,11 +578,8 @@ void CAnimComponentNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoa
     else
     {
         // saving
-        char uuidStringBuf[AZ::Uuid::MaxStringBuffer] = { 0 };
-
         xmlNode->setAttr("ComponentId", m_componentId);
-        m_componentTypeId.ToString(uuidStringBuf, AZ::Uuid::MaxStringBuffer);
-        xmlNode->setAttr("ComponentTypeId", uuidStringBuf);
+        xmlNode->setAttr("ComponentTypeId", m_componentTypeId.ToFixedString().c_str());
     }
 }
 

@@ -1666,9 +1666,7 @@ namespace AssetProcessor
                 QString gemAbsolutePath = QString::fromUtf8(absoluteSourcePath.c_str(), aznumeric_cast<int>(absoluteSourcePath.Native().size())); // this is an absolute path!
                 // Append the index of the source path array element to make a unique portable key is created for each path of a gem
                 AZ::Uuid gemNameUuid = AZ::Uuid::CreateName((gemElement.m_gemName + AZStd::to_string(sourcePathIndex)).c_str());
-                char gemNameToUuidBuffer[AZ::Uuid::MaxStringBuffer];
-                gemNameUuid.ToString(gemNameToUuidBuffer);
-                QString gemNameAsUuid(gemNameToUuidBuffer);
+                QString gemNameAsUuid(gemNameUuid.ToFixedString().c_str());
 
                 QDir gemDir(gemAbsolutePath);
 

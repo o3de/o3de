@@ -44,17 +44,17 @@ namespace AzNetworking
         //! @param trustZone    the trust level associated with this network interface (client to server or server to server)
         //! @param listener     the connection listener responsible for handling connection events
         //! @return pointer to the instantiated network interface, or nullptr on error
-        virtual INetworkInterface* CreateNetworkInterface(AZ::Name name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) = 0;
+        virtual INetworkInterface* CreateNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) = 0;
 
         //! Retrieves a network interface instance by name.
         //! @param name the name of the network interface to retrieve
         //! @return pointer to the requested network interface, or nullptr on error
-        virtual INetworkInterface* RetrieveNetworkInterface(AZ::Name name) = 0;
+        virtual INetworkInterface* RetrieveNetworkInterface(const AZ::Name& name) = 0;
 
         //! Destroys a network interface instance by name.
         //! @param name the name of the network interface to destroy
         //! @return boolean true on success or false on failure
-        virtual bool DestroyNetworkInterface(AZ::Name name) = 0;
+        virtual bool DestroyNetworkInterface(const AZ::Name& name) = 0;
 
         //! Registers a Compressor Factory that can be used to create compressors for INetworkInterfaces
         //! @param factory The ICompressorFactory to register
@@ -63,12 +63,12 @@ namespace AzNetworking
         //! Creates a compressor using a registered factory looked up by name
         //! @param name The name of the Compressor Factory to use, must match result of factory->GetFactoryName()
         //! @return A unique_ptr to the new compressor
-        virtual AZStd::unique_ptr<ICompressor> CreateCompressor(AZ::Name name) = 0;
+        virtual AZStd::unique_ptr<ICompressor> CreateCompressor(const AZStd::string_view name) = 0;
 
         //! Unregisters the compressor factory
         //! @param name The name of the Compressor factory to unregister, must match result of factory->GetFactoryName()
         //! @return Whether the factory was found and unregistered
-        virtual bool UnregisterCompressorFactory(AZ::Name name) = 0;
+        virtual bool UnregisterCompressorFactory(const AZStd::string_view name) = 0;
 
         //! Returns the raw network interfaces owned by the networking instance.
         //! @return the raw network interfaces owned by the networking instance

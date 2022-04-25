@@ -36,6 +36,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
@@ -879,8 +880,15 @@ void UiCanvasComponent::SetTargetCanvasSize(bool isInGame, const AZ::Vector2& ta
 {
     if (m_renderToTexture)
     {
-        // when a canvas is set to render to texture the target canvas size is always the authored canvas size
-        SetTargetCanvasSizeAndUniformScale(isInGame, m_canvasSize);
+        // When a canvas is set to render to texture the target canvas size is retrieved from the asset.
+        // This is typically the same size as the authored canvas size
+        AZ::Vector2 targetSize(m_canvasSize);
+        if (m_attachmentImageAsset)
+        {
+            AZ::RHI::Size imageSize = m_attachmentImageAsset->GetImageDescriptor().m_size;
+            targetSize = AZ::Vector2(aznumeric_cast<float>(imageSize.m_width), aznumeric_cast<float>(imageSize.m_height));
+        }
+        SetTargetCanvasSizeAndUniformScale(isInGame, targetSize);
     }
     else
     {
@@ -957,18 +965,18 @@ void UiCanvasComponent::SetIsRenderToTexture(bool isRenderToTexture)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZStd::string UiCanvasComponent::GetRenderTargetName()
+const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& UiCanvasComponent::GetAttachmentImageAsset()
 {
-    return m_renderTargetName;
+    return m_attachmentImageAsset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::SetRenderTargetName(const AZStd::string& name)
+void UiCanvasComponent::SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
-    if (name != m_renderTargetName && !name.empty())
+    if (m_attachmentImageAsset != attachmentImageAsset)
     {
         DestroyRenderTarget();
-        m_renderTargetName = name;
+        m_attachmentImageAsset = attachmentImageAsset;
     }
 }
 
@@ -1863,6 +1871,24 @@ AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderT
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTargetAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
+{
+    auto attachmentImage = AZ::RPI::AttachmentImage::FindOrCreate(attachmentImageAsset);
+    if (!attachmentImage)
+    {
+        AZ_Warning("UI", false, "Failed to find or create render target");
+        return AZ::RHI::AttachmentId();
+    }
+
+    m_attachmentImageMap[attachmentImage->GetAttachmentId()] = attachmentImage;
+
+    // Notify LyShine render pass that it needs to rebuild
+    QueueRttPassRebuild();
+
+    return attachmentImage->GetAttachmentId();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::ReleaseRenderTarget(const AZ::RHI::AttachmentId& attachmentId)
 {
     m_attachmentImageMap.erase(attachmentId);
@@ -1977,6 +2003,13 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
 
     if (!m_renderGraph.IsEmpty())
     {
+        if (!m_attachmentImageMap.empty())
+        {
+            // Process any queued pass changes to get rtt draw list tags in sync prior to adding draw calls
+            AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
+            passSystem->ProcessQueuedChanges();
+        }
+
         uiRenderer->BeginCanvasRender();
         m_renderGraph.Render(uiRenderer, viewportSize);
         uiRenderer->EndCanvasRender();
@@ -2209,7 +2242,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
         UiAnimationSystem::Reflect(serializeContext);
 
         serializeContext->Class<UiCanvasComponent, AZ::Component>()
-            ->Version(3, &VersionConverter)
+            ->Version(4, &VersionConverter)
         // Not in properties pane
             ->Field("UniqueId", &UiCanvasComponent::m_uniqueId)
             ->Field("RootElement", &UiCanvasComponent::m_rootElement)
@@ -2221,7 +2254,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
             ->Field("IsPixelAligned", &UiCanvasComponent::m_isPixelAligned)
             ->Field("IsTextPixelAligned", &UiCanvasComponent::m_isTextPixelAligned)
             ->Field("RenderToTexture", &UiCanvasComponent::m_renderToTexture)
-            ->Field("RenderTargetName", &UiCanvasComponent::m_renderTargetName)
+            ->Field("AttachmentImageAsset", &UiCanvasComponent::m_attachmentImageAsset)
         // Input group
             ->Field("IsPosInputSupported", &UiCanvasComponent::m_isPositionalInputSupported)
             ->Field("IsConsumingAllInput", &UiCanvasComponent::m_isConsumingAllInputEvents)
@@ -2287,7 +2320,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCanvasComponent::OnTextPixelAlignmentChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_renderToTexture, "Render to texture", "When checked, the canvas is rendered to a texture instead of the full screen.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
-            editInfo->DataElement(0, &UiCanvasComponent::m_renderTargetName, "Render target", "The name of the texture that is created when this canvas renders to a texture.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_attachmentImageAsset, "Render Target", "The asset for the attachment image that this canvas renders to.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasComponent::m_renderToTexture);
 
             editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Input")
@@ -2352,8 +2385,8 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
             ->Event("SetEnabled", &UiCanvasBus::Events::SetEnabled)
             ->Event("GetIsRenderToTexture", &UiCanvasBus::Events::GetIsRenderToTexture)
             ->Event("SetIsRenderToTexture", &UiCanvasBus::Events::SetIsRenderToTexture)
-            ->Event("GetRenderTargetName", &UiCanvasBus::Events::GetRenderTargetName)
-            ->Event("SetRenderTargetName", &UiCanvasBus::Events::SetRenderTargetName)
+            ->Event("GetAttachmentImageAsset", &UiCanvasBus::Events::GetAttachmentImageAsset)
+            ->Event("SetAttachmentImageAsset", &UiCanvasBus::Events::SetAttachmentImageAsset)
             ->Event("GetIsPositionalInputSupported", &UiCanvasBus::Events::GetIsPositionalInputSupported)
             ->Event("SetIsPositionalInputSupported", &UiCanvasBus::Events::SetIsPositionalInputSupported)
             ->Event("GetIsConsumingAllInputEvents", &UiCanvasBus::Events::GetIsConsumingAllInputEvents)
@@ -3629,13 +3662,9 @@ void UiCanvasComponent::CreateRenderTarget()
     }
 
     // Create a render target for the canvas
-    AZ::RHI::Size imageSize(static_cast<uint32_t>(m_canvasSize.GetX()), static_cast<uint32_t>(m_canvasSize.GetY()), 1);
     LyShine::RenderToTextureRequestBus::EventResult(m_attachmentImageId, GetEntityId(),
-        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
-    AZ_Warning("UI", !m_attachmentImageId.IsEmpty(), "Failed to create render target for UI canvas: %s", m_pathname.c_str());
-    {
-        AZ_Warning("UI", false, "Failed to create render target for UI canvas: %s", m_pathname.c_str());
-    }
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTargetAsset, m_attachmentImageAsset);
+    AZ_Warning("UI", !m_attachmentImageId.IsEmpty(), "Failed to find or create render target for UI canvas: %s", m_pathname.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4187,6 +4216,16 @@ bool UiCanvasComponent::VersionConverter(AZ::SerializeContext& context,
     if (classElement.GetVersion() < 3)
     {
         if (!LyShine::ConvertSubElementFromVec2ToVector2(context, classElement, "CanvasSize"))
+        {
+            return false;
+        }
+    }
+
+    // conversion from version 3 to 4:
+    // - Need to remove render target name as it was replaced with attachment image asset
+    if (classElement.GetVersion() < 4)
+    {
+        if (!LyShine::RemoveRenderTargetAsString(context, classElement, "RenderTargetName"))
         {
             return false;
         }
