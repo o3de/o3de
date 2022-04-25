@@ -72,10 +72,13 @@ namespace AZ
             void AddMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject);
             void RemoveMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject);
 
+            Data::Instance<RPI::Shader> GetComputeShader() { return m_computeShader;  }
+
         protected:
             /// Implement equivalent
 //            bool CreateMeshDrawPacket(Meshlets::Mesh* currentMesh);
 
+            bool HasMeshletPasses(RPI::RenderPipeline* renderPipeline);
             bool AddMeshletsPassesToPipeline(RPI::RenderPipeline* renderPipeline);
 
             void CreateResources();
@@ -102,6 +105,9 @@ namespace AZ
             //! might still be a problem.  If needed, it can be resolved using a map for each
             //! pass name per pipeline.
             RPI::RenderPipeline* m_renderPipeline = nullptr;
+
+            Data::Instance<RPI::Shader> m_renderShader;
+            Data::Instance<RPI::Shader> m_computeShader;
         };
     } // namespace Meshlets
 } // namespace AZ

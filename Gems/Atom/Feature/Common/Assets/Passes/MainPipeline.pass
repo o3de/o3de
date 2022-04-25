@@ -221,6 +221,25 @@
                     ]
                 },
                 {
+                    "Name": "MeshletsComputePass",
+                    "TemplateName": "MeshletsComputePassTemplate"
+//                    "Connections": [
+//                        {
+//                            "LocalSlot": "MeshletsSharedBuffer",
+//                            "AttachmentRef": {
+//                                "Pass": "This",
+//                                "Attachment": "MeshletsSharedBuffer"
+//                            }
+//                        }
+//                    ],
+//                    "PassData": {
+//                        "$type": "ComputePassData",
+//                        "ShaderAsset": {
+//                            "FilePath": "Shaders/MeshletsCompute.shader"
+//                        }
+//                    }
+                },
+                {
                     "Name": "TransparentPass",
                     "TemplateName": "TransparentParentTemplate",
                     "Connections": [

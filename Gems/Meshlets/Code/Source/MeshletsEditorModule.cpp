@@ -2,37 +2,41 @@
 #include <MeshletsModuleInterface.h>
 #include <MeshletsEditorSystemComponent.h>
 
-namespace Meshlets
+namespace AZ
 {
-    class MeshletsEditorModule
-        : public MeshletsModuleInterface
+    namespace Meshlets
     {
-    public:
-        AZ_RTTI(MeshletsEditorModule, "{19bbf909-a4fc-48ec-915a-316046feb2f9}", MeshletsModuleInterface);
-        AZ_CLASS_ALLOCATOR(MeshletsEditorModule, AZ::SystemAllocator, 0);
-
-        MeshletsEditorModule()
+        class MeshletsEditorModule
+            : public MeshletsModuleInterface
         {
-            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-            // Add ALL components descriptors associated with this gem to m_descriptors.
-            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
-            // This happens through the [MyComponent]::Reflect() function.
-            m_descriptors.insert(m_descriptors.end(), {
-                MeshletsEditorSystemComponent::CreateDescriptor(),
-            });
-        }
+        public:
+            AZ_RTTI(MeshletsEditorModule, "{19bbf909-a4fc-48ec-915a-316046feb2f9}", MeshletsModuleInterface);
+            AZ_CLASS_ALLOCATOR(MeshletsEditorModule, AZ::SystemAllocator, 0);
 
-        /**
-         * Add required SystemComponents to the SystemEntity.
-         * Non-SystemComponents should not be added here
-         */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override
-        {
-            return AZ::ComponentTypeList {
-                azrtti_typeid<MeshletsEditorSystemComponent>(),
-            };
-        }
-    };
-}// namespace Meshlets
+            MeshletsEditorModule()
+            {
+                // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
+                // Add ALL components descriptors associated with this gem to m_descriptors.
+                // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
+                // This happens through the [MyComponent]::Reflect() function.
+                m_descriptors.insert(m_descriptors.end(), {
+                    MeshletsEditorSystemComponent::CreateDescriptor(),
+                });
+            }
 
-AZ_DECLARE_MODULE_CLASS(Gem_Meshlets, Meshlets::MeshletsEditorModule)
+            /**
+             * Add required SystemComponents to the SystemEntity.
+             * Non-SystemComponents should not be added here
+             */
+            AZ::ComponentTypeList GetRequiredSystemComponents() const override
+            {
+                return AZ::ComponentTypeList {
+                    azrtti_typeid<MeshletsEditorSystemComponent>(),
+                };
+            }
+        };
+    } // namespace Meshlets
+} // namespace AZ
+
+
+AZ_DECLARE_MODULE_CLASS(Gem_Meshlets, AZ::Meshlets::MeshletsEditorModule)

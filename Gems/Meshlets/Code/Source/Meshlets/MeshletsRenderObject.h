@@ -32,6 +32,8 @@ namespace AZ
         const uint32_t maxVerticesPerMeshlet = 64;      // matching wave/warp groups size multiplier
         const uint32_t maxTrianglesPerMeshlet = 124;    // NVidia-recommended 126, rounded down to a multiple of 4
 
+        class MeshletsFeatureProcessor;
+
         struct MeshRenderData
         {
             //! Render pass data
@@ -64,7 +66,7 @@ namespace AZ
         public:
             static uint32_t s_modelNumber;
 
-            MeshletsRenderObject(Data::Asset<RPI::ModelAsset> sourceModelAsset);
+            MeshletsRenderObject(Data::Asset<RPI::ModelAsset> sourceModelAsset, MeshletsFeatureProcessor* meshletsFeatureProcessor);
             ~MeshletsRenderObject();
 
             static  Data::Instance<RPI::ShaderResourceGroup> CreateShaderResourceGroup(
@@ -81,7 +83,7 @@ namespace AZ
                 return m_modelRenderData[AZStd::max(lodIdx, (uint32_t)m_modelRenderData.size() - 1)];
             }
 
-            bool UpdateShader(Data::Instance<RPI::Shader> updatedShader);
+//            bool UpdateShader(Data::Instance<RPI::Shader> updatedShader);
 
             uint32_t GetMeshletsCount() { return m_meshletsCount; }
 
@@ -116,10 +118,11 @@ namespace AZ
             bool CreateAndBindComputeSrg(MeshRenderData &meshRenderData);
             bool CreateAndBindComputeBuffers(MeshRenderData &meshRenderData);
 
-        private:
-            AZStd::string m_name;
+            bool SetShaders();
 
-            Data::Instance<RPI::Shader> m_meshletsDataPrepComputeShader;
+        private:
+            MeshletsFeatureProcessor* m_featureProcessor = nullptr;
+            AZStd::string m_name;
 
             Aabb m_aabb;    // [Adi] should be per Lod per mesh and not global
 

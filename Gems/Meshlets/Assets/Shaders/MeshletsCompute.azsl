@@ -109,6 +109,11 @@ void ComputeMeshletsIndexBuffer(
 
     float2 debugTexCoord = float2( (meshletId % 3), ((meshletId / 3) % 3) ) * 0.5;
 
+    if (PassSrg::m_MeshletsSharedBuffer[0] == 0)
+    {
+        return;
+    }
+
     if (groupIndex < meshlet.triangleCount)
     {   // groupIndex is used here as the index of the trianlge we process
         uint4 vtxGlobalVerticesAndTriOffset = GetGlobalVertexIndicesAndTriOffset(meshlet, groupIndex);

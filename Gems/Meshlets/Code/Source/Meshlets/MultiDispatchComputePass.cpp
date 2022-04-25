@@ -45,6 +45,21 @@ namespace AZ
         {
         }
 
+        void MultiDispatchComputePass::BuildInternal()
+        {
+            ComputePass::BuildInternal();
+
+            // Output
+            // This is the buffer that is shared between all objects and dispatches and contains
+            // the dynamic data that can be changed between passes.
+            Name bufferName = Name{ "MeshletsSharedBuffer" };
+            RPI::PassAttachmentBinding* localBinding = FindAttachmentBinding(bufferName);
+            if (localBinding && !localBinding->GetAttachment() && Meshlets::SharedBufferInterface::Get())
+            {
+                AttachBufferToSlot(Name{ "MeshletsSharedBuffer" }, Meshlets::SharedBufferInterface::Get()->GetBuffer());
+            }
+        }
+
         void MultiDispatchComputePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
             // DON'T call the ComputePass:CompileResources as it will try to compile perDraw srg

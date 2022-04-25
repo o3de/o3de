@@ -51,6 +51,8 @@ namespace AZ
         protected:
             MultiDispatchComputePass(const RPI::PassDescriptor& descriptor);
 
+            // Overriding methods
+            void BuildInternal() override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             // ShaderReloadNotificationBus::Handler overrides...

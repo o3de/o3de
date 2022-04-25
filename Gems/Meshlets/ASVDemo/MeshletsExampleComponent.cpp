@@ -88,7 +88,8 @@ namespace AtomSampleViewer
         AZ::RPI::RenderPipelineDescriptor pipelineDesc;
         pipelineDesc.m_mainViewTagName = "MainCamera";
         pipelineDesc.m_name = "LowEndPipeline";
-        pipelineDesc.m_rootPassTemplate = "LowEndPipelineTemplate";
+//        pipelineDesc.m_rootPassTemplate = "LowEndPipelineTemplate";
+        pipelineDesc.m_rootPassTemplate = "MainPipeline";
         pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
 
         m_lowEndPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineDesc, *m_windowContext);

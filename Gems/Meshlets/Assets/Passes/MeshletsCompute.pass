@@ -14,6 +14,17 @@
                     "ScopeAttachmentUsage": "Shader"
                 }
             ],
+            // [Adi] - FOr now we don't need to declare any connection as the connection 
+            // will only be required by the following passes that will use the buffer
+            //            "Connections": [
+            //                {
+            //                    "LocalSlot": "MeshletsSharedBufferOutput",
+            //                    "AttachmentRef": {
+            //                        "Pass": "This",
+            //                        "Attachment": "MeshletsSharedBuffer"
+            //                    }
+            //                }
+            //            ],
             "PassData": {
                 "$type": "ComputePassData",
                 "ShaderAsset": {

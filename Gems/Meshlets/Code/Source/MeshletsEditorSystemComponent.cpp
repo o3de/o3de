@@ -2,53 +2,57 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <MeshletsEditorSystemComponent.h>
 
-namespace Meshlets
+namespace AZ
 {
-    void MeshletsEditorSystemComponent::Reflect(AZ::ReflectContext* context)
+    namespace Meshlets
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        void MeshletsEditorSystemComponent::Reflect(AZ::ReflectContext* context)
         {
-            serializeContext->Class<MeshletsEditorSystemComponent, MeshletsSystemComponent>()
-                ->Version(0);
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<MeshletsEditorSystemComponent, MeshletsSystemComponent>()
+                    ->Version(0);
+            }
         }
-    }
 
-    MeshletsEditorSystemComponent::MeshletsEditorSystemComponent() = default;
+        MeshletsEditorSystemComponent::MeshletsEditorSystemComponent() = default;
 
-    MeshletsEditorSystemComponent::~MeshletsEditorSystemComponent() = default;
+        MeshletsEditorSystemComponent::~MeshletsEditorSystemComponent() = default;
 
-    void MeshletsEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-    {
-        BaseSystemComponent::GetProvidedServices(provided);
-        provided.push_back(AZ_CRC_CE("MeshletsEditorService"));
-    }
+        void MeshletsEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        {
+            BaseSystemComponent::GetProvidedServices(provided);
+            provided.push_back(AZ_CRC_CE("MeshletsEditorService"));
+        }
 
-    void MeshletsEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-        BaseSystemComponent::GetIncompatibleServices(incompatible);
-        incompatible.push_back(AZ_CRC_CE("MeshletsEditorService"));
-    }
+        void MeshletsEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        {
+            BaseSystemComponent::GetIncompatibleServices(incompatible);
+            incompatible.push_back(AZ_CRC_CE("MeshletsEditorService"));
+        }
 
-    void MeshletsEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-        BaseSystemComponent::GetRequiredServices(required);
-    }
+        void MeshletsEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+        {
+            BaseSystemComponent::GetRequiredServices(required);
+        }
 
-    void MeshletsEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
-        BaseSystemComponent::GetDependentServices(dependent);
-    }
+        void MeshletsEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+        {
+            BaseSystemComponent::GetDependentServices(dependent);
+        }
 
-    void MeshletsEditorSystemComponent::Activate()
-    {
-        MeshletsSystemComponent::Activate();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-    }
+        void MeshletsEditorSystemComponent::Activate()
+        {
+            MeshletsSystemComponent::Activate();
+            AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        }
 
-    void MeshletsEditorSystemComponent::Deactivate()
-    {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        MeshletsSystemComponent::Deactivate();
-    }
+        void MeshletsEditorSystemComponent::Deactivate()
+        {
+            AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+            MeshletsSystemComponent::Deactivate();
+        }
 
-} // namespace Meshlets
+    } // namespace Meshlets
+} // namespace AZ
+

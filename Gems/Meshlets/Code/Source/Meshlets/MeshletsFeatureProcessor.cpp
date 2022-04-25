@@ -28,22 +28,14 @@ namespace AZ
 {
     namespace Meshlets
     {
-        static bool printDebugInfo = false;
-        static bool printDebugStats = false;
-        static bool printDebugRemoval = false;
-        static bool printDebugRunTimeHiding = false;
-        static bool printDebugAdd = false;
-        static bool debugDraw = false;
-        static bool debugSpheres = false;
-
         MeshletsFeatureProcessor::MeshletsFeatureProcessor()
         {
             MeshletsComputePassName = Name("MeshletsComputePass");
+            CreateResources();
         }
 
         MeshletsFeatureProcessor::~MeshletsFeatureProcessor()
         {
-            // Destroy Umbra handles
             CleanResources();
         }
 
@@ -101,15 +93,23 @@ namespace AZ
             return AZ::TICK_PRE_RENDER;
         }
 
+        bool MeshletsFeatureProcessor::HasMeshletPasses(RPI::RenderPipeline* renderPipeline)
+        {
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(MeshletsComputePassName, renderPipeline);
+            RPI::Ptr<RPI::Pass> desiredPass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+            return desiredPass ? true : false;
+        }
+
         bool MeshletsFeatureProcessor::InitComputePass(const Name& passName)
         {
             m_computePass = Data::Instance<MultiDispatchComputePass>();
-
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(passName, m_renderPipeline);
             RPI::Ptr<RPI::Pass> desiredPass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+
             if (desiredPass)
             {
                 m_computePass = static_cast<MultiDispatchComputePass*>(desiredPass.get());
+                m_computeShader = m_computePass->GetShader();
             }
             else
             {
@@ -210,26 +210,41 @@ namespace AZ
 
         void MeshletsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
         {
-            CleanResources();
+//            CleanResources();
+
+            if (!HasMeshletPasses(renderPipeline))
+            {   // This pipeline is not relevant - exist without changing anything.
+                return;
+            }
 
             m_renderPipeline = renderPipeline;
             CreateResources();
-            AddMeshletsPassesToPipeline(m_renderPipeline);
+//            AddMeshletsPassesToPipeline(m_renderPipeline);
             Init(m_renderPipeline);
         }
 
         void MeshletsFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr renderPipeline)
         {
+            if (!HasMeshletPasses(renderPipeline.get()))
+            {   // This pipeline is not relevant - exist without changing anything.
+                return;
+            }
+
             m_renderPipeline = renderPipeline.get();
             CreateResources();
-            AddMeshletsPassesToPipeline(m_renderPipeline);
+//            AddMeshletsPassesToPipeline(m_renderPipeline);
             Init(m_renderPipeline);
         }
 
         void MeshletsFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
         {
+            if (!HasMeshletPasses(renderPipeline))
+            {   // This pipeline is not relevant - exist without changing anything.
+                return;
+            }
+
             m_renderPipeline = nullptr;
-            CleanResources();
+//            CleanResources();
         }
 
     } // namespace AtomSceneStream
