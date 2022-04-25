@@ -156,9 +156,9 @@
                             "ModelAsset": {
                                 "assetId": {
                                     "guid": "{1B06015D-D440-53C8-8C66-DC910D55D768}",
-                                    "subId": 282189580
+                                    "subId": 282409373
                                 },
-                                "assetHint": "assets/prefabsoverridesample/default_houserootnode_building_building_1.azmodel"
+                                "assetHint": "assets/prefabsoverridesample/house.azmodel"
                             }
                         }
                     }
@@ -311,9 +311,9 @@
                             "ModelAsset": {
                                 "assetId": {
                                     "guid": "{1E2A90DF-6B42-5149-9BDB-D1FB6ACA4F69}",
-                                    "subId": 269250371
+                                    "subId": 273516563
                                 },
-                                "assetHint": "assets/prefabsoverridesample/default_roofrootnode_roof2_roof2_1.azmodel"
+                                "assetHint": "assets/prefabsoverridesample/roof.azmodel"
                             }
                         }
                     }
@@ -348,9 +348,9 @@
                             "ModelAsset": {
                                 "assetId": {
                                     "guid": "{169F5748-F8F5-5AB1-B38B-7AD504DA863C}",
-                                    "subId": 284755728
+                                    "subId": 283217539
                                 },
-                                "assetHint": "assets/prefabsoverridesample/default_chimneyrootnode_chimney_chimney_1.azmodel"
+                                "assetHint": "assets/prefabsoverridesample/chimney.azmodel"
                             }
                         }
                     }
