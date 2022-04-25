@@ -13,6 +13,7 @@
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 
 #include <Atom/RPI.Public/BlockCompression.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 
@@ -308,6 +309,11 @@ namespace AZ
                 }
             }
         } // namespace Internal
+                
+        bool IsNullRenderer()
+        {
+            return RPI::RPISystemInterface::Get()->IsNullRenderer();
+        }
 
         Data::AssetId GetShaderAssetId(const AZStd::string& shaderFilePath, bool isCritical)
         {
