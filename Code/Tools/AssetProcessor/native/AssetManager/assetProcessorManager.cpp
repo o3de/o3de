@@ -822,9 +822,12 @@ namespace AssetProcessor
 
                 if(!productWrapper.IsValid())
                 {
-                    AZ_Error(AssetProcessor::ConsoleChannel, false, "Products are not valid %s\n", product.m_productFileName.c_str());
+                    auto errorMessage = AZStd::string::format("Output product %s for file %s is not valid.  The file may have been deleted unexpectedly or have an invalid path.",
+                        product.m_productFileName.c_str(),
+                        itProcessedAsset->m_entry.GetAbsoluteSourcePath().toUtf8().constData()
+                    );
 
-                    AutoFailJob("", AZStd::string::format("Products are not valid %s", product.m_productFileName.c_str()), itProcessedAsset);
+                    AutoFailJob(errorMessage, errorMessage, itProcessedAsset);
                     continue;
                 }
 
