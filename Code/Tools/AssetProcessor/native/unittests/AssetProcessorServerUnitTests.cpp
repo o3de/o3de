@@ -165,7 +165,7 @@ namespace UnitTest
                     failureOccurred = true;
                 }
 
-                EXPECT_TRUE(connection.NegotiationFailed() == failNegotiation);
+                EXPECT_EQ(connection.NegotiationFailed(), failNegotiation);
             }
         };
 
@@ -192,7 +192,7 @@ namespace UnitTest
                 QCoreApplication::processEvents();
             }
 
-            EXPECT_TRUE(failureOccurred == false);
+            EXPECT_FALSE(failureOccurred);
 
             for (int idx = 0; idx < NUMBER_OF_CONNECTION; ++idx)
             {
