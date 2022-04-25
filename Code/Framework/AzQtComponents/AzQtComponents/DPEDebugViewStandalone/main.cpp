@@ -20,6 +20,7 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <QAbstractItemModel>
 #include <QApplication>
@@ -80,11 +81,12 @@ int main(int argc, char** argv)
     app.Start(AzFramework::Application::Descriptor());
 
     // create a default cvar adapter to expose the local CVar settings to edit
-    AZ::DocumentPropertyEditor::CvarAdapter cvarAdapter;
+    AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> cvarAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
     AzToolsFramework::DPEDebugModel adapterModel(nullptr);
-    adapterModel.SetAdapter(&cvarAdapter);
+    adapterModel.SetAdapter(cvarAdapter.get());
 
     QPointer<DPEDebugView::DPEDebugWindow> theWindow = new DPEDebugView::DPEDebugWindow(nullptr);
+    theWindow->m_textView->SetAdapter(cvarAdapter);
     theWindow->m_treeView->setModel(&adapterModel);
     theWindow->show();
 

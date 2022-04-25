@@ -328,6 +328,8 @@ set(FILES
     UI/Docking/DockWidgetUtils.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
+    UI/DPEDebugViewer/DPEDebugTextView.cpp
+    UI/DPEDebugViewer/DPEDebugTextView.h
     UI/Layer/AddToLayerMenu.cpp
     UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h
