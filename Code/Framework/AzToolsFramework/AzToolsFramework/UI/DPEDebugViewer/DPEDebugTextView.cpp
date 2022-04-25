@@ -56,29 +56,27 @@ namespace AzToolsFramework
 
             Result Null()
             {
-                return Write(QStringLiteral("null"));
+                return WriteQuotedValue(QStringLiteral("null"));
             }
             Result Bool(bool value)
             {
-                return Write(value ? QStringLiteral("true") : QStringLiteral("false"));
+                return WriteQuotedValue(value ? QStringLiteral("true") : QStringLiteral("false"));
             }
             Result Int64(AZ::s64 value)
             {
-                return Write(QString::number(value));
+                return WriteQuotedValue(QString::number(value));
             }
             Result Uint64(AZ::u64 value)
             {
-                return Write(QString::number(value));
+                return WriteQuotedValue(QString::number(value));
             }
             Result Double(double value)
             {
-                return Write(QString::number(value));
+                return WriteQuotedValue(QString::number(value));
             }
             Result String(AZStd::string_view value, AZ::Dom::Lifetime)
             {
-                Write(QStringLiteral("\""));
-                Write(QString::fromUtf8(value.data(), aznumeric_cast<int>(value.size())), false);
-                return Write(QStringLiteral("\""), false);
+                return WriteQuotedValue(QString::fromUtf8(value.data(), aznumeric_cast<int>(value.size())));
             }
             Result RefCountedString(AZStd::shared_ptr<const AZStd::vector<char>> value, AZ::Dom::Lifetime lifetime)
             {
@@ -86,23 +84,25 @@ namespace AzToolsFramework
             }
             Result OpaqueValue(AZ::Dom::OpaqueType&)
             {
-                return Write(QStringLiteral("{...C++ type...}"));
+                return WriteQuotedValue(QStringLiteral("{...C++ type...}"));
             }
             Result RawValue(AZStd::string_view value, AZ::Dom::Lifetime)
             {
-                return Write(QString::fromUtf8(value.data(), aznumeric_cast<int>(value.size())));
+                return WriteValue(QString::fromUtf8(value.data(), aznumeric_cast<int>(value.size())));
             }
 
             Result StartObject()
             {
-                Result result = Write(QStringLiteral("["));
+                StartValue();
+                Write(QStringLiteral("["));
                 m_stack.emplace();
-                return result;
+                return VisitorSuccess();
             }
             Result EndObject(AZ::u64)
             {
                 m_stack.pop();
-                return Write(QStringLiteral("]"), false);
+                Write(QStringLiteral("]"));
+                return VisitorSuccess();
             }
 
             Result Key(AZ::Name key)
@@ -116,22 +116,25 @@ namespace AzToolsFramework
                 {
                     entry->m_key = true;
                 }
-                Write(QStringLiteral(" "), false);
-                Write(QString::fromUtf8(key.data(), aznumeric_cast<int>(key.size())), false);
-                return Write(QStringLiteral("="), false);
+                Write(QStringLiteral(" "));
+                Write(QString::fromUtf8(key.data(), aznumeric_cast<int>(key.size())));
+                Write(QStringLiteral("="));
+                return VisitorSuccess();
             }
 
             Result StartArray()
             {
-                Result result = Write(QStringLiteral("["));
+                StartValue();
+                Write(QStringLiteral("["));
                 m_stack.emplace();
                 m_stack.top().m_separator = QStringLiteral(", ");
-                return result;
+                return VisitorSuccess();
             }
             Result EndArray(AZ::u64)
             {
                 m_stack.pop();
-                return Write(QStringLiteral("]"), false);
+                Write(QStringLiteral("]"));
+                return VisitorSuccess();
             }
 
             Result StartNode(AZ::Name name)
@@ -143,16 +146,17 @@ namespace AzToolsFramework
                 int indentLevel = GetIndent();
                 if (auto currentNode = CurrentNode(); currentNode != nullptr && !currentNode->m_firstValue)
                 {
-                    Write(QStringLiteral("\n"), true);
+                    StartValue();
+                    Write(QStringLiteral("\n"));
                     WriteIndent(indentLevel);
                 }
                 else
                 {
-                    Write(QString());
+                    StartValue();
                 }
-                Write(QStringLiteral("<"), false);
+                Write(QStringLiteral("<"));
                 QString nodeName = QString::fromUtf8(name.data(), aznumeric_cast<int>(name.size()));
-                Write(nodeName, false);
+                Write(nodeName);
                 m_stack.emplace();
                 m_stack.top().m_nodeOpen = true;
                 m_stack.top().m_nodeName = nodeName;
@@ -163,15 +167,15 @@ namespace AzToolsFramework
             {
                 if (m_stack.top().m_nodeOpen)
                 {
-                    Write(QStringLiteral(" />"), false);
+                    Write(QStringLiteral(" />"));
                 }
                 else
                 {
                     Write(QStringLiteral("\n"));
                     WriteIndent(GetIndent() - 1);
-                    Write(QStringLiteral("</"), false);
-                    Write(m_stack.top().m_nodeName, false);
-                    Write(QStringLiteral(">"), false);
+                    Write(QStringLiteral("</"));
+                    Write(m_stack.top().m_nodeName);
+                    Write(QStringLiteral(">"));
                 }
                 m_stack.pop();
                 return VisitorSuccess();
@@ -213,14 +217,13 @@ namespace AzToolsFramework
             {
                 for (int i = 0; i < indent; ++i)
                 {
-                    Write(QStringLiteral("  "), false);
+                    Write(QStringLiteral("  "));
                 }
             }
 
-            Result Write(QString text, bool checkNode = true)
+            void StartValue()
             {
-                NodeEntry* node = CurrentNode();
-                if (checkNode && node != nullptr)
+                if (auto node = CurrentNode(); node != nullptr)
                 {
                     if (node->m_nodeOpen && !node->m_key)
                     {
@@ -242,7 +245,26 @@ namespace AzToolsFramework
                         m_contents.append(node->m_separator);
                     }
                 }
+            }
+
+            void Write(QString text)
+            {
                 m_contents.append(text);
+            }
+
+            Result WriteValue(QString value)
+            {
+                StartValue();
+                Write(value);
+                return VisitorSuccess();
+            }
+
+            Result WriteQuotedValue(QString value)
+            {
+                StartValue();
+                Write(QStringLiteral("\""));
+                Write(value);
+                Write(QStringLiteral("\""));
                 return VisitorSuccess();
             }
         };
