@@ -67,7 +67,7 @@ namespace Automation
         void ResumeAutomation() override;
         void QueueScriptOperation(AutomationRequests::ScriptOperation&& operation) override;
 
-        void ExecuteScript(const AZStd::string& scriptFilePath);
+        void ExecuteScript(const char* scriptFilePath);
 
         AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext; //< Provides the lua scripting system
         AZStd::unique_ptr<AZ::BehaviorContext> m_scriptBehaviorContext; //< Used to bind script callback functions to lua

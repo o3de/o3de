@@ -174,7 +174,7 @@ namespace Automation
         if (!m_isStarted)
         {
             m_isStarted = true;
-            ExecuteScript(m_automationScript);
+            ExecuteScript(m_automationScript.c_str());
 
             AutomationNotificationBus::Broadcast(&AutomationNotificationBus::Events::OnAutomationStarted);
         }
@@ -246,16 +246,16 @@ namespace Automation
         m_scriptOperations.push(AZStd::move(operation));
     }
 
-    void AutomationSystemComponent::ExecuteScript(const AZStd::string& scriptFilePath)
+    void AutomationSystemComponent::ExecuteScript(const char* scriptFilePath)
     {
-        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath.c_str());
+        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath);
         if (!scriptAsset)
         {
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([scriptFilePath]()
                 {
-                    AZ_Error("Automation", false, "Script: Could not find or load script asset '%s'.", scriptFilePath.c_str());
+                    AZ_Error("Automation", false, "Script: Could not find or load script asset '%s'.", scriptFilePath);
                 }
             );
             return;
@@ -263,17 +263,17 @@ namespace Automation
 
         QueueScriptOperation([scriptFilePath]()
             {
-                AZ_Printf("Automation", "Running script '%s'...\n", scriptFilePath.c_str());
+                AZ_Printf("Automation", "Running script '%s'...\n", scriptFilePath);
             }
         );
 
-        if (!m_scriptContext->Execute(scriptAsset->GetScriptBuffer().data(), scriptFilePath.c_str(), scriptAsset->GetScriptBuffer().size()))
+        if (!m_scriptContext->Execute(scriptAsset->GetScriptBuffer().data(), scriptFilePath, scriptAsset->GetScriptBuffer().size()))
         {
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([scriptFilePath]()
                 {
-                    AZ_Error("Automation", false, "Script: Error running script '%s'.", scriptFilePath.c_str());
+                    AZ_Error("Automation", false, "Script: Error running script '%s'.", scriptFilePath);
                 }
             );
         }
