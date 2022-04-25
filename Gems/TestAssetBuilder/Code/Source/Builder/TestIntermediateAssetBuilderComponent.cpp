@@ -6,16 +6,13 @@
  *
  */
 
-#include <Builder/TestIntermediateAssetBuilderComponent.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/IO/LocalFileIO.h>
+#include <Builder/TestIntermediateAssetBuilderComponent.h>
 
 namespace TestAssetBuilder
 {

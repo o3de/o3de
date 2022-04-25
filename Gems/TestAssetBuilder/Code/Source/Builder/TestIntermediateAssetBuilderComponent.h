@@ -10,9 +10,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
-#include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzFramework/Asset/AssetCatalog.h>
 
 namespace TestAssetBuilder
 {
