@@ -140,7 +140,7 @@ namespace AZ
                         if (metaData.m_morphTargetName == morphTarget->GetNameString() && metaData.m_numVertices > 0)
                         {
                             // The skinned mesh lod gets a unique morph for each meta, since each one has unique min/max delta values to use for decompression
-                            const AZStd::string morphString = AZStd::string::format("%s_Lod%zu_Morph_%s", fullFileName.c_str(), lodIndex, metaData.m_meshNodeName.c_str());
+                            const AZStd::string morphString = AZStd::string::format("%s_Lod%"PRIu32"_Morph_%s", fullFileName.c_str(), lodIndex, metaData.m_meshNodeName.c_str());
 
                             float minWeight = morphTarget->GetRangeMin();
                             float maxWeight = morphTarget->GetRangeMax();
@@ -222,7 +222,7 @@ namespace AZ
                     const uint32_t numSubMeshes = aznumeric_caster(mesh->GetNumSubMeshes());
 
                     AZ_Assert(numSubMeshes == modelLodAsset->GetMeshes().size(),
-                        "Number of submeshes (%d) in EMotionFX mesh (lod %d and joint index %d) doesn't match the number of meshes (%d) in model lod asset",
+                        "Number of submeshes (%"PRIu32") in EMotionFX mesh (lod %d and joint index %d) doesn't match the number of meshes (%d) in model lod asset",
                         numSubMeshes, lodIndex, jointIndex, modelLodAsset->GetMeshes().size());
 
                     for (uint32_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
@@ -263,7 +263,7 @@ namespace AZ
 
                 if (!jointIndicesBufferView || !skinWeightsBufferView)
                 {
-                    AZ_Error("ProcessSkinInfluences", false, "Actor '%s' lod '%zu' has no skin influences, and will be stuck in bind pose.", fullFileName.c_str(), lodIndex);
+                    AZ_Error("ProcessSkinInfluences", false, "Actor '%s' lod '%"PRIu32"' has no skin influences, and will be stuck in bind pose.", fullFileName.c_str(), lodIndex);
                 }
                 else
                 {
