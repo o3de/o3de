@@ -32,7 +32,7 @@ namespace EMotionFX
             virtual void Serialize(const AnimGraphSnapshot& snapshot) = 0;
 
             // Deserialize happen on the client side snapshot.
-            // For GridMate, this function only called once after client side snapshot connected to server.
+            // For Multiplayer, this function only called once after client side snapshot connected to server.
             // After the connection, snapshot gets update per dataset through a callback function.
             virtual void Deserialize(AnimGraphSnapshot& snapshot) = 0;
         };

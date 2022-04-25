@@ -19,7 +19,6 @@ set(FILES
     Tests/ScriptCanvas_ContainerSupport.cpp
     Tests/ScriptCanvas_Core.cpp
     Tests/ScriptCanvas_EventHandlers.cpp
-    Tests/ScriptCanvas_GlobalMethods.cpp
     Tests/ScriptCanvas_Math.cpp
     Tests/ScriptCanvas_MethodOverload.cpp
     Tests/ScriptCanvas_NodeGenerics.cpp

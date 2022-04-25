@@ -166,7 +166,6 @@ namespace LmbrCentral
         , m_currentTransform(other.m_currentTransform)
         , m_entityId(other.m_entityId)
     {
-
     }
 
     PolygonPrismShape& PolygonPrismShape::operator=(const PolygonPrismShape& other)
@@ -207,24 +206,29 @@ namespace LmbrCentral
 
     void PolygonPrismShape::Activate(AZ::EntityId entityId)
     {
+        // Clear out callbacks at the start of activation. Otherwise, the underlying polygonPrism will attempt to trigger callbacks
+        // before this shape is fully activated, which we want to avoid.
+        m_polygonPrism->SetCallbacks({}, {}, {}, {});
+
         m_entityId = entityId;
         m_currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(m_currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
-        ShapeComponentRequestsBus::Handler::BusConnect(entityId);
-        PolygonPrismShapeComponentRequestBus::Handler::BusConnect(entityId);
-        AZ::VariableVerticesRequestBus<AZ::Vector2>::Handler::BusConnect(entityId);
-        AZ::FixedVerticesRequestBus<AZ::Vector2>::Handler::BusConnect(entityId);
 
         m_currentNonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(m_currentNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
+
+        // This will trigger an OnChangeNonUniformScale callback if one is set, which is why we clear out the callbacks at the
+        // start of activation. Those callbacks might try to query back to this shape, which isn't fully initialized or activated yet
+        // (see for example EditorPolygonPrismShapeComponent), so they would end up retrieving invalid data.
         m_polygonPrism->SetNonUniformScale(m_currentNonUniformScale);
         m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
 
         AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
             m_nonUniformScaleChangedHandler);
 
+        // Now that we've finished initializing the other data, set up the default change callbacks.
         const auto polygonPrismChanged = [this]()
         {
             ShapeChanged();
@@ -235,27 +239,40 @@ namespace LmbrCentral
             polygonPrismChanged,
             polygonPrismChanged,
             polygonPrismChanged);
+
+        // Connect to these last so that the shape doesn't start responding to requests until after everything is initialized
+        PolygonPrismShapeComponentRequestBus::Handler::BusConnect(entityId);
+        AZ::VariableVerticesRequestBus<AZ::Vector2>::Handler::BusConnect(entityId);
+        AZ::FixedVerticesRequestBus<AZ::Vector2>::Handler::BusConnect(entityId);
+        ShapeComponentRequestsBus::Handler::BusConnect(entityId);
     }
 
     void PolygonPrismShape::Deactivate()
     {
-        m_nonUniformScaleChangedHandler.Disconnect();
-        PolygonPrismShapeComponentRequestBus::Handler::BusDisconnect();
-        AZ::FixedVerticesRequestBus<AZ::Vector2>::Handler::BusDisconnect();
-        AZ::VariableVerticesRequestBus<AZ::Vector2>::Handler::BusDisconnect();
         ShapeComponentRequestsBus::Handler::BusDisconnect();
+        AZ::VariableVerticesRequestBus<AZ::Vector2>::Handler::BusDisconnect();
+        AZ::FixedVerticesRequestBus<AZ::Vector2>::Handler::BusDisconnect();
+        PolygonPrismShapeComponentRequestBus::Handler::BusDisconnect();
+        m_nonUniformScaleChangedHandler.Disconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
+
+        // Clear out callbacks to ensure that they don't get called while the component is deactivated.
+        m_polygonPrism->SetCallbacks({}, {}, {}, {});
     }
 
     void PolygonPrismShape::InvalidateCache(InvalidateShapeCacheReason reason)
     {
+        PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
         m_intersectionDataCache.InvalidateCache(reason);
     }
 
     void PolygonPrismShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        m_currentTransform = world;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        {
+            PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
+            m_currentTransform = world;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
@@ -263,9 +280,12 @@ namespace LmbrCentral
 
     void PolygonPrismShape::OnNonUniformScaleChanged(const AZ::Vector3& scale)
     {
-        m_currentNonUniformScale = scale;
-        m_polygonPrism->SetNonUniformScale(scale);
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
+            m_currentNonUniformScale = scale;
+            m_polygonPrism->SetNonUniformScale(scale);
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
@@ -273,79 +293,90 @@ namespace LmbrCentral
 
     void PolygonPrismShape::ShapeChanged()
     {
+        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
-
-        m_intersectionDataCache.InvalidateCache(
-            InvalidateShapeCacheReason::ShapeChange);
     }
 
     AZ::PolygonPrismPtr PolygonPrismShape::GetPolygonPrism()
     {
+        PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         return m_polygonPrism;
     }
 
     bool PolygonPrismShape::GetVertex(const size_t index, AZ::Vector2& vertex) const
     {
+        PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         return m_polygonPrism->m_vertexContainer.GetVertex(index, vertex);
     }
 
     void PolygonPrismShape::AddVertex(const AZ::Vector2& vertex)
     {
+        PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
         m_polygonPrism->m_vertexContainer.AddVertex(vertex);
     }
 
     bool PolygonPrismShape::UpdateVertex(const size_t index, const AZ::Vector2& vertex)
     {
+        PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
         return m_polygonPrism->m_vertexContainer.UpdateVertex(index, vertex);
     }
 
     bool PolygonPrismShape::InsertVertex(const size_t index, const AZ::Vector2& vertex)
     {
+        PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
         return m_polygonPrism->m_vertexContainer.InsertVertex(index, vertex);
     }
 
     bool PolygonPrismShape::RemoveVertex(const size_t index)
     {
+        PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
         return m_polygonPrism->m_vertexContainer.RemoveVertex(index);
     }
 
     void PolygonPrismShape::SetVertices(const AZStd::vector<AZ::Vector2>& vertices)
     {
+        PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
         m_polygonPrism->m_vertexContainer.SetVertices(vertices);
     }
 
     void PolygonPrismShape::ClearVertices()
     {
+        PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
         m_polygonPrism->m_vertexContainer.Clear();
     }
 
     size_t PolygonPrismShape::Size() const
     {
+        PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         return m_polygonPrism->m_vertexContainer.Size();
     }
 
     bool PolygonPrismShape::Empty() const
     {
+        PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         return m_polygonPrism->m_vertexContainer.Empty();
     }
 
     void PolygonPrismShape::SetHeight(const float height)
     {
+        PolygonPrismUniqueLockGuard lock(m_mutex, m_uniqueLockThreadId);
         m_polygonPrism->SetHeight(height);
         m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
     }
 
     AZ::Aabb PolygonPrismShape::GetEncompassingAabb()
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_currentNonUniformScale);
+        PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
 
         return m_intersectionDataCache.m_aabb;
     }
 
     void PolygonPrismShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
     {
+        PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         bounds = PolygonPrismUtil::CalculateAabb(*m_polygonPrism, AZ::Transform::Identity());
         transform = m_currentTransform;
     }
@@ -355,7 +386,8 @@ namespace LmbrCentral
     /// @param point Position in world space to test against.
     bool PolygonPrismShape::IsPointInside(const AZ::Vector3& point)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_currentNonUniformScale);
+        PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
 
         // initial early aabb rejection test
         // note: will implicitly do height test too
@@ -369,14 +401,16 @@ namespace LmbrCentral
 
     float PolygonPrismShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_currentNonUniformScale);
+        PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
 
-        return PolygonPrismUtil::DistanceSquaredFromPoint(*m_polygonPrism, point, m_currentTransform);;
+        return PolygonPrismUtil::DistanceSquaredFromPoint(*m_polygonPrism, point, m_currentTransform);
     }
 
     bool PolygonPrismShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_currentNonUniformScale);
+        PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
 
         return PolygonPrismUtil::IntersectRay(m_intersectionDataCache.m_triangles, m_currentTransform, src, dir, distance);
     }

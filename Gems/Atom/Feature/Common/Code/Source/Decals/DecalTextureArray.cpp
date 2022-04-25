@@ -23,26 +23,16 @@ namespace AZ
     {
         namespace
         {
-            static AZ::Name GetMapName(const DecalMapType mapType)
+            static const AZ::Name& GetMapName(const DecalMapType mapType)
             {
-                // TODO: We can change this back to using static names (if needed) after static allocations are supported
-                // See https://github.com/o3de/sig-core/pull/31
-                // 
-                //static AZStd::array<AZ::Name, DecalMapType_Num> mapNames =
-                //{
-                //    AZ::Name("baseColor.textureMap"),
-                //    AZ::Name("normal.textureMap")
-                //};
-                //return mapNames[mapType];
-
                 switch (mapType)
                 {
                 case DecalMapType_Diffuse:
-                    return Name{"baseColor.textureMap"};
+                    return AZ_NAME_LITERAL("baseColor.textureMap");
                 case DecalMapType_Normal:
-                    return Name{"normal.textureMap"};
+                    return AZ_NAME_LITERAL("normal.textureMap");
                 default:
-                    return Name{};
+                    return AZ_NAME_LITERAL("");
                 }
             }
 

@@ -866,18 +866,14 @@ bool CEditorImpl::SelectColor(QColor& color, QWidget* parent)
 
 void CEditorImpl::SetInGameMode(bool inGame)
 {
-    static bool bWasInSimulationMode(false);
-
-    if (inGame)
+    if (IsInSimulationMode())
     {
-        bWasInSimulationMode = GetIEditor()->GetGameEngine()->GetSimulationMode();
-        GetIEditor()->GetGameEngine()->SetSimulationMode(false);
-        GetIEditor()->GetGameEngine()->RequestSetGameMode(true);
+        return;
     }
-    else
+
+    if (m_pGameEngine)
     {
-        GetIEditor()->GetGameEngine()->RequestSetGameMode(false);
-        GetIEditor()->GetGameEngine()->SetSimulationMode(bWasInSimulationMode);
+        m_pGameEngine->RequestSetGameMode(inGame);
     }
 }
 
