@@ -304,14 +304,11 @@ namespace AZ::SceneAPI::Behaviors
                 const auto meshNodeIndex = entry.second.m_meshIndex;
                 const auto propertyDataIndex = entry.second.m_propertyMapIndex;
                 const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
-                const auto meshSubId = DataTypes::Utilities::CreateStableUuid(
-                    scene,
-                    azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(),
-                    meshNodeName.GetPath());
 
+                AZStd::string meshNodePath{ meshNodeName.GetPath() };
                 AZStd::string meshGroupName = "default_";
                 meshGroupName += scene.GetName();
-                meshGroupName += meshSubId.ToString<AZStd::string>().c_str();
+                meshGroupName += meshNodePath;
 
                 // clean up the mesh group name
                 AZStd::replace_if(
@@ -320,7 +317,6 @@ namespace AZ::SceneAPI::Behaviors
                     [](char c) { return (!AZStd::is_alnum(c) && c != '_'); },
                     '_');
 
-                AZStd::string meshNodePath{ meshNodeName.GetPath() };
                 auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
                 meshGroup->SetName(meshGroupName);
                 meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
@@ -332,7 +328,10 @@ namespace AZ::SceneAPI::Behaviors
                         meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
                     }
                 }
-                meshGroup->OverrideId(meshSubId);
+                meshGroup->OverrideId(DataTypes::Utilities::CreateStableUuid(
+                    scene,
+                    azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(),
+                    meshNodeName.GetPath()));
 
                 // this clears out the mesh coordinates each mesh group will be rotated and translated
                 // using the attached scene graph node
@@ -392,7 +391,7 @@ namespace AZ::SceneAPI::Behaviors
             const Containers::SceneGraph& graph,
             const MeshTransformMap& meshTransformMap)
         {
-            EntityIdList entities;            
+            EntityIdList entities;
             entities.reserve(nodeEntityMap.size());
 
             for (const auto& nodeEntity : nodeEntityMap)
