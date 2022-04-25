@@ -687,7 +687,7 @@ namespace AssetProcessor
                     // If a lost connection occured, prepare for a retry using an exponential backoff policy
                     if ((response.m_resultCode == AssetBuilderSDK::ProcessJobResult_NetworkIssue) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
                     {
-                        const int delay = aznumeric_caster(pow(2, retryCount-1));
+                        const int delay = 1 << (retryCount-1);
                         AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
                     }
                     AZ_Warning("RC Builder", response.m_resultCode != AssetBuilderSDK::ProcessJobResult_NetworkIssue, "RC.exe reported a network connection issue.  %s",

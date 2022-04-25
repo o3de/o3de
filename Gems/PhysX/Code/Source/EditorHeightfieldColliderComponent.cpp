@@ -93,6 +93,8 @@ namespace PhysX
                       AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
               })
     {
+        // By default, disable heightfield collider debug drawing. This doesn't need to be viewed in the common case.
+        m_colliderDebugDraw.SetDisplayFlag(false);
     }
 
     EditorHeightfieldColliderComponent ::~EditorHeightfieldColliderComponent()
