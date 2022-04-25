@@ -230,5 +230,3 @@ def export_o3de_material(output: Path, material_description: dict):
     with open(output, 'w', encoding='utf-8') as material_file:
         json.dump(material_description, material_file, ensure_ascii=False, indent=4)
 
-
-

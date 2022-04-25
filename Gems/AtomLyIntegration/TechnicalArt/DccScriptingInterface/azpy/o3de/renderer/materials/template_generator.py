@@ -26,11 +26,6 @@ from azpy.constants import FRMT_LOG_LONG
 from SDK.Python import general_utilities as helpers
 
 
-_config = azpy.config_utils.get_dccsi_config()
-settings = _config.get_config_settings()
-
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
 
 module_name = 'azpy.o3de.renderer.materials.TemplateGenerator'
 

@@ -34,6 +34,7 @@ import json
 import re
 import os
 
+
 _LOGGER = logging.getLogger('SDK.DCC.Python.general_utilities')
 
 
@@ -109,6 +110,10 @@ def get_markdown_information(target_path: Path) -> dict:
     return markdown
 
 
+def get_clean_path(target_path) -> str:
+    return target_path.replace('\\', '/')
+
+
 def get_files_by_name(base_directory: Path, target_file: str) -> list:
     file_list = []
     for (root, dirs, files) in os.walk(base_directory, topdown=True):
@@ -120,7 +125,7 @@ def get_files_by_name(base_directory: Path, target_file: str) -> list:
 
 
 def set_json_data(target_path: Path, json_data: Box):
-    with open(target_path, 'w') as json_file:
+    with open(str(target_path), 'w') as json_file:
         json.dump(json_data, json_file, indent=4)
 
 

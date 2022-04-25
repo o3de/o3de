@@ -13,7 +13,7 @@
 """! @brief This module contains several common material utilities/operations. """
 
 ##
-# @file maya_materials.py
+# @file maya_materials_conversion.py
 #
 # @brief This module contains several common materials utilities/operations for use with Maya.
 #
@@ -29,12 +29,13 @@ import os
 import logging as _logging
 from pathlib import Path
 import maya.cmds as mc
+mc.loadPlugin("fbxmaya")
 from azpy.dcc.maya.utils import pycharm_debugger
 from azpy.dcc.maya.helpers import convert_arnold_material as arnold
 from azpy.dcc.maya.helpers import convert_stingray_material as stingray
 
 
-_LOGGER = _logging.getLogger('azpy.dcc.maya.utils.maya_materials')
+_LOGGER = _logging.getLogger('azpy.dcc.maya.utils.maya_materials_conversion')
 
 
 # TODO - You need to provide for creating new files while Maya is already open
@@ -44,6 +45,12 @@ supported_material_types = [
     'StingrayPBS',
     'aiStandardSurface'
 ]
+
+
+def prepare_material_export(target_mesh, export_location):
+    mesh_materials = get_mesh_materials(target_mesh)
+    export_path = get_mesh_export_path(target_mesh, export_location) if export_location else ''
+    return export_path, mesh_materials
 
 
 def create_preview_files(target_files, database_values):
@@ -123,7 +130,9 @@ def open_target_scene(scene_path):
 
 
 def run_operation(process_dictionary, operation, output):
-    _LOGGER.info(f'Run operation fired::::::::\nOperation: {operation}\nOutput: {output} ')
+    _LOGGER.info(f'\n\n:::::::::::::::::::\nRun operation fired\n:::::::::::::::::::\n\nOperation Type: {operation}\n')
+    if operation == 'convert':
+        _LOGGER.info('* Set up conversion here *')
 
 
 def get_materials_in_scene():
@@ -166,6 +175,19 @@ def get_material_type(target_material):
     return mc.nodeType(target_material)
 
 
+def get_material_attributes(target_material: str, target_keys: list):
+    attribute_dictionary = {}
+    attributes = mc.listAttr(target_material)
+    for target_key in attributes:
+        if target_key in target_keys:
+            try:
+                target_value = mc.getAttr(target_material + '.' + target_key)
+                attribute_dictionary[target_key] = target_value
+            except RuntimeError:
+                pass
+    return attribute_dictionary
+
+
 def get_current_scene():
     current_scene = mc.file(q=True, sceneName=True)
     return Path(current_scene)
@@ -201,6 +223,12 @@ def get_shading_group(material_name):
     return mc.listConnections(material_name, type='shadingEngine')[0]
 
 
+def get_mesh_export_path(target_mesh, export_location):
+    if os.path.isdir(export_location):
+        return Path(export_location) / target_mesh / f'{target_mesh}.fbx'
+    return ''
+
+
 def get_mesh_materials(target_mesh):
     """! Gathers a list of all materials attached to each mesh's shader.
 
@@ -220,29 +248,6 @@ def get_maya_file_path(fbx_file_path):
     @return str - File path
     """
     return os.path.splitext(fbx_file_path)[0] + '.ma'
-
-
-def get_texture_type(plug_name):
-    texture_types = {
-        'TEX_ao_map': 'AmbientOcclusion',
-        'TEX_color_map': 'BaseColor',
-        'TEX_metallic_map': 'Metallic',
-        'TEX_normal_map': 'Normal',
-        'TEX_roughness_map': 'Roughness',
-        'TEX_emissive': 'Emissive'
-    }
-    plug = plug_name.split('.')[-1]
-    if plug in texture_types.keys():
-        return texture_types[plug]
-    return None
-
-
-def enable_stingray_textures(material_name: str):
-    mc.setAttr('{}.use_color_map'.format(material_name), 1)
-    mc.setAttr('{}.use_normal_map'.format(material_name), 1)
-    mc.setAttr('{}.use_metallic_map'.format(material_name), 1)
-    mc.setAttr('{}.use_roughness_map'.format(material_name), 1)
-    mc.setAttr('{}.use_emissive_map'.format(material_name), 1)
 
 
 def get_material(material_name: str) -> list:
@@ -271,6 +276,10 @@ def get_material(material_name: str) -> list:
     return [sha, sg]
 
 
+def get_new_material(material_type: str, material_name: str, assignment_list: list):
+    _LOGGER.info(f'Getting new material[{material_name}] of type: {material_type}  ApplyTo: {assignment_list}')
+
+
 def get_material_info(target_material: str):
     mc.select(target_material, r=True)
     material_type = get_material_type(mc.ls(sl=True, long=True) or [])
@@ -280,8 +289,25 @@ def get_material_info(target_material: str):
         return stingray.get_material_info(target_material)
 
 
-def get_arnold_material_info(material_name: str):
-    _LOGGER.info(f'Getting arnold material information')
+def get_default_material_settings(material_type):
+    """! This is important for helping to detect user changes to the default material attributes. It compares a
+    new instance of the target material type and generates a dictionary of default values to compare with the
+    target material being read/parsed in the system.
+    """
+
+    default_settings = None
+    try:
+        mc.sphere(n='templateSphere')
+        sg = set_new_material(material_type, 'templateShader', [])
+        default_settings = get_material_info('templateShader')
+        _LOGGER.info(f'DefaultSettings: {default_settings}')
+        # mc.select(clear=True)
+        # mc.select('templateSphere', r=True)
+        # mc.select(sg, add=True)
+        # mc.delete()
+    except Exception as e:
+        _LOGGER.info(f'Unable to retrieve default material settings. EXCEPTION [{type(e)}]: {e}')
+    return default_settings
 
 
 def get_scene_objects():
@@ -292,12 +318,38 @@ def get_scene_objects():
 def get_selected_objects():
     """! Filters selection to just meshes in the event that other items exist in the current selection."""
     return mc.filterExpand(sm=12)
-    # try:
-    #     for obj in selected_objects:
-    #         _LOGGER.info(f'Selected: {obj}  Type: {mc.objectType(obj)}')
-    #     return selected_objects
-    # except TypeError:
-    #     return []
+
+
+def get_object_by_name(target_object):
+    try:
+        mc.select(target_object)
+        object_exists = True
+    except ValueError:
+        object_exists = False
+    return object_exists
+
+
+def get_transferable_properties(material_type):
+    if material_type == 'aiStandardSurface':
+        return arnold.get_transferable_properties()
+    elif material_type == 'StingrayPBS':
+        return stingray.get_transferable_properties()
+
+
+def set_new_material(material_type: str, material_name: str, mesh_assignment: list):
+    # Create material if it doesn't already exist
+    sg = None
+    if not mc.objExists(material_name):
+        sha = mc.shadingNode(material_type, asShader=True, name=material_name)
+        sg = mc.sets(renderable=True, noSurfaceShader=True, empty=True)
+        mc.connectAttr(sha + '.outColor', sg + '.surfaceShader', force=True)
+
+    try:
+        mc.select(mesh_assignment, replace=True)
+        mc.hyperShade(assign=material_name)
+    except Exception as e:
+        _LOGGER.info(f'SetNewMaterialError [type(e)]: {e}')
+    return sg
 
 
 def set_selected_objects(objects_list):
@@ -320,29 +372,6 @@ def set_camera_attributes():
     for c in camera_list:
         for attrName in attributes.keys():
             mc.setAttr('{}.{}'.format(c, attrName), attributes[attrName])
-
-
-def set_stingray_materials(material_dict: dict):
-    for material_name, material_values in material_dict.items():
-        if 'textures' in material_values.keys():
-
-            sha, sg = get_material(material_name)
-            material_textures = material_values['textures']
-            material_assignments = material_values['assigned']
-            material_modifications = material_values['modifications']
-
-            _LOGGER.info('+++++++++++++++++++++++++++++')
-            _LOGGER.info('Converting material: {}'.format(material_name))
-            _LOGGER.info('Material Textures: {}'.format(material_textures))
-            _LOGGER.info('Material Assignments: {}'.format(material_assignments))
-
-            try:
-                set_material(material_name, sg, material_assignments)
-                set_textures(material_name, material_textures)
-                if material_modifications:
-                    _LOGGER.info('\n++++++++++++++\nMaterialMods: {}\n++++++++++++++'.format(material_modifications))
-            except Exception as e:
-                _LOGGER.info('Material Assignment failed: {}'.format(e))
 
 
 def set_material(material_name: str, shading_group: str, assignment_list: list):
@@ -397,6 +426,16 @@ def set_textures(material_name: str, texture_dict: dict):
 
         except Exception as e:
             _LOGGER.info('Conversion failed: {}'.format(e))
+
+
+def export_mesh(target_object, mesh_export_location):
+    try:
+        mc.move(0, 0, 0, target_object, absolute=True)
+        mc.select(target_object, replace=True)
+        mc.file(mesh_export_location, force=True, type='FBX export', exportSelected=True)
+        return True
+    except Exception as e:
+        _LOGGER.info('ExportMesh failed [type(e)]: {e}')
 
 
 def cleanup(target_objects):

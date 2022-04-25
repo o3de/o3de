@@ -11,6 +11,12 @@ supported_material_types = [
 ]
 
 
+def prepare_material_export(target_mesh, export_location):
+    mesh_materials = get_mesh_materials(target_mesh)
+    export_path = get_mesh_export_path(target_mesh, export_location) if export_location else ''
+    return export_path, mesh_materials
+
+
 def get_current_scene():
     return bpy.data.filepath
 
@@ -34,6 +40,10 @@ def get_material_type(target_material):
     for node in target_material.node_tree.nodes:
         if node.name in shader_types:
             return node.name
+
+
+def get_mesh_export_path(target_mesh, export_location):
+    return Path(export_location) / f'{target_mesh}.fbx'
 
 
 def get_shader_types():

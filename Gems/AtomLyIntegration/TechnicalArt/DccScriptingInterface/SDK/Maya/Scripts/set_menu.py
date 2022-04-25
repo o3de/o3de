@@ -16,7 +16,7 @@ This module creates and manages a DCCsi mainmenu
 """
 # -------------------------------------------------------------------------
 # -- Standard Python modules
-# none
+from functools import partial
 
 # -- External Python modules
 # none
@@ -28,6 +28,7 @@ from constants import TAG_DCCSI_MAINMENU
 
 # -- maya imports
 import pymel.core as pm
+
 # -------------------------------------------------------------------------
 
 
@@ -47,11 +48,31 @@ _LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
+# MATERIALS HELPER --------------------------------------------------------
+
+def materials_helper_launch(operation):
+    MaterialsHelper(operation)
+
+
+class MaterialsHelper(QtWidgets.QWidget):
+    def __init__(self, operation, parent=None):
+        super().__init__(parent)
+
+        self.setParent(mayaMainWindow)
+        self.setWindowFlags(QtCore.Qt.Window)
+        self.setGeometry(500, 500)
+        self.setObjectName('MaterialsHelper')
+        self.setWindowTitle('Materials Helper')
+        self.isTopLevel()
+
+        self.operation = operation
+        self.set_window()
+
+    def set_window(self):
+        _LOGGER.info(f'Set window fired in Materials Conversion... Operation: {self.operation}')
+
 # -------------------------------------------------------------------------
-def menu_cmd_test():
-    _LOGGER.info('test_func(), is TESTING main menu')
-    return
-# -------------------------------------------------------------------------
+
 
 # -------------------------------------------------------------------------
 def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
@@ -64,25 +85,31 @@ def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
     if pm.menu(_menu_obj, label=_menu_label, exists=True, parent=_main_window):
         pm.deleteUI(pm.menu(_menu_obj, e=True, deleteAllItems=True))
 
-    # create the main menu object
+    # Main menu object
     _custom_tools_menu = pm.menu(_menu_obj,
                                  label=_menu_label,
                                  parent=_main_window,
                                  tearOff=True)
 
-    # make a dummpy sub-menu
-    pm.menuItem(label='Menu Item Stub',
+    # +++++++++++++++++--->>
+    # Materials Helper ---->>
+    # +++++++++++++++++--->>
+
+    pm.menuItem(label='Materials Helper',
                 subMenu=True,
                 parent=_custom_tools_menu,
                 tearOff=True)
     
-    # make a dummy menu item to test
-    pm.menuItem(label='Test', command=pm.Callback(menu_cmd_test))
+    # Sub-menu items
+    pm.menuItem(label='Query Material Settings', command=pm.Callback(partial(self.materials_helper_launch, 'query')))
+    pm.menuItem(label='Export Material to O3DE', command=pm.Callback(partial(self.materials_helper_launch, 'convert')))
+
     return _custom_tools_menu
 
 # ==========================================================================
 # Run as LICENSE
-#==========================================================================
-if __name__ == '__main__':
+# ==========================================================================
 
+
+if __name__ == '__main__':
     _custom_menu = set_main_menu()

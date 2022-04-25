@@ -22,6 +22,8 @@
 # @section Maya Materials Notes
 # - Comments are Doxygen compatible
 
+from azpy.dcc.maya.helpers import maya_materials_conversion
+from SDK.Python import general_utilities as helpers
 import logging as _logging
 import maya.cmds as mc
 
@@ -30,7 +32,15 @@ _LOGGER = _logging.getLogger('azpy.dcc.maya.helpers.convert_arnold_material')
 
 def get_material_info(target_material: str):
     material_textures = get_material_textures(target_material)
-    return get_material_settings(material_textures)
+    target_keys = get_transferable_properties()
+    material_settings = maya_materials_conversion.get_material_attributes(target_material, target_keys)
+    material_info = {
+        'material_type': 'aiStandardSurface',
+        'dcc_application': 'Maya',
+        'settings': material_settings,
+        'textures': material_textures
+    }
+    return material_info
 
 
 def get_material_textures(target_material: str):
@@ -56,14 +66,9 @@ def get_material_textures(target_material: str):
             parent_node = mc.listConnections(node, p=True)[0]
             texture_slot = parent_node.split('.')[-1]
         texture_path = mc.getAttr(f'{node}.fileTextureName')
-        arnold_file_connections[texture_slot] = {'node': node, 'path': texture_path}
+        arnold_file_connections[texture_slot] = {'node': node, 'path': helpers.get_clean_path(texture_path)}
 
     return arnold_file_connections
-
-
-def get_material_settings(material_settings):
-    # Find all material settings and insert here
-    return material_settings
 
 
 def get_texture_slot(node_connections):
@@ -81,5 +86,57 @@ def get_texture_slot(node_connections):
 def get_file_node(source_node):
     file_node = mc.listConnections(source_node, type='file', c=True)[1]
     return file_node
+
+
+def get_transferable_properties():
+    """! This is a listing of properties on an aiStandardSurface material that can be directly transferred to an
+    O3DE material. When parsing the material attributes in Maya these values will be extracted and added to scene
+    material information. "*" Indicates a texture slot- if textures don't exist this likely can be controlled with
+    RGB values. This should probably be moved to a constants file once we work out how we are set everything up
+    """
+
+    # Please note: I'm unsure about the differences in mapping between "roughness" and "specular roughness with the
+    # Arnold shader. I'm pretty sure standard "roughness" mapping is found under "Specular" in the material properties
+    # but this is then contends with specularF0 roughness... need to get an answer on this
+    target_properties = {
+        'base': 'baseColor.factor',                     # BASE - Weight
+        'baseColor': 'baseColor.textureMap',            # BASE - * Color
+        'diffuseRoughness': '',                         # BASE - Roughness
+        'metalness': 'metallic.textureMap',             # BASE - Metalness
+
+        'specular': 'roughness.factor',                 # SPECULAR - Weight
+        'specularColor': '',                            # SPECULAR - Color
+        'specularRoughness': 'roughness.textureMap',    # SPECULAR - * Roughness
+        'specularIOR': '',                              # SPECULAR - IOR
+        'specularAnisotropy': '',                       # SPECULAR - Anisotropy
+        'specularRotation': '',                         # SPECULAR - Rotation
+
+        'subsurface': '',                               # SUBSURFACE - Weight
+        'subsurfaceColor': '',                          # SUBSURFACE - * Subsurface Color
+        'subsurfaceRadius': '',                         # SUBSURFACE - Radius
+        'subsurfaceScale': '',                          # SUBSURFACE - Scale
+
+        'coat': 'clearCoat.factor',                     # COAT - Weight
+        'coatColor': 'clearCoat.influenceMap',          # COAT - Color
+        'coatRoughness': 'clearCoat.roughness',         # COAT - Roughness
+        'coatIOR': '',                                  # COAT - IOR
+        'coatAnisotropy': '',                           # COAT - Anisotropy
+        'coatRotation': '',                             # COAT - Rotation
+
+        'sheen': '',                                    # SHEEN - Weight
+        'sheenColor': '',                               # SHEEN - Color
+        'sheenRoughness': '',                           # SHEEN - Roughness
+
+        'emission': 'emissive.intensity',               # EMISSION - Weight
+        'emissionColor': 'emissive.textureMap',         # EMISSION - * Color
+
+        'opacity': 'opacity.textureMap',                # GEOMETRY - Opacity
+        'normalCamera': 'normal.textureMap',            # GEOMETRY - * Bump Mapping (Normal Map input)
+
+        'aiEnableMatte': '',                            # MATTE - * Enable Matte (Alpha)
+        'aiMatteColor': 'opacity.textureMap',           # MATTE - Matte Color
+        'aiMatteColorA': 'opacity.factor',              # MATTE - Matte Opacity
+    }
+    return target_properties
 
 

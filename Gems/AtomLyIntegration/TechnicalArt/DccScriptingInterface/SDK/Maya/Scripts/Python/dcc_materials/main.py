@@ -464,7 +464,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         # TODO- Set load process to a separate thread and wire load progress bar up
 
         try:
-            script_path = str(os.path.join(self.directory_path, 'maya_materials.py'))
+            script_path = str(os.path.join(self.directory_path, 'maya_materials_conversion.py'))
             target_files.append(self.total_materials)
             runtime_env = os.environ.copy()
             runtime_env['MAYA_LOCATION'] = os.path.dirname(self.mayapy_path)

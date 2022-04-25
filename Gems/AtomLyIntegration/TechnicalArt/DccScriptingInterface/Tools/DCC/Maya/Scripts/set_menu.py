@@ -16,7 +16,8 @@ This module creates and manages a DCCsi mainmenu
 """
 # -------------------------------------------------------------------------
 # -- Standard Python modules
-# none
+from functools import partial
+import importlib
 
 # -- External Python modules
 # none
@@ -47,10 +48,11 @@ _LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
-# -------------------------------------------------------------------------
-def menu_cmd_test():
-    _LOGGER.info('test_func(), is TESTING main menu')
-    return
+# MATERIALS HELPER --------------------------------------------------------
+def materials_helper_launch(operation):
+    _LOGGER.info(f'MaterialsHelperLaunch: {operation}')
+    materials_helper = importlib.import_module('SDK.Maya.Scripts.Python.maya_menu_items.materials_helper')
+    materials_helper.MaterialsHelper(operation).set_window()
 # -------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------
@@ -64,20 +66,25 @@ def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
     if pm.menu(_menu_obj, label=_menu_label, exists=True, parent=_main_window):
         pm.deleteUI(pm.menu(_menu_obj, e=True, deleteAllItems=True))
 
-    # create the main menu object
+    # Main menu object
     _custom_tools_menu = pm.menu(_menu_obj,
                                  label=_menu_label,
                                  parent=_main_window,
                                  tearOff=True)
 
-    # make a dummpy sub-menu
-    pm.menuItem(label='Menu Item Stub',
+    # +++++++++++++++++--->>
+    # Materials Helper ---->>
+    # +++++++++++++++++--->>
+
+    pm.menuItem(label='Materials Helper',
                 subMenu=True,
                 parent=_custom_tools_menu,
                 tearOff=True)
     
-    # make a dummy menu item to test
-    pm.menuItem(label='Test', command=pm.Callback(menu_cmd_test))
+    # Sub-menu items
+    pm.menuItem(label='Query Material Settings', command=pm.Callback(partial(materials_helper_launch, 'query')))
+    pm.menuItem(label='Export Material to O3DE', command=pm.Callback(partial(materials_helper_launch, 'convert')))
+
     return _custom_tools_menu
 
 # ==========================================================================
