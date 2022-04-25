@@ -1,24 +1,16 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
     "materialTypeVersion": 5,
-    "properties": {
-        "general": {
-            "doubleSided": true
-        },
-        "baseColor": {
-            "color": [
-                0.8207980394363403,
-                1.0,
-                0.0,
-                1.0
-            ]
-        },
-        "opacity": {
-            "alphaSource": "None",
-            "factor": 1.0,
-            "mode": "Cutout"
-        }
+    "propertyValues": {
+        "baseColor.color": [
+            0.8207980394363403,
+            1.0,
+            0.0,
+            1.0
+        ],
+        "general.doubleSided": true,
+        "opacity.alphaSource": "None",
+        "opacity.factor": 1.0,
+        "opacity.mode": "Cutout"
     }
 }

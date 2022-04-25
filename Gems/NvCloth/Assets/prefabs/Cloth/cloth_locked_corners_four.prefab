@@ -108,7 +108,7 @@
                     "$type": "EditorClothComponent",
                     "Id": 15114198178471353754,
                     "Configuration": {
-                        "Mesh Node": "pPlane1_1",
+                        "Mesh Node": "pPlane1",
                         "Stiffness Frequency": 1.0,
                         "Damping": [
                             0.0,
@@ -174,46 +174,7 @@
                                 }
                             ]
                         }
-                    },
-                    "materialSlots": [
-                        {
-                            "id": {
-                                "materialSlotStableId": 902256226
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{838EA487-0F74-5448-AABE-947B138CD6C2}"
-                                },
-                                "assetHint": "objects/cloth/environment/cloth_locked_corners_four.azmaterial"
-                            },
-                            "defaultMaterialAsset": {
-                                "assetId": {
-                                    "guid": "{89C91D92-7B4E-5EB5-945D-0053111859EE}",
-                                    "subId": 902256226
-                                },
-                                "loadBehavior": "PreLoad",
-                                "assetHint": "objects/cloth/environment/cloth_locked_corners_four_lambert1_3614897150141879906.azmaterial"
-                            }
-                        }
-                    ],
-                    "materialSlotsByLod": [
-                        [
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialSlotStableId": 902256226
-                                },
-                                "defaultMaterialAsset": {
-                                    "assetId": {
-                                        "guid": "{89C91D92-7B4E-5EB5-945D-0053111859EE}",
-                                        "subId": 902256226
-                                    },
-                                    "loadBehavior": "PreLoad",
-                                    "assetHint": "objects/cloth/environment/cloth_locked_corners_four_lambert1_3614897150141879906.azmaterial"
-                                }
-                            }
-                        ]
-                    ]
+                    }
                 },
                 "Component_[8417657922837077982]": {
                     "$type": "EditorVisibilityComponent",
