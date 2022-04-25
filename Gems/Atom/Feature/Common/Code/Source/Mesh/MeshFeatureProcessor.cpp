@@ -1348,24 +1348,30 @@ namespace AZ
                     RHI::ShaderInputImageIndex reflectionCubeMapImageIndex = objectSrg->FindShaderInputImageIndex(reflectionCubeMapImageName);
                     AZ_Error("ModelDataInstance", reflectionCubeMapImageIndex.IsValid(), "Failed to find shader image index [%s]", reflectionCubeMapImageName.GetCStr());
 
-                    // retrieve the list of probes that contain the centerpoint of the mesh
+                    // retrieve the list of probes that overlap the mesh bounds
                     TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
                     Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
 
-                    ReflectionProbeFeatureProcessor::ReflectionProbeVector reflectionProbes;
-                    reflectionProbeFeatureProcessor->FindReflectionProbes(transform.GetTranslation(), reflectionProbes);
+                    Aabb aabbWS = m_aabb;
+                    aabbWS.ApplyTransform(transform);
 
-                    if (!reflectionProbes.empty() && reflectionProbes[0])
+                    ReflectionProbeHandleVector reflectionProbeHandles;
+                    reflectionProbeFeatureProcessor->FindReflectionProbes(aabbWS, reflectionProbeHandles);
+
+                    if (!reflectionProbeHandles.empty())
                     {
-                        objectSrg->SetConstant(modelToWorldConstantIndex, reflectionProbes[0]->GetTransform());
-                        objectSrg->SetConstant(modelToWorldInverseConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbes[0]->GetTransform()).GetInverseFull());
-                        objectSrg->SetConstant(outerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetOuterObbWs().GetHalfLengths());
-                        objectSrg->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetInnerObbWs().GetHalfLengths());
-                        objectSrg->SetConstant(useReflectionProbeConstantIndex, true);
-                        objectSrg->SetConstant(useParallaxCorrectionConstantIndex, reflectionProbes[0]->GetUseParallaxCorrection());
-                        objectSrg->SetConstant(exposureConstantIndex, reflectionProbes[0]->GetRenderExposure());
+                        // take the last handle from the list, which will be the smallest (most influential) probe
+                        ReflectionProbeHandle handle = reflectionProbeHandles.back();
 
-                        objectSrg->SetImage(reflectionCubeMapImageIndex, reflectionProbes[0]->GetCubeMapImage());
+                        objectSrg->SetConstant(modelToWorldConstantIndex, reflectionProbeFeatureProcessor->GetTransform(handle));
+                        objectSrg->SetConstant(modelToWorldInverseConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbeFeatureProcessor->GetTransform(handle)).GetInverseFull());
+                        objectSrg->SetConstant(outerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetOuterObbWs(handle).GetHalfLengths());
+                        objectSrg->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetInnerObbWs(handle).GetHalfLengths());
+                        objectSrg->SetConstant(useReflectionProbeConstantIndex, true);
+                        objectSrg->SetConstant(useParallaxCorrectionConstantIndex, reflectionProbeFeatureProcessor->GetUseParallaxCorrection(handle));
+                        objectSrg->SetConstant(exposureConstantIndex, reflectionProbeFeatureProcessor->GetRenderExposure(handle));
+
+                        objectSrg->SetImage(reflectionCubeMapImageIndex, reflectionProbeFeatureProcessor->GetCubeMap(handle));
                     }
                     else
                     {
