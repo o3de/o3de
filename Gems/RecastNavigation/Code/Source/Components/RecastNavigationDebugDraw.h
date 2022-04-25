@@ -30,7 +30,6 @@ namespace RecastNavigation
         void depthMask([[maybe_unused]] bool state) override {}
         //! Not implemented
         void texture([[maybe_unused]] bool state) override {}
-
         void begin(duDebugDrawPrimitives prim, float size = 1.0f) override;
         void vertex(const float* pos, unsigned int color) override;
         void vertex(const float x, const float y, const float z, unsigned int color) override;
