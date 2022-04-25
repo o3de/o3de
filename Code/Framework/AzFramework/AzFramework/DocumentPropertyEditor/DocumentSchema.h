@@ -52,11 +52,43 @@ namespace AZ::DocumentPropertyEditor
         return AZ::Name(NodeDefinition::Name);
     }
 
-    //! Defines a definition for a PropertyEditor, specified as the type of a PropertyEditor node
-    struct PropertyEditorDefinition
+    struct NodeMetadata
     {
-        static constexpr AZStd::string_view Name = "<undefined editor name>";
+        template<typename NodeDefinition>
+        static NodeMetadata FromType(const NodeMetadata* parent = nullptr)
+        {
+            NodeMetadata metadata;
+            metadata.m_name = GetNodeName<NodeDefinition>();
+            metadata.m_parent = parent;
+            metadata.m_canAddToParentNode = &NodeDefinition::CanAddToParentNode;
+            metadata.m_canBeParentToValue = &NodeDefinition::CanBeParentToValue;
+            return metadata;
+        }
+
+        template <typename ParentNode>
+        bool InheritsFrom() const
+        {
+            const Name targetParentName = GetNodeName<ParentNode>();
+            const NodeMetadata* parent = this;
+            while (parent != nullptr)
+            {
+                if (parent->m_name == targetParentName)
+                {
+                    return true;
+                }
+                parent = parent->m_parent;
+            }
+            return false;
+        }
+
+        AZ::Name m_name;
+        AZStd::function<bool(const Dom::Value&)> m_canAddToParentNode;
+        AZStd::function<bool(const Dom::Value&)> m_canBeParentToValue;
+        const NodeMetadata* m_parent = nullptr;
     };
+
+    using PropertyEditorMetadata = NodeMetadata;
+    using PropertyEditorDefinition = NodeDefinition;
 
     //! Defines an attribute applicable to a Node.
     //! Attributes may be defined inline inside of a NodeDefinition.
@@ -102,8 +134,28 @@ namespace AZ::DocumentPropertyEditor
             return {};
         }
 
+        AZ::TypeId GetTypeId() const
+        {
+            return azrtti_typeid<AttributeType>();
+        }
+
     protected:
         AZStd::fixed_string<128> m_name;
+    };
+
+    struct AttributeMetadata
+    {
+        template <typename AttributeDefinition>
+        static AttributeMetadata FromDefinition(const AttributeDefinition& definition, const NodeMetadata* node)
+        {
+            AttributeMetadata metadata;
+            metadata.m_name = definition.GetName();
+            metadata.m_node = node;
+            return metadata;
+        }
+
+        AZ::Name m_name;
+        const NodeMetadata* m_node;
     };
 
     //! Defines a callback applicable to a Node.
@@ -136,7 +188,7 @@ namespace AZ::DocumentPropertyEditor
             }
         };
 
-        template <typename... Args>
+        template<typename... Args>
         struct Traits<void(Args...)>
         {
             using ResultType = AZ::Outcome<void, ErrorType>;
