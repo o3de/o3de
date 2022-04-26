@@ -575,6 +575,20 @@ namespace AtomToolsFramework
         SetStatusMessage(tr("Document closed: %1").arg(GetDocumentPath(documentId)));
     }
 
+    void AtomToolsDocumentMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
+    {
+        UpdateDocumentTab(documentId);
+        QueueUpdateMenus(true);
+        SetStatusMessage(tr("Document cleared: %1").arg(GetDocumentPath(documentId)));
+    }
+
+    void AtomToolsDocumentMainWindow::OnDocumentError(const AZ::Uuid& documentId)
+    {
+        UpdateDocumentTab(documentId);
+        QueueUpdateMenus(true);
+        SetStatusError(tr("Document error: %1").arg(GetDocumentPath(documentId)));
+    }
+
     void AtomToolsDocumentMainWindow::OnDocumentDestroyed(const AZ::Uuid& documentId)
     {
         RemoveDocumentTab(documentId);

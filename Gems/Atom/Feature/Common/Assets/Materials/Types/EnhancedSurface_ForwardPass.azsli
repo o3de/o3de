@@ -96,13 +96,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Tangents & Bitangets -------
     float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
     float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
-
-    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering) || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture)
+    
+    if (ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture)
     {
         for (int i = 0; i != UvSetCount; ++i)
         {
             EvaluateTangentFrame(
-                IN.m_normal,
+                vertexNormal,
                 IN.m_worldPosition, 
                 isFrontFace,
                 IN.m_uv[i],
@@ -125,7 +125,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     {
         EnhancedSetPixelDepth(
             IN.m_worldPosition,
-            IN.m_normal,
+            vertexNormal,
             tangents,
             bitangents,
             IN.m_uv,
@@ -155,7 +155,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // TODO: this often invokes a separate sample of the base color texture which is wasteful
     float alpha = GetAlphaAndClip(IN.m_uv);
 
-    EvaluateEnhancedSurface(IN.m_normal, IN.m_uv, IN.m_detailUv, tangents, bitangents, isFrontFace, displacementIsClipped, surface, surfaceSettings);
+    EvaluateEnhancedSurface(vertexNormal, IN.m_uv, IN.m_detailUv, tangents, bitangents, isFrontFace, displacementIsClipped, surface, surfaceSettings);
 
     // ------- Lighting Data -------
 
