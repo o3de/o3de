@@ -36,6 +36,8 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Component/Entity.h>
 
+#include <inttypes.h>
+
 // Copied from ModelAssetBuilderComponent.cpp
 namespace
 {
@@ -140,7 +142,8 @@ namespace AZ
                         if (metaData.m_morphTargetName == morphTarget->GetNameString() && metaData.m_numVertices > 0)
                         {
                             // The skinned mesh lod gets a unique morph for each meta, since each one has unique min/max delta values to use for decompression
-                            const AZStd::string morphString = AZStd::string::format("%s_Lod%"PRIu32"_Morph_%s", fullFileName.c_str(), lodIndex, metaData.m_meshNodeName.c_str());
+                            const AZStd::string morphString = AZStd::string::format(
+                                "%s_Lod%" PRIu32 "_Morph_%s", fullFileName.c_str(), lodIndex, metaData.m_meshNodeName.c_str());
 
                             float minWeight = morphTarget->GetRangeMin();
                             float maxWeight = morphTarget->GetRangeMax();
