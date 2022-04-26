@@ -9,29 +9,30 @@
 #include "EditorDefs.h"
 
 // Editor
-#include "Resource.h"
-#include "LevelEditorMenuHandler.h"
 #include "CryEdit.h"
-#include "MainWindow.h"
-#include "QtViewPaneManager.h"
-#include "ToolBox.h"
 #include "Include/IObjectManager.h"
+#include "LevelEditorMenuHandler.h"
+#include "MainWindow.h"
 #include "Objects/SelectionGroup.h"
+#include "QtViewPaneManager.h"
+#include "Resource.h"
+#include "ToolBox.h"
 #include "ViewManager.h"
 
 #include <AzCore/Interface/Interface.h>
 
 // Qt
-#include <QMenuBar>
-#include <QUrlQuery>
 #include <QDesktopServices>
 #include <QHBoxLayout>
+#include <QMenuBar>
 #include <QUrl>
+#include <QUrlQuery>
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
@@ -185,6 +186,11 @@ LevelEditorMenuHandler::~LevelEditorMenuHandler()
 
 void LevelEditorMenuHandler::Initialize()
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     // make sure we can fix the view menus
     connect(
         m_viewPaneManager, &QtViewPaneManager::registeredPanesChanged,
@@ -1195,6 +1201,11 @@ void LevelEditorMenuHandler::AddDisableActionInSimModeListener(QAction* action)
 void LevelEditorMenuHandler::OnEditorModeActivated(
     [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     if (mode == ViewportEditorMode::Component)
     {
         if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
@@ -1228,6 +1239,11 @@ void LevelEditorMenuHandler::OnEditorModeDeactivated(
 
 void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
         !menuWrapper.isNull())
     {
@@ -1237,6 +1253,11 @@ void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
 
 void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     auto menuWrapper = m_actionManager->FindMenu(categoryId.data());
     if (menuWrapper.isNull())
     {
@@ -1253,6 +1274,11 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
         !menuWrapper.isNull())
     {
