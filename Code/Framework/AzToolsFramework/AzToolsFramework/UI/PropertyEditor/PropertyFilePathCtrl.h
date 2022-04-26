@@ -44,7 +44,7 @@ namespace AzToolsFramework
         void SetDefaultFileName(const AZStd::string& fileName);
   
     Q_SIGNALS:
-        void valueChanged(AZ::IO::Path newPath);
+        void FilePathChanged();
 
     public Q_SLOTS:
         void SetFilePath(AZ::IO::Path filePath);

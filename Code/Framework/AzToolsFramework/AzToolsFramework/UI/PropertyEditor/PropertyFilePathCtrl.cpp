@@ -34,9 +34,11 @@ namespace AzToolsFramework
 
         m_browseEdit = new AzQtComponents::BrowseEdit(this);
         m_browseEdit->lineEdit()->setFocusPolicy(Qt::StrongFocus);
+        m_browseEdit->setLineEditReadOnly(true);
         m_browseEdit->setClearButtonEnabled(true);
         m_browseEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         QObject::connect(m_browseEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &PropertyFilePathCtrl::OnOpenButtonClicked);
+        QObject::connect(m_browseEdit->lineEdit(), &QLineEdit::textChanged, this, &PropertyFilePathCtrl::FilePathChanged);
 
         QToolButton* clearButton = AzQtComponents::LineEdit::getClearButton(m_browseEdit->lineEdit());
         AZ_Assert(clearButton, "Clear button missing from BrowseEdit");
@@ -57,7 +59,7 @@ namespace AzToolsFramework
         m_currentFilePath = filePath;
         m_browseEdit->setText(filePath.c_str());
 
-        Q_EMIT valueChanged(m_currentFilePath);
+        Q_EMIT FilePathChanged();
     }
 
     AZ::IO::Path PropertyFilePathCtrl::GetFilePath() const
@@ -261,7 +263,7 @@ namespace AzToolsFramework
     {
         PropertyFilePathCtrl* newCtrl = aznew PropertyFilePathCtrl(parent);
 
-        QObject::connect(newCtrl, &PropertyFilePathCtrl::valueChanged, this, [newCtrl]()
+        QObject::connect(newCtrl, &PropertyFilePathCtrl::FilePathChanged, this, [newCtrl]()
         {
             PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::RequestWrite, newCtrl);
             PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
