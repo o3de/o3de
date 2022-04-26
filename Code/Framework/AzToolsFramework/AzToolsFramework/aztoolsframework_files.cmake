@@ -115,6 +115,8 @@ set(FILES
     ContainerEntity/ContainerEntityNotificationBus.h
     ContainerEntity/ContainerEntitySystemComponent.cpp
     ContainerEntity/ContainerEntitySystemComponent.h
+    Editor/ActionManagerUtils.cpp
+    Editor/ActionManagerUtils.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
     Editor/RichTextHighlighter.h

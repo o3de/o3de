@@ -58,7 +58,7 @@ namespace UnitTest
         static size_t GetEntryCount()
         {
             // Subtract any static scope names hanging around
-            AZ::Name* head = AZ::NameDictionary::Instance().m_deferredHead;
+            AZ::Name* head = &AZ::NameDictionary::Instance().m_deferredHead;
             size_t staticNameCount = 0;
             AZ::Name* current = head;
             while (current != nullptr)
