@@ -38,7 +38,6 @@ namespace AzToolsFramework
         m_browseEdit->setClearButtonEnabled(true);
         m_browseEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         QObject::connect(m_browseEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &PropertyFilePathCtrl::OnOpenButtonClicked);
-        QObject::connect(m_browseEdit->lineEdit(), &QLineEdit::textChanged, this, &PropertyFilePathCtrl::FilePathChanged);
 
         QToolButton* clearButton = AzQtComponents::LineEdit::getClearButton(m_browseEdit->lineEdit());
         AZ_Assert(clearButton, "Clear button missing from BrowseEdit");
@@ -227,6 +226,8 @@ namespace AzToolsFramework
     {
         m_currentFilePath.clear();
         m_browseEdit->lineEdit()->clearFocus();
+
+        Q_EMIT FilePathChanged();
     }
 
     void PropertyFilePathHandler::ConsumeAttribute(PropertyFilePathCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, [[maybe_unused]] const char* debugName)
