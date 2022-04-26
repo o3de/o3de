@@ -111,9 +111,9 @@ namespace Terrain
         void GenerateHeightsInBounds(AZStd::vector<float>& heights) const;
         AZ::Aabb GetRegionClampedToGrid(const AZ::Aabb& region) const;
 
-        void NotifyListenersOfHeightfieldDataChange(const AZ::Aabb* dirtyRegion = nullptr,
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask =
-                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified);
+        void NotifyListenersOfHeightfieldDataChange(
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask,
+            const AZ::Aabb& dirtyRegion);
 
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
@@ -124,5 +124,6 @@ namespace Terrain
 
     private:
         TerrainPhysicsColliderConfig m_configuration;
+        bool m_terrainDataActive = false;
     };
 }
