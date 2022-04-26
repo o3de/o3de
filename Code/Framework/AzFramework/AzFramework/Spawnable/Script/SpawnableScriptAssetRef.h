@@ -36,6 +36,20 @@ namespace AzFramework::Scripts
         AZ::Data::Asset<Spawnable> GetAsset() const;
 
     private:
+        class SerializationEvents : public AZ::SerializeContext::IEventHandler
+        {
+            void OnReadEnd(void* classPtr) override
+            {
+                // Listen to OnAssetReloaded as soon as m_asset is assigned
+                SpawnableScriptAssetRef* spawnableScriptAssetRef = reinterpret_cast<SpawnableScriptAssetRef*>(classPtr);
+                if (spawnableScriptAssetRef->m_asset.GetId().IsValid())
+                {
+                    spawnableScriptAssetRef->BusDisconnect();
+                    spawnableScriptAssetRef->BusConnect(spawnableScriptAssetRef->m_asset.GetId());
+                }
+            }
+        };
+
         void OnSpawnAssetChanged();
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 

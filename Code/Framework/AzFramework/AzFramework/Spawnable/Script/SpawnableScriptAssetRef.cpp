@@ -21,7 +21,9 @@ namespace AzFramework::Scripts
         {
             serializeContext
                 ->Class<SpawnableScriptAssetRef>()
-                ->Field("asset", &SpawnableScriptAssetRef::m_asset);
+                ->EventHandler<SerializationEvents>()
+                ->Field("asset", &SpawnableScriptAssetRef::m_asset)
+            ;
 
             serializeContext->RegisterGenericType<AZStd::vector<SpawnableScriptAssetRef>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, SpawnableScriptAssetRef>>();
