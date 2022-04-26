@@ -56,6 +56,8 @@ namespace AZ::DocumentPropertyEditor
         //! GetContents() result).
         void ConnectChangedHandler(ChangedEvent::Handler& handler);
 
+        //! Sets a router responsible for chaining nested adapters, if supported.
+        //! \see RoutingAdapter
         virtual void SetRouter(RoutingAdapter* router, const Dom::Path& route);
 
     protected:
