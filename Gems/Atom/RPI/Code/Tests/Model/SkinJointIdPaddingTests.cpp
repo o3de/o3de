@@ -15,7 +15,7 @@ namespace UnitTest
     {
         for (uint32_t jointIdCount = 1; jointIdCount <= 32; ++jointIdCount)
         {
-            uint32_t byteSize = (CalculateJointIdPaddingCount(jointIdCount) + jointIdCount) * sizeof(uint16_t);
+            uint32_t byteSize = (AZ::RPI::CalculateJointIdPaddingCount(jointIdCount) + jointIdCount) * sizeof(uint16_t);
             // Validate that the size in bytes of a given number of joints plus their padding will always be 16-byte aligned
             EXPECT_EQ(byteSize % 16, 0);
         }

@@ -33,7 +33,7 @@ namespace AZ
                 // Get the project wide default settings for the skin rule
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
-                    uint64_t defaultMaxSkinInfluences = 0;
+                    AZ::u64 defaultMaxSkinInfluences = 0;
                     if (settingsRegistry->Get(defaultMaxSkinInfluences, SceneAPI::DataTypes::DefaultMaxSkinInfluencesPerVertexKey))
                     {
                         defaultSettings.m_maxInfluencesPerVertex = aznumeric_caster(defaultMaxSkinInfluences);

@@ -41,7 +41,6 @@ namespace AZ
             const size_t modelLodCount = m_instance->m_model->GetLodCount();
             m_featureProcessor = featureProcessor;
 
-            m_dispatchItemsByLod.reserve(modelLodCount);
             for (uint32_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
             {
                 if (!BuildDispatchItem(scene, modelLodIndex, m_shaderOptions))
