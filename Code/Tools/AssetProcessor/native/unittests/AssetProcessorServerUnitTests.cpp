@@ -16,6 +16,7 @@
 #include <native/connection/connectionManager.h>
 #include <native/utilities/assetUtils.h> // for AssetUtilities::ComputeProjectName
 #include <native/utilities/BatchApplicationManager.h>
+#include <native/utilities/ApplicationServer.h>
 #include <native/utilities/BatchApplicationServer.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <QApplication>
