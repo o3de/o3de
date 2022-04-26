@@ -25,69 +25,6 @@ namespace AzToolsFramework
 
         namespace Internal
         {
-            static constexpr AZStd::string_view PathMatchingEntities = "/Entities";
-            static constexpr AZStd::string_view PathStartingWithEntities = "/Entities/";
-            static constexpr AZStd::string_view PathMatchingContainerEntity = "/ContainerEntity";
-
-            //! Identifies the instance members to reload by parsing through the patches provided.
-            static void IdentifyInstanceMembersToReload(
-                PrefabDom& patches,
-                AZStd::unordered_set<EntityAlias>& entitiesToReload,
-                AZStd::unordered_set<EntityAlias>& entitiesToRemove,
-                bool& shouldReloadContainerEntity,
-                bool& clearAndLoadAllEntities)
-            {
-                for (const PrefabDomValue& patchEntry : patches.GetArray())
-                {
-                    PrefabDomValue::ConstMemberIterator patchEntryIterator = patchEntry.FindMember("path");
-                    if (patchEntryIterator != patchEntry.MemberEnd())
-                    {
-                        AZStd::string_view patchPath = patchEntryIterator->value.GetString();
-
-                        if (patchPath == PathMatchingEntities)
-                        {
-                            clearAndLoadAllEntities = true;
-                        }
-                        else if (patchPath.starts_with(PathStartingWithEntities))
-                        {
-                            if (clearAndLoadAllEntities)
-                            {
-                                continue;
-                            }
-
-                            patchPath.remove_prefix(PathStartingWithEntities.size());
-                            AZStd::size_t pathSeparatorIndex = patchPath.find('/');
-                            if (pathSeparatorIndex != AZStd::string::npos)
-                            {
-                                entitiesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
-                            }
-                            else
-                            {
-                                patchEntryIterator = patchEntry.FindMember("op");
-                                if (patchEntryIterator != patchEntry.MemberEnd())
-                                {
-                                    AZStd::string opPath = patchEntryIterator->value.GetString();
-
-                                    if (opPath == "remove")
-                                    {
-                                        entitiesToRemove.emplace(AZStd::move(patchPath));
-                                    }
-                                    else if (opPath == "add" || opPath == "replace")
-                                    {
-                                        // Could be an add or change from empty->full. The later case is rare but not impossible.
-                                        entitiesToReload.emplace(AZStd::move(patchPath));
-                                    }
-                                }
-                            }
-                        }
-                        else if (patchPath.starts_with(PathMatchingContainerEntity))
-                        {
-                            shouldReloadContainerEntity = true;
-                        }
-                    }
-                }
-            }
-
             static void AddEntitiesToScrub(
                 const AZStd::span<AZ::Entity*>& entitiesModified, AZ::JsonDeserializerContext& jsonDeserializerContext)
             {
@@ -151,8 +88,8 @@ namespace AzToolsFramework
                 const Instance::AliasToInstanceMap* instances = &instance->m_nestedInstances;
                 const Instance::AliasToInstanceMap* defaultInstances = defaultInstance ? &defaultInstance->m_nestedInstances : nullptr;
 
-                JSR::ResultCode resultInstances =
-                    ContinueStoringToJsonObjectField(outputValue, "Instances",
+                JSR::ResultCode resultInstances = ContinueStoringToJsonObjectField(
+                    outputValue, "Instances",
                         instances, defaultInstances, azrtti_typeid<Instance::AliasToInstanceMap>(), context);
 
                 result.Combine(resultInstances);
@@ -217,43 +154,6 @@ namespace AzToolsFramework
             }
 
             {
-                instance->m_nestedInstances.clear();
-
-                // Load nested instances iteratively
-                // We want to first create the nested instance object and assign its alias and parent pointer
-                // These values are needed for the idmapper to properly resolve alias paths
-                auto instancesMemberIter = inputValue.FindMember("Instances");
-                if (instancesMemberIter != inputValue.MemberEnd() && instancesMemberIter->value.IsObject())
-                {
-                    for (auto& instanceIter : instancesMemberIter->value.GetObject())
-                    {
-                        const rapidjson::Value& instanceAliasValue = instanceIter.name;
-
-                        InstanceAlias instanceAlias(instanceAliasValue.GetString(),
-                            instanceAliasValue.GetStringLength());
-
-                        AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>();
-
-                        nestedInstance->m_alias = instanceAlias;
-                        nestedInstance->m_parent = instance;
-
-                        result.Combine(
-                            ContinueLoading(&nestedInstance, azrtti_typeid<decltype(nestedInstance)>(),
-                            instanceIter.value, context));
-
-                        instance->m_nestedInstances.emplace(
-                            instanceAlias,
-                            AZStd::move(nestedInstance));
-                    }
-                }
-            }
-
-            if (idMapper && *idMapper)
-            {
-                (*idMapper)->SetLoadingInstance(*instance);
-            }
-
-            {
                 result.Combine(
                     ContinueLoadingFromJsonObjectField(&instance->m_linkId, azrtti_typeid<LinkId>(), inputValue, "LinkId", context));
             }
@@ -263,6 +163,13 @@ namespace AzToolsFramework
 
             if (instanceDomMetadata == nullptr || cachedInstanceDom == AZStd::nullopt)
             {
+                ClearAndLoadInstances(inputValue, context, instance, result);
+
+                if (idMapper && *idMapper)
+                {
+                    (*idMapper)->SetLoadingInstance(*instance);
+                }
+
                 {
                     instance->DetachContainerEntity();
                     JSR::ResultCode containerEntityResult = ContinueLoadingFromJsonObjectField(
@@ -337,6 +244,39 @@ namespace AzToolsFramework
             Internal::AddEntitiesToScrub(entitiesLoaded, context);
         }
 
+        void JsonInstanceSerializer::ClearAndLoadInstances(
+            const rapidjson::Value& inputValue,
+            AZ::JsonDeserializerContext& context,
+            Instance* instance,
+            AZ::JsonSerializationResult::ResultCode& result)
+        {
+            instance->m_nestedInstances.clear();
+
+            // Load nested instances iteratively
+            // We want to first create the nested instance object and assign its alias and parent pointer
+            // These values are needed for the idmapper to properly resolve alias paths
+            auto instancesMemberIter = inputValue.FindMember(PrefabDomUtils::InstancesName);
+            if (instancesMemberIter != inputValue.MemberEnd() && instancesMemberIter->value.IsObject())
+            {
+                for (auto& instanceIter : instancesMemberIter->value.GetObject())
+                {
+                    const rapidjson::Value& instanceAliasValue = instanceIter.name;
+
+                    InstanceAlias instanceAlias(instanceAliasValue.GetString(), instanceAliasValue.GetStringLength());
+
+                    AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>();
+
+                    nestedInstance->m_alias = instanceAlias;
+                    nestedInstance->m_parent = instance;
+
+                    result.Combine(
+                        ContinueLoading(&nestedInstance, azrtti_typeid<decltype(nestedInstance)>(), instanceIter.value, context));
+
+                    instance->m_nestedInstances.emplace(instanceAlias, AZStd::move(nestedInstance));
+                }
+            }
+        }
+
         void JsonInstanceSerializer::Reload(
             const rapidjson::Value& inputValue,
             AZ::JsonDeserializerContext& context,
@@ -344,15 +284,69 @@ namespace AzToolsFramework
             PrefabDom patches,
             AZ::JsonSerializationResult::ResultCode& result)
         {
-            AZStd::unordered_set<EntityAlias> entitiesToReload;
-            AZStd::unordered_set<EntityAlias> entitiesToRemove;
-            bool shouldReloadContainerEntity = false;
-            bool clearAndLoadAllEntities = false;
+            PrefabDomUtils::PatchesMetadata patchesMetadata = PrefabDomUtils::IdentifyModifiedInstanceMembers(patches);
 
-            Internal::IdentifyInstanceMembersToReload(
-                patches, entitiesToReload, entitiesToRemove, shouldReloadContainerEntity, clearAndLoadAllEntities);
+            if (patchesMetadata.m_clearAndLoadAllInstances)
+            {
+                ClearAndLoadInstances(inputValue, context, instance, result);
+            }
+            else
+            {
+                auto instancesMemberIterator = inputValue.FindMember(PrefabDomUtils::InstancesName);
+                if (instancesMemberIterator != inputValue.MemberEnd() && instancesMemberIterator->value.IsObject())
+                {
+                    // Remove nested instances identified in patches metadata.
+                    for (const AZStd::string& instanceAlias : patchesMetadata.m_instancesToRemove)
+                    {
+                        instance->DetachNestedInstance(instanceAlias);
+                    }
 
-            if (shouldReloadContainerEntity)
+                    // Add nested instances identified in patches metadata.
+                    for (const AZStd::string& instanceAlias : patchesMetadata.m_instancesToAdd)
+                    {
+                        AZStd::unique_ptr<Instance> detachedInstance = instance->DetachNestedInstance(instanceAlias);
+                        detachedInstance.reset();
+
+                        AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>();
+
+                        nestedInstance->m_alias = instanceAlias;
+                        nestedInstance->m_parent = instance;
+
+                        auto instanceIter = instancesMemberIterator->value.FindMember(instanceAlias.c_str());
+                        result.Combine(
+                            ContinueLoading(&nestedInstance, azrtti_typeid<decltype(nestedInstance)>(), instanceIter->value, context));
+
+                        instance->m_nestedInstances.emplace(instanceAlias, AZStd::move(nestedInstance));
+
+                        PrefabDomUtils::InstanceDomMetadata* instanceDomMetadata =
+                            context.GetMetadata().Find<PrefabDomUtils::InstanceDomMetadata>();
+                        if (instanceDomMetadata)
+                        {
+                            instance->SetCachedInstanceDom(instanceIter->value);
+                        }
+                    }
+
+                    // Reload nested instances identified in patches metadata. This will trigger further instance loads recursively.
+                    for (const AZStd::string& instanceAlias : patchesMetadata.m_instancesToReload)
+                    {
+                        InstanceOptionalReference nestedInstance = instance->FindNestedInstance(instanceAlias);
+                        if (nestedInstance.has_value())
+                        {
+                            auto instanceIter = instancesMemberIterator->value.FindMember(instanceAlias.c_str());
+                            result.Combine(ContinueLoading(
+                                &nestedInstance->get(), azrtti_typeid<decltype(nestedInstance->get())>(), instanceIter->value, context));
+                        }
+                    }
+                }
+            }
+
+            InstanceEntityIdMapper** idMapper = context.GetMetadata().Find<InstanceEntityIdMapper*>();
+            if (idMapper && *idMapper)
+            {
+                (*idMapper)->SetLoadingInstance(*instance);
+            }
+
+            if (patchesMetadata.m_shouldReloadContainerEntity)
             {
                 if (instance->m_containerEntity)
                 {
@@ -373,7 +367,7 @@ namespace AzToolsFramework
                 }
             }
 
-            if (clearAndLoadAllEntities)
+            if (patchesMetadata.m_clearAndLoadAllEntities)
             {
                 ClearAndLoadEntities(inputValue, context, instance, result);
             }
@@ -382,8 +376,8 @@ namespace AzToolsFramework
                 auto entitiesMemberIterator = inputValue.FindMember("Entities");
                 if (entitiesMemberIterator != inputValue.MemberEnd() && entitiesMemberIterator->value.IsObject())
                 {
-
-                    for (AZStd::string entityAlias : entitiesToRemove)
+                    // Remove entities identified in patches metadata.
+                    for (AZStd::string entityAlias : patchesMetadata.m_entitiesToRemove)
                     {
                         EntityOptionalReference existingEntity = instance->GetEntity(entityAlias);
 
@@ -394,9 +388,10 @@ namespace AzToolsFramework
                     }
 
                     EntityList entitiesLoaded;
-                    entitiesLoaded.reserve(entitiesToReload.size());
+                    entitiesLoaded.reserve(patchesMetadata.m_entitiesToReload.size());
 
-                    for (AZStd::string entityAlias : entitiesToReload)
+                    // Reload entities identified in patches metadata. This includes addition of new entities too.
+                    for (AZStd::string entityAlias : patchesMetadata.m_entitiesToReload)
                     {
                         EntityOptionalReference existingEntity = instance->GetEntity(entityAlias);
 
@@ -418,3 +413,4 @@ namespace AzToolsFramework
         }
     } // namespace Prefab
 } // namespace AzToolsFramework
+

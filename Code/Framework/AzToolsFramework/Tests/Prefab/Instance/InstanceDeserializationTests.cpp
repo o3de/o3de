@@ -25,17 +25,18 @@ namespace UnitTest
     }
 
     AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> SetupPrefabInstances(
-        const AzToolsFramework::EntityList& entitiesToUseForCreation, PrefabSystemComponent* prefabSystemComponent)
+        const AzToolsFramework::EntityList& entitiesToUseForCreation,
+        AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances, PrefabSystemComponent* prefabSystemComponent)
     {
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> createdPrefab =
-            prefabSystemComponent->CreatePrefab(entitiesToUseForCreation, {}, "test/path");
+            prefabSystemComponent->CreatePrefab(entitiesToUseForCreation, AZStd::move(nestedInstances), "test/path");
         EXPECT_NE(nullptr, createdPrefab);
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> instantiatedPrefab =
             prefabSystemComponent->InstantiatePrefab(createdPrefab->GetTemplateId());
         EXPECT_NE(nullptr, instantiatedPrefab);
 
-        instantiatedPrefab->GetEntities(
+        instantiatedPrefab->GetAllEntitiesInHierarchy(
             [](const AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 // Activate the entities so that we can later validate that entities stay activated throughout the deserialization.
@@ -47,6 +48,23 @@ namespace UnitTest
         return { AZStd::move(createdPrefab), AZStd::move(instantiatedPrefab) };
     }
 
+    void ValidateEntityState(const InstanceUniquePointer& instanceToLookUnder, AZStd::string_view entityName, AZ::Entity::State expectedEntityState)
+    {
+        bool isEntityFound = false;
+        instanceToLookUnder->GetEntities(
+            [&isEntityFound, &entityName, &expectedEntityState](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                if (entity->GetName() == entityName)
+                {
+                    EXPECT_EQ(entity->GetState(), expectedEntityState);
+                    isEntityFound = true;
+                }
+                return true;
+            });
+        EXPECT_TRUE(isEntityFound); 
+    }
+
+
     TEST_F(InstanceDeserializationTest, ReloadInstanceUponComponentUpdate)
     {
         AZ::Entity* entity1 = CreateEntity("Entity1",false);
@@ -57,7 +75,7 @@ namespace UnitTest
         AZ::Entity* entity2 = CreateEntity("Entity2", false);
 
         AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
-            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1, entity2}, m_prefabSystemComponent);
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1, entity2}, {}, m_prefabSystemComponent);
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
 
@@ -109,7 +127,7 @@ namespace UnitTest
         AZ::Entity* entity2 = CreateEntity("Entity2", false);
 
         AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
-            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1, entity2 }, m_prefabSystemComponent);
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1, entity2 }, {}, m_prefabSystemComponent);
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
 
@@ -161,7 +179,7 @@ namespace UnitTest
         AZ::Entity* entity2 = CreateEntity("Entity2", false);
 
         AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
-            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1, entity2 }, m_prefabSystemComponent);
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1, entity2 }, {}, m_prefabSystemComponent);
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
 
@@ -208,7 +226,7 @@ namespace UnitTest
         AZ::Entity* entity1 = CreateEntity("Entity1", false);
 
         AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
-            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, m_prefabSystemComponent);
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, {}, m_prefabSystemComponent);
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
 
@@ -238,10 +256,10 @@ namespace UnitTest
         EXPECT_TRUE(isEntity2Found);
     }
 
-    TEST_F(InstanceDeserializationTest, ReloadInstanceUponAddingEntityToEmptyInstance)
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponAddingTheFirstEntity)
     {
         AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
-            SetupPrefabInstances(AzToolsFramework::EntityList{}, m_prefabSystemComponent);
+            SetupPrefabInstances(AzToolsFramework::EntityList{}, {}, m_prefabSystemComponent);
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
 
@@ -267,7 +285,7 @@ namespace UnitTest
         AZ::Entity* entity2 = CreateEntity("Entity2", false);
 
         AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
-            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1, entity2 }, m_prefabSystemComponent);
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1, entity2 }, {}, m_prefabSystemComponent);
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
 
@@ -301,7 +319,7 @@ namespace UnitTest
         AZ::Entity* entity1 = CreateEntity("Entity1", false);
 
         AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
-            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, m_prefabSystemComponent);
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, {}, m_prefabSystemComponent);
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
 
@@ -322,5 +340,149 @@ namespace UnitTest
                 return true;
             });
         EXPECT_FALSE(isEntity1Found);
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponAddingTheFirstNestedInstance)
+    {
+        AZ::Entity* entity1 = CreateEntity("Entity1", false);
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, {}, m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+
+        AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> nestedPrefab = m_prefabSystemComponent->CreatePrefab(
+            AzToolsFramework::EntityList{ CreateEntity("Entity1", false) }, {}, "test/nestedPrefabPath");
+
+        // Extract the template id from the instance and store it in a variable before moving the instance.
+        TemplateId nestedPrefabTemplateId = nestedPrefab->GetTemplateId();
+        createdPrefab->AddInstance(AZStd::move(nestedPrefab));
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        // Validate that the entity remains in active state throughout the reloading process. This indicates that it is untouched.
+        ValidateEntityState(instantiatedPrefab, "Entity1", AZ::Entity::State::Active);
+
+        // Validate that there is one instance after reloading the instantiated prefab.
+        EXPECT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 1);
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponAddingNestedInstanceToExistingNestedInstances)
+    {
+        AZ::Entity* entity1 = CreateEntity("EntityUnderParentPrefab", false);
+        InstanceUniquePointer nestedInstanceToUseForCreation = m_prefabSystemComponent->CreatePrefab(
+            AzToolsFramework::EntityList{ CreateEntity("EntityUnderNestedPrefab", false) }, {}, "test/nestedPrefabPath");
+
+        // Extract the template id from the instance and store it in a variable before moving the instance.
+        TemplateId nestedPrefabTemplateId = nestedInstanceToUseForCreation->GetTemplateId();
+
+        AZStd::vector<InstanceUniquePointer> nestedInstances;
+        nestedInstances.emplace_back(AZStd::move(nestedInstanceToUseForCreation));
+        
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances = SetupPrefabInstances(
+            AzToolsFramework::EntityList{ entity1 }, AZStd::move(nestedInstances),
+            m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+        ASSERT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 1);
+
+        InstanceUniquePointer nestedInstanceToAdd = m_prefabSystemComponent->InstantiatePrefab(nestedPrefabTemplateId);
+        Instance& instanceAdded = createdPrefab->AddInstance(AZStd::move(nestedInstanceToAdd));
+        InstanceAlias aliasOfInstanceAdded = instanceAdded.GetInstanceAlias();
+
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        // Validate that the entity remains in active state throughout the reloading process. This indicates that it is untouched.
+        ValidateEntityState(instantiatedPrefab, "EntityUnderParentPrefab", AZ::Entity::State::Active);
+
+        // Validate that there are two instances after reloading the instantiated prefab.
+        EXPECT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 2);
+        instantiatedPrefab->GetNestedInstances(
+            [&aliasOfInstanceAdded](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                if (nestedInstance->GetInstanceAlias() == aliasOfInstanceAdded)
+                {
+                    // Entities under a newly deserialized instance should be in constructed state.
+                    ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Constructed);
+                }
+                else
+                {
+                    // Entities under an existing nested instance should be in active state. This indicates that the instance is untouched.
+                    ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Active);
+                }
+                
+        });
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponDeletingTheOnlyNestedInstance)
+    {
+        AZ::Entity* entity1 = CreateEntity("EntityUnderParentPrefab", false);
+        InstanceUniquePointer nestedInstanceToUseForCreation = m_prefabSystemComponent->CreatePrefab(
+            AzToolsFramework::EntityList{ CreateEntity("EntityUnderNestedPrefab", false) }, {}, "test/nestedPrefabPath");
+
+        // Extract the template id from the instance and store it in a variable before moving the instance.
+        TemplateId nestedPrefabTemplateId = nestedInstanceToUseForCreation->GetTemplateId();
+
+        AZStd::vector<InstanceUniquePointer> nestedInstances;
+        nestedInstances.emplace_back(AZStd::move(nestedInstanceToUseForCreation));
+
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, AZStd::move(nestedInstances), m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+
+        ASSERT_EQ(createdPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 1);
+        InstanceUniquePointer nestedInstanceToRemove =
+            createdPrefab->DetachNestedInstance(createdPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).front());
+        nestedInstanceToRemove.reset();
+
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        // Validate that the entity remains in active state throughout the reloading process. This indicates that it is untouched.
+        ValidateEntityState(instantiatedPrefab, "EntityUnderParentPrefab", AZ::Entity::State::Active);
+
+        // Validate that the only nested instance was removed.
+        EXPECT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 0);
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponDeletingOneAmongManyNestedInstances)
+    {
+        AZ::Entity* entity1 = CreateEntity("EntityUnderParentPrefab", false);
+        InstanceUniquePointer nestedInstance1 = m_prefabSystemComponent->CreatePrefab(
+            AzToolsFramework::EntityList{ CreateEntity("EntityUnderNestedPrefab", false) }, {}, "test/nestedPrefabPath");
+
+        // Extract the template id from the instance and store it in a variable before moving the instance.
+        TemplateId nestedPrefabTemplateId = nestedInstance1->GetTemplateId();
+
+        InstanceUniquePointer nestedInstance2 = m_prefabSystemComponent->InstantiatePrefab(nestedPrefabTemplateId);
+
+        AZStd::vector<InstanceUniquePointer> nestedInstances;
+        nestedInstances.emplace_back(AZStd::move(nestedInstance1));
+        nestedInstances.emplace_back(AZStd::move(nestedInstance2));
+
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, AZStd::move(nestedInstances), m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+
+        AZStd::vector<InstanceAlias> nestedInstanceAliases = createdPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId);
+        ASSERT_EQ(nestedInstanceAliases.size(), 2);
+        InstanceUniquePointer nestedInstanceToRemove = createdPrefab->DetachNestedInstance(nestedInstanceAliases.front());
+        nestedInstanceToRemove.reset();
+
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        // Validate that the entity remains in active state throughout the reloading process. This indicates that it is untouched.
+        ValidateEntityState(instantiatedPrefab, "EntityUnderParentPrefab", AZ::Entity::State::Active);
+
+        // Validate that the number of instances came down to just one.
+        EXPECT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 1);
+        instantiatedPrefab->GetNestedInstances(
+            [&nestedInstanceAliases](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                if (nestedInstance->GetInstanceAlias() == nestedInstanceAliases.back())
+                {
+                    // Entities under an existing nested instance should be in active state. This indicates that the instance is untouched.
+                    ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Active);
+                }
+            });
     }
 } // namespace UnitTest
