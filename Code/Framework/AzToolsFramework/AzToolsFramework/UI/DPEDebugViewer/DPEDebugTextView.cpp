@@ -144,7 +144,7 @@ namespace AzToolsFramework
             Result RawStartNode(AZStd::string_view name, AZ::Dom::Lifetime)
             {
                 int indentLevel = GetIndent();
-                if (auto currentNode = CurrentNode(); currentNode != nullptr && !currentNode->m_firstValue)
+                if (auto currentNode = CurrentNode(); currentNode != nullptr && !currentNode->m_firstValue && !currentNode->m_nodeOpen)
                 {
                     StartValue();
                     Write(QStringLiteral("\n"));
