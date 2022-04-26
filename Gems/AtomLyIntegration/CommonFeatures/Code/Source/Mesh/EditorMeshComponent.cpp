@@ -12,7 +12,7 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 
-#include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
+#include <EditorModeFeedback/EditorModeFeedbackInterface.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace AZ
