@@ -112,7 +112,6 @@ protected:
 
     double m_fieldWidthMultiplier = 1.8;
 
-
     void OnMenuFOVCustom();
 
     void CreateFOVMenu();

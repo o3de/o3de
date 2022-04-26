@@ -58,7 +58,7 @@ namespace LandscapeCanvas
     {
         CreateEntityNameSlot();
 
-        GraphModel::DataTypePtr dataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
+        GraphModel::DataTypePtr dataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
         RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
             BOUNDS_SLOT_ID,
             BOUNDS_SLOT_LABEL.toUtf8().constData(),
