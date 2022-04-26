@@ -191,13 +191,6 @@ namespace Multiplayer
                 console->PerformCommand("disconnect");
             }
 
-            if (m_connectionEvent.IsScheduled())
-            {
-                m_connectionEvent.RemoveFromQueue();
-            }
-
-            AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
-
             // Rebuild the library to clear temporary in-memory spawnable assets
             AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
