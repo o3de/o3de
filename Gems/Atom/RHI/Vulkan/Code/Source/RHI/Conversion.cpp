@@ -1134,8 +1134,14 @@ namespace AZ
             const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = imageAttachment.GetUsageAndAccess();
             if (usagesAndAccesses.size() > 1)
             {
-                //[GFX TODO][ATOM-4779] -Multiple Usage/Access can be further optimized. For now VK_IMAGE_LAYOUT_GENERAL is the fallback.
-                return VK_IMAGE_LAYOUT_GENERAL;
+                const auto& first = usagesAndAccesses.front();
+                for (int i = 1; i < usagesAndAccesses.size(); ++i) {
+                    if (usagesAndAccesses[i].m_access != first.m_access || usagesAndAccesses[i].m_usage != first.m_usage) {
+                        //[GFX TODO][ATOM-4779] -Multiple Usage/Access can be further optimized.
+                        // For now VK_IMAGE_LAYOUT_GENERAL is the fallback if the usages differ
+                        return VK_IMAGE_LAYOUT_GENERAL;
+                    }
+                }
             }
 
             const RHI::ImageView* imageView = imageAttachment.GetImageView();
