@@ -133,11 +133,16 @@ namespace AZ
         auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
+
+
+        AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     DebugConsole::~DebugConsole()
     {
+        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+
         // Disconnect to stop receiving render tick events.
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
 
@@ -183,6 +188,18 @@ namespace AZ
         }
     }
 
+    void DebugConsole::AddDebugLog(const char* window, const char* debugLogString, const AZ::Color& color)
+    {
+        if (strcmp(window, AZ::Debug::Trace::GetDefaultSystemWindow()) == 0)
+        {
+            AddDebugLog( debugLogString, color);
+        }
+        else
+        {
+            AddDebugLog( AZStd::string::format("(%s) - %s", window, debugLogString), color);
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void DebugConsole::ClearDebugLog()
     {
@@ -194,6 +211,24 @@ namespace AZ
     {
         data->DeleteChars(0, data->BufTextLen);
         data->InsertChars(0, newText.c_str());
+    }
+
+    bool DebugConsole::OnPreError(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)
+    {
+        AddDebugLog(window, message, GetColorForLogLevel(AZ::LogLevel::Error));
+        return false;
+    }
+
+    bool DebugConsole::OnPreWarning(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)
+    {
+        AddDebugLog(window, message, GetColorForLogLevel(AZ::LogLevel::Warn));
+        return false;
+    }
+
+    bool DebugConsole::OnPrintf(const char* window, const char* message)
+    {
+        AddDebugLog(window, message, GetColorForLogLevel(AZ::LogLevel::Trace));
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
