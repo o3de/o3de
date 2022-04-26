@@ -59,6 +59,7 @@ namespace AZ::Render
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_minSamples, "Min samples", "Minimum number of samples when tracing")
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 20.0f)
@@ -70,10 +71,15 @@ namespace AZ::Render
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 64.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_rayleighScattering, "Raleigh scattering", "Raleigh scattering")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieScattering, "Mie scattering", "Mie scattering")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieExtinction, "Mie extinction", "Mie extinction")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_absorptionExtinction, "Absorption extinction", "Absorption extinction. Useful for thi")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_groundAlbedo, "Ground albedo", "Additional light from the surface of the ground")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_originAtSurface, "Origin at surface", "True to use the world origin as the planet surface of the atmosphere")
                     ;
             }
@@ -83,5 +89,38 @@ namespace AZ::Render
     EditorSkyAtmosphereComponent::EditorSkyAtmosphereComponent(const SkyAtmosphereComponentConfig& config)
         : BaseClass(config)
     {
+    }
+
+    AZ::u32 EditorSkyAtmosphereComponent::OnLUTConfigurationChanged()
+    {
+        if (auto featureProcessor = m_controller.m_featureProcessorInterface)
+        {
+            auto id = m_controller.m_atmosphereId;
+            auto config = m_controller.m_configuration;
+
+            featureProcessor->SetAbsorptionExtinction(id, config.m_absorptionExtinction);
+            featureProcessor->SetGroundAlbedo(id, config.m_groundAlbedo);
+            featureProcessor->SetMieScattering(id, config.m_mieScattering);
+            featureProcessor->SetRaleighScattering(id, config.m_rayleighScattering);
+            featureProcessor->SetSunIlluminance(id, config.m_sunIlluminance);
+        }
+
+        return Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
+    AZ::u32 EditorSkyAtmosphereComponent::OnConfigurationChanged()
+    {
+        if(auto featureProcessor = m_controller.m_featureProcessorInterface)
+        {
+            auto id = m_controller.m_atmosphereId;
+            auto config = m_controller.m_configuration;
+
+            featureProcessor->SetAtmosphereRadius(id, config.m_atmosphereRadius);
+            featureProcessor->SetMinMaxSamples(id, config.m_minSamples, config.m_maxSamples);
+            featureProcessor->SetOriginAtSurface(id, config.m_originAtSurface);
+            featureProcessor->SetPlanetRadius(id, config.m_planetRadius);
+        }
+
+        return Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 }

@@ -103,6 +103,7 @@ namespace AZ::Render
     {
         auto& params = m_params.GetElement(id.GetIndex());
         params.m_sunIlluminance = illuminance;
+        params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
 
@@ -118,6 +119,7 @@ namespace AZ::Render
     {
         auto& params = m_params.GetElement(id.GetIndex());
         params.m_rayleighScattering = scattering;
+        params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
 
@@ -125,6 +127,7 @@ namespace AZ::Render
     {
         auto& params = m_params.GetElement(id.GetIndex());
         params.m_mieScattering = scattering;
+        params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
 
@@ -132,6 +135,7 @@ namespace AZ::Render
     {
         auto& params = m_params.GetElement(id.GetIndex());
         params.m_mieExtinction = extinction;
+        params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
 
@@ -139,6 +143,7 @@ namespace AZ::Render
     {
         auto& params = m_params.GetElement(id.GetIndex());
         params.m_groundAlbedo = albedo;
+        params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
 
@@ -206,6 +211,17 @@ namespace AZ::Render
                 return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             });
 
+
+        // make sure we update all the LUTS
+        for (auto id : m_atmosphereIds)
+        {
+            if (id.IsValid())
+            {
+                auto& params = m_params.GetElement(id.GetIndex());
+                params.m_lutUpdateRequired = true;
+            }
+        }
+
         m_passNeedsUpdate = true;
     }
     
@@ -221,8 +237,11 @@ namespace AZ::Render
                 {
                     if (id.IsValid())
                     {
-                        auto params = m_params.GetElement(id.GetIndex());
+                        auto& params = m_params.GetElement(id.GetIndex());
                         pass->UpdateAtmospherePassSRG(id, params);
+
+                        // reset the lut update flag now that we've passed on the changes
+                        params.m_lutUpdateRequired = false;
                     }
                 }
             }

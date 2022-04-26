@@ -40,9 +40,10 @@ namespace AZ::Render
     private:
         AZ_DISABLE_COPY(SkyAtmosphereComponentController);
 
-        // TransformNotificationBus
+        //! TransformNotificationBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
+        //! EntityBus
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         TransformInterface* m_transformInterface = nullptr;
