@@ -22,6 +22,31 @@ namespace AZ::Dom::Utils
         return backend.ReadFromBufferInPlace(string.data(), string.size(), visitor);
     }
 
+    AZ::Outcome<Value, AZStd::string> SerializedStringToValue(
+        Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime)
+    {
+        return WriteToValue(
+            [&](Visitor& visitor)
+            {
+                return backend.ReadFromBuffer(string.data(), string.size(), lifetime, visitor);
+            });
+    }
+
+    AZ::Outcome<void, AZStd::string> ValueToSerializedString(Backend& backend, Dom::Value value, AZStd::string& buffer)
+    {
+        Dom::Visitor::Result result = backend.WriteToBuffer(
+            buffer,
+            [&](Visitor& visitor)
+            {
+                return value.Accept(visitor, false);
+            });
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure(result.GetError().FormatVisitorErrorMessage());
+        }
+        return AZ::Success();
+    }
+
     AZ::Outcome<Value, AZStd::string> WriteToValue(const Backend::WriteCallback& writeCallback)
     {
         Value value;

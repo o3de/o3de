@@ -172,7 +172,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias\n",
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias",
                             "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
                             "If this is 0, no biasing is applied.")
                             ->Attribute(Edit::Attributes::Min, 0.f)

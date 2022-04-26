@@ -454,7 +454,7 @@ namespace AZ::Render
         if (m_skinnedMeshInputBuffers)
         {
             m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, GetSkinningMethod());
-            AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRenderer(), "Failed to create bone transform buffer.");
+            AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRHI(), "Failed to create bone transform buffer.");
 
             // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
             // Wait for them all to be ready before creating the instance

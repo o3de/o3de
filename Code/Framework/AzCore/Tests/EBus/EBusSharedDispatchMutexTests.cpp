@@ -150,7 +150,7 @@ namespace UnitTest
         // Verify that multiple dispatched events run in parallel without deadlocks, even if each thread has recursively called
         // events on the same bus.
 
-        constexpr int32_t TotalRecursiveQueries = 10;
+        const int32_t TotalRecursiveQueries = 10;
         SharedDispatchRequestHandler handler;
         handler.Connect();
 
@@ -212,7 +212,7 @@ namespace UnitTest
         // disconnect, the Disconnect() won't be able to execute until all the dispatches have completed. If they don't block the
         // disconnect, then there will be dispatches running at the same time and the verification will fail.
 
-        constexpr int32_t TotalRecursiveQueries = 5;
+        const int32_t TotalRecursiveQueries = 5;
         SharedDispatchRequestHandler handler;
         handler.Connect();
 

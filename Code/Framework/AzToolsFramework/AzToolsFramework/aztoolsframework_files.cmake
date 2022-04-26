@@ -115,6 +115,8 @@ set(FILES
     ContainerEntity/ContainerEntityNotificationBus.h
     ContainerEntity/ContainerEntitySystemComponent.cpp
     ContainerEntity/ContainerEntitySystemComponent.h
+    Editor/ActionManagerUtils.cpp
+    Editor/ActionManagerUtils.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
     Editor/RichTextHighlighter.h
@@ -326,6 +328,8 @@ set(FILES
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h
+    UI/DPEDebugViewer/DPEDebugModel.cpp
+    UI/DPEDebugViewer/DPEDebugModel.h
     UI/Layer/AddToLayerMenu.cpp
     UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h
