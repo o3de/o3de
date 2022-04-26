@@ -15,6 +15,9 @@
 
 namespace ScriptCanvas
 {
+    //! OBBNodes is deprecated
+    //! This file is deprecated and will be removed. Keep it to allow for seamless migration from node generic framework
+    //! to new AutoGen function.
     namespace OBBNodes
     {
         using namespace Data;

@@ -12,10 +12,6 @@
 // shared code
 
 #include "MathExpression.h"
-#include "TransformNodes.h"
-#include "Vector2Nodes.h"
-#include "Vector3Nodes.h"
-#include "Vector4Nodes.h"
 
 // Deprecated math nodes
 #include "Deprecated/AABBNodes.h"
@@ -32,3 +28,7 @@
 #include "Deprecated/RotationNodes.h"
 #include "Deprecated/Subtract.h"
 #include "Deprecated/Sum.h"
+#include "Deprecated/TransformNodes.h"
+#include "Deprecated/Vector2Nodes.h"
+#include "Deprecated/Vector3Nodes.h"
+#include "Deprecated/Vector4Nodes.h"

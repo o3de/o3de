@@ -12,6 +12,9 @@
 
 namespace ScriptCanvas
 {
+    //! MathNodes is deprecated
+    //! This file is deprecated and will be removed. Keep it to allow for seamless migration from node generic framework
+    //! to new AutoGen function.
     namespace MathNodes
     {
         static constexpr const char* k_categoryName = "Math";

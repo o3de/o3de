@@ -144,6 +144,10 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/OBB.cpp
     Include/ScriptCanvas/Libraries/Math/Plane.cpp
     Include/ScriptCanvas/Libraries/Math/Quaternion.cpp
+    Include/ScriptCanvas/Libraries/Math/Transform.cpp
+    Include/ScriptCanvas/Libraries/Math/Vector2.cpp
+    Include/ScriptCanvas/Libraries/Math/Vector3.cpp
+    Include/ScriptCanvas/Libraries/Math/Vector4.cpp
     Include/ScriptCanvas/Libraries/Comparison/Comparison.cpp
     Include/ScriptCanvas/Libraries/Time/Time.cpp
     Include/ScriptCanvas/Libraries/Time/Countdown.cpp

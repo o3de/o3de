@@ -214,45 +214,53 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/While.h
     Include/ScriptCanvas/Libraries/Logic/While.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Math/Deprecated/AABBNodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/ColorNodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/CRCNodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Divide.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/MathGenerics.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/MathRandom.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Matrix3x3Nodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Matrix4x4Nodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Multiply.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/OBBNodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/PlaneNodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/RotationNodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Subtract.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Sum.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/TransformNodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Vector2Nodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Vector3Nodes.h
+    Include/ScriptCanvas/Libraries/Math/Deprecated/Vector4Nodes.h
     Include/ScriptCanvas/Libraries/Math/AABB.h
     Include/ScriptCanvas/Libraries/Math/AABB.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Color.h
     Include/ScriptCanvas/Libraries/Math/Color.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Math/Deprecated/ColorNodes.h
     Include/ScriptCanvas/Libraries/Math/CRC.h
     Include/ScriptCanvas/Libraries/Math/CRC.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Math/Deprecated/CRCNodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Divide.h
     Include/ScriptCanvas/Libraries/Math/Math.h
     Include/ScriptCanvas/Libraries/Math/MathExpression.h
     Include/ScriptCanvas/Libraries/Math/MathExpression.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Math/MathFunctions.h
     Include/ScriptCanvas/Libraries/Math/MathFunctions.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/MathGenerics.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/MathRandom.h
     Include/ScriptCanvas/Libraries/Math/Matrix3x3.h
     Include/ScriptCanvas/Libraries/Math/Matrix3x3.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Matrix3x3Nodes.h
     Include/ScriptCanvas/Libraries/Math/Matrix4x4.h
     Include/ScriptCanvas/Libraries/Math/Matrix4x4.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Matrix4x4Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Multiply.h
     Include/ScriptCanvas/Libraries/Math/OBB.h
     Include/ScriptCanvas/Libraries/Math/OBB.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Math/Deprecated/OBBNodes.h
     Include/ScriptCanvas/Libraries/Math/Plane.h
     Include/ScriptCanvas/Libraries/Math/Plane.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Math/Deprecated/PlaneNodes.h
     Include/ScriptCanvas/Libraries/Math/Quaternion.h
     Include/ScriptCanvas/Libraries/Math/Quaternion.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Math/Deprecated/RotationNodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Subtract.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Sum.h
-    Include/ScriptCanvas/Libraries/Math/TransformNodes.h
-    Include/ScriptCanvas/Libraries/Math/Vector2Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Vector3Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Vector4Nodes.h
+    Include/ScriptCanvas/Libraries/Math/Transform.h
+    Include/ScriptCanvas/Libraries/Math/Transform.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Vector2.h
+    Include/ScriptCanvas/Libraries/Math/Vector2.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Vector3.h
+    Include/ScriptCanvas/Libraries/Math/Vector3.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/Vector4.h
+    Include/ScriptCanvas/Libraries/Math/Vector4.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Comparison/Comparison.h
     Include/ScriptCanvas/Libraries/Comparison/EqualTo.h
     Include/ScriptCanvas/Libraries/Comparison/NotEqualTo.h

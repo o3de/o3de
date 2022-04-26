@@ -13,6 +13,9 @@
 
 namespace ScriptCanvas
 {
+    //! Matrix3x3Nodes is deprecated
+    //! This file is deprecated and will be removed. Keep it to allow for seamless migration from node generic framework
+    //! to new AutoGen function.
     namespace Matrix3x3Nodes
     {
         static constexpr const char* k_categoryName = "Math/Matrix3x3";

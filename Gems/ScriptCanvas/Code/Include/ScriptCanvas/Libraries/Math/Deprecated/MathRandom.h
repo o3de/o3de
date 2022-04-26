@@ -13,6 +13,9 @@
 
 namespace ScriptCanvas
 {
+    //! RandomNodes is deprecated
+    //! This file is deprecated and will be removed. Keep it to allow for seamless migration from node generic framework
+    //! to new AutoGen function.
     namespace RandomNodes
     {
         static constexpr const char* k_categoryName = "Math/Random";

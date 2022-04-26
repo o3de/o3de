@@ -12,6 +12,9 @@
 
 namespace ScriptCanvas
 {
+    //! Matrix4x4Nodes is deprecated
+    //! This file is deprecated and will be removed. Keep it to allow for seamless migration from node generic framework
+    //! to new AutoGen function.
     namespace Matrix4x4Nodes
     {
         static constexpr const char* k_categoryName = "Math/Matrix4x4";
