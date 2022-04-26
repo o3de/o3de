@@ -135,7 +135,7 @@ def create_material_editor(workspace, launcher_platform=ly_test_tools.HOST_OS_MA
     """
     launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
     if not launcher_class:
-        log.warning(f"Using default material_editor launcher for '{ly_test_tools.HOST_OS_EDITOR}' "
+        log.warning(f"Using default MaterialEditor launcher for '{ly_test_tools.HOST_OS_MATERIAL_EDITOR}' "
                     f"as no option is available for '{launcher_platform}'")
         launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_MATERIAL_EDITOR)
     return launcher_class(workspace, args)

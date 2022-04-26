@@ -257,6 +257,9 @@ class WinMaterialEditor(WinLauncher):
 
     def __init__(self, build, args=None):
         super(WinLauncher, self).__init__(build, args)
+        self.args.append('--regset="/Amazon/Settings/EnableSourceControl=false"')
+        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=true"')
+        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionEnabled=false"')
 
     def stop(self):
         """

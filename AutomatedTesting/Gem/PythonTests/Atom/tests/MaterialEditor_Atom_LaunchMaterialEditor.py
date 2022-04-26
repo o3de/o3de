@@ -33,19 +33,13 @@ def MaterialEditor_Launched_SuccessfullyLaunched():
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
-        # Test setup begins.
-        # Setup: Wait for Editor idle loop before executing Python hydra scripts.
-        TestHelper.init_idle()
-
         # 1. Verify Material Inspector pane visibility to confirm the MaterialEditor launched.
-        Report.critical_result(
+        material_editor.set_pane_visibility("Inspector", 1)
+        Report.result(
             Tests.material_editor_launched,
-            material_editor.is_pane_visible("Inspector") is True)
+            material_editor.is_pane_visible("Inspector") == 1)
 
-        # 2. Exit MaterialEditor
-        material_editor.exit()
-
-    # 3. Look for errors and asserts.
+    # 2. Look for errors and asserts.
     TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
     for error_info in error_tracer.errors:
         Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

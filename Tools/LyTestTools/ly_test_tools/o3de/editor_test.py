@@ -333,7 +333,7 @@ class EditorTestSuite:
     # Tests usually run with no renderer, however some tests require a renderer 
     use_null_renderer = True
     # Maximum time for a single editor to stay open on a shared test
-    timeout_editor_shared_test = 60
+    timeout_editor_shared_test = 300
     # Marks the test as a MaterialEditor test instead of an Editor test.
     material_editor_test = False
 
@@ -804,6 +804,9 @@ class EditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        test_run_python_command = "--runpythontest"
+        if self.material_editor_test:
+            test_run_python_command = "--runpython"
         test_cmdline_args += [
             "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
             f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
@@ -823,7 +826,7 @@ class EditorTestSuite:
         results = {}
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
-            "--runpythontest", test_filename,
+            test_run_python_command, test_filename,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         test_executable.args.extend(cmdline)
@@ -894,6 +897,9 @@ class EditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        test_run_python_command = "--runpythontest"
+        if self.material_editor_test:
+            test_run_python_command = "--runpython"
         test_cmdline_args += [
             "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
             f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
@@ -911,7 +917,7 @@ class EditorTestSuite:
         results = {}
         test_filenames_str = ";".join(editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
         cmdline = [
-            "--runpythontest", test_filenames_str,
+            test_run_python_command, test_filenames_str,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
 
