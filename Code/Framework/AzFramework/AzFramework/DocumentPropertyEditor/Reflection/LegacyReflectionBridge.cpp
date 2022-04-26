@@ -224,10 +224,20 @@ namespace AZ::Reflection
                 {
                     if (const AZ::Edit::ElementData* elementEditData = m_classElement->m_editData; elementEditData != nullptr)
                     {
+                        if (elementEditData->m_name)
+                        {
+                            labelAttributeValue = elementEditData->m_name;
+                        }
+
                         for (auto it = elementEditData->m_attributes.begin(); it != elementEditData->m_attributes.end(); ++it)
                         {
                             checkAttribute(it);
                         }
+                    }
+
+                    if (labelAttributeValue.empty() && m_classElement->m_name)
+                    {
+                        labelAttributeValue = m_classElement->m_name;
                     }
 
                     for (auto it = m_classElement->m_attributes.begin(); it != m_classElement->m_attributes.end(); ++it)
@@ -241,6 +251,11 @@ namespace AZ::Reflection
 
                 if (m_classData)
                 {
+                    if (labelAttributeValue.empty() && m_classData->m_name)
+                    {
+                        labelAttributeValue = m_classData->m_name;
+                    }
+
                     for (auto it = m_classData->m_attributes.begin(); it != m_classData->m_attributes.end(); ++it)
                     {
                         AZ::AttributePair pair;

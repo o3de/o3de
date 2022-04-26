@@ -120,6 +120,11 @@ namespace AzToolsFramework
 
     void DPEModelNode::Populate(const AZ::Dom::Value& domVal)
     {
+        if (!domVal.IsNode())
+        {
+            AZ_Warning("DPE", false, "Received a non-node value");
+            return;
+        }
         auto& jsonBackend = GetModel()->GetBackend();
         for (size_t arrayIndex = 0, numIndices = domVal.ArraySize(); arrayIndex < numIndices; ++arrayIndex)
         {

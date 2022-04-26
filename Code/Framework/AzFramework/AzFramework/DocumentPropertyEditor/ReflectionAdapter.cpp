@@ -17,7 +17,7 @@ namespace AZ::DocumentPropertyEditor
 {
     struct ReflectionAdapterReflectionImpl : public AZ::Reflection::IReadWrite
     {
-        ReflectionAdapter* m_adapter;
+        const ReflectionAdapter* m_adapter;
         AdapterBuilder m_builder;
         AZStd::unordered_map<AZ::TypeId, AZStd::string_view> m_defaultEditorMap;
 
@@ -37,7 +37,7 @@ namespace AZ::DocumentPropertyEditor
             m_defaultEditorMap[azrtti_typeid<AZStd::string>()] = Nodes::LineEdit::Name;
         }
 
-        ReflectionAdapterReflectionImpl(ReflectionAdapter* adapter)
+        ReflectionAdapterReflectionImpl(const ReflectionAdapter* adapter)
             : m_adapter(adapter)
         {
             PopulateDefaultEditors();
@@ -112,91 +112,132 @@ namespace AZ::DocumentPropertyEditor
             VisitValue(Reflection::CreateValue(value), GetPropertyEditor(azrtti_typeid<T>(), attributes), attributes);
         }
 
-        virtual void Visit(bool& value, const Reflection::IAttributes& attributes)
+        void Visit(bool& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(int8_t& value, const Reflection::IAttributes& attributes)
+        void Visit(int8_t& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(int16_t& value, const Reflection::IAttributes& attributes)
+        void Visit(int16_t& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(int32_t& value, const Reflection::IAttributes& attributes)
+        void Visit(int32_t& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(int64_t& value, const Reflection::IAttributes& attributes)
+        void Visit(int64_t& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(uint8_t& value, const Reflection::IAttributes& attributes)
+        void Visit(uint8_t& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(uint16_t& value, const Reflection::IAttributes& attributes)
+        void Visit(uint16_t& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(uint32_t& value, const Reflection::IAttributes& attributes)
+        void Visit(uint32_t& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(uint64_t& value, const Reflection::IAttributes& attributes)
+        void Visit(uint64_t& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(float& value, const Reflection::IAttributes& attributes)
+        void Visit(float& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(double& value, const Reflection::IAttributes& attributes)
+        void Visit(double& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void VisitObjectBegin([[maybe_unused]] Reflection::IObjectAccess& access, const Reflection::IAttributes& attributes)
+        void VisitObjectBegin([[maybe_unused]] Reflection::IObjectAccess& access, const Reflection::IAttributes& attributes) override
         {
             m_builder.BeginRow();
             ExtractLabel(attributes);
             ForwardAttributes(attributes);
         }
 
-        virtual void VisitObjectEnd()
+        void VisitObjectEnd() override
         {
             m_builder.EndRow();
         }
 
-        virtual void Visit(
-            const AZStd::string_view value, [[maybe_unused]] Reflection::IStringAccess& access, const Reflection::IAttributes& attributes)
+        void Visit(
+            const AZStd::string_view value, [[maybe_unused]] Reflection::IStringAccess& access, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        virtual void Visit(Reflection::IArrayAccess& access, const Reflection::IAttributes& attributes);
-        virtual void Visit(Reflection::IMapAccess& access, const Reflection::IAttributes& attributes);
-        virtual void Visit(Reflection::IDictionaryAccess& access, const Reflection::IAttributes& attributes);
-        virtual void Visit(int64_t value, const Reflection::IEnumAccess& access, const Reflection::IAttributes& attributes);
-        virtual void Visit(Reflection::IPointerAccess& access, const Reflection::IAttributes& attributes);
-        virtual void Visit(Reflection::IBufferAccess& access, const Reflection::IAttributes& attributes);
-        virtual void Visit(
-            const AZ::Data::Asset<AZ::Data::AssetData>& asset, Reflection::IAssetAccess& access, const Reflection::IAttributes& attributes)
+        void Visit(Reflection::IArrayAccess& access, const Reflection::IAttributes& attributes) override
+        {
+            (void)access;
+            (void)attributes;
+        }
+        void Visit(Reflection::IMapAccess& access, const Reflection::IAttributes& attributes) override
+        {
+            (void)access;
+            (void)attributes;
+        }
+        void Visit(Reflection::IDictionaryAccess& access, const Reflection::IAttributes& attributes) override
+        {
+            (void)access;
+            (void)attributes;
+        }
+        void Visit(int64_t value, const Reflection::IEnumAccess& access, const Reflection::IAttributes& attributes) override
+        {
+            (void)value;
+            (void)access;
+            (void)attributes;
+        }
+        void Visit(Reflection::IPointerAccess& access, const Reflection::IAttributes& attributes) override
+        {
+            (void)access;
+            (void)attributes;
+        }
+        void Visit(Reflection::IBufferAccess& access, const Reflection::IAttributes& attributes) override
+        {
+            (void)access;
+            (void)attributes;
+        }
+        void Visit(
+            const AZ::Data::Asset<AZ::Data::AssetData>& asset, Reflection::IAssetAccess& access, const Reflection::IAttributes& attributes) override
         {
             (void)asset;
             (void)access;
             (void)attributes;
         }
     };
+
+    void ReflectionAdapter::SetValue(void* instance, const AZ::TypeId typeId)
+    {
+        m_instance = instance;
+        m_typeId = typeId;
+        NotifyResetDocument();
+    }
+
+    Dom::Value ReflectionAdapter::GetContents() const
+    {
+        ReflectionAdapterReflectionImpl impl(this);
+        impl.m_builder.BeginAdapter();
+        Reflection::VisitLegacyInMemoryInstance(&impl, m_instance, m_typeId);
+        impl.m_builder.EndAdapter();
+        return impl.m_builder.FinishAndTakeResult();
+    }
 } // namespace AZ::DocumentPropertyEditor
