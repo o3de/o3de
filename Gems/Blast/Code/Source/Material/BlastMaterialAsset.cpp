@@ -53,4 +53,9 @@ namespace Blast
     {
         return m_materialConfiguration;
     }
+
+    BlastMaterialId MaterialAsset::GetLegacyBlastMaterialId() const
+    {
+        return m_legacyBlastMaterialId;
+    }
 } // namespace Blast

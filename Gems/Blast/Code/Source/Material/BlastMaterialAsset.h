@@ -44,6 +44,8 @@ namespace Blast
 
         const MaterialConfiguration& GetMaterialConfiguration() const;
 
+        BlastMaterialId GetLegacyBlastMaterialId() const;
+
     protected:
         MaterialConfiguration m_materialConfiguration;
 

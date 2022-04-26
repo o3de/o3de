@@ -120,7 +120,6 @@ namespace Blast
         // Configurations
         AZ::Data::Asset<BlastAsset> m_blastAsset;
         AZ::Data::Asset<MaterialAsset> m_blastMaterialAsset;
-        const BlastMaterialId m_legacyBlastMaterialId; // Kept to convert old blast material assets. It will be removed eventually.
         Physics::MaterialId m_physicsMaterialId;
         const BlastActorConfiguration m_actorConfiguration{};
 

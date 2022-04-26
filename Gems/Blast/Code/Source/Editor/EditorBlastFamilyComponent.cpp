@@ -25,6 +25,7 @@ namespace Blast
                 ->Version(2)
                 ->Field("BlastAsset", &EditorBlastFamilyComponent::m_blastAsset)
                 ->Field("BlastMaterialAsset", &EditorBlastFamilyComponent::m_blastMaterialAsset)
+                ->Field("BlastMaterial", &EditorBlastFamilyComponent::m_legacyBlastMaterialId)
                 ->Field("PhysicsMaterial", &EditorBlastFamilyComponent::m_physicsMaterialId)
                 ->Field("ActorConfiguration", &EditorBlastFamilyComponent::m_actorConfiguration);
 

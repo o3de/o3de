@@ -60,7 +60,6 @@ namespace Blast
                 ->Version(3)
                 ->Field("BlastAsset", &BlastFamilyComponent::m_blastAsset)
                 ->Field("BlastMaterialAsset", &BlastFamilyComponent::m_blastMaterialAsset)
-                ->Field("BlastMaterial", &BlastFamilyComponent::m_legacyBlastMaterialId)
                 ->Field("PhysicsMaterial", &BlastFamilyComponent::m_physicsMaterialId)
                 ->Field("ActorConfiguration", &BlastFamilyComponent::m_actorConfiguration);
         }
