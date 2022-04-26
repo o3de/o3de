@@ -31,69 +31,9 @@
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <AzTest/Utils.h>
 
-namespace AZ::GFxFramework
-{
-    class MockMaterialGroup
-        : public MaterialGroup
-    {
-    public:
-        // ActorBuilder::GetMaterialInfoForActorGroup tries to read a source file first, and if that fails
-        //  (likely because it doesn't exist), tries to read one product file, followed by another. If they all fail,
-        //  none of those files exist, so the function fails. The material read function called by
-        //  GetMaterialInfoForActorGroup is mocked to return true after a set number of false returns to mimic the
-        //  behavior we would see if each given file is on disk.
-        MOCK_METHOD1(ReadMtlFile, bool(const char* filename));
-        MOCK_METHOD0(GetMaterialCount, size_t());
-    };
-} // namespace AZ
 
 namespace EMotionFX
 {
-    namespace Pipeline
-    {
-        class MockActorBuilder
-            : public ActorBuilder
-        {
-        public:
-            AZ_COMPONENT(MockActorBuilder, "{0C2537B5-6628-4076-BB09-CA1E57E59252}", EMotionFX::Pipeline::ActorBuilder)
-
-            int m_numberReadFailsBeforeSuccess = 0;
-            int m_materialCount = 0;
-
-        protected:
-            void InstantiateMaterialGroup() override
-            {
-                auto materialGroup = AZStd::make_shared<AZ::GFxFramework::MockMaterialGroup>();
-                EXPECT_CALL(*materialGroup, GetMaterialCount())
-                    .WillRepeatedly(testing::Return(m_materialCount));
-                EXPECT_CALL(*materialGroup, ReadMtlFile(::testing::_))
-                    .WillRepeatedly(testing::Return(true));
-                if (m_numberReadFailsBeforeSuccess)
-                {
-                    EXPECT_CALL(*materialGroup, ReadMtlFile(::testing::_))
-                        .Times(m_numberReadFailsBeforeSuccess)
-                        .WillRepeatedly(testing::Return(false))
-                        .RetiresOnSaturation();
-                }
-                m_materialGroup = AZStd::move(materialGroup);
-            }
-        };
-
-        class MockMaterialRule
-            : public AZ::SceneAPI::DataTypes::IMaterialRule
-        {
-        public:
-            bool RemoveUnusedMaterials() const override
-            {
-                return true;
-            }
-
-            bool UpdateMaterials() const override
-            {
-                return true;
-            }
-        };
-    } // namespace Pipeline
     // This fixture is responsible for creating the scene description used by
     // the actor builder pipeline tests
     using ActorBuilderPipelineFixtureBase = InitSceneAPIFixture<
@@ -103,7 +43,7 @@ namespace EMotionFX
         AZ::StreamerComponent,
         AzToolsFramework::Components::PropertyManagerComponent,
         EMotionFX::Integration::SystemComponent,
-        EMotionFX::Pipeline::MockActorBuilder
+        EMotionFX::Pipeline::ActorBuilder
     >;
 
     class ActorBuilderPipelineFixture
@@ -123,39 +63,14 @@ namespace EMotionFX
             AzFramework::StringFunc::Path::Join(this->GetAssetFolder().c_str(), "TestFile.fbx", testSourceFile);
             AzFramework::StringFunc::Path::Normalize(testSourceFile);
             m_scene->SetSource(testSourceFile, AZ::Uuid::CreateRandom());
-
-            AZ::SceneAPI::Containers::SceneGraph& graph = m_scene->GetGraph();
-
-            AZStd::shared_ptr<AZ::SceneData::GraphData::BoneData> boneData = AZStd::make_shared<AZ::SceneData::GraphData::BoneData>();
-            graph.AddChild(graph.GetRoot(), "testRootBone", boneData);
-
-            // Set up our base shape
-            AZStd::shared_ptr<AZ::SceneData::GraphData::MeshData> meshData = AZStd::make_shared<AZ::SceneData::GraphData::MeshData>();
-            AZStd::vector<AZ::Vector3> unmorphedVerticies
-            {
-                AZ::Vector3(0, 0, 0),
-                AZ::Vector3(1, 0, 0),
-                AZ::Vector3(0, 1, 0)
-            };
-            for (const AZ::Vector3& vertex : unmorphedVerticies)
-            {
-                meshData->AddPosition(vertex);
-            }
-            meshData->AddNormal(AZ::Vector3(0, 0, 1));
-            meshData->AddNormal(AZ::Vector3(0, 0, 1));
-            meshData->AddNormal(AZ::Vector3(0, 0, 1));
-            meshData->SetVertexIndexToControlPointIndexMap(0, 0);
-            meshData->SetVertexIndexToControlPointIndexMap(1, 1);
-            meshData->SetVertexIndexToControlPointIndexMap(2, 2);
-            meshData->AddFace(0, 1, 2);
-            AZ::SceneAPI::Containers::SceneGraph::NodeIndex meshNodeIndex = graph.AddChild(graph.GetRoot(), "testMesh", meshData);
         }
 
-        AZ::SceneAPI::Events::ProcessingResult Process(EMotionFX::Pipeline::Group::ActorGroup& actorGroup, AZStd::vector<AZStd::string>& materialReferences)
+        AZ::SceneAPI::Events::ProcessingResult Process(EMotionFX::Pipeline::Group::ActorGroup& actorGroup)
         {
             AZ::SceneAPI::Events::ProcessingResultCombiner result;
             AZStd::string workingDir = this->GetAssetFolder();
-            EMotionFX::Pipeline::ActorBuilderContext actorBuilderContext(*m_scene, workingDir, actorGroup, m_actor.get(), materialReferences, AZ::RC::Phase::Construction);
+            AZStd::vector<AZStd::string> empty;
+            EMotionFX::Pipeline::ActorBuilderContext actorBuilderContext(*m_scene, workingDir, actorGroup, m_actor.get(), empty, AZ::RC::Phase::Construction);
             result += AZ::SceneAPI::Events::Process(actorBuilderContext);
             result += AZ::SceneAPI::Events::Process<EMotionFX::Pipeline::ActorBuilderContext>(actorBuilderContext, AZ::RC::Phase::Filling);
             result += AZ::SceneAPI::Events::Process<EMotionFX::Pipeline::ActorBuilderContext>(actorBuilderContext, AZ::RC::Phase::Finalizing);
@@ -170,79 +85,115 @@ namespace EMotionFX
             ActorBuilderPipelineFixtureBase::TearDown();
         }
 
-        void TestSuccessCase(const AZStd::vector<AZStd::string>& expectedMaterialReferences)
+        void ProcessScene()
         {
             // Set up the actor group, which controls which parts of the scene graph
             // are used to generate the actor
             EMotionFX::Pipeline::Group::ActorGroup actorGroup;
             actorGroup.SetName("testActor");
-            actorGroup.SetSelectedRootBone("testRootBone");
-            actorGroup.GetSceneNodeSelectionList().AddSelectedNode("testMesh");
-            actorGroup.GetBaseNodeSelectionList().AddSelectedNode("testMesh");
+            actorGroup.SetSelectedRootBone("root_joint");
 
-            // do something here to make sure there are material rules in the actor?
-            if (!expectedMaterialReferences.empty())
-            {
-                AZStd::shared_ptr<EMotionFX::Pipeline::MockMaterialRule> materialRule = AZStd::make_shared<EMotionFX::Pipeline::MockMaterialRule>();
-                actorGroup.GetRuleContainer().AddRule(materialRule);
-            }
-
-            AZStd::vector<AZStd::string> materialReferences;
-
-            const AZ::SceneAPI::Events::ProcessingResult result = Process(actorGroup, materialReferences);
+            const AZ::SceneAPI::Events::ProcessingResult result = Process(actorGroup);
             ASSERT_EQ(result, AZ::SceneAPI::Events::ProcessingResult::Success) << "Failed to build actor";
-
-            for (auto& materialReference : materialReferences)
-            {
-                AzFramework::StringFunc::Path::Normalize(materialReference);
-            }
-            EXPECT_THAT(
-                materialReferences,
-                ::testing::Pointwise(StrEq(), expectedMaterialReferences)
-            );
         }
 
         AZStd::unique_ptr<Actor> m_actor;
         AZ::SceneAPI::Containers::Scene* m_scene = nullptr;
     };
 
-    TEST_F(ActorBuilderPipelineFixture, ActorBuilder_MaterialReferences_NoReferences)
+    TEST_F(ActorBuilderPipelineFixture, ActorBuilder_Basic_Three_Joint)
     {
-        // Set up the actor group, which controls which parts of the scene graph
-        // are used to generate the actor
-        TestSuccessCase({});
+        // Set up a scene graph like this for testing
+        // root_joint
+        //   |____joint_1
+        //         |____joint_2
+
+        using SceneGraph = AZ::SceneAPI::Containers::SceneGraph;
+        using namespace AZ::SceneData::GraphData;
+        SceneGraph& graph = m_scene->GetGraph();
+
+        AZStd::shared_ptr<BoneData> boneData = AZStd::make_shared<BoneData>();
+        const SceneGraph::NodeIndex rootJointIndex = graph.AddChild(graph.GetRoot(), "root_joint", boneData);
+        const SceneGraph::NodeIndex joint1Index = graph.AddChild(rootJointIndex, "joint_1", boneData);
+        graph.AddChild(joint1Index, "joint_2", boneData);
+
+        ProcessScene();
+
+        ASSERT_EQ(m_actor->GetNumNodes(), 3);
+        const Node* rootJoint = m_actor->GetSkeleton()->FindNodeByName("root_joint");
+        const Node* joint1 = m_actor->GetSkeleton()->FindNodeByName("joint_1");
+        const Node* joint2 = m_actor->GetSkeleton()->FindNodeByName("joint_2");
+        EXPECT_TRUE(rootJoint);
+        EXPECT_TRUE(rootJoint->GetIsRootNode());
+        EXPECT_TRUE(joint1);
+        EXPECT_TRUE(joint2);
+        EXPECT_EQ(joint1->GetParentNode(), rootJoint);
+        EXPECT_EQ(joint2->GetParentNode(), joint1);
     }
 
-    TEST_F(ActorBuilderPipelineFixture, ActorBuilder_MaterialReferences_OneSourceReference_ExpectAbsolutePath)
+    TEST_F(ActorBuilderPipelineFixture, ActorBuilder_Basic_Mesh)
     {
-        AZStd::string expectedMaterialReference;
-        AZ::StringFunc::Path::Join(this->GetAssetFolder().c_str(), "TestFile.mtl", expectedMaterialReference);
+        // Set up a scene graph like this for testing
+        // root_joint
+        //   |____joint_1
+        //         |____mesh_1
 
-        Pipeline::MockActorBuilder* actorBuilderComponent = GetSystemEntity()->FindComponent<Pipeline::MockActorBuilder>();
-        actorBuilderComponent->m_numberReadFailsBeforeSuccess = 0;
-        actorBuilderComponent->m_materialCount = 1;
-        TestSuccessCase({expectedMaterialReference});
+        using SceneGraph = AZ::SceneAPI::Containers::SceneGraph;
+        using namespace AZ::SceneData::GraphData;
+        SceneGraph& graph = m_scene->GetGraph();
+
+        AZStd::shared_ptr<BoneData> boneData = AZStd::make_shared<BoneData>();
+        const SceneGraph::NodeIndex rootJointIndex = graph.AddChild(graph.GetRoot(), "root_joint", boneData);
+        const SceneGraph::NodeIndex joint1Index = graph.AddChild(rootJointIndex, "joint_1", boneData);
+
+        AZStd::shared_ptr<MeshData> meshData = AZStd::make_shared<MeshData>();
+        graph.AddChild(joint1Index, "mesh_1", meshData);
+
+        ProcessScene();
+
+        // NOTE: End point mesh node should be skipped in the emfx skeleton structure. 
+        ASSERT_EQ(m_actor->GetNumNodes(), 2);
+        const Node* rootJoint = m_actor->GetSkeleton()->FindNodeByName("root_joint");
+        const Node* joint1 = m_actor->GetSkeleton()->FindNodeByName("joint_1");
+        const Node* mesh1 = m_actor->GetSkeleton()->FindNodeByName("mesh_1");
+        EXPECT_TRUE(rootJoint);
+        EXPECT_TRUE(joint1);
+        EXPECT_TRUE(!mesh1);
     }
 
-    TEST_F(ActorBuilderPipelineFixture, ActorBuilder_MaterialReferences_OneProductReference_ExpectRelativeMaterialPath)
+    TEST_F(ActorBuilderPipelineFixture, ActorBuilder_Basic_Mesh_Chained)
     {
-        AZStd::string expectedMaterialReference = "testActor.mtl";
-        AZStd::to_lower(expectedMaterialReference.begin(), expectedMaterialReference.end());
+        // Set up a scene graph like this for testing
+        // root_joint
+        //   |____joint_1
+        //         |____mesh_1
+        //                |____joint_2
 
-        Pipeline::MockActorBuilder* actorBuilderComponent = GetSystemEntity()->FindComponent<Pipeline::MockActorBuilder>();
-        actorBuilderComponent->m_numberReadFailsBeforeSuccess = 1;
-        actorBuilderComponent->m_materialCount = 1;
-        TestSuccessCase({expectedMaterialReference});
-    }
+        using SceneGraph = AZ::SceneAPI::Containers::SceneGraph;
+        using namespace AZ::SceneData::GraphData;
+        SceneGraph& graph = m_scene->GetGraph();
 
-    TEST_F(ActorBuilderPipelineFixture, ActorBuilder_MaterialReferences_OneProductReference_ExpectRelativeDccPath)
-    {
-        AZStd::string expectedMaterialReference = "testActor.dccmtl";
-        AZStd::to_lower(expectedMaterialReference.begin(), expectedMaterialReference.end());
+        AZStd::shared_ptr<BoneData> boneData = AZStd::make_shared<BoneData>();
+        const SceneGraph::NodeIndex rootJointIndex = graph.AddChild(graph.GetRoot(), "root_joint", boneData);
+        const SceneGraph::NodeIndex joint1Index = graph.AddChild(rootJointIndex, "joint_1", boneData);
 
-        Pipeline::MockActorBuilder* actorBuilderComponent = GetSystemEntity()->FindComponent<Pipeline::MockActorBuilder>();
-        actorBuilderComponent->m_numberReadFailsBeforeSuccess = 2;
-        actorBuilderComponent->m_materialCount = 1;
-        TestSuccessCase({expectedMaterialReference});
+        AZStd::shared_ptr<MeshData> meshData = AZStd::make_shared<MeshData>();
+        SceneGraph::NodeIndex meshIndex = graph.AddChild(joint1Index, "mesh_1", meshData);
+        graph.AddChild(meshIndex, "joint_2", boneData);
+
+        ProcessScene();
+
+        // NOTE: Mesh node that's part of the chain should NOT be skipped in the emfx skeleton structure. 
+        ASSERT_EQ(m_actor->GetNumNodes(), 4);
+        const Node* rootJoint = m_actor->GetSkeleton()->FindNodeByName("root_joint");
+        const Node* joint1 = m_actor->GetSkeleton()->FindNodeByName("joint_1");
+        const Node* mesh1 = m_actor->GetSkeleton()->FindNodeByName("mesh_1");
+        const Node* joint2 = m_actor->GetSkeleton()->FindNodeByName("joint_2");
+        EXPECT_TRUE(rootJoint);
+        EXPECT_TRUE(joint1);
+        EXPECT_TRUE(mesh1);
+        EXPECT_TRUE(joint2);
+        EXPECT_EQ(mesh1->GetParentNode(), joint1);
+        EXPECT_EQ(joint2->GetParentNode(), mesh1);
     }
 } // namespace EMotionFX

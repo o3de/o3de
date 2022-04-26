@@ -173,7 +173,7 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         Report.result(Tests.creation_redo, mesh_entity.exists())
 
         # 5. Set Mesh component asset property
-        model_path = os.path.join('Objects', 'sphere_5lods_fbx_psphere_base_1.azmodel')
+        model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.azmodel')
         model = Asset.find_asset_by_path(model_path)
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
         Report.result(Tests.mesh_asset_specified,
