@@ -5,19 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QDialog>
+#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #endif
 
-class FeedbackDialog
-    : public QDialog
+namespace MaterialCanvas
 {
-    Q_OBJECT
-
-public:
-    FeedbackDialog(QWidget* pParent = nullptr);
-
-private:
-};
+    using CreateNodePaletteItemsCallback = AZStd::function<GraphCanvas::GraphCanvasTreeItem*(const AZ::Crc32&)>;
+} // namespace MaterialCanvas
