@@ -6,9 +6,9 @@
  *
  */
 
+#include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/IO/LocalFileIO.h>
