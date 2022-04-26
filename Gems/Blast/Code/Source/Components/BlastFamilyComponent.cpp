@@ -328,7 +328,7 @@ namespace Blast
         m_damageManager.reset();
         m_solver.reset();
         m_family.reset();
-		m_blastMaterial.reset();
+        m_blastMaterial.reset();
 
         m_isSpawned = false;
     }
