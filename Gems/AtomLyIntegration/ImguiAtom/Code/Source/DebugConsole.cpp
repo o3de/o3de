@@ -174,7 +174,7 @@ namespace AZ
         }
 
         AZ::Color color = GetColorForLogLevel(logLevel);
-        if (strcmp(window, AZ::Debug::Trace::GetDefaultSystemWindow()) == 0 || strcmp(window, ILogger::GetTraceWindow()) == 0)
+        if (strcmp(window, AZ::Debug::Trace::GetDefaultSystemWindow()) == 0)
         {
             AddDebugLog( debugLogString, color);
         }

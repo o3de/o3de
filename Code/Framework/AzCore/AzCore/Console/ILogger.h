@@ -34,8 +34,6 @@ namespace AZ
         // LogLevel, message, file, function, line
         using LogEvent = AZ::Event<LogLevel, const char*, const char*, const char*, int32_t>;
 
-        static const char* GetTraceWindow() { return "Logger"; }
-
         ILogger() = default;
         virtual ~ILogger() = default;
 

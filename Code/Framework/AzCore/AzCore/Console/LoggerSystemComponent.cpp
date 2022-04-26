@@ -126,14 +126,14 @@ namespace AZ
         switch (level)
         {
         case LogLevel::Warn:
-            AZ_Warning(ILogger::GetTraceWindow(), true, buffer.c_str());
+            AZ_Warning(Debug::Trace::GetDefaultSystemWindow(), true, buffer.c_str());
             break;
         case LogLevel::Error:
-            AZ_Error(ILogger::GetTraceWindow(), true, buffer.c_str());
+            AZ_Error(Debug::Trace::GetDefaultSystemWindow(), true, buffer.c_str());
             break;
         default:
             // Catch all else with trace
-            AZ::Debug::Trace::Printf(ILogger::GetTraceWindow(), buffer.c_str());
+            AZ::Debug::Trace::Printf(Debug::Trace::GetDefaultSystemWindow(), buffer.c_str());
             break;
         }
     }
