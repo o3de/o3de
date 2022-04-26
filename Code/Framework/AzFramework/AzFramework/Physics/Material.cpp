@@ -47,7 +47,26 @@ namespace Physics
             {
                 materialSelection->SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
             }
-            materialSelection->SyncSelectionToMaterialLibrary();
+
+            // Not validating the material selection against the library at asset builder time
+            // because the library is not available. This happens when a MaterialSelection
+            // is part of a prefab. This will avoid writing null material ids into prefabs.
+            if (!IsAssetBuilder())
+            {
+                materialSelection->SyncSelectionToMaterialLibrary();
+            }
+        }
+
+        bool IsAssetBuilder() const
+        {
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+            // TypeId of AssetBuilderComponent
+            const char* typeIDAssetBuilderComponent = "{04332899-5d73-4d41-86b7-b1017d349673}";
+
+            return serializeContext
+                && serializeContext->FindClassData(AZ::TypeId::CreateString(typeIDAssetBuilderComponent));
         }
     };
 
