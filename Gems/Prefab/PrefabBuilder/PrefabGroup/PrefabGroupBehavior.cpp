@@ -391,7 +391,7 @@ namespace AZ::SceneAPI::Behaviors
             const Containers::SceneGraph& graph,
             const MeshTransformMap& meshTransformMap)
         {
-            EntityIdList entities;            
+            EntityIdList entities;
             entities.reserve(nodeEntityMap.size());
 
             for (const auto& nodeEntity : nodeEntityMap)
@@ -520,7 +520,21 @@ namespace AZ::SceneAPI::Behaviors
 
         // AssetImportRequest
         Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action, RequestingApplication requester) override;
+        Events::ProcessingResult PrepareForAssetLoading(Containers::Scene& scene, RequestingApplication requester) override;
     };
+
+    Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::PrepareForAssetLoading(
+        [[maybe_unused]] Containers::Scene& scene,
+        RequestingApplication requester)
+    {
+        using namespace AzToolsFramework;
+        if (requester == RequestingApplication::AssetProcessor)
+        {
+            EntityUtilityBus::Broadcast(&EntityUtilityBus::Events::ResetEntityContext);
+            AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
+        }
+        return Events::ProcessingResult::Success;
+    }
 
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
         Containers::Scene& scene,
