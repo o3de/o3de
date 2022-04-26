@@ -25,5 +25,11 @@ namespace AZ::Render
 
         EditorSkyAtmosphereComponent() = default;
         EditorSkyAtmosphereComponent(const SkyAtmosphereComponentConfig& config);
+
+    private:
+        //! EditorRenderComponentAdapter
+        //! we override OnConfigurationChanged to avoid deactivating and activating unnecessarily
+        AZ::u32 OnConfigurationChanged() override;
+        AZ::u32 OnLUTConfigurationChanged();
     };
 } // namespace AZ::Render

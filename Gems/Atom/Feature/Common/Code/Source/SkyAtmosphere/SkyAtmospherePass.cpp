@@ -20,6 +20,7 @@ namespace AZ::Render
         : RPI::ParentPass(descriptor)
         , m_atmosphereId(id)
     {
+        InitializeConstants(m_constants);
     }
 
     RPI::Ptr<SkyAtmospherePass> SkyAtmospherePass::CreateWithPassRequest(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id)
@@ -67,8 +68,6 @@ namespace AZ::Render
 	void SkyAtmospherePass::BuildInternal()
     {
         Base::BuildInternal();
-
-        InitializeConstants(m_constants);
 
         for (auto child : m_children)
         {
@@ -144,20 +143,24 @@ namespace AZ::Render
 
     void SkyAtmospherePass::FrameBeginInternal(AZ::RPI::Pass::FramePrepareParams params)
     {
-        //for (auto childPass : GetChildren())
-        //{
-
-        //}
         Base::FrameBeginInternal(params); 
+    }
+
+    void SkyAtmospherePass::FrameEndInternal()
+    {
+        Base::FrameEndInternal(); 
+
+        auto childPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
+        if (childPass && childPass->IsEnabled())
+        {
+            childPass->SetEnabled(false);
+        }
     }
 
     void SkyAtmospherePass::UpdateRenderPassSRG(const AtmosphereParams& params)
     {
         m_constants.bottom_radius = params.m_planetRadius;
         m_constants.top_radius = params.m_atmosphereRadius;
-        m_constants.gSunIlluminance[0] = params.m_sunIlluminance;
-        m_constants.gSunIlluminance[1] = params.m_sunIlluminance;
-        m_constants.gSunIlluminance[2] = params.m_sunIlluminance;
         params.m_sunDirection.GetNormalized().StoreToFloat3(m_constants.sun_direction);
         constexpr uint32_t maxSamples{ 64 }; // avoid oversampling (too many loops) causing device removal 
         m_constants.RayMarchMinMaxSPP[0] = static_cast<float>(AZStd::min(maxSamples, params.m_minSamples)); 
@@ -165,36 +168,50 @@ namespace AZ::Render
         m_constants.origin_at_surface = params.m_originAtSurface ? 1.0f : 0.0f;
         params.m_planetOrigin.StoreToFloat3(m_constants.planet_origin);
 
-        params.m_rayleighScattering.StoreToFloat3(m_constants.rayleigh_scattering);
-        params.m_mieScattering.StoreToFloat3(m_constants.mie_scattering);
-        params.m_mieExtinction.StoreToFloat3(m_constants.mie_extinction);
-        params.m_absorptionExtinction.StoreToFloat3(m_constants.absorption_extinction);
-        params.m_groundAlbedo.StoreToFloat3(m_constants.ground_albedo);
-
-        for (int i = 0; i < 3; ++i)
+        if (params.m_lutUpdateRequired)
         {
-            m_constants.mie_absorption[i] = AZStd::max(0.f, m_constants.mie_extinction[i] - m_constants.mie_scattering[i]);
-        }
+            m_constants.gSunIlluminance[0] = params.m_sunIlluminance;
+            m_constants.gSunIlluminance[1] = params.m_sunIlluminance;
+            m_constants.gSunIlluminance[2] = params.m_sunIlluminance;
+            params.m_rayleighScattering.StoreToFloat3(m_constants.rayleigh_scattering);
+            params.m_mieScattering.StoreToFloat3(m_constants.mie_scattering);
+            params.m_mieExtinction.StoreToFloat3(m_constants.mie_extinction);
+            params.m_absorptionExtinction.StoreToFloat3(m_constants.absorption_extinction);
+            params.m_groundAlbedo.StoreToFloat3(m_constants.ground_albedo);
 
-        // just locate the srg and constant every time for now to support shader reloading
-        for (auto child : m_children)
-        {
-            if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
+            for (int i = 0; i < 3; ++i)
             {
-                if (auto srg = renderPass->GetShaderResourceGroup())
-                {
-                    if (auto index = srg->FindShaderInputConstantIndex(Name("m_constants")); index.IsValid())
-                    {
-                        srg->SetConstant(index, m_constants);
-                    }
-                }
+                m_constants.mie_absorption[i] = AZStd::max(0.f, m_constants.mie_extinction[i] - m_constants.mie_scattering[i]);
             }
         }
 
-        //for (auto iter: m_passSrgData)
-        //{
-        //    iter.srg->SetConstant(iter.index, m_constants); 
-        //}
+        if (!m_children.empty())
+        {
+            // just locate the srg and constant every time for now to support shader reloading
+            for (auto child : m_children)
+            {
+                if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
+                {
+                    if (auto srg = renderPass->GetShaderResourceGroup())
+                    {
+                        if (auto index = srg->FindShaderInputConstantIndex(Name("m_constants")); index.IsValid())
+                        {
+                            srg->SetConstant(index, m_constants);
+                        }
+                    }
+                }
+            }
+
+            if (params.m_lutUpdateRequired)
+            {
+                // enable the LUT child pass to update the LUT render target
+                auto childPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
+                if (childPass)
+                {
+                    childPass->SetEnabled(true);
+                }
+            }
+        }
     }
 
     void SkyAtmospherePass::InitializeConstants(AtmosphereGPUParams& atmosphereConstants)

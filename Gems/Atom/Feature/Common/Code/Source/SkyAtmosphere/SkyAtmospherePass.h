@@ -8,9 +8,11 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Math/Vector3.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ::Render
 {
@@ -37,6 +39,7 @@ namespace AZ::Render
         {
             bool m_enabled = true;
             bool m_originAtSurface = true;
+            bool m_lutUpdateRequired = true;
             AZ::Vector3 m_planetOrigin = AZ::Vector3(0,0,0);
             AZ::Vector3 m_sunDirection = AZ::Vector3(0,0,-1);
             float m_sunIlluminance = 1.0f;
@@ -60,6 +63,7 @@ namespace AZ::Render
         explicit SkyAtmospherePass(const RPI::PassDescriptor& descriptor, SkyAtmosphereFeatureProcessorInterface::AtmosphereId id);
 
          void FrameBeginInternal(AZ::RPI::Pass::FramePrepareParams params) override;
+         void FrameEndInternal() override;
     private:
         SkyAtmospherePass() = delete;
 
