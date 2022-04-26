@@ -118,13 +118,12 @@ namespace AZ
         void ToggleIsShowing();
 
     private:
-        void AddDebugLog(const char* window, const char* debugLogString, const AZ::Color& color = AZ::Colors::White);
+        void AddDebugLog(const char* window, const char* debugLogString, AZ::LogLevel logLevel);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Variables
         AZStd::deque<AZStd::pair<AZStd::string, AZ::Color>> m_debugLogEntires; //!< All debug logs.
         AZStd::deque<AZStd::string> m_textInputHistory; //!< History of input that has been entered.
-        AZ::ILogger::LogEvent::Handler m_logHandler; //!< Handler that receives log events to display.
         AzFramework::InputContext m_inputContext; //!< Input context used to open/close the console.
         char m_inputBuffer[1028] = {}; //!< The character buffer used to accept text input.
         AzFramework::SystemCursorState m_previousSystemCursorState; //! The last system cursor state.

@@ -66,17 +66,6 @@ namespace AZ
     ////////////////////////////////////////////////////////////////////////////////////////////////
     DebugConsole::DebugConsole(int maxEntriesToDisplay, int maxInputHistorySize)
         : InputChannelEventListener(InputChannelEventListener::GetPriorityFirst(), true)
-        , m_logHandler
-        (
-            [this](AZ::LogLevel logLevel,
-                   const char* message,
-                   [[maybe_unused]]const char* file,
-                   [[maybe_unused]]const char* function,
-                   [[maybe_unused]]int32_t line)
-            {
-                AddDebugLog(message, GetColorForLogLevel(logLevel));
-            }
-        )
         , m_inputContext(DebugConsoleInputContext, {nullptr, InputChannelEventListener::GetPriorityFirst(), true, true})
         , m_maxEntriesToDisplay(maxEntriesToDisplay)
         , m_maxInputHistorySize(maxInputHistorySize)
@@ -121,19 +110,10 @@ namespace AZ
         inputFilter->IncludeChannelName(inputMappingToggleConsole->GetInputChannelId().GetNameCrc32());
         SetFilter(inputFilter);
 
-        // Bind our custom log handler.
-        AZ::ILogger* loggerInstance = AZ::Interface<AZ::ILogger>::Get();
-        AZ_Assert(loggerInstance, "Failed to get ILogger instance. Log handler not bound.")
-        if (loggerInstance)
-        {
-            loggerInstance->BindLogHandler(m_logHandler);
-        }
-
         // Connect to receive render tick events.
         auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
-
 
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
@@ -145,9 +125,6 @@ namespace AZ
 
         // Disconnect to stop receiving render tick events.
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
-
-        // Disconnect our custom log handler.
-        m_logHandler.Disconnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,9 +165,16 @@ namespace AZ
         }
     }
 
-    void DebugConsole::AddDebugLog(const char* window, const char* debugLogString, const AZ::Color& color)
+    void DebugConsole::AddDebugLog(const char* window, const char* debugLogString, AZ::LogLevel logLevel)
     {
-        if (strcmp(window, AZ::Debug::Trace::GetDefaultSystemWindow()) == 0)
+        AZ::ILogger* logger = AZ::Interface<AZ::ILogger>::Get();
+        if (logger == nullptr || logLevel < logger->GetLogLevel())
+        {
+            return;
+        }
+
+        AZ::Color color = GetColorForLogLevel(logLevel);
+        if (strcmp(window, AZ::Debug::Trace::GetDefaultSystemWindow()) == 0 || strcmp(window, ILogger::GetTraceWindow()) == 0)
         {
             AddDebugLog( debugLogString, color);
         }
@@ -215,19 +199,19 @@ namespace AZ
 
     bool DebugConsole::OnPreError(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)
     {
-        AddDebugLog(window, message, GetColorForLogLevel(AZ::LogLevel::Error));
+        AddDebugLog(window, message, AZ::LogLevel::Error);
         return false;
     }
 
     bool DebugConsole::OnPreWarning(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)
     {
-        AddDebugLog(window, message, GetColorForLogLevel(AZ::LogLevel::Warn));
+        AddDebugLog(window, message, AZ::LogLevel::Warn);
         return false;
     }
 
     bool DebugConsole::OnPrintf(const char* window, const char* message)
     {
-        AddDebugLog(window, message, GetColorForLogLevel(AZ::LogLevel::Trace));
+        AddDebugLog(window, message, AZ::LogLevel::Notice); // Notice is one level below warning
         return false;
     }
 
