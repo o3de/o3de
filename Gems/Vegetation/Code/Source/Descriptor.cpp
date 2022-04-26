@@ -13,8 +13,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
-#include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <Vegetation/EmptyInstanceSpawner.h>
+#include <Vegetation/PrefabInstanceSpawner.h>
 
 //////////////////////////////////////////////////////////////////////
 // #pragma inline_depth(0)
@@ -84,10 +84,6 @@ namespace Vegetation
                     if (spawnerType == "Legacy Vegetation")
                     {
                         AZ_Error("Dynamic Vegetation", false, "Replacing legacy vegetation spawner with an empty instance spawner");
-                    }
-                    else if (spawnerType == "Dynamic Slice")
-                    {
-                        newSpawnerType = azrtti_typeid<DynamicSliceInstanceSpawner>();
                     }
 
                     classElement.RemoveElementByName(AZ_CRC("SpawnerType", 0xbabb9f23));
@@ -504,7 +500,7 @@ namespace Vegetation
 
     Descriptor::Descriptor()
     {
-        m_instanceSpawner = AZStd::make_shared<DynamicSliceInstanceSpawner>();
+        m_instanceSpawner = AZStd::make_shared<PrefabInstanceSpawner>();
         m_spawnerType = azrtti_typeid(*m_instanceSpawner);
     }
 
