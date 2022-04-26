@@ -224,8 +224,10 @@ namespace AZ
                     // For each sub-mesh within each mesh, we want to create a separate sub-piece.
                     const uint32_t numSubMeshes = aznumeric_caster(mesh->GetNumSubMeshes());
 
-                    AZ_Assert(numSubMeshes == modelLodAsset->GetMeshes().size(),
-                        "Number of submeshes (%"PRIu32") in EMotionFX mesh (lod %d and joint index %d) doesn't match the number of meshes (%d) in model lod asset",
+                    AZ_Assert(
+                        numSubMeshes == modelLodAsset->GetMeshes().size(),
+                        "Number of submeshes (%" PRIu32 ") in EMotionFX mesh (lod %d and joint index %d) "
+                        "doesn't match the number of meshes (%d) in model lod asset",
                         numSubMeshes, lodIndex, jointIndex, modelLodAsset->GetMeshes().size());
 
                     for (uint32_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
@@ -266,7 +268,10 @@ namespace AZ
 
                 if (!jointIndicesBufferView || !skinWeightsBufferView)
                 {
-                    AZ_Error("ProcessSkinInfluences", false, "Actor '%s' lod '%"PRIu32"' has no skin influences, and will be stuck in bind pose.", fullFileName.c_str(), lodIndex);
+                    AZ_Error(
+                        "ProcessSkinInfluences", false,
+                        "Actor '%s' lod '%" PRIu32 "' has no skin influences, and will be stuck in bind pose.", fullFileName.c_str(),
+                        lodIndex);
                 }
                 else
                 {
