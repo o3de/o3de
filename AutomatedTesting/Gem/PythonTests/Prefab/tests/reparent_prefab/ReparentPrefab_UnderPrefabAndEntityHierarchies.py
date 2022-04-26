@@ -24,7 +24,7 @@ def ReparentPrefab_UnderPrefabAndEntityHierarchies():
         import azlmbr.legacy.general as general
 
         async def reparent_with_undo_redo(prefab_file_name, prefab_instance, new_parent_entity_id):
-            # Get child data on the original parent, original container id, and new parent
+            # Get ids for original parent, original container id, and new parent
             original_parent = EditorEntity(prefab_instance.container_entity.get_parent_id())
             original_container_id = prefab_instance.container_entity.id
             new_parent = EditorEntity(new_parent_entity_id)
