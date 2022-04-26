@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/DOM/DomPath.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/AttributeReader.h>
@@ -16,11 +17,12 @@
 
 namespace AZ::Reflection
 {
-    namespace LegacyAttributes
+    namespace DescriptorAttributes
     {
         Name Handler = Name::FromStringLiteral("Handler");
         Name Label = Name::FromStringLiteral("Label");
-    }
+        Name SerializedPath = Name::FromStringLiteral("SerializedPath");
+    } // namespace DescriptorAttributes
 
     namespace LegacyReflectionInternal
     {
@@ -29,14 +31,7 @@ namespace AZ::Reflection
             , IAttributes
         {
             IReadWrite* m_visitor;
-            void* m_instance;
-            AZ::TypeId m_typeId;
             SerializeContext* m_serializeContext;
-            const SerializeContext::ClassData* m_classData = nullptr;
-            const SerializeContext::ClassElement* m_classElement = nullptr;
-
-            using HandlerCallback = AZStd::function<bool()>;
-            AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
 
             struct AttributeData
             {
@@ -44,16 +39,28 @@ namespace AZ::Reflection
                 Name m_name;
                 Dom::Value m_value;
             };
-            AZStd::vector<AttributeData> m_cachedAttributes;
+
+            struct StackEntry
+            {
+                void* m_instance;
+                AZ::TypeId m_typeId;
+                const SerializeContext::ClassData* m_classData = nullptr;
+                const SerializeContext::ClassElement* m_classElement = nullptr;
+                AZStd::vector<AttributeData> m_cachedAttributes;
+                AZStd::string m_path;
+            };
+            AZStd::stack<StackEntry> m_stack;
+
+            using HandlerCallback = AZStd::function<bool()>;
+            AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
 
             virtual ~InstanceVisitor() = default;
 
             InstanceVisitor(IReadWrite* visitor, void* instance, const AZ::TypeId& typeId, SerializeContext* serializeContext)
                 : m_visitor(visitor)
-                , m_instance(instance)
-                , m_typeId(typeId)
                 , m_serializeContext(serializeContext)
             {
+                m_stack.push({ instance, typeId });
                 RegisterPrimitiveHandlers<bool, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, float, double>();
             }
 
@@ -62,7 +69,7 @@ namespace AZ::Reflection
             {
                 m_handlers[azrtti_typeid<T>()] = [this, handler]() -> bool
                 {
-                    return handler(*reinterpret_cast<T*>(m_instance));
+                    return handler(*reinterpret_cast<T*>(m_stack.top().m_instance));
                 };
             }
 
@@ -99,31 +106,39 @@ namespace AZ::Reflection
                     },
                     m_serializeContext, SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_WRITE, nullptr);
 
-                m_serializeContext->EnumerateInstance(&context, m_instance, m_typeId, nullptr, nullptr);
+                const StackEntry& nodeData = m_stack.top();
+                m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
             }
 
             bool BeginNode(
                 void* instance, const AZ::SerializeContext::ClassData* classData, const AZ::SerializeContext::ClassElement* classElement)
             {
-                m_instance = instance;
-                m_typeId = classData ? classData->m_typeId : Uuid::CreateNull();
-                m_classData = classData;
-                m_classElement = classElement;
+                AZStd::string path = m_stack.top().m_path;
+                if (classElement)
+                {
+                    path.append("/");
+                    path.append(classElement->m_name);
+                }
+                m_stack.push({ instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
+                m_stack.top().m_path = AZStd::move(path);
+                CacheAttributes();
 
-                if (auto handlerIt = m_handlers.find(m_typeId); handlerIt != m_handlers.end())
+                StackEntry& nodeData = m_stack.top();
+
+                if (auto handlerIt = m_handlers.find(nodeData.m_typeId); handlerIt != m_handlers.end())
                 {
                     return handlerIt->second();
                 }
-
-                CacheAttributes();
-
                 m_visitor->VisitObjectBegin(*this, *this);
+
                 return true;
             }
 
             bool EndNode()
             {
-                if (auto handlerIt = m_handlers.find(m_typeId); handlerIt != m_handlers.end())
+                StackEntry nodeData = AZStd::move(m_stack.top());
+                m_stack.pop();
+                if (auto handlerIt = m_handlers.find(nodeData.m_typeId); handlerIt != m_handlers.end())
                 {
                     return true;
                 }
@@ -134,23 +149,23 @@ namespace AZ::Reflection
 
             const AZ::TypeId& GetType() const override
             {
-                return m_typeId;
+                return m_stack.top().m_typeId;
             }
 
             AZStd::string_view GetTypeName() const override
             {
-                const AZ::SerializeContext::ClassData* classData = m_serializeContext->FindClassData(m_typeId);
+                const AZ::SerializeContext::ClassData* classData = m_serializeContext->FindClassData(m_stack.top().m_typeId);
                 return classData ? classData->m_name : "<unregistered type>";
             }
 
             void* Get() override
             {
-                return m_instance;
+                return m_stack.top().m_instance;
             }
 
             const void* Get() const override
             {
-                return m_instance;
+                return m_stack.top().m_instance;
             }
 
             template<typename T>
@@ -178,7 +193,9 @@ namespace AZ::Reflection
 
             void CacheAttributes()
             {
-                m_cachedAttributes.clear();
+                StackEntry& nodeData = m_stack.top();
+                AZStd::vector<AttributeData>& cachedAttributes = nodeData.m_cachedAttributes;
+                cachedAttributes.clear();
 
                 // Legacy reflection doesn't have groups, so they're in the root "" group
                 const Name group;
@@ -204,10 +221,10 @@ namespace AZ::Reflection
                         Dom::Value attributeValue;
                         const bool readSucceeded = TryReadAttribute<
                             bool, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, AZStd::string, float, double>(
-                            m_instance, it->second, attributeValue);
+                            nodeData.m_instance, it->second, attributeValue);
                         if (readSucceeded)
                         {
-                            m_cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue) });
+                            cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue) });
                         }
                     }
                     else
@@ -216,14 +233,27 @@ namespace AZ::Reflection
                     }
                 };
 
+                nodeData.m_cachedAttributes.push_back(
+                    { group, DescriptorAttributes::SerializedPath, Dom::Value(nodeData.m_path, true) });
+
                 // Read attributes in order, checking:
                 // 1) Class element edit data attributes (EditContext from the given row of a class)
                 // 2) Class element data attributes (SerializeContext from the given row of a class)
                 // 3) Class data attributes (the base attributes of a class)
-                if (m_classElement)
+                if (nodeData.m_classElement)
                 {
-                    if (const AZ::Edit::ElementData* elementEditData = m_classElement->m_editData; elementEditData != nullptr)
+                    if (const AZ::Edit::ElementData* elementEditData = nodeData.m_classElement->m_editData; elementEditData != nullptr)
                     {
+                        if (elementEditData->m_elementId)
+                        {
+                            AZ::Name handlerName = propertyEditorSystem->LookupNameFromCrc(elementEditData->m_elementId);
+                            if (!handlerName.IsEmpty())
+                            {
+                                nodeData.m_cachedAttributes.push_back(
+                                    { group, DescriptorAttributes::Handler, Dom::Value(handlerName.GetCStr(), false) });
+                            }
+                        }
+
                         if (elementEditData->m_name)
                         {
                             labelAttributeValue = elementEditData->m_name;
@@ -235,12 +265,12 @@ namespace AZ::Reflection
                         }
                     }
 
-                    if (labelAttributeValue.empty() && m_classElement->m_name)
+                    if (labelAttributeValue.empty() && nodeData.m_classElement->m_name)
                     {
-                        labelAttributeValue = m_classElement->m_name;
+                        labelAttributeValue = nodeData.m_classElement->m_name;
                     }
 
-                    for (auto it = m_classElement->m_attributes.begin(); it != m_classElement->m_attributes.end(); ++it)
+                    for (auto it = nodeData.m_classElement->m_attributes.begin(); it != nodeData.m_classElement->m_attributes.end(); ++it)
                     {
                         AZ::AttributePair pair;
                         pair.first = it->first;
@@ -249,14 +279,14 @@ namespace AZ::Reflection
                     }
                 }
 
-                if (m_classData)
+                if (nodeData.m_classData)
                 {
-                    if (labelAttributeValue.empty() && m_classData->m_name)
+                    if (labelAttributeValue.empty() && nodeData.m_classData->m_name)
                     {
-                        labelAttributeValue = m_classData->m_name;
+                        labelAttributeValue = nodeData.m_classData->m_name;
                     }
 
-                    for (auto it = m_classData->m_attributes.begin(); it != m_classData->m_attributes.end(); ++it)
+                    for (auto it = nodeData.m_classData->m_attributes.begin(); it != nodeData.m_classData->m_attributes.end(); ++it)
                     {
                         AZ::AttributePair pair;
                         pair.first = it->first;
@@ -265,7 +295,7 @@ namespace AZ::Reflection
                     }
                 }
 
-                m_cachedAttributes.push_back({ group, AZ_NAME_LITERAL("Label"), Dom::Value(labelAttributeValue, true) });
+                nodeData.m_cachedAttributes.push_back({ group, AZ_NAME_LITERAL("Label"), Dom::Value(labelAttributeValue, true) });
             }
 
             AttributeDataType Find(Name name) const override
@@ -275,7 +305,8 @@ namespace AZ::Reflection
 
             AttributeDataType Find(Name group, Name name) const override
             {
-                for (auto it = m_cachedAttributes.begin(); it != m_cachedAttributes.end(); ++it)
+                const StackEntry& nodeData = m_stack.top();
+                for (auto it = nodeData.m_cachedAttributes.begin(); it != nodeData.m_cachedAttributes.end(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {
@@ -287,12 +318,12 @@ namespace AZ::Reflection
 
             void ListAttributes(const IterationCallback& callback) const override
             {
-                for (const AttributeData& data : m_cachedAttributes)
+                const StackEntry& nodeData = m_stack.top();
+                for (const AttributeData& data : nodeData.m_cachedAttributes)
                 {
                     callback(data.m_group, data.m_name, data.m_value);
                 }
             }
-
         };
     } // namespace LegacyReflectionInternal
 

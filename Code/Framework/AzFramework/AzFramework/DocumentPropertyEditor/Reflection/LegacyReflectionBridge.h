@@ -15,10 +15,11 @@
 
 namespace AZ::Reflection
 {
-    namespace LegacyAttributes
+    namespace DescriptorAttributes
     {
         extern Name Handler;
         extern Name Label;
+        extern Name SerializedPath;
     }
 
     template<typename T>

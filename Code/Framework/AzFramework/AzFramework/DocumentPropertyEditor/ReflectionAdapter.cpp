@@ -12,6 +12,7 @@
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <AzCore/DOM/DomUtils.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -46,7 +47,7 @@ namespace AZ::DocumentPropertyEditor
         AZStd::string_view GetPropertyEditor(const AZ::TypeId& id, const Reflection::IAttributes& attributes)
         {
             (void)attributes;
-            const Dom::Value handler = attributes.Find(Reflection::LegacyAttributes::Handler);
+            const Dom::Value handler = attributes.Find(Reflection::DescriptorAttributes::Handler);
             if (handler.IsString())
             {
                 return handler.GetString();
@@ -61,7 +62,7 @@ namespace AZ::DocumentPropertyEditor
 
         void ExtractLabel(const Reflection::IAttributes& attributes)
         {
-            Dom::Value label = attributes.Find(Reflection::LegacyAttributes::Label);
+            Dom::Value label = attributes.Find(Reflection::DescriptorAttributes::Label);
             if (!label.IsNull())
             {
                 if (!label.IsString())
@@ -85,7 +86,7 @@ namespace AZ::DocumentPropertyEditor
                         return;
                     }
 
-                    if (name == Reflection::LegacyAttributes::Label)
+                    if (name == Reflection::DescriptorAttributes::Label || name == Reflection::DescriptorAttributes::Handler)
                     {
                         return;
                     }
@@ -94,13 +95,14 @@ namespace AZ::DocumentPropertyEditor
                 });
         }
 
-        void VisitValue(Dom::Value value, AZStd::string_view editorType, const Reflection::IAttributes& attributes)
+        void VisitValue(Dom::Value value, AZStd::string_view editorType, const Reflection::IAttributes& attributes, AZStd::function<void(const Dom::Value&)> onChanged)
         {
             m_builder.BeginRow();
             ExtractLabel(attributes);
 
             m_builder.BeginPropertyEditor(editorType, AZStd::move(value));
             ForwardAttributes(attributes);
+            m_builder.Attribute(Nodes::PropertyEditor::OnChanged, onChanged);
             m_builder.EndPropertyEditor();
 
             m_builder.EndRow();
@@ -109,7 +111,12 @@ namespace AZ::DocumentPropertyEditor
         template<class T>
         void VisitPrimitive(T& value, const Reflection::IAttributes& attributes)
         {
-            VisitValue(Reflection::CreateValue(value), GetPropertyEditor(azrtti_typeid<T>(), attributes), attributes);
+            VisitValue(
+                Reflection::CreateValue(value), GetPropertyEditor(azrtti_typeid<T>(), attributes), attributes,
+                [&value](const Dom::Value& newValue)
+                {
+                    value = Dom::Utils::ConvertValueToPrimitive<T>(newValue);
+                });
         }
 
         void Visit(bool& value, const Reflection::IAttributes& attributes) override
@@ -180,9 +187,14 @@ namespace AZ::DocumentPropertyEditor
         }
 
         void Visit(
-            const AZStd::string_view value, [[maybe_unused]] Reflection::IStringAccess& access, const Reflection::IAttributes& attributes) override
+            const AZStd::string_view value, Reflection::IStringAccess& access, const Reflection::IAttributes& attributes) override
         {
-            VisitPrimitive(value, attributes);
+            VisitValue(
+                Reflection::CreateValue(value), GetPropertyEditor(azrtti_typeid<AZStd::string_view>(), attributes), attributes,
+                [&access](const Dom::Value& newValue)
+                {
+                    access.Set(newValue.GetString());
+                });
         }
 
         void Visit(Reflection::IArrayAccess& access, const Reflection::IAttributes& attributes) override

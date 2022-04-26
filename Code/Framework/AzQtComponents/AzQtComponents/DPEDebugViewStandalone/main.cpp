@@ -15,6 +15,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
@@ -24,13 +25,13 @@
 
 #include <QAbstractItemModel>
 #include <QApplication>
-#include <QTreeView>
 #include <QMessageBox>
+#include <QTreeView>
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
-#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
+#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 
@@ -61,6 +62,7 @@ namespace DPEDebugView
         };
 
         int m_simpleInt = 5;
+        double m_doubleSlider = 3.25;
         AZStd::map<AZStd::string, float> m_map;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
         AZStd::unordered_map<EnumType, int> m_simpleEnum;
@@ -79,6 +81,7 @@ namespace DPEDebugView
             {
                 serializeContext->Class<TestContainer>()
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
+                    ->Field("doubleSlider", &TestContainer::m_doubleSlider)
                     ->Field("map", &TestContainer::m_map)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
                     ->Field("simpleEnum", &TestContainer::m_simpleEnum)
@@ -100,6 +103,9 @@ namespace DPEDebugView
 
                     editContext->Class<TestContainer>("TestContainer", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleInt, "simple int", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &TestContainer::m_doubleSlider, "double slider", "")
+                        ->Attribute(AZ::Edit::Attributes::Min, -10.0)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10.0)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_map, "map<string, float>", "")
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_unorderedMap, "unordered_map<pair<int, double>, int>", "")
@@ -156,6 +162,7 @@ namespace DPEDebugView
         DPEDebugApplication(int* argc = nullptr, char*** argv = nullptr)
             : AzToolsFramework::ToolsApplication(argc, argv)
         {
+            AZ::NameDictionary::Create();
             AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
 
             m_propertyEditorSystem = AZStd::make_unique<AZ::DocumentPropertyEditor::PropertyEditorSystem>();
@@ -201,12 +208,13 @@ int main(int argc, char** argv)
 
     // create a default cvar adapter to expose the local CVar settings to edit
     // AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
-    AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
+    AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> adapter =
+        AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
     DPEDebugView::TestContainer testContainer;
     adapter->SetValue(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>());
 
     AzToolsFramework::DPEDebugModel adapterModel(nullptr);
-    //adapterModel.SetAdapter(adapter.get());
+    // adapterModel.SetAdapter(adapter.get());
 
     QPointer<DPEDebugView::DPEDebugWindow> theWindow = new DPEDebugView::DPEDebugWindow(nullptr);
     theWindow->m_textView->SetAdapter(adapter);

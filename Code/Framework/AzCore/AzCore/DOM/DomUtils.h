@@ -23,4 +23,40 @@ namespace AZ::Dom::Utils
 
     bool DeepCompareIsEqual(const Value& lhs, const Value& rhs);
     Value DeepCopy(const Value& value, bool copyStrings = true);
+
+    template<typename T>
+    T ConvertValueToPrimitive(const Dom::Value& value, AZStd::enable_if_t<AZStd::is_same_v<T, bool>>* = nullptr)
+    {
+        return value.GetBool();
+    }
+
+    template<typename T>
+    T ConvertValueToPrimitive(
+        const Dom::Value& value,
+        AZStd::enable_if_t<AZStd::is_integral_v<T> && AZStd::is_signed_v<T> && !AZStd::is_same_v<T, bool>>* = nullptr)
+    {
+        return aznumeric_cast<T>(value.GetInt64());
+    }
+
+    template<typename T>
+    T ConvertValueToPrimitive(
+        const Dom::Value& value,
+        AZStd::enable_if_t<AZStd::is_integral_v<T> && !AZStd::is_signed_v<T> && !AZStd::is_same_v<T, bool>>* = nullptr)
+    {
+        return aznumeric_cast<T>(value.GetUint64());
+    }
+
+    template<typename T>
+    T ConvertValueToPrimitive(const Dom::Value& value, AZStd::enable_if_t<AZStd::is_floating_point_v<T>>* = nullptr)
+    {
+        return aznumeric_cast<T>(value.GetDouble());
+    }
+
+    template<typename T>
+    T ConvertValueToPrimitive(
+        const Dom::Value& value,
+        AZStd::enable_if_t<AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string_view> || AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string>>* = nullptr)
+    {
+        return value.GetString();
+    }
 } // namespace AZ::Dom::Utils
