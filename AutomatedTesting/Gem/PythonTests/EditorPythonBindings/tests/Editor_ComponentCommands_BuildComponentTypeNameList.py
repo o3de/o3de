@@ -10,8 +10,7 @@ from Editor_TestClass import BaseClass
 
 class Editor_ComponentCommands_BuildComponentTypeNameList(BaseClass):
     # Description: 
-    # LY-107818 reported a crash with this code snippet
-    # This new test will be used to regress test the issue
+    # Regression test for crash with BuildComponentTypeNameList command
     
     @staticmethod
     def test():

@@ -146,8 +146,3 @@ def Editor_LayerEntity_Works():
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
     Report.start_test(Editor_LayerEntity_Works)
-
-
-
-
-

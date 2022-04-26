@@ -11,7 +11,6 @@ from Editor_TestClass import BaseClass
 class Editor_ComponentCommands_Works(BaseClass):
     # Description: 
     # Tests a portion of the Component CRUD Python API while the Editor is running
-    # It needs a new test level in prefab format to make it testable again.
     
     @staticmethod
     def test():

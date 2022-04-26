@@ -8,18 +8,14 @@ import pytest
 from ly_test_tools import LAUNCHERS
 from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorBatchedTest, EditorSingleTest
 
-# uber complex set of internal tests, will need further work
-#    class Editor_ComponentCommands_Works(EditorSingleTest):
-#        from .tests import Editor_ComponentCommands_Works as test_module
-
-# something is causing an infnite loop in Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\InstanceDataHierarchy.cpp
+# something is causing an infinite loop in Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\InstanceDataHierarchy.cpp
 #    class Editor_ComponentPropertyCommands_containers(EditorSingleTest):
 #        from .tests import Editor_ComponentPropertyCommands_containers as test_module
 
 #Exception: [FAIL] layer was not created : FAILED
 #    class Editor_LayerEntity_Works(EditorSingleTest):
 #        from .tests import Editor_LayerEntity_Works as test_module
-#
+
 #ERROR. Failed to pre-enable component with name=Terrain World Debugger, uuid={D09BA0B9-FB51-446B-BD7B-3C40743D2E39}
 #    class Editor_LevelComponentCommands_Works(EditorSingleTest):
 #        from .tests import Editor_LevelComponentCommands_Works as test_module
