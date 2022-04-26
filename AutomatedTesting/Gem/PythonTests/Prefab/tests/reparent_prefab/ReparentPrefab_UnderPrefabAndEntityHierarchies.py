@@ -17,38 +17,45 @@ def ReparentPrefab_UnderPrefabAndEntityHierarchies():
     @pyside_utils.wrap_async
     async def run_test():
 
-        from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorLevelEntity
+        from editor_python_test_tools.editor_entity_utils import EditorEntity
         from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
 
         import Prefab.tests.PrefabTestUtils as prefab_test_utils
         import azlmbr.legacy.general as general
 
-        async def reparent_with_undo_redo(prefab_instance, new_parent_entity_id):
-            # Get child data on the original parent, and reparent to new entity
+        async def reparent_with_undo_redo(prefab_file_name, prefab_instance, new_parent_entity_id):
+            # Get child data on the original parent, original container id, and new parent
             original_parent = EditorEntity(prefab_instance.container_entity.get_parent_id())
-            original_parent_original_children_ids = {child_id.ToString(): child_id for child_id in
-                                                     original_parent.get_children_ids()}
+            original_container_id = prefab_instance.container_entity.id
+            new_parent = EditorEntity(new_parent_entity_id)
+
+            # Reparent to the new parent
             await prefab_instance.ui_reparent_prefab_instance(new_parent_entity_id)
 
             # Undo the reparent operation, and verify original parent is restored
             general.undo()
             wait_for_propagation()
-            original_parent_new_children_ids = {child_id.ToString(): child_id for child_id in
-                                                original_parent.get_children_ids()}
-            assert original_parent_original_children_ids == original_parent_new_children_ids, \
-                "Failed to reparent instance to the original parent via Undo"
+            original_parent_children_ids = original_parent.get_children_ids()
+            new_parent_children_ids = new_parent.get_children_ids()
+            instance_id = general.find_editor_entity(prefab_file_name)
+            assert instance_id in original_parent_children_ids, \
+                "Undo failed: Failed to find instance as a child of the original parent."
+            assert instance_id not in new_parent_children_ids, \
+                "Undo failed: Unexpectedly still found instance as a child of the new parent."
 
             # Redo the reparent operation, and verify the new instance is not among the original parent's child entities
             general.redo()
             wait_for_propagation()
-            original_parent_new_children_ids = {child_id.ToString(): child_id for child_id in
-                                                original_parent.get_children_ids()}
-            assert prefab_instance.container_entity.id not in original_parent_new_children_ids, \
-                "Redo on reparent operation failed"
+            original_parent_children_ids = original_parent.get_children_ids()
+            new_parent_children_ids = new_parent.get_children_ids()
+            instance_id = general.find_editor_entity(prefab_file_name)
+            assert instance_id not in original_parent_children_ids, \
+                "Redo failed: Unexpectedly found prefab instance as a child of the original parent."
+            assert instance_id in new_parent_children_ids, \
+                "Redo failed: Failed to find instance as a child of the new parent."
 
         prefab_test_utils.open_base_tests_level()
 
-        Report.info(f"Level Entity Id: {EditorEntity(EditorLevelEntity).id}")
         # Creates a new car entity at the root level
         car_entity = EditorEntity.create_editor_entity()
         car_prefab_entities = [car_entity]
@@ -81,19 +88,19 @@ def ReparentPrefab_UnderPrefabAndEntityHierarchies():
         car.container_entity.focus_on_owning_prefab()
 
         # Reparents the wheel prefab instance to the container entity of the car prefab instance
-        await reparent_with_undo_redo(wheel, car.container_entity.id)
+        await reparent_with_undo_redo(WHEEL_PREFAB_FILE_NAME, wheel, car.container_entity.id)
 
         # Reparents the driver instance to the container entity of the now nested car/wheel prefab
         wheel.container_entity.focus_on_owning_prefab()
-        await reparent_with_undo_redo(driver, wheel.container_entity.id)
+        await reparent_with_undo_redo(DRIVER_PREFAB_FILE_NAME, driver, wheel.container_entity.id)
 
         # Reparents the wheel prefab instance to the non-prefab entity at the root level
         non_prefab_entity.focus_on_owning_prefab()
-        await reparent_with_undo_redo(wheel, non_prefab_entity.id)
+        await reparent_with_undo_redo(WHEEL_PREFAB_FILE_NAME, wheel, non_prefab_entity.id)
 
         # Reparents the wheel prefab instance to the child entity of the non-prefab entity hierarchy
         non_prefab_child_entity.focus_on_owning_prefab()
-        await reparent_with_undo_redo(wheel, non_prefab_child_entity.id)
+        await reparent_with_undo_redo(WHEEL_PREFAB_FILE_NAME, wheel, non_prefab_child_entity.id)
 
     run_test()
 
