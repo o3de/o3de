@@ -180,8 +180,9 @@ namespace Multiplayer
                 m_serverProcessWatcher = nullptr;
                 m_serverProcessTracePrinter = nullptr;
             }
-            
-            if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName)))
+
+            const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
+            if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(editorInterfaceName))
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
@@ -189,13 +190,6 @@ namespace Multiplayer
             {
                 console->PerformCommand("disconnect");
             }
-
-            if (m_connectionEvent.IsScheduled())
-            {
-                m_connectionEvent.RemoveFromQueue();
-            }
-
-            AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
 
             // Rebuild the library to clear temporary in-memory spawnable assets
             AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
@@ -252,13 +246,13 @@ namespace Multiplayer
         return false;
     }
 
-    void MultiplayerEditorSystemComponent::LaunchEditorServer()
+    bool MultiplayerEditorSystemComponent::LaunchEditorServer()
     {
         // Assemble the server's path
         AZ::IO::FixedMaxPath serverPath;
         if (!FindServerLauncher(serverPath))
         {
-            return;
+            return false;
         }        
 
         // Start the configured server if it's available
@@ -304,7 +298,9 @@ namespace Multiplayer
             const char* fail_message = "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.";
             AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(fail_message);
             AZ_Error("MultiplayerEditor", outProcess, fail_message);
+            return false;
         }
+        return true;
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
@@ -364,7 +360,11 @@ namespace Multiplayer
             AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
 
             // Launch the editor-server
-            LaunchEditorServer();
+            if (!LaunchEditorServer())
+            {
+                AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage("(1/3) Could not launch editor server.\nSee console for more info.");
+                return;
+            }
         }
         
         // Keep trying to connect until the port is finally available.
@@ -488,7 +488,8 @@ namespace Multiplayer
         AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(message);
         AZ_Printf("MultiplayerEditor", message)
 
-        INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
+        const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
+        INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(editorInterfaceName);
         AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
 
         const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;

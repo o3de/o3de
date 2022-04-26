@@ -22,7 +22,7 @@ namespace GraphModel
         return m_graph.lock();
     }
 
-    IGraphContextPtr GraphElement::GetGraphContext() const
+    GraphContextPtr GraphElement::GetGraphContext() const
     {
         GraphPtr graph = m_graph.lock();
         return graph ? graph->GetContext() : nullptr;

@@ -12,6 +12,6 @@
 
 partial ShaderResourceGroup SceneSrg
 {
-    float m_time;
+    float m_time; // number of seconds since the application started
 }
 
