@@ -774,6 +774,21 @@ namespace AssetProcessor
                 AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
 
 
+            if (outputToCache && outputToIntermediate)
+            {
+                // We currently do not support both since intermediate outputs require the Common platform, which is not supported for cache outputs yet
+                AZ_Error(AssetProcessor::ConsoleChannel, false, "Outputting an asset as both a product and intermediate is not supported.  To output both, please split the job into two separate ones.");
+                return false;
+            }
+
+            if (!outputToCache && !outputToIntermediate)
+            {
+                AZ_Error(AssetProcessor::ConsoleChannel, false, "An output asset must be flagged as either a product or an intermediate asset.  "
+                    "Please update the output job to include either AssetBuilderSDK::ProductOutputFlags::ProductAsset "
+                    "or AssetBuilderSDK::ProductOutputFlags::IntermediateAsset");
+                return false;
+            }
+
             if(outputToCache)
             {
                 if(!product.m_outputPathOverride.empty())
