@@ -11,11 +11,11 @@
 #include <Atom/Features/MatrixUtility.azsli>
 
  void EnhancedSetPixelDepth(
-     float3 worldPosition,
+     inout float3 worldPosition,
      float3 normal,
      float3 tangents[UvSetCount],
      float3 bitangents[UvSetCount],
-     float2 uvs[UvSetCount],
+     inout float2 uvs[UvSetCount],
      bool isFrontFace,
      inout float2 detailUv[UvSetCount],
      inout float depthCS,
