@@ -84,7 +84,7 @@ namespace Multiplayer
         //! @}
 
     private:
-        void LaunchEditorServer();
+        bool LaunchEditorServer();
         bool FindServerLauncher(AZ::IO::FixedMaxPath& serverPath);
         void Connect();
         
