@@ -40,13 +40,9 @@ namespace AzFramework::Scripts
         {
             void OnReadEnd(void* classPtr) override
             {
-                // Listen to OnAssetReloaded as soon as m_asset is assigned
                 SpawnableScriptAssetRef* spawnableScriptAssetRef = reinterpret_cast<SpawnableScriptAssetRef*>(classPtr);
-                if (spawnableScriptAssetRef->m_asset.GetId().IsValid())
-                {
-                    spawnableScriptAssetRef->BusDisconnect();
-                    spawnableScriptAssetRef->BusConnect(spawnableScriptAssetRef->m_asset.GetId());
-                }
+                // Call SetAsset to connect AssetBus handler as soon as m_asset field is set
+                spawnableScriptAssetRef->SetAsset(spawnableScriptAssetRef->m_asset);
             }
         };
 
