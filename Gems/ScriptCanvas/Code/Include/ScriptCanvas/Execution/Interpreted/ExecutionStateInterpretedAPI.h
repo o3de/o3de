@@ -16,8 +16,16 @@ namespace ScriptCanvas
 {
     namespace Execution
     {
+        /**
+        * Use this function instead of directly pushing the ExectionState onto the stack, to protect calling code from changes to the use
+        * of the Lua runtime.
+        */
         void ExecutionStatePush(lua_State* lua, ExecutionStateWeakPtr executionState);
 
+        /**
+        * Use this function instead of directly reading the ExectionState from the stack, to protect calling code from changes to the use of
+        * the Lua runtime.
+        */
         ExecutionStateWeakPtr ExecutionStateRead(lua_State* lua, int index);
     }
 }

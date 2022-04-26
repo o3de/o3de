@@ -24,7 +24,9 @@ namespace ScriptCanvas
      * ExecutionStateHandler requires to run properly.
      * Like the ExecutionState and ExecutionStateHandler it provides no little or no safety checks, and host systems must take
      * care to properly initialize it.
-     *       
+     *
+     * \see ExecutionStateHandler for documentation on Execution and Initialization methods.
+     * 
      * For example usage:
      * \see Interpreter
      * \see RuntimeComponents
@@ -53,16 +55,20 @@ namespace ScriptCanvas
 
         bool IsPure() const;
 
+        /// Set the RuntimeDataOverrides which provide a runtime Asset to run and the possible property overrides.
         void SetRuntimeOverrides(const RuntimeDataOverrides& overrideData);
 
+        /// Set the ExecutionUserData which will be used on Execution.
         void SetUserData(const ExecutionUserData& userData);
 
         void StopAndClearExecutable();
 
         void StopAndKeepExecutable();
 
+        /// Take the RuntimeDataOverrides which provide a runtime Asset to run and the possible property overrides.
         void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
 
+        /// Take the ExecutionUserData which will be used on Execution.
         void TakeUserData(ExecutionUserData&& userData);
 
     private:

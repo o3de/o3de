@@ -16,11 +16,11 @@
 
 namespace ScriptCanvas
 {
-    /*
-    * Defines a operations for dynamic execution state storage in static allocation to elimination heap allocation costs
-    * associated with creating the proper execution state against an asset whose type cannot be known
+    /**
+    * Defines operations for storage of the dynamic and polymorphic ExecutionState sub classes in a static size buffer. This eliminates
+    * heap allocation costs associated with creating the proper ExecutionState against an asset whose type cannot be known
     * at runtime. Use with class ExecutionStateHandler to benefit from RAII semantics or you must perform
-    * your own safety checks to call Destruct() before this storage is deleted if any Create calls were used on it.
+    * your own safety checks to call Destruct() before this storage is deleted if any of the Create calls were used on it.
     */
     namespace Execution
     {
@@ -32,7 +32,7 @@ namespace ScriptCanvas
 
         using StorageArray = AZStd::array<AZ::u8, s_StorageSize>;
 
-        // to allow forward declare usage, rather than including this file, which must pull all derived ExecutionStates into it.
+        /// This struct allows forward declare usage, rather than including this file, which must pull all derived ExecutionStates into it.
         struct StateStorage
         {
             StorageArray data;

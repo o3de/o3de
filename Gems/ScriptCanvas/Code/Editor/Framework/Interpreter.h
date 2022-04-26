@@ -34,7 +34,7 @@ namespace ScriptCanvasEditor
         Stopped             // (manually) stopped
        );
 
-    /// This class defines an object that provides source and property configuration for ScriptCanvas graphs, and executes them
+    /// This class defines provides source and property configuration for ScriptCanvas graphs, and executes them
     /// as safely as possible. This can be used while the graph is being actively edited, whether in the O3DE provided editor or in
     /// another editor. When the graph properties are updated, the interpreter will always present and (attempt to) run the latest version.
     class Interpreter final
@@ -55,6 +55,10 @@ namespace ScriptCanvasEditor
 
         AZ::EventHandler<const Interpreter&> ConnectOnStatusChanged(AZStd::function<void(const Interpreter&)>&& function) const;
 
+        /// <summary
+        /// Executes the selected Script if possible, and returns true if it did so. 
+        /// </summary>
+        /// <returns>true iff the script was Executable</returns>
         bool Execute();
 
         const Configuration& GetConfiguration() const;
@@ -67,14 +71,28 @@ namespace ScriptCanvasEditor
 
         Configuration& ModConfiguration();
 
+        /// <summary>
+        /// Allows a manual refresh of the configuration to update Editor properties.
+        /// </summary>
         void RefreshConfiguration();
 
+        /// <summary>
+        /// Sets the default user data in the Executable to a pointer to this Interpreter object.
+        /// \note It will not be used until the next execution.
+        /// </summary>
         void ResetUserData();
 
         void SetScript(SourceHandle source);
 
+        /// <summary>
+        /// Stops the execution of the script if it is executable and stoppable. If the script does not require being stopped, does nothing.
+        /// </summary>
         void Stop();
 
+        /// <summary>
+        /// Sets the user data in the Executable to the input runtimeUserData.
+        /// \note It will not be used until the next execution.
+        /// </summary>
         void TakeUserData(ScriptCanvas::ExecutionUserData&& runtimeUserData);
 
     private:

@@ -8,14 +8,21 @@
 
 #pragma once
 
-// SC_RUNTIME_CHECKS are only for use against machine generated code, or interactions with it.
-// It is recommended to leave them as asserts whenever possible. 
-
-// #define SC_RUNTIME_CHECKS_AS_ERRORS 
-
+/// SC_RUNTIME_CHECKS are only for use against machine generated code, or interactions with it.
+/// It is recommended to leave them as asserts whenever possible. The primary intention of SC_RUNTIME_CHECKS_ENABLED is to allow developers
+/// and users of the ScriptCanvas Runtime to quickly switch between an implementation that has been verified to execute without any errors
+/// or harm to the host executable (a release or performance profiling build), or an implementation that may be riskier or under
+/// active development. Care is taken to make sure that both implementations execute the logic of Scripts *exactly the same*. When checks
+/// are enabled, the most catastrophic errors (to the host executable) are attempted to be avoided when they are encountered in either
+/// internal systems of the ScriptCanvas runtime, or when executing Scripts themselves. Otherwise, Scripts are executed with as little
+/// additional branching or diagnostics as possible, to allow for minimal overhead.
 #if !defined(_RELEASE)
 #define SC_RUNTIME_CHECKS_ENABLED
 #endif
+
+/// It is recommended to leave SC_RUNTIME_CHECKS implemented as a asserts, as they are to be considered a catastrophic failure that should
+/// not be tolerated in a release build.
+// #define SC_RUNTIME_CHECKS_AS_ERRORS 
 
 #if defined SC_RUNTIME_CHECKS_ENABLED
     #if defined SC_RUNTIME_CHECKS_AS_ERRORS

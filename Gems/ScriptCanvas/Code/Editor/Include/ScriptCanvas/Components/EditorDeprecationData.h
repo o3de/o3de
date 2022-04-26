@@ -13,6 +13,15 @@
 #include <ScriptCanvas/Core/Core.h>
 #include <AzCore/Asset/AssetCommon.h>
 
+/// <summary>
+/// This file is for deprecated Editor time / source data that is none-the-less used to assist developers writing code
+/// that can load and properly update legacy source files for ScriptCanvas.
+///
+/// \note Runtime data should *never* be versioned. The serialized Assets should always be reflect the latest version of the
+/// serialized C++ definitions, and when an update is required, the appropriate builder is bumped to trigger teh AP to regenerate all files
+/// from their sources.
+/// </summary>
+
 namespace ScriptCanvasEditor
 {
     namespace Deprecated

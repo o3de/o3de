@@ -18,9 +18,10 @@
 
 namespace ScriptCanvasEditor
 {
-    /*! Configuration
-    The user facing data for selecting ScriptCanvas source and configuration exposed properties.
-    */
+    /// <summary>
+    /// Configuration provides user-facing facilities for selecting a ScriptCanvas source file, monitoring its status, and exposing its
+    /// properties for configuration if possible.
+    /// </summary>
     class Configuration final
         : public AzFramework::AssetCatalogEventBus::Handler
         , public ScriptCanvasBuilder::DataSystemSourceNotificationsBus::Handler
@@ -31,7 +32,6 @@ namespace ScriptCanvasEditor
     public:
         AZ_TYPE_INFO(Configuration, "{0F4D78A9-EF29-4D6A-AC5B-8F4E19B1A6EE}");
 
-        // make file handling for this class specifically
         static void Reflect(AZ::ReflectContext* context);
 
         Configuration();
@@ -42,20 +42,26 @@ namespace ScriptCanvasEditor
 
         const ScriptCanvasBuilder::BuildVariableOverrides* CompileLatest();
 
+        /// Will signal when the properties have been modified by the user, or when the source file has been changed.
         AZ::EventHandler<const Configuration&> ConnectToPropertiesChanged(AZStd::function<void(const Configuration&)>&& function) const;
 
+        /// Will signal when the selected source file has been successfully compiled.
         AZ::EventHandler<const Configuration&> ConnectToSourceCompiled(AZStd::function<void(const Configuration&)>&& function) const;
 
+        /// Will signal when the selected source file has failed to compile for any reason.
         AZ::EventHandler<const Configuration&> ConnectToSourceFailed(AZStd::function<void(const Configuration&)>&& function) const;
 
+        /// Returns the user editable properties of the selected source. The properties could be empty.
         const ScriptCanvasBuilder::BuildVariableOverrides& GetOverrides() const;
 
         const SourceHandle& GetSource() const;
 
         bool HasSource() const;
 
+        /// Provides a manual call to Refresh() with currently selected source file.
         void Refresh();
 
+        /// Sets the selected file to the input sourceHandle, compiles latest, and sends all signals.
         void Refresh(const SourceHandle& sourceHandle);
 
     private:
@@ -105,6 +111,8 @@ namespace ScriptCanvasEditor
     public:
         bool AcceptsComponentScript() const;
 
+        /// Some Scripts refer the 'self Entity Id', part of the Entity / Component extension of current ScriptCanvas scripting system.
+        /// This allows programmers to enable or disable using such a script with this Configuraiton.
         void SetAcceptsComponentScript(bool value);
 
         AZ::EventHandler<const Configuration&> ConnectToIncompatilbleScript(AZStd::function<void(const Configuration&)>&& function) const;
