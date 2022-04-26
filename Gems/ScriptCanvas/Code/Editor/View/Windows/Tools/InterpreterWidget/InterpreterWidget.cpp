@@ -18,6 +18,7 @@ namespace InterpreterWidgetCpp
 {
     using namespace ScriptCanvasEditor;
 
+    /// converts the interpreter status to a AZStd::pair<boo, bool> : first = Start button enabled, second = Stop button enabled
     AZStd::pair<bool, bool> ToStartStopButtonEnabled(InterpreterStatus status)
     {
         switch (status)

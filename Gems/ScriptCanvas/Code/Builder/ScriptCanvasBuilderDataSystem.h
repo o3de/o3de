@@ -24,9 +24,20 @@ namespace ScriptCanvasEditor
 
 namespace ScriptCanvasBuilder
 {
+// this MACRO enables highly verbose status updates from the builder data system which will later be routed through an imgui window.
 // #define DATA_SYSTEM_STATUS(window, msg, ...) AZ_TracePrintf(window, msg, __VA_ARGS__);
 #define DATA_SYSTEM_STATUS(window, msg, ...)
 
+    /// <summary>
+    /// Provides simplified access to status and compiled data for ScriptCanvas source files.
+    /// </summary>
+    /// 
+    /// This class handles both DataSystemAssetRequestsBus and DataSystemSourceRequestsBus. It listens to AP notifications and
+    /// the tools framework notifications for ScriptCanvas source file changes. It stores the results of processing a source file for both
+    /// editor-configurable properties and for runtime ready assets for faster retrieval when many are being simultaneously processed. For
+    /// example, this occurs during prefab compilation time, when multiple ScriptCanvasEditorComponents require builder data for their
+    /// configuration loaded from latest source file on disk. This system reduces file I/O and compilation work by maintaining and providing
+    /// access to the very latest results.
     class DataSystem final
         : public DataSystemAssetRequestsBus::Handler
         , public DataSystemSourceRequestsBus::Handler
@@ -40,8 +51,18 @@ namespace ScriptCanvasBuilder
         DataSystem();
         virtual ~DataSystem();
 
+        /// <summary>
+        /// Returns the latest built editor properties for the source file
+        /// </summary>
+        /// <param name="sourceHandle"></param>
+        /// <returns>BuilderSourceResult editor properties status and data </returns>
         BuilderSourceResult CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle) override;
 
+        /// <summary>
+        /// Returns the latest built runtime data for the source file
+        /// </summary>
+        /// <param name="sourceHandle"></param>
+        /// <returns>BuilderAssetResult runtime status and data </returns>
         BuilderAssetResult LoadAsset(ScriptCanvasEditor::SourceHandle sourceHandle) override;
 
     private:

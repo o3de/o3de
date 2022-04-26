@@ -37,6 +37,11 @@ namespace ScriptCanvasEditor
 {
     class Configuration;
 
+    /// <summary>
+    /// Reusable Editor Widget that provides an editable [Configuration](@ref Configuration) and control for an
+    /// [Interpreter](@ref Interpreter). This allows developers to place the widget in almost any tool to provide in-place access to
+    /// executing ScriptCanvas graphs.
+    /// </summary>
     class InterpreterWidget final
         : public AzQtComponents::StyledDialog
         , public AzToolsFramework::IPropertyEditorNotify

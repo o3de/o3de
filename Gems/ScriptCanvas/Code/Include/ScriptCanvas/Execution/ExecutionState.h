@@ -40,6 +40,12 @@ namespace ScriptCanvas
         ExecutionStateConfig(const RuntimeDataOverrides& overrides, ExecutionUserData&& userData);
     };
 
+    /// <summary>
+    /// \class ExecutionState - the base abstract class that is the interface for the ScriptCanvas runtime and the hosting environment.
+    /// It allows for customization of initialization, starting, and stopping execution. It only works on on valid runtime data, and holds
+    /// user data. For example, in the Entity/Component system, the user data stores the information required to provide the Entity and
+    /// Component that own the running graph. The actual runtime implementation is entirely up to subclasses.
+    /// </summary>
     class ExecutionState
     {
     public:

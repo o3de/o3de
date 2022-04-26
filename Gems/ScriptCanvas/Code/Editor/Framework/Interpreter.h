@@ -34,9 +34,9 @@ namespace ScriptCanvasEditor
         Stopped             // (manually) stopped
        );
 
-    // This class defined an object that provides source and property configuration for ScriptCanvas graphs, and executes them
-    // as safely as possible. This can be used while the graph is being actively edited, whether in the O3DE provided editor or in
-    // another editor. When the graph properties are updated, the interpreter will always present and (attempt to) run the latest version.
+    /// This class defines an object that provides source and property configuration for ScriptCanvas graphs, and executes them
+    /// as safely as possible. This can be used while the graph is being actively edited, whether in the O3DE provided editor or in
+    /// another editor. When the graph properties are updated, the interpreter will always present and (attempt to) run the latest version.
     class Interpreter final
         : public ScriptCanvasBuilder::DataSystemAssetNotificationsBus::Handler
     {
