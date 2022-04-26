@@ -28,7 +28,7 @@ namespace UnitTest
         Q_OBJECT
     public:
         AssetProcessorServerUnitTest();
-        ~AssetProcessorServerUnitTest() = default;
+        ~AssetProcessorServerUnitTest();
 
     public Q_SLOTS:
         void AssetProcessorConnectionStressTest();

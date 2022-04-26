@@ -79,6 +79,10 @@ namespace UnitTest
     {
     }
 
+    AssetProcessorServerUnitTest::~AssetProcessorServerUnitTest()
+    {
+    }
+
     void AssetProcessorServerUnitTest::SetUp()
     {
         ScopedAllocatorSetupFixture::SetUp();
