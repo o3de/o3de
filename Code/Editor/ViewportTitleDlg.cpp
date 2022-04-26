@@ -21,26 +21,25 @@
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
 // Editor
-#include "Settings.h"
-#include "ViewPane.h"
-#include "DisplaySettings.h"
-#include "CustomResolutionDlg.h"
-#include "CustomAspectRatioDlg.h"
-#include "Include/IObjectManager.h"
-#include "UsedResources.h"
-#include "Objects/SelectionGroup.h"
-#include "UsedResources.h"
-#include "Include/IObjectManager.h"
 #include "ActionManager.h"
-#include "MainWindow.h"
-#include "GameEngine.h"
-#include "MathConversion.h"
+#include "CustomAspectRatioDlg.h"
+#include "CustomResolutionDlg.h"
+#include "DisplaySettings.h"
 #include "EditorViewportSettings.h"
+#include "GameEngine.h"
+#include "Include/IObjectManager.h"
+#include "MainWindow.h"
+#include "MathConversion.h"
+#include "Objects/SelectionGroup.h"
+#include "Settings.h"
+#include "UsedResources.h"
+#include "ViewPane.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
@@ -107,7 +106,12 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
-    SetupHelpersButton();
+
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        SetupHelpersButton();
+    }
+
     SetupOverflowMenu();
 
     if (gSettings.bMuteAudio)

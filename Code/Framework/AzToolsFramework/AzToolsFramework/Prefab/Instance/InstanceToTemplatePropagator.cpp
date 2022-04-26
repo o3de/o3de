@@ -172,7 +172,7 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ_Error(
+                AZ_Warning(
                     "Prefab",
                     (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
                     (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
