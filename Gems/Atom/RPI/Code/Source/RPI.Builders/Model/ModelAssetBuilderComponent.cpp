@@ -937,8 +937,6 @@ namespace AZ
             const AZStd::map<uint32_t, uint32_t>& oldToNewIndicesMap,
             bool& warnedExcessOfSkinInfluences) const
         {
-            const size_t vertexCount = oldToNewIndicesMap.size();
-
             uint32_t influencesPerVertex = 0;
             for (const auto& [oldIndex, newIndex] : oldToNewIndicesMap)
             {
