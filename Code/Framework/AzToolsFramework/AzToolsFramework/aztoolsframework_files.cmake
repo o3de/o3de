@@ -7,6 +7,24 @@
 #
 
 set(FILES
+    ActionManager/ActionManager.cpp
+    ActionManager/ActionManager.h
+    ActionManager/ActionManagerInterface.h
+    ActionManager/ActionManagerSystemComponent.cpp
+    ActionManager/ActionManagerSystemComponent.h
+    ActionManager/Action/EditorAction.cpp
+    ActionManager/Action/EditorAction.h
+    ActionManager/Action/EditorActionContext.cpp
+    ActionManager/Action/EditorActionContext.h
+    ActionManager/Hotkey/HotkeyManager.cpp
+    ActionManager/Hotkey/HotkeyManager.h
+    ActionManager/Hotkey/HotkeyManagerInterface.h
+    ActionManager/Menu/MenuManager.cpp
+    ActionManager/Menu/MenuManager.h
+    ActionManager/Menu/MenuManagerInterface.h
+    ActionManager/Toolbar/ToolbarManager.cpp
+    ActionManager/Toolbar/ToolbarManager.h
+    ActionManager/Toolbar/ToolbarManagerInterface.h
     AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
