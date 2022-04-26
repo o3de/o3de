@@ -15,9 +15,9 @@ namespace RecastNavigation
         : public AZ::ComponentBus
     {
     public:
-        //! Collects and adds the geometry within the defined world space.
-        //! @param geometryData an out parameter that will have the geometry added to.
-        virtual void CollectGeometry(BoundedGeometry& geometryData) = 0;
+        virtual void BindGeometryCollectionEventHandler(AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler& handler) = 0;
+
+        virtual void StartCollectingGeometry() = 0;
         
         //! Returns the world bounds that this surveyor is responsible for.
         //! @return An axis aligned bounding box of the world bounds.

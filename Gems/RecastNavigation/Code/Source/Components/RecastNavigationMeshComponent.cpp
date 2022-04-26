@@ -25,8 +25,18 @@ AZ_CVAR(
     bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, draw debug visual information about Navigation Mesh");
 
+#pragma optimize("", off)
+
 namespace RecastNavigation
 {
+    RecastNavigationMeshComponent::RecastNavigationMeshComponent()
+        : m_geometryCollectedEventHandler([this](AZStd::shared_ptr<BoundedGeometry> boundedGeometry)
+        {
+            OnGeometryCollected(boundedGeometry);
+        })
+    {
+    }
+
     void RecastNavigationMeshComponent::Reflect(AZ::ReflectContext* context)
     {
         RecastNavigationMeshConfig::Reflect(context);
@@ -136,38 +146,27 @@ namespace RecastNavigation
         m_taskGraphEvent = AZStd::unique_ptr<AZ::TaskGraphEvent>();
         m_navMeshReady = false;
         m_waitingOnNavMeshRebuild = true;
-
-        // Get geometry
-        m_geom.clear();
-        RecastNavigationSurveyorRequestBus::Event(GetEntityId(), &RecastNavigationSurveyorRequestBus::Events::CollectGeometry, m_geom);
-
-        m_taskGraph.Reset();
-        m_taskGraph.AddTask(
-            m_taskDescriptor,
-            [this]
-            {
-                if (TaskUpdateNavigationMesh())
-                {
-                    m_navMeshReady = true;
-                    RecastNavigationMeshNotificationBus::Broadcast(&RecastNavigationMeshNotificationBus::Events::OnNavigationMeshUpdated, GetEntityId());
-                }
-
-                m_waitingOnNavMeshRebuild = false;
-            });
-        m_taskGraph.Submit(m_taskGraphEvent.get());
+        
+        RecastNavigationSurveyorRequestBus::Event(GetEntityId(), &RecastNavigationSurveyorRequests::StartCollectingGeometry);
     }
 
-    bool RecastNavigationMeshComponent::TaskUpdateNavigationMesh()
+    NavigationTileData RecastNavigationMeshComponent::CreateNavigationTile(AZStd::shared_ptr<BoundedGeometry> geom,
+        const RecastNavigationMeshConfig& meshConfig, rcContext* context)
     {
-        if (m_geom.m_verts.empty())
-        {
-            return true;
-        }
+        rcConfig m_config = {};
+        AZStd::vector<AZ::u8> m_trianglesAreas;
+        RecastPointer<rcHeightfield> m_solid;
+        RecastPointer<rcCompactHeightfield> m_chf;
+        RecastPointer<rcContourSet> m_contourSet;
+        RecastPointer<rcPolyMesh> m_pmesh;
+        RecastPointer<rcPolyMeshDetail> m_detailMesh;
+        RecastPointer<dtNavMesh> m_navMesh;
+        RecastPointer<dtNavMeshQuery> m_navQuery;
 
-        const float* vertices = &m_geom.m_verts.front().m_x;
-        const int vertexCount = static_cast<int>(m_geom.m_verts.size());
-        const int* triangleData = &m_geom.m_indices[0];
-        const int triangleCount = static_cast<int>(m_geom.m_indices.size()) / 3;
+        const float* vertices = &geom->m_verts.front().m_x;
+        const int vertexCount = static_cast<int>(geom->m_verts.size());
+        const int* triangleData = &geom->m_indices[0];
+        const int triangleCount = static_cast<int>(geom->m_indices.size()) / 3;
 
         //
         // Step 1. Initialize build config.
@@ -175,40 +174,34 @@ namespace RecastNavigation
 
         // Init build configuration from GUI
         memset(&m_config, 0, sizeof(m_config));
-        m_config.cs = m_meshConfig.m_cellSize;
-        m_config.ch = m_meshConfig.m_cellHeight;
-        m_config.walkableSlopeAngle = m_meshConfig.m_agentMaxSlope;
-        m_config.walkableHeight = static_cast<int>(ceilf(m_meshConfig.m_agentHeight / m_config.ch));
-        m_config.walkableClimb = static_cast<int>(floorf(m_meshConfig.m_agentMaxClimb / m_config.ch));
-        m_config.walkableRadius = static_cast<int>(ceilf(m_meshConfig.m_agentRadius / m_config.cs));
-        m_config.maxEdgeLen = static_cast<int>(m_meshConfig.m_edgeMaxLen / m_meshConfig.m_cellSize);
-        m_config.maxSimplificationError = m_meshConfig.m_edgeMaxError;
-        m_config.minRegionArea = static_cast<int>(rcSqr(m_meshConfig.m_regionMinSize));		// Note: area = size*size
-        m_config.mergeRegionArea = static_cast<int>(rcSqr(m_meshConfig.m_regionMergeSize));	// Note: area = size*size
-        m_config.maxVertsPerPoly = static_cast<int>(m_meshConfig.m_maxVertsPerPoly);
-        m_config.detailSampleDist = m_meshConfig.m_detailSampleDist < 0.9f ? 0 : m_meshConfig.m_cellSize * m_meshConfig.m_detailSampleDist;
-        m_config.detailSampleMaxError = m_meshConfig.m_cellHeight * m_meshConfig.m_detailSampleMaxError;
+        m_config.cs = meshConfig.m_cellSize;
+        m_config.ch = meshConfig.m_cellHeight;
+        m_config.walkableSlopeAngle = meshConfig.m_agentMaxSlope;
+        m_config.walkableHeight = static_cast<int>(ceilf(meshConfig.m_agentHeight / m_config.ch));
+        m_config.walkableClimb = static_cast<int>(floorf(meshConfig.m_agentMaxClimb / m_config.ch));
+        m_config.walkableRadius = static_cast<int>(ceilf(meshConfig.m_agentRadius / m_config.cs));
+        m_config.maxEdgeLen = static_cast<int>(meshConfig.m_edgeMaxLen / meshConfig.m_cellSize);
+        m_config.maxSimplificationError = meshConfig.m_edgeMaxError;
+        m_config.minRegionArea = static_cast<int>(rcSqr(meshConfig.m_regionMinSize));		// Note: area = size*size
+        m_config.mergeRegionArea = static_cast<int>(rcSqr(meshConfig.m_regionMergeSize));	// Note: area = size*size
+        m_config.maxVertsPerPoly = static_cast<int>(meshConfig.m_maxVertsPerPoly);
+        m_config.detailSampleDist = meshConfig.m_detailSampleDist < 0.9f ? 0 : meshConfig.m_cellSize * meshConfig.m_detailSampleDist;
+        m_config.detailSampleMaxError = meshConfig.m_cellHeight * meshConfig.m_detailSampleMaxError;
 
         // Set the area where the navigation will be build.
         // Here the bounds of the input mesh are used, but the
         // area could be specified by an user defined box, etc.
 
-        const RecastVector3 worldMin(m_geom.m_worldBounds.GetMin());
-        const RecastVector3 worldMax(m_geom.m_worldBounds.GetMax());
+        const RecastVector3 worldMin(geom->m_worldBounds.GetMin());
+        const RecastVector3 worldMax(geom->m_worldBounds.GetMax());
 
         rcVcopy(m_config.bmin, &worldMin.m_x);
         rcVcopy(m_config.bmax, &worldMax.m_x);
         rcCalcGridSize(m_config.bmin, m_config.bmax, m_config.cs, &m_config.width, &m_config.height);
 
-        // Reset build times gathering.
-        m_context->resetTimers();
-
-        // Start the build process.
-        m_context->startTimer(RC_TIMER_TOTAL);
-
-        m_context->log(RC_LOG_PROGRESS, "Building navigation:");
-        m_context->log(RC_LOG_PROGRESS, " - %d x %d cells", m_config.width, m_config.height);
-        m_context->log(RC_LOG_PROGRESS, " - %d verts, %d triangles", vertexCount, triangleCount);
+        context->log(RC_LOG_PROGRESS, "Building navigation:");
+        context->log(RC_LOG_PROGRESS, " - %d x %d cells", m_config.width, m_config.height);
+        context->log(RC_LOG_PROGRESS, " - %d verts, %d triangles", vertexCount, triangleCount);
 
         //
         // Step 2. Rasterize input polygon soup.
@@ -218,14 +211,14 @@ namespace RecastNavigation
         m_solid.reset(rcAllocHeightfield());
         if (!m_solid)
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'solid'.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'solid'.");
+            return {};
         }
-        if (!rcCreateHeightfield(m_context.get(), *m_solid, m_config.width, m_config.height,
+        if (!rcCreateHeightfield(context, *m_solid, m_config.width, m_config.height,
             m_config.bmin, m_config.bmax, m_config.cs, m_config.ch))
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Could not create solid height field.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Could not create solid height field.");
+            return {};
         }
 
         // Allocate array that can hold triangle area types.
@@ -236,13 +229,13 @@ namespace RecastNavigation
         // Find triangles which are walkable based on their slope and rasterize them.
         // If your input data is multiple meshes, you can transform them here, calculate
         // the are type for each of the meshes and rasterize them.
-        rcMarkWalkableTriangles(m_context.get(), m_config.walkableSlopeAngle, vertices,
+        rcMarkWalkableTriangles(context, m_config.walkableSlopeAngle, vertices,
             vertexCount, triangleData, triangleCount, m_trianglesAreas.data());
-        if (!rcRasterizeTriangles(m_context.get(), vertices, vertexCount, triangleData,
+        if (!rcRasterizeTriangles(context, vertices, vertexCount, triangleData,
             m_trianglesAreas.data(), triangleCount, *m_solid /*, m_config.walkableClimb*/))
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Could not rasterize triangles.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Could not rasterize triangles.");
+            return {};
         }
 
         m_trianglesAreas.clear();
@@ -254,12 +247,12 @@ namespace RecastNavigation
         // Once all geometry is rasterized, we do initial pass of filtering to
         // remove unwanted overhangs caused by the conservative rasterization
         // as well as filter spans where the character cannot possibly stand.
-        if (m_meshConfig.m_filterLowHangingObstacles)
-            rcFilterLowHangingWalkableObstacles(m_context.get(), m_config.walkableClimb, *m_solid);
-        if (m_meshConfig.m_filterLedgeSpans)
-            rcFilterLedgeSpans(m_context.get(), m_config.walkableHeight, m_config.walkableClimb, *m_solid);
-        if (m_meshConfig.m_filterWalkableLowHeightSpans)
-            rcFilterWalkableLowHeightSpans(m_context.get(), m_config.walkableHeight, *m_solid);
+        if (meshConfig.m_filterLowHangingObstacles)
+            rcFilterLowHangingWalkableObstacles(context, m_config.walkableClimb, *m_solid);
+        if (meshConfig.m_filterLedgeSpans)
+            rcFilterLedgeSpans(context, m_config.walkableHeight, m_config.walkableClimb, *m_solid);
+        if (meshConfig.m_filterWalkableLowHeightSpans)
+            rcFilterWalkableLowHeightSpans(context, m_config.walkableHeight, *m_solid);
 
         //if (cl_navmesh_debug)
         //{
@@ -277,30 +270,30 @@ namespace RecastNavigation
         m_chf.reset(rcAllocCompactHeightfield());
         if (!m_chf)
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'chf'.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'chf'.");
+            return {};
         }
-        if (!rcBuildCompactHeightfield(m_context.get(), m_config.walkableHeight, m_config.walkableClimb, *m_solid, *m_chf))
+        if (!rcBuildCompactHeightfield(context, m_config.walkableHeight, m_config.walkableClimb, *m_solid, *m_chf))
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Could not build compact data.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Could not build compact data.");
+            return {};
         }
 
         m_solid.reset();
 
         // Erode the walkable area by agent radius.
-        if (!rcErodeWalkableArea(m_context.get(), m_config.walkableRadius, *m_chf))
+        if (!rcErodeWalkableArea(context, m_config.walkableRadius, *m_chf))
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Could not erode.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Could not erode.");
+            return {};
         }
 
         // Partition the walkable surface into simple regions without holes.
         // Monotone partitioning does not need distance field.
-        if (!rcBuildRegionsMonotone(m_context.get(), *m_chf, 0, m_config.minRegionArea, m_config.mergeRegionArea))
+        if (!rcBuildRegionsMonotone(context, *m_chf, 0, m_config.minRegionArea, m_config.mergeRegionArea))
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Could not build monotone regions.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Could not build monotone regions.");
+            return {};
         }
 
         //if (cl_navmesh_debug)
@@ -317,14 +310,14 @@ namespace RecastNavigation
         m_contourSet.reset(rcAllocContourSet());
         if (!m_contourSet)
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Out of memory while allocating contours.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory while allocating contours.");
+            return {};
         }
-        if (!rcBuildContours(m_context.get(), *m_chf, m_config.maxSimplificationError,
+        if (!rcBuildContours(context, *m_chf, m_config.maxSimplificationError,
             m_config.maxEdgeLen, *m_contourSet))
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Could not create contours.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Could not create contours.");
+            return {};
         }
 
         //if (cl_navmesh_debug)
@@ -341,13 +334,13 @@ namespace RecastNavigation
         m_pmesh.reset(rcAllocPolyMesh());
         if (!m_pmesh)
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'pmesh'.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'pmesh'.");
+            return {};
         }
-        if (!rcBuildPolyMesh(m_context.get(), *m_contourSet, m_config.maxVertsPerPoly, *m_pmesh))
+        if (!rcBuildPolyMesh(context, *m_contourSet, m_config.maxVertsPerPoly, *m_pmesh))
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Could not triangulate contours.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Could not triangulate contours.");
+            return {};
         }
 
         //if (cl_navmesh_debug)
@@ -363,14 +356,14 @@ namespace RecastNavigation
         m_detailMesh.reset(rcAllocPolyMeshDetail());
         if (!m_detailMesh)
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Out of memory while allocating detail mesh.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory while allocating detail mesh.");
+            return {};
         }
 
-        if (!rcBuildPolyMeshDetail(m_context.get(), *m_pmesh, *m_chf, m_config.detailSampleDist, m_config.detailSampleMaxError, *m_detailMesh))
+        if (!rcBuildPolyMeshDetail(context, *m_pmesh, *m_chf, m_config.detailSampleDist, m_config.detailSampleMaxError, *m_detailMesh))
         {
-            m_context->log(RC_LOG_ERROR, "buildNavigation: Could not build detail mesh.");
-            return false;
+            context->log(RC_LOG_ERROR, "buildNavigation: Could not build detail mesh.");
+            return {};
         }
 
         //if (cl_navmesh_debug)
@@ -386,15 +379,14 @@ namespace RecastNavigation
         // See duDebugDrawPolyMesh or dtCreateNavMeshData as examples how to access the data.
 
         //
-        // (Optional) Step 8. Create Detour data from Recast poly mesh.
+        // Step 8. Create Detour data from Recast poly mesh.
         //
 
         // The GUI may allow more max points per polygon than Detour can handle.
         // Only build the detour navmesh if we do not exceed the limit.
         if (m_config.maxVertsPerPoly <= DT_VERTS_PER_POLYGON)
         {
-            unsigned char* navData = nullptr;
-            int navDataSize = 0;
+            NavigationTileData navigationTileData;
 
             // Update poly flags from areas.
             for (int i = 0; i < m_pmesh->npolys; ++i)
@@ -427,52 +419,91 @@ namespace RecastNavigation
             params.offMeshConUserID = nullptr;
             params.offMeshConCount = 0;
 
-            params.walkableHeight = m_meshConfig.m_agentHeight;
-            params.walkableRadius = m_meshConfig.m_agentRadius;
-            params.walkableClimb = m_meshConfig.m_agentMaxClimb;
+            params.walkableHeight = meshConfig.m_agentHeight;
+            params.walkableRadius = meshConfig.m_agentRadius;
+            params.walkableClimb = meshConfig.m_agentMaxClimb;
             rcVcopy(params.bmin, m_pmesh->bmin);
             rcVcopy(params.bmax, m_pmesh->bmax);
             params.cs = m_config.cs;
             params.ch = m_config.ch;
             params.buildBvTree = true;
 
-            if (!dtCreateNavMeshData(&params, &navData, &navDataSize))
+            if (!dtCreateNavMeshData(&params, &navigationTileData.m_data, &navigationTileData.m_size))
             {
-                m_context->log(RC_LOG_ERROR, "Could not build Detour navmesh.");
-                return false;
+                context->log(RC_LOG_ERROR, "Could not build Detour navmesh.");
+                return {};
             }
 
-            m_navMesh.reset(dtAllocNavMesh());
-            if (!m_navMesh)
-            {
-                dtFree(navData);
-                m_context->log(RC_LOG_ERROR, "Could not create Detour navmesh");
-                return false;
-            }
+            return navigationTileData;
+        }
 
-            dtStatus status = m_navMesh->init(navData, navDataSize, DT_TILE_FREE_DATA);
-            if (dtStatusFailed(status))
+        return {};
+    }
+    
+    void RecastNavigationMeshComponent::OnGeometryCollected(AZStd::shared_ptr<BoundedGeometry> boundedGeometry)
+    {
+        m_taskGraph.Reset();
+        m_taskGraph.AddTask(
+            m_taskDescriptor,
+            [this, boundedGeometry]
             {
-                dtFree(navData);
-                m_context->log(RC_LOG_ERROR, "Could not init Detour navmesh");
-                return false;
-            }
+                if (TaskUpdateNavigationMesh(boundedGeometry))
+                {
+                    m_navMeshReady = true;
+                    RecastNavigationMeshNotificationBus::Broadcast(&RecastNavigationMeshNotificationBus::Events::OnNavigationMeshUpdated, GetEntityId());
+                }
 
-            if (cl_navmesh_debug)
-            {
-                duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);
-            }
+                m_waitingOnNavMeshRebuild = false;
+            });
+        m_taskGraph.Submit(m_taskGraphEvent.get());
+    }
 
+    bool RecastNavigationMeshComponent::TaskUpdateNavigationMesh(AZStd::shared_ptr<BoundedGeometry> boundedGeometry)
+    {
+        if (boundedGeometry->IsEmpty())
+        {
+            return true;
+        }
+
+        NavigationTileData navigationTileData = CreateNavigationTile(boundedGeometry, m_meshConfig, m_context.get());
+        if (navigationTileData.IsValid() == false)
+        {
+            return false;
+        }
+
+        return CreateNavigationMesh(navigationTileData);
+    }
+
+    bool RecastNavigationMeshComponent::CreateNavigationMesh(NavigationTileData& navigationTileData)
+    {
+        AZStd::lock_guard<AZStd::mutex> lock(m_navMeshMutex);
+
+        m_navMesh.reset(dtAllocNavMesh());
+        if (!m_navMesh)
+        {
+            navigationTileData.Free();
+            AZ_Error("Navigation", false, "Could not create Detour navmesh");
+            return false;
+        }
+
+        dtStatus status = m_navMesh->init(navigationTileData.m_data, navigationTileData.m_size, DT_TILE_FREE_DATA);
+        if (dtStatusFailed(status))
+        {
+            navigationTileData.Free();
+            AZ_Error("Navigation", false, "Could not init Detour navmesh");
+            return false;
+        }
+
+        if (!m_navQuery) // query object is re-usable
+        {
             m_navQuery.reset(dtAllocNavMeshQuery());
+        }
 
-            status = m_navQuery->init(m_navMesh.get(), 2048);
-            if (dtStatusFailed(status))
-            {
-                m_context->log(RC_LOG_ERROR, "Could not init Detour navmesh query");
-                return false;
-            }
-
-            m_context->stopTimer(RC_TIMER_TOTAL);
+        status = m_navQuery->init(m_navMesh.get(), 2048);
+        if (dtStatusFailed(status))
+        {
+            AZ_Error("Navigation", false, "Could not init Detour navmesh query");
+            return false;
         }
 
         return true;
@@ -480,16 +511,13 @@ namespace RecastNavigation
 
     AZStd::vector<AZ::Vector3> RecastNavigationMeshComponent::FindPathToEntity(AZ::EntityId fromEntity, AZ::EntityId toEntity)
     {
-        if (m_navMeshReady)
+        if (fromEntity.IsValid() && toEntity.IsValid())
         {
-            if (fromEntity.IsValid() && toEntity.IsValid())
-            {
-                AZ::Vector3 start = AZ::Vector3::CreateZero(), end = AZ::Vector3::CreateZero();
-                AZ::TransformBus::EventResult(start, fromEntity, &AZ::TransformBus::Events::GetWorldTranslation);
-                AZ::TransformBus::EventResult(end, toEntity, &AZ::TransformBus::Events::GetWorldTranslation);
+            AZ::Vector3 start = AZ::Vector3::CreateZero(), end = AZ::Vector3::CreateZero();
+            AZ::TransformBus::EventResult(start, fromEntity, &AZ::TransformBus::Events::GetWorldTranslation);
+            AZ::TransformBus::EventResult(end, toEntity, &AZ::TransformBus::Events::GetWorldTranslation);
 
-                return FindPathToPosition(start, end);
-            }
+            return FindPathToPosition(start, end);
         }
 
         return {};
@@ -497,6 +525,8 @@ namespace RecastNavigation
 
     AZStd::vector<AZ::Vector3> RecastNavigationMeshComponent::FindPathToPosition(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& targetWorldPosition)
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_navMeshMutex);
+
         if (m_navMeshReady == false)
         {
             return {};
@@ -607,10 +637,15 @@ namespace RecastNavigation
 
         RecastNavigationMeshRequestBus::Handler::BusConnect(GetEntityId());
         AZ::TickBus::Handler::BusConnect();
+
+        RecastNavigationSurveyorRequestBus::Event(GetEntityId(), &RecastNavigationSurveyorRequests::BindGeometryCollectionEventHandler,
+            m_geometryCollectedEventHandler);
     }
 
     void RecastNavigationMeshComponent::Deactivate()
     {
+        m_geometryCollectedEventHandler.Disconnect();
+
         if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
         {
             m_taskGraphEvent->Wait();
@@ -634,3 +669,5 @@ namespace RecastNavigation
         }
     }
 } // namespace RecastNavigation
+
+#pragma optimize("", on)

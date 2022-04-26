@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include <DetourAlloc.h>
 #include <Recast.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
@@ -65,6 +66,11 @@ namespace RecastNavigation
         AZStd::vector<RecastVector3> m_verts;
         AZStd::vector<AZ::s32> m_indices;
 
+        bool IsEmpty() const
+        {
+            return m_verts.empty();
+        }
+
         //! Reset and clear geometry and the volume.
         void clear()
         {
@@ -72,5 +78,23 @@ namespace RecastNavigation
             m_verts.clear();
             m_indices.clear();
         }
+    };
+    
+    //! Navigation data in binary Recast form
+    class NavigationTileData
+    {
+    public:
+        void Free()
+        {
+            dtFree(m_data);
+        }
+
+        bool IsValid() const
+        {
+            return m_size > 0 && m_data != nullptr;
+        }
+
+        unsigned char* m_data = nullptr;
+        int m_size = 0;
     };
 }

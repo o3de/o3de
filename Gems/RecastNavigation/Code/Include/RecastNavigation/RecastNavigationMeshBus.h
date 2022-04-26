@@ -31,6 +31,12 @@ namespace RecastNavigation
         //! @param toWorldPosition The end point of the path to find.
         //! @return If a path is found, returns a vector of waypoints.
         virtual AZStd::vector<AZ::Vector3> FindPathToPosition( const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition ) = 0;
+        
+        //! @return returns the underlying navigation map object
+        virtual dtNavMesh* GetNativeNavigationMap() const = 0;
+        
+        //! @return returns the underlying navigation query object
+        virtual dtNavMeshQuery* GetNativeNavigationQuery() const = 0;
     };
 
     using RecastNavigationMeshRequestBus = AZ::EBus<RecastNavigationMeshRequests>;

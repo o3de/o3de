@@ -34,7 +34,8 @@ namespace RecastNavigation
     {
     public:
         AZ_COMPONENT(RecastNavigationMeshComponent, "{a281f314-a525-4c05-876d-17eb632f14b4}");
-        
+
+        RecastNavigationMeshComponent();
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -45,6 +46,8 @@ namespace RecastNavigation
         void UpdateNavigationMesh() override;
         AZStd::vector<AZ::Vector3> FindPathToEntity(AZ::EntityId fromEntity, AZ::EntityId toEntity) override;
         AZStd::vector<AZ::Vector3> FindPathToPosition(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& targetWorldPosition) override;
+        dtNavMesh* GetNativeNavigationMap() const override { return m_navMesh.get(); }
+        dtNavMeshQuery* GetNativeNavigationQuery() const override { return m_navQuery.get(); }
 
         // AZ::Component interface implementation
         void Activate() override;
@@ -54,6 +57,9 @@ namespace RecastNavigation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
     private:
+        AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler m_geometryCollectedEventHandler;
+        void OnGeometryCollected(AZStd::shared_ptr<BoundedGeometry> boundedGeometry);
+
         bool m_showNavigationMesh = true;
 
         static RecastVector3 GetPolyCenter(const dtNavMesh* navMesh, dtPolyRef ref);
@@ -62,24 +68,23 @@ namespace RecastNavigation
         AZ::TaskGraph m_taskGraph;
         AZ::TaskDescriptor m_taskDescriptor{ "UpdateNavigationMesh", "RecastNavigation" };
 
-        bool TaskUpdateNavigationMesh();
-        BoundedGeometry m_geom;
+        //! Does not require locking
+        static NavigationTileData CreateNavigationTile(AZStd::shared_ptr<BoundedGeometry> geom,
+            const RecastNavigationMeshConfig& meshConfig, rcContext* context);
+
+        bool TaskUpdateNavigationMesh(AZStd::shared_ptr<BoundedGeometry> boundedGeometry);
+
+        //! Requires a lock when updating navigation mesh and query objects
+        bool CreateNavigationMesh(NavigationTileData& navigationTileData);
+
+        AZStd::mutex m_navMeshMutex;
         AZStd::atomic<bool> m_navMeshReady = false;
         AZStd::atomic<bool> m_waitingOnNavMeshRebuild = false;
         
-        AZStd::unique_ptr<rcContext> m_context;
-
         RecastNavigationMeshConfig m_meshConfig;
-
         RecastNavigationDebugDraw m_customDebugDraw;
-
-        rcConfig m_config = {};
-        AZStd::vector<AZ::u8> m_trianglesAreas;
-        RecastPointer<rcHeightfield> m_solid;
-        RecastPointer<rcCompactHeightfield> m_chf;
-        RecastPointer<rcContourSet> m_contourSet;
-        RecastPointer<rcPolyMesh> m_pmesh;
-        RecastPointer<rcPolyMeshDetail> m_detailMesh;
+        
+        AZStd::unique_ptr<rcContext> m_context;
         RecastPointer<dtNavMesh> m_navMesh;
         RecastPointer<dtNavMeshQuery> m_navQuery;
     };

@@ -21,16 +21,17 @@ namespace RecastNavigation
 {
     //! This component requires a box shape component that defines a world space to collect geometry from
     //! static physical colliders present within the bounds of a shape component on the same entity.
+    //! The geometry is collected in portions of vertical tiles and is fed into @RecastNavigationMeshComponent.
     //!
     //! @note You can provide your implementation of collecting geometry instead of this component.
     //!       If you do, in @GetProvidedServices specify AZ_CRC_CE("RecastNavigationSurveyorService"),
     //!       which is needed by @RecastNavigationMeshComponent.
-    class RecastNavigationSurveyorComponent final
+    class RecastNavigationTiledSurveyorComponent final
         : public AZ::Component
         , public RecastNavigationSurveyorRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(RecastNavigationSurveyorComponent, "{202de120-29f3-4b64-b95f-268323d86349}");
+        AZ_COMPONENT(RecastNavigationTiledSurveyorComponent, "{4bc92ce5-e179-4985-b0b1-f22bff6006dd}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -43,14 +44,12 @@ namespace RecastNavigation
         void Deactivate() override;
 
         // RecastNavigationSurveyorRequestBus interface implementation
-        void BindGeometryCollectionEventHandler(AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler& handler) override;
         void StartCollectingGeometry() override;
+        void BindGeometryCollectionEventHandler(AZ::Event<BoundedGeometry&>::Handler& handler) override;
         AZ::Aabb GetWorldBounds() override;
 
     private:
         // Append the geometry within a volume
         void AppendColliderGeometry(BoundedGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
-
-        AZ::Event<AZStd::shared_ptr<BoundedGeometry>> m_geometryCollectedEvent;
     };
 } // namespace RecastNavigation

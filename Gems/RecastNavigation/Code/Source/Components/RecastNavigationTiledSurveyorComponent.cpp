@@ -6,7 +6,7 @@
  *
  */
 
-#include "RecastNavigationSurveyorComponent.h"
+#include "RecastNavigationTiledSurveyorComponent.h"
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -18,21 +18,19 @@
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
-#pragma optimize("", off)
-
 namespace RecastNavigation
 {
-    void RecastNavigationSurveyorComponent::Reflect(AZ::ReflectContext* context)
+    void RecastNavigationTiledSurveyorComponent::Reflect(AZ::ReflectContext* context)
     {
         if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<RecastNavigationSurveyorComponent, AZ::Component>()
+            serialize->Class<RecastNavigationTiledSurveyorComponent, AZ::Component>()
                 ->Version(1)
                 ;
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<RecastNavigationSurveyorComponent>("Recast Navigation Surveyor",
+                ec->Class<RecastNavigationTiledSurveyorComponent>("Recast Navigation Surveyor",
                     "[Collects the geometry for navigation mesh within the area defined by a shape component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
@@ -50,28 +48,28 @@ namespace RecastNavigation
                 ->Event("GetWorldBounds", &RecastNavigationSurveyorRequests::GetWorldBounds)
                 ;
 
-            behaviorContext->Class<RecastNavigationSurveyorComponent>()->RequestBus("RecastNavigationSurveyorRequestBus");
+            behaviorContext->Class<RecastNavigationTiledSurveyorComponent>()->RequestBus("RecastNavigationSurveyorRequestBus");
         }
     }
 
-    void RecastNavigationSurveyorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void RecastNavigationTiledSurveyorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("RecastNavigationSurveyorComponent"));
+        provided.push_back(AZ_CRC_CE("RecastNavigationTiledSurveyorComponent"));
         provided.push_back(AZ_CRC_CE("RecastNavigationSurveyorService"));
     }
 
-    void RecastNavigationSurveyorComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void RecastNavigationTiledSurveyorComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("RecastNavigationSurveyorComponent"));
+        incompatible.push_back(AZ_CRC_CE("RecastNavigationTiledSurveyorComponent"));
         incompatible.push_back(AZ_CRC_CE("RecastNavigationSurveyorService"));
     }
 
-    void RecastNavigationSurveyorComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void RecastNavigationTiledSurveyorComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("BoxShapeService"));
     }
 
-    void RecastNavigationSurveyorComponent::AppendColliderGeometry(
+    void RecastNavigationTiledSurveyorComponent::AppendColliderGeometry(
         BoundedGeometry& geometry,
         const AzPhysics::SceneQueryHits& overlapHits)
     {
@@ -121,7 +119,7 @@ namespace RecastNavigation
         }
     }
 
-    void RecastNavigationSurveyorComponent::Activate()
+    void RecastNavigationTiledSurveyorComponent::Activate()
     {
         AZ::Vector3 position = AZ::Vector3::CreateZero();
         AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
@@ -129,54 +127,52 @@ namespace RecastNavigation
         RecastNavigationSurveyorRequestBus::Handler::BusConnect(GetEntityId());
     }
 
-    void RecastNavigationSurveyorComponent::Deactivate()
+    void RecastNavigationTiledSurveyorComponent::Deactivate()
     {
         RecastNavigationSurveyorRequestBus::Handler::BusDisconnect();
     }
 
-    void RecastNavigationSurveyorComponent::BindGeometryCollectionEventHandler(AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler& handler)
+    void RecastNavigationTiledSurveyorComponent::StartCollectingGeometry()
     {
-        handler.Connect(m_geometryCollectedEvent);
     }
 
-    void RecastNavigationSurveyorComponent::StartCollectingGeometry()
+    void RecastNavigationTiledSurveyorComponent::BindGeometryCollectionEventHandler(
+        [[maybe_unused]] AZ::Event<BoundedGeometry&>::Handler& handler)
     {
-        AZStd::shared_ptr<BoundedGeometry> geometryData = AZStd::make_unique<BoundedGeometry>();
-
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(geometryData->m_worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-
-        AZ::Vector3 dimension = geometryData->m_worldBounds.GetExtents();
-        AZ::Transform pose = AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), geometryData->m_worldBounds.GetCenter());
-
-        Physics::BoxShapeConfiguration shapeConfiguration;
-        shapeConfiguration.m_dimensions = dimension;
-
-        AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
-        request.m_queryType = AzPhysics::SceneQuery::QueryType::Static;
-        request.m_collisionGroup = AzPhysics::CollisionGroup::All;
-
-        auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
-        AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
-        AzPhysics::SceneQueryHits results = AZ::Interface<AzPhysics::SceneInterface>::Get()->QueryScene(sceneHandle, &request);
-
-        if (results.m_hits.empty())
-        {
-            return;
-        }
-
-        AZ_Printf("RecastNavigationSurveyorComponent", "found %llu physx meshes", results.m_hits.size());
-
-        AppendColliderGeometry(*geometryData.get(), results);
-
-        m_geometryCollectedEvent.Signal(geometryData);
     }
 
-    AZ::Aabb RecastNavigationSurveyorComponent::GetWorldBounds()
+    //void RecastNavigationTiledSurveyorComponent::CollectGeometry(BoundedGeometry& geometryData)
+    //{
+    //    LmbrCentral::ShapeComponentRequestsBus::EventResult(geometryData.m_worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
+    //    AZ::Vector3 dimension = geometryData.m_worldBounds.GetExtents();
+    //    AZ::Transform pose = AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), geometryData.m_worldBounds.GetCenter());
+
+    //    Physics::BoxShapeConfiguration shapeConfiguration;
+    //    shapeConfiguration.m_dimensions = dimension;
+
+    //    AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
+    //    request.m_queryType = AzPhysics::SceneQuery::QueryType::Static;
+    //    request.m_collisionGroup = AzPhysics::CollisionGroup::All;
+
+    //    auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+    //    AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+    //    AzPhysics::SceneQueryHits results = AZ::Interface<AzPhysics::SceneInterface>::Get()->QueryScene(sceneHandle, &request);
+
+    //    if (results.m_hits.empty())
+    //    {
+    //        return;
+    //    }
+
+    //    AZ_Printf("RecastNavigationTiledSurveyorComponent", "found %llu physx meshes", results.m_hits.size());
+
+    //    AppendColliderGeometry(geometryData, results);
+    //}
+
+    AZ::Aabb RecastNavigationTiledSurveyorComponent::GetWorldBounds()
     {
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
         return worldBounds;
     }
 } // namespace RecastNavigation
-
-#pragma optimize("", on)
