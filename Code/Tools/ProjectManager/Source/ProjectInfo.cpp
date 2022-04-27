@@ -98,4 +98,16 @@ namespace O3DE::ProjectManager
             return m_projectName;
         }
     }
+
+    void ProjectInfo::SetProjectDisplayName(const QString& displayName)
+    {
+        if (displayName.size() > 22)
+        {
+            m_displayName = displayName.left(22) + "...";
+        }
+        else
+        {
+            m_displayName = displayName;
+        }
+    }
 } // namespace O3DE::ProjectManager
