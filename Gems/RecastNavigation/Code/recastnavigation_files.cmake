@@ -13,8 +13,8 @@ set(FILES
     Source/Components/RecastNavigationMeshComponent.h
     Source/Components/RecastNavigationSurveyorComponent.cpp
     Source/Components/RecastNavigationSurveyorComponent.h
-    #Source/Components/RecastNavigationTiledSurveyorComponent.cpp
-    #Source/Components/RecastNavigationTiledSurveyorComponent.h
+    Source/Components/RecastNavigationTiledSurveyorComponent.cpp
+    Source/Components/RecastNavigationTiledSurveyorComponent.h
     Source/Components/RecastNavigationMeshConfig.cpp
     Source/Components/RecastNavigationMeshConfig.h
     Source/Components/RecastNavigationDebugDraw.cpp

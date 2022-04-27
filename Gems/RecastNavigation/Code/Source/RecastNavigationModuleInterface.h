@@ -11,7 +11,7 @@
 #include <AzCore/Module/Module.h>
 #include <Components/RecastNavigationMeshComponent.h>
 #include <Components/RecastNavigationSurveyorComponent.h>
-//#include <Components/RecastNavigationTiledSurveyorComponent.h>
+#include <Components/RecastNavigationTiledSurveyorComponent.h>
 
 namespace RecastNavigation
 {
@@ -31,7 +31,7 @@ namespace RecastNavigation
             m_descriptors.insert(m_descriptors.end(), {
                 RecastNavigationMeshComponent::CreateDescriptor(),
                 RecastNavigationSurveyorComponent::CreateDescriptor(),
-                //RecastNavigationTiledSurveyorComponent::CreateDescriptor(),
+                RecastNavigationTiledSurveyorComponent::CreateDescriptor(),
                 });
         }
     };
