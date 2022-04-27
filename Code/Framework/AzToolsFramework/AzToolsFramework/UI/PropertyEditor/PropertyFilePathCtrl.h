@@ -55,6 +55,8 @@ namespace AzToolsFramework
         AZStd::string m_defaultFileName;
 
         void OnOpenButtonClicked();
+        QString GetPreselectedFilePath() const;
+        void HandleNewFilePathSelected(const QString& newFilePath);
         void OnClearButtonClicked();
     };
 

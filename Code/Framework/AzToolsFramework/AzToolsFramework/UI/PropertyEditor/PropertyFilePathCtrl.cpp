@@ -87,6 +87,22 @@ namespace AzToolsFramework
 
     void PropertyFilePathCtrl::OnOpenButtonClicked()
     {
+        // Retrieve what the pre-selected file path should be for the file dialog
+        QString preselectedFilePath = GetPreselectedFilePath();
+
+        // Popup a native file dialog to choose a new or existing file
+        // Using the AzQtComponents::FileDialog::GetSaveFileName helper will protect the user from entering
+        // a filename with invalid characters for the AP
+        QString newFilePath =
+            AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Open/Save File"), preselectedFilePath, m_filter);
+
+        // Try to set the new file path (if one was selected)
+        // This will handle file paths outside of the safe asset folders
+        HandleNewFilePathSelected(newFilePath);
+    }
+
+    QString PropertyFilePathCtrl::GetPreselectedFilePath() const
+    {
         QString preselectedFilePath;
 
         // If we don't have any output file set yet, then generate a default
@@ -135,7 +151,7 @@ namespace AzToolsFramework
                 if (!assetSafeFoldersRetrieved)
                 {
                     AZ_Error("PropertyFilePathCtrl", false, "Could not acquire a list of asset safe folders from the database.");
-                    return;
+                    return QString();
                 }
 
                 // Find an asset safe folder that already has existing sub-path that
@@ -161,12 +177,11 @@ namespace AzToolsFramework
             }
         }
 
-        // Popup a native file dialog to choose a new or existing file
-        // Using the AzQtComponents::FileDialog::GetSaveFileName helper will protect the user from entering
-        // a filename with invalid characters for the AP
-        QString newFilePath =
-            AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Open/Save File"), preselectedFilePath, m_filter);
+        return preselectedFilePath;
+    }
 
+    void PropertyFilePathCtrl::HandleNewFilePathSelected(const QString& newFilePath)
+    {
         // If the newFilePath is empty, then the dialog was cancelled,
         // so don't process any further.
         if (newFilePath.isEmpty())
@@ -209,18 +224,18 @@ namespace AzToolsFramework
             QObject::connect(
                 errorDialog, &QDialog::finished,
                 [this, errorDialog](int resultCode)
+            {
+                // If the user wants to retry, re-open the file dialog
+                // It will automatically be re-opened relative to the default
+                // asset safe folder (typically the project root)
+                if (resultCode == QMessageBox::Retry)
                 {
-                    // If the user wants to retry, re-open the file dialog
-                    // It will automatically be re-opened relative to the default
-                    // asset safe folder (typically the project root)
-                    if (resultCode == QMessageBox::Retry)
-                    {
-                        OnOpenButtonClicked();
-                    }
+                    OnOpenButtonClicked();
+                }
 
-                    // Make sure our error dialog gets deleted after it is dismissed.
-                    errorDialog->deleteLater();
-                });
+                // Make sure our error dialog gets deleted after it is dismissed.
+                errorDialog->deleteLater();
+            });
 
             errorDialog->open();
         }
