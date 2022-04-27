@@ -25,11 +25,11 @@ namespace AZ::DocumentPropertyEditor
         //! Creates a ReflectionAdapter with a contents comrpised of the reflected data of
         //! the specified instance.
         //! \see SetValue
-        ReflectionAdapter(void* instance, const AZ::TypeId typeId);
+        ReflectionAdapter(void* instance, AZ::TypeId typeId);
 
         //! Sets the instance to reflect. If typeId is a type registered to SerializeContext,
         //! this adapter will produce a property grid based on its contents.
-        void SetValue(void* instance, const AZ::TypeId typeId);
+        void SetValue(void* instance, AZ::TypeId typeId);
 
         Dom::Value GetContents() const override;
 

@@ -138,7 +138,7 @@ namespace AZ::DocumentPropertyEditor
             }
 
             auto memberIt = node.FindMember(GetName());
-            if (memberIt = node.MemberEnd())
+            if (memberIt == node.MemberEnd())
             {
                 return {};
             }
@@ -146,8 +146,8 @@ namespace AZ::DocumentPropertyEditor
             return DomToValue(memberIt->second);
         }
 
-        //! Gets thie attribute's type ID
-        AZ::TypeId GetTypeId() const
+        //! Gets this attribute's type ID
+        const AZ::TypeId& GetTypeId() const
         {
             return azrtti_typeid<AttributeType>();
         }

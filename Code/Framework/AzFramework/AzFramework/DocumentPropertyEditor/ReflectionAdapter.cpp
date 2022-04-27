@@ -242,15 +242,15 @@ namespace AZ::DocumentPropertyEditor
         }
     };
 
-    ReflectionAdapter::ReflectionAdapter(void* instance, const AZ::TypeId typeId)
+    ReflectionAdapter::ReflectionAdapter(void* instance, AZ::TypeId typeId)
     {
-        SetValue(instance, typeId);
+        SetValue(instance, AZStd::move(typeId));
     }
 
-    void ReflectionAdapter::SetValue(void* instance, const AZ::TypeId typeId)
+    void ReflectionAdapter::SetValue(void* instance, AZ::TypeId typeId)
     {
         m_instance = instance;
-        m_typeId = typeId;
+        m_typeId = AZStd::move(typeId);
         NotifyResetDocument();
     }
 
