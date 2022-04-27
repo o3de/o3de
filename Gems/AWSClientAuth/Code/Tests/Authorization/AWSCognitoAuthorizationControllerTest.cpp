@@ -73,7 +73,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Success_GetAWSAccountEm
 TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_WithLogins_Success)
 {
     AWSClientAuth::AuthenticationTokens tokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 60);
 
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnPasswordGrantSingleFactorSignInSuccess(testing::_)).Times(1);
@@ -81,7 +81,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_WithLogins_S
         &AWSClientAuth::AuthenticationProviderNotifications::OnPasswordGrantSingleFactorSignInSuccess, tokens);
 
     AWSClientAuth::AuthenticationTokens tokens1(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::Google, 60);
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnDeviceCodeGrantConfirmSignInSuccess(testing::_)).Times(1);
     AWSClientAuth::AuthenticationProviderNotificationBus::Broadcast(
@@ -132,7 +132,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, MultipleCalls_UsesCacheCredentials
 TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetIdError) // fail
 {
     AWSClientAuth::AuthenticationTokens cognitoTokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 60);
     
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnPasswordGrantSingleFactorSignInSuccess(testing::_)).Times(1);
@@ -156,14 +156,14 @@ TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetIdEr
 TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetCredentialsForIdentityError)
 {
     AWSClientAuth::AuthenticationTokens cognitoTokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 60);
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnPasswordGrantSingleFactorSignInSuccess(testing::_)).Times(1);
     AWSClientAuth::AuthenticationProviderNotificationBus::Broadcast(
         &AWSClientAuth::AuthenticationProviderNotifications::OnPasswordGrantSingleFactorSignInSuccess, cognitoTokens);
 
     AWSClientAuth::AuthenticationTokens googleTokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::Google, 60);
 
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnDeviceCodeGrantConfirmSignInSuccess(testing::_)).Times(1);
@@ -192,7 +192,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetCred
 TEST_F(AWSCognitoAuthorizationControllerTest, AddRemoveLogins_Succuess)
 {
     AWSClientAuth::AuthenticationTokens cognitoTokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 60);
 
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnPasswordGrantSingleFactorSignInSuccess(testing::_)).Times(1);
@@ -210,7 +210,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, AddRemoveLogins_Succuess)
     ASSERT_TRUE(m_mockController->m_persistentCognitoIdentityProvider->GetLogins().size() == 1);
 
     AWSClientAuth::AuthenticationTokens googleTokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::Google, 60);
 
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnDeviceCodeGrantConfirmSignInSuccess(testing::_)).Times(1);
@@ -236,7 +236,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, AddRemoveLogins_Succuess)
     ASSERT_TRUE(m_mockController->m_persistentCognitoIdentityProvider->GetLogins().size() == 0);
 
     AWSClientAuth::AuthenticationTokens lwaTokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ACCESS_TOKEN,
         AWSClientAuth::ProviderNameEnum::LoginWithAmazon, 60);
 
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnPasswordGrantMultiFactorConfirmSignInSuccess(testing::_)).Times(1);
@@ -254,7 +254,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, AddRemoveLogins_Succuess)
 TEST_F(AWSCognitoAuthorizationControllerTest, ResetAuthenticated_ClearsCachedLoginsAndIdentityId_Success)
 {
     AWSClientAuth::AuthenticationTokens cognitoTokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 60);
 
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnPasswordGrantSingleFactorSignInSuccess(testing::_)).Times(1);
@@ -308,7 +308,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, ResetAnonymous_ClearsCachedLoginsA
 TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_ForPersistedLogins_ResultIsAuthenticatedCredentials)
 {
     AWSClientAuth::AuthenticationTokens cognitoTokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 60);
 
     EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnPasswordGrantSingleFactorSignInSuccess(testing::_)).Times(1);
@@ -361,7 +361,7 @@ TEST_F(
 
     testThreads.emplace_back(AZStd::thread([&]() {
         AWSClientAuth::AuthenticationTokens cognitoTokens(
-            AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+            AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
             AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 60);
 
         EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnPasswordGrantSingleFactorSignInSuccess(testing::_)).Times(1);
