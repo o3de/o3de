@@ -51,7 +51,10 @@ namespace RecastNavigation
         int GetTilesAlongYDimension() const override { return m_tilesOnYSide; }
 
     private:
-        // Append the geometry within a volume
+
+        void CollectGeometryWithinVolume(const AZ::Aabb& volume, AzPhysics::SceneQueryHits& overlapHits);
+
+        //! Append the geometry within a volume
         void AppendColliderGeometry(BoundedGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
         
         AZ::Event<AZStd::shared_ptr<BoundedGeometry>> m_geometryCollectedEvent;

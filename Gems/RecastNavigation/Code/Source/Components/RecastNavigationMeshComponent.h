@@ -15,6 +15,7 @@
 #include <Recast.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
@@ -60,25 +61,33 @@ namespace RecastNavigation
         AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler m_geometryCollectedEventHandler;
         void OnGeometryCollected(AZStd::shared_ptr<BoundedGeometry> boundedGeometry);
 
+        AZStd::deque<AZStd::shared_ptr<BoundedGeometry>> m_pendingTiles;
+
         bool m_showNavigationMesh = true;
 
         static RecastVector3 GetPolyCenter(const dtNavMesh* navMesh, dtPolyRef ref);
-        
+
+        AZ::ScheduledEvent m_updateEvent;
+        void OnNavigationMeshUpdated();
+
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskGraph m_taskGraph;
         AZ::TaskDescriptor m_taskDescriptor{ "UpdateNavigationMesh", "RecastNavigation" };
 
         //! Does not require locking
-        static NavigationTileData CreateNavigationTile(AZStd::shared_ptr<BoundedGeometry> geom,
+        static NavigationTileData CreateNavigationTile(BoundedGeometry* geom,
             const RecastNavigationMeshConfig& meshConfig, rcContext* context);
 
-        bool TaskUpdateNavigationMesh(AZStd::shared_ptr<BoundedGeometry> boundedGeometry);
+        void StartProcessingTiles();
+        void ProcessPendingTiles();
 
         //! Requires a lock when updating navigation mesh and query objects
-        bool CreateNavigationMesh(NavigationTileData& navigationTileData);
+        bool CreateNavigationMesh();
+        bool AttachNavigationTileToMesh(NavigationTileData& navigationTileData);
+
+        AZ::Aabb m_worldVolume = AZ::Aabb::CreateNull();
 
         AZStd::mutex m_navMeshMutex;
-        AZStd::atomic<bool> m_navMeshReady = false;
         AZStd::atomic<bool> m_waitingOnNavMeshRebuild = false;
         
         RecastNavigationMeshConfig m_meshConfig;

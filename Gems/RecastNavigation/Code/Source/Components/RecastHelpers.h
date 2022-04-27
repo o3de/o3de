@@ -63,6 +63,10 @@ namespace RecastNavigation
     {
     public:
         AZ::Aabb m_worldBounds = AZ::Aabb::CreateNull();
+
+        int m_tileX = 0;
+        int m_tileY = 0;
+
         AZStd::vector<RecastVector3> m_verts;
         AZStd::vector<AZ::s32> m_indices;
 
@@ -75,6 +79,8 @@ namespace RecastNavigation
         void clear()
         {
             m_worldBounds.SetNull();
+            m_tileX = 0;
+            m_tileY = 0;
             m_verts.clear();
             m_indices.clear();
         }

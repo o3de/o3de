@@ -558,9 +558,9 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            16.331573486328125,
+                            10.798758506774902,
                             -1.6495599746704102,
-                            -1.5062556266784668
+                            -1.2032766342163086
                         ],
                         "UniformScale": 10.0
                     }
@@ -649,7 +649,7 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            16.331573486328125,
+                            10.798758506774902,
                             -11.43963623046875,
                             -1.4344921112060547
                         ],
@@ -758,7 +758,7 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            -3.834160089492798,
+                            -9.366974830627441,
                             -1.5693464279174805,
                             -1.9577574729919434
                         ],
@@ -833,8 +833,8 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            -6.098448753356934,
-                            -0.09033584594726563,
+                            -11.840726852416992,
+                            -5.552739143371582,
                             3.880613327026367
                         ]
                     }
@@ -959,7 +959,7 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            7.490167617797852,
+                            1.957352638244629,
                             -1.6495599746704102,
                             -2.0966899394989014
                         ],
@@ -1110,7 +1110,7 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            -0.5909982919692993,
+                            -6.123813152313232,
                             -7.900838851928711,
                             5.279726505279541
                         ]
@@ -1179,9 +1179,9 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            19.86924171447754,
-                            -14.144950866699219,
-                            4.139902591705322
+                            11.446244239807129,
+                            -1.0676765441894531,
+                            4.6407790184021
                         ]
                     }
                 },
@@ -1378,6 +1378,15 @@
                     "$type": "EditorLockComponent",
                     "Id": 11878103616676392438
                 },
+                "Component_[12830913355670056048]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 12830913355670056048,
+                    "m_template": {
+                        "$type": "RecastNavigationTiledSurveyorComponent",
+                        "Tiles On X Side": 2,
+                        "Tiles On Y Side": 2
+                    }
+                },
                 "Component_[13657964881596301273]": {
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 13657964881596301273
@@ -1401,13 +1410,6 @@
                         }
                     }
                 },
-                "Component_[1832561805637078977]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 1832561805637078977,
-                    "m_template": {
-                        "$type": "RecastNavigationSurveyorComponent"
-                    }
-                },
                 "Component_[18389148463105412893]": {
                     "$type": "GenericComponentWrapper",
                     "Id": 18389148463105412893,
@@ -1418,14 +1420,7 @@
                 "Component_[2276002420810393427]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 2276002420810393427,
-                    "Parent Entity": "Entity_[1146574390643]",
-                    "Transform Data": {
-                        "Translate": [
-                            4.414854049682617,
-                            -4.0271525382995605,
-                            0.7910568714141846
-                        ]
-                    }
+                    "Parent Entity": "Entity_[1146574390643]"
                 },
                 "Component_[2341960808846952083]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -1463,9 +1458,9 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            20.362913131713867,
-                            -10.439406394958496,
-                            3.6471056938171387
+                            13.761846542358398,
+                            -4.511622428894043,
+                            4.124453067779541
                         ]
                     }
                 },
