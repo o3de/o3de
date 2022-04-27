@@ -246,13 +246,13 @@ namespace Multiplayer
         return false;
     }
 
-    void MultiplayerEditorSystemComponent::LaunchEditorServer()
+    bool MultiplayerEditorSystemComponent::LaunchEditorServer()
     {
         // Assemble the server's path
         AZ::IO::FixedMaxPath serverPath;
         if (!FindServerLauncher(serverPath))
         {
-            return;
+            return false;
         }        
 
         // Start the configured server if it's available
@@ -298,7 +298,9 @@ namespace Multiplayer
             const char* fail_message = "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.";
             AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(fail_message);
             AZ_Error("MultiplayerEditor", outProcess, fail_message);
+            return false;
         }
+        return true;
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
@@ -358,7 +360,11 @@ namespace Multiplayer
             AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
 
             // Launch the editor-server
-            LaunchEditorServer();
+            if (!LaunchEditorServer())
+            {
+                AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage("(1/3) Could not launch editor server.\nSee console for more info.");
+                return;
+            }
         }
         
         // Keep trying to connect until the port is finally available.

@@ -40,13 +40,8 @@ ly_add_target(
             Gem::AtomLyIntegration_CommonFeatures.Static
             Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static
-            Gem::GraphCanvasWidgets
-            Gem::GraphModel.Editor.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
-        Gem::GraphCanvas.Editor
-        Gem::GraphCanvasWidgets
-        Gem::GraphModel.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS MaterialCanvas VARIANTS Tools)

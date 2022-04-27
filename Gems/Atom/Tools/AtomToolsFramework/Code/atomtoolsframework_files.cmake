@@ -50,6 +50,17 @@ set(FILES
     Source/Document/AtomToolsDocumentTypeInfo.cpp
     Source/Document/CreateDocumentDialog.cpp
 
+    Include/AtomToolsFramework/DynamicNode/DynamicNode.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeConfig.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeManager.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h
+    Source/DynamicNode/DynamicNode.cpp
+    Source/DynamicNode/DynamicNodeConfig.cpp
+    Source/DynamicNode/DynamicNodeManager.cpp
+    Source/DynamicNode/DynamicNodePaletteItem.cpp
+    Source/DynamicNode/DynamicNodeSlotConfig.cpp
+
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
     Source/DynamicProperty/DynamicProperty.cpp

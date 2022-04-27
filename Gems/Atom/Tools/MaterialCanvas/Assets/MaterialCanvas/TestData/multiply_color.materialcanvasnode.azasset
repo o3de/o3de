@@ -1,0 +1,37 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Color Operations",
+        "title": "Multiply Color",
+        "inputSlots": [
+            {
+                "name": "inColor1",
+                "displayName": "Color1",
+                "description": "Color1",
+                "supportedDataTypes": [
+                    "Color"
+                ]
+            },
+            {
+                "name": "inColor2",
+                "displayName": "Color2",
+                "description": "Color2",
+                "supportedDataTypes": [
+                    "Color"
+                ]
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outColor",
+                "displayName": "Color",
+                "description": "Color",
+                "supportedDataTypes": [
+                    "Color"
+                ]
+            }
+        ]
+    }
+}
