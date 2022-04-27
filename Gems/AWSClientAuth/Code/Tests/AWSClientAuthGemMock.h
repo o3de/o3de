@@ -191,10 +191,10 @@ namespace AWSClientAuthUnitTest
             jsonValue.WithString("user_code", "TestCode");
             jsonValue.WithString("device_code", "TestDeviceCode");
             jsonValue.WithString("verification_uri", "TestVerificationURI");
-            jsonValue.WithString("access_token", "TestAccessToken");
-            jsonValue.WithString("refresh_token", "TestRefreshToken");
-            jsonValue.WithString("id_token", "TestIdToken");
-            jsonValue.WithString("expires_in", "600");
+            jsonValue.WithString("access_token", TEST_ACCESS_TOKEN);
+            jsonValue.WithString("refresh_token", TEST_REFRESH_TOKEN);
+            jsonValue.WithString("id_token", TEST_ID_TOKEN);
+            jsonValue.WithInteger("expires_in", 600);
             Aws::Utils::Json::JsonView jsonView(jsonValue);
             Aws::Http::HttpResponseCode code = Aws::Http::HttpResponseCode::OK;
             callback(jsonView, code);
@@ -395,6 +395,11 @@ namespace AWSClientAuthUnitTest
     public:
         AuthenticationProviderNotificationsBusMock()
         {
+            ON_CALL(*this, OnPasswordGrantSingleFactorSignInSuccess(testing::_)).WillByDefault(testing::Invoke(this, &AuthenticationProviderNotificationsBusMock::AssertAuthenticationTokensPopulated));
+            ON_CALL(*this, OnPasswordGrantMultiFactorConfirmSignInSuccess(testing::_)).WillByDefault(testing::Invoke(this, &AuthenticationProviderNotificationsBusMock::AssertAuthenticationTokensPopulated));
+            ON_CALL(*this, OnDeviceCodeGrantConfirmSignInSuccess(testing::_)).WillByDefault(testing::Invoke(this, &AuthenticationProviderNotificationsBusMock::AssertAuthenticationTokensPopulated));
+            ON_CALL(*this, OnRefreshTokensSuccess(testing::_)).WillByDefault(testing::Invoke(this, &AuthenticationProviderNotificationsBusMock::AssertAuthenticationTokensPopulated));
+
             AWSClientAuth::AuthenticationProviderNotificationBus::Handler::BusConnect();
         }
 
@@ -416,6 +421,25 @@ namespace AWSClientAuthUnitTest
         MOCK_METHOD1(OnRefreshTokensSuccess, void(const AWSClientAuth::AuthenticationTokens& authenticationToken));
         MOCK_METHOD1(OnRefreshTokensFail, void(const AZStd::string& error));
         MOCK_METHOD1(OnSignOut, void(const AWSClientAuth::ProviderNameEnum& providerName));
+
+    private:
+        void AssertAuthenticationTokensPopulated([[maybe_unused]] const AWSClientAuth::AuthenticationTokens& authenticationToken)
+        {
+            AZ_Assert(
+                authenticationToken.GetAccessToken() == TEST_ACCESS_TOKEN,
+                "Access token expected to match");
+            AZ_Assert(
+                authenticationToken.GetProviderName() == AWSClientAuth::ProviderNameEnum::LoginWithAmazon ?
+                    authenticationToken.GetOpenIdToken() == TEST_ACCESS_TOKEN : authenticationToken.GetOpenIdToken() == TEST_ID_TOKEN,
+                "Id token expected to match");
+            AZ_Assert(
+                authenticationToken.GetRefreshToken() == TEST_REFRESH_TOKEN,
+                "Refresh token expected match");
+            AZ_Assert(
+                authenticationToken.GetTokensExpireTimeSeconds() != 0,
+                "Access token expiry expected to be set");
+            AZ_Assert(authenticationToken.AreTokensValid(), "Tokens expected to be valid");
+        }
     };
 
     class AWSCognitoAuthorizationNotificationsBusMock
