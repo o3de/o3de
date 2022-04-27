@@ -91,7 +91,6 @@ namespace EMStudio
         int m_pixelsSinceClick = 0;
         const int MinMouseMovePixes = 5;
 
-        // ViewportUiManager
         AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUiManager;
         QWidget m_renderOverlay;
     };
