@@ -67,4 +67,20 @@ namespace ScriptCanvas::Nodeables::Spawning
 
         HashContainerReflector<SpawnTicketInstance>::Reflect(context);
     }
+
+    SpawnTicketInstance::SpawnTicketInstance()
+    {
+        AzFramework::GameEntityContextEventBus::Handler::BusConnect();
+    }
+
+    SpawnTicketInstance::~SpawnTicketInstance()
+    {
+        AzFramework::GameEntityContextEventBus::Handler::BusDisconnect();
+    }
+
+    void SpawnTicketInstance::OnGameEntitiesReset()
+    {
+        // Reset EntitySpawnTicket to despawn anything associated with it
+        m_ticket.reset();
+    }
 }
