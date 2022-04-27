@@ -1313,11 +1313,12 @@ bool PathDependencyTest::ProcessAsset(TestAsset& asset, const OutputAssetSet& ou
             }
 
             auto filename = capturedDetails[jobSet].m_relativePath / (asset.m_name + outputExtension);
-            auto outputAssetPath = capturedDetails[jobSet].m_cachePath / filename;
 
-            UnitTestUtils::CreateDummyFile(outputAssetPath.AsPosix().c_str(), "this is a test output asset");
+            AssetUtilities::ProductPath productPath{ filename.Native(), capturedDetails[jobSet].m_jobEntry.m_platformInfo.m_identifier };
 
-            JobProduct jobProduct(filename.StringAsPosix(), AZ::Uuid::CreateRandom(), subIdCounter);
+            UnitTestUtils::CreateDummyFile(productPath.GetCachePath().c_str(), "this is a test output asset");
+
+            JobProduct jobProduct(productPath.GetRelativePath(), AZ::Uuid::CreateRandom(), subIdCounter);
             jobProduct.m_pathDependencies.insert(dependencies.begin(), dependencies.end());
 
             processJobResponse.m_outputProducts.push_back(jobProduct);
