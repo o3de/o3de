@@ -18,8 +18,12 @@ namespace ScriptCanvasEditor
         {
             AZStd::string fileSaveError;
             AZStd::string tempFileRemovalError;
+
+            bool IsSuccess() const;
         };
 
+        // \todo consider removing the live graph from this class, and replacing it with the json data that it will actually
+        // write to disk.
         class FileSaver
         {
         public:

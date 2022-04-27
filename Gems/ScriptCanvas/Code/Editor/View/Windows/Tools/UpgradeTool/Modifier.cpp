@@ -375,7 +375,7 @@ namespace ScriptCanvasEditor
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
             m_fileSaver.reset();
 
-            if (m_fileSaveResult.fileSaveError.empty())
+            if (m_fileSaveResult.IsSuccess())
             {
                 ReportModificationSuccess();
             }
