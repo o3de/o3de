@@ -178,11 +178,11 @@ namespace AzFramework
 
         for (AZ::Data::Asset<AZ::Data::AssetData>& asset : spawnable.m_assets)
         {
-            auto callback = [&blockingAssets](
+            auto callback = [sc, &blockingAssets](
                                 void* object, const AZ::SerializeContext::ClassData* classData,
-                                [[maybe_unused]]const AZ::SerializeContext::ClassElement* elementData) -> bool
+                                const AZ::SerializeContext::ClassElement* elementData) -> bool
             {
-                if (classData->m_typeId == AZ::GetAssetClassId())
+                if (const auto* genericInfo = elementData ? elementData->m_genericClassInfo : sc->FindGenericClassInfo(classData->m_typeId); genericInfo && genericInfo->GetGenericTypeId() == AZ::GetAssetClassId())
                 {
                     auto asset = reinterpret_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(object);
 
