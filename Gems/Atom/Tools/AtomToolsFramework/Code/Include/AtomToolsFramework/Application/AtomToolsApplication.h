@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
@@ -89,8 +90,16 @@ namespace AtomToolsFramework
         virtual void CompileCriticalAssets();
         virtual void ProcessCommandLine(const AZ::CommandLine& commandLine);
 
+        void PrintAlways(const AZStd::string& output);
+        void RedirectStdoutToNull();
+
         static void PyIdleWaitFrames(uint32_t frames);
         static void PyExit();
+        static void PyTestOutput(const AZStd::string& output);
+
+        // Adding static instance access for static Python methods
+        static AtomToolsApplication* GetInstance();
+        static AtomToolsApplication* m_instance;
 
         AzToolsFramework::TraceLogger m_traceLogger;
 
@@ -111,5 +120,10 @@ namespace AtomToolsFramework
         const AZ::Crc32 m_toolId = {};
 
         bool m_isAutoTestMode = false;
+
+        // Disable warning for dll export since this member won't be used outside this class
+        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+        AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
+        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     };
 } // namespace AtomToolsFramework

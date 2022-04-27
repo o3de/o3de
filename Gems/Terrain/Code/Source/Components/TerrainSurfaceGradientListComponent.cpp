@@ -151,9 +151,6 @@ namespace Terrain
         const AZ::Vector3& inPosition,
         AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights) const
     {
-        // Make sure we don't run queries simultaneously with changing any of the cached data.
-        AZStd::shared_lock lock(m_queryMutex);
-
         outSurfaceWeights.clear();
 
         if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
@@ -180,9 +177,6 @@ namespace Terrain
         AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const
     {
         AZ_PROFILE_FUNCTION(Terrain);
-
-        // Make sure we don't run queries simultaneously with changing any of the cached data.
-        AZStd::shared_lock lock(m_queryMutex);
 
         AZ_Assert(
             inPositionList.size() == outSurfaceWeightsList.size(), "The position list size doesn't match the outSurfaceWeights list size.");
@@ -211,9 +205,6 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
-        // Ensure that we only change our terrain registration status when no queries are actively running.
-        AZStd::unique_lock lock(m_queryMutex);
-
         TerrainSystemServiceRequestBus::Broadcast(
             &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
             AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
