@@ -57,7 +57,7 @@ namespace AzToolsFramework
         setFocusPolicy(m_browseEdit->lineEdit()->focusPolicy());
     };
 
-    void PropertyFilePathCtrl::SetFilePath(AZ::IO::Path filePath)
+    void PropertyFilePathCtrl::SetFilePath(const AZ::IO::Path& filePath)
     {
         m_currentFilePath = filePath;
         m_browseEdit->setText(filePath.c_str());

@@ -45,7 +45,7 @@ namespace AzToolsFramework
         void FilePathChanged();
 
     public Q_SLOTS:
-        void SetFilePath(AZ::IO::Path filePath);
+        void SetFilePath(const AZ::IO::Path& filePath);
 
     private:
         AzQtComponents::BrowseEdit* m_browseEdit = nullptr;
