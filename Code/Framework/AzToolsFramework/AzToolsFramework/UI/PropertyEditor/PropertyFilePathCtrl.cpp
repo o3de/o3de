@@ -153,23 +153,22 @@ namespace AzToolsFramework
                     return QString();
                 }
 
-                // Find an asset safe folder that already has existing sub-path that
-                // would satisfy the relative path for the file
-                for (const AZStd::string& assetSafeFolder : assetSafeFolders)
+                // Find an asset safe folder that already has the existing parent-path that
+                // would satisfy the relative path currently stored.
+                //
+                // Example: m_currentFilePath has a value of "my/sub/folder/image.png"
+                // It will keep looking until it finds an asset safe folder that has
+                // a matching sub-directory structure that exists:
+                //      <ASSET_SAFE_FOLDER>/my/sub/folder
+                for (AZ::IO::Path candidateFilePath : assetSafeFolders)
                 {
-                    AZ::IO::Path assetSafeFolderPath(assetSafeFolder);
-                    AZ::IO::Path relativeFolderPath = assetSafeFolderPath;
+                    candidateFilePath /= m_currentFilePath;
 
-                    if (m_currentFilePath.HasParentPath())
+                    if (AZ::IO::FixedMaxPath parentCandidatePath = candidateFilePath.ParentPath();
+                        AZ::IO::SystemFile::IsDirectory(parentCandidatePath.c_str()))
                     {
-                        relativeFolderPath /= m_currentFilePath.ParentPath();
-                    }
-
-                    if (AZ::IO::SystemFile::IsDirectory(relativeFolderPath.c_str()))
-                    {
-                        auto absoluteFilePath = (assetSafeFolderPath / m_currentFilePath);
                         preselectedFilePath =
-                            QString::fromUtf8(absoluteFilePath.c_str(), static_cast<int>(absoluteFilePath.Native().size()));
+                            QString::fromUtf8(candidateFilePath.c_str(), static_cast<int>(candidateFilePath.Native().size()));
                         break;
                     }
                 }
