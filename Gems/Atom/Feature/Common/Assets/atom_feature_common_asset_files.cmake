@@ -112,13 +112,6 @@ set(FILES
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
     Passes/ChromaticAberration.pass
-    Passes/EditorModeFeedbackParent.pass
-    Passes/EditorModeMask.pass
-    Passes/EditorModeDesaturation.pass
-    Passes/EditorModeTint.pass
-    Passes/EditorModeBlurParent.pass
-    Passes/EditorModeBlur.pass
-    Passes/EditorModeOutline.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -476,18 +469,6 @@ set(FILES
     Shaders/PostProcessing/FullscreenCopy.shader
     Shaders/PostProcessing/HDRColorGrading.azsl
     Shaders/PostProcessing/HDRColorGrading.shader
-    Shaders/PostProcessing/EditorModeCommon.azsli
-    Shaders/PostProcessing/EditorModeDepthTransition.azsli
-    Shaders/PostProcessing/EditorModeMask.azsl
-    Shaders/PostProcessing/EditorModeMask.shader
-    Shaders/PostProcessing/EditorModeDesaturation.azsl
-    Shaders/PostProcessing/EditorModeDesaturation.shader
-    Shaders/PostProcessing/EditorModeTint.azsl
-    Shaders/PostProcessing/EditorModeTint.shader
-    Shaders/PostProcessing/EditorModeBlur.azsl
-    Shaders/PostProcessing/EditorModeBlur.shader
-    Shaders/PostProcessing/EditorModeOutline.azsl
-    Shaders/PostProcessing/EditorModeOutline.shader
     Shaders/PostProcessing/LookModificationTransform.azsl
     Shaders/PostProcessing/LookModificationTransform.shader
     Shaders/PostProcessing/LuminanceHeatmap.azsl

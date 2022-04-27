@@ -136,6 +136,8 @@ namespace AZ
             const static AZ::Crc32 ShowProductAssetFileName = AZ_CRC("ShowProductAssetFileName");
             //! Regular expression pattern filter for source files
             const static AZ::Crc32 SourceAssetFilterPattern = AZ_CRC_CE("SourceAssetFilterPattern");
+            //! Extension for a product asset to search for
+            const static AZ::Crc32 ProductAssetExtension = AZ_CRC_CE("ProductAssetExtension");
 
             //! Component icon attributes
             const static AZ::Crc32 Icon = AZ_CRC("Icon", 0x659429db);

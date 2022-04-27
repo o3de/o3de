@@ -42,15 +42,16 @@
 #include <AzFramework/Viewport/CameraInput.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
-#include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzToolsFramework/API/EditorCameraBus.h>
-#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
@@ -294,15 +295,11 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_oldMainFrame(nullptr)
     , m_viewPaneManager(QtViewPaneManager::instance())
-    , m_shortcutDispatcher(new ShortcutDispatcher(this))
-    , m_actionManager(new ActionManager(this, QtViewPaneManager::instance(), m_shortcutDispatcher))
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
     , m_settings("O3DE", "O3DE")
-    , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
-    , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager))
     , m_sourceControlNotifHandler(new AzToolsFramework::QtSourceControlNotificationHandler(this))
     , m_viewPaneHost(nullptr)
     , m_autoSaveTimer(nullptr)
@@ -310,6 +307,15 @@ MainWindow::MainWindow(QWidget* parent)
     , m_backgroundUpdateTimer(nullptr)
     , m_connectionLostTimer(new QTimer(this))
 {
+    // Determine which action manager classes should be enabled based on the current setting.
+    if (!IsNewActionManagerEnabled())
+    {
+        m_shortcutDispatcher = new ShortcutDispatcher(this);
+        m_actionManager = new ActionManager(this, QtViewPaneManager::instance(), m_shortcutDispatcher);
+        m_toolbarManager = new ToolbarManager(m_actionManager, this);
+        m_levelEditorMenuHandler = new LevelEditorMenuHandler(this, m_viewPaneManager);
+    }
+
     setObjectName("MainWindow"); // For IEditor::GetEditorMainWindow to work in plugins, where we can't link against MainWindow::instance()
     m_instance = this;
 
@@ -407,7 +413,11 @@ MainWindow::~MainWindow()
 {
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
 
-    delete m_toolbarManager;
+    if (m_toolbarManager)
+    {
+        delete m_toolbarManager;
+    }
+
     m_connectionListener.reset();
     GetIEditor()->UnregisterNotifyListener(this);
 
@@ -448,7 +458,10 @@ void MainWindow::Initialize()
 {
     m_viewPaneManager->SetMainWindow(m_viewPaneHost, &m_settings, /*unused*/ QByteArray());
 
-    InitActions();
+    if (!IsNewActionManagerEnabled())
+    {
+        InitActions();
+    }
 
     RegisterStdViewClasses();
     InitCentralWidget();
@@ -456,12 +469,15 @@ void MainWindow::Initialize()
     // load toolbars ("shelves") and macros
     GetIEditor()->GetToolBoxManager()->Load(m_actionManager);
 
-    InitToolActionHandlers();
+    if (!IsNewActionManagerEnabled())
+    {
+        InitToolActionHandlers();
 
-    // Initialize toolbars before we setup the menu so that any tools can be added to the toolbar as needed
-    InitToolBars();
+        // Initialize toolbars before we setup the menu so that any tools can be added to the toolbar as needed
+        InitToolBars();
 
-    m_levelEditorMenuHandler->Initialize();
+        m_levelEditorMenuHandler->Initialize();
+    }
 
     InitStatusBar();
 
@@ -1963,7 +1979,7 @@ void MainWindow::OnViewPaneCreated(const QtViewPane* pane)
         id = pane->m_options.builtInActionId;
     }
 
-    if (m_actionManager->HasAction(id))
+    if (!IsNewActionManagerEnabled() && m_actionManager->HasAction(id))
     {
         action = m_actionManager->GetAction(id);
         action->setChecked(true);

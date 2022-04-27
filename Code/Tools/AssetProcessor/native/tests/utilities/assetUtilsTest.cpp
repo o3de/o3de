@@ -413,6 +413,11 @@ namespace AssetUtilsTest
     {
     public:
         MOCK_METHOD1(GetJobFingerprint, AZ::u32(const AssetProcessor::JobIndentifier&));
+
+        ~MockJobDependencyResponder()
+        {
+            BusDisconnect();
+        }
     };
 }
 

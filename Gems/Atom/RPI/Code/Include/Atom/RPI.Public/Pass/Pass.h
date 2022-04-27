@@ -155,6 +155,9 @@ namespace AZ
             bool HasDrawListTag() const;
             bool HasPipelineViewTag() const;
 
+            // Searches this pass's attachment bindings for one with the provided Name (nullptr if none found)
+            PassAttachmentBinding* FindAttachmentBinding(const Name& slotName);
+
             //! Return the set of attachment bindings
             PassAttachmentBindingListView GetAttachmentBindings() const;
 
@@ -306,9 +309,6 @@ namespace AZ
             // Special names: "This" will return this, and "Parent" will return the parent pass.
             // Search order: 1.This -> 2.Parent -> 3.Siblings -> 4.Children
             Ptr<Pass> FindAdjacentPass(const Name& passName);
-
-            // Searches this pass's attachment bindings for one with the provided Name (nullptr if none found)
-            PassAttachmentBinding* FindAttachmentBinding(const Name& slotName);
 
             // Searches this pass's attachment bindings for one with the provided Name (nullptr if none found)
             const PassAttachmentBinding* FindAttachmentBinding(const Name& slotName) const;
