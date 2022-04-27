@@ -101,7 +101,7 @@ namespace O3DE::ProjectManager
 
     void ProjectInfo::SetProjectDisplayName(const QString& displayName)
     {
-        if (displayName.size() > 22)
+        if (displayName.size() > 25)
         {
             m_displayName = displayName.left(22) + "...";
         }
