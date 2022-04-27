@@ -45,7 +45,6 @@ namespace AzToolsFramework
         QObject::connect(clearButton, &QToolButton::clicked, this, &PropertyFilePathCtrl::OnClearButtonClicked);
 
         layout->setContentsMargins(0, 0, 0, 0);
-        layout->setSpacing(2);
         layout->addWidget(m_browseEdit);
 
         setLayout(layout);
