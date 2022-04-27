@@ -206,15 +206,19 @@ int main(int argc, char** argv)
 
     app.Start(AzFramework::Application::Descriptor());
 
+#if 1 // change this to test with a reflection adapter instead
     // create a default cvar adapter to expose the local CVar settings to edit
-    // AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
+    AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
+#else
+    // create a reflection adapter for a TestContainer
     AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> adapter =
         AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
     DPEDebugView::TestContainer testContainer;
     adapter->SetValue(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>());
+#endif
 
     AzToolsFramework::DPEDebugModel adapterModel(nullptr);
-    // adapterModel.SetAdapter(adapter.get());
+    adapterModel.SetAdapter(adapter.get());
 
     QPointer<DPEDebugView::DPEDebugWindow> theWindow = new DPEDebugView::DPEDebugWindow(nullptr);
     theWindow->m_textView->SetAdapter(adapter);
