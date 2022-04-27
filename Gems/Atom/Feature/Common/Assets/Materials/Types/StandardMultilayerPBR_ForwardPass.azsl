@@ -234,7 +234,7 @@ ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inp
     inputs.m_sampler = MaterialSrg::m_sampler;                                                                     \
     inputs.m_vertexUv = IN.m_uv;                                                                                   \
     inputs.m_uvMatrix = srgLayerPrefix##m_uvMatrix;                                                                \
-    inputs.m_normal = IN.m_normal;                                                                                 \
+    inputs.m_normal = vertexNormal;                                                                                \
     inputs.m_tangents = tangents;                                                                                  \
     inputs.m_bitangents = bitangents;                                                                              \
     inputs.m_isFrontFace = isFrontFace;                                                                            \
@@ -359,7 +359,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         
         float parallaxOverallOffset = MaterialSrg::m_displacementMax;
         float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
+        GetParallaxInput(vertexNormal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
 
@@ -446,7 +446,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     }
     // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
     surface.vertexNormal = vertexNormal;
-    surface.normal = normalize(TangentSpaceToWorld(normalTS, IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
+    surface.normal = normalize(TangentSpaceToWorld(normalTS, vertexNormal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
         
     // ------- Combine Albedo, roughness, specular, roughness ---------
 
