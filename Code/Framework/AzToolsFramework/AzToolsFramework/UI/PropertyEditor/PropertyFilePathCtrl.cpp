@@ -278,21 +278,15 @@ namespace AzToolsFramework
     }
 
     void PropertyFilePathHandler::WriteGUIValuesIntoProperty(
-        size_t index, PropertyFilePathCtrl* GUI, property_t& instance, InstanceDataNode* node)
+        [[maybe_unused]] size_t index, PropertyFilePathCtrl* GUI, property_t& instance, [[maybe_unused]] InstanceDataNode* node)
     {
-        AZ_UNUSED(index);
-        AZ_UNUSED(node);
-
         AZ::IO::Path filePath = GUI->GetFilePath();
         instance = static_cast<property_t>(filePath);
     }
 
     bool PropertyFilePathHandler::ReadValuesIntoGUI(
-        size_t index, PropertyFilePathCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+        [[maybe_unused]] size_t index, PropertyFilePathCtrl* GUI, const property_t& instance, [[maybe_unused]] InstanceDataNode* node)
     {
-        AZ_UNUSED(index);
-        AZ_UNUSED(node);
-
         GUI->blockSignals(true);
 
         GUI->SetFilePath(instance);
