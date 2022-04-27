@@ -25,9 +25,9 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {
-    // A control for representing an AZ::IO::Path field with
-    // a BrowseEdit whose popup button triggers a native
-    // file dialog
+    //! A control for representing an AZ::IO::Path field with
+    //! a BrowseEdit whose popup button triggers a native
+    //! file dialog.
     class PropertyFilePathCtrl : public QWidget
     {
         Q_OBJECT
