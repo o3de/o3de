@@ -27,11 +27,12 @@ namespace EMStudio
     class MotionEventWidget
         : public QWidget
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(MotionEventWidget, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
-        MotionEventWidget(QWidget* parent);
+        explicit MotionEventWidget(QWidget* parent = nullptr);
+        ~MotionEventWidget();
 
         void ReInit(EMotionFX::Motion* motion = nullptr, EMotionFX::MotionEvent* motionEvent = nullptr);
 
