@@ -323,6 +323,10 @@
             "isTemplated": false
         },
         {
+            "file": "README.md",
+            "isTemplated": true
+        },
+        {
             "file": "gem.json",
             "isTemplated": true
         },
