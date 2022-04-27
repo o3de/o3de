@@ -1,0 +1,53 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Color Operations",
+        "title": "Split Color",
+        "inputSlots": [
+            {
+                "name": "inColor",
+                "displayName": "Color",
+                "description": "Color",
+                "supportedDataTypes": [
+                    "Color"
+                ]
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outR",
+                "displayName": "R",
+                "description": "Red color channel",
+                "supportedDataTypes": [
+                    "float"
+                ]
+            },
+            {
+                "name": "outG",
+                "displayName": "G",
+                "description": "Green color channel",
+                "supportedDataTypes": [
+                    "float"
+                ]
+            },
+            {
+                "name": "outB",
+                "displayName": "B",
+                "description": "Blue color channel",
+                "supportedDataTypes": [
+                    "float"
+                ]
+            },
+            {
+                "name": "outA",
+                "displayName": "A",
+                "description": "Alpha color channel",
+                "supportedDataTypes": [
+                    "float"
+                ]
+            }
+        ]
+    }
+}

@@ -106,18 +106,7 @@ namespace GraphModel
 
     SlotDefinitionPtr SlotDefinition::CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
     {
-        AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
-        slotDefinition->m_slotDirection = SlotDirection::Input;
-        slotDefinition->m_slotType = SlotType::Data;
-        slotDefinition->m_name = name;
-        slotDefinition->m_displayName = displayName;
-        slotDefinition->m_supportedDataTypes = { dataType };
-        slotDefinition->m_defaultValue = defaultValue;
-        slotDefinition->m_description = description;
-
-        HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
-
-        return slotDefinition;
+        return CreateInputData(name, displayName, DataTypeList{ dataType }, defaultValue, description, extendableSlotConfiguration);
     }
 
     SlotDefinitionPtr SlotDefinition::CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypeList supportedDataTypes, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
