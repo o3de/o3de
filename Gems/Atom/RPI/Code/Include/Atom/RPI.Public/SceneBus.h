@@ -81,6 +81,7 @@ namespace AZ
             using BusIdType = SceneId;
 
             virtual void OnSceneNotifictaionHandlerConnected(SceneNotification* handler) = 0;
+            virtual void PipelineStateLookupNeedsRebuild() = 0;
         };
 
         using SceneRequestBus = AZ::EBus<SceneRequest>;

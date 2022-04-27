@@ -176,7 +176,8 @@ namespace AZ
         protected:
             // SceneFinder overrides...
             void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
-                        
+            void PipelineStateLookupNeedsRebuild();
+
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's simulation.
             // @param simulationTime the number of seconds since the application started
@@ -262,6 +263,8 @@ namespace AZ
             RenderPipelinePtr m_defaultPipeline;
 
             // Mapping of draw list tag and a group of pipeline states info built from scene's render pipeline passes
+            bool m_pipelineStatesLookup_needs_rebuild = false;
+
             AZStd::map<RHI::DrawListTag, PipelineStateList> m_pipelineStatesLookup;
 
             // reference of dynamic draw system (from RPISystem)

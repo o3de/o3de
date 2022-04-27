@@ -695,6 +695,12 @@ namespace AZ
                 }
             }
 
+            // the pipeline states might have changed during the OnStartFrame, rebuild the lookup
+            if (m_pipelineStatesLookup_needs_rebuild) {
+                RebuildPipelineStatesLookup();
+                m_pipelineStatesLookup_needs_rebuild = false;
+            }
+
             // Return if there is no active render pipeline
             if (activePipelines.empty())
             {
@@ -885,7 +891,13 @@ namespace AZ
                 }
             }
         }
-        
+
+        void Scene::PipelineStateLookupNeedsRebuild()
+        {
+            m_pipelineStatesLookup_needs_rebuild = true;
+        }
+
+
         bool Scene::ConfigurePipelineState(RHI::DrawListTag drawListTag, RHI::PipelineStateDescriptorForDraw& outPipelineState) const
         {
             auto pipelineStatesItr = m_pipelineStatesLookup.find(drawListTag);
