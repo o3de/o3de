@@ -41,6 +41,11 @@ set_property(
     APPEND
     PROPERTY COMPILE_OPTIONS /W3
 )
+set_property(
+    DIRECTORY
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS DT_POLYREF64 
+)
 FetchContent_MakeAvailable(RecastNavigation)
 # Restore compile options
 set_property(

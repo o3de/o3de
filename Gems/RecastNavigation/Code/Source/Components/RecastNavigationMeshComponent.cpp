@@ -174,7 +174,10 @@ namespace RecastNavigation
         memset(&config, 0, sizeof(config));
         config.cs = meshConfig.m_cellSize;
         config.ch = meshConfig.m_cellHeight;
-        config.tileSize = 200; // TODO
+        config.tileSize = 32; // TODO
+        config.borderSize = 0; // TODO
+        config.width = config.tileSize + config.borderSize * 2;
+        config.height = config.tileSize + config.borderSize * 2;
         config.walkableSlopeAngle = meshConfig.m_agentMaxSlope;
         config.walkableHeight = static_cast<int>(ceilf(meshConfig.m_agentHeight / config.ch));
         config.walkableClimb = static_cast<int>(floorf(meshConfig.m_agentMaxClimb / config.ch));
@@ -426,6 +429,10 @@ namespace RecastNavigation
             params.cs = config.cs;
             params.ch = config.ch;
             params.buildBvTree = true;
+            
+		    params.tileX = 0;
+		    params.tileY = 0;
+		    params.tileLayer = 0;
 
             if (!dtCreateNavMeshData(&params, &navigationTileData.m_data, &navigationTileData.m_size))
             {
@@ -485,19 +492,12 @@ namespace RecastNavigation
             return false;
         }
 
-        dtNavMeshParams params;
-        /*
-            float orig[3];					///< The world space origin of the navigation mesh's tile space. [(x, y, z)]
-            float tileWidth;				///< The width of each tile. (Along the x-axis.)
-            float tileHeight;				///< The height of each tile. (Along the z-axis.)
-            int maxTiles;					///< The maximum number of tiles the navigation mesh can contain. This and maxPolys are used to calculate how many bits are needed to identify tiles and polygons uniquely.
-            int maxPolys;
-         */
-        AZ::Aabb volume;
+        dtNavMeshParams params = {};
+        AZ::Aabb volume = AZ::Aabb::CreateNull();
         RecastNavigationSurveyorRequestBus::EventResult(volume, GetEntityId(), &RecastNavigationSurveyorRequests::GetWorldBounds);
-        params.orig[0] = volume.GetCenter().GetX();
-        params.orig[1] = volume.GetCenter().GetZ(); // swapping for Recast coordinate system
-        params.orig[2] = volume.GetCenter().GetY();
+
+        const RecastVector3 worldCenter(volume.GetMin());
+        rcVcopy(params.orig, &worldCenter.m_x);
 
         int tilesOnX = 1;
         RecastNavigationSurveyorRequestBus::EventResult(tilesOnX, GetEntityId(), &RecastNavigationSurveyorRequests::GetTilesAlongXDimension);
@@ -507,7 +507,7 @@ namespace RecastNavigation
         params.tileHeight = volume.GetYExtent() / tilesOnY;
         params.maxTiles = tilesOnX * tilesOnY;
 
-        params.maxPolys = 10'000; // TODO what this should be?
+        //params.maxPolys = 10'000; // TODO what this should be?
 
         dtStatus status = m_navMesh->init(&params);
         if (dtStatusFailed(status))
@@ -569,7 +569,7 @@ namespace RecastNavigation
 
         {
             RecastVector3 startRecast{ fromWorldPosition }, endRecast{ targetWorldPosition };
-            constexpr float halfExtents[3] = { 1.F, 1., 1 };
+            constexpr float halfExtents[3] = { 3.F, 3., 3 };
 
             dtPolyRef startPoly = 0, endPoly = 0;
 
@@ -705,7 +705,6 @@ namespace RecastNavigation
     {
         if (m_navMeshReady && (cl_navmesh_debug || m_showNavigationMesh))
         {
-            //m_customDebugDraw.SetColor(AZ::Color(0.F, 0.9f, 0, 1));
             duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);
         }
     }
