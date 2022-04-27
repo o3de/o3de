@@ -36,10 +36,10 @@ namespace AzToolsFramework
 
         PropertyFilePathCtrl(QWidget* parent = nullptr);
 
-        AZ::IO::Path GetFilePath() const;
+        const AZ::IO::Path& GetFilePath() const;
         void SetFilter(const QString& filter);
-        void SetProductExtension(const AZStd::string& extension);
-        void SetDefaultFileName(const AZStd::string& fileName);
+        void SetProductExtension(AZStd::string extension);
+        void SetDefaultFileName(AZ::IO::Path fileName);
 
     Q_SIGNALS:
         void FilePathChanged();
@@ -52,7 +52,7 @@ namespace AzToolsFramework
         AZ::IO::Path m_currentFilePath;
         QString m_filter;
         AZStd::string m_productExtension;
-        AZStd::string m_defaultFileName;
+        AZ::IO::Path m_defaultFileName;
 
         void OnOpenButtonClicked();
         QString GetPreselectedFilePath() const;

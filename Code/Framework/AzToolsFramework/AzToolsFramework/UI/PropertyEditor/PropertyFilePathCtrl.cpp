@@ -9,7 +9,6 @@
 #include "PropertyFilePathCtrl.h"
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
-#include <QDir>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLineEdit>
@@ -65,7 +64,7 @@ namespace AzToolsFramework
         Q_EMIT FilePathChanged();
     }
 
-    AZ::IO::Path PropertyFilePathCtrl::GetFilePath() const
+    const AZ::IO::Path& PropertyFilePathCtrl::GetFilePath() const
     {
         return m_currentFilePath;
     }
@@ -75,14 +74,14 @@ namespace AzToolsFramework
         m_filter = filter;
     }
 
-    void PropertyFilePathCtrl::SetProductExtension(const AZStd::string& extension)
+    void PropertyFilePathCtrl::SetProductExtension(AZStd::string extension)
     {
-        m_productExtension = extension;
+        m_productExtension = AZStd::move(extension);
     }
 
-    void PropertyFilePathCtrl::SetDefaultFileName(const AZStd::string& fileName)
+    void PropertyFilePathCtrl::SetDefaultFileName(AZ::IO::Path fileName)
     {
-        m_defaultFileName = fileName;
+        m_defaultFileName = AZStd::move(fileName);
     }
 
     void PropertyFilePathCtrl::OnOpenButtonClicked()
@@ -109,16 +108,16 @@ namespace AzToolsFramework
         // option for the user
         if (m_currentFilePath.empty())
         {
-            AZ::IO::Path defaultPath = AZ::IO::Path(AZ::Utils::GetProjectPath());
+            AZ::IO::FixedMaxPath defaultPath = AZ::Utils::GetProjectPath();
 
             // If a default filename has been specified, append it to
             // the project path to be the default path
             if (!m_defaultFileName.empty())
             {
-                defaultPath /= AZ::IO::Path(m_defaultFileName);
+                defaultPath /= m_defaultFileName;
             }
 
-            preselectedFilePath = defaultPath.c_str();
+            preselectedFilePath = QString::fromUtf8(defaultPath.c_str(), static_cast<int>(defaultPath.Native().size()));
         }
         // Otherwise, we need to find the proper absolute path based on the relative path
         // that is stored
@@ -126,10 +125,10 @@ namespace AzToolsFramework
         {
             // The GetFullSourcePathFromRelativeProductPath API only works on product paths,
             // so we need to append the product extension to try and find it
-            AZStd::string relativePath = m_currentFilePath.String() + m_productExtension;
+            AZStd::string relativePath = m_currentFilePath.Native() + m_productExtension;
 
             AZStd::string fullPath;
-            bool fullPathIsValid;
+            bool fullPathIsValid = false;
             AssetSystemRequestBus::BroadcastResult(
                 fullPathIsValid, &AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, relativePath, fullPath);
 
@@ -137,7 +136,7 @@ namespace AzToolsFramework
             // the pre-selected file when the user opens the file picker dialog
             if (fullPathIsValid)
             {
-                preselectedFilePath = fullPath.c_str();
+                preselectedFilePath = QString::fromUtf8(fullPath.c_str(), static_cast<int>(fullPath.size()));
             }
             // GetFullSourcePathFromRelativeProductPath failed so the file doesn't exist on disk yet
             // So we need to find it by searching in the asset safe folders
@@ -166,11 +165,11 @@ namespace AzToolsFramework
                         relativeFolderPath /= m_currentFilePath.ParentPath();
                     }
 
-                    QDir currentFilePathDirectory(relativeFolderPath.c_str());
-                    if (currentFilePathDirectory.exists())
+                    if (AZ::IO::SystemFile::IsDirectory(relativeFolderPath.c_str()))
                     {
                         auto absoluteFilePath = (assetSafeFolderPath / m_currentFilePath);
-                        preselectedFilePath = absoluteFilePath.c_str();
+                        preselectedFilePath =
+                            QString::fromUtf8(absoluteFilePath.c_str(), static_cast<int>(absoluteFilePath.Native().size()));
                         break;
                     }
                 }
@@ -194,7 +193,7 @@ namespace AzToolsFramework
         // the call to GenerateRelativeSourcePath will fail.
         AZStd::string absolutePath(newFilePath.toUtf8().constData());
         AZStd::string relativePath, rootFilePath;
-        bool relativePathIsValid;
+        bool relativePathIsValid = false;
         AssetSystemRequestBus::BroadcastResult(
             relativePathIsValid, &AssetSystemRequestBus::Events::GenerateRelativeSourcePath, absolutePath, relativePath, rootFilePath);
 
@@ -207,35 +206,36 @@ namespace AzToolsFramework
         // so give them a warning dialog explaining why it can't be saved there
         else
         {
-            AZStd::string errorMessage =
+            constexpr const char* errorMessage =
                 "You can only save assets to either your game project folder or the Gems folder. Update the location and try "
                 "again.\n\n"
-                "You can also review and update your save locations in the AssetProcessorPlatformConfig.ini file.";
-            AZ_Error("PropertyFilePathCtrl", false, errorMessage.c_str());
+                "You can also review and update your save locations in the Registry/AssetProcessorPlatformConfig.setreg file or your Gem's "
+                "Registry/assetprocessor_settings.setreg file.";
+            AZ_Error("PropertyFilePathCtrl", false, errorMessage);
 
             QMessageBox* errorDialog = new QMessageBox(GetActiveWindow());
             errorDialog->setIcon(QMessageBox::Icon::Warning);
             errorDialog->setTextFormat(Qt::RichText);
             errorDialog->setWindowTitle(QObject::tr("Invalid save location"));
-            errorDialog->setText(QObject::tr(errorMessage.c_str()));
+            errorDialog->setText(QObject::tr(errorMessage));
             errorDialog->setStandardButtons(QMessageBox::Cancel | QMessageBox::Retry);
             errorDialog->setDefaultButton(QMessageBox::Retry);
 
             QObject::connect(
                 errorDialog, &QDialog::finished,
                 [this, errorDialog](int resultCode)
-            {
-                // If the user wants to retry, re-open the file dialog
-                // It will automatically be re-opened relative to the default
-                // asset safe folder (typically the project root)
-                if (resultCode == QMessageBox::Retry)
                 {
-                    OnOpenButtonClicked();
-                }
+                    // If the user wants to retry, re-open the file dialog
+                    // It will automatically be re-opened relative to the default
+                    // asset safe folder (typically the project root)
+                    if (resultCode == QMessageBox::Retry)
+                    {
+                        OnOpenButtonClicked();
+                    }
 
-                // Make sure our error dialog gets deleted after it is dismissed.
-                errorDialog->deleteLater();
-            });
+                    // Make sure our error dialog gets deleted after it is dismissed.
+                    errorDialog->deleteLater();
+                });
 
             errorDialog->open();
         }
