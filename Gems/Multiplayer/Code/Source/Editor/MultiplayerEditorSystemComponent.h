@@ -47,12 +47,12 @@ namespace Multiplayer
     class MultiplayerEditorSystemComponent final
         : public AZ::Component
         , public MultiplayerEditorLayerPythonRequestBus::Handler
-        , private AzFramework::GameEntityContextEventBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private IEditorNotifyListener
         , private MultiplayerEditorServerRequestBus::Handler
         , private AZ::TickBus::Handler
         , private AzFramework::SpawnableAssetEventsBus::Handler
+        , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerEditorSystemComponent, "{9F335CC0-5574-4AD3-A2D8-2FAEF356946C}");
@@ -90,20 +90,20 @@ namespace Multiplayer
         bool FindServerLauncher(AZ::IO::FixedMaxPath& serverPath);
         void Connect();
 
+        //! AzToolsFramework::EditorEntityContextNotificationBus::Handler overrides
+        //! @{
+        void OnStartPlayInEditorBegin() override;
+        void OnStartPlayInEditor() override;
+        //! @
+
         //! AzFramework::SpawnableAssetEventsBus::Handler overrides
         //! @{
-        void OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZ::Data::AssetId& id) override;
+        void OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint) override;
         //! @
         
         //! EditorEvents::Handler overrides
         //! @{
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
-        //! @}
-        
-        //!  GameEntityContextEventBus::Handler overrides
-        //! @{
-        void OnGameEntitiesStarted() override;
-        void OnGameEntitiesReset() override;
         //! @}
 
         //! MultiplayerEditorServerRequestBus::Handler
@@ -124,5 +124,7 @@ namespace Multiplayer
         ServerAcceptanceReceivedEvent::Handler m_serverAcceptanceReceivedHandler;
         AZ::ScheduledEvent m_connectionEvent = AZ::ScheduledEvent([this]{this->Connect();}, AZ::Name("MultiplayerEditorConnect"));
         uint16_t m_connectionAttempts = 0;
+
+        AZStd::map<AZStd::string, AZStd::unique_ptr<AzFramework::Spawnable>> m_preAliasedSpawnablesForServer;
     };
 }
