@@ -45,12 +45,16 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
+    AtomToolsApplication* AtomToolsApplication::m_instance = {};
+
     AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
         : Application(argc, argv)
         , AzQtApplication(*argc, *argv)
         , m_targetName(targetName)
         , m_toolId(targetName)
     {
+        m_instance = this;
+
         // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), m_targetName);
@@ -74,6 +78,7 @@ namespace AtomToolsFramework
 
     AtomToolsApplication ::~AtomToolsApplication()
     {
+        m_instance = {};
         m_styleManager.reset();
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
@@ -126,6 +131,9 @@ namespace AtomToolsFramework
             addGeneral(behaviorContext->Method(
                 "exit", &AtomToolsApplication::PyExit, nullptr,
                 "Exit application. Primarily used for auto-testing."));
+            addGeneral(behaviorContext->Method(
+                "test_output", &AtomToolsApplication::PyTestOutput, nullptr,
+                "Report test information."));
         }
     }
 
@@ -397,6 +405,13 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
+        if (commandLine.HasSwitch("autotest_mode") || commandLine.HasSwitch("runpythontest"))
+        {
+            // Nullroute all stdout to null for automated tests, this way we make sure
+            // that the test result output is not polluted with unrelated output data.
+            RedirectStdoutToNull();
+        }
+
         const AZStd::string activateWindowSwitchName = "activatewindow";
         if (commandLine.HasSwitch(activateWindowSwitchName))
         {
@@ -416,17 +431,21 @@ namespace AtomToolsFramework
         }
 
         // Process command line options for running one or more python scripts on startup
-        const AZStd::string runPythonScriptSwitchName = "runpython";
-        size_t runPythonScriptCount = commandLine.GetNumSwitchValues(runPythonScriptSwitchName);
-        for (size_t runPythonScriptIndex = 0; runPythonScriptIndex < runPythonScriptCount; ++runPythonScriptIndex)
+        auto runScripts = [&commandLine, this](const AZStd::string& runPythonScriptSwitchName)
         {
-            const AZStd::string runPythonScriptPath = commandLine.GetSwitchValue(runPythonScriptSwitchName, runPythonScriptIndex);
-            AZStd::vector<AZStd::string_view> runPythonArgs;
+            size_t runPythonScriptCount = commandLine.GetNumSwitchValues(runPythonScriptSwitchName);
+            for (size_t runPythonScriptIndex = 0; runPythonScriptIndex < runPythonScriptCount; ++runPythonScriptIndex)
+            {
+                const AZStd::vector<AZStd::string_view> runPythonArgs;
+                const AZStd::string runPythonScriptPath = commandLine.GetSwitchValue(runPythonScriptSwitchName, runPythonScriptIndex);
+                AZ_Printf(m_targetName.c_str(), "Launching script: %s", runPythonScriptPath.c_str());
 
-            AZ_Printf(m_targetName.c_str(), "Launching script: %s", runPythonScriptPath.c_str());
-            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
-                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, runPythonScriptPath, runPythonArgs);
-        }
+                AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                    &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, runPythonScriptPath, runPythonArgs);
+            }
+        };
+        runScripts("runpython");
+        runScripts("runpythontest");
 
         const AZStd::string exitAfterCommandsSwitchName = "exitaftercommands";
         if (commandLine.HasSwitch(exitAfterCommandsSwitchName))
@@ -444,6 +463,16 @@ namespace AtomToolsFramework
                 nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
             }
         }
+    }
+
+    void AtomToolsApplication::PrintAlways(const AZStd::string& output)
+    {
+        m_stdoutRedirection.WriteBypassingRedirect(output.c_str(), static_cast<unsigned int>(output.size()));
+    }
+
+    void AtomToolsApplication::RedirectStdoutToNull()
+    {
+        m_stdoutRedirection.RedirectTo(AZ::IO::SystemFile::GetNullFilename());
     }
 
     bool AtomToolsApplication::LaunchLocalServer()
@@ -588,7 +617,17 @@ namespace AtomToolsFramework
     void AtomToolsApplication::PyExit()
     {
         QTimer::singleShot(0, []() { 
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+            AtomToolsApplication::GetInstance()->ExitMainLoop();
         });
+    }
+
+    void AtomToolsApplication::PyTestOutput(const AZStd::string& output)
+    {
+        AtomToolsApplication::GetInstance()->PrintAlways(output);
+    }
+
+    AtomToolsApplication* AtomToolsApplication::GetInstance()
+    {
+        return m_instance;
     }
 } // namespace AtomToolsFramework

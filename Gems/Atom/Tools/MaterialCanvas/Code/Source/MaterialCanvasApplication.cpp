@@ -7,10 +7,9 @@
  */
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <MaterialCanvasApplication.h>
-
 #include <Document/MaterialCanvasDocument.h>
+#include <Document/MaterialCanvasGraphDataTypes.h>
+#include <MaterialCanvasApplication.h>
 #include <Window/MaterialCanvasGraphView.h>
 #include <Window/MaterialCanvasMainWindow.h>
 
@@ -71,17 +70,40 @@ namespace MaterialCanvas
     {
         Base::StartCommon(systemEntity);
 
+        m_graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas", CreateAllDataTypes());
+        m_graphContext->CreateModuleGraphManager();
+
+        // Instantiate the dynamic node manager, giving it an extension to enumerate and load node configurations
+        m_dynamicNodeManager.reset(aznew AtomToolsFramework::DynamicNodeManager());
+        m_dynamicNodeManager->LoadMatchingConfigFiles({ "materialcanvasnode.azasset" });
+
+        // This callback is passed into the main window and views to populate nude palette items from the dynamic node manager
+        auto createNodePaletteFn = [this](const AZ::Crc32& toolId)
+        {
+            return m_dynamicNodeManager->CreateNodePaletteRootTreeItem(toolId);
+        };
+
         // Overriding default document type info to provide a custom view
         auto documentTypeInfo = MaterialCanvasDocument::BuildDocumentTypeInfo();
-        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
-            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId));
+
+        // Overriding default document factory function to pass in a shared graph context
+        documentTypeInfo.m_documentFactoryCallback = [this](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+        {
+            return aznew MaterialCanvasDocument(toolId, documentTypeInfo, m_graphContext);
         };
+
+        // Overriding documentview factory function to create graph view
+        documentTypeInfo.m_documentViewFactoryCallback = [this, createNodePaletteFn](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
+        {
+            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, createNodePaletteFn));
+        };
+
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
         m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
 
-        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId));
+        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, createNodePaletteFn));
         m_window->show();
     }
 
