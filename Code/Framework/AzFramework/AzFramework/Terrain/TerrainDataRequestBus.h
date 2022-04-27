@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/EBus/EBusSharedDispatchTraits.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -27,7 +28,7 @@ namespace AzFramework
 
         //! Shared interface for terrain system implementations
         class TerrainDataRequests
-            : public AZ::EBusTraits
+            : public AZ::EBusSharedDispatchTraits<TerrainDataRequests>
         {
         public:
             static void Reflect(AZ::ReflectContext* context);
@@ -36,7 +37,6 @@ namespace AzFramework
             // EBusTraits overrides
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-            using MutexType = AZStd::recursive_mutex;
             //////////////////////////////////////////////////////////////////////////
 
             enum class Sampler

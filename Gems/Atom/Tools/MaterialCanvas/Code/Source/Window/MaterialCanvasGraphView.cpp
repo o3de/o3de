@@ -26,15 +26,6 @@
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SceneContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SlotContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/EditorContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/BookmarkContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CollapsedNodeGroupContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CommentContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/ConnectionContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/NodeContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/NodeGroupContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SceneContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SlotContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/EditorContextMenu.h>
 #include <GraphCanvas/Widgets/GraphCanvasMimeContainer.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
@@ -54,10 +45,15 @@
 
 namespace MaterialCanvas
 {
-    MaterialCanvasGraphView::MaterialCanvasGraphView(const AZ::Crc32& toolId, const AZ::Uuid& documentId, QWidget* parent)
+    MaterialCanvasGraphView::MaterialCanvasGraphView(
+        const AZ::Crc32& toolId,
+        const AZ::Uuid& documentId,
+        const CreateNodePaletteItemsCallback& createNodePaletteItemsCallback,
+        QWidget* parent)
         : QWidget(parent)
         , m_toolId(toolId)
         , m_documentId(documentId)
+        , m_createNodePaletteItemsCallback(createNodePaletteItemsCallback)
     {
         setLayout(new QVBoxLayout());
 
@@ -93,13 +89,13 @@ namespace MaterialCanvas
         nodePaletteConfig.m_mimeType = "materialcanvas/node-palette-mime-event";
         nodePaletteConfig.m_isInContextMenu = true;
         nodePaletteConfig.m_saveIdentifier = "MaterialCanvas_ContextMenu";
-        nodePaletteConfig.m_rootTreeItem = GetNodePaletteRootTreeItem();
+        nodePaletteConfig.m_rootTreeItem = m_createNodePaletteItemsCallback(m_toolId);
         m_sceneContextMenu = aznew GraphCanvas::SceneContextMenu(m_toolId, this);
         m_sceneContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
 
         // Setup the context menu with node palette for proposing a new node
         // when dropping a connection in an empty space in the graph
-        nodePaletteConfig.m_rootTreeItem = GetNodePaletteRootTreeItem();
+        nodePaletteConfig.m_rootTreeItem = m_createNodePaletteItemsCallback(m_toolId);
         m_createNodeProposalContextMenu = aznew GraphCanvas::EditorContextMenu(m_toolId, this);
         m_createNodeProposalContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
 
@@ -712,22 +708,6 @@ namespace MaterialCanvas
 
             m_presetWrapper->setGeometry(geometry);
         }
-    }
-
-    GraphCanvas::GraphCanvasTreeItem* MaterialCanvasGraphView::GetNodePaletteRootTreeItem() const
-    {
-        GraphCanvas::NodePaletteTreeItem* rootItem = aznew GraphCanvas::NodePaletteTreeItem("Root", m_toolId);
-        auto nodeCategory1 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 1", m_toolId);
-        nodeCategory1->SetTitlePalette("NodeCategory1");
-        auto nodeCategory2 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 2", m_toolId);
-        nodeCategory2->SetTitlePalette("NodeCategory2");
-        auto nodeCategory3 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 3", m_toolId);
-        nodeCategory3->SetTitlePalette("NodeCategory3");
-        auto nodeCategory4 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 4", m_toolId);
-        nodeCategory4->SetTitlePalette("NodeCategory4");
-        auto nodeCategory5 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 5", m_toolId);
-        nodeCategory5->SetTitlePalette("NodeCategory5");
-        return rootItem;
     }
 } // namespace MaterialCanvas
 

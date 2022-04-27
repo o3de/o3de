@@ -236,9 +236,8 @@ namespace AZ
             classData = genericClassInfo ? genericClassInfo->GetClassData() : nullptr;
             if (classData)
             {
-                char uuidStr[Uuid::MaxStringBuffer];
-                SerializeGenericTypeInfo<T>::GetClassTypeId().ToString(uuidStr, Uuid::MaxStringBuffer, false);
-                AZ_Error("Serializer", false, "Serialization of generic type (%s,%s) or a derivative as root element is not supported!!", classData->m_name, uuidStr);
+                AZ_Error("Serializer", false, "Serialization of generic type (%s,%s) or a derivative as root element is not supported!!"
+                    , classData->m_name, SerializeGenericTypeInfo<T>::GetClassTypeId().ToFixedString().c_str());
             }
             else
             {

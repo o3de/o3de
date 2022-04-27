@@ -18,8 +18,11 @@ float3 GetViewRayDirection(float4x4 viewProjectionInverseMatrix)
 // Note: usable only in a raytracing Hit shader
 uint3 GetHitIndices(RayTracingSceneSrg::MeshInfo meshInfo)
 {
+    // get the start of the index list for this mesh in the indirection buffer 
+    uint meshBufferStartIndex = RayTracingSceneSrg::m_meshBufferIndices[meshInfo.m_bufferStartIndex];
+
     // compute the array index of the index buffer for this mesh in the m_meshBuffers unbounded array
-    uint meshIndexBufferArrayIndex = meshInfo.m_bufferStartIndex + MESH_INDEX_BUFFER_OFFSET;
+    uint meshIndexBufferArrayIndex = meshBufferStartIndex + MESH_INDEX_BUFFER_OFFSET;
 
     // compute the offset into the index buffer for this primitve of the mesh
     uint offsetBytes = meshInfo.m_indexOffset + (PrimitiveIndex() * 12);
@@ -47,6 +50,9 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
     // compute barycentrics
     float3 barycentrics = float3((1.0f - builtInBarycentrics.x - builtInBarycentrics.y), builtInBarycentrics.x, builtInBarycentrics.y);    
 
+    // get the start of the index list for this mesh in the indirection buffer 
+    uint meshBufferStartIndex = RayTracingSceneSrg::m_meshBufferIndices[meshInfo.m_bufferStartIndex];
+
     // compute the vertex data using barycentric interpolation
     VertexData vertexData = (VertexData)0;
     for (uint i = 0; i < 3; ++i)
@@ -54,7 +60,7 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
         // position
         {
             // array index of the position buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexPositionArrayIndex = meshInfo.m_bufferStartIndex + MESH_POSITION_BUFFER_OFFSET;
+            uint meshVertexPositionArrayIndex = meshBufferStartIndex + MESH_POSITION_BUFFER_OFFSET;
 
             // offset into the position buffer for this vertex
             uint positionOffset = meshInfo.m_positionOffset + (indices[i] * 12);
@@ -66,7 +72,7 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
         // normal
         {
             // array index of the normal buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexNormalArrayIndex = meshInfo.m_bufferStartIndex + MESH_NORMAL_BUFFER_OFFSET;
+            uint meshVertexNormalArrayIndex = meshBufferStartIndex + MESH_NORMAL_BUFFER_OFFSET;
 
             // offset into the normal buffer for this vertex
             uint normalOffset = meshInfo.m_normalOffset + (indices[i] * 12);
@@ -75,14 +81,11 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
             vertexData.m_normal += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexNormalArrayIndex].Load3(normalOffset)) * barycentrics[i];
         }
 
-        // optional streams begin after MESH_NORMAL_BUFFER_OFFSET
-        uint optionalBufferOffset = MESH_NORMAL_BUFFER_OFFSET + 1;
-
         // tangent
         if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_TANGENT)
         {
             // array index of the tangent buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexTangentArrayIndex = meshInfo.m_bufferStartIndex + optionalBufferOffset++;
+            uint meshVertexTangentArrayIndex = meshBufferStartIndex + MESH_TANGENT_BUFFER_OFFSET;
 
             // offset into the tangent buffer for this vertex
             uint tangentOffset = meshInfo.m_tangentOffset + (indices[i] * 16);
@@ -95,7 +98,7 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
         if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_BITANGENT)
         {
             // array index of the bitangent buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexBitangentArrayIndex = meshInfo.m_bufferStartIndex + optionalBufferOffset++;
+            uint meshVertexBitangentArrayIndex = meshBufferStartIndex + MESH_BITANGENT_BUFFER_OFFSET;
 
             // offset into the bitangent buffer for this vertex
             uint bitangentOffset = meshInfo.m_bitangentOffset + (indices[i] * 12);
@@ -108,7 +111,7 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
         if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_UV)
         {
             // array index of the UV buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexUVArrayIndex = meshInfo.m_bufferStartIndex + optionalBufferOffset++;
+            uint meshVertexUVArrayIndex = meshBufferStartIndex + MESH_UV_BUFFER_OFFSET;
     
             // offset into the UV buffer for this vertex
             uint uvOffset = meshInfo.m_uvOffset + (indices[i] * 8);    

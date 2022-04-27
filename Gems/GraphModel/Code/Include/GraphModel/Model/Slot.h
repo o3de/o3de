@@ -17,8 +17,8 @@
 
 // Graph Model
 #include <GraphModel/Model/Common.h>
+#include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/GraphElement.h>
-#include <GraphModel/Model/IGraphContext.h>
 
 namespace GraphModel
 {

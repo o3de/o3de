@@ -511,7 +511,7 @@ namespace LyShine
                 m_dynamicDraw = uiRenderer->CreateDynamicDrawContextForRTT(GetRenderTargetName());
                 if (m_dynamicDraw)
                 {
-                    m_dynamicDraw->SetViewport(AZ::RHI::Viewport(m_viewportX, m_viewportWidth, m_viewportY, m_viewportHeight));
+                    m_dynamicDraw->SetViewport(AZ::RHI::Viewport(0.0f, m_viewportWidth, 0.0f, m_viewportHeight));
                 }
             }
 
@@ -533,7 +533,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     const char* RenderTargetRenderNode::GetRenderTargetName() const
     {
-        return m_attachmentImage->GetRHIImage()->GetName().GetCStr();
+        return m_attachmentImage ? m_attachmentImage->GetRHIImage()->GetName().GetCStr() : "";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
