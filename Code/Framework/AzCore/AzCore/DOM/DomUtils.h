@@ -25,38 +25,77 @@ namespace AZ::Dom::Utils
     Value DeepCopy(const Value& value, bool copyStrings = true);
 
     template<typename T>
-    T ConvertValueToPrimitive(const Dom::Value& value, AZStd::enable_if_t<AZStd::is_same_v<T, bool>>* = nullptr)
+    Dom::Value ValueFromType(const T& value)
     {
-        return value.GetBool();
+        if constexpr (AZStd::is_same_v<AZStd::string_view, T>)
+        {
+            return Dom::Value(value, true);
+        }
+        else if constexpr (AZStd::is_constructible_v<Dom::Value, const T&>)
+        {
+            return Dom::Value(value);
+        }
+        else
+        {
+            return Dom::Value::FromOpaqueValue(AZStd::any(value));
+        }
     }
 
-    template<typename T>
-    T ConvertValueToPrimitive(
-        const Dom::Value& value,
-        AZStd::enable_if_t<AZStd::is_integral_v<T> && AZStd::is_signed_v<T> && !AZStd::is_same_v<T, bool>>* = nullptr)
+    template <typename T>
+    AZStd::optional<T> ValueToType(const Dom::Value& value)
     {
-        return aznumeric_cast<T>(value.GetInt64());
-    }
-
-    template<typename T>
-    T ConvertValueToPrimitive(
-        const Dom::Value& value,
-        AZStd::enable_if_t<AZStd::is_integral_v<T> && !AZStd::is_signed_v<T> && !AZStd::is_same_v<T, bool>>* = nullptr)
-    {
-        return aznumeric_cast<T>(value.GetUint64());
-    }
-
-    template<typename T>
-    T ConvertValueToPrimitive(const Dom::Value& value, AZStd::enable_if_t<AZStd::is_floating_point_v<T>>* = nullptr)
-    {
-        return aznumeric_cast<T>(value.GetDouble());
-    }
-
-    template<typename T>
-    T ConvertValueToPrimitive(
-        const Dom::Value& value,
-        AZStd::enable_if_t<AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string_view> || AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string>>* = nullptr)
-    {
-        return value.GetString();
+        if constexpr (AZStd::is_same_v<T, bool>)
+        {
+            if (!value.IsBool())
+            {
+                return {};
+            }
+            return value.GetBool();
+        }
+        else if constexpr (AZStd::is_integral_v<T> && AZStd::is_signed_v<T>)
+        {
+            if (!value.IsInt())
+            {
+                return {};
+            }
+            return aznumeric_cast<T>(value.GetInt64());
+        }
+        else if constexpr (AZStd::is_integral_v<T> && !AZStd::is_signed_v<T>)
+        {
+            if (!value.IsUint())
+            {
+                return {};
+            }
+            return aznumeric_cast<T>(value.GetUint64());
+        }
+        else if constexpr (AZStd::is_floating_point_v<T>)
+        {
+            if (!value.IsDouble())
+            {
+                return {};
+            }
+            return aznumeric_cast<T>(value.GetDouble());
+        }
+        else if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string> || AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string_view>)
+        {
+            if (!value.IsString())
+            {
+                return {};
+            }
+            return value.GetString();
+        }
+        else
+        {
+            if (!value.IsOpaqueValue())
+            {
+                return {};
+            }
+            const AZStd::any& opaqueValue = value.GetOpaqueValue();
+            if (!opaqueValue.is<T>())
+            {
+                return {};
+            }
+            return AZStd::any_cast<T>(value.GetOpaqueValue());
+        }
     }
 } // namespace AZ::Dom::Utils

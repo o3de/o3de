@@ -15,11 +15,22 @@
 
 namespace AZ::DocumentPropertyEditor
 {
+    //! RoutingAdapter manages chaining DocumentAdapters together so that their contents
+    //! hierarchically merge, and their corresponding patches get applied cleanly.
     class RoutingAdapter : public DocumentAdapter
     {
     protected:
+        //! Clears all routes.
+        //! Typically, this should be called at the start of GetContents, so that child routes can be reinitalized.
+        void ClearRoutes();
+        //! Adds a route at the given path to the specified adapter.
+        //! Reset and Changed signals will be bubbled up from this child adapter to this router.
+        //! This implies that this adapter's contents at route match the child contents of adapter.
         void AddRoute(const Dom::Path& route, DocumentAdapterPtr adapter);
+        //! Removes a route at a given path, and all of its subpaths.
         void RemoveRoute(const Dom::Path& route);
+        //! If set, forwards all routing requests from this router to another router.
+        //! This allows a single, parent RoutingAdapter to handle all requests.
         void SetRouter(RoutingAdapter* router, const Dom::Path& route) override;
 
     private:

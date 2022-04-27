@@ -8,6 +8,7 @@
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/DOM/DomPath.h>
+#include <AzCore/DOM/DomUtils.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/AttributeReader.h>
@@ -175,7 +176,7 @@ namespace AZ::Reflection
                 T value;
                 if (reader.Read<T>(value))
                 {
-                    result = CreateValue(value);
+                    result = Dom::Utils::ValueFromType(value);
                     return true;
                 }
                 return false;
@@ -233,8 +234,7 @@ namespace AZ::Reflection
                     }
                 };
 
-                nodeData.m_cachedAttributes.push_back(
-                    { group, DescriptorAttributes::SerializedPath, Dom::Value(nodeData.m_path, true) });
+                nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::SerializedPath, Dom::Value(nodeData.m_path, true) });
 
                 // Read attributes in order, checking:
                 // 1) Class element edit data attributes (EditContext from the given row of a class)

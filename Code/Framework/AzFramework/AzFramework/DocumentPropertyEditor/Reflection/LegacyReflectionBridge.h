@@ -8,39 +8,32 @@
 
 #pragma once
 
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/Attribute.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/Visitor.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
 
 namespace AZ::Reflection
 {
+    //! These synthetic attributes are injected into legacy reflection data to give additional context
+    //! for use in the DocumentPropertyEditor.
     namespace DescriptorAttributes
     {
+        //! The UIHandler (or PropertyEditor Type) this property should use.
+        //! Type: String
         extern Name Handler;
+        //! If specified, this property should have a label with the specified text.
+        //! Type: String
         extern Name Label;
+        //! Specifies the JSON path to where this property would be located in a JSON serialized instance,
+        //! relative to the instance in a Visit call.
+        //! Type: String (can be parsed by AZ::Dom::Path)
         extern Name SerializedPath;
-    }
+    } // namespace DescriptorAttributes
 
-    template<typename T>
-    Dom::Value CreateValue(const T& value)
-    {
-        return Dom::Value(value);
-    }
-
-    template<>
-    Dom::Value CreateValue(const AZStd::string_view& value)
-    {
-        return Dom::Value(value, true);
-    }
-
-    template <>
-    Dom::Value CreateValue(const AZStd::string& value)
-    {
-        return Dom::Value(value, true);
-    }
-
-    void VisitLegacyInMemoryInstance(IRead* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext = nullptr);
-    void VisitLegacyInMemoryInstance(IReadWrite* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext = nullptr);
+    void VisitLegacyInMemoryInstance(
+        IRead* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext = nullptr);
+    void VisitLegacyInMemoryInstance(
+        IReadWrite* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext = nullptr);
     // void VisitLegacyJsonSerializedInstance(IRead* visitor, Dom::Value instance, const AZ::TypeId& typeId);
-}
+} // namespace AZ::Reflection

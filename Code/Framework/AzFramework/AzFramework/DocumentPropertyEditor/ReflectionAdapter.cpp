@@ -112,10 +112,15 @@ namespace AZ::DocumentPropertyEditor
         void VisitPrimitive(T& value, const Reflection::IAttributes& attributes)
         {
             VisitValue(
-                Reflection::CreateValue(value), GetPropertyEditor(azrtti_typeid<T>(), attributes), attributes,
+                Dom::Utils::ValueFromType(value), GetPropertyEditor(azrtti_typeid<T>(), attributes), attributes,
                 [&value](const Dom::Value& newValue)
                 {
-                    value = Dom::Utils::ConvertValueToPrimitive<T>(newValue);
+                    AZStd::optional<T> extractedValue = Dom::Utils::ValueToType<T>(newValue);
+                    AZ_Warning("DPE", extractedValue.has_value(), "OnChanged failed, unable to extract value from DOM");
+                    if (extractedValue.has_value())
+                    {
+                        value = AZStd::move(extractedValue.value());
+                    }
                 });
         }
 
@@ -190,7 +195,7 @@ namespace AZ::DocumentPropertyEditor
             const AZStd::string_view value, Reflection::IStringAccess& access, const Reflection::IAttributes& attributes) override
         {
             VisitValue(
-                Reflection::CreateValue(value), GetPropertyEditor(azrtti_typeid<AZStd::string_view>(), attributes), attributes,
+                Dom::Utils::ValueFromType(value), GetPropertyEditor(azrtti_typeid<AZStd::string_view>(), attributes), attributes,
                 [&access](const Dom::Value& newValue)
                 {
                     access.Set(newValue.GetString());
@@ -236,6 +241,11 @@ namespace AZ::DocumentPropertyEditor
             (void)attributes;
         }
     };
+
+    ReflectionAdapter::ReflectionAdapter(void* instance, const AZ::TypeId typeId)
+    {
+        SetValue(instance, typeId);
+    }
 
     void ReflectionAdapter::SetValue(void* instance, const AZ::TypeId typeId)
     {

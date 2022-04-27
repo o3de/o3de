@@ -11,6 +11,11 @@
 
 namespace AZ::DocumentPropertyEditor
 {
+    void RoutingAdapter::ClearRoutes()
+    {
+        RemoveRoute(Dom::Path());
+    }
+
     void RoutingAdapter::AddRoute(const Dom::Path& route, DocumentAdapterPtr adapter)
     {
         if (m_rootRouter != nullptr)
