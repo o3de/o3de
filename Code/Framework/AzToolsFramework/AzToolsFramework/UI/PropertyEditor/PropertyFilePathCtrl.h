@@ -18,7 +18,6 @@
 #include "PropertyEditorAPI.h"
 #endif
 
-
 namespace AzQtComponents
 {
     class BrowseEdit;
@@ -29,8 +28,7 @@ namespace AzToolsFramework
     // A control for representing an AZ::IO::Path field with
     // a BrowseEdit whose popup button triggers a native
     // file dialog
-    class PropertyFilePathCtrl
-        : public QWidget
+    class PropertyFilePathCtrl : public QWidget
     {
         Q_OBJECT
     public:
@@ -42,7 +40,7 @@ namespace AzToolsFramework
         void SetFilter(const QString& filter);
         void SetProductExtension(const AZStd::string& extension);
         void SetDefaultFileName(const AZStd::string& fileName);
-  
+
     Q_SIGNALS:
         void FilePathChanged();
 
@@ -75,10 +73,11 @@ namespace AzToolsFramework
         bool IsDefaultHandler() const override;
 
         QWidget* CreateGUI(QWidget* parent) override;
-        void ConsumeAttribute(PropertyFilePathCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        void ConsumeAttribute(
+            PropertyFilePathCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyFilePathCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
-        bool ReadValuesIntoGUI(size_t index, PropertyFilePathCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
+        bool ReadValuesIntoGUI(size_t index, PropertyFilePathCtrl* GUI, const property_t& instance, InstanceDataNode* node) override;
     };
 
     void RegisterFilePathHandler();
-};
+} // namespace AzToolsFramework

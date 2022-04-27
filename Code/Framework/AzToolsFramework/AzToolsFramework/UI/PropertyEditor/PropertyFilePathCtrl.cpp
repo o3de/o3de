@@ -37,7 +37,8 @@ namespace AzToolsFramework
         m_browseEdit->setLineEditReadOnly(true);
         m_browseEdit->setClearButtonEnabled(true);
         m_browseEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        QObject::connect(m_browseEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &PropertyFilePathCtrl::OnOpenButtonClicked);
+        QObject::connect(
+            m_browseEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &PropertyFilePathCtrl::OnOpenButtonClicked);
 
         QToolButton* clearButton = AzQtComponents::LineEdit::getClearButton(m_browseEdit->lineEdit());
         AZ_Assert(clearButton, "Clear button missing from BrowseEdit");
@@ -111,8 +112,7 @@ namespace AzToolsFramework
             AZStd::string fullPath;
             bool fullPathIsValid;
             AssetSystemRequestBus::BroadcastResult(
-                fullPathIsValid, &AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, relativePath,
-                fullPath);
+                fullPathIsValid, &AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, relativePath, fullPath);
 
             // The full source path asset exists on disk, so use that as
             // the pre-selected file when the user opens the file picker dialog
@@ -161,8 +161,8 @@ namespace AzToolsFramework
         // Popup a native file dialog to choose a new or existing file
         // Using the AzQtComponents::FileDialog::GetSaveFileName helper will protect the user from entering
         // a filename with invalid characters for the AP
-        QString newFilePath = AzQtComponents::FileDialog::GetSaveFileName(
-            this, QObject::tr("Open/Save File"), preselectedFilePath, m_filter);
+        QString newFilePath =
+            AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Open/Save File"), preselectedFilePath, m_filter);
 
         // If the newFilePath is empty, then the dialog was cancelled,
         // so don't process any further.
@@ -178,8 +178,7 @@ namespace AzToolsFramework
         AZStd::string relativePath, rootFilePath;
         bool relativePathIsValid;
         AssetSystemRequestBus::BroadcastResult(
-            relativePathIsValid, &AssetSystemRequestBus::Events::GenerateRelativeSourcePath, absolutePath,
-            relativePath, rootFilePath);
+            relativePathIsValid, &AssetSystemRequestBus::Events::GenerateRelativeSourcePath, absolutePath, relativePath, rootFilePath);
 
         // We have a valid relative path, so update our entry.
         if (relativePathIsValid)
@@ -204,19 +203,21 @@ namespace AzToolsFramework
             errorDialog->setStandardButtons(QMessageBox::Cancel | QMessageBox::Retry);
             errorDialog->setDefaultButton(QMessageBox::Retry);
 
-            QObject::connect(errorDialog, &QDialog::finished, [this, errorDialog](int resultCode)
-            {
-                // If the user wants to retry, re-open the file dialog
-                // It will automatically be re-opened relative to the default
-                // asset safe folder (typically the project root)
-                if (resultCode == QMessageBox::Retry)
+            QObject::connect(
+                errorDialog, &QDialog::finished,
+                [this, errorDialog](int resultCode)
                 {
-                    OnOpenButtonClicked();
-                }
+                    // If the user wants to retry, re-open the file dialog
+                    // It will automatically be re-opened relative to the default
+                    // asset safe folder (typically the project root)
+                    if (resultCode == QMessageBox::Retry)
+                    {
+                        OnOpenButtonClicked();
+                    }
 
-                // Make sure our error dialog gets deleted after it is dismissed.
-                errorDialog->deleteLater();
-            });
+                    // Make sure our error dialog gets deleted after it is dismissed.
+                    errorDialog->deleteLater();
+                });
 
             errorDialog->open();
         }
@@ -230,7 +231,8 @@ namespace AzToolsFramework
         Q_EMIT FilePathChanged();
     }
 
-    void PropertyFilePathHandler::ConsumeAttribute(PropertyFilePathCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, [[maybe_unused]] const char* debugName)
+    void PropertyFilePathHandler::ConsumeAttribute(
+        PropertyFilePathCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, [[maybe_unused]] const char* debugName)
     {
         if (attrib == AZ::Edit::Attributes::SourceAssetFilterPattern)
         {
@@ -264,16 +266,19 @@ namespace AzToolsFramework
     {
         PropertyFilePathCtrl* newCtrl = aznew PropertyFilePathCtrl(parent);
 
-        QObject::connect(newCtrl, &PropertyFilePathCtrl::FilePathChanged, this, [newCtrl]()
-        {
-            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::RequestWrite, newCtrl);
-            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
-        });
+        QObject::connect(
+            newCtrl, &PropertyFilePathCtrl::FilePathChanged, this,
+            [newCtrl]()
+            {
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
+            });
 
         return newCtrl;
     }
 
-    void PropertyFilePathHandler::WriteGUIValuesIntoProperty(size_t index, PropertyFilePathCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    void PropertyFilePathHandler::WriteGUIValuesIntoProperty(
+        size_t index, PropertyFilePathCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         AZ_UNUSED(index);
         AZ_UNUSED(node);
@@ -282,7 +287,8 @@ namespace AzToolsFramework
         instance = static_cast<property_t>(filePath);
     }
 
-    bool PropertyFilePathHandler::ReadValuesIntoGUI(size_t index, PropertyFilePathCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    bool PropertyFilePathHandler::ReadValuesIntoGUI(
+        size_t index, PropertyFilePathCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         AZ_UNUSED(index);
         AZ_UNUSED(node);
@@ -301,6 +307,6 @@ namespace AzToolsFramework
         PropertyTypeRegistrationMessages::Bus::Broadcast(
             &PropertyTypeRegistrationMessages::RegisterPropertyType, aznew PropertyFilePathHandler());
     }
-}
+} // namespace AzToolsFramework
 
 #include "UI/PropertyEditor/moc_PropertyFilePathCtrl.cpp"
