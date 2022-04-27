@@ -48,7 +48,7 @@ namespace AZ::IO
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
-            m_path.InitFromAbsolutePath("Test");
+            m_path = "Test";
             m_context = new StreamerContext();
         }
 

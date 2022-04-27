@@ -102,7 +102,6 @@ namespace UnitTest
 
         void TearDown() override
         {
-
             AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
             m_settingsRegistry.reset();
 

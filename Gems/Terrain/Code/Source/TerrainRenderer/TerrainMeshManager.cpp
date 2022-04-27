@@ -37,6 +37,16 @@ namespace Terrain
         static const char* const PatchData("m_patchData");
     }
 
+    TerrainMeshManager::TerrainMeshManager()
+    {   
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+    }
+
+    TerrainMeshManager::~TerrainMeshManager()
+    {   
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
+    }
+
     void TerrainMeshManager::Initialize()
     {
         if (!InitializePatchModel())
@@ -46,7 +56,6 @@ namespace Terrain
         }
 
         OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         m_isInitialized = true;
     }
@@ -58,7 +67,6 @@ namespace Terrain
 
     void TerrainMeshManager::Reset()
     {
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         m_patchModel = {};
         m_sectorData.clear();
         m_rebuildSectors = true;
@@ -80,17 +88,19 @@ namespace Terrain
         AZ::RHI::ShaderInputConstantIndex patchDataIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::PatchData));
         AZ_Error(TerrainMeshManagerName, patchDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::PatchData);
 
-        const float xFirstPatchStart = AZStd::floorf(m_worldBounds.GetMin().GetX() / GridMeters) * GridMeters;
-        const float xLastPatchStart = AZStd::floorf(m_worldBounds.GetMax().GetX() / GridMeters) * GridMeters;
-        const float yFirstPatchStart = AZStd::floorf(m_worldBounds.GetMin().GetY() / GridMeters) * GridMeters;
-        const float yLastPatchStart = AZStd::floorf(m_worldBounds.GetMax().GetY() / GridMeters) * GridMeters;
+        const float gridMeters = GridSize * m_sampleSpacing;
+
+        const float xFirstPatchStart = AZStd::floorf(m_worldBounds.GetMin().GetX() / gridMeters) * gridMeters;
+        const float xLastPatchStart = AZStd::floorf(m_worldBounds.GetMax().GetX() / gridMeters) * gridMeters;
+        const float yFirstPatchStart = AZStd::floorf(m_worldBounds.GetMin().GetY() / gridMeters) * gridMeters;
+        const float yLastPatchStart = AZStd::floorf(m_worldBounds.GetMax().GetY() / gridMeters) * gridMeters;
 
         const auto& materialAsset = materialInstance->GetAsset();
         const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
 
-        for (float yPatch = yFirstPatchStart; yPatch <= yLastPatchStart; yPatch += GridMeters)
+        for (float yPatch = yFirstPatchStart; yPatch <= yLastPatchStart; yPatch += gridMeters)
         {
-            for (float xPatch = xFirstPatchStart; xPatch <= xLastPatchStart; xPatch += GridMeters)
+            for (float xPatch = xFirstPatchStart; xPatch <= xLastPatchStart; xPatch += gridMeters)
             {
                 ShaderTerrainData objectSrgData;
                 objectSrgData.m_xyTranslation = { xPatch, yPatch };
@@ -130,7 +140,7 @@ namespace Terrain
                 sectorData.m_aabb =
                     AZ::Aabb::CreateFromMinMax(
                         AZ::Vector3(xPatch, yPatch, m_worldBounds.GetMin().GetZ()),
-                        AZ::Vector3(xPatch + GridMeters, yPatch + GridMeters, m_worldBounds.GetMax().GetZ())
+                        AZ::Vector3(xPatch + gridMeters, yPatch + gridMeters, m_worldBounds.GetMax().GetZ())
                     );
             }
         }
@@ -139,6 +149,8 @@ namespace Terrain
 
     void TerrainMeshManager::DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process)
     {
+        const float gridMeters = GridSize * m_sampleSpacing;
+
         for (auto& sectorData : m_sectorData)
         {
             uint8_t lodChoice = AZ::RPI::ModelLodAsset::LodCountMax;
@@ -155,7 +167,7 @@ namespace Terrain
                     const float sectorDistance = sectorCenterXY.GetDistance(cameraPositionXY);
 
                     // This will be configurable later
-                    const float minDistanceForLod0 = (GridMeters * 4.0f);
+                    const float minDistanceForLod0 = (gridMeters * 4.0f);
 
                     // For every distance doubling beyond a minDistanceForLod0, we only need half the mesh density. Each LOD
                     // is exactly half the resolution of the last.
@@ -188,6 +200,11 @@ namespace Terrain
                 drawPacket.Update(scene, true);
             }
         }
+    }
+
+    void TerrainMeshManager::OnTerrainDataCreateEnd()
+    {
+        Initialize();
     }
 
     void TerrainMeshManager::OnTerrainDataDestroyBegin()
@@ -315,7 +332,7 @@ namespace Terrain
             modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "POSITION" }, AZ::Name(), {positionsOutcome.GetValue(), positionBufferViewDesc});
             modelLodAssetCreator.SetMeshIndexBuffer({indicesOutcome.GetValue(), indexBufferViewDesc});
 
-            AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0, 0.0, 0.0), AZ::Vector3(GridMeters, GridMeters, 0.0));
+            AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0, 0.0, 0.0), AZ::Vector3(GridSize, GridSize, 0.0));
             modelLodAssetCreator.SetMeshAabb(AZStd::move(aabb));
             modelLodAssetCreator.SetMeshName(AZ::Name("Terrain Patch"));
             modelLodAssetCreator.EndMesh();

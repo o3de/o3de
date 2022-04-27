@@ -93,27 +93,6 @@ def create_mesh_surface_entity_with_slopes(name, center_point, uniform_scale):
     return surface_entity
 
 
-def create_dynamic_slice_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, dynamic_slice_asset_path):
-    # Create a vegetation area entity to use as our test vegetation spawner
-    spawner_entity = hydra.Entity(name)
-    spawner_entity.create_entity(
-        center_point,
-        ["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List"]
-        )
-    if spawner_entity.id.IsValid():
-        print(f"'{spawner_entity.name}' created")
-    spawner_entity.get_set_test(1, "Box Shape|Box Configuration|Dimensions", math.Vector3(box_size_x, box_size_y,
-                                                                                          box_size_z))
-
-    # Set the vegetation area to a Dynamic Slice spawner with a specific slice asset selected
-    descriptor = hydra.get_component_property_value(spawner_entity.components[2], 'Configuration|Embedded Assets|[0]')
-    dynamic_slice_spawner = vegetation.DynamicSliceInstanceSpawner()
-    dynamic_slice_spawner.SetSliceAssetPath(dynamic_slice_asset_path)
-    descriptor.spawner = dynamic_slice_spawner
-    spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
-    return spawner_entity
-
-
 def create_temp_prefab_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, target_prefab):
     """Creates a vegetation area using in-memory prefabs. Use when test is solely contained to Editor"""
     # Create a vegetation area entity to use as our test vegetation spawner

@@ -49,7 +49,7 @@ namespace AZ
             HashValue64 seed = TypeHash64(m_constantDataBindingInfo);
             for (const auto& resourceInfo : m_resourcesRegisterMap)
             {
-                seed = TypeHash64(resourceInfo.first, seed);
+                seed = TypeHash64(resourceInfo.first.GetHash(), seed);
                 seed = TypeHash64(resourceInfo.second, seed);
             }
             return seed;

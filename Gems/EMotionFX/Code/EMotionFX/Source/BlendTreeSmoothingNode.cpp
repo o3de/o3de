@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Math/MathUtils.h>
 #include "BlendTreeSmoothingNode.h"
 #include "AnimGraphManager.h"
 #include "EMotionFXManager.h"
@@ -109,7 +110,7 @@ namespace EMotionFX
         // perform interpolation
         const float sourceValue = uniqueData->m_currentValue;
         const float interpolationSpeed = m_interpolationSpeed * uniqueData->m_frameDeltaTime * 10.0f;
-        const float interpolationResult = (interpolationSpeed < 0.99999f) ? MCore::LinearInterpolate<float>(sourceValue, destValue, interpolationSpeed) : destValue;
+        const float interpolationResult = (interpolationSpeed < 0.99999f) ? AZ::Lerp(sourceValue, destValue, interpolationSpeed) : destValue;
         // If the interpolation result is close to the dest value within the tolerance, snap to the destination value.
         if (AZ::IsClose((interpolationResult - destValue), 0.0f, m_snapTolerance))
         {

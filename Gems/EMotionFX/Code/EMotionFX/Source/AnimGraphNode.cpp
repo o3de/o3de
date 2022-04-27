@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -1128,9 +1129,9 @@ namespace EMotionFX
         nodeB->SetCurrentPlayTime(animGraphInstance, newTimeB);
         const float timeRatio       = (durationB > MCore::Math::epsilon) ? durationA / durationB : 0.0f;
         const float timeRatio2      = (durationA > MCore::Math::epsilon) ? durationB / durationA : 0.0f;
-        const float factorA         = MCore::LinearInterpolate<float>(1.0f, timeRatio, weight);
-        const float factorB         = MCore::LinearInterpolate<float>(timeRatio2, 1.0f, weight);
-        const float interpolatedSpeed   = MCore::LinearInterpolate<float>(uniqueDataA->GetPlaySpeed(), uniqueDataB->GetPlaySpeed(), weight);
+        const float factorA         = AZ::Lerp(1.0f, timeRatio, weight);
+        const float factorB         = AZ::Lerp(timeRatio2, 1.0f, weight);
+        const float interpolatedSpeed         = AZ::Lerp(uniqueDataA->GetPlaySpeed(), uniqueDataB->GetPlaySpeed(), weight);
 
         if (modifyLeaderSpeed)
         {

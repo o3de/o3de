@@ -138,6 +138,7 @@ namespace AssetProcessor
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
+        using MutexType = AZStd::recursive_mutex;
 
         virtual ~AssetBuilderInfoBusTraits() {}
 
@@ -149,7 +150,7 @@ namespace AssetProcessor
 
     using  AssetBuilderInfoBus = AZ::EBus<AssetBuilderInfoBusTraits>;
 
-    // This EBUS is used to broadcast information about the currently processing job 
+    // This EBUS is used to broadcast information about the currently processing job
     class ProcessingJobInfoBusTraits
         : public AZ::EBusTraits
     {
@@ -160,8 +161,8 @@ namespace AssetProcessor
 
         virtual ~ProcessingJobInfoBusTraits() {}
 
-        // Will notify other systems a product is about to be updated in the cache. This can mean that 
-        // it will be created, overwritten with new data or deleted. BeginCacheFileUpdate is pared with 
+        // Will notify other systems a product is about to be updated in the cache. This can mean that
+        // it will be created, overwritten with new data or deleted. BeginCacheFileUpdate is pared with
         // EndCacheFileUpdate.
         virtual void BeginCacheFileUpdate(const char* /*productPath*/) {};
         // Will notify other systems that a file in the cache has been updated along with status of whether it
@@ -184,7 +185,7 @@ namespace AssetProcessor
         // This function will either return the registry version of the next registry save or of the current one, if it is in progress
         // It will not put another save registry event in the event pump if we are currently in the process of saving the registry
         virtual int SaveRegistry() = 0;
-        
+
         // This method checks for cyclic preload dependency for all the currently processed assets.
         virtual void ValidatePreLoadDependency() = 0;
     };
@@ -235,15 +236,15 @@ namespace AssetProcessor
         //! This will return true if we were able to verify the server address as being valid, otherwise return false.
         virtual bool IsServerAddressValid() = 0;
         //! StoreJobResult should store all the files in the temp folder provided by the builderParams to the server
-        //! As well as any outputProducts which are outside the temp folder intended to be copied directly to the 
+        //! As well as any outputProducts which are outside the temp folder intended to be copied directly to the
         //! Cache without going through the temp folder
         //! It should associate those files with the server key provided by the builderParams because
         //! it will be send the same server key to retrieve these files by the client.
         //! This will return true if it was able to save all the relevant job data to the server, otherwise return false.
         virtual bool StoreJobResult(const AssetProcessor::BuilderParams& builderParams, AZStd::vector<AZStd::string>& sourceFileList) = 0;
-        //! RetrieveJobResult should retrieve all the files associated with the server key provided in the builderParams 
+        //! RetrieveJobResult should retrieve all the files associated with the server key provided in the builderParams
         //! and put them in the temporary directory provided by the builderParam.
-        //! This will return true if it was able to retrieve all the relevant job data from the server, otherwise return false. 
+        //! This will return true if it was able to retrieve all the relevant job data from the server, otherwise return false.
         virtual bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) = 0;
     };
 

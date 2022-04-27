@@ -58,3 +58,9 @@ namespace ScriptCanvasBuilder
 
     AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree);
 }
+
+namespace AZStd
+{
+    AZStd::string to_string(const ScriptCanvasBuilder::BuildVariableOverrides& overrides);
+}
+

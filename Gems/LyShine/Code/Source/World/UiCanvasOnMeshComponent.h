@@ -12,6 +12,7 @@
 #include <LyShine/Bus/World/UiCanvasOnMeshBus.h>
 #include <LyShine/Bus/UiCanvasManagerBus.h>
 #include <AzCore/Math/Vector3.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 
 struct IPhysicalEntity;
 
@@ -19,7 +20,7 @@ namespace AzFramework
 {
     namespace RenderGeometry
     {
-        struct RayResult;
+        struct RayRequest;
     }
 }
 
@@ -37,7 +38,9 @@ public: // member functions
     UiCanvasOnMeshComponent();
 
     // UiCanvasOnMeshInterface
-    bool ProcessHitInputEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AzFramework::RenderGeometry::RayResult& rayResult) override;
+    bool ProcessHitInputEvent(
+        const AzFramework::InputChannel::Snapshot& inputSnapshot,
+        const AzFramework::RenderGeometry::RayRequest& rayRequest) override;
     // ~UiCanvasOnMeshInterface
 
 
@@ -69,6 +72,11 @@ public: // static member functions
 
     static void Reflect(AZ::ReflectContext* context);
 
+private: // static member functions
+
+    static bool VersionConverter(AZ::SerializeContext& context,
+        AZ::SerializeContext::DataElementNode& classElement);
+
 protected: // member functions
 
     // AZ::Component
@@ -76,7 +84,7 @@ protected: // member functions
     void Deactivate() override;
     // ~AZ::Component
 
-    bool ProcessCollisionInputEventInternal(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AzFramework::RenderGeometry::RayResult& rayResult);
+    bool CalculateUVFromRayIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, AZ::Vector2& outUv);
 
     AZ::EntityId GetCanvas();
 
@@ -84,6 +92,6 @@ protected: // member functions
 
 protected: // data
 
-    //! Render target name to use (overrides the render target name in the UI canvas)
-    AZStd::string m_renderTargetOverride;
+    //! Render target asset to use (overrides the render target asset in the UI canvas)
+    AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_attachmentImageAssetOverride;
 };

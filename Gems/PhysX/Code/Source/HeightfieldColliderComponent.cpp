@@ -71,8 +71,6 @@ namespace PhysX
         ColliderShapeRequestBus::Handler::BusConnect(entityId);
         Physics::CollisionFilteringRequestBus::Handler::BusConnect(entityId);
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
-
-        RefreshHeightfield();
     }
 
     void HeightfieldColliderComponent::Deactivate()
@@ -86,9 +84,10 @@ namespace PhysX
         ClearHeightfield();
     }
 
-    void HeightfieldColliderComponent::OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion)
+    void HeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
-        RefreshHeightfield();
+        RefreshHeightfield(changeMask, dirtyRegion);
     }
 
     void HeightfieldColliderComponent::ClearHeightfield()
@@ -146,7 +145,9 @@ namespace PhysX
         Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), colliderConfig->m_materialSelection);
     }
 
-    void HeightfieldColliderComponent::RefreshHeightfield()
+    void HeightfieldColliderComponent::RefreshHeightfield( 
+        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
+        [[maybe_unused]] const AZ::Aabb& dirtyRegion)
     {
         ClearHeightfield();
         InitHeightfieldShapeConfiguration();

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <Editor/ColliderComponentMode.h>
 #include <EditorHeightfieldColliderComponent.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
@@ -92,6 +93,8 @@ namespace PhysX
                       AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
               })
     {
+        // By default, disable heightfield collider debug drawing. This doesn't need to be viewed in the common case.
+        m_colliderDebugDraw.SetDisplayFlag(false);
     }
 
     EditorHeightfieldColliderComponent ::~EditorHeightfieldColliderComponent()
@@ -129,8 +132,6 @@ namespace PhysX
         Physics::HeightfieldProviderNotificationBus::Handler::BusConnect(entityId);
         PhysX::ColliderShapeRequestBus::Handler::BusConnect(entityId);
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
-
-        RefreshHeightfield();
     }
 
     void EditorHeightfieldColliderComponent::Deactivate()
@@ -153,9 +154,10 @@ namespace PhysX
             { AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), m_shapeConfig });
     }
 
-    void EditorHeightfieldColliderComponent::OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion)
+    void EditorHeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
-        RefreshHeightfield();
+        RefreshHeightfield(changeMask, dirtyRegion);
     }
 
     void EditorHeightfieldColliderComponent::ClearHeightfield()
@@ -207,14 +209,81 @@ namespace PhysX
         *m_shapeConfig = Utils::CreateHeightfieldShapeConfiguration(GetEntityId());
     }
 
-    void EditorHeightfieldColliderComponent::RefreshHeightfield()
+    void EditorHeightfieldColliderComponent::RefreshHeightfield(
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
+        const AZ::Aabb& dirtyRegion)
     {
-        ClearHeightfield();
-        InitHeightfieldShapeConfiguration();
+        using Physics::HeightfieldProviderNotifications;
 
-        if (!m_shapeConfig->GetSamples().empty())
+        if (HeightfieldChangeMask::DestroyBegin == (changeMask & HeightfieldChangeMask::DestroyBegin) ||
+            HeightfieldChangeMask::DestroyEnd == (changeMask & HeightfieldChangeMask::DestroyEnd))
         {
-            InitStaticRigidBody();
+            // Clear the entire terrain if destroying
+            ClearHeightfield();
+            Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+            return;
+        }
+
+        AZ::Aabb heightfieldAabb = GetColliderShapeAabb();
+        AZ::Aabb requestRegion = dirtyRegion;
+
+        if (!requestRegion.IsValid())
+        {
+            requestRegion = heightfieldAabb;
+        }
+
+        // Early out if the updated region is outside of the heightfield Aabb
+        if (heightfieldAabb.Disjoint(requestRegion))
+        {
+            return;
+        }
+
+        // Clamp requested region to the entire heightfield AABB
+        requestRegion.Clamp(heightfieldAabb);
+
+        // if dirty region invalid, recreate the entire heightfield, otherwise request samples
+        bool shouldRecreateHeightfield = (m_shapeConfig == nullptr) ||
+            (HeightfieldChangeMask::CreateEnd == (changeMask & HeightfieldChangeMask::CreateEnd));
+
+        // Check if dirtyRegion covers the entire terrain
+        shouldRecreateHeightfield = shouldRecreateHeightfield || (requestRegion == heightfieldAabb);
+
+        // Check if base configuration parameters have changed
+        if (!shouldRecreateHeightfield)
+        {
+            Physics::HeightfieldShapeConfiguration baseConfiguration = Utils::CreateBaseHeightfieldShapeConfiguration(GetEntityId());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumRows() != m_shapeConfig->GetNumRows());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumColumns() != m_shapeConfig->GetNumColumns());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetMinHeightBounds() != m_shapeConfig->GetMinHeightBounds());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetMaxHeightBounds() != m_shapeConfig->GetMaxHeightBounds());
+        }
+
+        if (shouldRecreateHeightfield)
+        {
+            ClearHeightfield();
+            InitHeightfieldShapeConfiguration();
+
+            if (!m_shapeConfig->GetSamples().empty())
+            {
+                InitStaticRigidBody();
+            }
+        }
+        else
+        {
+            // Update m_shapeConfig
+            Physics::HeightfieldProviderRequestsBus::Event(GetEntityId(),
+                &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterials,
+                [this](int32_t row, int32_t col, const Physics::HeightMaterialPoint& point)
+                {
+                    m_shapeConfig->ModifySample(row, col, point);
+                },
+                requestRegion);
+
+            if (!m_shapeConfig->GetSamples().empty())
+            {
+                ClearHeightfield();
+                InitStaticRigidBody();
+            }
         }
 
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
@@ -222,7 +291,7 @@ namespace PhysX
 
     AZ::u32 EditorHeightfieldColliderComponent::OnConfigurationChanged()
     {
-        RefreshHeightfield();
+        RefreshHeightfield(Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 

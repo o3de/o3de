@@ -21,7 +21,7 @@
 #include <Atom/Feature/Material/MaterialAssignmentId.h>
 
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h> 
 #include <Atom/Feature/LookupTable/LookupTableAsset.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <CubeMapCapture/CubeMapCaptureFeatureProcessor.h>
@@ -41,15 +41,11 @@
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <ColorGrading/LutGenerationPass.h>
+#include <Debug/RenderDebugFeatureProcessor.h> 
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcessing/BlendColorGradingLutsPass.h>
 #include <PostProcessing/BloomParentPass.h>
 #include <PostProcessing/HDRColorGradingPass.h>
-#include <PostProcessing/EditorModeFeedbackParentPass.h>
-#include <PostProcessing/EditorModeDesaturationPass.h>
-#include <PostProcessing/EditorModeTintPass.h>
-#include <PostProcessing/EditorModeBlurPass.h>
-#include <PostProcessing/EditorModeOutlinePass.h>
 #include <PostProcessing/DepthUpsamplePass.h>
 #include <PostProcessing/DepthOfFieldCompositePass.h>
 #include <PostProcessing/DepthOfFieldBokehBlurPass.h>
@@ -73,6 +69,7 @@
 #include <PostProcessing/BloomDownsamplePass.h>
 #include <PostProcessing/BloomBlurPass.h>
 #include <PostProcessing/BloomCompositePass.h>
+#include <PostProcessing/ChromaticAberrationPass.h>
 #include <ScreenSpace/DeferredFogPass.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 #include <SkyBox/SkyBoxFogSettings.h>
@@ -150,6 +147,7 @@ namespace AZ
             ImGuiPassData::Reflect(context);
             RayTracingPassData::Reflect(context);
             TaaPassData::Reflect(context);
+            RenderDebugFeatureProcessor::Reflect(context);
 
             LightingPreset::Reflect(context);
             ModelPreset::Reflect(context);
@@ -209,6 +207,7 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<PostProcessFeatureProcessor, PostProcessFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<AcesDisplayMapperFeatureProcessor, DisplayMapperFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ProjectedShadowFeatureProcessor, ProjectedShadowFeatureProcessorInterface>();
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<RenderDebugFeatureProcessor, RenderDebugFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ReflectionProbeFeatureProcessor, ReflectionProbeFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<CubeMapCaptureFeatureProcessor, CubeMapCaptureFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<SMAAFeatureProcessor>();
@@ -236,11 +235,6 @@ namespace AZ
             passSystem->AddPassCreator(Name("LightCullingTilePreparePass"), &LightCullingTilePreparePass::Create);
             passSystem->AddPassCreator(Name("BlendColorGradingLutsPass"), &BlendColorGradingLutsPass::Create);
             passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeFeedbackParentPass"), &EditorModeFeedbackParentPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
             passSystem->AddPassCreator(Name("LutGenerationPass"), &LutGenerationPass::Create);
@@ -286,6 +280,9 @@ namespace AZ
             passSystem->AddPassCreator(Name("BloomDownsamplePass"), &BloomDownsamplePass::Create);
             passSystem->AddPassCreator(Name("BloomBlurPass"), &BloomBlurPass::Create);
             passSystem->AddPassCreator(Name("BloomCompositePass"), &BloomCompositePass::Create);
+
+            // Add Chromatic Aberration
+            passSystem->AddPassCreator(Name("ChromaticAberrationPass"), &ChromaticAberrationPass::Create);
 
             // Add Diffuse Global Illumination passes
             passSystem->AddPassCreator(Name("RayTracingAccelerationStructurePass"), &Render::RayTracingAccelerationStructurePass::Create);
@@ -346,6 +343,7 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<TransformServiceFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AuxGeomFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();
+            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RenderDebugFeatureProcessor>();
         }
 
         void CommonSystemComponent::LoadPassTemplateMappings()

@@ -250,51 +250,48 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::CreateProject()
     {
-        if (ProjectUtils::FindSupportedCompiler(this))
+        if (m_newProjectSettingsScreen->Validate())
         {
-            if (m_newProjectSettingsScreen->Validate())
+            if (!m_gemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
             {
-                if (!m_gemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
-                {
-                    QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
-                    return;
-                }
+                QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
+                return;
+            }
 
-                ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
-                QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+            ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
+            QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
 
-                auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
-                if (result.IsSuccess())
-                {
-                    // automatically register the project
-                    PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
+            auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
+            if (result.IsSuccess())
+            {
+                // automatically register the project
+                PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
-                    const GemCatalogScreen::EnableDisableGemsResult gemResult = m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
-                    if (gemResult == GemCatalogScreen::EnableDisableGemsResult::Failed)
-                    {
-                        QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
-                    }
-                    if (gemResult != GemCatalogScreen::EnableDisableGemsResult::Success)
-                    {
-                        return;
-                    }
+                const GemCatalogScreen::EnableDisableGemsResult gemResult = m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
+                if (gemResult == GemCatalogScreen::EnableDisableGemsResult::Failed)
+                {
+                    QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
+                }
+                if (gemResult != GemCatalogScreen::EnableDisableGemsResult::Success)
+                {
+                    return;
+                }
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
-                    projectInfo.m_needsBuild = true;
-                    emit NotifyBuildProject(projectInfo);
-                    emit ChangeScreenRequest(ProjectManagerScreen::Projects);
-                }
-                else
-                {
-                    QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
-                }
+                projectInfo.m_needsBuild = true;
+                emit NotifyBuildProject(projectInfo);
+                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
             else
             {
-                QMessageBox::warning(
-                    this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
+                QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
             }
+        }
+        else
+        {
+            QMessageBox::warning(
+                this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
         }
     }
 

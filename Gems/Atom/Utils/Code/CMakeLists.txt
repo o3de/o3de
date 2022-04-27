@@ -25,7 +25,7 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Public
             Gem::ImGui.imguilib
-            3rdParty::libpng
+            3rdParty::PNG
             Gem::ProfilerImGui
 )
 

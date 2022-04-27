@@ -30,6 +30,20 @@
 
 namespace Terrain
 {
+    struct DetailMaterialConfiguration
+    {
+        AZ_CLASS_ALLOCATOR(DetailMaterialConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(DetailMaterialConfiguration, "{D2A2EFBB-B0C2-4363-9B32-15B9ACD52902}");
+
+        DetailMaterialConfiguration() = default;
+        virtual ~DetailMaterialConfiguration() = default;
+
+        bool m_useHeightBasedBlending = false;
+        float m_renderDistance = 512.0f;
+        float m_fadeDistance = 64.0f;
+        float m_scale = 1.0f;
+    };
+
     class TerrainDetailMaterialManager
         : private AzFramework::Terrain::TerrainDataNotificationBus::Handler
         , private TerrainAreaMaterialNotificationBus::Handler
@@ -44,12 +58,15 @@ namespace Terrain
         
         void Initialize(
             const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+            const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
+            const AZ::Data::Instance<AZ::RPI::Material>& materialInstance);
         bool IsInitialized() const;
         void Reset();
-        bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
+        bool UpdateSrgIndices(const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
 
         void Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+
+        void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& params);
 
     private:
         
@@ -105,6 +122,7 @@ namespace Terrain
             float m_heightOffset{ 0.0f };
 
             float m_heightBlendFactor{ 0.5f };
+            float m_heightWeightClampFactor{ 0.1f };
 
             // Flags
             DetailTextureFlags m_flags{ 0 };
@@ -122,7 +140,6 @@ namespace Terrain
             // 16 byte aligned
             uint16_t m_padding1{ 0 };
             uint32_t m_padding2{ 0 };
-            uint32_t m_padding3{ 0 };
         };
         static_assert(sizeof(DetailMaterialShaderData) % 16 == 0, "DetailMaterialShaderData must be 16 byte aligned.");
 
@@ -165,9 +182,8 @@ namespace Terrain
         static constexpr auto InvalidDetailMaterialId = DetailMaterialContainer::NoFreeSlot;
         
         // System-level parameters
-        static constexpr int32_t DetailTextureSize{ 1024 };
-        static constexpr int32_t DetailTextureSizeHalf{ DetailTextureSize / 2 };
-        static constexpr float DetailTextureScale{ 0.5f };
+        int32_t m_detailTextureSize{ 1024 };
+        float m_detailTextureScale{ 0.5f };
         
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
@@ -213,6 +229,12 @@ namespace Terrain
         //! Initializes shader data for the default passthrough material which is used when no other detail material is found.
         void InitializePassthroughDetailMaterial();
 
+        //! Updates data regarding the material ID texture and resets it so it will get rebuilt.
+        void InitializeTextureParams();
+
+        //! Updates paramters related to detail materials on the terrain material itself.
+        void UpdateTerrainMaterial();
+
         using DefaultMaterialSurfaceCallback = AZStd::function<void(DetailMaterialSurface&)>;
         bool ForSurfaceTag(DetailMaterialListRegion& materialRegion,
             SurfaceData::SurfaceTag surfaceTag, DefaultMaterialSurfaceCallback callback);
@@ -220,9 +242,12 @@ namespace Terrain
         DetailMaterialListRegion& FindOrCreateByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
         void RemoveByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
 
+        DetailMaterialConfiguration m_config;
+
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
+        AZ::Data::Instance<AZ::RPI::Material> m_terrainMaterial;
 
         DetailMaterialContainer m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;

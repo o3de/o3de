@@ -93,7 +93,6 @@ namespace Terrain
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> TerrainPhysicsSurfaceMaterialMapping::BuildSelectableTagList() const
     {
-        AZ_PROFILE_FUNCTION(Entity);
         return AZStd::move(Terrain::BuildSelectableTagList(m_tagListProvider, m_surfaceTag));
     }
 

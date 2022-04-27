@@ -45,9 +45,12 @@ def _find_engine_root(initial_path):
 
 
 def _find_project_json(engine_root, project):
-    # type (None) -> str
+    # type (str, str) -> str
     """
     Find the project.json file for this project.
+
+    :param engine_root: The root of the O3DE directory where engine.json exists
+    :param project: The name of the O3DE project
     :return: Full path to the project.json file
     """
     project_json = None
@@ -57,7 +60,15 @@ def _find_project_json(engine_root, project):
     if os.path.isfile(manifest_json):
         # Read the o3de_manifest.json 
         with open(manifest_json, "r") as manifest_file:
-            json_data = json.load(manifest_file)
+
+            # Try to load the contents of the o3de_manifest.json file
+            try:
+                manifest_file_contents = manifest_file.read()
+                json_data = json.loads(manifest_file_contents)
+            except json.JSONDecodeError as jderror:
+                logger.error(f"Attempted to open the contents of {manifest_json}, found invalid JSON: {manifest_file_contents}")
+                raise jderror
+
             # Look at the "projects" key for registered project paths
             try:
                 for projects_path in json_data["projects"]:
@@ -73,15 +84,16 @@ def _find_project_json(engine_root, project):
             except KeyError as err:
                 logger.warning(f"Project key could not be found due to error: {err}")
 
-    # Check relative to defined build directory, for external projects which configure through SDK settings
-    if not project_json:
-        project_json = find_ancestor_file(target_file_name='project.json',
-                                          start_path=ly_test_tools._internal.pytest_plugin.build_directory)
     # Check internally for a project bundled with the engine
     if not project_json:
         check_project_json = os.path.join(engine_root, project, 'project.json')
         if os.path.isfile(check_project_json):
             project_json = check_project_json
+
+    # Check relative to defined build directory, for external projects which configure through SDK settings
+    if not project_json:
+        project_json = find_ancestor_file(target_file_name='project.json',
+                                          start_path=ly_test_tools._internal.pytest_plugin.build_directory)
 
     if not project_json:
         raise OSError(f"Unable to find the project directory for project: ${project}")

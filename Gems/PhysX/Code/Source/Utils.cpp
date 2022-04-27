@@ -1561,7 +1561,7 @@ namespace PhysX
             return entityWorldTransformWithoutScale * jointLocalTransformWithoutScale;
         }
         
-        Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId)
+        Physics::HeightfieldShapeConfiguration CreateBaseHeightfieldShapeConfiguration(AZ::EntityId entityId)
         {
             Physics::HeightfieldShapeConfiguration configuration;
 
@@ -1574,7 +1574,7 @@ namespace PhysX
             int32_t numRows = 0;
             int32_t numColumns = 0;
             Physics::HeightfieldProviderRequestsBus::Event(
-                            entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
+                entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
 
             configuration.SetNumRows(numRows);
             configuration.SetNumColumns(numColumns);
@@ -1586,6 +1586,13 @@ namespace PhysX
 
             configuration.SetMinHeightBounds(minHeightBounds);
             configuration.SetMaxHeightBounds(maxHeightBounds);
+
+            return configuration;
+        }
+
+        Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId)
+        {
+            Physics::HeightfieldShapeConfiguration configuration = CreateBaseHeightfieldShapeConfiguration(entityId);
 
             AZStd::vector<Physics::HeightMaterialPoint> samples;
             Physics::HeightfieldProviderRequestsBus::EventResult(

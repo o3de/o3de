@@ -50,7 +50,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Metallic.lua"
+                "file": "Materials/Types/StandardPBR_Metallic.lua"
             }
         }
     ]

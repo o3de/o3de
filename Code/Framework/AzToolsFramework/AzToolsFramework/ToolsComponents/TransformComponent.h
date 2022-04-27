@@ -161,6 +161,8 @@ namespace AzToolsFramework
             void UpdateCachedWorldTransform();
             void ClearCachedWorldTransform();
 
+            bool ShowClearButtonHandler();
+
             // SliceEntityHierarchyRequestBus
             AZ::EntityId GetSliceEntityParentId() override;
             AZStd::vector<AZ::EntityId> GetSliceEntityChildren() override;

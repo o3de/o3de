@@ -1583,8 +1583,12 @@ namespace AssetUtilities
             {
                 std::string dummy;
                 std::istringstream stream(message);
+                AZ::s64 errorCount, warningCount;
 
-                stream >> dummy >> m_errorCount >> dummy >> m_warningCount;
+                stream >> dummy >> errorCount >> dummy >> warningCount;
+
+                m_errorCount += errorCount;
+                m_warningCount += warningCount;
             }
 
             if (azstrnicmp(window, "debug", 5) == 0)

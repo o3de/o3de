@@ -79,7 +79,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Roughness.lua"
+                "file": "Materials/Types/StandardPBR_Roughness.lua"
             }
         }
     ]

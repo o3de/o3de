@@ -79,22 +79,41 @@ namespace LmbrCentral
 
     void BoxShape::InvalidateCache(InvalidateShapeCacheReason reason)
     {
-        m_intersectionDataCache.InvalidateCache(reason);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_intersectionDataCache.InvalidateCache(reason);
+        }
     }
 
     void BoxShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        m_currentTransform = world;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
-        ShapeComponentNotificationsBus::Event(
-            m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+        bool shapeChanged = false;
+                
+        {
+            AZStd::unique_lock lock(m_mutex);
+            if (m_currentTransform != world)
+            {
+                m_currentTransform = world;
+                m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+                shapeChanged = true;
+            }
+        }
+        
+        if (shapeChanged)
+        {
+            ShapeComponentNotificationsBus::Event(
+                m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+        }
     }
 
     void BoxShape::OnNonUniformScaleChanged(const AZ::Vector3& scale)
     {
-        m_currentNonUniformScale = scale;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_currentNonUniformScale = scale;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
@@ -102,8 +121,11 @@ namespace LmbrCentral
 
     void BoxShape::SetBoxDimensions(const AZ::Vector3& dimensions)
     {
-        m_boxShapeConfig.m_dimensions = dimensions;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_boxShapeConfig.m_dimensions = dimensions;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
@@ -111,7 +133,9 @@ namespace LmbrCentral
 
     AZ::Aabb BoxShape::GetEncompassingAabb()
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_currentNonUniformScale);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
+
         return m_intersectionDataCache.m_aabb;
     }
 
@@ -124,7 +148,8 @@ namespace LmbrCentral
 
     bool BoxShape::IsPointInside(const AZ::Vector3& point)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_currentNonUniformScale);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
 
         if (m_intersectionDataCache.m_axisAligned)
         {
@@ -136,7 +161,8 @@ namespace LmbrCentral
 
     float BoxShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_currentNonUniformScale);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
 
         if (m_intersectionDataCache.m_axisAligned)
         {
@@ -148,7 +174,8 @@ namespace LmbrCentral
 
     bool BoxShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_currentNonUniformScale);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
 
         if (m_intersectionDataCache.m_axisAligned)
         {
@@ -172,7 +199,8 @@ namespace LmbrCentral
 
     AZ::Vector3 BoxShape::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_currentNonUniformScale);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
 
         float x = 0;
         float y = 0;

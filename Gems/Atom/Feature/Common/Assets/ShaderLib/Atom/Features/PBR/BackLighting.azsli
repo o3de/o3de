@@ -44,7 +44,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
 #if ENABLE_TRANSMISSION
 
     float thickness = 0.0; 
-    float4 transmissionParams = surface.transmission.transmissionParams;
+    TransmissionSurfaceData transmission = surface.transmission;
 
     switch(o_transmission_mode)
     {
@@ -56,9 +56,9 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             // https://colinbarrebrisebois.com/2011/03/07/gdc-2011-approximating-translucency-for-a-fast-cheap-and-convincing-subsurface-scattering-look/
 
             {
-                thickness = max(transmissionDistance, surface.transmission.thickness);
-                float transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.normal * transmissionParams.z ) ) ), transmissionParams.y ) * transmissionParams.w;
-                float lamberAttenuation = exp(-thickness * transmissionParams.x) * saturate(1.0 - thickness);
+                thickness = max(transmissionDistance, transmission.thickness);
+                float transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.normal * transmission.GetDistortion() ) ) ), transmission.GetPower() ) * transmission.GetScale();
+                float lamberAttenuation = exp(-thickness * transmission.GetAttenuationCoefficient()) * saturate(1.0 - thickness);
                 result = transmittance * lamberAttenuation * lightIntensity;
             }
             break;
@@ -75,27 +75,29 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 }
 
                 // Irradiance arround surface point. 
-                // Albedo at front (surface point) is used to approximate irradiance at the back of the object (observation 4 in [Jimenez J. et al, 2010])
-                // Increase angle of influence to smooth transition regions
-                float3 E = surface.albedo * saturate(lightingData.transmissionNdLBias + dot(-surface.normal, dirToLight));
+                // Albedo at front (surface point) is used to approximate irradiance at the back of the 
+                // object (observation 4 in [Jimenez J. et al, 2010])
+                // Increase angle of influence to avoid dark transition regions
+                float3 E = surface.albedo * saturate(transmission.GetTransmissionNdLBias() + dot(-surface.normal, dirToLight));
 
-                // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter (in this case modulating the distance traversed by the light inside the object)
+                // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter 
+                // (in this case modulating the distance traversed by the light inside the object)
                 const float C = 300.0f;
-                float s = transmissionDistance * C * surface.transmission.thickness;
+                float s = transmissionDistance * C * transmission.thickness;
                 
                 // Use scattering color to weight thin object transmission color
-                const float3 invScattering = rcp(max(surface.transmission.scatterDistance, float(0.00001)));
+                const float3 invScattering = rcp(max(transmission.scatterDistance, float(0.00001)));
                 
 #ifndef USE_HUMAN_SKIN_PROFILE
                 // Generic profile based on scatter color
-                result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmissionParams.w;
+                result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmission.GetScale();
 #else // USE_HUMAN_SKIN_PROFILE
                 // Profile specific to human skin
-                result = T(s) * lightIntensity * E * transmissionParams.w;
+                result = T(s) * lightIntensity * E * transmission.GetScale();
 #endif
 
                 // Distance attenuation applied to hide artifacts due to low-res projected areas onto shadowmaps (might need some work in the future)
-                result /= max(1.0, attenuationDistance * attenuationDistance * lightingData.distanceAttenuation);
+                result /= max(1.0, attenuationDistance * attenuationDistance * transmission.GetDistanceAttenuation());
             }
             break;
     }

@@ -210,8 +210,7 @@ namespace AtomToolsFramework
         }
 
         // Attempt to select the new path
-        AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(
-            &AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Events::SelectFileAtPath, m_pathToSelect);
+        m_ui->m_assetBrowserTreeViewWidget->SelectFileAtPath(m_pathToSelect);
 
         // Iterate over the selected entries to verify if the selection was made
         for (const AssetBrowserEntry* entry : m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets())

@@ -36,6 +36,19 @@ partial ShaderResourceGroup SceneSrg
     float4 m_iblOrientation;
     float m_iblExposure;
     
+    // --- Debugging ---
+
+    bool m_debuggingEnabled;
+
+    // Material debug overrides...
+    float3 m_debugOverrideBaseColor;
+    float m_debugOverrideRoughness;
+    float m_debugOverrideMetallic;
+
+    // Specifies a lighting direction and intensity for debug purposes 
+    float3 m_debugLightingDirection;
+    float3 m_debugLightingIntensity;
+
     Sampler m_samplerEnv
     {
         AddressU = Wrap;

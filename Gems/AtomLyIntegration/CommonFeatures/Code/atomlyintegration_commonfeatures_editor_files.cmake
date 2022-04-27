@@ -22,6 +22,8 @@ set(FILES
     Source/CubeMapCapture/EditorCubeMapRenderer.cpp
     Source/CubeMapCapture/EditorCubeMapCaptureComponent.h
     Source/CubeMapCapture/EditorCubeMapCaptureComponent.cpp
+    Source/Debug/RenderDebugEditorComponent.cpp
+    Source/Debug/RenderDebugEditorComponent.h
     Source/Decals/EditorDecalComponent.h
     Source/Decals/EditorDecalComponent.cpp
     Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h
@@ -64,10 +66,10 @@ set(FILES
     Source/PostProcess/EditorPostFxLayerComponent.h
     Source/PostProcess/Bloom/EditorBloomComponent.cpp
     Source/PostProcess/Bloom/EditorBloomComponent.h
+    Source/PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.cpp
+    Source/PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.cpp
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.h
-    Source/PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.cpp
-    Source/PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.h
     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.cpp
     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.h
     Source/PostProcess/DisplayMapper/EditorDisplayMapperComponent.cpp

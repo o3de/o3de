@@ -19,7 +19,7 @@ namespace AZ
 
     namespace Render
     {
-        enum class PhotometricUnit : char
+        enum class PhotometricUnit : AZ::u8
         {
             Lumen,              // Total amount of luminous power emitted. Since a unit sphere is 4 pi steradians, 1 candela emitting uniformly in all directions is 4 pi lumens.
             Candela,            // Base unit of luminous intensity; luminous power per unit solid angle.

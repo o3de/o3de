@@ -1,0 +1,63 @@
+{
+    // Applies an outlining effect as controlled by the line thickness
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "EditorModeOutlineTemplate",
+            "PassClass": "EditorModeOutlinePass",
+            "Slots": [
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depth",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputEntityMask",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_entityMask",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_maskDimensions"
+                },
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_framebuffer",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "ColorInputOutput"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "InputColor",
+                    "Output" : "OutputColor"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/EditorModeOutline.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

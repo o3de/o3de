@@ -174,7 +174,7 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    void PrefabUiHandler::PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
+    void PrefabUiHandler::PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
         const QModelIndex& descendantIndex) const
     {
         if (!painter)
@@ -185,18 +185,49 @@ namespace AzToolsFramework
 
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
+        // If the owning prefab is focused, the border will be painted in the foreground.
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            return;
+        }
+        
+        QColor borderColor = m_prefabCapsuleDisabledColor;
+        if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
+        {
+            borderColor = m_prefabCapsuleColor;
+        }
+
+        PaintDescendantBorder(painter, option, index, descendantIndex, borderColor);
+    }
+
+    void PrefabUiHandler::PaintDescendantForeground(
+        QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QModelIndex& descendantIndex) const
+    {
+        if (!painter)
+        {
+            AZ_Warning("PrefabUiHandler", false, "PrefabUiHandler - painter is nullptr, can't draw Prefab outliner background.");
+            return;
+        }
+
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+
+        // If the owning prefab is not focused, the border will be painted in the background.
+        if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            return;
+        }
+
+        PaintDescendantBorder(painter, option, index, descendantIndex, m_prefabCapsuleEditColor);
+    }
+
+    void PrefabUiHandler::PaintDescendantBorder(
+        QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QModelIndex& descendantIndex, const QColor borderColor) const
+    {
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
         const int curveRectSize = m_prefabCapsuleRadius * 2;
         const bool isFirstColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
-
-        // There is no legal way of opening prefabs in their default state, so default to disabled.
-        QColor borderColor = m_prefabCapsuleDisabledColor;
-        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
-        {
-            borderColor = m_prefabCapsuleEditColor;
-        }
 
         QPen borderLinePen(borderColor, m_prefabBorderThickness);
 

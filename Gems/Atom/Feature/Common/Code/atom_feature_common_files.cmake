@@ -118,8 +118,10 @@ set(FILES
     Source/CubeMapCapture/CubeMapCapture.cpp
     Source/CubeMapCapture/CubeMapRenderer.h
     Source/CubeMapCapture/CubeMapRenderer.cpp
-    Source/Decals/DecalFeatureProcessor.h
-    Source/Decals/DecalFeatureProcessor.cpp
+    Source/Debug/RenderDebugFeatureProcessor.h
+    Source/Debug/RenderDebugFeatureProcessor.cpp
+    Source/Debug/RenderDebugSettings.h
+    Source/Debug/RenderDebugSettings.cpp
     Source/Decals/DecalTextureArray.h
     Source/Decals/DecalTextureArray.cpp
     Source/Decals/AsyncLoadTracker.h
@@ -213,6 +215,8 @@ set(FILES
     Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.h
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.cpp
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.h
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.cpp
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.h
     Source/PostProcess/ExposureControl/ExposureControlSettings.cpp
@@ -233,18 +237,8 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
-    Source/PostProcessing/EditorModeFeedbackParentPass.cpp
-    Source/PostProcessing/EditorModeFeedbackParentPass.h
-    Source/PostProcessing/EditorModeFeedbackPassBase.cpp
-    Source/PostProcessing/EditorModeFeedbackPassBase.h
-    Source/PostProcessing/EditorModeDesaturationPass.cpp
-    Source/PostProcessing/EditorModeDesaturationPass.h
-    Source/PostProcessing/EditorModeTintPass.cpp
-    Source/PostProcessing/EditorModeTintPass.h
-    Source/PostProcessing/EditorModeBlurPass.cpp
-    Source/PostProcessing/EditorModeBlurPass.h
-    Source/PostProcessing/EditorModeOutlinePass.cpp
-    Source/PostProcessing/EditorModeOutlinePass.h
+    Source/PostProcessing/ChromaticAberrationPass.h
+    Source/PostProcessing/ChromaticAberrationPass.cpp
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h
@@ -298,6 +292,8 @@ set(FILES
     Source/PostProcessing/TaaPass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
+    Source/RayTracing/RayTracingResourceList.h
+    Source/RayTracing/RayTracingIndexList.h
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
     Source/RayTracing/RayTracingPass.cpp

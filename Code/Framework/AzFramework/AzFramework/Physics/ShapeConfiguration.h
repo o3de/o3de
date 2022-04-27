@@ -228,6 +228,7 @@ namespace Physics
         int32_t GetNumRows() const;
         void SetNumRows(int32_t numRows);
         const AZStd::vector<Physics::HeightMaterialPoint>& GetSamples() const;
+        void ModifySample(int32_t row, int32_t column, const Physics::HeightMaterialPoint& point);
         void SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples);
         float GetMinHeightBounds() const;
         void SetMinHeightBounds(float minBounds);

@@ -17,7 +17,7 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 if [[ "$OSTYPE" == *"darwin"* ]]; then
-    PYTHON=$DIR/runtime/python-3.7.12-rev2-darwin/Python.framework/Versions/3.7/bin/python3
+    PYTHON=$DIR/runtime/python-3.7.12-rev3-darwin/Python.framework/Versions/3.7/bin/python3
 elif [[ "$OSTYPE" == "msys" ]]; then
     PYTHON=$DIR/runtime/python-3.7.12-rev2-windows/python/python.exe
 else

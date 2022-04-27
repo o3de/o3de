@@ -197,7 +197,7 @@ namespace AZ
         {
             return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
                 AZStd::string::format("Failed to retrieve serialization information for type %s.",
-                    classElement.m_typeId.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str()));
+                    classElement.m_typeId.ToFixedString().c_str()));
         }
         if (!elementClassData->m_azRtti)
         {
