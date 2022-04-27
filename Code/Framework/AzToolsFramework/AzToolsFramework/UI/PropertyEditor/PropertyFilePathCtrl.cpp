@@ -40,6 +40,10 @@ namespace AzToolsFramework
         QObject::connect(
             m_browseEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &PropertyFilePathCtrl::OnOpenButtonClicked);
 
+        // Whenever the browse edit has text, the clear button will be automatically shown
+        // since we enabled it with setClearButtonEnabled.
+        // When it is pressed, it clears the browse edit text for us, but we need to do
+        // some extra logic as well to clear our internal state and trigger our value changed.
         QToolButton* clearButton = AzQtComponents::LineEdit::getClearButton(m_browseEdit->lineEdit());
         AZ_Assert(clearButton, "Clear button missing from BrowseEdit");
         QObject::connect(clearButton, &QToolButton::clicked, this, &PropertyFilePathCtrl::OnClearButtonClicked);
