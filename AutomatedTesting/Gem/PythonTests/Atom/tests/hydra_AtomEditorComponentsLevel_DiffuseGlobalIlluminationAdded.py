@@ -66,6 +66,7 @@ def AtomEditorComponentsLevel_DiffuseGlobalIllumination_AddedToEntity():
         # 1. Add Diffuse Global Illumination level component to the level entity.
         diffuse_global_illumination_component = EditorLevelEntity.add_component(
             AtomComponentProperties.diffuse_global_illumination())
+        general.idle_wait_frames(1)
         Report.critical_result(
             Tests.diffuse_global_illumination_component,
             EditorLevelEntity.has_component(AtomComponentProperties.diffuse_global_illumination()))
@@ -87,6 +88,7 @@ def AtomEditorComponentsLevel_DiffuseGlobalIllumination_AddedToEntity():
         # 4. Set Quality Level property to Low
         diffuse_global_illumination_component.set_component_property_value(
             AtomComponentProperties.diffuse_global_illumination('Quality Level'), GLOBAL_ILLUMINATION_QUALITY['Low'])
+
         quality = diffuse_global_illumination_component.get_component_property_value(
             AtomComponentProperties.diffuse_global_illumination('Quality Level'))
         Report.result(Tests.diffuse_global_illumination_quality, quality == GLOBAL_ILLUMINATION_QUALITY['Low'])

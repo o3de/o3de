@@ -865,6 +865,7 @@ def AtomEditorComponents_Bloom_AddedToEntity():
 
         # 43. Delete Bloom entity.
         bloom_entity.delete()
+        general.idle_wait_frames(1)
         Report.result(Tests.entity_deleted, not bloom_entity.exists())
 
         # 44. UNDO deletion.
