@@ -42,18 +42,7 @@ def CreatePrefab_WithNestedEntities():
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS, OLD_POSITION)
 
     # Test undo/redo on prefab creation
-    general.undo()
-    wait_for_propagation()
-    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType",
-                                             nested_entities_prefab_instance.container_entity.id,
-                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
-    assert not is_prefab, "Undo operation failed. Entity is still recognized as a prefab."
-    general.redo()
-    wait_for_propagation()
-    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType",
-                                             nested_entities_prefab_instance.container_entity.id,
-                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
-    assert is_prefab, "Redo operation failed. Entity is not recognized as a prefab."
+    prefab_test_utils.validate_undo_redo_on_prefab_creation(nested_entities_prefab_instance)
 
     # Moves the position of root of the nested entities, it should also update all the entites' positions
     nested_entities_root_on_instance.set_world_translation(NEW_POSITION)

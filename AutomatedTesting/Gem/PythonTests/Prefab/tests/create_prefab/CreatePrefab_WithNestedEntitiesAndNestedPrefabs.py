@@ -75,16 +75,7 @@ def CreatePrefab_WithNestedEntitiesAndNestedPrefabs():
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
 
     # Test undo/redo on prefab creation
-    general.undo()
-    wait_for_propagation()
-    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", new_prefab.container_entity.id,
-                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
-    assert not is_prefab, "Undo operation failed. Entity is still recognized as a prefab."
-    general.redo()
-    wait_for_propagation()
-    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", new_prefab.container_entity.id,
-                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
-    assert is_prefab, "Redo operation failed. Entity is not recognized as a prefab."
+    prefab_test_utils.validate_undo_redo_on_prefab_creation(new_prefab)
 
     parent_prefab_container_entity_on_instance = new_prefab_container_entity
     child_entity_on_inner_instance = nested_prefabs_root_container_entity_on_instance
