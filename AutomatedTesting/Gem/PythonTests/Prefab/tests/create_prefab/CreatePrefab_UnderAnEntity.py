@@ -16,12 +16,8 @@ def CreatePrefab_UnderAnEntity():
     from pathlib import Path
     CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
 
-    import azlmbr.legacy.general as general
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab
 
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 

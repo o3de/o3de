@@ -16,12 +16,8 @@ def CreatePrefab_UnderAnotherPrefab():
     
     from pathlib import Path
 
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.legacy.general as general
-
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     OUTER_PREFAB_FILE_NAME = Path(__file__).stem + 'Outer_prefab'

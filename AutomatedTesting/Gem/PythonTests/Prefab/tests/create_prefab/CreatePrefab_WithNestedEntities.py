@@ -16,11 +16,7 @@ def CreatePrefab_WithNestedEntities():
 
     from pathlib import Path
 
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.legacy.general as general
-
-    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + 'nested_entities_prefab'
