@@ -56,6 +56,15 @@
 /Code/Tools/SceneAPI/ @o3de/sig-content-maintainers
 /Gems/SceneProcessing/ @o3de/sig-content-maintainers
 
+# SIG-Build areas of ownership
+/cmake/Platform/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/cmake/Packaging/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/cmake/Packaging* @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/scripts/build/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/scripts/commit_validation/ @o3de/sig-build-maintainers
+/scripts/license_scanner/ @o3de/sig-build-maintainers
+/scripts/signer/ @o3de/sig-build-maintainers
+
 # SIG-Networking ownership areas
 /Code/Framework/AzFramework/AzFramework/Network/ @o3de/sig-network-maintainers
 /Code/Framework/AzNetworking/ @o3de/sig-network-maintainers

@@ -12,8 +12,9 @@
 #include <Asset/BlastAsset.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Blast/BlastActor.h>
+#include <Blast/BlastActorConfiguration.h>
 #include <Blast/BlastDebug.h>
-#include <Blast/BlastMaterial.h>
+#include <Material/BlastMaterial.h>
 #include <Common/BlastInterfaces.h>
 
 struct NvBlastExtMaterial;
@@ -36,12 +37,11 @@ namespace Blast
     //! Set of options used to create a Blast Family
     struct BlastFamilyDesc
     {
-        BlastAsset& m_asset; //! Blast asset to create from.
-        BlastListener* m_listener; //! Blast listener to notify about actor creations/destructions, this would generally
-                                  //! be BlastFamilyComponent instance.
-        Nv::Blast::TkGroup* m_group; //! if not nullptr created TkActor (and TkFamily) will be placed in this group
+        BlastAsset& m_asset; //!< Blast asset to create from.
+        BlastListener* m_listener = nullptr; //!< Blast listener to notify about actor creations/destructions, this would generally be BlastFamilyComponent instance.
+        Nv::Blast::TkGroup* m_group = nullptr; //!< if not nullptr created TkActor (and TkFamily) will be placed in this group
         Physics::MaterialId m_physicsMaterial;
-        BlastMaterial m_blastMaterial;
+        const Material* m_blastMaterial = nullptr;
         AZStd::shared_ptr<BlastActorFactory> m_actorFactory;
         AZStd::shared_ptr<EntityProvider> m_entityProvider;
         const BlastActorConfiguration& m_actorConfiguration;

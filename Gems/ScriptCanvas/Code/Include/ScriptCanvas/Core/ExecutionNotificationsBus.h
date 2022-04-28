@@ -14,19 +14,9 @@
 #include "Variable/GraphVariable.h"
 #include "Core/NamedId.h"
 
-#include <AzCore/Component/NamedEntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
-#if defined(SC_EXECUTION_TRACE_ENABLED)
-#define SC_EXECUTION_TRACE_THREAD_BEGUN(arg) ;
-#define SC_EXECUTION_TRACE_THREAD_ENDED(arg) ;
-#define SC_EXECUTION_TRACE_GRAPH_ACTIVATED(arg) ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::GraphActivated, arg);
-#define SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(arg) ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::GraphDeactivated, arg);
-#define SC_EXECUTION_TRACE_SIGNAL_INPUT(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledInput, arg); }
-#define SC_EXECUTION_TRACE_SIGNAL_OUTPUT(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::NodeSignaledOutput, arg); }
-#define SC_EXECUTION_TRACE_VARIABLE_CHANGE(id, arg) if (IsVariableObserved(id)) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::VariableChanged, arg); } 
-#define SC_EXECUTION_TRACE_ANNOTATE_NODE(node, arg) if (IsGraphObserved(node.GetGraphEntityId(), node.GetGraphIdentifier())) { ScriptCanvas::ExecutionNotificationsBus::Broadcast(&ScriptCanvas::ExecutionNotifications::AnnotateNode, arg); }
-#else
 #define SC_EXECUTION_TRACE_THREAD_BEGUN(arg) ;
 #define SC_EXECUTION_TRACE_THREAD_ENDED(arg) ;
 #define SC_EXECUTION_TRACE_GRAPH_ACTIVATED(arg) ;
@@ -35,7 +25,6 @@
 #define SC_EXECUTION_TRACE_SIGNAL_OUTPUT(node, arg) ;
 #define SC_EXECUTION_TRACE_VARIABLE_CHANGE(id, arg) ;
 #define SC_EXECUTION_TRACE_ANNOTATE_NODE(node, arg) ;
-#endif
 
 namespace AZ
 {
@@ -44,22 +33,22 @@ namespace AZ
 
 namespace ScriptCanvas
 {
+    class ExecutionState;
+
     struct GraphInfo
     {
         AZ_CLASS_ALLOCATOR(GraphInfo, AZ::SystemAllocator, 0);
         AZ_RTTI(GraphInfo, "{8D40A70D-3846-46B4-B0BF-22B5D0F55ADC}");
 
-        NamedActiveEntityId m_runtimeEntity;
-        GraphIdentifier m_graphIdentifier;
-
+        ExecutionStateWeakConstPtr m_executionState;
+        
         GraphInfo() = default;
         virtual ~GraphInfo() = default;
 
         GraphInfo(const GraphInfo&) = default;
 
-        GraphInfo(const NamedActiveEntityId& runtimeEntity, const GraphIdentifier& graphIdentifier)
-            : m_runtimeEntity(runtimeEntity)
-            , m_graphIdentifier(graphIdentifier)
+        GraphInfo(ExecutionStateWeakConstPtr executionState)
+            : m_executionState(executionState)
         {}
 
         bool operator==(const GraphInfo& graphInfo) const;
@@ -111,9 +100,8 @@ namespace AZStd
 
         AZ_FORCE_INLINE size_t operator()(const argument_type& argument) const
         {
-            AZStd::size_t graphInfoHash = AZStd::hash<AZ::EntityId>()(argument.m_runtimeEntity);
-            AZStd::hash_combine(graphInfoHash, argument.m_graphIdentifier);
-
+            auto voidPtr = reinterpret_cast<const void*>(argument.m_executionState);
+            AZStd::size_t graphInfoHash = AZStd::hash<const void*>()(voidPtr);
             return graphInfoHash;
         }
     };
@@ -577,8 +565,8 @@ namespace ScriptCanvas
         virtual void AnnotateNode(const AnnotateNodeSignal&) = 0;
         virtual void GraphActivated(const GraphActivation&) = 0;
         virtual void GraphDeactivated(const GraphActivation&) = 0;
-        virtual void RuntimeError(const AZ::EntityId& entityId, const GraphIdentifier& identifier, const AZStd::string_view& description) = 0;
-        virtual bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier) = 0;
+        virtual void RuntimeError(const ExecutionState& executionState, const AZStd::string_view& description) = 0;
+        virtual bool IsGraphObserved(const ExecutionState& executionState) = 0;
         virtual bool IsVariableObserved(const VariableId&) = 0;
         virtual void NodeSignaledOutput(const OutputSignal&) = 0;
         virtual void NodeSignaledInput(const InputSignal&) = 0;
@@ -634,8 +622,8 @@ namespace AZStd
 
         AZ_FORCE_INLINE size_t operator()(const argument_type& argument) const
         {
-            result_type result = AZStd::hash<const AZ::u64>()(static_cast<AZ::u64>(argument.m_runtimeEntity));
-            AZStd::hash_combine(result, argument.m_graphIdentifier);
+            auto voidPtr = reinterpret_cast<const void*>(argument.m_executionState);
+            AZStd::size_t result = AZStd::hash<const void*>()(voidPtr);
             AZStd::hash_combine(result, argument.m_endpoint);
             return result;
         }

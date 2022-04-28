@@ -392,7 +392,7 @@ namespace AZ::SceneAPI::Behaviors
             const Containers::SceneGraph& graph,
             const MeshTransformMap& meshTransformMap)
         {
-            EntityIdList entities;            
+            EntityIdList entities;
             entities.reserve(nodeEntityMap.size());
 
             for (const auto& nodeEntity : nodeEntityMap)
