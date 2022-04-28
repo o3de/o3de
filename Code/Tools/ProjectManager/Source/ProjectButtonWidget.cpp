@@ -13,7 +13,7 @@
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/Path/Path.h>
-#include <fstream>
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QEvent>
