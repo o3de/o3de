@@ -256,18 +256,18 @@ class WinGenericLauncher(WinLauncher):
 class WinMaterialEditor(WinLauncher):
 
     def __init__(self, build, args=None):
-        super(WinLauncher, self).__init__(build, args)
+        super(WinMaterialEditor, self).__init__(build, args)
         self.args.append('--regset="/Amazon/Settings/EnableSourceControl=false"')
         self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=true"')
         self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionEnabled=false"')
 
-    def stop(self):
-        """
-        Kills the MaterialEditor and AssetProcessor processes.
-        :return: None
-        """
-        ly_test_tools.environment.process_utils.kill_processes_named("MaterialEditor", ignore_extensions=True)
-        self.workspace.asset_processor.stop()
+    # def stop(self):
+    #     """
+    #     Kills the MaterialEditor and AssetProcessor processes.
+    #     :return: None
+    #     """
+    #     ly_test_tools.environment.process_utils.kill_processes_named("MaterialEditor", ignore_extensions=True)
+    #     self.workspace.asset_processor.stop()
 
     def binary_path(self):
         """
@@ -277,4 +277,3 @@ class WinMaterialEditor(WinLauncher):
         """
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), "MaterialEditor.exe")
-

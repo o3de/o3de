@@ -377,9 +377,22 @@ class EditorTestSuite:
             editor_utils.kill_all_ly_processes(include_asset_processor=False)
 
     @pytest.fixture(scope="function")
-    def test_executable(self, request, editor, material_editor):
+    def test_executable(self,
+                        request: _pytest.fixtures.FixtureRequest,
+                        editor: ly_test_tools.Launcher,
+                        material_editor: ly_test_tools.Launcher) -> ly_test_tools.Launcher:
         """
         Fixture that determines which launcher to use for the current test.
+        :request: The Pytest request object.
+        :editor: The editor Launcher object.
+        :material_editor: The material_editor Launcher object.
+        :returns: Either the editor or material_editor Launcher object.
+        """
+        return self._test_executable(request, editor, material_editor)
+
+    def _test_executable(self, request, editor, material_editor):
+        """
+        A wrapper function for unit testing of this file to call directly. Do not use in production.
         """
         if not self.material_editor_test:
             return editor
@@ -488,7 +501,7 @@ class EditorTestSuite:
                         getattr(self, function.__name__)(request, workspace, test_executable, editor_test_data, runner.tests)
                     return shared_run
                 setattr(self.obj, name, make_func())
-                
+
                 # Add the shared tests results, these just succeed/fail based what happened on the Runner.
                 for test_spec in tests:
                     def make_func(test_spec):
@@ -503,13 +516,13 @@ class EditorTestSuite:
                                                                        f"tests.")
                             cls._report_result(test_spec.__name__, editor_test_data.results[test_spec.__name__])
                         return result
-                    
+
                     result_func = make_func(test_spec)
                     if hasattr(test_spec, "pytestmark"):
                         result_func.pytestmark = test_spec.pytestmark
                     setattr(self.obj, test_spec.__name__, result_func)
                 runners.append(runner)
-            
+
             create_runner("run_batched_tests", cls._run_batched_tests, batched_tests)
             create_runner("run_parallel_tests", cls._run_parallel_tests, parallel_tests)
             create_runner("run_parallel_batched_tests", cls._run_parallel_batched_tests, parallel_batched_tests)
@@ -986,7 +999,7 @@ class EditorTestSuite:
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash(crashed_result.test_spec, output, return_code,
                                                                crash_error, crashed_result.editor_log)
-        except WaitTimeoutError:            
+        except WaitTimeoutError:
             test_executable.stop()
             output = test_executable.get_output()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
