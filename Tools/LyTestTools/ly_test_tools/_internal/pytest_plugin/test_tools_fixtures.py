@@ -88,7 +88,7 @@ def _get_output_path(config):
     else:
         custom_build_directory = config.getoption('--build-directory', '')
         if custom_build_directory: # default into known build folder
-            default_output_path = os.path.join(custom_build_directory, 'build', 'Testing', 'LyTestTools')
+            default_output_path = os.path.join(custom_build_directory, 'Testing', 'LyTestTools')
         else:  # should already create a separate warning in _get_build_directory()
             default_output_path = os.getcwd()
         output_path = os.path.join(default_output_path,
