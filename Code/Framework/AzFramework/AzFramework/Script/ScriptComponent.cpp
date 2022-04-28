@@ -8,32 +8,27 @@
 
 #if !defined(AZCORE_EXCLUDE_LUA)
 
-#include <AzCore/Script/ScriptContext.h>
-#include <AzCore/Script/ScriptSystemBus.h>
-#include <AzCore/Script/ScriptProperty.h>
-
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Script/ScriptContext.h>
+#include <AzCore/Script/ScriptProperty.h>
+#include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/EditContext.h>
-
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/conversions.h>
-
-#include <AzFramework/Script/ScriptComponent.h>
-
-#include <AzFramework/StringFunc/StringFunc.h>
-
 #include <AzFramework/IO/LocalFileIO.h>
-
+#include <AzFramework/StringFunc/StringFunc.h>
 
 extern "C" {
 #   include <Lua/lualib.h>
 #   include <Lua/lauxlib.h>
 }
+
+#include <AzFramework/Script/ScriptComponent.h>
 
 AZ_DEFINE_BUDGET(Script);
 
@@ -65,43 +60,8 @@ namespace ScriptComponentCpp
             AZ_TracePrintf(errorWindow.data(), "Top of stack is not function!");
         }
 
-        // get this off the laptop
         const int stripBinaryRepresentation = 1;
         return lua_dump(l, LuaStreamWriter, &stream, stripBinaryRepresentation) == 0;
-    }
-
-    AZ::Outcome<void, AZStd::string> WriteAssetInfo(const AzFramework::ScriptCompileRequest& request, AZ::IO::GenericStream&, AZ::IO::GenericStream& out)
-    {
-        // Write asset version
-        // u8: asset version
-        AZ::ScriptAsset::LuaScriptInfo currentField = AZ::ScriptAsset::AssetVersion;
-        if (!ScriptComponentCpp::WriteToStream(out, &currentField))
-        {
-            return AZ::Failure(AZStd::string("Failed writing asset version to stream."));
-        }
-
-        // Write asset type
-        // u8: asset type (compiled)
-        currentField = AZ::ScriptAsset::AssetTypeCompiled;
-        if (!ScriptComponentCpp::WriteToStream(out, &currentField))
-        {
-            return AZ::Failure(AZStd::string("Failed to write asset type to stream."));
-        }
-
-        // u32: debug name length
-        const AZ::u32 debugNameLength = aznumeric_caster(request.m_fileName.size());
-        if (!ScriptComponentCpp::WriteToStream(out, &debugNameLength))
-        {
-            return AZ::Failure(AZStd::string("Failed to write asset debug name length to stream."));
-        }
-
-        // str[len]: debug name
-        if (out.Write(request.m_fileName.size(), request.m_fileName.data()) != request.m_fileName.size())
-        {
-            return AZ::Failure(AZStd::string("Failed to write asset debug name length to stream."));
-        }
-
-        return AZ::Success();
     }
 }
 
@@ -131,12 +91,6 @@ namespace AzFramework
 
     AZ::Outcome<void, AZStd::string> CompileScriptAndAsset(ScriptCompileRequest& request)
     {
-        if (request.m_prewriteCallback)
-        {
-            return AZ::Failure(AZStd::string("asset writing is requested, but the prewriteCallback is non null"));
-        }
-
-        request.m_prewriteCallback = &ScriptComponentCpp::WriteAssetInfo;
         return CompileScript(request);
     }
 
@@ -144,40 +98,27 @@ namespace AzFramework
     {
         AZ_TracePrintf(request.m_errorWindow.data(), "Starting script compile.\n");
 
-        AZStd::string debugName = "@";
-        debugName += request.m_sourceFile;
-        AZStd::to_lower(debugName.begin(), debugName.end());
+        AZ::LuaScriptData assetData;
+        assetData.m_debugName = "@";
+        assetData.m_debugName += request.m_sourceFile;
+        AZStd::to_lower(assetData.m_debugName.begin(), assetData.m_debugName.end());
+        auto scriptStream = assetData.CreateWriteStream();
 
-        // Parse asset
-        COMPILE_VERIFY(scriptContext.LoadFromStream(request.m_input, debugName.data(), AZ::k_scriptLoadRawText), "%s", lua_tostring(scriptContext.NativeContext(), -1));
-
-        if (request.m_prewriteCallback)
-        {
-            AZ_TracePrintf(request.m_errorWindow.data(), "Beginning pre-write.\n");
-            auto preWriteResult = request.m_prewriteCallback(request, *request.m_input, *request.m_output);
-            if (!preWriteResult.IsSuccess())
-            {
-                return preWriteResult;
-            }
-        }
-
+        // parse source
+        COMPILE_VERIFY(scriptContext.LoadFromStream(request.m_input, assetData.m_debugName.c_str(), AZ::k_scriptLoadRawText), "%s", lua_tostring(scriptContext.NativeContext(), -1));
         AZ_TracePrintf(request.m_errorWindow.data(), "Beginning writing of script data.\n");
-        COMPILE_VERIFY(ScriptComponentCpp::LuaDumpToStream(request.m_errorWindow, *request.m_output, scriptContext.NativeContext()), "Failed to write lua script to stream.");
+        COMPILE_VERIFY(ScriptComponentCpp::LuaDumpToStream(request.m_errorWindow, scriptStream, scriptContext.NativeContext()), "Failed to write lua script to stream.");
 
-        if (request.m_postwriteCallback)
-        {
-            AZ_TracePrintf(request.m_errorWindow.data(), "Beginning post-write.\n");
-            auto postWriteResult = request.m_postwriteCallback(request, *request.m_input, *request.m_output);
-            if (!postWriteResult.IsSuccess())
-            {
-                return postWriteResult;
-            }
-        }
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        COMPILE_VERIFY(serializeContext, "Unable to retrieve serialize context.");
+        COMPILE_VERIFY(AZ::Utils::SaveObjectToStream<AZ::LuaScriptData>(*request.m_output, AZ::ObjectStream::ST_BINARY, &assetData, serializeContext)
+            , "Failed to write asset data to stream");
 
         return AZ::Success();
     }
 
-    AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request, bool writeAssetInfo)
+    AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request)
     {
         using namespace AZ::IO;
         FileIOStream outputStream;
@@ -189,16 +130,6 @@ namespace AzFramework
 
         request.m_output = &outputStream;
 
-        if (writeAssetInfo)
-        {
-            if (request.m_prewriteCallback)
-            {
-                return AZ::Failure(AZStd::string("asset writing is requested, but the prewriteCallback is non null"));
-            }
-
-            request.m_prewriteCallback = &ScriptComponentCpp::WriteAssetInfo;
-        }
-
         auto compileOutcome = CompileScript(request);
         if (!compileOutcome.IsSuccess())
         {
@@ -208,6 +139,13 @@ namespace AzFramework
         return AZ::Success(request.m_destFileName);
     }
 
+    bool SaveLuaAssetData(const AZ::LuaScriptData& data, AZ::IO::GenericStream& stream)
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
+        return AZ::Utils::SaveObjectToStream<AZ::LuaScriptData>(stream, AZ::ObjectStream::ST_BINARY, &data, serializeContext);
+    }
 
     //  We generally have the following data types which we can use for editor properties
     //  simple: numbers, strings, booleans, arrays, entity
@@ -541,6 +479,7 @@ namespace AzFramework
         AZ_Assert(m_entity == nullptr || m_entity->GetState() != AZ::Entity::State::Active, "You can't change the script while the entity is active");
 
         m_script = script;
+        m_script.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
     }
 
     AZ::ScriptProperty* ScriptComponent::GetScriptProperty(const char* propertyName)
@@ -561,19 +500,7 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::Activate()
     {
-        // if we have valid asset listen for script asset events, like reload
-        if (m_script.GetId().IsValid())
-        {
-            // there's currently a bug within asset system which releases m_script asset meanwhile keeping it cached on prefab.
-            // This is a temporary fix to make sure asset is properly loaded on spawned prefab every time.
-            AZ::Data::AssetLoadParameters loadParams;
-            m_script = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(
-                    m_script.GetId(),
-                    m_script.GetAutoLoadBehavior(),
-                    loadParams);
-            AZ::Data::AssetBus::Handler::BusConnect(m_script.GetId());
-            m_script.QueueLoad();
-        }
+        LoadScript();
     }
 
     //=========================================================================
@@ -582,44 +509,7 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::Deactivate()
     {
-        AZ::Data::AssetBus::Handler::BusDisconnect(m_script.GetId());
-
-        UnloadScript();
-    }
-
-    //=========================================================================
-    // ScriptComponent::OnAssetReady
-    //=========================================================================
-    void ScriptComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        if (asset)
-        {
-            m_script = asset;
-            LoadScript();
-        }
-    }
-
-    //=========================================================================
-    // ScriptComponent::OnAssetReloaded
-    //=========================================================================
-    void ScriptComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        // When we reload a script it's tricky to maintain state for that entity instance,
-        // even though theoretical mapping is possible. This feature is used for
-        // faster in game iteration and based on feedbacks game designers do expect on reload to
-        // reset the state.
-        // If we don't need to fix the state, all we need to unload and reload the script.
-        // To make sure the script behaves properly (external connections and other resources)
-        // we call deactivate and activate after reload. This can cause performance issues if the
-        // script registers "expensive" to register assets. If this becomes a problem we should
-        // provide mapping.
-        // Other things to consider are properties. Reloading will just reload the code.
-        // Properties are exported from ScriptEditorComponent, so they will not be updated by
-        UnloadScript();
-
-        m_script = asset;
-
-        LoadScript();
+       UnloadScript();
     }
 
     //=========================================================================

@@ -44,8 +44,6 @@ namespace AzFramework
         AZStd::string_view m_tempDirPath;        
         AZ::IO::GenericStream* m_input = nullptr;
         AZ::IO::GenericStream* m_output = nullptr;
-        WriteFunction m_prewriteCallback;
-        WriteFunction m_postwriteCallback;
 
         AZStd::string m_destFileName;
         AZStd::string m_destPath;
@@ -55,7 +53,8 @@ namespace AzFramework
     AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request);
     AZ::Outcome<void, AZStd::string> CompileScriptAndAsset(ScriptCompileRequest& request);
     AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request, AZ::ScriptContext& context);
-    AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request, bool writeAssetInfo = true);
+    AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request);
+    bool SaveLuaAssetData(const AZ::LuaScriptData& data, AZ::IO::GenericStream& stream);
 
     struct ScriptPropertyGroup
     {
@@ -83,7 +82,6 @@ namespace AzFramework
 
     class ScriptComponent
         : public AZ::Component
-        , private AZ::Data::AssetBus::Handler
     {
         friend class AzToolsFramework::Components::ScriptEditorComponent;        
 
@@ -114,12 +112,6 @@ namespace AzFramework
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AssetBus
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         //////////////////////////////////////////////////////////////////////////
 
         /// Load script (unless already by other instances) and creates the script instance into the VM

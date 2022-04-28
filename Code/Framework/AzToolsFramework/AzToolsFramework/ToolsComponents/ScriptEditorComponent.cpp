@@ -1008,6 +1008,7 @@ namespace AzToolsFramework
                 AzFramework::ScriptComponent::Reflect(context);
 
                 serializeContext->Class<ScriptEditorComponent, EditorComponentBase>()
+                    ->Version(1)
                     ->Field("ScriptComponent", &ScriptEditorComponent::m_scriptComponent)
                     ->Field("ScriptAsset", &ScriptEditorComponent::m_scriptAsset);
 

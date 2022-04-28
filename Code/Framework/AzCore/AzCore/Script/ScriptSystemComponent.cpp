@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/ProfilerReflection.h>
@@ -29,6 +30,7 @@
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/conversions.h>
 
 namespace AZ
@@ -376,9 +378,11 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
         }
     }
 
+    AZ_TracePrintf("ScriptSystem", "Loading asset: %s", asset.Get()->m_data.GetDebugName());
+
     // Load lua script into the VM
-    IO::MemoryStream stream = asset.Get()->CreateMemoryStream();
-    if (!context->LoadFromStream(&stream, asset.Get()->GetDebugName(), mode, lua))
+    IO::MemoryStream stream = asset.Get()->m_data.CreateMemoryStream();
+    if (!context->LoadFromStream(&stream, asset.Get()->m_data.GetDebugName(), mode, lua))
     {
         context->Error(ScriptContext::ErrorType::Error, "%s", lua_tostring(lua, -1));
         lua_pop(lua, 1);
@@ -397,7 +401,7 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
 
     // No need to keep the script asset around, the owner will keep a reference to it (or this, if it's require()'d)
     LoadedScriptInfo info;
-    const char* debugName = asset.Get()->GetDebugName();
+    const char* debugName = asset.Get()->m_data.GetDebugName();
     if (debugName)
     {
         info.m_scriptNames.emplace(debugName);
@@ -625,6 +629,7 @@ void ScriptSystemComponent::ClearAssetReferences(Data::AssetId assetBaseId)
             {
                 lua_pushnil(thread);
                 lua_setfield(thread, -2, modName.c_str());
+                AZ_TracePrintf("ScriptSystem", "UNLOADDING: %s", modName.c_str());
             }
 
             // Unref the script table so it may be collected
@@ -650,73 +655,34 @@ Data::AssetPtr ScriptSystemComponent::CreateAsset(const Data::AssetId& id, const
 //
 // Loads the script data from disk into SciptAsset memory. This does NOT load the asset into any lua_State.
 //=========================================================================
-Data::AssetHandler::LoadResult ScriptSystemComponent::LoadAssetData(
-    const Data::Asset<Data::AssetData>& asset,
-    AZStd::shared_ptr<Data::AssetDataStream> stream,
-    [[maybe_unused]] const Data::AssetFilterCB& assetLoadFilterCB)
+
+Data::AssetHandler::LoadResult ScriptSystemComponent::LoadAssetData
+    ( const Data::Asset<Data::AssetData>& asset
+    , AZStd::shared_ptr<Data::AssetDataStream> stream
+    , [[maybe_unused]] const Data::AssetFilterCB& assetLoadFilterCB)
 {
-    if (stream)
+    ScriptAsset* assetData = asset.GetAs<ScriptAsset>();
+    AZ_Assert(assetData, "Asset is of the wrong type.");
+    AZ::SerializeContext* serializeContext = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+    AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
+
+    if (AZ::Utils::LoadObjectFromStreamInPlace<ScriptAsset>
+        ( *stream
+        , *assetData
+        , serializeContext
+        , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB)))
     {
-        ScriptAsset* script = asset.GetAs<ScriptAsset>();
-
-        // If it's a compiled asset, pull data from header
-        if (asset.GetId().m_subId == ScriptAsset::CompiledAssetSubId)
-        {
-            // Read asset version
-            ScriptAsset::LuaScriptInfo assetVersion = ScriptAsset::Invalid;
-            stream->Read(sizeof(assetVersion), &assetVersion);
-            if (assetVersion != ScriptAsset::AssetVersion)
-            {
-                AZ_Error("Script", false, "Script is binary version %u, expected %u.", assetVersion, ScriptAsset::AssetVersion);
-                return Data::AssetHandler::LoadResult::Error;
-            }
-
-            // Read asset type
-            ScriptAsset::LuaScriptInfo assetType = ScriptAsset::Invalid;
-            stream->Read(sizeof(assetType), &assetType);
-
-            if (assetType == ScriptAsset::AssetTypeCompiled || assetType == ScriptAsset::AssetTypeText)
-            {
-                // Read length of debug name
-                u32 debugNameLength = 0;
-                stream->Read(sizeof(debugNameLength), &debugNameLength);
-
-                // Make string the length of the name + 1 (name in script doesn't include \0)
-                script->m_debugName.resize(debugNameLength + 1);
-                // Read debug name
-                stream->Read(debugNameLength, script->m_debugName.data());
-            }
-            else
-            {
-                AZ_Error("Script", false, "Unsupported asset type %u!", assetType);
-                return Data::AssetHandler::LoadResult::Error;
-            }
-        }
-        // Otherwise, use defaults
-        else
-        {
-            Data::AssetInfo scriptInfo;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(scriptInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, asset.GetId());
-            script->m_debugName = "@" + scriptInfo.m_relativePath;
-            AZStd::to_lower(script->m_debugName.begin(), script->m_debugName.end());
-        }
-
-        // Read contents into buffer
-        size_t scriptDataLength = stream->GetLength() - stream->GetCurPos(); // Remove already read characters from length
-
-        AZ_Error("Script", scriptDataLength > 0, "Script contents are empty! Please check AssetProcessor output.");
-
-        script->m_scriptBuffer.resize(scriptDataLength);
-        stream->Read(scriptDataLength, script->m_scriptBuffer.data());
-
         // Clear cached references in the event of a successful load. This function has to be queued on
         // AssetBus where NotifyAssetReloaded is also queued, to ensure its execution before NotifyAssetReloaded
         Data::AssetBus::QueueFunction(&ScriptSystemComponent::ClearAssetReferences, this, asset.GetId());
-
         return Data::AssetHandler::LoadResult::LoadComplete;
-    }
 
-    return Data::AssetHandler::LoadResult::Error;
+    }
+    else
+    {
+        return Data::AssetHandler::LoadResult::Error;
+    }
 }
 
 //=========================================================================
@@ -875,10 +841,9 @@ AZ::Uuid AZ::ScriptSystemComponent::GetComponentTypeId() const
     return AZ::Uuid("{b5fc8679-fa2a-4c7c-ac42-dcc279ea613a}");
 }
 
-bool AZ::ScriptSystemComponent::CanCreateComponent(const AZ::Data::AssetId& assetId) const
+bool AZ::ScriptSystemComponent::CanCreateComponent([[maybe_unused]] const AZ::Data::AssetId& assetId) const
 {
-    //LUA source files output a compiled as well as an uncompiled asset, both with the same typeID.  We only want to create components with the compiled asset
-    return assetId.m_subId == ScriptAsset::CompiledAssetSubId;
+    return true;
 }
 
 /**
@@ -914,6 +879,7 @@ struct DummyTickOrder
 void ScriptSystemComponent::Reflect(ReflectContext* reflection)
 {
     ScriptTimePoint::Reflect(reflection);
+    LuaScriptData::Reflect(reflection);
 
     if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(reflection))
     {
