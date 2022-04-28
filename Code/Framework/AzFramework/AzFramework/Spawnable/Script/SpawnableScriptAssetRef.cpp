@@ -33,7 +33,6 @@ namespace AzFramework::Scripts
                 editContext
                     ->Class<SpawnableScriptAssetRef>("SpawnableScriptAssetRef", "A wrapper around spawnable asset to be used as a variable in Script Canvas.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     // m_asset
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SpawnableScriptAssetRef::m_asset, "asset", "")
