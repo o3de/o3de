@@ -6,6 +6,12 @@
                     "pattern": "(.*\\.physicsconfiguration|.*\\.physxconfiguration)",
                     "params": "copy"
                 },
+                "RC physxmaterial": {
+                    "glob": "*.physxmaterial",
+                    "params": "copy",
+                    "critical": true,
+                    "productAssetType": "{E4EF58EE-B1D1-46C8-BE48-BB62B8247386}"
+                },
                 "RC PhysX HeightField": {
                     "glob": "*.pxheightfield",
                     "params": "copy",

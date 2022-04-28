@@ -20,6 +20,7 @@
 #include <Source/PhysXCharacters/API/CharacterUtils.h>
 #include <Source/PhysXCharacters/API/CharacterController.h>
 #include <Source/WindProvider.h>
+#include <Source/Material/PhysXMaterialAsset.h>
 
 #include <PhysX/Debug/PhysXDebugInterface.h>
 #include <System/PhysXSystem.h>
@@ -194,9 +195,14 @@ namespace PhysX
         m_defaultWorldComponent.Activate();
 
         // Assets related work
-        auto* materialAsset = aznew AzFramework::GenericAssetHandler<Physics::MaterialLibraryAsset>("Physics Material", "Physics", "physmaterial");
+        auto* materialAsset = aznew AzFramework::GenericAssetHandler<Physics::MaterialLibraryAsset>("Physics Material", "PhysX Material", "physmaterial");
         materialAsset->Register();
         m_assetHandlers.emplace_back(materialAsset);
+
+        // TODO: "materialAsset2" is temporary until the "materialAsset" is removed.
+        auto* materialAsset2 = aznew AzFramework::GenericAssetHandler<MaterialAsset>("PhysX Material", "PhysX Material", "physxmaterial");
+        materialAsset2->Register();
+        m_assetHandlers.emplace_back(materialAsset2);
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         RegisterAsset<Pipeline::MeshAssetHandler, Pipeline::MeshAsset>(m_assetHandlers);
