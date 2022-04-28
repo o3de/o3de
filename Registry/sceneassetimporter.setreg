@@ -22,6 +22,11 @@
 			{
 				"DefaultGenerationMethod": "FromSourceScene",
 				"DebugBitangentFlip": false
+			},
+			"SkinRule":
+			{
+				"DefaultMaxSkinInfluencesPerVertex": 8,
+                "DefaultWeightThreshold": 0.001
 			}
 		}
 	}

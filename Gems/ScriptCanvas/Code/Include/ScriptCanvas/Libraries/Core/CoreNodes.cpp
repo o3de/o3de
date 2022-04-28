@@ -10,7 +10,6 @@
 
 #include <Data/DataMacros.h>
 #include <Data/DataTrait.h>
-#include <Execution/ExecutionState.h>
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Core/EBusHandler.h>
 #include <ScriptCanvas/Grammar/DebugMap.h>
@@ -82,7 +81,6 @@ namespace ScriptCanvas
             ContainerTypeReflection::ReflectOnDemandTargets::Reflect(reflection);
             
             // reflected to go over the network
-            ExecutionState::Reflect(reflection);
             Grammar::Variable::Reflect(reflection);
             Grammar::FunctionPrototype::Reflect(reflection);
 
