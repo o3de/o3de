@@ -41,13 +41,14 @@ namespace EMStudio
 
     AtomRenderPlugin::~AtomRenderPlugin()
     {
+        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
+        delete m_animViewportWidget;
+
         SaveRenderOptions();
         GetCommandManager()->RemoveCommandCallback(m_importActorCallback, false);
         GetCommandManager()->RemoveCommandCallback(m_removeActorCallback, false);
         delete m_importActorCallback;
         delete m_removeActorCallback;
-
-        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
     }
 
     const char* AtomRenderPlugin::GetName() const

@@ -6,7 +6,6 @@
  *
  */
 
-#include "GraphToLuaUtility.h"
 
 #include <clocale>
 
@@ -17,11 +16,13 @@
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/ScopedDataConnectionEvent.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/GraphTranslationValidation/GraphTranslationValidations.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ParsingValidation/ParsingValidations.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-#include <ScriptCanvas/Grammar/Primitives.h>
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
+#include <ScriptCanvas/Grammar/Primitives.h>
+#include <ScriptCanvas/Translation/GraphToLua.h>
 
-#include "GraphToLua.h"
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
 namespace GraphToLuaUtilityCpp
 {
@@ -222,7 +223,14 @@ namespace ScriptCanvas
 
             case Data::eType::BehaviorContextObject:
             {
-                return "nil";
+                if (datum.GetType().GetAZType() != azrtti_typeid<ExecutionState>())
+                {
+                    return "nil";
+                }
+                else
+                {
+                    return config.m_executionStateName;
+                }
             }
 
             case Data::eType::Boolean:
