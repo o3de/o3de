@@ -60,7 +60,7 @@ namespace AzToolsFramework
             return m_domValueIndex;
         }
 
-        bool isColumn() const
+        bool IsColumn() const
         {
             return !(m_type == NodeType::RootNode || m_type == NodeType::RowNode);
         }
@@ -114,7 +114,7 @@ namespace AzToolsFramework
 
     protected:
         DPEModelNode* GetNodeFromIndex(const QModelIndex& theIndex) const;
-        DPEModelNode* GetNodeFromPath(AZ::Dom::Path thePath) const;
+        DPEModelNode* GetNodeFromPath(const AZ::Dom::Path& thePath) const;
 
         // QAbstractItemModel overrides
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
