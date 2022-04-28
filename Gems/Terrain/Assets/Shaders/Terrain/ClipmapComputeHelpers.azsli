@@ -10,6 +10,15 @@
 
 #include <TerrainDetailHelpers.azsli>
 
+// A bias epsilon to shift the distance by a little bit
+// so that what is used to fall onto the edge of the clipmap
+// will instead fall onto the next layer of clipmap.
+static const float RenderDistanceBias = 1.001;
+// Where 2 layers of clipmap start to blend.
+// Must be bigger than the rcp of corresponding clipmap scale base.
+// e.g. 0.8 means the point should blend the next layer when it is off 80% from the current clipmap center.
+static const float BlendingStartFactor = 0.8;
+
 // Clipmap levels
 //         |<- clipmap size ->|
 // --------|------------------|-------- level 0
@@ -73,7 +82,7 @@ float2 GetCurrentWorldPositionFromMacroClipmaps(uint2 pixelPosition, uint clipma
 {
     float2 currentClipmapCenter = GetCurrentMacroClipmapCenter(clipmapLevel);
     float clipmapScaleInv = GetMacroClipmapScaleInv(clipmapLevel);
-    float maxRenderDistance = TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance;
+    float maxRenderDistance = TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius;
     return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel, clipmapScaleInv, maxRenderDistance);
 }
 
@@ -81,7 +90,7 @@ float2 GetCurrentWorldPositionFromDetailClipmaps(uint2 pixelPosition, uint clipm
 {
     float2 currentClipmapCenter = GetCurrentDetailClipmapCenter(clipmapLevel);
     float clipmapScaleInv = GetDetailClipmapScaleInv(clipmapLevel);
-    float maxRenderDistance = TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance;
+    float maxRenderDistance = TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius;
     return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel, clipmapScaleInv, maxRenderDistance);
 }
 
@@ -112,27 +121,76 @@ float3 UnpackNormal(float2 packedNormal)
     return float3(packedNormal.xy, z);
 }
 
+struct BilinearUvs
+{
+    uint2 m_u0v0;
+    uint2 m_u0v1;
+    uint2 m_u1v0;
+    uint2 m_u1v1;
+    float2 m_weight;
+};
+
+struct ClipmapLevel
+{
+    uint m_closestLevel;
+    uint m_nextLevel; // Set to clipmapStackSize if trilinear sampling doesn't apply.
+    float m_weight; // Blending weight between 2 clipmap layers.
+};
+
 // Calculate the most detailed clipmap level.
-uint CalculateClosestClipmapLevel(
+ClipmapLevel CalculateClosestClipmapLevel(
     float2 distanceFromViewPosition,
     float maxRenderDistance,
     float clipmapScaleBase,
     uint clipmapStackSize
 )
 {
+    ClipmapLevel clipmapLevel;
+
     float2 maxRenderSize = float2(maxRenderDistance, maxRenderDistance);
     // The top clipmap's render distance
     float2 minRenderSize = maxRenderSize / pow(clipmapScaleBase, (float)(clipmapStackSize - 1u));
 
-    float2 clampedDistance = clamp(minRenderSize, abs(distanceFromViewPosition), maxRenderSize);
+    float2 clampedDistance = clamp(minRenderSize, abs(distanceFromViewPosition) * RenderDistanceBias, maxRenderSize);
     float2 distanceRatio = maxRenderSize / clampedDistance;
     // Due to clamping, the max result of log is (clipmapStackSize - 1u), which falls into the first clipmap
-    uint clipmapLevel = clipmapStackSize - 1u - uint(floor(log(min(distanceRatio.x, distanceRatio.y))/log(clipmapScaleBase)));
+    clipmapLevel.m_closestLevel = clipmapStackSize - 1u - uint(floor(log(min(distanceRatio.x, distanceRatio.y))/log(clipmapScaleBase)));
+
+    float renderDistance = maxRenderDistance / pow(clipmapScaleBase, (float)(clipmapStackSize - 1u - clipmapLevel.m_closestLevel));
+    float blendingStart = renderDistance * BlendingStartFactor;
+    float blendingEnd = renderDistance / RenderDistanceBias;
+    float blendingValue = max(clampedDistance.x, clampedDistance.y);
+
+    if (blendingValue > blendingStart && blendingValue < blendingEnd)
+    {
+        clipmapLevel.m_weight = (blendingValue - blendingStart) / (blendingEnd - blendingStart);
+        clipmapLevel.m_nextLevel = clipmapLevel.m_closestLevel + 1;
+    }
+    else
+    {
+        clipmapLevel.m_weight = 0.0;
+        clipmapLevel.m_nextLevel = clipmapStackSize;
+    }
 
     return clipmapLevel;
 }
 
-uint2 CalculateClipmapUv(
+BilinearUvs GetBilinearUvs(uint2 u0v0)
+{
+    uint clipmapSize = (uint)TerrainSrg::m_clipmapData.m_clipmapSize;
+    uint u1 = (u0v0.x + 1) % clipmapSize;
+    uint v1 = (u0v0.y + 1) % clipmapSize;
+
+    BilinearUvs uvs;
+    uvs.m_u0v0 = u0v0;
+    uvs.m_u1v0 = uint2(u1, u0v0.y);
+    uvs.m_u0v1 = uint2(u0v0.x, v1);
+    uvs.m_u1v1 = uint2(u1, v1);
+
+    return uvs;
+}
+
+BilinearUvs CalculateClipmapUv(
     float2 distanceFromViewPosition,
     float maxRenderDistance,
     float clipmapScaleInv,
@@ -145,7 +203,102 @@ uint2 CalculateClipmapUv(
     // We can use fraction after shifting 1.0 to get the actual position.
     normalizedPixelPosition = frac(normalizedPixelPosition + float2(1.0, 1.0));
 
-    return uint2(normalizedPixelPosition * TerrainSrg::m_clipmapData.m_clipmapSize);
+    float2 exactUV = normalizedPixelPosition * TerrainSrg::m_clipmapData.m_clipmapSize;
+
+    uint2 u0v0 = uint2(exactUV);
+    BilinearUvs uvs = GetBilinearUvs(u0v0);
+    uvs.m_weight = frac(exactUV);
+
+    return uvs;
+}
+
+float4 ColorPointSampling(Texture2DArray<float4> colorClipmap, uint2 uv, uint clipmapLevel)
+{
+    uint3 texelIndex = uint3(uv, clipmapLevel);
+    return colorClipmap[texelIndex];
+}
+
+float3 NormalPointSampling(Texture2DArray<float2> normalClipmap, uint2 uv, uint clipmapLevel)
+{
+    uint3 texelIndex = uint3(uv, clipmapLevel);
+    float2 normal = normalClipmap[texelIndex];
+    return UnpackNormal(normal);
+}
+
+float GeneralFloatPointSampling(Texture2DArray<float> clipmap, uint2 uv, uint clipmapLevel)
+{
+    uint3 texelIndex = uint3(uv, clipmapLevel);
+    return clipmap[texelIndex];
+}
+
+float4 ColorBilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs, uint clipmapLevel)
+{
+    float4 color00 = colorClipmap[uint3(uvs.m_u0v0, clipmapLevel)];
+    float4 color10 = colorClipmap[uint3(uvs.m_u1v0, clipmapLevel)];
+    float4 color01 = colorClipmap[uint3(uvs.m_u0v1, clipmapLevel)];
+    float4 color11 = colorClipmap[uint3(uvs.m_u1v1, clipmapLevel)];
+
+    float3 color0 = lerp(color00.rgb, color01.rgb, uvs.m_weight.x);
+    float3 color1 = lerp(color10.rgb, color11.rgb, uvs.m_weight.x);
+
+    // Alpha for detail color clipmap is used to represent "has detail material" using 0.0 and 1.0.
+    // Detail is only valid when 4 adjecent texels are all valid. So using min is the proper choice.
+    float alpha0 = min(color00.a, color01.a);
+    float alpha1 = min(color10.a, color11.a);
+
+    return float4(lerp(color0, color1, uvs.m_weight.y), min(alpha0, alpha1));
+}
+
+float3 NormalBilinearSampling(Texture2DArray<float2> normalClipmap, BilinearUvs uvs, uint clipmapLevel)
+{
+    float3 normal00 = UnpackNormal(normalClipmap[uint3(uvs.m_u0v0, clipmapLevel)]);
+    float3 normal01 = UnpackNormal(normalClipmap[uint3(uvs.m_u1v0, clipmapLevel)]);
+    float3 normal10 = UnpackNormal(normalClipmap[uint3(uvs.m_u0v1, clipmapLevel)]);
+    float3 normal11 = UnpackNormal(normalClipmap[uint3(uvs.m_u1v1, clipmapLevel)]);
+    
+    float3 normal0 = normalize(lerp(normal00.rgb, normal01.rgb, uvs.m_weight.x));
+    float3 normal1 = normalize(lerp(normal10.rgb, normal11.rgb, uvs.m_weight.x));
+    return normalize(lerp(normal0, normal1, uvs.m_weight.y));
+}
+
+float GeneralFloatBilinearSampling(Texture2DArray<float> clipmap, BilinearUvs uvs, uint clipmapLevel)
+{
+    float value00 = clipmap[uint3(uvs.m_u0v0, clipmapLevel)];
+    float value10 = clipmap[uint3(uvs.m_u1v0, clipmapLevel)];
+    float value01 = clipmap[uint3(uvs.m_u0v1, clipmapLevel)];
+    float value11 = clipmap[uint3(uvs.m_u1v1, clipmapLevel)];
+    
+    float value0 = lerp(value00, value01, uvs.m_weight.x);
+    float value1 = lerp(value10, value11, uvs.m_weight.x);
+    return lerp(value0, value1, uvs.m_weight.y);
+}
+
+float4 ColorTrilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs1, BilinearUvs uvs2, ClipmapLevel clipmapLevel)
+{
+    float4 color1 = ColorBilinearSampling(colorClipmap, uvs1, clipmapLevel.m_closestLevel);
+    float4 color2 = ColorBilinearSampling(colorClipmap, uvs2, clipmapLevel.m_nextLevel);
+
+    // Alpha for detail color clipmap is used to represent "has detail material" using 0.0 and 1.0.
+    // Detail is only valid when 4 adjecent texels are all valid. So using min is the proper choice.
+    float alpha = min(color1.a, color2.a);
+
+    return float4(lerp(color1.rgb, color2.rgb, clipmapLevel.m_weight), alpha);
+}
+
+float3 NormalTrilinearSampling(Texture2DArray<float2> normalClipmap, BilinearUvs uvs1, BilinearUvs uvs2, ClipmapLevel clipmapLevel)
+{
+    float3 normal1 = NormalBilinearSampling(normalClipmap, uvs1, clipmapLevel.m_closestLevel);
+    float3 normal2 = NormalBilinearSampling(normalClipmap, uvs2, clipmapLevel.m_nextLevel);
+    
+    return normalize(lerp(normal1, normal2, clipmapLevel.m_weight));
+}
+
+float GeneralFloatTrilinearSampling(Texture2DArray<float> clipmap, BilinearUvs uvs1, BilinearUvs uvs2, ClipmapLevel clipmapLevel)
+{
+    float value1 = GeneralFloatBilinearSampling(clipmap, uvs1, clipmapLevel.m_closestLevel);
+    float value2 = GeneralFloatBilinearSampling(clipmap, uvs2, clipmapLevel.m_nextLevel);
+    
+    return lerp(value1, value2, clipmapLevel.m_weight);
 }
 
 ClipmapSample SampleClipmap(float2 worldPosition)
@@ -154,7 +307,7 @@ ClipmapSample SampleClipmap(float2 worldPosition)
 
     float2 distance = worldPosition - TerrainSrg::m_clipmapData.m_currentViewPosition;
     float2 absDistance = abs(distance);
-    if (absDistance.x > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance || absDistance.y > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance)
+    if (absDistance.x > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius || absDistance.y > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius)
     {
         data.m_hasMacro = false;
         data.m_hasDetail = false;
@@ -162,66 +315,112 @@ ClipmapSample SampleClipmap(float2 worldPosition)
     }
     data.m_hasMacro = true;
 
-    uint macroClipmapLevel = CalculateClosestClipmapLevel(
+    ClipmapLevel macroClipmapLevel = CalculateClosestClipmapLevel(
         distance,
-        TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance,
+        TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius,
         TerrainSrg::m_clipmapData.m_macroClipmapScaleBase,
         TerrainSrg::m_clipmapData.m_macroClipmapStackSize
     );
-    uint2 macroClipmapUv = CalculateClipmapUv(
-        distance,
-        TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance,
-        GetMacroClipmapScaleInv(macroClipmapLevel),
-        GetCurrentMacroClipmapCenter(macroClipmapLevel)
-    );
-    uint3 macroTexelIndex = uint3(macroClipmapUv, macroClipmapLevel);
 
-    float4 macroColor = TerrainSrg::m_macroColorClipmaps[macroTexelIndex];
-    float2 macroNormalPacked = TerrainSrg::m_macroNormalClipmaps[macroTexelIndex];
+    if (macroClipmapLevel.m_nextLevel == TerrainSrg::m_clipmapData.m_macroClipmapStackSize)
+    {
+        BilinearUvs macroClipmapUvs = CalculateClipmapUv(
+            distance,
+            TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius,
+            GetMacroClipmapScaleInv(macroClipmapLevel.m_closestLevel),
+            GetCurrentMacroClipmapCenter(macroClipmapLevel.m_closestLevel)
+        );
 
-    data.m_macroColor = macroColor.rgb;
-    data.m_macroNormal = UnpackNormal(macroNormalPacked);
+        data.m_macroColor = ColorBilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel).rgb;
+        data.m_macroNormal = NormalBilinearSampling(TerrainSrg::m_macroNormalClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel);
+    }
+    else
+    {
+        BilinearUvs macroClipmapUvs1 = CalculateClipmapUv(
+            distance,
+            TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius,
+            GetMacroClipmapScaleInv(macroClipmapLevel.m_closestLevel),
+            GetCurrentMacroClipmapCenter(macroClipmapLevel.m_closestLevel)
+        );
 
-    if (absDistance.x > TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance || absDistance.y > TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance)
+        BilinearUvs macroClipmapUvs2 = CalculateClipmapUv(
+            distance,
+            TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius,
+            GetMacroClipmapScaleInv(macroClipmapLevel.m_nextLevel),
+            GetCurrentMacroClipmapCenter(macroClipmapLevel.m_nextLevel)
+        );
+
+        data.m_macroColor = ColorTrilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel).rgb;
+        data.m_macroNormal = NormalTrilinearSampling(TerrainSrg::m_macroNormalClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel);
+    }
+
+    if (absDistance.x > TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius || absDistance.y > TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius)
     {
         data.m_hasDetail = false;
     }
     else
     {
-        uint detailClipmapLevel = CalculateClosestClipmapLevel(
+        ClipmapLevel detailClipmapLevel = CalculateClosestClipmapLevel(
             distance,
-            TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance,
+            TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius,
             TerrainSrg::m_clipmapData.m_detailClipmapScaleBase,
             TerrainSrg::m_clipmapData.m_detailClipmapStackSize
         );
-        uint2 detailClipmapUv = CalculateClipmapUv(
-            distance,
-            TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderDistance,
-            GetDetailClipmapScaleInv(detailClipmapLevel),
-            GetCurrentDetailClipmapCenter(detailClipmapLevel)
-        );
-        uint3 detailTexelIndex = uint3(detailClipmapUv, detailClipmapLevel);
 
-        float4 detailColor = TerrainSrg::m_detailColorClipmaps[detailTexelIndex];
-        // alpha represents hasDetailSurface, 1.0 for true and 0.0 for false.
-        data.m_hasDetail = detailColor.a == 1.0;
-
-        if (data.m_hasDetail)
+        if (detailClipmapLevel.m_nextLevel == TerrainSrg::m_clipmapData.m_detailClipmapStackSize)
         {
-            float2 detailNormalPacked = TerrainSrg::m_detailNormalClipmaps[detailTexelIndex];
-            float detailHeight = TerrainSrg::m_detailHeightClipmaps[detailTexelIndex];
-            float detailRoughness = TerrainSrg::m_detailRoughnessClipmaps[detailTexelIndex];
-            float detailSpecularF0 = TerrainSrg::m_detailSpecularF0Clipmaps[detailTexelIndex];
-            float detailMetalness = TerrainSrg::m_detailMetalnessClipmaps[detailTexelIndex];
-            float detailOcclusion = TerrainSrg::m_detailOcclusionClipmaps[detailTexelIndex];
+            BilinearUvs detailClipmapUvs = CalculateClipmapUv(
+                distance,
+                TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius,
+                GetDetailClipmapScaleInv(detailClipmapLevel.m_closestLevel),
+                GetCurrentDetailClipmapCenter(detailClipmapLevel.m_closestLevel)
+            );
 
-            data.m_detailSurface.m_color = detailColor.rgb;
-            data.m_detailSurface.m_normal = UnpackNormal(detailNormalPacked);
-            data.m_detailSurface.m_roughness = detailRoughness;
-            data.m_detailSurface.m_specularF0 = detailSpecularF0;
-            data.m_detailSurface.m_metalness = detailMetalness;
-            data.m_detailSurface.m_occlusion = detailOcclusion;
-            data.m_detailSurface.m_height = detailHeight;
+            float4 detailColor = ColorBilinearSampling(TerrainSrg::m_detailColorClipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel);
+            // alpha represents hasDetailSurface, 1.0 for true and 0.0 for false.
+            data.m_hasDetail = detailColor.a == 1.0;
+
+            if (data.m_hasDetail)
+            {
+                data.m_detailSurface.m_color = detailColor.rgb;
+                data.m_detailSurface.m_normal = NormalBilinearSampling(TerrainSrg::m_detailNormalClipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel);
+                data.m_detailSurface.m_roughness = GeneralFloatBilinearSampling(TerrainSrg::m_detailRoughnessClipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel);
+                data.m_detailSurface.m_specularF0 = GeneralFloatBilinearSampling(TerrainSrg::m_detailSpecularF0Clipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel);
+                data.m_detailSurface.m_metalness = GeneralFloatBilinearSampling(TerrainSrg::m_detailMetalnessClipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel);
+                data.m_detailSurface.m_occlusion = GeneralFloatBilinearSampling(TerrainSrg::m_detailOcclusionClipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel);
+                data.m_detailSurface.m_height = GeneralFloatBilinearSampling(TerrainSrg::m_detailHeightClipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel);
+            }
+        }
+        else
+        {
+            BilinearUvs detailClipmapUvs1 = CalculateClipmapUv(
+                distance,
+                TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius,
+                GetDetailClipmapScaleInv(detailClipmapLevel.m_closestLevel),
+                GetCurrentDetailClipmapCenter(detailClipmapLevel.m_closestLevel)
+            );
+
+            BilinearUvs detailClipmapUvs2 = CalculateClipmapUv(
+                distance,
+                TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius,
+                GetDetailClipmapScaleInv(detailClipmapLevel.m_nextLevel),
+                GetCurrentDetailClipmapCenter(detailClipmapLevel.m_nextLevel)
+            );
+
+            float4 detailColor = ColorTrilinearSampling(TerrainSrg::m_detailColorClipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel);
+            // alpha represents hasDetailSurface, 1.0 for true and 0.0 for false.
+            data.m_hasDetail = detailColor.a == 1.0;
+
+            if (data.m_hasDetail)
+            {
+                data.m_detailSurface.m_color = detailColor.rgb;
+                data.m_detailSurface.m_normal = NormalTrilinearSampling(TerrainSrg::m_detailNormalClipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel);
+                data.m_detailSurface.m_roughness = GeneralFloatTrilinearSampling(TerrainSrg::m_detailRoughnessClipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel);
+                data.m_detailSurface.m_specularF0 = GeneralFloatTrilinearSampling(TerrainSrg::m_detailSpecularF0Clipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel);
+                data.m_detailSurface.m_metalness = GeneralFloatTrilinearSampling(TerrainSrg::m_detailMetalnessClipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel);
+                data.m_detailSurface.m_occlusion = GeneralFloatTrilinearSampling(TerrainSrg::m_detailOcclusionClipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel);
+                data.m_detailSurface.m_height = GeneralFloatTrilinearSampling(TerrainSrg::m_detailHeightClipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel);
+            }
         }
     }
 
