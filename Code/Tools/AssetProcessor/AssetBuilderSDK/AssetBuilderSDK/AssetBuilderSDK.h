@@ -635,6 +635,8 @@ namespace AssetBuilderSDK
         IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the Common platform.
     };
 
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(ProductOutputFlags);
+
     using ProductPathDependencySet = AZStd::unordered_set<AssetBuilderSDK::ProductPathDependency>;
 
     //! JobProduct is used by the builder to store job product information

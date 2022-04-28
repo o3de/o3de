@@ -26,14 +26,14 @@ namespace UnitTests
     class IgnoreNotifyTracker : public ProcessingJobInfoBus::Handler
     {
     public:
-        // Will notify other systems which old product is just about to get removed from the cache 
-        // before we copy the new product instead along. 
+        // Will notify other systems which old product is just about to get removed from the cache
+        // before we copy the new product instead along.
         void BeginCacheFileUpdate(const char* productPath) override
         {
             m_capturedStartPaths.push_back(productPath);
         }
-        
-        // Will notify other systems which product we are trying to copy in the cache 
+
+        // Will notify other systems which product we are trying to copy in the cache
         // along with status of whether that copy succeeded or failed.
         void EndCacheFileUpdate(const char* productPath, bool /*queueAgainForProcessing*/) override
         {
@@ -64,7 +64,7 @@ namespace UnitTests
             ON_CALL(m_data->m_diskSpaceResponder, CheckSufficientDiskSpace(_, _, _))
                 .WillByDefault(Return(true));
 
-            
+
         }
 
         void TearDown() override
@@ -106,7 +106,7 @@ namespace UnitTests
         ProcessJobResponse response;
         response.m_resultCode = ProcessJobResult_Success;
         response.m_outputProducts.push_back({ "file1.txt" }); // make sure that there is at least one product so that it doesn't early out.
-        
+
         // set only the input path, not the output path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
 
@@ -123,8 +123,9 @@ namespace UnitTests
 
         // set the input dir to be a broken invalid dir:
         builderParams.m_processJobRequest.m_tempDirPath = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
-        
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
+
         EXPECT_FALSE(RCJob::CopyCompiledAssets(builderParams, response));
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 1);
     }
@@ -136,7 +137,8 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
 
         // give it an overly long file name:
         AZStd::string reallyLongFileName;
@@ -155,7 +157,9 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir =
+            AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
         response.m_resultCode = ProcessJobResult_Success;
         response.m_outputProducts.push_back({ "file1.txt" }); // make sure that there is at least one product so that it doesn't early out.
         UnitTestUtils::CreateDummyFile(QDir(m_data->m_absolutePathToTempInputFolder.c_str()).absoluteFilePath("file1.txt"), "output of file 1");
@@ -192,7 +196,8 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
         response.m_resultCode = ProcessJobResult_Success;
         response.m_outputProducts.push_back({ "FiLe1.TxT" }); // make sure that there is at least one product so that it doesn't early out.
         UnitTestUtils::CreateDummyFile(QDir(m_data->m_absolutePathToTempInputFolder.c_str()).absoluteFilePath("FiLe1.TxT"), "output of file 1");
@@ -217,7 +222,9 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
+        builderParams.m_relativePath = "";
         response.m_resultCode = ProcessJobResult_Success;
 
         // make up a completely different random path to put an absolute file in:
@@ -251,7 +258,8 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
         response.m_resultCode = ProcessJobResult_Success;
         response.m_outputProducts.push_back({ "FiLe1.TxT" }); // make sure that there is at least one product so that it doesn't early out.
         UnitTestUtils::CreateDummyFile(QDir(m_data->m_absolutePathToTempInputFolder.c_str()).absoluteFilePath("FiLe1.TxT"), "output of file 1");

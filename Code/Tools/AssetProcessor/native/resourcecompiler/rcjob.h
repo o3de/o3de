@@ -37,7 +37,9 @@ namespace AssetProcessor
         virtual ~Params() = default;
 
         AssetProcessor::RCJob* m_rcJob;
-        QString m_finalOutputDir;
+        AZ::IO::Path m_cacheOutputDir;
+        AZ::IO::Path m_intermediateOutputDir;
+        AZ::IO::Path m_relativePath;
 
         Params(const Params&) = default;
 
@@ -151,7 +153,9 @@ namespace AssetProcessor
 
         //! the final output path is where the actual outputs are copied when processing succeeds
         //! this will be in the asset cache, in the gamename / platform / gamename folder.
-        QString GetFinalOutputPath() const;
+        AZ::IO::Path GetCacheOutputPath() const;
+        AZ::IO::Path GetIntermediateOutputPath() const;
+        AZ::IO::Path GetRelativePath() const;
 
         const AssetProcessor::AssetRecognizer* GetRecognizer() const;
         void SetRecognizer(const AssetProcessor::AssetRecognizer* value);
@@ -186,6 +190,12 @@ namespace AssetProcessor
         static void ExecuteBuilderCommand(BuilderParams builderParams);
         static void AutoFailJob(BuilderParams& builderParams);
         static bool CopyCompiledAssets(BuilderParams& params, AssetBuilderSDK::ProcessJobResponse& response);
+        static bool VerifyOutputProduct(
+            QDir outputDirectory,
+            QString outputFilename,
+            QString absolutePathOfSource,
+            qint64& totalFileSizeRequired,
+            QList<QPair<QString, QString>>& outputsToCopy);
         //! This method will save the processJobResponse and the job log to the temp directory as xml files.
         //! We will be modifying absolute paths in processJobResponse before saving it to the disk.
         static AZ::Outcome<AZStd::vector<AZStd::string>> BeforeStoringJobResult(const BuilderParams& builderParams, AssetBuilderSDK::ProcessJobResponse jobResponse);

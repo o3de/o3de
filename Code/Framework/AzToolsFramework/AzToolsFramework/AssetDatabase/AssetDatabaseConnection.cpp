@@ -1338,13 +1338,14 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         //ProductDatabaseEntry
         ProductDatabaseEntry::ProductDatabaseEntry(AZ::s64 productID, AZ::s64 jobPK, AZ::u32 subID, const char* productName,
-            AZ::Data::AssetType assetType, AZ::Uuid legacyGuid, AZ::u64 hash)
+            AZ::Data::AssetType assetType, AZ::Uuid legacyGuid, AZ::u64 hash, AZStd::bitset<64> flags)
             : m_productID(productID)
             , m_jobPK(jobPK)
             , m_subID(subID)
             , m_assetType(assetType)
             , m_legacyGuid(legacyGuid)
             , m_hash(hash)
+            , m_flags(flags)
         {
             if (productName)
             {
@@ -1353,37 +1354,18 @@ namespace AzToolsFramework
         }
 
         ProductDatabaseEntry::ProductDatabaseEntry(AZ::s64 jobPK, AZ::u32 subID, const char* productName,
-            AZ::Data::AssetType assetType, AZ::Uuid legacyGuid, AZ::u64 hash)
+            AZ::Data::AssetType assetType, AZ::Uuid legacyGuid, AZ::u64 hash, AZStd::bitset<64> flags)
             : m_jobPK(jobPK)
             , m_subID(subID)
             , m_assetType(assetType)
             , m_legacyGuid(legacyGuid)
             , m_hash(hash)
+            , m_flags(flags)
         {
             if (productName)
             {
                 m_productName = productName;
             }
-        }
-
-        ProductDatabaseEntry::ProductDatabaseEntry(ProductDatabaseEntry&& other)
-        {
-            *this = AZStd::move(other);
-        }
-
-        ProductDatabaseEntry& ProductDatabaseEntry::operator=(ProductDatabaseEntry&& other)
-        {
-            if (this != &other)
-            {
-                m_productID = other.m_productID;
-                m_jobPK = other.m_jobPK;
-                m_subID = other.m_subID;
-                m_productName = AZStd::move(other.m_productName);
-                m_assetType = other.m_assetType;
-                m_legacyGuid = other.m_legacyGuid;
-                m_hash = other.m_hash;
-            }
-            return *this;
         }
 
         bool ProductDatabaseEntry::operator==(const ProductDatabaseEntry& other) const
@@ -1393,13 +1375,14 @@ namespace AzToolsFramework
                    m_subID == other.m_subID &&
                    m_assetType == other.m_assetType &&
                    m_hash == other.m_hash &&
-                   AzFramework::StringFunc::Equal(m_productName.c_str(), other.m_productName.c_str());//don't compare legacy guid
+                   AzFramework::StringFunc::Equal(m_productName.c_str(), other.m_productName.c_str()) &&
+                   m_flags == other.m_flags;//don't compare legacy guid
         }
 
         AZStd::string ProductDatabaseEntry::ToString() const
         {
-            return AZStd::string::format("ProductDatabaseEntry id:%" PRId64 " jobpk: %" PRId64 " subid: %i productname: %s assettype: %s hash: %" PRId64,
-                                         static_cast<int64_t>(m_productID), static_cast<int64_t>(m_jobPK), m_subID, m_productName.c_str(), m_assetType.ToString<AZStd::string>().c_str(), static_cast<int64_t>(m_hash));
+            return AZStd::string::format("ProductDatabaseEntry id:%" PRId64 " jobpk: %" PRId64 " subid: %i productname: %s assettype: %s hash: %" PRId64 " flags: %" PRId64,
+                                         static_cast<int64_t>(m_productID), static_cast<int64_t>(m_jobPK), m_subID, m_productName.c_str(), m_assetType.ToString<AZStd::string>().c_str(), static_cast<int64_t>(m_hash), static_cast<int64_t>(m_flags.to_ullong()));
         }
 
         auto ProductDatabaseEntry::GetColumns()
@@ -1411,7 +1394,8 @@ namespace AzToolsFramework
                 SQLite::MakeColumn("SubID", m_subID),
                 SQLite::MakeColumn("AssetType", m_assetType),
                 SQLite::MakeColumn("LegacyGuid", m_legacyGuid),
-                SQLite::MakeColumn("Hash", m_hash)
+                SQLite::MakeColumn("Hash", m_hash),
+                SQLite::MakeColumn("Flags", m_flags)
             );
         }
 

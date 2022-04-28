@@ -22,6 +22,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzCore/Math/Crc.h>
 #include <native/AssetManager/assetScanFolderInfo.h>
@@ -203,9 +204,11 @@ namespace AssetProcessor
         JobEntry m_jobEntry;
         AZStd::string m_extraInformationForFingerprinting;
         const ScanFolderInfo* m_scanFolder; // the scan folder info the file was found in
-        QString m_destinationPath; // the final folder that will be where your products are placed if you give relative path names
-        // destinationPath will be a cache folder.  If you tell it to emit something like "blah.dds"
-        // it will put it in (destinationPath)/blah.dds for example
+
+        AZ::IO::Path m_intermediatePath; // The base/root path of the intermediate output folder
+        AZ::IO::Path m_cachePath; // The base/root path of the cache folder, including the platform
+        AZ::IO::Path m_relativePath; // Relative path portion of the output file.  This can be overridden by the builder
+
         AZStd::vector<JobDependencyInternal> m_jobDependencyList;
 
         // which files to include in the fingerprinting. (Not including job dependencies)

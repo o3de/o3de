@@ -136,21 +136,20 @@ namespace UnitTests
 
         for (const auto& processResult : m_data->m_processResults)
         {
-            auto file =
-                QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1");
+            AZStd::string file = (processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1").toUtf8().constData();
             m_data->m_productPaths.emplace(
                 QDir(processResult.m_jobEntry.m_watchFolderPath)
                     .absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName)
                     .toUtf8()
                     .constData(),
-                file);
+                (processResult.m_cachePath / file).c_str());
 
             // Create the file on disk
-            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(file, "products."));
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile((processResult.m_cachePath / file).AsPosix().c_str(), "products."));
 
             AssetBuilderSDK::ProcessJobResponse response;
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(file.toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(file, AZ::Uuid::CreateNull(), 1));
 
             using JobEntry = AssetProcessor::JobEntry;
 
@@ -281,8 +280,8 @@ namespace UnitTests
         ExpectWork(
             4, 2); // CreateJobs = 4, 2 files * 2 platforms.  ProcessJobs = 2, just the android platform jobs (pc is already processed)
 
-        ASSERT_TRUE(m_data->m_processResults[0].m_destinationPath.contains("android"));
-        ASSERT_TRUE(m_data->m_processResults[1].m_destinationPath.contains("android"));
+        ASSERT_TRUE(m_data->m_processResults[0].m_cachePath.Filename() == "android");
+        ASSERT_TRUE(m_data->m_processResults[1].m_cachePath.Filename() == "android");
     }
 
     TEST_F(ModtimeScanningTest, ModtimeSkipping_ModifyTimestamp)
@@ -546,21 +545,20 @@ namespace UnitTests
                 });
 
             const auto& processResult = m_data->m_processResults[0];
-            auto file =
-                QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1");
+            AZStd::string file = (processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1").toUtf8().constData();
             m_data->m_productPaths.emplace(
                 QDir(processResult.m_jobEntry.m_watchFolderPath)
                     .absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName)
                     .toUtf8()
                     .constData(),
-                file);
+                (processResult.m_cachePath / file).c_str());
 
             // Create the file on disk
-            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(file, "products."));
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile((processResult.m_cachePath / file).AsPosix().c_str(), "products."));
 
             AssetBuilderSDK::ProcessJobResponse response;
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(file.toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(file, AZ::Uuid::CreateNull(), 1));
 
             using JobEntry = AssetProcessor::JobEntry;
 

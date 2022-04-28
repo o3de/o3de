@@ -129,16 +129,10 @@ namespace UnitTests
 
         ASSERT_TRUE(m_stateData->SetJob(job1));
 
-        ProductDatabaseEntry product1{
-            job1.m_jobID, 0, "product.txt", m_assetType, AZ::Uuid::CreateName("product.txt"),
-            hashA
-        };
-        ProductDatabaseEntry product2{ job1.m_jobID,
-                                       777,
-                                       "product777.txt",
-                                       m_assetType,
-                                       AZ::Uuid::CreateName("product777.txt"),
-                                       hashB };
+        ProductDatabaseEntry product1{ job1.m_jobID, 0, "pc/product.txt", m_assetType,
+            AZ::Uuid::CreateName("product.txt"), hashA, static_cast<int>(AssetBuilderSDK::ProductOutputFlags::ProductAsset) };
+        ProductDatabaseEntry product2{ job1.m_jobID, 777, "pc/product777.txt", m_assetType,
+            AZ::Uuid::CreateName("product777.txt"), hashB, static_cast<int>(AssetBuilderSDK::ProductOutputFlags::ProductAsset) };
 
         ASSERT_TRUE(m_stateData->SetProduct(product1));
         ASSERT_TRUE(m_stateData->SetProduct(product2));
@@ -157,9 +151,13 @@ namespace UnitTests
     {
         AZ::IO::Path cacheDir(m_tempDir.GetDirectory());
         cacheDir /= "Cache";
+        cacheDir /= "pc";
 
-        AZStd::string productPath = (cacheDir / "product.txt").AsPosix().c_str();
-        AZStd::string product2Path = (cacheDir / "product777.txt").AsPosix().c_str();
+        AZStd::string productFilename = "product.txt";
+        AZStd::string product2Filename = "product777.txt";
+
+        AZStd::string productPath = (cacheDir / productFilename).AsPosix().c_str();
+        AZStd::string product2Path = (cacheDir / product2Filename).AsPosix().c_str();
 
         UnitTestUtils::CreateDummyFile(productPath.c_str(), "unit test file");
         UnitTestUtils::CreateDummyFile(product2Path.c_str(), "unit test file");
@@ -202,8 +200,8 @@ namespace UnitTests
 
         AssetBuilderSDK::ProcessJobResponse response;
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productPath, m_assetType, 0));
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2Path, m_assetType, 777));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFilename, m_assetType, 0));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2Filename, m_assetType, 777));
 
         m_assetProcessorManager->AssetProcessed(jobDetailsList[0].m_jobEntry, response);
 
