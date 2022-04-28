@@ -16,6 +16,7 @@ namespace AzToolsFramework
 {
     void RegisterIntSpinBoxHandlers();
     void RegisterIntSliderHandlers();
+    void RegisterFilePathHandler();
     void RegisterDoubleSpinBoxHandlers();
     void RegisterDoubleSliderHandlers();
     void RegisterColorPropertyHandlers();
@@ -170,6 +171,7 @@ namespace AzToolsFramework
             RegisterCrcHandler();
             RegisterIntSpinBoxHandlers();
             RegisterIntSliderHandlers();
+            RegisterFilePathHandler();
             RegisterDoubleSpinBoxHandlers();
             RegisterDoubleSliderHandlers();
             RegisterColorPropertyHandlers();

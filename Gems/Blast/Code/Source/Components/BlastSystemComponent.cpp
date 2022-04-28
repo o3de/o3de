@@ -21,7 +21,7 @@
 #include <Blast/BlastActorData.h>
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastFamilyComponentBus.h>
-#include <Blast/BlastMaterial.h>
+#include <Material/BlastMaterialAsset.h>
 #include <IConsole.h>
 #include <NvBlastExtPxSerialization.h>
 #include <NvBlastExtTkSerialization.h>
@@ -43,6 +43,9 @@ namespace Blast
     {
         BlastGlobalConfiguration::Reflect(context);
 
+        MaterialConfiguration::Reflect(context);
+        MaterialAsset::Reflect(context);
+
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<BlastSystemComponent, AZ::Component>()->Version(1);
@@ -59,15 +62,11 @@ namespace Blast
 
     void BlastGlobalConfiguration::Reflect(AZ::ReflectContext* context)
     {
-        BlastMaterialLibraryAsset::Reflect(context);
-        BlastMaterialConfiguration::Reflect(context);
-
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<BlastGlobalConfiguration>()
-                ->Field("BlastMaterialLibrary", &BlastGlobalConfiguration::m_materialLibrary)
-                ->Field("StressSolverIterations", &BlastGlobalConfiguration::m_stressSolverIterations)
-                ->Version(1);
+                ->Version(2)
+                ->Field("StressSolverIterations", &BlastGlobalConfiguration::m_stressSolverIterations);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
@@ -76,9 +75,6 @@ namespace Blast
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &BlastGlobalConfiguration::m_materialLibrary,
-                        "Blast material library", "Material library asset to be used globally.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &BlastGlobalConfiguration::m_stressSolverIterations,
                         "Stress solver iterations",
@@ -118,8 +114,8 @@ namespace Blast
         blastAssetHandler->Register();
         m_assetHandlers.emplace_back(blastAssetHandler);
 
-        auto materialAsset = aznew AzFramework::GenericAssetHandler<BlastMaterialLibraryAsset>(
-            "Blast Material", "Blast", "blastmaterial");
+        auto materialAsset = aznew AzFramework::GenericAssetHandler<MaterialAsset>(
+            "Blast Material", "Blast Material", "blastmaterial");
         materialAsset->Register();
         m_assetHandlers.emplace_back(materialAsset);
 
@@ -143,15 +139,12 @@ namespace Blast
     void BlastSystemComponent::Deactivate()
     {
         AZ_PROFILE_FUNCTION(Physics);
-        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         BlastSystemRequestBus::Handler::BusDisconnect();
 
         SaveConfiguration();
         DeactivatePhysics();
-
-        m_configuration.m_materialLibrary.Release();
 
         m_assetHandlers.clear();
     };
@@ -282,14 +275,6 @@ namespace Blast
         }
     }
 
-    void BlastSystemComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        if (m_configuration.m_materialLibrary == asset)
-        {
-            m_configuration.m_materialLibrary = asset;
-        }
-    }
-
     void BlastSystemComponent::LoadConfiguration()
     {
         BlastGlobalConfiguration globalConfiguration;
@@ -416,30 +401,6 @@ namespace Blast
     {
         m_configuration = globalConfiguration;
 
-        {
-            AZ::Data::Asset<Blast::BlastMaterialLibraryAsset>& materialLibrary = m_configuration.m_materialLibrary;
-
-            if (!materialLibrary.GetId().IsValid())
-            {
-                AZ_Warning("Blast", false, "LoadDefaultMaterialLibrary: Default Material Library asset ID is invalid.");
-                return;
-            }
-
-            materialLibrary = AZ::Data::AssetManager::Instance().GetAsset<Blast::BlastMaterialLibraryAsset>(
-                materialLibrary.GetId(), AZ::Data::AssetLoadBehavior::QueueLoad);
-            materialLibrary.BlockUntilLoadComplete();
-
-            // Listen for material library asset modification events
-            if (!AZ::Data::AssetBus::MultiHandler::BusIsConnectedId(materialLibrary.GetId()))
-            {
-                AZ::Data::AssetBus::MultiHandler::BusDisconnect();
-                AZ::Data::AssetBus::MultiHandler::BusConnect(materialLibrary.GetId());
-            }
-
-            AZ_Warning(
-                "Blast", (materialLibrary.GetData() != nullptr),
-                "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
-        }
 #ifdef BLAST_EDITOR
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);

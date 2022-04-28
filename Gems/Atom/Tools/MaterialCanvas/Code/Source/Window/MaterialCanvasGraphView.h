@@ -9,6 +9,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
@@ -17,11 +19,9 @@
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
 #include <GraphCanvas/Widgets/ConstructPresetDialog/ConstructPresetDialog.h>
-#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h>
-
-#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
+#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+#include <MaterialCanvasUtil.h>
 
 #include <QToolButton>
 #include <QWidget>
@@ -47,7 +47,7 @@ namespace GraphCanvas
 
 namespace MaterialCanvas
 {
-    //! MaterialCanvasGraphView
+    //! MaterialCanvasGraphView handles displaying and managing interactions for a single graph
     class MaterialCanvasGraphView
         : public QWidget
         , private AtomToolsFramework::AtomToolsMainMenuRequestBus::Handler
@@ -61,7 +61,11 @@ namespace MaterialCanvas
     public:
         AZ_CLASS_ALLOCATOR(MaterialCanvasGraphView, AZ::SystemAllocator, 0);
 
-        MaterialCanvasGraphView(const AZ::Crc32& toolId, const AZ::Uuid& documentId, QWidget* parent = 0);
+        MaterialCanvasGraphView(
+            const AZ::Crc32& toolId,
+            const AZ::Uuid& documentId,
+            const CreateNodePaletteItemsCallback& createNodePaletteItemsCallback,
+            QWidget* parent = 0);
         ~MaterialCanvasGraphView();
 
     protected:
@@ -117,7 +121,6 @@ namespace MaterialCanvas
         // GraphCanvas::SceneNotificationBus::Handler overrides...
         void OnSelectionChanged() override;
 
-    private:
         GraphCanvas::Endpoint HandleProposedConnection(
             const GraphCanvas::GraphId& graphId,
             const GraphCanvas::ConnectionId& connectionId,
@@ -133,12 +136,12 @@ namespace MaterialCanvas
 
         void AlignSelected(const GraphCanvas::AlignConfig& alignConfig);
         void OpenPresetsEditor();
-        GraphCanvas::GraphCanvasTreeItem* GetNodePaletteRootTreeItem() const;
 
         const AZ::Crc32 m_toolId;
         const AZ::Uuid m_documentId;
         GraphCanvas::GraphId m_activeGraphId;
 
+        CreateNodePaletteItemsCallback m_createNodePaletteItemsCallback;
         AzQtComponents::WindowDecorationWrapper* m_presetWrapper = {};
         GraphCanvas::ConstructPresetDialog* m_presetEditor = {};
         GraphCanvas::GraphCanvasGraphicsView* m_graphicsView = {};
