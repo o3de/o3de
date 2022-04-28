@@ -18,9 +18,12 @@ def CreatePrefab_WithNestedEntitiesAndNestedPrefabs():
 
     from pathlib import Path
 
-    from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab
+    import azlmbr.bus as bus
+    import azlmbr.editor as editor
+    import azlmbr.legacy.general as general
 
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + '_' + 'nested_entities_prefab'
@@ -70,6 +73,18 @@ def CreatePrefab_WithNestedEntitiesAndNestedPrefabs():
         f"should be '{nested_entities_root_name}', " \
         f"not '{nested_entities_root_on_instance.get_name()}'"
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
+
+    # Test undo/redo on prefab creation
+    general.undo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", new_prefab.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert not is_prefab, "Undo operation failed. Entity is still recognized as a prefab."
+    general.redo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", new_prefab.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert is_prefab, "Redo operation failed. Entity is not recognized as a prefab."
 
     parent_prefab_container_entity_on_instance = new_prefab_container_entity
     child_entity_on_inner_instance = nested_prefabs_root_container_entity_on_instance

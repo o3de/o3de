@@ -16,9 +16,12 @@ def CreatePrefab_UnderAnotherPrefab():
     
     from pathlib import Path
 
-    from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab
+    import azlmbr.bus as bus
+    import azlmbr.editor as editor
+    import azlmbr.legacy.general as general
 
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     OUTER_PREFAB_FILE_NAME = Path(__file__).stem + 'Outer_prefab'
@@ -43,6 +46,19 @@ def CreatePrefab_UnderAnotherPrefab():
 
     # Now, create another prefab, based on the entity that is inside outer_prefab
     inner_prefab, inner_instance = Prefab.create_prefab([entity], INNER_PREFAB_FILE_NAME)
+
+    # Test undo/redo on prefab creation
+    general.undo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", inner_instance.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert not is_prefab, "Undo operation failed. Entity is still recognized as a prefab."
+    general.redo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", inner_instance.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert is_prefab, "Redo operation failed. Entity is not recognized as a prefab."
+
     # The test entity should now be inside the inner prefab instance
     entity = inner_instance.get_direct_child_entities()[0]
     # We track if that is the same entity by checking the name and if it still contains the component that we created before

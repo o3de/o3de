@@ -16,9 +16,11 @@ def CreatePrefab_WithNestedEntities():
 
     from pathlib import Path
 
-    from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab
+    import azlmbr.bus as bus
+    import azlmbr.editor as editor
+    import azlmbr.legacy.general as general
 
+    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + 'nested_entities_prefab'
@@ -38,6 +40,20 @@ def CreatePrefab_WithNestedEntities():
     _, nested_entities_prefab_instance = Prefab.create_prefab([nested_entities_root], NESTED_ENTITIES_PREFAB_FILE_NAME)
     nested_entities_root_on_instance = nested_entities_prefab_instance.get_direct_child_entities()[0]
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS, OLD_POSITION)
+
+    # Test undo/redo on prefab creation
+    general.undo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType",
+                                             nested_entities_prefab_instance.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert not is_prefab, "Undo operation failed. Entity is still recognized as a prefab."
+    general.redo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType",
+                                             nested_entities_prefab_instance.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert is_prefab, "Redo operation failed. Entity is not recognized as a prefab."
 
     # Moves the position of root of the nested entities, it should also update all the entites' positions
     nested_entities_root_on_instance.set_world_translation(NEW_POSITION)

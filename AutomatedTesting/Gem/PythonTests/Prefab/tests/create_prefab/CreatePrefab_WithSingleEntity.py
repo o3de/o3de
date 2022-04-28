@@ -8,13 +8,16 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 def CreatePrefab_WithSingleEntity():
 
     from pathlib import Path
-    CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
+
+    import azlmbr.bus as bus
+    import azlmbr.editor as editor
+    import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.prefab_utils import Prefab
-
+    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
+
+    CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
 
     prefab_test_utils.open_base_tests_level()
 
@@ -23,9 +26,21 @@ def CreatePrefab_WithSingleEntity():
     car_prefab_entities = [car_entity]
 
     # Creates a prefab from the new entity
-    Prefab.create_prefab(car_prefab_entities, CAR_PREFAB_FILE_NAME)
+    _, car_instance = Prefab.create_prefab(car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
-    
+    # Test undo/redo on prefab creation
+    general.undo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", car_instance.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert not is_prefab, "Undo operation failed. Entity is still recognized as a prefab."
+    general.redo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", car_instance.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert is_prefab, "Redo operation failed. Entity is not recognized as a prefab."
+
+
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
     Report.start_test(CreatePrefab_WithSingleEntity)

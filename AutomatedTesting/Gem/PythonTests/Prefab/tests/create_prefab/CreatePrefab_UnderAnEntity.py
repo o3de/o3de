@@ -16,8 +16,12 @@ def CreatePrefab_UnderAnEntity():
     from pathlib import Path
     CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
 
+    import azlmbr.legacy.general as general
+    import azlmbr.bus as bus
+    import azlmbr.editor as editor
+
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab
+    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
 
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
@@ -35,6 +39,19 @@ def CreatePrefab_UnderAnEntity():
 
     # Asserts if prefab creation doesn't succeed
     child_prefab, child_instance = Prefab.create_prefab([child_entity], CAR_PREFAB_FILE_NAME)
+
+    # Test undo/redo on prefab creation
+    general.undo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", child_instance.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert not is_prefab, "Undo operation failed. Entity is still recognized as a prefab."
+    general.redo()
+    wait_for_propagation()
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", child_instance.container_entity.id,
+                                             azlmbr.globals.property.EditorPrefabComponentTypeId)
+    assert is_prefab, "Redo operation failed. Entity is not recognized as a prefab."
+
     child_entity_on_child_instance = child_instance.get_direct_child_entities()[0]
     assert child_instance.container_entity.get_parent_id().IsValid(), "Newly instanced entity has no parent"
     assert child_instance.container_entity.get_parent_id() == parent_entity.id, "Newly instanced entity parent does not match the expected parent"
@@ -47,6 +64,7 @@ def CreatePrefab_UnderAnEntity():
     child_translation = child_entity_on_child_instance.get_world_translation()
     assert child_translation.IsClose(azlmbr.math.Vector3(200.0, 200.0, 200.0)), f"Entity position{child_translation.ToString()} of the instance didn't get updated" \
                                                                                 f" to the same position as the parent{parent_entity.get_world_translation().ToString()}"
+
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

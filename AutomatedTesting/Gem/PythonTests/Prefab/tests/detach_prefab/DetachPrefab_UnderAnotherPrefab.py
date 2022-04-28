@@ -16,9 +16,12 @@ def DetachPrefab_UnderAnotherPrefab():
     @pyside_utils.wrap_async
     async def run_test():
 
-        from editor_python_test_tools.editor_entity_utils import EditorEntity
-        from editor_python_test_tools.prefab_utils import Prefab
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.legacy.general as general
 
+        from editor_python_test_tools.editor_entity_utils import EditorEntity
+        from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
         import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
         prefab_test_utils.open_base_tests_level()
@@ -44,6 +47,19 @@ def DetachPrefab_UnderAnotherPrefab():
 
         # Detaches the wheel prefab instance
         Prefab.detach_prefab(wheel)
+
+        # Test undo/redo on prefab detach
+        general.undo()
+        wait_for_propagation()
+        is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", wheel.container_entity.id,
+                                                 azlmbr.globals.property.EditorPrefabComponentTypeId)
+        assert is_prefab, "Undo operation failed. Entity is not recognized as a prefab."
+
+        general.redo()
+        wait_for_propagation()
+        is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", wheel.container_entity.id,
+                                                 azlmbr.globals.property.EditorPrefabComponentTypeId)
+        assert not is_prefab, "Redo operation failed. Entity is still recognized as a prefab."
 
     run_test()
 

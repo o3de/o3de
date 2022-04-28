@@ -8,12 +8,16 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 def DuplicatePrefab_ContainingASingleEntity():
 
     from pathlib import Path
-    CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
+
+    import azlmbr.entity as entity
+    import azlmbr.bus as bus
+    import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab
-
+    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
+
+    CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
 
     prefab_test_utils.open_base_tests_level()
 
@@ -27,6 +31,20 @@ def DuplicatePrefab_ContainingASingleEntity():
 
     # Duplicates the prefab instance
     Prefab.duplicate_prefabs([car])
+
+    # Test undo/redo on prefab duplication
+    general.undo()
+    wait_for_propagation()
+    search_filter = entity.SearchFilter()
+    search_filter.names = [CAR_PREFAB_FILE_NAME]
+    entities_found = len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter))
+    assert entities_found == 1, "Undo failed: Found duplicated entities"
+
+    general.redo()
+    wait_for_propagation()
+    entities_found = len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter))
+    assert entities_found == 2, "Redo failed: Failed to find duplicated entities"
+
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
