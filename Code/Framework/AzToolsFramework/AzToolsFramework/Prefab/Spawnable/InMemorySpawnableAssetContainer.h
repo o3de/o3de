@@ -48,6 +48,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AZStd::string_view prefabFilePath, AZStd::string_view spawnableName, bool loadReferencedAssets = false);
         CreateSpawnableResult CreateInMemorySpawnableAsset(
             AzToolsFramework::Prefab::TemplateId templateId, AZStd::string_view spawnableName, bool loadReferencedAssets = false);
+        CreateSpawnableResult CreateInMemorySpawnableAsset(
+            AzFramework::Spawnable* spawnable, const AZ::Data::AssetId& assetId);
         RemoveSpawnableResult RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName);
         AZ::Data::AssetId GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const;
         bool HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const;
