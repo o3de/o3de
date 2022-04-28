@@ -22,6 +22,11 @@ namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
+        bool FileSaveResult::IsSuccess() const
+        {
+            return fileSaveError.empty();
+        }
+
         FileSaver::FileSaver
             ( AZStd::function<bool()> onReadOnlyFile
             , AZStd::function<void(const FileSaveResult& result)> onComplete)
