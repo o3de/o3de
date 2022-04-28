@@ -23,6 +23,7 @@ namespace AzToolsFramework
         if (IsNewActionManagerEnabled())
         {
             m_actionManager = new ActionManager();
+            m_menuManager = new MenuManager();
         }
     }
 

@@ -8,28 +8,29 @@
 
 #pragma once
 
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
 
-#include <QObject>
+class QAction;
+class QMenu;
 
 namespace AzToolsFramework
 {
-    class EditorActionContext
-        : public QObject
+    class EditorMenu
     {
-        Q_OBJECT
-
     public:
-        EditorActionContext() = default;
+        EditorMenu();
+
+        void AddMenuItem(int sortKey, QAction* action);
+        QMenu* GetMenu();
 
     private:
-        friend class ActionManager;
+        friend class MenuManager;
 
-        AZStd::string m_identifier;
-        AZStd::string m_name;
+        void RefreshMenu();
 
-        AZStd::string m_parentIdentifier;
-        QWidget* m_parentWidget;
+        QMenu* m_menu = nullptr;
+        AZStd::multimap<int, QAction*> m_menuItems;
     };
 
 } // namespace AzToolsFramework

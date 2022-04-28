@@ -8,10 +8,30 @@
 
 #pragma once
 
+#include <AzCore/std/containers/unordered_map.h>
+
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/EditorMenu.h>
+
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
+
     class MenuManager
+        : private MenuManagerInterface
     {
+    public:
+        MenuManager();
+        virtual ~MenuManager();
+
+    private:
+        // MenuManagerInterface overrides ...
+        void AddActionToMenu(AZStd::string_view actionIdentifier, AZStd::string_view menuIdentifier, int sortIndex) override;
+        QMenu* GetMenu(AZStd::string_view menuIdentifier) override;
+
+        AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
+
+        ActionManagerInterface* m_actionManagerInterface = nullptr;
     };
 
 } // namespace AzToolsFramework

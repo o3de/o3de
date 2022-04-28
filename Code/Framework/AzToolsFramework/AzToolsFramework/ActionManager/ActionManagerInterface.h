@@ -10,13 +10,16 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
 #include <AzCore/std/function/function_base.h>
 
 #include <QWidget>
 
+class QAction;
+
 namespace AzToolsFramework
 {
+    class EditorActionContext;
+
     //! ActionManagerInterface
     //! Interface to register and trigger actions in the Editor.
     class ActionManagerInterface
@@ -29,10 +32,9 @@ namespace AzToolsFramework
             QWidget* parentWidget,
             AZStd::string_view identifier,
             AZStd::string_view name,
-            AZStd::string_view parentIdentifier
-        ) = 0;
+            AZStd::string_view parentIdentifier) = 0;
 
-        //! Register a new Action to the Action Manager
+        //! Register a new Action to the Action Manager.
         virtual void RegisterAction(
             AZStd::string_view contextIdentifier,
             AZStd::string_view identifier,
@@ -42,6 +44,9 @@ namespace AzToolsFramework
             AZStd::string_view iconPath,
             AZStd::function<void()> handler
         ) = 0;
+
+        //! Retrieve a QAction via its identifier.
+        virtual QAction* GetAction(AZStd::string_view actionIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

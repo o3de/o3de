@@ -38,6 +38,7 @@ namespace AzToolsFramework
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
+        // TODO - Switch these to unique pointers
         ActionManager* m_actionManager = nullptr;
         HotkeyManager* m_hotkeyManager = nullptr;
         MenuManager* m_menuManager = nullptr;

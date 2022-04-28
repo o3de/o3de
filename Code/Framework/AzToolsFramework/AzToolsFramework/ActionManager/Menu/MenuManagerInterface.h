@@ -11,6 +11,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+class QMenu;
+
 namespace AzToolsFramework
 {
     //! MenuManagerInterface
@@ -19,6 +21,13 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(MenuManagerInterface, "{D70B7989-62BD-447E-ADF6-0971EC4B7DEE}");
+
+        //! Bind an action to a menu.
+        virtual void AddActionToMenu(
+            AZStd::string_view actionIdentifier, AZStd::string_view menuIdentifier, int sortIndex) = 0;
+
+        // Retrieve a QMenu from its identifier.
+        virtual QMenu* GetMenu(AZStd::string_view menuIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework
