@@ -18,7 +18,6 @@
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableAssetBus.h>
 
-#pragma optimize("", off)
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     InMemorySpawnableAssetContainer::~InMemorySpawnableAssetContainer()
@@ -145,8 +144,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             {
                 auto spawnable = azrtti_cast<AzFramework::Spawnable*>(&product.GetAsset());
 
-                AzFramework::SpawnableAssetEventsBus::Broadcast(
-                    &AzFramework::SpawnableAssetEvents::OnPreparingSpawnable, *spawnable, product.GetId());
+                AzFramework::SpawnableAssetEventsBus::Broadcast(&AzFramework::SpawnableAssetEvents::OnPreparingSpawnable,
+                    *spawnable, product.GetId());
                 spawnables.push_back(spawnable);
 
                 if (product.GetId() == rootProductId)
