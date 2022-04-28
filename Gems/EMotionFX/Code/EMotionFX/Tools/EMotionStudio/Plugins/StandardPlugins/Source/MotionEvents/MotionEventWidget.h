@@ -36,6 +36,8 @@ namespace EMStudio
 
         void ReInit(EMotionFX::Motion* motion = nullptr, EMotionFX::MotionEvent* motionEvent = nullptr);
 
+        static constexpr const char* s_headerIcon = ":/EMotionFX/ActorComponent.svg";
+
     private:
         void Init();
 

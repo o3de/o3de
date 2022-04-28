@@ -278,7 +278,7 @@ namespace EMStudio
                     m_motionEventWidget->ReInit(selectionItem.m_motion, selectionItem.GetMotionEvent());
                     EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::UpdateWithHeader,
                         "Motion Event",
-                        ":/EMotionFX/ActorComponent.svg",
+                        MotionEventWidget::s_headerIcon,
                         m_motionEventWidget);
                 }
             });

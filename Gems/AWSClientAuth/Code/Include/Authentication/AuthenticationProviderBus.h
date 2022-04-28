@@ -29,7 +29,10 @@ namespace AWSClientAuth
         //! @return bool True if valid access token available, else False
         virtual bool IsSignedIn(const ProviderNameEnum& providerName) = 0;
 
-        //! Get cached tokens from last last successful sign-in for the provider.
+        //! [Deprecated] Get cached tokens from last successful sign-in for the provider.
+        //! To enhance security, only the refresh token is cached and will be returned by this function.
+        //! If you need the access or ID tokens, all authentication tokens (access token, ID token and refresh token)
+        //! can be retrieved by implementing custom handlers for AuthenticationProviderNotifications in your project code.
         //! @param providerName Provider to get authentication tokens.
         //! @return AuthenticationTokens tokens from successful authentication.
         virtual AuthenticationTokens GetAuthenticationTokens(const ProviderNameEnum& providerName) = 0;
