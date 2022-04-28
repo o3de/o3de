@@ -88,15 +88,14 @@ def _get_output_path(config):
     else:
         custom_build_directory = config.getoption('--build-directory', '')
         if custom_build_directory: # default into known build folder
-            default_output_path = custom_build_directory
-        else: # should create a separate warning in _get_build_directory()
+            default_output_path = os.path.join(custom_build_directory, 'build', 'Testing', 'LyTestTools')
+        else:  # should already create a separate warning in _get_build_directory()
             default_output_path = os.getcwd()
         output_path = os.path.join(default_output_path,
-                                   "TestResults",
-                                   datetime.now().strftime(TIMESTAMP_FORMAT),
-                                   "pytest_results")
+                                   "pytest_results",
+                                   datetime.now().strftime(TIMESTAMP_FORMAT))
         logger.warning(f'Pytest custom argument "--output-path" was not provided, '
-                       f'defaulting TestResults output to: {str(output_path)}')
+                       f'defaulting Test Results output to: {str(output_path)}')
 
     os.makedirs(output_path, exist_ok=True)
     return output_path
