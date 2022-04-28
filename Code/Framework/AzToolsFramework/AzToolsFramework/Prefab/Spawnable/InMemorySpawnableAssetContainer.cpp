@@ -15,7 +15,10 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
+#include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/Spawnable/SpawnableAssetBus.h>
 
+#pragma optimize("", off)
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     InMemorySpawnableAssetContainer::~InMemorySpawnableAssetContainer()
@@ -133,12 +136,23 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZStd::string rootProductId(spawnableName);
         rootProductId += AzFramework::Spawnable::DotFileExtension;
 
+        AZStd::vector<AzFramework::Spawnable*> spawnables;
+
         // Create temporary assets from the processed data.
         for (auto& product : context.GetProcessedObjects())
         {
-            if (product.GetAssetType() == azrtti_typeid<AzFramework::Spawnable>() && product.GetId() == rootProductId)
+            if (product.GetAssetType() == azrtti_typeid<AzFramework::Spawnable>())
             {
-                targetSpawnableIndex = spawnableAssetData.m_assets.size();
+                auto spawnable = azrtti_cast<AzFramework::Spawnable*>(&product.GetAsset());
+
+                AzFramework::SpawnableAssetEventsBus::Broadcast(
+                    &AzFramework::SpawnableAssetEvents::OnPreparingSpawnable, *spawnable, product.GetId());
+                spawnables.push_back(spawnable);
+
+                if (product.GetId() == rootProductId)
+                {
+                    targetSpawnableIndex = spawnableAssetData.m_assets.size();
+                }
             }
 
             AZ::Data::AssetInfo info;
@@ -169,9 +183,57 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             LoadReferencedAssets(spawnableAssetData);
         }
 
+        // Delay resolving aliases to guarantee that the depended spawnables are already registered.
+        for (AzFramework::Spawnable* spawnable : spawnables)
+        {
+            AzFramework::Spawnable::EntityAliasVisitor aliases = spawnable->TryGetAliases();
+            AZ_Assert(aliases.IsValid(), "Unable to obtain lock for spawnable.");
+            if (aliases.HasAliases())
+            {
+                AZ_Assert(
+                    AZStd::is_sorted(
+                        aliases.begin(), aliases.end(),
+                        [](const AzFramework::Spawnable::EntityAlias& lhs, const AzFramework::Spawnable::EntityAlias& rhs)
+                        {
+                            return lhs.HasLowerIndex(rhs);
+                        }),
+                    "Spawnable has an unsorted entity alias list.");
+
+                AzFramework::SpawnableAssetEventsBus::Broadcast(
+                    &AzFramework::SpawnableAssetEvents::OnResolveAliases, aliases, spawnable->GetMetaData(), spawnable->GetEntities());
+            }
+        }
+
         auto& spawnableAssetDataAdded = m_spawnableAssets.emplace(spawnableName, spawnableAssetData).first->second;
         spawnableAssetDataAdded.m_spawnableAssetId = spawnableAssetDataAdded.m_assets[targetSpawnableIndex].GetId();
         return AZ::Success(spawnableAssetDataAdded.m_assets[targetSpawnableIndex]);
+    }
+
+    InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetContainer::CreateInMemorySpawnableAsset(
+        AzFramework::Spawnable* spawnable, const AZ::Data::AssetId& assetId)
+    {
+        AZ::Data::AssetInfo info;
+        info.m_assetId = assetId;
+        info.m_assetType = spawnable->GetType();
+        info.m_relativePath = "";
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, info.m_assetId, info);
+
+        SpawnableAssetData spawnableAssetData;
+        spawnableAssetData.m_assets.emplace_back(spawnable, AZ::Data::AssetLoadBehavior::Default);
+
+        // Ensure the spawnable asset is registered with the AssetManager
+        // Hold on to the returned asset to keep ref count alive until we assign it the latest data
+        AZ::Data::Asset<AZ::Data::AssetData> asset =
+            AZ::Data::AssetManager::Instance().FindOrCreateAsset(info.m_assetId, info.m_assetType, AZ::Data::AssetLoadBehavior::Default);
+
+        // Update the asset registered in the AssetManager with the data of our product from the Prefab Processor
+        AZ::Data::AssetManager::Instance().AssignAssetData(spawnableAssetData.m_assets.back());
+
+        LoadReferencedAssets(spawnableAssetData);
+
+        return AZ::Success(spawnableAssetData.m_assets.back());
     }
 
     InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetContainer::CreateInMemorySpawnableAsset(
@@ -293,3 +355,4 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
+#pragma optimize("", on)
