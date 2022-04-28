@@ -50,7 +50,7 @@ namespace LuaBuilder
                     if (assetSystem->GetSourceInfoBySourcePath(sourcePath.c_str(), assetInfo, watchFolder)
                         && assetInfo.m_assetId.IsValid())
                     {
-                        AZ::Data::Asset<AZ::ScriptAsset> asset(assetInfo.m_assetId, assetInfo.m_assetType, assetInfo.m_relativePath);
+                        AZ::Data::Asset<AZ::ScriptAsset> asset(AZ::Data::AssetId( assetInfo.m_assetId.m_guid, AZ::ScriptAsset::CompiledAssetSubId), assetInfo.m_assetType, assetInfo.m_relativePath);
                         asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                         assets.push_back(asset);
                     }
@@ -183,10 +183,17 @@ namespace LuaBuilder
                 , "Failed to write asset data to disk");
         }        
 
+
+        AssetBuilderSDK::JobProduct compileProduct{ destFileName, azrtti_typeid<AZ::ScriptAsset>(), AZ::ScriptAsset::CompiledAssetSubId };
+
+        for (auto& dependency : assetData.m_dependencies)
+        {
+            compileProduct.m_dependencies.push_back({ dependency.GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad) });
+        }
+
         // report success
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.emplace_back(AssetBuilderSDK::JobProduct{ destFileName, azrtti_typeid<AZ::ScriptAsset>() });
-        response.m_outputProducts.back().m_pathDependencies.insert(dependencySet.begin(), dependencySet.end());
+        response.m_outputProducts.emplace_back(compileProduct);
         response.m_outputProducts.back().m_dependenciesHandled = true;
         AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Finished job.\n");
     }

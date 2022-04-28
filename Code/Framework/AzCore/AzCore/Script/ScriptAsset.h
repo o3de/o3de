@@ -50,6 +50,8 @@ namespace AZ
         AZ_CLASS_ALLOCATOR(ScriptAsset, AZ::SystemAllocator, 0);
         AZ_RTTI(ScriptAsset, "{82557326-4AE3-416C-95D6-C70635AB7588}", Data::AssetData);
 
+        static const u32 CompiledAssetSubId = 1;
+
         ScriptAsset(const Data::AssetId& assetId = Data::AssetId());
         ~ScriptAsset() override = default;
 

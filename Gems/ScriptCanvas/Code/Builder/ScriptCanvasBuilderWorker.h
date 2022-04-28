@@ -64,6 +64,7 @@ namespace ScriptCanvasBuilder
         SeparateFromEntityComponentSystem,
         DistinguishEntityScriptFromScript,
         ExecutionStateAsLightUserdata,
+        UpdateDependencyHandling,
         // add new entries above
         Current,
     };

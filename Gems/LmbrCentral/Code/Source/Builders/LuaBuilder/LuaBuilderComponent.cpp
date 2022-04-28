@@ -15,7 +15,7 @@ namespace LuaBuilderComponentCpp
 {
     enum BuilderWorkerVersion
     {
-        AddDependenciesToAsset = 8,
+        AddDependenciesToAsset = 9,
 
         // add new, descriptive, entry above
         Current

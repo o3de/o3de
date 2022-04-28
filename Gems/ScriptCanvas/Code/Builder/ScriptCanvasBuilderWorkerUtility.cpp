@@ -103,7 +103,7 @@ namespace ScriptCanvasBuilder
 
         auto& translation = translationResult.m_translations.find(ScriptCanvas::Translation::TargetFlags::Lua)->second;
         AZ::Data::Asset<AZ::ScriptAsset> asset;
-        AZ::Data::AssetId scriptAssetId(editAsset.Id());
+        AZ::Data::AssetId scriptAssetId(editAsset.Id(), AZ::ScriptAsset::CompiledAssetSubId);
         asset.Create(scriptAssetId);
         auto writeStream = asset.Get()->m_data.CreateWriteStream();
 
@@ -255,7 +255,7 @@ namespace ScriptCanvasBuilder
         AssetBuilderSDK::JobProduct jobProduct;
         jobProduct.m_productFileName = compileRequest.m_destPath;;
         jobProduct.m_productAssetType = azrtti_typeid<AZ::ScriptAsset>();
-        jobProduct.m_productSubID = 0;
+        jobProduct.m_productSubID = AZ::ScriptAsset::CompiledAssetSubId;
         jobProduct.m_dependenciesHandled = true;
         input.response->m_outputProducts.push_back(AZStd::move(jobProduct));
 
@@ -363,16 +363,16 @@ namespace ScriptCanvasBuilder
             ScriptCanvas::RuntimeDataSubId, jobProduct);
 
         // Output Object marks dependencies as handled.
-        // We still have more to evaluate
+        // We still have more to evaluate, so mark false, until complete
         jobProduct.m_dependenciesHandled = false;
 
-        jobProduct.m_dependencies.push_back({ runtimeData.m_script.GetId(), {} });
+        jobProduct.m_dependencies.push_back({ runtimeData.m_script.GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad) });
 
         for (const auto& assetDependency : runtimeData.m_requiredAssets)
         {
             if (AZ::Data::AssetManager::Instance().GetAsset(assetDependency.GetId(), assetDependency.GetType(), AZ::Data::AssetLoadBehavior::PreLoad))
             {
-                jobProduct.m_dependencies.push_back({ assetDependency.GetId(), {} });
+                jobProduct.m_dependencies.push_back({ assetDependency.GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad) });
             }
             else
             {
@@ -384,7 +384,7 @@ namespace ScriptCanvasBuilder
         {
             if (AZ::Data::AssetManager::Instance().GetAsset(scriptEventDependency.GetId(), scriptEventDependency.GetType(), AZ::Data::AssetLoadBehavior::PreLoad))
             {
-                jobProduct.m_dependencies.push_back({ scriptEventDependency.GetId(), {} });
+                jobProduct.m_dependencies.push_back({ scriptEventDependency.GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad) });
             }
             else
             {
