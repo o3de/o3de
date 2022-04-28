@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <AzCore/IO/Path/Path.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AssetDatabase/AssetDatabaseConnection.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/Path/Path.h>
 #include <native/utilities/assetUtils.h>
 
 namespace AssetProcessor
