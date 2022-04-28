@@ -12,7 +12,6 @@
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ShaderResourceGroupBindless.h>
 
 namespace AZ
 {
@@ -61,10 +60,7 @@ namespace AZ
             ShaderInputImageIndex    FindShaderInputImageIndex(const Name& name) const;
             ShaderInputSamplerIndex  FindShaderInputSamplerIndex(const Name& name) const;
             ShaderInputConstantIndex FindShaderInputConstantIndex(const Name& name) const;
-
-            //! Retrieve helper object used to retain resources accessed via bindless heaps and query indices
-            ShaderResourceGroupBindless& GetBindless();
-
+            
             //! Sets one image view for the given shader input index.
             bool SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex);
 
@@ -209,6 +205,24 @@ namespace AZ
                 SamplerMask = AZ_BIT(static_cast<uint32_t>(ResourceType::Sampler))
             };
 
+            //This enum order needs to match the order in Bindless.azsli
+            enum class BindlessResourceType : uint32_t
+            {
+                ReadTexture = 0,
+                ReadWriteTexture,
+                ReadBuffer,
+                ReadWriteBuffer,
+                RTAccelerationStructure,
+                Count
+            };
+            
+            // Structure to hold all the bindless views and the BindlessResourceType related to it
+            struct BindlessResourceViews
+            {
+                BindlessResourceType m_bindlessResourceType = BindlessResourceType::Count;
+                AZStd::vector<ConstPtr<ResourceView>> m_bindlessResources;
+            };
+            
             //! Reset the update mask
             void ResetUpdateMask();
 
@@ -217,6 +231,30 @@ namespace AZ
 
             //! Returns the mask that is suppose to indicate which resource type was updated
             uint32_t GetUpdateMask() const;
+            
+            //! Update the indirect buffer view with the indices of all the image views which reside in the global gpu heap.
+            void SetBindlessViews(
+                ShaderInputBufferIndex indirectResourceBufferIndex,
+                const RHI::BufferView* indirectResourceBuffer,
+                AZStd::span<const ImageView* const> imageViews,
+                uint32_t* outIndices,
+                bool viewReadOnly = true,
+                uint32_t arrayIndex = 0);
+            
+            //! Update the indirect buffer view with the indices of all the buffer views which reside in the global gpu heap.
+            void SetBindlessViews(
+                ShaderInputBufferIndex indirectResourceBufferIndex,
+                const RHI::BufferView* indirectResourceBuffer,
+                AZStd::span<const BufferView* const> bufferViews,
+                uint32_t* outIndices,
+                bool viewReadOnly = true,
+                uint32_t arrayIndex = 0);
+
+            //! Get the size of the bindless view map
+            const uint32_t GetBindlessViewsSize() const;
+            
+            //! Return all the view data stored within bindless view map
+            const AZStd::vector<BindlessResourceViews> GetAllBindlessViews() const;
             
         private:
             static const ConstPtr<ImageView> s_nullImageView;
@@ -240,8 +278,10 @@ namespace AZ
             AZStd::vector<ConstPtr<ImageView>> m_imageViewsUnboundedArray;
             AZStd::vector<ConstPtr<BufferView>> m_bufferViewsUnboundedArray;
 
-            //! The backing data store for views bound via indirection constants (bindless)
-            ShaderResourceGroupBindless m_bindless;
+            // The map below is used to manage ownership of buffer and image views that aren't bound directly to the shader, but implicitly
+            // referenced through indirection constants. The key corresponds to the pair of (buffer input slot, index) where the indirection
+            // constants reside (an array of indirection buffers is supported)            
+            AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, BindlessResourceViews> m_bindlessResourceViews;
 
             //! The backing data store of constants for the shader resource group.
             ConstantsData m_constantsData;

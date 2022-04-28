@@ -24,7 +24,9 @@ namespace AZ
             return aznew ArgumentBuffer();
         }
 
-        void ArgumentBuffer::Init(Device* device, RHI::ConstPtr<RHI::ShaderResourceGroupLayout> srgLayout, ShaderResourceGroup& group, ShaderResourceGroupPool* srgPool)
+        void ArgumentBuffer::Init(Device* device,
+                                  RHI::ConstPtr<RHI::ShaderResourceGroupLayout> srgLayout,
+                                  ShaderResourceGroupPool* srgPool)
         {
             @autoreleasepool
             {
@@ -49,40 +51,12 @@ namespace AZ
                     AZ_Assert(m_constantBuffer.IsValid(), "Couldnt allocate memory for Constant buffer")
                 }
 
-
                 NSMutableArray* argBufferDecriptors = [[[NSMutableArray alloc] init] autorelease];
                 bool argDescriptorsCreated = CreateArgumentDescriptors(argBufferDecriptors);
 
                 if(argDescriptorsCreated)
                 {
-                    NSSortDescriptor* sortDescriptor;
-                    sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"index"
-                                                                 ascending:YES] autorelease];
-                    NSArray* sortedArgDescriptors = [argBufferDecriptors sortedArrayUsingDescriptors:@[sortDescriptor]];
-
-                    m_argumentEncoder = [m_device->GetMtlDevice() newArgumentEncoderWithArguments:sortedArgDescriptors];
-                    NSUInteger argumentBufferLength = m_argumentEncoder.encodedLength;
-
-                    RHI::BufferDescriptor bufferDescriptor;
-
-                    bufferDescriptor.m_byteCount = argumentBufferLength;
-                    bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
-                    AZStd::string argBufferName = "ArgumentBuffer";
-#if defined(ARGUMENTBUFFER_PAGEALLOCATOR)
-                    m_argumentBuffer = device->GetArgumentBufferAllocator().Allocate(bufferDescriptor.m_byteCount);
-#else
-                    m_argumentBuffer = device->CreateBufferCommitted(bufferDescriptor, RHI::HeapMemoryLevel::Host);
-                    argBufferName = AZStd::string::format("ArgumentBuffer_%s", srgPool->GetName().GetCStr());
-                    m_argumentBuffer.SetName(argBufferName.c_str());
-#endif
-                    AZ_Assert(m_argumentBuffer.IsValid(), "Argument Buffer was not created");
-
-                    
-                    SetName(Name(argBufferName.c_str()));
-
-                    //Attach the argument buffer to the argument encoder
-                    [m_argumentEncoder setArgumentBuffer:m_argumentBuffer.GetGpuAddress<id<MTLBuffer>>()
-                                                                     offset:m_argumentBuffer.GetOffset()];
+                    SetArgumentBuffer(argBufferDecriptors, AZStd::string::format("ArgumentBuffer_%s", srgPool->GetName().GetCStr()));
 
                     //Attach the static samplers
                     AttachStaticSamplers();
@@ -93,6 +67,52 @@ namespace AZ
             }
         }
 
+        void ArgumentBuffer::Init(Device* device,
+                                  AZStd::vector<MTLArgumentDescriptor*> argBufferDescriptors,
+                                  AZStd::string argBufferName)
+        {
+            @autoreleasepool
+            {
+                m_device = device;
+
+                NSMutableArray* argBufferDecriptors = [[[NSMutableArray alloc] init] autorelease];
+                for(MTLArgumentDescriptor* desc : argBufferDescriptors)
+                {
+                    [argBufferDecriptors addObject:desc];
+                }
+                
+                SetArgumentBuffer(argBufferDecriptors, argBufferName);
+            }
+        }
+
+        void ArgumentBuffer::SetArgumentBuffer(NSMutableArray* argBufferDecriptors, AZStd::string argBufferName)
+        {
+            NSSortDescriptor* sortDescriptor;
+            sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"index"
+                                                         ascending:YES] autorelease];
+            NSArray* sortedArgDescriptors = [argBufferDecriptors sortedArrayUsingDescriptors:@[sortDescriptor]];
+
+            m_argumentEncoder = [m_device->GetMtlDevice() newArgumentEncoderWithArguments:sortedArgDescriptors];
+            NSUInteger argumentBufferLength = m_argumentEncoder.encodedLength;
+
+            RHI::BufferDescriptor bufferDescriptor;
+
+            bufferDescriptor.m_byteCount = argumentBufferLength;
+            bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
+#if defined(ARGUMENTBUFFER_PAGEALLOCATOR)
+            m_argumentBuffer = m_device->GetArgumentBufferAllocator().Allocate(bufferDescriptor.m_byteCount);
+#else
+            m_argumentBuffer = m_device->CreateBufferCommitted(bufferDescriptor, RHI::HeapMemoryLevel::Host);
+            m_argumentBuffer.SetName(argBufferName.c_str());
+#endif
+            AZ_Assert(m_argumentBuffer.IsValid(), "Argument Buffer was not created");
+            SetName(Name(argBufferName.c_str()));
+
+            //Attach the argument buffer to the argument encoder
+            [m_argumentEncoder setArgumentBuffer:m_argumentBuffer.GetGpuAddress<id<MTLBuffer>>()
+                                                             offset:m_argumentBuffer.GetOffset()];
+        }
+    
         bool ArgumentBuffer::CreateArgumentDescriptors(NSMutableArray* argBufferDecriptors)
         {
             bool resourceAdded = false;
@@ -517,6 +537,24 @@ namespace AZ
         bool ArgumentBuffer::IsNullDescHeapNeeded() const
         {
             return m_useNullDescriptorHeap;
+        }
+    
+        void ArgumentBuffer::UpdateTextureView(id <MTLTexture> mtlTexture, uint32_t index)
+        {
+            [m_argumentEncoder setTexture : mtlTexture
+                                atIndex   : index];
+        }
+        
+        void ArgumentBuffer::UpdateBufferView(id <MTLBuffer> mtlBuffer, uint32_t offset, uint32_t index)
+        {
+            [m_argumentEncoder setBuffer : mtlBuffer
+                                  offset : offset
+                                 atIndex : index];
+        }
+    
+        const id<MTLArgumentEncoder> ArgumentBuffer::GetArgEncoder() const
+        {
+            return m_argumentEncoder;
         }
     }
 }

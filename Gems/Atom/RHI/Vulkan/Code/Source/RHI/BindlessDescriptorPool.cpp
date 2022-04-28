@@ -23,17 +23,23 @@ namespace AZ::Vulkan
     void BindlessDescriptorPool::Init(Device& device)
     {
         m_device = &device;
+        const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
+        const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
+        const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
+        const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
+        const uint32_t tlasIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::RTAccelerationStructure);
+        const uint32_t MaxBindlessIndices = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count) - 1; //-1 because we dont have unbounded tlas array
 
         {
             DescriptorPool::Descriptor desc;
             desc.m_device = &device;
-
-            desc.m_descriptorPoolSizes.resize_no_construct(4);
-            desc.m_descriptorPoolSizes[0] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, UnboundedArraySize };
-            desc.m_descriptorPoolSizes[1] = { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, UnboundedArraySize };
-            desc.m_descriptorPoolSizes[2] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, UnboundedArraySize };
-            desc.m_descriptorPoolSizes[3] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, UnboundedArraySize };
-            // desc.m_descriptorPoolSizes[4] = { VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, UnboundedArraySize };
+            
+            desc.m_descriptorPoolSizes.resize_no_construct(MaxBindlessIndices);
+            desc.m_descriptorPoolSizes[roTextureIndex] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, UnboundedArraySize };
+            desc.m_descriptorPoolSizes[rwTextureIndex] = { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, UnboundedArraySize };
+            desc.m_descriptorPoolSizes[roBufferIndex] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, UnboundedArraySize };
+            desc.m_descriptorPoolSizes[rwBufferIndex] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, UnboundedArraySize };
+            //desc.m_descriptorPoolSizes[tlasIndex] = { VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, UnboundedArraySize };
             desc.m_maxSets = 1;
             desc.m_collectLatency = 1;
             desc.m_updateAfterBind = true;
@@ -46,45 +52,55 @@ namespace AZ::Vulkan
             // TODO(BINDLESS): Here, we aren't using the SRG abstraction to create the native binding layout because we'd need a shader to
             // hook up reflection, similar to how the scene/view SRGs are reflected. For now, this layout is fixed but needs to match the
             // Bindless.azsli SRG declaration.
-            VkDescriptorSetLayoutBinding bindings[4];
+            VkDescriptorSetLayoutBinding bindings[MaxBindlessIndices];
+      
+            bindings[roTextureIndex].binding = roTextureIndex;
+            bindings[roTextureIndex].descriptorCount = UnboundedArraySize;
+            bindings[roTextureIndex].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            bindings[roTextureIndex].stageFlags = VK_SHADER_STAGE_ALL;
 
-            bindings[0].binding = 0;
-            bindings[0].descriptorCount = UnboundedArraySize;
-            bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-            bindings[0].stageFlags = VK_SHADER_STAGE_ALL;
+            bindings[rwTextureIndex].binding = rwTextureIndex;
+            bindings[rwTextureIndex].descriptorCount = UnboundedArraySize;
+            bindings[rwTextureIndex].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            bindings[rwTextureIndex].stageFlags = VK_SHADER_STAGE_ALL;
 
-            bindings[1].binding = 1;
-            bindings[1].descriptorCount = UnboundedArraySize;
-            bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            bindings[1].stageFlags = VK_SHADER_STAGE_ALL;
+            bindings[roBufferIndex].binding = roBufferIndex;
+            bindings[roBufferIndex].descriptorCount = UnboundedArraySize;
+            bindings[roBufferIndex].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            bindings[roBufferIndex].stageFlags = VK_SHADER_STAGE_ALL;
 
-            bindings[2].binding = 2;
-            bindings[2].descriptorCount = UnboundedArraySize;
-            bindings[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            bindings[2].stageFlags = VK_SHADER_STAGE_ALL;
+            bindings[rwBufferIndex].binding = rwBufferIndex;
+            bindings[rwBufferIndex].descriptorCount = UnboundedArraySize;
+            bindings[rwBufferIndex].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            bindings[rwBufferIndex].stageFlags = VK_SHADER_STAGE_ALL;
 
-            bindings[3].binding = 3;
-            bindings[3].descriptorCount = UnboundedArraySize;
-            bindings[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            bindings[3].stageFlags = VK_SHADER_STAGE_ALL;
+            // TODO(BINDLESS): The pipeline layout creation does not recognize an unbounded array of TLAS descriptors yet.
+            // As a ref this is the validation hit when we uncomment tlas related support from this class.
+            // Vk validation - Binding 4 for VkDescriptorSetLayout 0x45560900000002bf[] from pipeline layout is type
+            // 'VK_DESCRIPTOR_TYPE_STORAGE_BUFFER' but binding 4 for VkDescriptorSetLayout 0xfa21a40000000003[], which is bound, is type
+            // 'VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR'. The Vulkan spec states: Each element of pDescriptorSets must have been
+            // allocated with a VkDescriptorSetLayout that matches (is the same as, or identically defined as) the VkDescriptorSetLayout at
+            // set n in layout, where n is the sum of firstSet and the index into pDescriptorSets
 
-            VkDescriptorBindingFlags bindingFlags[4];
-            for (size_t i = 0; i != 4; ++i)
+            //bindings[tlasIndex].binding = tlasIndex;
+            //bindings[tlasIndex].descriptorCount = UnboundedArraySize;
+            //bindings[tlasIndex].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+            //bindings[tlasIndex].stageFlags = VK_SHADER_STAGE_ALL;
+            
+            VkDescriptorBindingFlags bindingFlags[MaxBindlessIndices];
+            for (size_t i = 0; i != MaxBindlessIndices; ++i)
             {
                 bindingFlags[i] = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
             }
             VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
             bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-            bindingFlagsInfo.bindingCount = 4;
+            bindingFlagsInfo.bindingCount = MaxBindlessIndices;
             bindingFlagsInfo.pBindingFlags = bindingFlags;
-
-            // TODO(BINDLESS): The pipeline layout creation does not recognize an unbounded array of TLAS descriptors yet
-            // We should add a pool of bindless TLAS descriptors as well
 
             VkDescriptorSetLayoutCreateInfo layoutInfo{};
             layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             layoutInfo.pNext = &bindingFlagsInfo;
-            layoutInfo.bindingCount = 4;
+            layoutInfo.bindingCount = MaxBindlessIndices;
             layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
             layoutInfo.pBindings = bindings;
 
@@ -99,12 +115,12 @@ namespace AZ::Vulkan
             vkAllocateDescriptorSets(m_device->GetNativeDevice(), &allocInfo, &m_set);
         }
 
-        for (size_t i = 0; i != 5; ++i)
+        for (size_t i = 0; i != MaxBindlessIndices; ++i)
         {
             RHI::FreeListAllocator::Descriptor desc;
             desc.m_capacityInBytes = UnboundedArraySize;
             desc.m_alignmentInBytes = 1;
-            desc.m_garbageCollectLatency = 3;
+            desc.m_garbageCollectLatency = RHI::Limits::Device::FrameCountMax;
             desc.m_policy = RHI::FreeListAllocatorPolicy::FirstFit;
             m_allocators[i].Init(desc);
         }
@@ -133,10 +149,11 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachReadImage(ImageView* view)
     {
+        const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
         AZStd::array<RHI::ConstPtr<RHI::ImageView>, 1> span{ view };
-        uint32_t index = static_cast<uint32_t>(m_allocators[0].Allocate(1, 1).m_ptr);
+        uint32_t index = static_cast<uint32_t>(m_allocators[roTextureIndex].Allocate(1, 1).m_ptr);
 
-        VkWriteDescriptorSet write = PrepareWrite(index, 0, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+        VkWriteDescriptorSet write = PrepareWrite(index, roTextureIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = view->GetNativeImageView();
@@ -148,10 +165,11 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachReadWriteImage(ImageView* view)
     {
+        const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
         AZStd::array<RHI::ConstPtr<RHI::ImageView>, 1> span{ view };
-        uint32_t index = static_cast<uint32_t>(m_allocators[1].Allocate(1, 1).m_ptr);
+        uint32_t index = static_cast<uint32_t>(m_allocators[rwTextureIndex].Allocate(1, 1).m_ptr);
 
-        VkWriteDescriptorSet write = PrepareWrite(index, 1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+        VkWriteDescriptorSet write = PrepareWrite(index, rwTextureIndex, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
         imageInfo.imageView = view->GetNativeImageView();
@@ -163,13 +181,14 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachReadBuffer(BufferView* view)
     {
+        const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
         AZStd::array<const RHI::ConstPtr<RHI::BufferView>, 1> span{ view };
-        uint32_t index = static_cast<uint32_t>(m_allocators[2].Allocate(1, 1).m_ptr);
+        uint32_t index = static_cast<uint32_t>(m_allocators[roBufferIndex].Allocate(1, 1).m_ptr);
 
         const auto& viewDesc = view->GetDescriptor();
         const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
 
-        VkWriteDescriptorSet write = PrepareWrite(index, 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+        VkWriteDescriptorSet write = PrepareWrite(index, roBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = bufferMemoryView.GetNativeBuffer();
         bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
@@ -182,13 +201,14 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachReadWriteBuffer(BufferView* view)
     {
+        const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
         AZStd::array<RHI::ConstPtr<RHI::BufferView>, 1> span{ view };
-        uint32_t index = static_cast<uint32_t>(m_allocators[3].Allocate(1, 1).m_ptr);
+        uint32_t index = static_cast<uint32_t>(m_allocators[rwBufferIndex].Allocate(1, 1).m_ptr);
 
         const auto& viewDesc = view->GetDescriptor();
         const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
 
-        VkWriteDescriptorSet write = PrepareWrite(index, 3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+        VkWriteDescriptorSet write = PrepareWrite(index, rwBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = bufferMemoryView.GetNativeBuffer();
         bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
@@ -201,13 +221,14 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachTLAS(BufferView* view)
     {
+        const uint32_t tlasIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::RTAccelerationStructure);
         AZStd::array<RHI::ConstPtr<RHI::BufferView>, 1> span{ view };
-        uint32_t index = static_cast<uint32_t>(m_allocators[4].Allocate(1, 1).m_ptr);
+        uint32_t index = static_cast<uint32_t>(m_allocators[tlasIndex].Allocate(1, 1).m_ptr);
 
         const auto& viewDesc = view->GetDescriptor();
         const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
 
-        VkWriteDescriptorSet write = PrepareWrite(index, 4, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR);
+        VkWriteDescriptorSet write = PrepareWrite(index, tlasIndex, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR);
 
         VkWriteDescriptorSetAccelerationStructureKHR tlasInfo{};
         tlasInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
@@ -228,32 +249,37 @@ namespace AZ::Vulkan
 
     void BindlessDescriptorPool::DetachReadImage(uint32_t index)
     {
-        m_allocators[0].DeAllocate({ index });
+        const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
+        m_allocators[roTextureIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadWriteImage(uint32_t index)
     {
-        m_allocators[1].DeAllocate({ index });
+        const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
+        m_allocators[rwTextureIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadBuffer(uint32_t index)
     {
-        m_allocators[2].DeAllocate({ index });
+        const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
+        m_allocators[roBufferIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadWriteBuffer(uint32_t index)
     {
-        m_allocators[3].DeAllocate({ index });
+        const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
+        m_allocators[rwBufferIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachTLAS(uint32_t index)
     {
-        m_allocators[4].DeAllocate({ index });
+        const uint32_t tlasIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::RTAccelerationStructure);
+        m_allocators[tlasIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::GarbageCollect()
     {
-        for (size_t i = 0; i != 5; ++i)
+        for (size_t i = 0; i != static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count); ++i)
         {
             m_allocators[i].GarbageCollect();
         }

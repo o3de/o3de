@@ -151,11 +151,6 @@ namespace AZ
             return m_layout->FindShaderInputImageUnboundedArrayIndex(name);
         }
 
-        //const Data::Asset<ShaderAsset>& ShaderResourceGroup::GetAsset() const
-        //{
-        //    return m_asset;
-        //}
-
         const RHI::ShaderResourceGroupLayout* ShaderResourceGroup::GetLayout() const
         {
             return m_layout;
@@ -273,11 +268,6 @@ namespace AZ
                 return AZStd::span<const Data::Instance<Image>>(&m_imageGroup[interval.m_min], interval.m_max - interval.m_min);
             }
             return {};
-        }
-
-        RHI::ShaderResourceGroupBindless& ShaderResourceGroup::GetBindless()
-        {
-            return m_data.GetBindless();
         }
 
         bool ShaderResourceGroup::SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex)
@@ -621,6 +611,30 @@ namespace AZ
         AZStd::span<const uint8_t> ShaderResourceGroup::GetConstantRaw(RHI::ShaderInputConstantIndex inputIndex) const
         {
             return m_data.GetConstantRaw(inputIndex);
+        }
+    
+        void ShaderResourceGroup::SetBindlessViews(
+            RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
+            const RHI::BufferView* indirectResourceBuffer,
+            AZStd::span<const RHI::ImageView* const> imageViews,
+            uint32_t* outIndices,
+            bool viewReadOnly,
+            uint32_t arrayIndex)
+        {
+            m_data.SetBindlessViews(indirectResourceBufferIndex,indirectResourceBuffer,
+                                    imageViews, outIndices,viewReadOnly, arrayIndex);
+        }
+    
+        void ShaderResourceGroup::SetBindlessViews(
+            RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
+            const RHI::BufferView* indirectResourceBuffer,
+            AZStd::span<const RHI::BufferView* const> bufferViews,
+            uint32_t* outIndices,
+            bool viewReadOnly,
+            uint32_t arrayIndex)
+        {
+            m_data.SetBindlessViews(indirectResourceBufferIndex,indirectResourceBuffer,
+                                    bufferViews, outIndices,viewReadOnly, arrayIndex);
         }
 
     } // namespace RPI

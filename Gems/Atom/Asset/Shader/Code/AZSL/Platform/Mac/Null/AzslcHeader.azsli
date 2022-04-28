@@ -10,3 +10,5 @@
 * The shader build pipeline has 2 preprocess stages. The first one happens 
 * after appending this header and pre-processing with mcpp ahead of azslc.
 */
+
+#define UNBOUNDED_SIZE 100000

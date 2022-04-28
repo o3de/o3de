@@ -15,6 +15,7 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
+#include <RHI/ImageView.h>
 #include <RHI/MemoryView.h>
 #include <RHI/PipelineState.h>
 #include <RHI/ShaderResourceGroup.h>
@@ -35,11 +36,8 @@ namespace AZ
         }
         void CommandList::Reset()
         {
-            //We are deliberately not doing m_state = State(); because on ios build server machines we were getting this issue
-            //Undefined symbols for architecture arm64:
-            //   "_objc_memmove_collectable", referenced from:
-            //We can come back and revisit this after upgrading the build server machines to Mojave.
-
+            m_state = State();
+            
             m_state.m_pipelineState = nullptr;
             m_state.m_pipelineLayout = nullptr;
             m_state.m_streamsHash = AZ::HashValue64{0};
@@ -278,6 +276,27 @@ namespace AZ
             {
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[slot];
                 uint32_t slotIndex = pipelineLayout.GetIndexBySlot(slot);
+ 
+                //Check explicitly for Bindless SRG. This needs to be data driven (todo)
+                if(slotIndex != RHI::Limits::Pipeline::ShaderResourceGroupCountMax && shaderResourceGroup == nullptr &&
+                   bindings.m_srgsByIndex[slot] == nullptr)
+                {
+                    bindings.m_srgsByIndex[slot] = shaderResourceGroup;
+                    
+                    //Add the bindless AB info to the arrays in order to bind it to the appropriate encoder
+                    m_device->GetBindlessArgumentBuffer().BindBindlessArgumentBuffer(slotIndex, m_commandEncoderType,
+                                                                        mtlVertexArgBuffers, mtlVertexArgBufferOffsets,
+                                                                        mtlFragmentOrComputeArgBuffers, mtlFragmentOrComputeArgBufferOffsets,
+                                                                        bufferVertexRegisterIdMin, bufferVertexRegisterIdMax,
+                                                                        bufferFragmentOrComputeRegisterIdMin, bufferFragmentOrComputeRegisterIdMax);
+                    
+                    //Make all the relevant ABs resident. This only to ABs related to unbounded array support
+                    m_device->GetBindlessArgumentBuffer().MakeBindlessArgumentBuffersResident(m_commandEncoderType,
+                                                                                              resourcesToMakeResidentGraphics,
+                                                                                              resourcesToMakeResidentCompute);                                 
+                    continue;
+                }
+                
                 if(!shaderResourceGroup || slotIndex == RHI::Limits::Pipeline::ShaderResourceGroupCountMax)
                 {
                     continue;
@@ -341,8 +360,60 @@ namespace AZ
                     bindings.m_srgVisHashByIndex[slot] = srgResourcesVisHash;
                     if(srgVisInfo != RHI::ShaderStageMask::None)
                     {
-
-
+                        //Make all the bindless resource views that are referenced indirectly by this SRG resident.
+                        const uint32_t bindlessViewsSize = shaderResourceGroup->GetData().GetBindlessViewsSize();
+                        if(bindlessViewsSize>0)
+                        {
+                            const AZStd::vector<RHI::ShaderResourceGroupData::BindlessResourceViews> bindlessResourcesVec =
+                                                    shaderResourceGroup->GetData().GetAllBindlessViews();
+                            for(const auto& it : bindlessResourcesVec)
+                            {
+                                // Iterate through all the ResourceViews
+                                for(const auto& resourceViewsIt : it.m_bindlessResources)
+                                {
+                                    id<MTLResource> mtlResourceView = nil;
+                                    MTLResourceUsage resourceUsage = MTLResourceUsageRead;
+                                    //Figure out the correct resource usage and resource pointer
+                                    switch(it.m_bindlessResourceType)
+                                    {
+                                        case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture:
+                                        {
+                                            resourceUsage |= MTLResourceUsageWrite;
+                                        }
+                                        case RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture:
+                                        {
+                                            const ImageView* imageView = static_cast<const ImageView*>(resourceViewsIt.get());
+                                            mtlResourceView = imageView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
+                                            break;
+                                        }
+                                        case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer:
+                                        {
+                                            resourceUsage |= MTLResourceUsageWrite;
+                                        }
+                                        case RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer:
+                                        {
+                                            const BufferView* bufferView = static_cast<const BufferView*>(resourceViewsIt.get());
+                                            mtlResourceView = bufferView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
+                                            break;
+                                        }
+                                    }
+                                    
+                                    // Cache it in the appropriate map so that we can make a single UseResources call per key
+                                    // which is composed of usage and renderstage(only graphics)
+                                    if(m_commandEncoderType == CommandEncoderType::Render)
+                                    {
+                                        AZStd::pair <MTLResourceUsage,MTLRenderStages> key =
+                                                    AZStd::make_pair(resourceUsage, MTLRenderStageVertex|MTLRenderStageFragment);
+                                        resourcesToMakeResidentGraphics[key].emplace(mtlResourceView);
+                                    }
+                                    else if(m_commandEncoderType == CommandEncoderType::Compute)
+                                    {
+                                        resourcesToMakeResidentCompute[resourceUsage].emplace(mtlResourceView);
+                                    }
+                                }
+                            }
+                        }
+                        
                         //For graphics and compute encoder make the resource resident (call UseResource) for the duration
                         //of the work associated with the current scope and ensure that it's in a
                         //format compatible with the appropriate metal function.

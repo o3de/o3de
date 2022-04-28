@@ -91,6 +91,7 @@ namespace AZ
             
             //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
             void MakeHeapsResident(MTLRenderStages renderStages);
+            Device* m_device = nullptr;
         private:
             
             

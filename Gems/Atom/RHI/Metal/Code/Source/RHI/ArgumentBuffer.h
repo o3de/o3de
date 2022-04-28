@@ -65,6 +65,7 @@ namespace AZ
         class ShaderResourceGroup;
         struct ShaderResourceGroupCompiledData;
 
+        //! This class manages all the native objects associated with a ShaderResourceGroup
         class ArgumentBuffer final
             : public RHI::DeviceObject
         {
@@ -78,10 +79,13 @@ namespace AZ
 
             static RHI::Ptr<ArgumentBuffer> Create();
             void Init(Device* device,
-                      RHI::ConstPtr<RHI::ShaderResourceGroupLayout> srgLayout,
-                      ShaderResourceGroup& group,
+                      RHI::ConstPtr<RHI::ShaderResourceGroupLayout> srgLayout,                      
                       ShaderResourceGroupPool* srgPool);
-
+            
+            void Init(Device* device,
+                      AZStd::vector<MTLArgumentDescriptor*> argBufferDescriptors,
+                      AZStd::string argBufferName);
+            
             void UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
                                   const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews);
 
@@ -93,7 +97,13 @@ namespace AZ
 
             void UpdateConstantBufferViews(AZStd::span<const uint8_t> rawData);
 
+            //! Return the native MTLBuffer that holds SRG data
             id<MTLBuffer> GetArgEncoderBuffer() const;
+            
+            //! Return the native Argument buffer encoder is used to write into the native MTLBuffer
+            const id<MTLArgumentEncoder> GetArgEncoder() const;
+            
+            //! Return the offset associated with the native MTLBuffer for this argument buffer
             size_t GetOffset() const;
 
             //Map to cache all the resources based on the usage as we can batch all the resources for a given usage.
@@ -101,6 +111,7 @@ namespace AZ
             //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage.
             using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, AZStd::unordered_set<id <MTLResource>>>;
 
+            //Cache all the resources bound to the SRG that needs to be made resident beofre the draw call
             void CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
                                            ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
                                            GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
@@ -108,6 +119,12 @@ namespace AZ
             bool IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
             bool IsNullDescHeapNeeded() const;
 
+            //! Update the texture related descriptor at a specific id index within the Argument buffer
+            void UpdateTextureView(id <MTLTexture> mtlTexture, uint32_t index);
+            
+            //! Update the buffer related descriptor at a specific id index within the Argument buffer
+            void UpdateBufferView(id <MTLBuffer> mtlBuffer, uint32_t offset, uint32_t index);
+            
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceObject
             void Shutdown() override;
@@ -135,7 +152,8 @@ namespace AZ
                                              GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
     
             void BindNullSamplers(uint32_t registerId, uint32_t samplerCount);
-
+            void SetArgumentBuffer(NSMutableArray* argBufferDecriptors, AZStd::string argBufferName);
+            
             Device* m_device = nullptr;
             RHI::ConstPtr<RHI::ShaderResourceGroupLayout> m_srgLayout;
 
