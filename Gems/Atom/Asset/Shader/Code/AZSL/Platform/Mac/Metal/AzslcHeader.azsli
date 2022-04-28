@@ -11,4 +11,5 @@
 * after appending this header and pre-processing with mcpp ahead of azslc.
 */
 
+#define UNBOUNDED_SIZE 100000
 static const float4 s_AzslDebugColor = float4(85.0 / 255.0, 85.0 / 255.0, 85.0 / 255.0, 1);

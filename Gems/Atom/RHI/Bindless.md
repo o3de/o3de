@@ -108,9 +108,15 @@ The descriptor bindings in the global layout request several feature bit capabil
 - The `Vulkan/Code/Source/RHI/CommandList.cpp` implementation was modified to assume that an unbound descriptor set must simply refer to the `Bindless` descriptor set, and validation is needed to ensure this is in fact the case.
 - The bindings are all hardcoded to require `100000` elements, but this is a gross overestimation of usage for many resource types (e.g. UAV textures, UAV buffers). To relax this requirement, the `PipelineLayout` compilation needs to change to adjust the unbounded array descriptor count estimation based on descriptor type.
 
+### Metal Implementation
+
+Metal currently has support for Bindless via teo approaches.
+- Approach 1 (Unbounded arrays with an explicit limit of 100k) - We create one Argument buffer that encompasses all the bounded unbound arrays. Since the resource types can not alias like Dx12 we create separate regions for read only textures, read write textures, read only buffers and read write buffers. Each section gets enough space for 100k views. 
+- Approach 2 (Unbounded array with no limit) - Assuming spirv-cross adds support for it we create an argument buffer per resource type (read only textures, read write textures, read only buffers, read write buffers) and we create a  root argument buffer which acts as a container for all argument buffers per bindless resource type. 
+For both approaches when a view is created we add it to the global heap and at runtime we bind the appropriate AB as needed.
+
 ### General TODOs
 
 - Designate an `SRG_Frequency` as the "bindless SRG" and enforce this
-- Enable unbounded arrays of `RaytracingAccelerationStructure` (TLAS) types
-- Provide a metal backend
+- Enable unbounded arrays of `RaytracingAccelerationStructure` (TLAS) type
 - Recompile GI shader binaries with the new reflected `azshader` data format and test functionality continues to operate as normal with raytracing enabled
