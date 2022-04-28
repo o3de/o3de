@@ -266,6 +266,6 @@ private: // ---------------------------------------------------------------
 class CScopedSuspendUndo
 {
 public:
-    CScopedSuspendUndo() { GetIEditor()->SuspendUndo(); }
-    ~CScopedSuspendUndo() { GetIEditor()->ResumeUndo(); }
+    EDITOR_CORE_API CScopedSuspendUndo();
+    EDITOR_CORE_API ~CScopedSuspendUndo();
 };
