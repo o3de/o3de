@@ -14,6 +14,14 @@
 
 struct lua_State;
 
+// #define SCRIPT_SYSTEM_SCRIPT_LOADED_DIAGNOSTICS_ENABLED
+
+#if defined(SCRIPT_SYSTEM_SCRIPT_LOADED_DIAGNOSTICS_ENABLED)
+#define SCRIPT_SYSTEM_SCRIPT_STATUS(window, msg, ...) AZ_TracePrintf(window, msg, __VA_ARGS__);
+#else
+#define SCRIPT_SYSTEM_SCRIPT_STATUS(window, msg, ...)
+#endif
+
 namespace AZ
 {
     using InMemoryScriptModules = AZStd::vector<AZStd::pair<AZStd::string, AZ::Data::Asset<AZ::ScriptAsset>>>;

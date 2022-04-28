@@ -31,7 +31,6 @@
 #include <ScriptCanvas/Core/Core.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 
-
 namespace ScriptCanvasBuilder
 {
     AssetHandlers::AssetHandlers(SharedHandlers& source)
@@ -137,7 +136,7 @@ namespace ScriptCanvasBuilder
         AZ::Data::AssetManager::Instance().DispatchEvents();
 
         AZ::Data::AssetId runtimeAssetId = editAsset.Id();
-        runtimeAssetId.m_subId = AZ_CRC("RuntimeData", 0x163310ae);
+        runtimeAssetId.m_subId = ScriptCanvas::RuntimeDataSubId;
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
         runtimeAsset.Create(runtimeAssetId);
 
@@ -434,6 +433,8 @@ namespace ScriptCanvasBuilder
 
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input)
     {
+        using namespace ScriptCanvas;
+
         auto sourceGraph = PrepareSourceGraph(input.buildEntity);
 
         auto version = sourceGraph->GetVersion();
@@ -500,7 +501,7 @@ namespace ScriptCanvasBuilder
 
         for (const auto& subgraphAssetID : orderedDependencies.orderedAssetIds)
         {
-            const AZ::Data::AssetId dependentSubgraphAssetID(subgraphAssetID.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
+            const AZ::Data::AssetId dependentSubgraphAssetID(subgraphAssetID.m_guid, RuntimeDataSubId);
             AZ::Data::Asset<ScriptCanvas::RuntimeAsset> subgraphAsset(dependentSubgraphAssetID, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
             subgraphAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
             input.runtimeDataOut.m_requiredAssets.push_back(subgraphAsset);
@@ -559,7 +560,7 @@ namespace ScriptCanvasBuilder
     AZ::Outcome<void, AZStd::string> SaveRuntimeAsset(ProcessTranslationJobInput& input, ScriptCanvas::RuntimeData& runtimeData)
     {
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
-        runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC("RuntimeData", 0x163310ae)));
+        runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, ScriptCanvas::RuntimeDataSubId));
         runtimeAsset.Get()->m_runtimeData = runtimeData;
 
         AZStd::vector<AZ::u8> byteBuffer;
@@ -591,7 +592,7 @@ namespace ScriptCanvasBuilder
             azrtti_typeid<decltype(runtimeData.m_input)>(),
             input.runtimeScriptCanvasOutputPath,
             azrtti_typeid<ScriptCanvas::RuntimeAsset>(),
-            AZ_CRC("RuntimeData", 0x163310ae), jobProduct);
+            ScriptCanvas::RuntimeDataSubId, jobProduct);
 
         // Output Object marks dependencies as handled.
         // We still have more to evaluate

@@ -63,17 +63,22 @@ set(FILES
     Include/ScriptCanvas/Deprecated/VariableDatumBase.cpp
     Include/ScriptCanvas/Deprecated/VariableDatum.cpp
     Include/ScriptCanvas/Deprecated/VariableHelpers.cpp
+    Include/ScriptCanvas/Execution/Executor.cpp
     Include/ScriptCanvas/Execution/ExecutionContext.cpp
     Include/ScriptCanvas/Execution/ExecutionObjectCloning.cpp
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.cpp
     Include/ScriptCanvas/Execution/ExecutionState.cpp
+    Include/ScriptCanvas/Execution/ExecutionStateHandler.cpp
+    Include/ScriptCanvas/Execution/ExecutionStateStorage.cpp
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.cpp
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedComponentAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedDebugAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedEBusAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedOut.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.cpp
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPerActivation.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPure.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.cpp

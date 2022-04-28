@@ -61,6 +61,7 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/GradientWeightModifier/GradientWeightModifierComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/ScreenSpace/DeferredFogComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/ScreenSpace/DeferredFogBus.h
+    Include/AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/PhysicalSkyBus.h
