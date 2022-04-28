@@ -24,7 +24,7 @@ namespace AZ::DocumentPropertyEditor
     void AdapterBuilder::OnEditorChanged(AZStd::function<void(const Dom::Path&, const Dom::Value&)> onChangedCallback)
     {
         // The value path is the first child of the PropertyEditor node
-        Dom::Path changedPath = GetCurrentPath() / 0;
+        Dom::Path changedPath = GetCurrentPath() / Nodes::Label::Value.GetName();
         CallbackAttribute(
             Nodes::PropertyEditor::OnChanged,
             [changedPath, onChangedCallback](const Dom::Value& value)
