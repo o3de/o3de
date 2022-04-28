@@ -10,6 +10,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/ranges/elements_view.h>
+#include <Editor/Framework/Configuration.h>
+#include <Editor/Framework/Interpreter.h>
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 #include <Editor/ReflectComponent.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
@@ -109,6 +111,8 @@ namespace ScriptCanvasEditor
     void ReflectComponent::Reflect(AZ::ReflectContext* context)
     {
         SourceHandle::Reflect(context);
+        Configuration::Reflect(context);
+        Interpreter::Reflect(context);
         ScriptCanvas::ScriptCanvasData::Reflect(context);
         Deprecated::ScriptCanvasAssetHolder::Reflect(context);
         EditorSettings::EditorWorkspace::Reflect(context);        

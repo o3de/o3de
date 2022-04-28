@@ -12,6 +12,7 @@
 #include <ActorAsset.h>
 
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshInputBuffers.h>
+#include <AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h>
 #include <Integration/System/SystemCommon.h>
 #include <Integration/System/SystemComponent.h>
 #include <EMotionFX/Source/ActorInstance.h>
@@ -250,12 +251,6 @@ namespace AZ::Render
     {
         // The mesh transform is used to determine where the actor instance is actually rendered
         m_meshFeatureProcessor->SetTransform(*m_meshHandle, world); // handle validity is checked internally.
-
-        if (m_skinnedMeshRenderProxy.IsValid())
-        {
-            // The skinned mesh transform is used to determine which Lod needs to be skinned
-            m_skinnedMeshRenderProxy->SetTransform(world);
-        }
     }
 
     void AtomActorInstance::OnMaterialsUpdated(const MaterialAssignmentMap& materials)
@@ -458,26 +453,21 @@ namespace AZ::Render
 
             // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
             // Wait for them all to be ready before creating the instance
-            size_t lodCount = m_skinnedMeshInputBuffers->GetLodCount();
-            for (size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
+            uint32_t lodCount = m_skinnedMeshInputBuffers->GetLodCount();
+            for (uint32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
                 const SkinnedMeshInputLod& inputLod = m_skinnedMeshInputBuffers->GetLod(lodIndex);
-                const AZStd::vector< SkinnedSubMeshProperties>& subMeshProperties = inputLod.GetSubMeshProperties();
-                for (const SkinnedSubMeshProperties& submesh : subMeshProperties)
+                Data::Asset<RPI::ModelLodAsset> modelLodAsset = inputLod.GetModelLodAsset();
+                for (const RPI::ModelLodAsset::Mesh& submesh : modelLodAsset->GetMeshes())
                 {
-                    Data::Asset<RPI::MaterialAsset> materialAsset = submesh.m_materialSlot.m_defaultMaterialAsset;
-                    AZ_Error("AtomActorInstance", materialAsset, "Actor does not have a valid default material in lod %d", lodIndex);
-
-                    if (materialAsset)
+                    Data::Asset<RPI::MaterialAsset> defaultSubmeshMaterial = m_skinnedMeshInputBuffers->GetModelAsset()->FindMaterialSlot(submesh.GetMaterialSlotId()).m_defaultMaterialAsset;
+                    if (defaultSubmeshMaterial && !defaultSubmeshMaterial.IsReady())
                     {
-                        if (!materialAsset->IsReady())
-                        {
-                            // Start listening for the material's OnAssetReady event.
-                            // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
-                            // since those events will also come from the main thread
-                            m_waitForMaterialLoadIds.insert(materialAsset->GetId());
-                            Data::AssetBus::MultiHandler::BusConnect(materialAsset->GetId());
-                        }
+                        // Start listening for the material's OnAssetReady event.
+                        // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
+                        // since those events will also come from the main thread
+                        m_waitForMaterialLoadIds.insert(defaultSubmeshMaterial.GetId());
+                        Data::AssetBus::MultiHandler::BusConnect(defaultSubmeshMaterial.GetId());
                     }
                 }
             }
@@ -527,12 +517,12 @@ namespace AZ::Render
 
     void AtomActorInstance::OnUpdateSkinningMatrices()
     {
-        if (m_skinnedMeshRenderProxy.IsValid())
+        if (m_skinnedMeshHandle.IsValid())
         {
             AZStd::vector<float> boneTransforms;
             GetBoneTransformsFromActorInstance(m_actorInstance, boneTransforms, GetSkinningMethod());
 
-            m_skinnedMeshRenderProxy->SetSkinningMatrices(boneTransforms);
+            m_skinnedMeshFeatureProcessor->SetSkinningMatrices(m_skinnedMeshHandle, boneTransforms);
 
             // Update the morph weights for every lod. This does not mean they will all be dispatched, but they will all have up to date weights
             // TODO: once culling is hooked up such that EMotionFX and Atom are always in sync about which lod to update, only update the currently visible lods [ATOM-13564]
@@ -563,7 +553,7 @@ namespace AZ::Render
                         EMotionFX::MorphSetupInstance::MorphTarget* morphTargetSetupInstance = m_actorInstance->GetMorphSetupInstance()->FindMorphTargetByID(morphTargetStandard->GetID());
 
                         // Each morph target is split into several deform datas, all of which share the same weight but have unique min/max delta values
-                        // and thus correspond with unique dispatches in the morph target pass
+                        // and impact a unique mesh and thus correspond with unique dispatches in the morph target pass
                         for (size_t deformDataIndex = 0; deformDataIndex < morphTargetStandard->GetNumDeformDatas(); ++deformDataIndex)
                         {
                             // Morph targets that don't deform any vertices (e.g. joint-based morph targets) are not registered in the render proxy. Skip adding their weights.
@@ -608,7 +598,7 @@ namespace AZ::Render
                         swizzle_unique(m_wrinkleMaskWeights, remapped);
                     }
 
-                    m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, m_morphTargetWeights);
+                    m_skinnedMeshFeatureProcessor->SetMorphTargetWeights(m_skinnedMeshHandle, lodIndex, m_morphTargetWeights);
 
                     // Until EMotionFX and Atom lods are synchronized [ATOM-13564] we don't know which EMotionFX lod to pull the weights from
                     // Until that is fixed, just use lod 0 [ATOM-15251]
@@ -632,6 +622,7 @@ namespace AZ::Render
         TransformNotificationBus::Handler::BusConnect(m_entityId);
         MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
         MeshComponentRequestBus::Handler::BusConnect(m_entityId);
+        AZ::Render::SkinnedMeshOverrideRequestBus::Handler::BusConnect(m_entityId);
 
         const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
@@ -641,10 +632,11 @@ namespace AZ::Render
     {
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
 
+        AZ::Render::SkinnedMeshOverrideRequestBus::Handler::BusDisconnect(m_entityId);
         MeshComponentRequestBus::Handler::BusDisconnect();
         MaterialComponentNotificationBus::Handler::BusDisconnect();
         TransformNotificationBus::Handler::BusDisconnect();
-        m_skinnedMeshFeatureProcessor->ReleaseRenderProxyInterface(m_skinnedMeshRenderProxy);
+        m_skinnedMeshFeatureProcessor->ReleaseSkinnedMesh(m_skinnedMeshHandle);
         if (m_meshHandle)
         {
             m_meshFeatureProcessor->ReleaseMesh(*m_meshHandle);
@@ -669,8 +661,8 @@ namespace AZ::Render
         }
 
         // If render proxies already exist, they will be auto-freed
-        SkinnedMeshFeatureProcessorInterface::SkinnedMeshRenderProxyDesc desc{ m_skinnedMeshInputBuffers, m_skinnedMeshInstance, m_meshHandle, m_boneTransforms, {GetAtomSkinningMethod()} };
-        m_skinnedMeshRenderProxy = m_skinnedMeshFeatureProcessor->AcquireRenderProxyInterface(desc);
+        SkinnedMeshFeatureProcessorInterface::SkinnedMeshHandleDescriptor desc{ m_skinnedMeshInputBuffers, m_skinnedMeshInstance, m_meshHandle, m_boneTransforms, {GetAtomSkinningMethod()} };
+        m_skinnedMeshHandle = m_skinnedMeshFeatureProcessor->AcquireSkinnedMesh(desc);
 
         if (m_transformInterface)
         {
@@ -690,12 +682,8 @@ namespace AZ::Render
         if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
         {
             MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
-            RegisterActor();
 
-            // [TODO ATOM-15288]
-            // Temporary workaround for cloth to make sure the output skinned buffers are filled at least once.
-            // When meshes with cloth data are not dispatched for skinning FillSkinnedMeshInstanceBuffers can be removed.
-            FillSkinnedMeshInstanceBuffers();
+            RegisterActor();
         }
         else
         {
@@ -703,50 +691,20 @@ namespace AZ::Render
             SkinnedMeshOutputStreamNotificationBus::Handler::BusConnect();
         }
     }
-
-    void AtomActorInstance::FillSkinnedMeshInstanceBuffers()
+    
+    void AtomActorInstance::EnableSkinning(uint32_t lodIndex, uint32_t meshIndex)
     {
-        AZ_Assert( m_skinnedMeshInputBuffers->GetLodCount() == m_skinnedMeshInstance->m_outputStreamOffsetsInBytes.size(),
-            "Number of lods in Skinned Mesh Input Buffers (%d) does not match with Skinned Mesh Instance (%d)",
-            m_skinnedMeshInputBuffers->GetLodCount(), m_skinnedMeshInstance->m_outputStreamOffsetsInBytes.size());
-
-        for (size_t lodIndex = 0; lodIndex < m_skinnedMeshInputBuffers->GetLodCount(); ++lodIndex)
+        if (m_skinnedMeshHandle.IsValid())
         {
-            const SkinnedMeshInputLod& inputSkinnedMeshLod = m_skinnedMeshInputBuffers->GetLod(lodIndex);
-            const AZStd::vector<uint32_t>& outputBufferOffsetsInBytes = m_skinnedMeshInstance->m_outputStreamOffsetsInBytes[lodIndex];
-            uint32_t lodVertexCount = inputSkinnedMeshLod.GetVertexCount();
+            m_skinnedMeshFeatureProcessor->EnableSkinning(m_skinnedMeshHandle, lodIndex, meshIndex);
+        }
+    }
 
-            auto updateSkinnedMeshInstance =
-                [&inputSkinnedMeshLod, &outputBufferOffsetsInBytes, &lodVertexCount](SkinnedMeshInputVertexStreams inputStream, SkinnedMeshOutputVertexStreams outputStream)
-            {
-                const Data::Asset<RPI::BufferAsset>& inputBufferAsset = inputSkinnedMeshLod.GetSkinningInputBufferAsset(inputStream);
-                const RHI::BufferViewDescriptor& inputBufferViewDescriptor = inputBufferAsset->GetBufferViewDescriptor();
-
-                const uint64_t inputByteCount = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementCount) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
-                const uint64_t inputByteOffset = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
-
-                const uint32_t outputElementSize = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(outputStream).m_elementSize;
-                [[maybe_unused]] const uint64_t outputByteCount = aznumeric_cast<uint64_t>(lodVertexCount) * aznumeric_cast<uint64_t>(outputElementSize);
-                const uint64_t outputByteOffset = aznumeric_cast<uint64_t>(outputBufferOffsetsInBytes[static_cast<uint8_t>(outputStream)]);
-
-                // The byte count from input and output buffers doesn't have to match necessarily.
-                // For example the output positions buffer has double the amount of elements because it has
-                // another set of positions from the previous frame.
-                AZ_Assert(inputByteCount <= outputByteCount, "Trying to write too many bytes to output buffer.");
-
-                // The shared buffer that all skinning output lives in
-                AZ::Data::Instance<AZ::RPI::Buffer> rpiBuffer = SkinnedMeshOutputStreamManagerInterface::Get()->GetBuffer();
-
-                rpiBuffer->UpdateData(
-                    inputBufferAsset->GetBuffer().data() + inputByteOffset,
-                    inputByteCount,
-                    outputByteOffset);
-            };
-
-            updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::Position, SkinnedMeshOutputVertexStreams::Position);
-            updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::Normal, SkinnedMeshOutputVertexStreams::Normal);
-            updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::Tangent, SkinnedMeshOutputVertexStreams::Tangent);
-            updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::BiTangent, SkinnedMeshOutputVertexStreams::BiTangent);
+    void AtomActorInstance::DisableSkinning(uint32_t lodIndex, uint32_t meshIndex)
+    {
+        if (m_skinnedMeshHandle.IsValid())
+        {
+            m_skinnedMeshFeatureProcessor->DisableSkinning(m_skinnedMeshHandle, lodIndex, meshIndex);
         }
     }
 
