@@ -279,11 +279,9 @@ namespace AZ
             }
 
             // Find srg input indexes
-            for (ImageTypePreviewInfo& info : m_imageTypePreviewInfo)
-            {
-                info.m_imageInput = m_passSrg->FindShaderInputImageIndex(Name("m_image"));
-                info.m_colorRangeMinMaxInput = m_passSrg->FindShaderInputConstantIndex(Name("m_colorRangeMinMax"));
-            }
+            m_imageTypePreviewInfo[static_cast<uint32_t>(ImageType::Image2d)].m_imageInput = m_passSrg->FindShaderInputImageIndex(Name("m_image"));
+            m_imageTypePreviewInfo[static_cast<uint32_t>(ImageType::Image2dMs)].m_imageInput = m_passSrg->FindShaderInputImageIndex(Name("m_msImage"));
+            m_colorRangeMinMaxInput = m_passSrg->FindShaderInputConstantIndex(Name("m_colorRangeMinMax"));
             
             // Setup initial data for pipeline state descriptors. The rest of the data will be set when the draw data is updated
 
@@ -457,10 +455,9 @@ namespace AZ
                         auto& previewInfo = m_imageTypePreviewInfo[typeIndex];
                         m_passSrg->SetShaderVariantKeyFallbackValue(previewInfo.m_shaderVariantKeyFallback);
                         m_passSrg->SetImageView(previewInfo.m_imageInput, inputImageView, 0);
-                        m_passSrg->SetConstant(previewInfo.m_colorRangeMinMaxInput, m_attachmentColorTranformRange);
+                        m_passSrg->SetConstant(m_colorRangeMinMaxInput, m_attachmentColorTranformRange);
                         m_passSrgChanged = true;
                         previewInfo.m_imageCount = 1;
-                
                     }
                     else
                     {
