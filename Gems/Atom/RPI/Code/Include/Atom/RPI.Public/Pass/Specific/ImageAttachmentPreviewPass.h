@@ -94,6 +94,9 @@ namespace AZ
             //! Readback the output color attachment
             bool ReadbackOutput(AZStd::shared_ptr<AttachmentReadback> readback);
 
+            //! Set a min/max range for remapping the preview output, to increase contrast. The default of 0-1 is a no-op.
+            void SetColorTransformRange(float colorTransformRange[2]);
+
         private:
             explicit ImageAttachmentPreviewPass(const PassDescriptor& descriptor);
 
@@ -128,6 +131,7 @@ namespace AZ
             struct ImageTypePreviewInfo
             {
                 RHI::ShaderInputImageIndex m_imageInput;
+                RHI::ShaderInputConstantIndex m_colorRangeMinMaxInput;
                 // Cached pipeline state descriptor
                 RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
                 // The draw item for drawing the image preview for this type of image
@@ -144,6 +148,8 @@ namespace AZ
 
             // render target for the preview
             RHI::Ptr<PassAttachment> m_outputColorAttachment;
+
+            float m_attachmentColorTranformRange[2] = {0.0f, 1.0f};
 
             // shader for render images to the output
             Data::Instance<Shader> m_shader;
