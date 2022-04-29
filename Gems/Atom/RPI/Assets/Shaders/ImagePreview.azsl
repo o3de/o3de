@@ -92,7 +92,7 @@ PSOutput MainPS(VSOutput psInput)
         }
     }  
 
-    OUT.m_color.xyz = (OUT.m_color.xyz - float3(PassSrg::m_colorRangeMinMax[0],PassSrg::m_colorRangeMinMax[0],PassSrg::m_colorRangeMinMax[0])) / (PassSrg::m_colorRangeMinMax[1] - PassSrg::m_colorRangeMinMax[0]);
+    OUT.m_color.xyz = (OUT.m_color.xyz - PassSrg::m_colorRangeMinMax[0].xxx) / (PassSrg::m_colorRangeMinMax[1] - PassSrg::m_colorRangeMinMax[0]);
 
     return OUT;
 }
