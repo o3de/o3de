@@ -79,10 +79,10 @@
             "_convolvedcubemap": [ "ConvolvedCubemap" ],
             // decal
             "_decal": [ "Decal_AlbedoWithOpacity" ],
-            // Displacement
+            // displacement
             "_d": [ "Displacement" ],
-            "_displ": [ "Displacement" ],
             "_disp": [ "Displacement" ],
+            "_displ": [ "Displacement" ],
             "_displacement": [ "Displacement" ],
             "_dm": [ "Displacement" ],
             "_dsp": [ "Displacement" ],
@@ -90,7 +90,6 @@
             "_height": [ "Displacement" ],
             "_hm": [ "Displacement" ],
             "_ht": [ "Displacement" ],
-            "_h": [ "Displacement" ],
             "_thickness": [ "Displacement" ],
             // Emissive
             "_e": [ "Emissive" ],
@@ -101,11 +100,6 @@
             // Gradient
             "_grad": [ "Gradient" ],
             "_gradient": [ "Gradient" ],
-            // GSI
-            "_gsi": [ "GSI" ],
-            "_gsi8": [ "GSI8" ],
-            "_gsi16": [ "GSI16" ],
-            "_gsi32": [ "GSI32" ],
             // Greyscale
             "_grey": [ "Greyscale" ],
             "_greyscale": [ "Greyscale" ],
@@ -186,7 +180,12 @@
             "_skyboxcm": [ "Skybox" ],
             // UI
             "_ui": [ "UserInterface_Compressed" ],
-            "_uil": [ "UserInterface_Lossless" ]
+            "_uil": [ "UserInterface_Lossless" ],
+            // GSI
+            "_gsi": [ "GSI" ],
+            "_gsi8": [ "GSI8" ],
+            "_gsi16": [ "GSI16" ],
+            "_gsi32": [ "GSI32" ]
         },
         "DefaultPreset": "Albedo",
         "DefaultPresetAlpha": "AlbedoWithGenericAlpha"
