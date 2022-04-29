@@ -9,6 +9,8 @@
 #include "Core.h"
 #include "ExecutionNotificationsBus.h"
 
+#include <ScriptCanvas/Execution/ExecutionState.h>
+
 namespace ScriptCanvas
 {
     void ReflectExecutionBusArguments(AZ::ReflectContext* context)
@@ -39,8 +41,6 @@ namespace ScriptCanvas
 
             serializeContext->Class<GraphInfo>()
                 ->Version(0)
-                ->Field("runtimeEntityId", &GraphInfo::m_runtimeEntity)
-                ->Field("graphIdentifier", &GraphInfo::m_graphIdentifier)
                 ;
 
             serializeContext->Class<DatumValue>()
@@ -111,7 +111,7 @@ namespace ScriptCanvas
 
     AZStd::string ActivationInfo::ToString() const
     {
-        return AZStd::string::format("Entity: %s, Graph: %s, Variables: %s", m_runtimeEntity.ToString().data(), GraphInfo::ToString().data(), ScriptCanvas::ToString(m_variableValues).data());
+        return AZStd ::string::format("Graph: %s, Variables: %s", GraphInfo::ToString().data(), ScriptCanvas::ToString(m_variableValues).data());
     }
 
     ///////////////
@@ -187,13 +187,12 @@ namespace ScriptCanvas
 
     bool GraphInfo::operator==(const GraphInfo& other) const
     {
-        return m_runtimeEntity == other.m_runtimeEntity
-            && m_graphIdentifier == other.m_graphIdentifier;
+        return m_executionState == other.m_executionState;
     }
 
     AZStd::string GraphInfo::ToString() const
     {
-        return AZStd::string::format("Entity: %s, %s", m_runtimeEntity.ToString().data(), m_graphIdentifier.ToString().data());
+        return m_executionState->ToString();
     }
 
     NodeStateChange::NodeStateChange()
@@ -284,8 +283,7 @@ namespace ScriptCanvas
 
     bool Signal::operator==(const Signal& other) const
     {
-        return m_runtimeEntity == other.m_runtimeEntity
-            && m_graphIdentifier == other.m_graphIdentifier
+        return m_executionState == other.m_executionState
             && m_endpoint == other.m_endpoint;
     }    
 
