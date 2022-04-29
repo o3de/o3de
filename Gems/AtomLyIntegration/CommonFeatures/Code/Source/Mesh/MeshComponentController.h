@@ -47,7 +47,7 @@ namespace AZ
             AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> GetLodOverrideValues();
 
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
-            RHI::DrawItemSortKey m_sortKey = 0;
+            AZ::s64 m_sortKey = 0;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_useForwardPassIblSpecular = false;
             bool m_isRayTracingEnabled = true;

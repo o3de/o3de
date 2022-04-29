@@ -38,12 +38,12 @@ namespace AzFramework
         return GetGeneric(GetKeyHash(key), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view key, uint64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view key, AZ::u64& value) const
     {
         return GetGeneric(GetKeyHash(key), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view key, int64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view key, AZ::s64& value) const
     {
         return GetGeneric(GetKeyHash(key), value);
     }
@@ -68,12 +68,12 @@ namespace AzFramework
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, uint64_t index, uint64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, uint64_t index, AZ::u64& value) const
     {
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, uint64_t index, int64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, uint64_t index, AZ::s64& value) const
     {
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
@@ -93,12 +93,12 @@ namespace AzFramework
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, uint64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, AZ::u64& value) const
     {
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, int64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, AZ::s64& value) const
     {
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
