@@ -28,19 +28,28 @@ namespace Multiplayer
 
     void NetworkRigidBodyComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
+        NetworkRigidBodyComponentBase::GetProvidedServices(provided);
         provided.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
     }
 
     void NetworkRigidBodyComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        NetworkRigidBodyComponentBase::GetRequiredServices(required);
         required.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
     }
 
     void NetworkRigidBodyComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
+        NetworkRigidBodyComponentBase::GetDependentServices(dependent);
         dependent.push_back(AZ_CRC_CE("TransformService"));
         dependent.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
     }
+
+    void NetworkRigidBodyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        NetworkRigidBodyComponentBase::GetIncompatibleServices(incompatible);
+    }
+
 
     NetworkRigidBodyComponent::NetworkRigidBodyComponent()
         : m_syncRewindHandler([this](){ OnSyncRewind(); })

@@ -316,6 +316,10 @@ namespace {{ Component.attrib['Namespace'] }}
         AZ_MULTIPLAYER_COMPONENT({{ Component.attrib['Namespace'] }}::{{ ComponentName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, {{ Component.attrib['Namespace'] }}::{{ ComponentNameBase }});
 
         static void Reflect(AZ::ReflectContext* context);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         void OnInit() override;
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
@@ -391,6 +395,26 @@ namespace {{ Component.attrib['Namespace'] }}
                 ->Version(1);
         }
         {{ ComponentNameBase }}::Reflect(context);
+    }
+
+    void {{ ComponentName }}::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        {{ ComponentNameBase }}::GetProvidedServices(provided);
+    }
+
+    void {{ ComponentName }}::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        {{ ComponentNameBase }}::GetRequiredServices(required);
+    }
+
+    void {{ ComponentName }}::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        {{ ComponentNameBase }}::GetDependentServices(dependent);
+    }
+
+    void {{ ComponentName }}::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        {{ ComponentNameBase }}::GetIncompatibleServices(incompatible);
     }
 
     void {{ ComponentName }}::OnInit()
