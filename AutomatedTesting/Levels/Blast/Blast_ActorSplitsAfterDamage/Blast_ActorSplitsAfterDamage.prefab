@@ -126,8 +126,11 @@
                         },
                         "assetHint": "assets/destruction/box_2_chunks.blast"
                     },
-                    "BlastMaterial": {
-                        "BlastMaterialId": "{2F200947-553F-487F-B4EA-57F0EF5AE024}"
+                    "BlastMaterialAsset": {
+                        "assetId": {
+                            "guid": "{FCE5C7F7-9941-5580-9050-2FD3F325CA3D}"
+                        },
+                        "assetHint": "assets/destruction/brittle.blastmaterial"
                     },
                     "PhysicsMaterial": {
                         "MaterialId": "{34AD1046-240B-448C-A694-AE80F595C431}"

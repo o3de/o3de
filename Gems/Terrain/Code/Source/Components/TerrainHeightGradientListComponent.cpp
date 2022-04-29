@@ -290,11 +290,16 @@ namespace Terrain
             // Save off the min/max heights so that we don't have to re-query them on every single height query.
             m_cachedMinWorldHeight = worldBounds.GetMin().GetZ();
             m_cachedMaxWorldHeight = worldBounds.GetMax().GetZ();
-
-            TerrainSystemServiceRequestBus::Broadcast(
-                &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-                AzFramework::Terrain::TerrainDataNotifications::HeightData);
         }
+
+        // We specifically refresh this outside of the queryMutex lock to avoid lock inversion deadlocks. These can occur if one thread
+        // is calling TerrainHeightGradientListComponent::OnCompositionChanged -> TerrainSystem::RefreshArea, and another thread
+        // is running a query like TerrainSystem::GetHeights -> TerrainHeightGradientListComponent::GetHeights.
+        // It's ok if a query is able to run in-between the cache change and the RefreshArea call, because the RefreshArea should cause
+        // the querying system to refresh and achieve eventual consistency.
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::HeightData);
     }
 
     void TerrainHeightGradientListComponent::OnTerrainDataChanged(

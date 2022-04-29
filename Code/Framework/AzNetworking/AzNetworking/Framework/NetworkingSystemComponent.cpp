@@ -86,7 +86,7 @@ namespace AzNetworking
         return AZ::TICK_PLACEMENT;
     }
 
-    INetworkInterface* NetworkingSystemComponent::CreateNetworkInterface(AZ::Name name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener)
+    INetworkInterface* NetworkingSystemComponent::CreateNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener)
     {
         AZ_Assert(RetrieveNetworkInterface(name) == nullptr, "A network interface with this name already exists");
 
@@ -108,7 +108,7 @@ namespace AzNetworking
         return returnResult;
     }
 
-    INetworkInterface* NetworkingSystemComponent::RetrieveNetworkInterface(AZ::Name name)
+    INetworkInterface* NetworkingSystemComponent::RetrieveNetworkInterface(const AZ::Name& name)
     {
         auto networkInterface = m_networkInterfaces.find(name);
         if (networkInterface != m_networkInterfaces.end())
@@ -118,21 +118,23 @@ namespace AzNetworking
         return nullptr;
     }
 
-    bool NetworkingSystemComponent::DestroyNetworkInterface(AZ::Name name)
+    bool NetworkingSystemComponent::DestroyNetworkInterface(const AZ::Name& name)
     {
         return m_networkInterfaces.erase(name) > 0;
     }
 
     void NetworkingSystemComponent::RegisterCompressorFactory(ICompressorFactory* factory)
     {
-        AZ_Assert(m_compressorFactories.find(factory->GetFactoryName()) == m_compressorFactories.end(), "A compressor factory with this name already exists");
+        const AZ::Crc32 factorKey = AZ::Crc32(factory->GetFactoryName());
+        AZ_Assert(m_compressorFactories.find(factorKey) == m_compressorFactories.end(),
+            "A compressor factory with this name already exists");
 
-        m_compressorFactories.emplace(factory->GetFactoryName(), factory);
+        m_compressorFactories.emplace(factorKey, factory);
     }
 
-    AZStd::unique_ptr<ICompressor> NetworkingSystemComponent::CreateCompressor(AZ::Name name)
+    AZStd::unique_ptr<ICompressor> NetworkingSystemComponent::CreateCompressor(const AZStd::string_view name)
     {
-        auto compressorFactory = m_compressorFactories.find(name);
+        auto compressorFactory = m_compressorFactories.find(AZ::Crc32(name));
         if(compressorFactory != m_compressorFactories.end())
         {
             return compressorFactory->second->Create();
@@ -141,9 +143,9 @@ namespace AzNetworking
         return nullptr;
     }
 
-    bool NetworkingSystemComponent::UnregisterCompressorFactory(AZ::Name name)
+    bool NetworkingSystemComponent::UnregisterCompressorFactory(const AZStd::string_view name)
     {
-        return m_compressorFactories.erase(name) > 0;
+        return m_compressorFactories.erase(AZ::Crc32(name)) > 0;
     }
 
     const NetworkInterfaces& NetworkingSystemComponent::GetNetworkInterfaces() const

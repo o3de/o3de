@@ -573,34 +573,6 @@
                 "Path": "Passes/HDRColorGrading.pass"
             },
             {
-                "Name": "EditorModeFeedbackParentTemplate",
-                "Path": "Passes/EditorModeFeedbackParent.pass"
-            },
-            {
-                "Name": "EditorModeMaskTemplate",
-                "Path": "Passes/EditorModeMask.pass"
-            },
-            {
-                "Name": "EditorModeDesaturationTemplate",
-                "Path": "Passes/EditorModeDesaturation.pass"
-            },
-            {
-                "Name": "EditorModeTintTemplate",
-                "Path": "Passes/EditorModeTint.pass"
-            },
-            {
-                "Name": "EditorModeBlurParentTemplate",
-                "Path": "Passes/EditorModeBlurParent.pass"
-            },
-            {
-                "Name": "EditorModeBlurTemplate",
-                "Path": "Passes/EditorModeBlur.pass"
-            },
-            {
-                "Name": "EditorModeOutlineTemplate",
-                "Path": "Passes/EditorModeOutline.pass"
-            },
-            {
                 "Name": "LutGenerationTemplate",
                 "Path": "Passes/LutGeneration.pass"
             },

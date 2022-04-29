@@ -87,14 +87,24 @@ namespace LmbrCentral
 
     void BoxShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
+        bool shapeChanged = false;
+                
         {
             AZStd::unique_lock lock(m_mutex);
-            m_currentTransform = world;
-            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+            if (m_currentTransform != world)
+            {
+                m_currentTransform = world;
+                m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+                shapeChanged = true;
+            }
         }
-        ShapeComponentNotificationsBus::Event(
-            m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+        
+        if (shapeChanged)
+        {
+            ShapeComponentNotificationsBus::Event(
+                m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+        }
     }
 
     void BoxShape::OnNonUniformScaleChanged(const AZ::Vector3& scale)
