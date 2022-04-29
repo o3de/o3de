@@ -14,6 +14,7 @@
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <TerrainRenderer/ClipmapBounds.h>
 
 namespace Terrain
 {
@@ -32,10 +33,10 @@ namespace Terrain
         //! The size of the clipmap image in each layer.
         uint32_t m_clipmapSize = 1024u;
 
-        //! Max render distance that the lowest resolution clipmap can cover.
-        //! Distance in: meters.
-        float m_macroClipmapMaxRenderDistance = 2048.0f;
-        float m_detailClipmapMaxRenderDistance = 512.0f;
+        //! Max render radius that the lowest resolution clipmap can cover.
+        //! Radius in: meters.
+        float m_macroClipmapMaxRenderRadius = 2048.0f;
+        float m_detailClipmapMaxRenderRadius = 512.0f;
 
         //! Max resolution of the clipmap stack.
         //! The actual max resolution may be bigger due to rounding.
@@ -109,10 +110,11 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::AttachmentImage> GetClipmapImage(ClipmapName clipmapName) const;
     private:
         void UpdateClipmapData(const AZ::Vector3& cameraPosition);
-        void UpdateClipmapDataHelper(const AZ::Vector2& scaledTranslation, AZStd::array<float, 4>& dataToUpdate);
+        void InitializeClipmapBounds();
         void InitializeClipmapData();
         void InitializeClipmapImages();
 
+        //! Data to be passed to shaders
         struct ClipmapData
         {
             //! The 2D xy-plane view position where the main camera is.
@@ -124,8 +126,8 @@ namespace Terrain
             AZStd::array<float, 2> m_worldBoundsMax;
 
             //! The max range that the clipmap is covering.
-            float m_macroClipmapMaxRenderDistance;
-            float m_detailClipmapMaxRenderDistance;
+            float m_macroClipmapMaxRenderRadius;
+            float m_detailClipmapMaxRenderRadius;
 
             //! The scale base between two adjacent clipmap layers.
             //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times
@@ -143,9 +145,9 @@ namespace Terrain
             uint32_t m_padding;
 
             //! Clipmap centers in normalized UV coordinates [0, 1].
-            // 0,1: previous clipmap centers; 2,3: current clipmap centers.
-            // They are used for toroidal addressing and may move each frame based on the view point movement.
-            // The move distance is scaled differently in each layer.
+            //! 0,1: previous clipmap centers; 2,3: current clipmap centers.
+            //! They are used for toroidal addressing and may move each frame based on the view point movement.
+            //! The move distance is scaled differently in each layer.
             AZStd::array<AZStd::array<float, 4>, ClipmapConfiguration::MacroClipmapStackSizeMax> m_macroClipmapCenters;
             AZStd::array<AZStd::array<float, 4>, ClipmapConfiguration::DetailClipmapStackSizeMax> m_detailClipmapCenters;
 
@@ -157,6 +159,9 @@ namespace Terrain
         };
 
         ClipmapData m_clipmapData;
+
+        AZStd::vector<ClipmapBounds> m_macroClipmapBounds;
+        AZStd::vector<ClipmapBounds> m_detailClipmapBounds;
 
         AZ::RHI::ShaderInputNameIndex m_terrainSrgClipmapDataIndex = ClipmapDataShaderInput;
         AZ::RHI::ShaderInputNameIndex m_terrainSrgClipmapImageIndex[ClipmapName::Count];
