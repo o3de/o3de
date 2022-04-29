@@ -126,21 +126,20 @@ namespace AzToolsFramework
         DPEModelNode* returnedNode = nullptr;
 
         // search row and column children for the node with the given DOM index
-        for (auto rowIterator = m_rowChildren.begin(), endIterator = m_rowChildren.end(); rowIterator != endIterator; ++rowIterator)
+        for (auto rowIterator = m_rowChildren.begin(), endIterator = m_rowChildren.end();
+             returnedNode == nullptr && rowIterator != endIterator; ++rowIterator)
         {
             if ((*rowIterator)->GetDomValueIndex() == domIndex)
             {
                 returnedNode = *rowIterator;
-                break;
             }
         }
-        for (auto columnIterator = m_columnChildren.begin(), endIterator = m_columnChildren.end(); columnIterator != endIterator;
-             ++columnIterator)
+        for (auto columnIterator = m_columnChildren.begin(), endIterator = m_columnChildren.end();
+             returnedNode == nullptr && columnIterator != endIterator; ++columnIterator)
         {
             if ((*columnIterator)->GetDomValueIndex() == domIndex)
             {
                 returnedNode = *columnIterator;
-                break;
             }
         }
 
@@ -471,9 +470,8 @@ namespace AzToolsFramework
         return parentIndex;
     }
 
-    int DPEDebugModel::columnCount(const QModelIndex& parent) const
+    int DPEDebugModel::columnCount([[maybe_unused]] const QModelIndex& parent) const
     {
-        Q_UNUSED(parent);
         return m_maxColumns;
     }
 
@@ -492,7 +490,7 @@ namespace AzToolsFramework
     void DPEDebugModel::HandleReset()
     {
         beginResetModel();
-        
+
         if (!m_rootNode)
         {
             m_rootNode = new DPEModelNode(this);
