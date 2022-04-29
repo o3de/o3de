@@ -50,7 +50,6 @@ namespace Multiplayer
         NetworkRigidBodyComponentBase::GetIncompatibleServices(incompatible);
     }
 
-
     NetworkRigidBodyComponent::NetworkRigidBodyComponent()
         : m_syncRewindHandler([this](){ OnSyncRewind(); })
         , m_transformChangedHandler([this]([[maybe_unused]] const AZ::Transform& localTm, const AZ::Transform& worldTm){ OnTransformUpdate(worldTm); })
