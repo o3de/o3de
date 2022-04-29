@@ -11,7 +11,6 @@ import logging
 import os
 import subprocess
 
-import ly_test_tools.environment.process_utils
 import ly_test_tools.environment.waiter
 import ly_test_tools.launchers.exceptions
 
