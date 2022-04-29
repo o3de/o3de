@@ -26,12 +26,6 @@ namespace Multiplayer
         NetworkRigidBodyComponentBase::Reflect(context);
     }
 
-    void NetworkRigidBodyComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-    {
-        NetworkRigidBodyComponentBase::GetProvidedServices(provided);
-        provided.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
-    }
-
     void NetworkRigidBodyComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         NetworkRigidBodyComponentBase::GetRequiredServices(required);
@@ -43,11 +37,6 @@ namespace Multiplayer
         NetworkRigidBodyComponentBase::GetDependentServices(dependent);
         dependent.push_back(AZ_CRC_CE("TransformService"));
         dependent.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
-    }
-
-    void NetworkRigidBodyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-        NetworkRigidBodyComponentBase::GetIncompatibleServices(incompatible);
     }
 
     NetworkRigidBodyComponent::NetworkRigidBodyComponent()
