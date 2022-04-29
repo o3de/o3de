@@ -256,7 +256,7 @@ class LinuxGenericLauncher(LinuxLauncher):
 class LinuxMaterialEditor(LinuxLauncher):
 
     def __init__(self, build, args=None):
-        super(LinuxLauncher, self).__init__(build, args)
+        super(LinuxMaterialEditor, self).__init__(build, args)
 
     def binary_path(self):
         """
