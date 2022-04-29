@@ -44,7 +44,7 @@ function OutputProfileData:TryDisconnect()
 end
 
 function OutputProfileData:TryQuitOnComplete()
-    if (self.quitOnComplete and not System.IsEditor()) then
+    if (self.quitOnComplete) then
         g_SettingsRegistry:SetString(ConsoleCommandQuitRegistryKey, "")
     end
 end
