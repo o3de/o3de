@@ -449,10 +449,15 @@ QTabBar::tab:focus {
     border:1px solid #1e70eb;
 }
 
-#projectButton > QFrame  {
-    margin-top:6px;
-    min-width: 185px;
+#projectButton  {
+    min-width: 210px;
     max-width: 210px;
+    min-height: 310px;
+    max-height: 310px;
+}
+
+#projectButton > Frame {
+    margin-top:6px;
 }
 
 #projectButton QLabel {
