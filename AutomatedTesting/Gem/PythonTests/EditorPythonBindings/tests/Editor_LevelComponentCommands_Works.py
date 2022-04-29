@@ -4,11 +4,9 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-def check_result(result, msg):
-    from editor_python_test_tools.utils import Report
-    if not result:
-        Report.result(msg, False)
-        raise Exception(msg + " : FAILED")
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+from Editor_TestClass import BaseClass
 
 def validate_component_property_apis(levelEntityComponentIdPair, componentName, componentUuid):
     import azlmbr.legacy.general as general
@@ -48,9 +46,6 @@ def validate_level_component_api(componentName, componentUuid):
     if componentName == "PhysX Terrain":
         #Skip physX. It has issues now that the Legacy Terrain is a component.
         return True
-    if componentName == "Terrain World Renderer":
-        #?
-        return True    
     if editor.EditorLevelComponentAPIBus(bus.Broadcast, 'HasComponentOfType', componentUuid):
         print("ERROR: Component with name={}, uuid={} was already present".format(componentName, componentUuid))
         return False
@@ -131,55 +126,43 @@ def validate_level_component_api(componentName, componentUuid):
     print("SUCCESS: validated API with component with name={}, uuid={} ".format(componentName, componentUuid))
     return True
 
-def Editor_LevelComponentCommands_Works():
+def Editor_LevelComponentCommands_Works(BaseClass):
     # Description: 
     # Tests a portion of the Component CRUD Python API while the Editor is running
 
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper
-    import sys
-    import azlmbr.legacy.general as general
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    from azlmbr.entity import EntityType
+    @staticmethod
+    def test():
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        from azlmbr.entity import EntityType
 
-    # Required for automated tests
-    TestHelper.init_idle()
+        # Generate List of Component Types
+        componentList = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentTypeNameListByEntityType', EntityType().Level)
 
-    # Open the test level
-    TestHelper.open_level(directory="", level="Base")
-    azlmbr.legacy.general.idle_wait_frames(1)
+        BaseClass.check_result(len(componentList) > 0, "Component List returned correctly")
 
-    # Generate List of Component Types
-    componentList = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentTypeNameListByEntityType', EntityType().Level)
+        # Get Component Types for all level components
+        typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', componentList, EntityType().Level)
 
-    check_result(len(componentList) > 0, "Component List returned correctly")
+        BaseClass.check_result(len(typeIdsList) == len(componentList), f"length of typeIdsList={len(typeIdsList)} and length of componentList={len(componentList)}")
 
-    # Get Component Types for all level components
-    typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', componentList, EntityType().Level)
+        # Get Component names from Component Types
+        typeNamesList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeNames', typeIdsList)
 
-    check_result(len(typeIdsList) == len(componentList), f"length of typeIdsList={len(typeIdsList)} and length of componentList={len(componentList)}")
+        BaseClass.check_result(len(typeIdsList) == len(typeNamesList), f"length of typeIdsList={len(typeIdsList)} and length of typeNamesList={len(typeNamesList)}")
 
-    # Get Component names from Component Types
-    typeNamesList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeNames', typeIdsList)
+        for i in range(len(componentList)):
+            BaseClass.check_result(componentList[i] == typeNamesList[i], "componentList[{i}]({componentList[i]}) != typeNamesList=[{i}]({typeNamesList[i]})")
 
-    check_result(len(typeIdsList) == len(typeNamesList), f"length of typeIdsList={len(typeIdsList)} and length of typeNamesList={len(typeNamesList)}")
-
-    for i in range(len(componentList)):
-        check_result(componentList[i] == typeNamesList[i], "componentList[{i}]({componentList[i]}) != typeNamesList=[{i}]({typeNamesList[i]})")
-
-    #Let's add each level component, one at a time, wait, remove component
-    for i in range(len(componentList)):
-        if validate_level_component_api(componentList[i], typeIdsList[i]):
-            continue
-        check_result(False, "Failed to validate_level_component_api for component with name={componentList[i]}, uuid={typeIdsList[i]}")
-
-    # all tests worked
-    Report.result("Editor_LevelComponentCommands_Works ran", True)
+        #Let's add each level component, one at a time, wait, remove component
+        for i in range(len(componentList)):
+            if validate_level_component_api(componentList[i], typeIdsList[i]):
+                continue
+            BaseClass.check_result(False, "Failed to validate_level_component_api for component with name={componentList[i]}, uuid={typeIdsList[i]}")
 
 if __name__ == "__main__":
-    from editor_python_test_tools.utils import Report
-    Report.start_test(Editor_LevelComponentCommands_Works)
+    tester = Editor_LevelComponentCommands_Works()
+    tester.test_case(tester.test)
 
 
 
