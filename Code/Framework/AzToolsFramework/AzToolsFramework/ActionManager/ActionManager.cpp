@@ -66,7 +66,7 @@ namespace AzToolsFramework
 
         QObject::connect(
             action.m_action, &QAction::triggered, m_actionContexts[contextIdentifier]->m_parentWidget,
-            [&handler]()
+            [handler]()
             {
                 handler();
             }
