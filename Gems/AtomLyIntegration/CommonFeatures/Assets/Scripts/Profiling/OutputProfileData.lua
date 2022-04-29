@@ -44,7 +44,7 @@ function OutputProfileData:TryDisconnect()
 end
 
 function OutputProfileData:TryQuitOnComplete()
-    if (self.quitOnComplete) then
+    if (self.quitOnComplete and not System.IsEditor()) then
         g_SettingsRegistry:SetString(ConsoleCommandQuitRegistryKey, "")
     end
 end
@@ -68,7 +68,6 @@ function OutputProfileData:OnActivate()
         local frameTimeRecordingActivateValue = g_SettingsRegistry:GetBool(FrameTimeRecordingActiveRegistryKey)
         if (not frameTimeRecordingActivateValue:has_value() or not frameTimeRecordingActivateValue:value()) then
             Debug:Log("OutputProfileData:OnActivate - Missing registry setting to activate frame time recording, aborting data collection")
-            self:TryQuitOnComplete()
             return
         end
 
