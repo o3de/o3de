@@ -451,12 +451,15 @@ QTabBar::tab:focus {
 
 #projectButton > QFrame  {
     margin-top:6px;
+    min-width: 185px;
+    max-width: 210px;
 }
 
 #projectButton QLabel {
     font-weight:bold;
     font-size:14px;
     qproperty-indent: 0;
+	margin:0;
 }
 
 #labelButton QPushButton {

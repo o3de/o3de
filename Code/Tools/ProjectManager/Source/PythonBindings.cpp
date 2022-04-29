@@ -866,8 +866,7 @@ namespace O3DE::ProjectManager
             try
             {
                 projectInfo.m_projectName = Py_To_String(projectData["project_name"]);
-                // Shorten the project display name to fit the project button
-                projectInfo.SetProjectDisplayName(Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName));
+                projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
                 projectInfo.m_id = Py_To_String_Optional(projectData, "project_id", projectInfo.m_id);
                 projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
                 projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);

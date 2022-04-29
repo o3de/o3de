@@ -38,7 +38,6 @@ namespace O3DE::ProjectManager
 
         bool IsValid() const;
         const QString& GetProjectDisplayName() const;
-        void SetProjectDisplayName(const QString& displayName);
 
         // from o3de_manifest.json and o3de_projects.json
         QString m_path;

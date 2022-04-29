@@ -8,10 +8,6 @@
 
 #include <ProjectInfo.h>
 #include <ProjectManagerDefs.h>
-#include <GemCatalog/GemItemDelegate.h>
-
-#include <QFontMetrics>
-#include <QApplication>
 
 namespace O3DE::ProjectManager
 {
@@ -101,14 +97,5 @@ namespace O3DE::ProjectManager
         {
             return m_projectName;
         }
-    }
-
-    void ProjectInfo::SetProjectDisplayName(const QString& displayName)
-    {
-        QFont font = QApplication::font();
-        font.setPointSize(static_cast<int>(GemItemDelegate::s_fontSize));
-        QFontMetrics fontMetrics(font);
-        // 30 is the width of the menu right next to the project name
-        m_displayName = fontMetrics.elidedText(displayName, Qt::ElideRight, ProjectPreviewImageWidth - 30);
     }
 } // namespace O3DE::ProjectManager
