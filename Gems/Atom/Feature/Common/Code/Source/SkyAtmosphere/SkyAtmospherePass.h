@@ -106,10 +106,10 @@ namespace AZ::Render
             float pad4[2];
 
             float planet_origin[3];
-            float origin_at_surface;
+            float pad5;
 
             uint32_t gResolution[2];
-            uint32_t pad5[2];
+            uint32_t pad6[2];
         };
         void InitializeConstants(AtmosphereGPUParams& atmosphereConstants);
 

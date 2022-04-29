@@ -19,7 +19,10 @@ namespace AZ::Render
                 ->Version(1)
                 ->Field("AtmosphereRadius", &SkyAtmosphereComponentConfig::m_atmosphereRadius)
                 ->Field("PlanetRadius", &SkyAtmosphereComponentConfig::m_planetRadius)
-                ->Field("Sun", &SkyAtmosphereComponentConfig::m_sun)
+                ->Field("DrawSun", &SkyAtmosphereComponentConfig::m_drawSun)
+                ->Field("SunOrientation", &SkyAtmosphereComponentConfig::m_sun)
+                ->Field("SunRadiusFactor", &SkyAtmosphereComponentConfig::m_sunRadiusFactor)
+                ->Field("SunFalloffFactor", &SkyAtmosphereComponentConfig::m_sunFalloffFactor)
                 ->Field("SunIlluminance", &SkyAtmosphereComponentConfig::m_sunIlluminance)
                 ->Field("MinSamples", &SkyAtmosphereComponentConfig::m_minSamples)
                 ->Field("MaxSamples", &SkyAtmosphereComponentConfig::m_maxSamples)
@@ -28,7 +31,9 @@ namespace AZ::Render
                 ->Field("MieScattering", &SkyAtmosphereComponentConfig::m_mieScattering)
                 ->Field("AbsorptionExtinction", &SkyAtmosphereComponentConfig::m_absorptionExtinction)
                 ->Field("RaleighScattering", &SkyAtmosphereComponentConfig::m_rayleighScattering)
-                ->Field("OriginAtSurface", &SkyAtmosphereComponentConfig::m_originAtSurface)
+                ->Field("OriginMode", &SkyAtmosphereComponentConfig::m_originMode)
+                ->Field("FastSkyEnabled", &SkyAtmosphereComponentConfig::m_fastSkyEnabled)
+                ->Field("FastSkyLUTSize", &SkyAtmosphereComponentConfig::m_fastSkyLUTSize)
                 ;
         }
     }

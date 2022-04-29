@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector2.h>
 
 namespace AZ::Render
 {
@@ -19,12 +20,22 @@ namespace AZ::Render
     public:
         AZ_RTTI(AZ::Render::SkyAtmosphereComponentConfig, "{1874446D-E0AA-4DFF-83A0-F7F76C10A867}", AZ::ComponentConfig);
 
+        enum class AtmosphereOrigin
+        {
+            SurfaceAtWorldOrigin,
+            SurfaceAtLocalOrigin,
+            CenterAtLocalOrigin
+        };
+
         static void Reflect(AZ::ReflectContext* context);
 
         float m_atmosphereRadius = 6460.0f;
         float m_planetRadius = 6360.0f;
 
         AZ::EntityId m_sun; // optional sun entity to use for orientation
+        bool m_drawSun = true;
+        float m_sunRadiusFactor = 1.0f;
+        float m_sunFalloffFactor = 1.0f;
         float m_sunIlluminance = 1.0f;
         uint32_t m_minSamples = 4;
         uint32_t m_maxSamples = 14;
@@ -33,6 +44,8 @@ namespace AZ::Render
         AZ::Vector3 m_absorptionExtinction = AZ::Vector3(0.000650f, 0.001881f, 0.000085f);
         AZ::Vector3 m_mieExtinction = AZ::Vector3(0.004440f, 0.004440f, 0.004440f);
         AZ::Vector3 m_groundAlbedo = AZ::Vector3(0.0f, 0.0f, 0.0f);
-        bool m_originAtSurface = true;
+        AtmosphereOrigin m_originMode = AtmosphereOrigin::SurfaceAtWorldOrigin;
+        bool m_fastSkyEnabled = true;
+        AZ::Vector2 m_fastSkyLUTSize = AZ::Vector2(192.0f, 108.0f);
     };
 } // namespace AZ::Render

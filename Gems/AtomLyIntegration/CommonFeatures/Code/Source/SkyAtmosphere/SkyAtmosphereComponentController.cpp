@@ -69,13 +69,12 @@ namespace AZ::Render
             m_featureProcessorInterface->SetGroundAlbedo(m_atmosphereId, m_configuration.m_groundAlbedo);
             m_featureProcessorInterface->SetMieScattering(m_atmosphereId, m_configuration.m_mieScattering);
             m_featureProcessorInterface->SetMinMaxSamples(m_atmosphereId, m_configuration.m_minSamples, m_configuration.m_maxSamples);
-            m_featureProcessorInterface->SetOriginAtSurface(m_atmosphereId, m_configuration.m_originAtSurface);
-            m_featureProcessorInterface->SetPlanetOrigin(m_atmosphereId, transform.GetTranslation());
             m_featureProcessorInterface->SetPlanetRadius(m_atmosphereId, m_configuration.m_planetRadius);
             m_featureProcessorInterface->SetRaleighScattering(m_atmosphereId, m_configuration.m_rayleighScattering);
             m_featureProcessorInterface->SetSunIlluminance(m_atmosphereId, m_configuration.m_sunIlluminance);
             m_featureProcessorInterface->SetSunDirection(m_atmosphereId, -sunTransform.GetBasisY());
 
+            UpdatePlanetOrigin();
 
             m_featureProcessorInterface->Enable(m_atmosphereId, true);
 
@@ -129,7 +128,30 @@ namespace AZ::Render
             {
                 m_featureProcessorInterface->SetSunDirection(m_atmosphereId, -world.GetBasisY());
             }
-            m_featureProcessorInterface->SetPlanetOrigin(m_atmosphereId, world.GetTranslation());
+            UpdatePlanetOrigin();
+        }
+    }
+
+    void SkyAtmosphereComponentController::UpdatePlanetOrigin()
+    {
+        if (m_transformInterface)
+        {
+            AZ::Vector3 originInKm;
+            switch (m_configuration.m_originMode)
+            {
+            case SkyAtmosphereComponentConfig::AtmosphereOrigin::CenterAtLocalOrigin:
+                originInKm = m_transformInterface->GetWorldTranslation() * 0.001f;
+                break;
+            case SkyAtmosphereComponentConfig::AtmosphereOrigin::SurfaceAtLocalOrigin:
+                originInKm = m_transformInterface->GetWorldTranslation() * 0.001f - AZ::Vector3(0.0, 0.0, m_configuration.m_planetRadius);
+                break;
+            default:
+            case SkyAtmosphereComponentConfig::AtmosphereOrigin::SurfaceAtWorldOrigin:
+                originInKm = -AZ::Vector3(0.0, 0.0, m_configuration.m_planetRadius);
+                break;
+            }
+
+            m_featureProcessorInterface->SetPlanetOrigin(m_atmosphereId, originInKm);
         }
     }
 

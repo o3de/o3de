@@ -7,6 +7,7 @@
  */
 
 #include <SkyAtmosphere/EditorSkyAtmosphereComponent.h>
+#include <AtomLyIntegration/CommonFeatures/SkyAtmosphere/SkyAtmosphereComponentConfig.h>
 
 namespace AZ::Render
 {
@@ -53,7 +54,18 @@ namespace AZ::Render
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 10000.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100000.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_sun, "Sun", "Optional sun entity to use for transform")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_sun, "Sun orientation", "Optional sun entity to use for orientation")
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_drawSun, "Draw sun", "Whether to draw the sun or not")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunRadiusFactor, "Sun radius factor", "Sun radius factor")
+                            ->Attribute(AZ::Edit::Attributes::SoftMin, 0.01f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunFalloffFactor, "Sun falloff factor", "Sun falloff factor")
+                            ->Attribute(AZ::Edit::Attributes::SoftMin, 0.01f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunIlluminance, "Sun illuminance", "Sun illuminance")
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
@@ -76,11 +88,15 @@ namespace AZ::Render
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieExtinction, "Mie extinction", "Mie extinction")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_absorptionExtinction, "Absorption extinction", "Absorption extinction. Useful for thi")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_absorptionExtinction, "Absorption extinction", "Absorption extinction")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_groundAlbedo, "Ground albedo", "Additional light from the surface of the ground")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_originAtSurface, "Origin at surface", "True to use the world origin as the planet surface of the atmosphere")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SkyAtmosphereComponentConfig::m_originMode, "Origin", "The origin to use for the atmosphere")
+                            ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::CenterAtLocalOrigin, "Center at Local Origin")
+                            ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::SurfaceAtLocalOrigin, "Surface at Local Origin")
+                            ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::SurfaceAtWorldOrigin, "Surface at World Origin")
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_fastSkyEnabled, "Fast sky", "Enable to use a less accurate but faster performing sky algorithm")
                     ;
             }
         }
@@ -117,8 +133,8 @@ namespace AZ::Render
 
             featureProcessor->SetAtmosphereRadius(id, config.m_atmosphereRadius);
             featureProcessor->SetMinMaxSamples(id, config.m_minSamples, config.m_maxSamples);
-            featureProcessor->SetOriginAtSurface(id, config.m_originAtSurface);
             featureProcessor->SetPlanetRadius(id, config.m_planetRadius);
+            m_controller.UpdatePlanetOrigin();
         }
 
         return Edit::PropertyRefreshLevels::AttributesAndValues;

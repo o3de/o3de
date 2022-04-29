@@ -52,15 +52,8 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 
 	float3 viewToPosition =  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
 	float3 worldDir = normalize(viewToPosition);
-	float3 worldPosKm = ViewSrg::m_worldPosition * worldScale;
-	if(Atmosphere.OriginAtSurface == 1.0)
-	{
-		worldPosKm += float3(0, 0, Atmosphere.BottomRadius);
-	}
-	else
-	{
-		worldPosKm -= Atmosphere.PlanetOrigin * worldScale;
-	}
+	// Atmosphere.PlanetOrigin is in KM already
+	float3 worldPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
 
 	float worldDepth = depth * invWorldScale;
 	if (depth == 0.0f)
