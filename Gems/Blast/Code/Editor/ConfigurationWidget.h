@@ -8,7 +8,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Blast/BlastMaterial.h>
 #include <Blast/BlastSystemBus.h>
 #include <QWidget>
 #endif

@@ -374,6 +374,8 @@ namespace AZ
 
         void RayTracingFeatureProcessor::UpdateRayTracingSrgs()
         {
+            AZ_PROFILE_SCOPE(AzRender, "RayTracingFeatureProcessor::UpdateRayTracingSrgs");
+
             if (!m_tlas->GetTlasBuffer())
             {
                 return;

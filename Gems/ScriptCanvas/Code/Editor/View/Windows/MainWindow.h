@@ -89,7 +89,7 @@ class QProgressDialog;
 namespace ScriptCanvasEditor
 {
     class MainWindow;
-
+    class InterpreterWidget;
 
     class ScriptCanvasAssetBrowserModel
         : public AzToolsFramework::AssetBrowser::AssetBrowserFilterModel
@@ -553,6 +553,7 @@ namespace ScriptCanvasEditor
         void SignalActiveSceneChanged(const ScriptCanvasEditor::SourceHandle assetId);
 
         void RunUpgradeTool();
+        void ShowInterpreter();
 
         void OnShowValidationErrors();
         void OnShowValidationWarnings();
@@ -668,6 +669,7 @@ namespace ScriptCanvasEditor
         LoggingWindow*                      m_loggingWindow = nullptr;
         VariableConfigurationWidget*             m_slotTypeSelector = nullptr;
 
+        AZStd::unique_ptr<InterpreterWidget> m_interpreterWidget;
 
         AzQtComponents::WindowDecorationWrapper*    m_presetWrapper = nullptr;
         GraphCanvas::ConstructPresetDialog*         m_presetEditor = nullptr;
