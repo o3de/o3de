@@ -81,6 +81,8 @@ namespace AZ::DocumentPropertyEditor
             attributes.ListAttributes(
                 [this](AZ::Name group, AZ::Name name, const Dom::Value& value)
                 {
+                    AZ_Warning("dpe", !name.IsEmpty(), "DPE: Received empty name in ListAttributes");
+                    // Skip non-default groups, we don't presently source any attributes from outside of the default group.
                     if (!group.IsEmpty())
                     {
                         return;

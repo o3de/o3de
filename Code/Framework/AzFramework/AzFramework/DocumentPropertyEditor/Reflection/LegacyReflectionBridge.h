@@ -35,5 +35,7 @@ namespace AZ::Reflection
         IRead* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext = nullptr);
     void VisitLegacyInMemoryInstance(
         IReadWrite* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext = nullptr);
+    // TODO: Currently we only support reflecting in-memory instances, but we'll also need to be able to reflect JSON-serialized
+    // instances to interface with the Prefab System.
     // void VisitLegacyJsonSerializedInstance(IRead* visitor, Dom::Value instance, const AZ::TypeId& typeId);
 } // namespace AZ::Reflection

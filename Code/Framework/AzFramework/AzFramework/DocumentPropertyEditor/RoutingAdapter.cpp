@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzFramework/DocumentPropertyEditor/RoutingAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
+#include <AzFramework/DocumentPropertyEditor/RoutingAdapter.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -29,8 +29,8 @@ namespace AZ::DocumentPropertyEditor
         entry->m_onAdapterChanged = ChangedEvent::Handler(
             [this, entryPtr = entry.get()](const Dom::Patch& patch)
             {
-                // On patch, map it to the actual path inthis adapter and notify the view
-                NotifyContentsChanged(MapPatchFromRoute(patch, entryPtr->m_path));
+                // On patch, map it to the actual path in this adapter and notify the view
+                NotifyContentsChanged(MapPatchToRoute(patch, entryPtr->m_path));
             });
         entry->m_onAdapterReset = ResetEvent::Handler(
             [this, entryPtr = entry.get()]()
@@ -63,26 +63,29 @@ namespace AZ::DocumentPropertyEditor
         m_relativeRoutingPath = route;
     }
 
-    Dom::Path RoutingAdapter::MapPathFromRoute(const Dom::Path& path, const Dom::Path& route)
+    Dom::Path RoutingAdapter::MapPathToRoute(const Dom::Path& path, const Dom::Path& route)
     {
-        Dom::Path subpath;
-        for (size_t i = route.size(); i < path.size(); ++i)
+        Dom::Path result = route;
+        AZ_Assert(
+            path.size() >= 1 && path[0].IsIndex() && path[0].GetIndex() == 0, "All adapter paths should start with /0 for the Adapter tag");
+        // Skip the root /0 for any adapter paths, as they'll have been subsumed by this route
+        for (size_t i = 1; i < path.size(); ++i)
         {
-            subpath.Push(path[i]);
+            result.Push(path[i]);
         }
-        return subpath;
+        return result;
     }
 
-    Dom::Patch RoutingAdapter::MapPatchFromRoute(const Dom::Patch& patch, const Dom::Path& route)
+    Dom::Patch RoutingAdapter::MapPatchToRoute(const Dom::Patch& patch, const Dom::Path& route)
     {
         Dom::Patch routedPatch = patch;
         for (Dom::PatchOperation& entry : routedPatch)
         {
-            entry.SetDestinationPath(MapPathFromRoute(entry.GetDestinationPath(), route));
+            entry.SetDestinationPath(MapPathToRoute(entry.GetDestinationPath(), route));
             const Dom::PatchOperation::Type entryType = entry.GetType();
             if (entryType == Dom::PatchOperation::Type::Move || entryType == Dom::PatchOperation::Type::Copy)
             {
-                entry.SetSourcePath(MapPathFromRoute(entry.GetSourcePath(), route));
+                entry.SetSourcePath(MapPathToRoute(entry.GetSourcePath(), route));
             }
         }
         return routedPatch;

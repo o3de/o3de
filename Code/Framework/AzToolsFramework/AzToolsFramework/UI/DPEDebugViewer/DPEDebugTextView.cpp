@@ -94,14 +94,16 @@ namespace AzToolsFramework
             Result StartObject()
             {
                 StartValue();
-                Write(QStringLiteral("["));
+                Write(QStringLiteral("{"));
                 m_stack.emplace();
+                // don't specify m_separator for object stack entries, our Key implementation will handle writing out
+                // needed spaces
                 return VisitorSuccess();
             }
             Result EndObject(AZ::u64)
             {
                 m_stack.pop();
-                Write(QStringLiteral("]"));
+                Write(QStringLiteral("}"));
                 return VisitorSuccess();
             }
 

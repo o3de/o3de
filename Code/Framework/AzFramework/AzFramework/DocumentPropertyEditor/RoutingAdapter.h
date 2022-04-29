@@ -34,8 +34,10 @@ namespace AZ::DocumentPropertyEditor
         void SetRouter(RoutingAdapter* router, const Dom::Path& route) override;
 
     private:
-        Dom::Path MapPathFromRoute(const Dom::Path& path, const Dom::Path& route);
-        Dom::Patch MapPatchFromRoute(const Dom::Patch& patch, const Dom::Path& route);
+        //! Takes a path provided from a nested adapter and maps it back to the absolute path inside this router.
+        Dom::Path MapPathToRoute(const Dom::Path& path, const Dom::Path& route);
+        //! Maps all paths in a patch to absolute paths in this router.
+        Dom::Patch MapPatchToRoute(const Dom::Patch& patch, const Dom::Path& route);
 
         struct RouteEntry
         {
