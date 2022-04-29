@@ -11,16 +11,14 @@ from editor_python_test_tools.utils import Report
 import azlmbr.legacy.general as general
 import editor_python_test_tools.pyside_utils as pyside_utils
 
-
-# fmt: off
 class Tests():
 
     initialTabTestResults = "Verified no tabs open"
     newTabTestResults = "New tab opened successfully"
     fileMenuTestResults = "Open file window triggered successfully"
 
-# fmt: on
 TIME_TO_WAIT = 3
+SCRIPT_CANVAS_PANE = "Script Canvas"
 
 class TestFileMenuDefaultNewOpen:
 
@@ -33,12 +31,13 @@ class TestFileMenuDefaultNewOpen:
      New and Open actions should work as expected.
 
     Test Steps:
-     1) Open Script Canvas window (Tools > Script Canvas)
+     1) Open Script Canvas window and wait for it to render(Tools > Script Canvas)
      2) Get the SC window object
-     3) Trigger File->New action
-     4) Verify if New tab is opened
-     5) Trigger File->Open action
-     6) Close Script Canvas window
+     3) Get the initial tab count and verify it's zero. Save the tab count for verification in step 5
+     4) Trigger open new graph file action
+     5) Check tab count again to verify a new tab has been opened
+     6) Trigger open file popup action then close the popup
+     7) Close Script Canvas window
 
 
     Note:
@@ -56,18 +55,17 @@ class TestFileMenuDefaultNewOpen:
         general.idle_enable(True)
 
         # 1) Open Script Canvas window and wait for it to render(Tools > Script Canvas)
-        general.open_pane("Script Canvas")
-        helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), TIME_TO_WAIT)
+        general.open_pane(SCRIPT_CANVAS_PANE)
+        helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_PANE), TIME_TO_WAIT)
 
         # 2) Get the SC window object
         editor_window = pyside_utils.get_editor_main_window()
-        sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
+        sc = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_PANE)
         sc_main = sc.findChild(QtWidgets.QMainWindow)
         sc_tabs = sc_main.findChild(QtWidgets.QTabWidget, "ScriptCanvasTabs")
 
         # 3) Get the initial tab count and verify it's zero. Save the tab count for verification in step 5
-        result = helper.wait_for_condition(lambda: sc_tabs.count() == 0, TIME_TO_WAIT)
-        Report.info(f"{Tests.initialTabTestResults}: {result}")
+        Report.info(f"{Tests.initialTabTestResults}: {sc_tabs.count() == 0}")
         initial_tabs_count = sc_tabs.count()
 
         # 4) Trigger open new graph file action
@@ -88,7 +86,7 @@ class TestFileMenuDefaultNewOpen:
         popup.close()
 
         # 7) Close Script Canvas window
-        general.close_pane("Script Canvas")
+        general.close_pane(SCRIPT_CANVAS_PANE)
 
 
 test = TestFileMenuDefaultNewOpen()
