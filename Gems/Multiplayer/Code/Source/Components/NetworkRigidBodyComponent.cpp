@@ -32,13 +32,6 @@ namespace Multiplayer
         required.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
     }
 
-    void NetworkRigidBodyComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
-        NetworkRigidBodyComponentBase::GetDependentServices(dependent);
-        dependent.push_back(AZ_CRC_CE("TransformService"));
-        dependent.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
-    }
-
     NetworkRigidBodyComponent::NetworkRigidBodyComponent()
         : m_syncRewindHandler([this](){ OnSyncRewind(); })
         , m_transformChangedHandler([this]([[maybe_unused]] const AZ::Transform& localTm, const AZ::Transform& worldTm){ OnTransformUpdate(worldTm); })
