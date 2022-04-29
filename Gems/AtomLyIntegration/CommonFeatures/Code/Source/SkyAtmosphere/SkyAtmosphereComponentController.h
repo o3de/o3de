@@ -46,6 +46,8 @@ namespace AZ::Render
         //! EntityBus
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
+        void UpdatePlanetOrigin();
+
         TransformInterface* m_transformInterface = nullptr;
         SkyAtmosphereFeatureProcessorInterface* m_featureProcessorInterface = nullptr;
         SkyAtmosphereFeatureProcessorInterface::AtmosphereId m_atmosphereId;

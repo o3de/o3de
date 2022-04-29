@@ -165,7 +165,6 @@ namespace AZ::Render
         constexpr uint32_t maxSamples{ 64 }; // avoid oversampling (too many loops) causing device removal 
         m_constants.RayMarchMinMaxSPP[0] = static_cast<float>(AZStd::min(maxSamples, params.m_minSamples)); 
         m_constants.RayMarchMinMaxSPP[1] = static_cast<float>(AZStd::min(maxSamples, params.m_maxSamples));
-        m_constants.origin_at_surface = params.m_originAtSurface ? 1.0f : 0.0f;
         params.m_planetOrigin.StoreToFloat3(m_constants.planet_origin);
 
         if (params.m_lutUpdateRequired)
