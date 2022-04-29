@@ -35,7 +35,7 @@
 #include <GraphModel/Model/Node.h>
 #include <GraphModel/Model/Connection.h>
 #include <GraphModel/Model/Graph.h>
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/DataType.h>
 #include <GraphModel/Integration/BooleanDataInterface.h>
 #include <GraphModel/Integration/IntegerDataInterface.h>

@@ -19,6 +19,29 @@ namespace AssetProcessor
         TNetResponse netResponse;
         netRequest.m_request = request;
 
+        struct BuildTracker final
+        {
+            BuildTracker(const Builder& builder, const AZStd::string& sourceFile, const AZStd::string& task)
+                : m_builder(builder)
+                , m_sourceFile(sourceFile)
+                , m_task(task)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request started builder [%s] task (%s) %s \n",
+                    m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
+            }
+
+            ~BuildTracker()
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request stopped builder [%s] task (%s) %s \n",
+                    m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
+            }
+
+            const Builder& m_builder;
+            const AZStd::string& m_sourceFile;
+            const AZStd::string& m_task;
+        };
+        BuildTracker tracker(*this, request.m_sourceFile, task);
+
         [[maybe_unused]] AZ::u32 type;
         QByteArray data;
         AZStd::binary_semaphore wait;

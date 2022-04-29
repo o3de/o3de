@@ -175,7 +175,7 @@ namespace AZ::IO
             AZ_Assert(compressedSize == uncompressedBufferSize, "Fake decompression algorithm only supports copying data.");
             if (sleep)
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(80));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(1));
             }
             memcpy(uncompressed, compressed, compressedSize);
             return true;

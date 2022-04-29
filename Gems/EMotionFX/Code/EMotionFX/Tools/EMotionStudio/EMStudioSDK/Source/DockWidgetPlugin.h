@@ -29,7 +29,7 @@ namespace EMStudio
         DockWidgetPlugin();
          ~DockWidgetPlugin() override;
 
-        EMStudioPlugin::EPluginType GetPluginType() const override              { return EMStudioPlugin::PLUGINTYPE_DOCKWIDGET; }
+        EMStudioPlugin::EPluginType GetPluginType() const override              { return EMStudioPlugin::PLUGINTYPE_WINDOW; }
 
         void OnMainWindowClosed() override;
 

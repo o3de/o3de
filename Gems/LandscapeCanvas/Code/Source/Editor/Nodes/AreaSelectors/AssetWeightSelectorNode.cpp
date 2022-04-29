@@ -70,8 +70,8 @@ namespace LandscapeCanvas
 
     void AssetWeightSelectorNode::RegisterSlots()
     {
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
-        GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
+        GraphModel::DataTypePtr invalidEntityDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
+        GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INBOUND_GRADIENT_SLOT_ID,

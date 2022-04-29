@@ -5,7 +5,3 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-set(FILES
-    ../Common/Unimplemented/Source/StandaloneApplication_Unimplemented.cpp
-)

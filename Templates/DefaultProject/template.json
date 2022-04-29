@@ -31,14 +31,6 @@
             "isTemplated": true
         },
         {
-            "file": "cmake/CompilerSettings.cmake",
-            "isTemplated": false
-        },
-        {
-            "file": "cmake/Platform/Linux/CompilerSettings_linux.cmake",
-            "isTemplated": false
-        },
-        {
             "file": "Config/default_aws_resource_mappings.json",
             "isTemplated": false
         },
@@ -381,12 +373,6 @@
         },
         {
             "dir": "cmake"
-        },
-        {
-            "dir": "cmake/Platform"
-        },
-        {
-            "dir": "cmake/Platform/Linux"
         },
         {
             "dir": "Config"

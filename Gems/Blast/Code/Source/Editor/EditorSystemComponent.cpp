@@ -10,13 +10,15 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Editor/EditorSystemComponent.h>
 #include <Editor/EditorWindow.h>
-#include <Editor/MaterialIdWidget.h>
+#include <Editor/Material/LegacyBlastMaterialAssetConversion.h>
 
 namespace Blast
 {
     void EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         BlastChunksAsset::Reflect(context);
+
+        ReflectLegacyMaterialClasses(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -37,10 +39,6 @@ namespace Blast
         }
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-
-        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType,
-            aznew Blast::Editor::MaterialIdWidget());
     }
 
     void EditorSystemComponent::Deactivate()

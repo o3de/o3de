@@ -71,16 +71,7 @@ namespace AZ
                 MaterialComponentNotificationBus::Handler::BusDisconnect();
                 MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
 
-                AZ::Data::AssetId materialAssetId = {};
-                MaterialComponentRequestBus::EventResult(
-                    materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, m_materialAssignmentId);
-                if (!materialAssetId.IsValid())
-                {
-                    MaterialComponentRequestBus::EventResult(
-                        materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId,
-                        m_materialAssignmentId);
-                }
-
+                const AZ::Data::AssetId materialAssetId = GetActiveMaterialAssetIdFromEntity();
                 if (!materialAssetId.IsValid())
                 {
                     UnloadMaterial();
@@ -127,12 +118,15 @@ namespace AZ
 
             bool MaterialPropertyInspector::IsLoaded() const
             {
-                return m_entityId.IsValid() && m_materialInstance && m_editData.m_materialAsset.IsReady();
+                // The inspector only has a valid configuration if the entity ID, material assignment ID, and material asset are all valid
+                // and match what is on the selected entity. If there is a mismatch, the content must be reloaded.
+                const AZ::Data::AssetId materialAssetId = GetActiveMaterialAssetIdFromEntity();
+                return m_entityId.IsValid() && m_materialInstance && m_editData.m_materialAsset.IsReady() &&
+                    m_editData.m_materialAsset.GetId() == materialAssetId && m_editData.m_materialAssetId == materialAssetId;
             }
 
             void MaterialPropertyInspector::Reset()
             {
-                m_activeProperty = {};
                 m_groups = {};
                 m_dirtyPropertyFlags.set();
                 m_internalEditNotification = {};
@@ -201,7 +195,8 @@ namespace AZ
                 QString materialInfo;
                 materialInfo += tr("<table>");
                 materialInfo += tr("<tr><td><b>Entity&emsp;</b></td><td>%1</td></tr>").arg(entityName.c_str());
-                materialInfo += tr("<tr><td><b>Material Slot&emsp;</b></td><td>%1</td></tr>").arg(slotName.c_str());
+                materialInfo += tr("<tr><td><b>Material Slot Name&emsp;</b></td><td>%1</td></tr>").arg(slotName.c_str());
+                materialInfo += tr("<tr><td><b>Material Slot LOD&emsp;</b></td><td>%1</td></tr>").arg(m_materialAssignmentId.m_lodIndex);
                 if (!materialFileInfo.fileName().isEmpty())
                 {
                     materialInfo += tr("<tr><td><b>Material&emsp;</b></td><td>%1</td></tr>").arg(materialFileInfo.fileName());
@@ -708,20 +703,18 @@ namespace AZ
                 return m_editData;
             }
 
-            void MaterialPropertyInspector::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)
+            AZ::Data::AssetId MaterialPropertyInspector::GetActiveMaterialAssetIdFromEntity() const
             {
-                // For some reason the reflected property editor notifications are not symmetrical
-                // This function is called continuously anytime a property changes until the edit has completed
-                // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has
-                // started and ended
-                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
-                if (property)
+                AZ::Data::AssetId materialAssetId = {};
+                MaterialComponentRequestBus::EventResult(
+                    materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, m_materialAssignmentId);
+                if (!materialAssetId.IsValid())
                 {
-                    if (m_activeProperty != property)
-                    {
-                        m_activeProperty = property;
-                    }
+                    MaterialComponentRequestBus::EventResult(
+                        materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId,
+                        m_materialAssignmentId);
                 }
+                return materialAssetId;
             }
 
             void MaterialPropertyInspector::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
@@ -729,12 +722,9 @@ namespace AZ
                 const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
                 if (property)
                 {
-                    if (m_activeProperty == property)
-                    {
-                        m_editData.m_materialPropertyOverrideMap[m_activeProperty->GetId()] = m_activeProperty->GetValue();
-                        UpdateMaterialInstanceProperty(*m_activeProperty);
-                        SaveOverridesToEntity(false);
-                    }
+                    m_editData.m_materialPropertyOverrideMap[property->GetId()] = property->GetValue();
+                    UpdateMaterialInstanceProperty(*property);
+                    SaveOverridesToEntity(false);
                 }
             }
 
@@ -746,14 +736,10 @@ namespace AZ
                 const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
                 if (property)
                 {
-                    if (m_activeProperty == property)
-                    {
-                        m_editData.m_materialPropertyOverrideMap[m_activeProperty->GetId()] = m_activeProperty->GetValue();
-                        UpdateMaterialInstanceProperty(*m_activeProperty);
-                        SaveOverridesToEntity(true);
-                        RunEditorMaterialFunctors();
-                        m_activeProperty = nullptr;
-                    }
+                    m_editData.m_materialPropertyOverrideMap[property->GetId()] = property->GetValue();
+                    UpdateMaterialInstanceProperty(*property);
+                    SaveOverridesToEntity(true);
+                    RunEditorMaterialFunctors();
                 }
             }
 
@@ -827,16 +813,7 @@ namespace AZ
 
             void MaterialPropertyInspector::UpdateUI()
             {
-                AZ::Data::AssetId materialAssetId = {};
-                MaterialComponentRequestBus::EventResult(
-                    materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, m_materialAssignmentId);
-                if (!materialAssetId.IsValid())
-                {
-                    MaterialComponentRequestBus::EventResult(
-                        materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, m_materialAssignmentId);
-                }
-
-                if (IsLoaded() && m_editData.m_materialAssetId == materialAssetId)
+                if (IsLoaded())
                 {
                     LoadOverridesFromEntity();
                 }

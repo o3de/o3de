@@ -52,7 +52,7 @@ public:
     void SetViewPane(CLayoutViewPane* pViewPane);
     void SetTitle(const QString& title);
     void OnViewportSizeChanged(int width, int height);
-    void OnViewportFOVChanged(float fov);
+    void OnViewportFOVChanged(float fovRadians);
 
     static void AddFOVMenus(QMenu* menu, std::function<void(float)> callback, const QStringList& customPresets);
     static void AddAspectRatioMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets);
@@ -111,7 +111,6 @@ protected:
     float m_speedPresetValues[4] = { 0.01f, 0.1f, 1.0f, 10.0f };
 
     double m_fieldWidthMultiplier = 1.8;
-
 
     void OnMenuFOVCustom();
 

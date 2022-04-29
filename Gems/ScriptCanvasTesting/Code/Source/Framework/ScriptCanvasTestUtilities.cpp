@@ -89,10 +89,6 @@ namespace ScriptCanvasTests
         {
             ADD_FAILURE() << "Graph failed to compile";
         }
-        else if (!reporter.GetScriptCanvasId().IsValid())
-        {
-            ADD_FAILURE() << "Graph is not valid, wasn't assigned properly to an entity";
-        }
         else if (reporter.IsReportFinished())
         {
             bool reportCheckpoints = false;

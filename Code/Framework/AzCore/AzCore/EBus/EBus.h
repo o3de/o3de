@@ -146,6 +146,9 @@ namespace AZ
          * - For simple multithreaded cases, use AZStd::mutex.
          * - For multithreaded cases where an event handler sends a new event on the same bus
          *   or connects/disconnects while handling an event on the same bus, use AZStd::recursive_mutex.
+         * - For specialized multithreading cases, such as allowing events to execute in parallel with each other but not with
+         *   connects / disconnects, use custom mutex types along with custom LockGuard policies to control the specific locking
+         *   requirements for each mutex use case (connection, dispatch, binding, callstack tracking).
          */
         using MutexType = NullMutex;
 
@@ -245,15 +248,53 @@ namespace AZ
         using EventProcessingPolicy = EBusEventProcessingPolicy;
 
         /**
-        * Template Lock Guard class that wraps around the Mutex
-        * The EBus Context uses the LockGuard when dispatching
-        * (either AZStd::scoped_lock<MutexType> or NullLockGuard<MutexType>)
+         * The following Lock Guard classes are exposed so that it's possible to redefine them with custom lock/unlock functionality
+         * when using custom types for the EBus MutexType.
+         */
+
+       /**
+        * Template Lock Guard class to use during event dispatches.
+        * By default it will use a scoped_lock, but IsLocklessDispatch=true will cause it to use a NullLockGuard.
         * The IsLocklessDispatch bool is there to defer evaluation of the LocklessDispatch constant
         * Otherwise the value above in EBusTraits.h is always used and not the value
         * that the derived trait class sets.
         */
         template <typename DispatchMutex, bool IsLocklessDispatch>
         using DispatchLockGuard = AZStd::conditional_t<IsLocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
+
+        /**
+         * Template Lock Guard class to use during connection / disconnection.
+         * By default it will use a unique_lock if the ContextMutex is anything but a NullMutex.
+         * This can be overridden to provide a different locking policy with custom EBus MutexType settings.
+         * Also, some specialized policies execute handler methods which can cause unnecessary delays holding
+         * the context mutex, such as performing blocking waits. These methods must unlock the context mutex before
+         * doing so to prevent deadlocks, especially when the wait is for an event in another thread which is trying
+         * to connect to the same bus before it can complete.
+         */
+        template<typename ContextMutex>
+        using ConnectLockGuard = AZStd::conditional_t<
+            AZStd::is_same_v<ContextMutex, AZ::NullMutex>,
+            AZ::Internal::NullLockGuard<ContextMutex>,
+            AZStd::unique_lock<ContextMutex>>;
+
+        /**
+         * Template Lock Guard class to use for EBus bind calls.
+         * By default it will use a scoped_lock.
+         * This can be overridden to provide a different locking policy with custom EBus MutexType settings.
+         */
+        template<typename ContextMutex>
+        using BindLockGuard = AZStd::scoped_lock<ContextMutex>;
+
+        /**
+         * Template Lock Guard class to use for EBus callstack tracking.
+         * By default it will use a unique_lock if the ContextMutex is anything but a NullMutex.
+         * This can be overridden to provide a different locking policy with custom EBus MutexType settings.
+         */
+        template<typename ContextMutex>
+        using CallstackTrackerLockGuard = AZStd::conditional_t<
+            AZStd::is_same_v<ContextMutex, AZ::NullMutex>,
+            AZ::Internal::NullLockGuard<ContextMutex>,
+            AZStd::unique_lock<ContextMutex>>;
     };
 
     namespace Internal
@@ -522,6 +563,24 @@ namespace AZ
         template <typename DispatchMutex>
         using DispatchLockGuardTemplate = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
 
+        /**
+         * Template Lock Guard class that wraps around the Mutex the EBus uses for Bus Connects / Disconnects.
+         */
+        template<typename ContextMutexType>
+        using ConnectLockGuardTemplate = typename ImplTraits::template ConnectLockGuard<ContextMutexType>;
+
+        /**
+         * Template Lock Guard class that wraps around the Mutex the EBus uses for Bus Bind calls.
+         */
+        template<typename ContextMutexType>
+        using BindLockGuardTemplate = typename ImplTraits::template BindLockGuard<ContextMutexType>;
+
+        /**
+         * Template Lock Guard class that wraps around the Mutex the EBus uses for Bus callstack tracking.
+         */
+        template<typename ContextMutexType>
+        using CallstackTrackerLockGuardTemplate = typename ImplTraits::template CallstackTrackerLockGuard<ContextMutexType>;
+
         //////////////////////////////////////////////////////////////////////////
         // Check to help identify common mistakes
         /// @cond EXCLUDE_DOCS
@@ -663,12 +722,22 @@ namespace AZ
             using DispatchLockGuard = DispatchLockGuardTemplate<ContextMutexType>;
 
             /**
-            * The scoped lock guard to use during connection.  Some specialized policies execute handler methods which
+            * The scoped lock guard to use during connection / disconnection.  Some specialized policies execute handler methods which
             * can cause unnecessary delays holding the context mutex or in some cases perform blocking waits and
             * must unlock the context mutex before doing so to prevent deadlock when the wait is for
             * an event in another thread which is trying to connect to the same bus before it can complete
             */
-            using ConnectLockGuard = AZStd::conditional_t<AZStd::is_same_v<ContextMutexType, AZ::NullMutex>, AZ::Internal::NullLockGuard<ContextMutexType>, AZStd::unique_lock<ContextMutexType>>;
+            using ConnectLockGuard = ConnectLockGuardTemplate<ContextMutexType>;
+
+            /**
+             * The scoped lock guard to use for bind calls.
+             */
+            using BindLockGuard = BindLockGuardTemplate<ContextMutexType>;
+
+            /**
+             * The scoped lock guard to use for callstack tracking.
+             */
+            using CallstackTrackerLockGuard = CallstackTrackerLockGuardTemplate<ContextMutexType>;
 
             BusesContainer          m_buses;         ///< The actual bus container, which is a static map for each bus type.
             ContextMutexType        m_contextMutex;  ///< Mutex to control access when modifying the context
@@ -1051,7 +1120,7 @@ AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option")
         if (Context* context = GetContext())
         {
             // scoped lock guard in case of exception / other odd situation
-            AZStd::scoped_lock<decltype(context->m_contextMutex)> lock(context->m_contextMutex);
+            ConnectLockGuard lock(context->m_contextMutex);
             DisconnectInternal(*context, handler);
         }
     }
@@ -1248,8 +1317,9 @@ AZ_POP_DISABLE_WARNING
         Context* context = StoragePolicy::Get();
         if (trackCallstack && context && !context->s_callstack)
         {
-            // cache the callstack into this thread/dll
-            AZStd::scoped_lock<decltype(context->m_contextMutex)> lock(context->m_contextMutex);
+            // Cache the callstack root into this thread/dll. Even though s_callstack is thread-local, we need a mutex lock
+            // for the modifications to m_callstackRoots, which is NOT thread-local.
+            typename Context::CallstackTrackerLockGuard lock(context->m_contextMutex);
             context->s_callstack = &context->m_callstackRoots[AZStd::this_thread::get_id().m_id];
         }
         return context;
@@ -1264,8 +1334,9 @@ AZ_POP_DISABLE_WARNING
         Context& context = StoragePolicy::GetOrCreate();
         if (trackCallstack && !context.s_callstack)
         {
-            // cache the callstack into this thread/dll
-            AZStd::scoped_lock<decltype(context.m_contextMutex)> lock(context.m_contextMutex);
+            // Cache the callstack root into this thread/dll. Even though s_callstack is thread-local, we need a mutex lock
+            // for the modifications to m_callstackRoots, which is NOT thread-local.
+            typename Context::CallstackTrackerLockGuard lock(context.m_contextMutex);
             context.s_callstack = &context.m_callstackRoots[AZStd::this_thread::get_id().m_id];
         }
         return context;
@@ -1340,7 +1411,7 @@ AZ_POP_DISABLE_WARNING
         {
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 if (BusIsConnected())
                 {
                     BusType::DisconnectInternal(*context, m_node);
@@ -1374,7 +1445,7 @@ AZ_POP_DISABLE_WARNING
         {
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 if (BusIsConnectedId(id))
                 {
                     BusType::DisconnectInternal(*context, m_node);
@@ -1386,7 +1457,7 @@ AZ_POP_DISABLE_WARNING
         {
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 if (BusIsConnected())
                 {
                     BusType::DisconnectInternal(*context, m_node);
@@ -1414,7 +1485,7 @@ AZ_POP_DISABLE_WARNING
         {
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 auto nodeIt = m_handlerNodes.find(id);
                 if (nodeIt != m_handlerNodes.end())
                 {
@@ -1432,7 +1503,7 @@ AZ_POP_DISABLE_WARNING
             decltype(m_handlerNodes) handlerNodesToDisconnect;
             if (typename BusType::Context* context = BusType::GetContext())
             {
-                AZStd::scoped_lock<decltype(context->m_contextMutex)> contextLock(context->m_contextMutex);
+                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
                 handlerNodesToDisconnect = AZStd::move(m_handlerNodes);
 
                 for (const auto& nodePair : handlerNodesToDisconnect)

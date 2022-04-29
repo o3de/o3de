@@ -531,7 +531,12 @@ namespace AzToolsFramework
                         if (genericClassInfo->GetNumTemplatedArguments() == 1)
                         {
                             void* ptrAddress = dataNode->GetInstance(0);
-                            void* ptrValue = container->GetElementByIndex(ptrAddress, classElement, 0);
+                            void* ptrValue = nullptr;
+                            if (container->CanAccessElementsByIndex())
+                            {
+                                container->GetElementByIndex(ptrAddress, classElement, 0);
+                            }
+
                             AZ::Uuid pointeeType;
                             // If the pointer is non-null, find the polymorphic type info
                             if (ptrValue)

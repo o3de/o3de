@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <Atom/RPI.Public/RPISystem.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
@@ -264,7 +264,7 @@ namespace AZ
 
         void RPISystem::SimulationTick()
         {
-            if (!m_systemAssetsInitialized)
+            if (!m_systemAssetsInitialized || IsNullRenderer())
             {
                 return;
             }
@@ -288,8 +288,9 @@ namespace AZ
 
         void RPISystem::RenderTick()
         {
-            if (!m_systemAssetsInitialized)
+            if (!m_systemAssetsInitialized || IsNullRenderer())
             {
+                m_dynamicDraw.FrameEnd();
                 return;
             }
 
@@ -406,6 +407,11 @@ namespace AZ
         bool RPISystem::IsInitialized() const
         {
             return m_systemAssetsInitialized;
+        }
+
+        bool RPISystem::IsNullRenderer() const
+        {
+            return m_descriptor.m_isNullRenderer;
         }
 
         void RPISystem::InitializeSystemAssetsForTests()

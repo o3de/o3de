@@ -684,9 +684,15 @@ namespace AssetProcessor
                     ++retryCount;
                     ProcessLegacyRCJob(request, rcParam, assetRecognizer->m_productAssetType, jobCancelListener, response);
 
+                    // If a lost connection occured, prepare for a retry using an exponential backoff policy
+                    if ((response.m_resultCode == AssetBuilderSDK::ProcessJobResult_NetworkIssue) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
+                    {
+                        const int delay = 1 << (retryCount-1);
+                        AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
+                    }
                     AZ_Warning("RC Builder", response.m_resultCode != AssetBuilderSDK::ProcessJobResult_NetworkIssue, "RC.exe reported a network connection issue.  %s",
-                        retryCount <= AssetProcessor::RetriesForJobNetworkError ? "Attempting to retry job." : "Maximum retry attempts exceeded, giving up.");
-                } while (response.m_resultCode == AssetBuilderSDK::ProcessJobResult_NetworkIssue && retryCount <= AssetProcessor::RetriesForJobNetworkError);
+                        retryCount <= AssetProcessor::RetriesForJobLostConnection ? "Attempting to retry job." : "Maximum retry attempts exceeded, giving up.");
+                } while (response.m_resultCode == AssetBuilderSDK::ProcessJobResult_NetworkIssue && retryCount <= AssetProcessor::RetriesForJobLostConnection);
 
             }
 

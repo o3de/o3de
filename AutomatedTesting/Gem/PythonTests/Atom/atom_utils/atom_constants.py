@@ -80,6 +80,31 @@ DISPLAY_MAPPER_PRESET = {
     '4000Nits': 3,
 }
 
+# Control Type options for the Exposure Control component.
+EXPOSURE_CONTROL_TYPE = {
+    'manual': 0,
+    'eye_adaptation': 1
+}
+
+#Reflection Probe Baked Cubemap Quality
+BAKED_CUBEMAP_QUALITY = {
+    'Very Low': 0,
+    'Low': 1,
+    'Medium': 2,
+    'High': 3,
+    'Very High': 4
+}
+
+#Diffuse Probe Grid number of rays to cast per probe from enum DiffuseProbeGridNumRaysPerProbe
+NUM_RAYS_PER_PROBE = {
+    'NumRaysPerProbe_144': 0,
+    'NumRaysPerProbe_288': 1,
+    'NumRaysPerProbe_432': 2,
+    'NumRaysPerProbe_576': 3,
+    'NumRaysPerProbe_720': 4,
+    'NumRaysPerProbe_864': 5,
+    'NumRaysPerProbe_1008': 6,
+}
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -301,12 +326,28 @@ class AtomComponentProperties:
         """
         Diffuse Probe Grid component properties. Requires one of 'shapes'.
           - 'shapes' a list of supported shapes as component names.
+          - 'Scrolling' Toggle the translation of probes with the entity (bool)
+          - 'Show Inactive Probes' Toggle the visualization of inactive probes (bool)
+          - 'Show Visualization' Toggles the probe grid visualization (bool)
+          - 'Visualization Sphere Radius' Sets the radius of probe visualization spheres (float 0.1 to inf)
+          - 'Normal Bias' Adjusts normal bias (float 0.0 to 1.0)
+          - 'Ambient Multiplier' adjusts multiplier for irradiance intensity (float 0.0 to 10.0)
+          - 'View Bias'Adjusts view bias (float 0.0 to 1.0)
+          - 'Number of Rays Per Probe' Number of rays to cast per probe from atom_constants.py NUM_RAYS_PER_PROBE
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Diffuse Probe Grid',
-            'shapes': ['Axis Aligned Box Shape', 'Box Shape']
+            'shapes': ['Axis Aligned Box Shape', 'Box Shape'],
+            'Scrolling': 'Grid Settings|Scrolling',
+            'Show Inactive Probes': 'Visualization|Show Inactive Probes',
+            'Show Visualization': 'Visualization|Show Visualization',
+            'Visualization Sphere Radius': 'Visualization|Visualization Sphere Radius',
+            'Normal Bias': 'Grid Settings|Normal Bias',
+            'Ambient Multiplier': 'Grid Settings|Ambient Multiplier',
+            'View Bias': 'Grid Settings|View Bias',
+            'Number of Rays Per Probe': 'Grid Settings|Number of Rays Per Probe',
         }
         return properties[property]
 
@@ -388,12 +429,44 @@ class AtomComponentProperties:
         Exposure Control component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable' Toggle active state of Exposure Control (bool).
+          - 'Enabled Override' Toggle active state of Exposure Control Overrides (bool).
+          - 'ExposureControlType Override' Toggle enable for Exposure Control Type (bool).
+          - 'ManualCompensation Override' Override Factor for Manual Compensation (0.0, 1.0).
+          - 'EyeAdaptationExposureMin Override' Override Factor for Minimum Exposure (0.0, 1.0).
+          - 'EyeAdaptationExposureMax Override' Override Factor for Maximum Exposure (0.0, 1.0).
+          - 'EyeAdaptationSpeedUp Override' Override Factor for Speed Up (0.0, 1.0).
+          - 'EyeAdaptationSpeedDown Override' Override Factor for Speed Down (0.0, 1.0).
+          - 'HeatmapEnabled Override' Toggle enable for Enable Heatmap (bool).
+          - 'Control Type' specifies manual or Eye Adaptation control from atom_constants.py CONTROL_TYPE.
+          - 'Manual Compensation' Manual exposure compensation value (-16.0, 16.0).
+          - 'Minimum Exposure' Exposure compensation for Eye Adaptation minimum exposure (-16.0, 16.0).
+          - 'Maximum Exposure' Exposure compensation for Eye Adaptation maximum exposure (-16.0, 16.0).
+          - 'Speed Up' Speed for Auto Exposure to adapt to bright scenes (0.01, 10.0).
+          - 'Speed Down' Speed for Auto Exposure to adapt to dark scenes (0.01, 10.0).
+          - 'Enable Heatmap' Toggle enable for Heatmap (bool).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Exposure Control',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable': 'Controller|Configuration|Enable',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'ExposureControlType Override': 'Controller|Configuration|Overrides|ExposureControlType Override',
+            'ManualCompensation Override': 'Controller|Configuration|Overrides|ManualCompensation Override',
+            'EyeAdaptationExposureMin Override': 'Controller|Configuration|Overrides|EyeAdaptationExposureMin Override',
+            'EyeAdaptationExposureMax Override': 'Controller|Configuration|Overrides|EyeAdaptationExposureMax Override',
+            'EyeAdaptationSpeedUp Override': 'Controller|Configuration|Overrides|EyeAdaptationSpeedUp Override',
+            'EyeAdaptationSpeedDown Override': 'Controller|Configuration|Overrides|EyeAdaptationSpeedDown Override',
+            'HeatmapEnabled Override': 'Controller|Configuration|Overrides|HeatmapEnabled Override',
+            'Control Type': 'Controller|Configuration|Control Type',
+            'Manual Compensation': 'Controller|Configuration|Manual Compensation',
+            'Minimum Exposure': 'Controller|Configuration|Eye Adaptation|Minimum Exposure',
+            'Maximum Exposure': 'Controller|Configuration|Eye Adaptation|Maximum Exposure',
+            'Speed Up': 'Controller|Configuration|Eye Adaptation|Speed Up',
+            'Speed Down': 'Controller|Configuration|Eye Adaptation|Speed Down',
+            'Enable Heatmap': 'Controller|Configuration|Eye Adaptation|Enable Heatmap',
         }
         return properties[property]
 
@@ -497,7 +570,7 @@ class AtomComponentProperties:
             'Attenuation radius Radius': 'Controller|Configuration|Attenuation radius|Radius',
             'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
             'Shadows Bias': 'Controller|Configuration|Shadows|Bias',
-            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias\n',
+            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias',
             'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
             'Shadow filter method': 'Controller|Configuration|Shadows|Shadow filter method',
             'Filtering sample count': 'Controller|Configuration|Shadows|Filtering sample count',
@@ -681,13 +754,31 @@ class AtomComponentProperties:
         """
         Reflection Probe component properties. Requires one of 'shapes' listed.
           - 'shapes' a list of supported shapes as component names.
-          - 'Baked Cubemap Path' Asset.id of the baked cubemap image generated by a call to 'BakeReflectionProbe' ebus.
+          - 'Bake Exposure' Used when baking the cubemap. (float -20.0 to 20.0)
+          - 'Parallax Correction' Toggles between preauthored cubemap and one that captures at the location. (bool)
+          - 'Show Visualization' Toggles the reflection probe visualization sphere. (bool)
+          - 'Settings Exposure' Used when rendering meshes with the cubemap. (float -20.0 to 20.0)
+          - 'Use Baked Cubemap' Toggles between preauthored cubemap and one that captures at the location. (bool)
+          - 'Baked Cubemap Quality' resolution of the baked cubemap from atom_constants.py BAKED_CUBEMAP_QUALITY.
+          - 'Height' Inner extents constrained by the shape dimensions attached to the entity.
+          - 'Length' Inner extents constrained by the shape dimensions attached to the entity.
+          - 'Width' Inner extents constrained by the shape dimensions attached to the entity.
+          - 'Baked Cubemap Path' Read-only Path of baked cubemap image generated by calling 'BakeReflectionProbe' ebus.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Reflection Probe',
             'shapes': ['Axis Aligned Box Shape', 'Box Shape'],
+            'Bake Exposure': 'Cubemap Bake|Bake Exposure',
+            'Parallax Correction': 'Controller|Configuration|Settings|Parallax Correction',
+            'Show Visualization': 'Controller|Configuration|Settings|Show Visualization',
+            'Settings Exposure': 'Controller|Configuration|Settings|Exposure',
+            'Use Baked Cubemap': 'Cubemap|Use Baked Cubemap',
+            'Baked Cubemap Quality': 'Cubemap|Baked Cubemap Quality',
+            'Height': 'Controller|Configuration|Inner Extents|Height',
+            'Length': 'Controller|Configuration|Inner Extents|Length',
+            'Width': 'Controller|Configuration|Inner Extents|Width',
             'Baked Cubemap Path': 'Cubemap|Baked Cubemap Path',
         }
         return properties[property]
