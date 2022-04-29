@@ -9,7 +9,6 @@ import os
 
 import pytest
 
-import editor_python_test_tools.hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorTestSuite
 from Atom.atom_utils.atom_component_helper import compare_screenshot_to_golden_image, golden_images_directory
@@ -170,38 +169,3 @@ class TestMaterialEditor(EditorTestSuite):
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
 
         extra_cmdline_args = ["-rhi=Vulkan"]
-
-
-# @pytest.mark.parametrize("project", ["AutomatedTesting"])
-# @pytest.mark.parametrize("launcher_platform", ['windows_generic'])
-# class TestMaterialEditor(object):
-#
-#     @pytest.mark.parametrize("cfg_args,expected_lines", [
-#         pytest.param("-rhi=dx12", ["Registering dx12 RHI"]),
-#         pytest.param("-rhi=Vulkan", ["Registering vulkan RHI"])
-#     ])
-#     @pytest.mark.parametrize("exe_file_name", ["MaterialEditor"])
-#     @pytest.mark.test_case_id("C30973986")  # Material Editor Launching in Dx12
-#     @pytest.mark.test_case_id("C30973987")  # Material Editor Launching in Vulkan
-#     def test_MaterialEditorLaunch_AllRHIOptionsSucceed(
-#             self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name, cfg_args,
-#             expected_lines):
-#         """
-#         Tests each valid RHI option (Null RHI excluded) can be launched with the MaterialEditor.
-#         Checks for the specific expected_lines messaging for each RHI type.
-#         """
-#
-#         hydra.launch_and_validate_results(
-#             request,
-#             os.path.join(os.path.dirname(__file__), "tests"),
-#             generic_launcher,
-#             editor_script="",
-#             run_python="--runpython",
-#             timeout=60,
-#             expected_lines=expected_lines,
-#             unexpected_lines=[],
-#             halt_on_unexpected=False,
-#             null_renderer=False,
-#             cfg_args=[cfg_args],
-#             log_file_name="MaterialEditor.log",
-#         )

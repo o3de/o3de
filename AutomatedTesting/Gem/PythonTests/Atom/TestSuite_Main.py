@@ -135,5 +135,4 @@ class TestMaterialEditor(EditorTestSuite):
     material_editor_test = True
 
     class MaterialEditor_Atom_LaunchMaterialEditor(EditorSharedTest):
-        material_editor_test = True
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module

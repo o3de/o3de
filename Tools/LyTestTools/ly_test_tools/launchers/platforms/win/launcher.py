@@ -261,14 +261,6 @@ class WinMaterialEditor(WinLauncher):
         self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=true"')
         self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionEnabled=false"')
 
-    # def stop(self):
-    #     """
-    #     Kills the MaterialEditor and AssetProcessor processes.
-    #     :return: None
-    #     """
-    #     ly_test_tools.environment.process_utils.kill_processes_named("MaterialEditor", ignore_extensions=True)
-    #     self.workspace.asset_processor.stop()
-
     def binary_path(self):
         """
         Return full path to the Editor for this build's configuration and project
