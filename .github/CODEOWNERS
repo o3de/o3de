@@ -72,6 +72,7 @@
 /AutomatedTesting/Levels/Multiplayer/ @o3de/sig-network-maintainers
 /Code/Framework/AzFramework/AzFramework/Network/ @o3de/sig-network-maintainers
 /Code/Framework/AzNetworking/ @o3de/sig-network-maintainers
+/Code/Tools/AWSNativeSDKInit/ @o3de/sig-network-maintainers
 /Gems/AWSClientAuth/ @o3de/sig-network-maintainers
 /Gems/AWSCore/ @o3de/sig-network-maintainers
 /Gems/AWSGameLift/ @o3de/sig-network-maintainers
