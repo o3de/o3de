@@ -11,6 +11,7 @@
 
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
+#include <Atom/RPI.Public/Pass/PassContainer.h>
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -69,13 +70,14 @@ namespace AZ
             bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath) override;
             void WriteTemplateToFile(const PassTemplate& passTemplate, AZStd::string_view assetFilePath) override;
             void DebugPrintPassHierarchy() override;
-            bool IsHotReloading() const override;
-            void SetHotReloading(bool hotReloading) override;
             void SetTargetedPassDebuggingName(const AZ::Name& targetPassName) override;
             const AZ::Name& GetTargetedPassDebuggingName() const override;
             void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) override;
             PassSystemState GetState() const override;
             SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const override;
+            void DebugBreakOnPass(const Pass* pass) const override;
+            void AddRenderPipeline(RenderPipelinePtr renderPipeline) override;
+            void RemoveRenderPipeline(RenderPipelinePtr renderPipeline) override;
 
             // PassSystemInterface statistics related functions
             void IncrementFrameDrawItemCount(u32 numDrawItems) override;
@@ -126,11 +128,10 @@ namespace AZ
             // Resets the frame statistic counters
             void ResetFrameStatistics();
 
-            // Lists for queuing passes for various function calls
-            // Name of the list reflects the pass function it will call
-            AZStd::vector< Ptr<Pass> > m_buildPassList;
-            AZStd::vector< Ptr<Pass> > m_removePassList;
-            AZStd::vector< Ptr<Pass> > m_initializePassList;
+            // Collection of passes that don't belong to any rendering pipeline
+            PassContainer m_passesWithoutPipeline;
+
+            AZStd::vector< RenderPipelinePtr > m_renderPipelines;
 
             // Library of pass descriptors that can be instantiated through data driven pass requests
             PassLibrary m_passLibrary;
@@ -140,9 +141,6 @@ namespace AZ
 
             // The root of the pass tree hierarchy
             Ptr<ParentPass> m_rootPass = nullptr;
-
-            // Whether the Pass Hierarchy changed
-            bool m_passHierarchyChanged = true;
 
             // Whether the Pass System is currently hot reloading passes 
             bool m_isHotReloading = false;

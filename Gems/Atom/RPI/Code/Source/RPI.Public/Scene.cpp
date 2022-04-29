@@ -113,8 +113,7 @@ namespace AZ
         {
             if (m_taskGraphActive)
             {
-                WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
-                m_simulationFinishedTGEvent.reset();
+                WaitAndCleanTGEvent();
             }
             else
             {
@@ -382,6 +381,8 @@ namespace AZ
                         m_defaultPipeline = m_pipelines[0];
                     }
 
+                    // AKM_MARKER
+                    // Comment/replace the call to ProcessQueuedChanges here?
                     AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
                     RebuildPipelineStatesLookup();
 
@@ -458,8 +459,7 @@ namespace AZ
             // If previous simulation job wasn't done, wait for it to finish.
             if (m_taskGraphActive)
             {
-                WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
-                m_simulationFinishedTGEvent.reset();
+                WaitAndCleanTGEvent();
             }
             else
             {
@@ -489,14 +489,14 @@ namespace AZ
             }
         }
 
-        void Scene::WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&&  completionTGEvent)
+        void Scene::WaitAndCleanTGEvent()
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: WaitAndCleanTGEvent");
-            if (completionTGEvent)
+            if (m_simulationFinishedTGEvent)
             {
-                completionTGEvent->Wait();
+                m_simulationFinishedTGEvent->Wait();
             }
-            // allow completionTGEvent to go out of scope and be deleted
+            m_simulationFinishedTGEvent = nullptr;
         }
 
         void Scene::WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob)
@@ -678,8 +678,7 @@ namespace AZ
 
             if (m_taskGraphActive)
             {
-                WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
-                m_simulationFinishedTGEvent.reset();
+                WaitAndCleanTGEvent();
             }
             else
             {

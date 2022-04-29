@@ -41,14 +41,14 @@ namespace AZ
                 rootRequest.m_templateName = desc.m_rootPassTemplate;
 
                 Ptr<Pass> rootPass = passSystem->CreatePassFromRequest(&rootRequest);
-                pipeline->m_rootPass = azrtti_cast<ParentPass*>(rootPass.get());
+                pipeline->m_passes.m_rootPass = azrtti_cast<ParentPass*>(rootPass.get());
             }
             else
             {
                 // Otherwise create an empty root pass with pipeline name
-                pipeline->m_rootPass = passSystem->CreatePass<ParentPass>(passName);
+                pipeline->m_passes.m_rootPass = passSystem->CreatePass<ParentPass>(passName);
             }
-            AZ_Assert(pipeline->m_rootPass != nullptr, "Error creating root pass for pipeline!");
+            AZ_Assert(pipeline->m_passes.m_rootPass != nullptr, "Error creating root pass for pipeline!");
 
             InitializeRenderPipeline(pipeline, desc);
 
@@ -92,7 +92,7 @@ namespace AZ
             Name tempalteName = Name(desc.m_rootPassTemplate.c_str());
             swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(tempalteName);
 
-            pipeline->m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext);
+            pipeline->m_passes.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
 
             InitializeRenderPipeline(pipeline, desc);
@@ -106,29 +106,29 @@ namespace AZ
             pipeline->m_mainViewTag = Name(desc.m_mainViewTagName);
             pipeline->m_nameId = desc.m_name.data();
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
-            pipeline->m_rootPass->SetRenderPipeline(pipeline);
-            pipeline->m_rootPass->m_flags.m_isPipelineRoot = true;
-            pipeline->m_rootPass->ManualPipelineBuildAndInitialize();
+            pipeline->m_passes.m_rootPass->SetRenderPipeline(pipeline);
+            pipeline->m_passes.m_rootPass->m_flags.m_isPipelineRoot = true;
+            pipeline->m_passes.m_rootPass->ManualPipelineBuildAndInitialize();
         }
 
         RenderPipeline::~RenderPipeline()
         {
-            if (m_rootPass)
+            if (m_passes.m_rootPass)
             {
-                m_rootPass->SetRenderPipeline(nullptr);
+                m_passes.m_rootPass->SetRenderPipeline(nullptr);
             }
         }
 
         void RenderPipeline::BuildPipelineViews()
         {
-            if (m_rootPass == nullptr)
+            if (m_passes.m_rootPass == nullptr)
             {
                 return;
             }
 
             // Get view tags from all passes.
             SortedPipelineViewTags viewTags;
-            m_rootPass->GetPipelineViewTags(viewTags);
+            m_passes.m_rootPass->GetPipelineViewTags(viewTags);
 
             // Use a new list for building pipeline views since we may need information from the previous list in m_views in the process
             PipelineViewMap newViewsByTag;
@@ -162,7 +162,7 @@ namespace AZ
         {
             views.m_drawListMask.reset();
             views.m_passesByDrawList.clear();
-            m_rootPass->GetViewDrawListInfo(views.m_drawListMask, views.m_passesByDrawList, views.m_viewTag);
+            m_passes.m_rootPass->GetViewDrawListInfo(views.m_drawListMask, views.m_passesByDrawList, views.m_viewTag);
         }
 
         void RenderPipeline::SetPersistentView(const PipelineViewTag& viewTag, ViewPtr view)
@@ -293,19 +293,14 @@ namespace AZ
         {
             AZ_Assert(m_scene == nullptr, "Pipeline was added to another scene");
             m_scene = scene;
-            PassSystemInterface::Get()->GetRootPass()->AddChild(m_rootPass);
-            if (m_renderMode != RenderMode::NoRender)
-            {
-                m_rootPass->SetEnabled(true);
-            }
+            PassSystemInterface::Get()->AddRenderPipeline(RenderPipelinePtr(this));
         }
 
         void RenderPipeline::OnRemovedFromScene([[maybe_unused]] Scene* scene)
         {
             AZ_Assert(m_scene == scene, "Pipeline isn't added to the specified scene");
             m_scene = nullptr;
-            m_rootPass->SetEnabled(false);
-            m_rootPass->QueueForRemoval();
+            PassSystemInterface::Get()->RemoveRenderPipeline(RenderPipelinePtr(this));
 
             m_drawFilterTag.Reset();
             m_drawFilterMask = 0;
@@ -315,15 +310,12 @@ namespace AZ
         {
             if (m_needsPassRecreate)
             {
-                PassSystemInterface* passSystem = PassSystemInterface::Get();
-
                 // Process any queued changes before we attempt to reload the pipeline
-                passSystem->ProcessQueuedChanges();
-
-                passSystem->SetHotReloading(true);
+                bool changed = false;
+                m_passes.ProcessQueuedChanges(changed);
 
                 // Attempt to re-create hierarchy under root pass
-                Ptr<ParentPass> newRoot = azrtti_cast<ParentPass*>(m_rootPass->Recreate().get());
+                Ptr<ParentPass> newRoot = azrtti_cast<ParentPass*>(m_passes.m_rootPass->Recreate().get());
                 newRoot->SetRenderPipeline(this);
                 newRoot->m_flags.m_isPipelineRoot = true;
                 newRoot->ManualPipelineBuildAndInitialize();
@@ -334,12 +326,12 @@ namespace AZ
                 if (validation.IsValid())
                 {
                     // Remove old pass
-                    m_rootPass->SetRenderPipeline(nullptr);
-                    m_rootPass->QueueForRemoval();
+                    m_passes.m_rootPass->SetRenderPipeline(nullptr);
+                    m_passes.m_rootPass->QueueForRemoval();
 
                     // Set new root
-                    m_rootPass = newRoot;
-                    passSystem->GetRootPass()->AddChild(m_rootPass);
+                    m_passes.m_rootPass = newRoot;
+                    PassSystemInterface::Get()->GetRootPass()->AddChild(m_passes.m_rootPass);
 
                     // Re-Apply render pipeline change
                     m_wasModifiedByScene = false;
@@ -356,13 +348,12 @@ namespace AZ
                     newRoot->DebugPrint();
 #endif
                 }
-                passSystem->SetHotReloading(false);
                 m_needsPassRecreate = false;
             }
 
             if (m_wasPassModified)
             {
-                m_rootPass->SetRenderPipeline(this);
+                m_passes.m_rootPass->SetRenderPipeline(this);
                 BuildPipelineViews();
                 m_wasPassModified = false;
                 if (m_scene)
@@ -417,6 +408,22 @@ namespace AZ
             if (m_renderMode == RenderMode::RenderOnce)
             {
                 RemoveFromRenderTick();
+            }
+        }
+
+        void RenderPipeline::PassSystemFrameBegin(Pass::FramePrepareParams params)
+        {
+            if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
+            {
+                m_passes.m_rootPass->FrameBegin(params);
+            }
+        }
+
+        void RenderPipeline::PassSystemFrameEnd()
+        {
+            if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
+            {
+                m_passes.m_rootPass->FrameEnd();
             }
         }
 
@@ -488,7 +495,7 @@ namespace AZ
 
         const Ptr<ParentPass>& RenderPipeline::GetRootPass() const
         {
-            return m_rootPass;
+            return m_passes.m_rootPass;
         }
 
         void RenderPipeline::SetPassModified()

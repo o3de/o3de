@@ -11,6 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Pass/PassContainer.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
@@ -80,6 +81,7 @@ namespace AZ
         class RenderPipeline
         {
             friend class Pass;
+            friend class PassSystem;
             friend class Scene;
 
         public:
@@ -240,6 +242,9 @@ namespace AZ
             // Build pipeline views from the pipeline pass tree. It's usually called when pass tree changed.
             void BuildPipelineViews();
 
+            void PassSystemFrameBegin(Pass::FramePrepareParams params);
+            void PassSystemFrameEnd();
+
             //////////////////////////////////////////////////
             // Functions accessed by Scene class
             
@@ -261,14 +266,12 @@ namespace AZ
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
 
-
             RenderMode m_renderMode = RenderMode::RenderEveryTick;
 
             // The Scene this pipeline was added to.
             Scene* m_scene = nullptr;
 
-            // Pass tree which contains all the passes in this render pipeline.
-            Ptr<ParentPass> m_rootPass;
+            PassContainer m_passes;
 
             // Attachment bindings/connections that can be referenced from any pass in the pipeline in a global manner
             AZStd::vector<PipelineGlobalBinding> m_pipelineGlobalConnections;
