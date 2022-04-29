@@ -66,6 +66,8 @@
 /Code/Framework/AzQtComponents/ @o3de/sig-content-maintainers
 /Code/Editor/ @o3de/sig-content-maintainers
 /Gems/EditorPythonBindings/ @o3de/sig-content-maintainers
+/Gems/GraphCanvas/ @o3de/sig-content-maintainers
+/Gems/GraphModel/ @o3de/sig-content-maintainers
 /Gems/LandscapeCanvas/ @o3de/sig-content-maintainers
 /Gems/QtForPython/ @o3de/sig-content-maintainers
 /AutomatedTesting/Gem/PythonTests/editor*/ @o3de/sig-content-maintainers
