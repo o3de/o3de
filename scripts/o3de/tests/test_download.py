@@ -147,7 +147,7 @@ class TestObjectDownload:
         'http://o3derepo.org/TestTemplate/template.json',
         'http://o3derecursiverepo.org/repo.json'
     ]
-    
+
     @pytest.mark.parametrize("manifest_data, gem_name, expected_result, repo_data, gem_data, zip_data, skip_auto_register, force_overwrite, registration_expected", [
                                  # Remote and local gem tests
                                  pytest.param(TEST_O3DE_MANIFEST_JSON_PAYLOAD, 'TestGem', 0, TEST_O3DE_REPO_WITH_OBJECTS_JSON_PAYLOAD, TEST_O3DE_REPO_GEM_JSON_PAYLOAD, TEST_O3DE_ZIP_FILE_DATA, False, True, True),
@@ -192,7 +192,7 @@ class TestObjectDownload:
                 raise urllib.error.HTTPError(url_str, 404, "Not found", {}, 0)
 
             return custom_mock
-            
+
         def mocked_extract(path=None, members=None, pwd=None):
             self.extracted_gem_path = path
             self.extracted_gem_json = gem_data
@@ -226,9 +226,6 @@ class TestObjectDownload:
 
         def get_cache_folder():
             return pathlib.Path('C:/Users/testuser/.o3de/cache')
-            
-        def mocked_is_zipfile(path):
-            return True
 
         def mocked_copy(origin, dest):
             if mocked_isfile(origin):
@@ -246,13 +243,13 @@ class TestObjectDownload:
                 patch('pathlib.Path.is_file', mocked_isfile) as _6, \
                 patch('pathlib.Path.mkdir') as _7, \
                 patch('pathlib.Path.unlink') as _8, \
-                patch('zipfile.is_zipfile', mocked_is_zipfile) as _9, \
+                patch('zipfile.is_zipfile', return_value=True) as _9, \
                 patch('zipfile.ZipFile', mocked_open) as _10, \
                 patch('pathlib.Path.is_dir', return_value=True) as _11, \
                 patch('shutil.copy', mocked_copy) as _12, \
                 patch('os.unlink') as _13, \
                 patch('os.path.getsize', return_value=64) as _14:
-                
+
             result = download.download_gem(gem_name, '', skip_auto_register, force_overwrite, download_callback)
             assert result == expected_result
 
