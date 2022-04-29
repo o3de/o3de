@@ -250,7 +250,7 @@ namespace ScriptCanvasEditor
         return AZ::Success(result);
     }
 
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path)
+    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool makeEntityIdsUnique)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
 
@@ -261,6 +261,14 @@ namespace ScriptCanvasEditor
         }
 
         const auto& asString = fileStringOutcome.GetValue();
+        return LoadFromString(asString, path, makeEntityIdsUnique);
+    }
+
+    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromString(
+        const AZStd::string& scriptCanvasString,
+        AZStd::string_view path,
+        bool makeEntityIdsUnique)
+    {
         ScriptCanvas::DataPtr scriptCanvasData = aznew ScriptCanvas::ScriptCanvasData();
         if (!scriptCanvasData)
         {
@@ -277,7 +285,8 @@ namespace ScriptCanvasEditor
         FileLoadSuccess success;
 
         // attempt JSON deserialization...
-        auto jsonResult = LoadDataFromJson(*scriptCanvasData, AZStd::string_view{ asString.begin(), asString.size() }, *serializeContext);
+        auto jsonResult = LoadDataFromJson(
+            *scriptCanvasData, AZStd::string_view{ scriptCanvasString.begin(), scriptCanvasString.size() }, *serializeContext);
 
         if (jsonResult.IsSuccess())
         {
@@ -287,7 +296,7 @@ namespace ScriptCanvasEditor
         {
             success.deserializationErrors = "JSON deserialization failed. Attempting deprecated ObjectStream read from XML.";
             // ...try legacy xml as a failsafe
-            AZ::IO::ByteContainerStream byteStream(&asString);
+            AZ::IO::ByteContainerStream byteStream(&scriptCanvasString);
             if (!AZ::Utils::LoadObjectFromStreamInPlace
                 ( byteStream
                 , *scriptCanvasData
@@ -314,7 +323,10 @@ namespace ScriptCanvasEditor
             return AZ::Failure(AZStd::string("Entity loaded without required EditorGraph component."));
         }
 
-        ScriptCanvasFileHandlingCpp::MakeGraphComponentEntityIdsUnique(entity, serializeContext);
+        if (makeEntityIdsUnique)
+        {
+            ScriptCanvasFileHandlingCpp::MakeGraphComponentEntityIdsUnique(entity, serializeContext);
+        }
         graph->MarkOwnership(*scriptCanvasData);
         entity->Init();
         entity->Activate();

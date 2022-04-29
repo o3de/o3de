@@ -49,7 +49,10 @@ namespace ScriptCanvasBuilder
         const ScriptCanvas::GraphData* graphData = nullptr;
         ScriptCanvasEditor::SourceHandle sourceHandle;
 
-        auto sourceOutcome = ScriptCanvasEditor::LoadFromFile(fullPath);
+        // By default, entity IDs are made unique, so that multiple instances of the script canvas file can be loaded at the same time.
+        // However, in this case the file is not loaded multiple times at once, and the entity IDs need to be stable so that
+        // the logic used to generate the fingerprint for this file remains stable.
+        auto sourceOutcome = ScriptCanvasEditor::LoadFromFile(fullPath, /*makeEntityIdsUnique*/ false);
         if (sourceOutcome.IsSuccess())
         {
             sourceHandle = sourceOutcome.GetValue().handle;
@@ -84,6 +87,12 @@ namespace ScriptCanvasBuilder
             }
         };
         const AZStd::set<AZ::Entity*, EntityIdComparer> sortedEntities(graphData->m_nodes.begin(), graphData->m_nodes.end());
+        AZ_TracePrintf(s_scriptCanvasBuilder, "Sorted entities are...");
+        for (const auto& nodeEntity : sortedEntities)
+        {
+            AZ_TracePrintf(
+                s_scriptCanvasBuilder, "\t%s: %s", nodeEntity->GetName().c_str(), nodeEntity->GetId().ToString().c_str());
+        }
 
         size_t fingerprint = 0;
         for (const auto& nodeEntity : sortedEntities)
@@ -91,6 +100,12 @@ namespace ScriptCanvasBuilder
             if (auto nodeComponent = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Node>(nodeEntity))
             {
                 AZStd::hash_combine(fingerprint, nodeComponent->GenerateFingerprint());
+                AZ_TracePrintf(s_scriptCanvasBuilder, "Fingerprint for entity %s with ID %s for node %s is %d. Fingerprint is %d",
+                    nodeEntity->GetName().c_str(),
+                    nodeEntity->GetId().ToString().c_str(),
+                    nodeComponent->GetNodeName().c_str(),
+                    nodeComponent->GenerateFingerprint(),
+                    fingerprint);
             }
         }
 
@@ -167,6 +182,8 @@ namespace ScriptCanvasBuilder
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
             jobDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
 
+            AZ_TracePrintf(
+                s_scriptCanvasBuilder, "jobDescriptor.m_additionalFingerprintInfo %s", jobDescriptor.m_additionalFingerprintInfo.c_str());
             // Graph process job needs to wait until its dependency asset job finished
             for (const auto& processingDependency : jobDependenciesByKey)
             {
