@@ -47,11 +47,7 @@ namespace AZ
             AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> GetLodOverrideValues();
 
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
-            // Using int64_t/uint64_t results in cross platform serialization issues.
-            // Updating m_sortKey to address problems loading mesh assets on Android.
-            // Changing RHI::DrawItemSortKey would be better in the long term.
-            // RHI::DrawItemSortKey m_sortKey = 0;
-            AZ::s64 m_sortKey = 0;
+            RHI::DrawItemSortKey m_sortKey = 0;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_useForwardPassIblSpecular = false;
             bool m_isRayTracingEnabled = true;
