@@ -64,7 +64,8 @@
 /Gems/WhiteBox/ @o3de/sig-content-maintainers
 
 # SIG-Simulation ownership area
-/Code/Framework/AzFramework/AzFramework/Physics @o3de/sig-simulation-maintainers
+/Code/Framework/AzCore/AzCore/Math/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Code/Framework/AzFramework/AzFramework/Physics/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/Blast/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/MotionMatching/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/NvCloth/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
