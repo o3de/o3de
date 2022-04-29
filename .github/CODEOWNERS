@@ -66,6 +66,7 @@
 # SIG-Simulation ownership area
 /Code/Framework/AzFramework/AzFramework/Physics @o3de/sig-simulation-maintainers
 /Gems/Blast/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/MotionMatching/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/NvCloth/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/PhysX/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/PhysXDebug/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
