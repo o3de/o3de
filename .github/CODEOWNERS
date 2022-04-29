@@ -37,11 +37,6 @@
 /SerializeContextAnalysis.bat @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Tools/SerializeContextAnalyzer/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 
-# SIG-Core temporary areas of ownership. Will be moved to SIG-Simulation when that group is created
-/AutomatedTesting/Gem/PythonTests/Blast @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/AutomatedTesting/Gem/PythonTests/NvCloth @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/AutomatedTesting/Gem/PythonTests/Physics @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-
 # SIG-Content Asset Pipeline ownership area
 /AutomatedTesting/Gem/PythonTests/assetpipeline/ap_fixtures/ @o3de/sig-content-maintainers
 /AutomatedTesting/Gem/PythonTests/assetpipeline/asset_processor_tests/ @o3de/sig-content-maintainers
@@ -65,6 +60,7 @@
 /Code/Framework/AzFramework/AzFramework/Visibility/ @o3de/sig-content-maintainers
 
 # SIG-Content White Box ownership area
+/AutomatedTesting/Gem/PythonTests/WhiteBox/ @o3de/sig-content-maintainers
 /Gems/WhiteBox/ @o3de/sig-content-maintainers
 
 # SIG-Simulation ownership area
@@ -74,6 +70,9 @@
 /Gems/PhysX/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/PhysXDebug/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/EMotionFX/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/AutomatedTesting/Gem/PythonTests/Blast @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/AutomatedTesting/Gem/PythonTests/NvCloth @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/AutomatedTesting/Gem/PythonTests/Physics @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 
 # SIG-Build areas of ownership
 /cmake/Platform/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
