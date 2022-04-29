@@ -34,6 +34,7 @@ namespace RecastNavigation
                 ->Field("Max Vertices Per Poly", &Self::m_maxVertsPerPoly)
                 ->Field("Region Merge Size", &Self::m_regionMergeSize)
                 ->Field("Region Min Size", &Self::m_regionMinSize)
+                ->Field("Tile Size", &Self::m_tileSize)
                 ->Version(1)
                 ;
 
@@ -45,6 +46,8 @@ namespace RecastNavigation
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
+                    ->DataElement(nullptr, &Self::m_tileSize, "Tile Size",
+                        "The width/height size of tile's on the xy-plane. [Limit: >= 0] [Units: vx]")
                     ->DataElement(nullptr, &Self::m_agentHeight, "Agent Height",
                         "Minimum floor to 'ceiling' height that will still allow the floor area to be considered walkable. [Limit: >= 3]")
                     ->DataElement(nullptr, &Self::m_agentMaxClimb, "Agent Max Climb",

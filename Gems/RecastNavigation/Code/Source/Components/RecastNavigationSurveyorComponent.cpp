@@ -95,7 +95,7 @@ namespace RecastNavigation
                 /*AZ_Printf("NavMesh", "world %s, local %s & %s = %s", AZ::ToString(t).c_str(),
                     AZ::ToString(pose.first).c_str(), AZ::ToString(pose.second).c_str(), AZ::ToString(worldTransform).c_str());*/
 
-                overlapHit.m_shape->GetGeometry(vertices, indices, &geometry.m_worldBounds);
+                overlapHit.m_shape->GetGeometry(vertices, indices, nullptr);
                 if (!vertices.empty() && !indices.empty())
                 {
                     for (const AZ::Vector3& vertex : vertices)
@@ -139,7 +139,8 @@ namespace RecastNavigation
         handler.Connect(m_geometryCollectedEvent);
     }
 
-    void RecastNavigationSurveyorComponent::StartCollectingGeometry()
+    void RecastNavigationSurveyorComponent::StartCollectingGeometry(
+        [[maybe_unused]] float tileSize, [[maybe_unused]] float cellSize)
     {
         AZStd::shared_ptr<BoundedGeometry> geometryData = AZStd::make_unique<BoundedGeometry>();
 
@@ -171,7 +172,7 @@ namespace RecastNavigation
         m_geometryCollectedEvent.Signal(geometryData);
     }
 
-    AZ::Aabb RecastNavigationSurveyorComponent::GetWorldBounds()
+    AZ::Aabb RecastNavigationSurveyorComponent::GetWorldBounds() const
     {
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);

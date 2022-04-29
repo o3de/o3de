@@ -17,14 +17,12 @@ namespace RecastNavigation
     public:
         virtual void BindGeometryCollectionEventHandler(AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler& handler) = 0;
 
-        virtual void StartCollectingGeometry() = 0;
+        virtual void StartCollectingGeometry(float tileSize, float cellSize) = 0;
+        virtual int GetNumberOfTiles([[maybe_unused]] float tileSize, [[maybe_unused]]float cellSize) const { return 1; }
         
         //! Returns the world bounds that this surveyor is responsible for.
         //! @return An axis aligned bounding box of the world bounds.
-        virtual AZ::Aabb GetWorldBounds() = 0;
-
-        virtual int GetTilesAlongXDimension() const { return 1; }
-        virtual int GetTilesAlongYDimension() const { return 1; }
+        virtual AZ::Aabb GetWorldBounds() const = 0;
     };
 
     using RecastNavigationSurveyorRequestBus = AZ::EBus<RecastNavigationSurveyorRequests>;

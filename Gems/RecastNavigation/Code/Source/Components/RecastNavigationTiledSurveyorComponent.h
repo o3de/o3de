@@ -44,11 +44,10 @@ namespace RecastNavigation
         void Deactivate() override;
 
         // RecastNavigationSurveyorRequestBus interface implementation
-        void StartCollectingGeometry() override;
+        void StartCollectingGeometry(float tileSize, float cellSize) override;
         void BindGeometryCollectionEventHandler(AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler& handler) override;
-        AZ::Aabb GetWorldBounds() override;
-        int GetTilesAlongXDimension() const override { return m_tilesOnXSide; }
-        int GetTilesAlongYDimension() const override { return m_tilesOnYSide; }
+        AZ::Aabb GetWorldBounds() const override;
+        int GetNumberOfTiles(float tileSize, float cellSize) const override;
 
     private:
 
@@ -58,7 +57,5 @@ namespace RecastNavigation
         void AppendColliderGeometry(BoundedGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
         
         AZ::Event<AZStd::shared_ptr<BoundedGeometry>> m_geometryCollectedEvent;
-        int m_tilesOnXSide = 1;
-        int m_tilesOnYSide = 1;
     };
 } // namespace RecastNavigation

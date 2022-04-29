@@ -44,8 +44,8 @@ namespace RecastNavigation
 
         // RecastNavigationSurveyorRequestBus interface implementation
         void BindGeometryCollectionEventHandler(AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler& handler) override;
-        void StartCollectingGeometry() override;
-        AZ::Aabb GetWorldBounds() override;
+        void StartCollectingGeometry(float tileSize, float cellSize) override;
+        AZ::Aabb GetWorldBounds() const override;
 
     private:
         // Append the geometry within a volume

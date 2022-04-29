@@ -28,8 +28,6 @@ namespace RecastNavigation
         if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<RecastNavigationTiledSurveyorComponent, AZ::Component>()
-                ->Field("Tiles On X Side", &RecastNavigationTiledSurveyorComponent::m_tilesOnXSide)
-                ->Field("Tiles On Y Side", &RecastNavigationTiledSurveyorComponent::m_tilesOnYSide)
                 ->Version(1)
                 ;
 
@@ -40,10 +38,6 @@ namespace RecastNavigation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(nullptr, &RecastNavigationTiledSurveyorComponent::m_tilesOnXSide, "Tiles On X Side",
-                        "Number of tiles along the X dimension of the box shape component on the entity")
-                    ->DataElement(nullptr, &RecastNavigationTiledSurveyorComponent::m_tilesOnYSide, "Tiles On Y Side",
-                        "Number of tiles along the Y dimension of the box shape component on the entity")
                     ;
             }
         }
@@ -119,7 +113,7 @@ namespace RecastNavigation
                 /*AZ_Printf("NavMesh", "world %s, local %s & %s = %s", AZ::ToString(t).c_str(),
                     AZ::ToString(pose.first).c_str(), AZ::ToString(pose.second).c_str(), AZ::ToString(worldTransform).c_str());*/
 
-                overlapHit.m_shape->GetGeometry(vertices, indices, &geometry.m_worldBounds);
+                overlapHit.m_shape->GetGeometry(vertices, indices, nullptr);
                 if (!vertices.empty() && !indices.empty())
                 {
                     for (const AZ::Vector3& vertex : vertices)
@@ -158,40 +152,56 @@ namespace RecastNavigation
         RecastNavigationSurveyorRequestBus::Handler::BusDisconnect();
     }
 
-    void RecastNavigationTiledSurveyorComponent::StartCollectingGeometry()
+    void RecastNavigationTiledSurveyorComponent::StartCollectingGeometry(float tileSize, float cellSize)
     {
         const AZ::Aabb worldVolume = GetWorldBounds();
-        const AZ::Vector3 tileDimensions{
-            worldVolume.GetXExtent() / m_tilesOnXSide,
-            worldVolume.GetYExtent() / m_tilesOnYSide,
-            worldVolume.GetZExtent() };
 
-        const AZ::Vector3 padding = AZ::Vector3::CreateOne() * 3.f;
+        RecastVector3 bmin{ worldVolume.GetMin() };
+        RecastVector3 bmax{ worldVolume.GetMax() };
 
-        for (int tileOnX = 0; tileOnX < m_tilesOnXSide; ++tileOnX)
+        int gw = 0, gh = 0;
+        rcCalcGridSize(bmin.data(), bmax.data(), cellSize, &gw, &gh);
+        const int ts = static_cast<int>(tileSize);
+        const int tw = (gw + ts - 1) / ts;
+        const int th = (gh + ts - 1) / ts;
+        const float tcs = tileSize * cellSize;
+
+        const AZ::Vector3 worldMin = worldVolume.GetMin();
+        const AZ::Vector3 worldMax = worldVolume.GetMax();
+
+        const AZ::Vector3 border = AZ::Vector3::CreateOne() * 5.f;
+
+        for (int y = 0; y < th; ++y)
         {
-            for (int tileOnY = 0; tileOnY < m_tilesOnYSide; ++tileOnY)
+            for (int x = 0; x < tw; ++x)
             {
-                AZ::Vector3 minPoint = worldVolume.GetMin();
-                minPoint.SetX(minPoint.GetX() + worldVolume.GetXExtent() / m_tilesOnXSide * tileOnX);
-                minPoint.SetY(minPoint.GetY() + worldVolume.GetYExtent() / m_tilesOnYSide * tileOnY);
+                AZ::Vector3 tileMin{
+                    worldMin.GetX() + x * tcs,
+                    worldMin.GetY() + y * tcs,
+                    worldMin.GetZ()
+                };
 
-                AZ::Vector3 maxPoint = minPoint + tileDimensions;
+                AZ::Vector3 tileMax{
+                    worldMin.GetX() + (x + 1) * tcs,
+                    worldMin.GetY() + (y + 1) * tcs,
+                    worldMax.GetZ()
+                };
 
-                AZ::Aabb tileVolume = AZ::Aabb::CreateFromMinMax(minPoint - padding, maxPoint + padding);
-                
+                AZ::Aabb tileVolume = AZ::Aabb::CreateFromMinMax(tileMin, tileMax);
+                AZ::Aabb scanVolume = AZ::Aabb::CreateFromMinMax(tileMin - border, tileMax + border);
+
                 AzPhysics::SceneQueryHits results;
                 AZStd::shared_ptr<BoundedGeometry> geometryData = AZStd::make_unique<BoundedGeometry>();
                 geometryData->m_worldBounds = tileVolume;
-                CollectGeometryWithinVolume(tileVolume, results);
+                CollectGeometryWithinVolume(scanVolume, results);
 
                 AZ_Printf("RecastNavigationTiledSurveyorComponent", "Found %llu physx meshes in volume %s",
                     results.m_hits.size(), AZStd::to_string(tileVolume).c_str());
 
                 AppendColliderGeometry(*geometryData, results);
-                
-                geometryData->m_tileX = tileOnX;
-                geometryData->m_tileY = tileOnY;
+
+                geometryData->m_tileX = x;
+                geometryData->m_tileY = y;
                 m_geometryCollectedEvent.Signal(geometryData);
             }
         }
@@ -203,11 +213,27 @@ namespace RecastNavigation
         handler.Connect(m_geometryCollectedEvent);
     }
 
-    AZ::Aabb RecastNavigationTiledSurveyorComponent::GetWorldBounds()
+    AZ::Aabb RecastNavigationTiledSurveyorComponent::GetWorldBounds() const
     {
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
         return worldBounds;
+    }
+
+    int RecastNavigationTiledSurveyorComponent::GetNumberOfTiles(float tileSize, [[maybe_unused]] float cellSize) const
+    {
+        const AZ::Aabb worldVolume = GetWorldBounds();
+
+        RecastVector3 bmin{ worldVolume.GetMin() };
+        RecastVector3 bmax{ worldVolume.GetMax() };
+
+        int gw = 0, gh = 0;
+        rcCalcGridSize(bmin.data(), bmax.data(), cellSize, &gw, &gh);
+        const int ts = (int)tileSize;
+        const int tw = (gw + ts - 1) / ts;
+        const int th = (gh + ts - 1) / ts;
+
+        return tw * th;
     }
 } // namespace RecastNavigation
 

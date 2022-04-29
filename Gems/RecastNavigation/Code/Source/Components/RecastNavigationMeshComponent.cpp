@@ -158,7 +158,7 @@ namespace RecastNavigation
             return;
         }
 
-        RecastNavigationSurveyorRequestBus::Event(GetEntityId(), &RecastNavigationSurveyorRequests::StartCollectingGeometry);
+        RecastNavigationSurveyorRequestBus::Event(GetEntityId(), &RecastNavigationSurveyorRequests::StartCollectingGeometry, m_meshConfig.m_tileSize, m_meshConfig.m_cellSize);
     }
 
     NavigationTileData RecastNavigationMeshComponent::CreateNavigationTile(BoundedGeometry* geom,
@@ -197,8 +197,8 @@ namespace RecastNavigation
         config.detailSampleDist = meshConfig.m_detailSampleDist < 0.9f ? 0 : meshConfig.m_cellSize * meshConfig.m_detailSampleDist;
         config.detailSampleMaxError = meshConfig.m_cellHeight * meshConfig.m_detailSampleMaxError;
 
-        config.tileSize = 20; // TODO
-        config.borderSize = config.walkableRadius + 3; // Reserve enough padding.
+        config.tileSize = static_cast<int>(meshConfig.m_tileSize);
+        config.borderSize = config.walkableRadius + 1; // Reserve enough padding.
         config.width = config.tileSize + config.borderSize * 2;
         config.height = config.tileSize + config.borderSize * 2;
 
@@ -209,14 +209,16 @@ namespace RecastNavigation
         const RecastVector3 worldMin(geom->m_worldBounds.GetMin());
         const RecastVector3 worldMax(geom->m_worldBounds.GetMax());
 
+        [[maybe_unused]] const auto extents = geom->m_worldBounds.GetExtents();
+
         rcVcopy(config.bmin, &worldMin.m_x);
         rcVcopy(config.bmax, &worldMax.m_x);
-        config.bmin[0] += config.borderSize * config.cs;
-        config.bmin[2] += config.borderSize * config.cs;
-        config.bmax[0] -= config.borderSize * config.cs;
-        config.bmax[2] -= config.borderSize * config.cs;
+        config.bmin[0] -= config.borderSize * config.cs;
+        config.bmin[2] -= config.borderSize * config.cs;
+        config.bmax[0] += config.borderSize * config.cs;
+        config.bmax[2] += config.borderSize * config.cs;
 
-        rcCalcGridSize(config.bmin, config.bmax, config.cs, &config.width, &config.height);
+        //rcCalcGridSize(config.bmin, config.bmax, config.cs, &config.width, &config.height);
 
         context->log(RC_LOG_PROGRESS, "Building navigation:");
         context->log(RC_LOG_PROGRESS, " - %d x %d cells", config.width, config.height);
@@ -441,8 +443,22 @@ namespace RecastNavigation
             params.walkableHeight = meshConfig.m_agentHeight;
             params.walkableRadius = meshConfig.m_agentRadius;
             params.walkableClimb = meshConfig.m_agentMaxClimb;
+
             rcVcopy(params.bmin, polyMesh->bmin);
             rcVcopy(params.bmax, polyMesh->bmax);
+
+            /*params.bmin[0] += config.borderSize * config.cs;
+            params.bmin[2] += config.borderSize * config.cs;
+            params.bmax[0] -= config.borderSize * config.cs;
+            params.bmax[2] -= config.borderSize * config.cs;*/
+
+            AZ_Printf("TEST", "rcConfig              bmin %f,%f,%f; bmax %f,%f,%f;\n"
+                              "dtNavMeshCreateParams bmin %f,%f,%f; bmax %f,%f,%f",
+                config.bmin[0], config.bmin[1], config.bmin[2],
+                config.bmax[0], config.bmax[1], config.bmax[2],
+                params.bmin[0], params.bmin[1], params.bmin[2],
+                params.bmax[0], params.bmax[1], params.bmax[2]);
+
             params.cs = config.cs;
             params.ch = config.ch;
             params.buildBvTree = true;
@@ -453,7 +469,7 @@ namespace RecastNavigation
 
             if (!dtCreateNavMeshData(&params, &navigationTileData.m_data, &navigationTileData.m_size))
             {
-                context->log(RC_LOG_ERROR, "Could not build Detour navmesh.");
+                context->log(RC_LOG_ERROR, "Could not build navigation tile.");
                 return {};
             }
 
@@ -551,13 +567,11 @@ namespace RecastNavigation
         const RecastVector3 worldCenter(m_worldVolume.GetMin());
         rcVcopy(params.orig, &worldCenter.m_x);
 
-        int tilesOnX = 1;
-        RecastNavigationSurveyorRequestBus::EventResult(tilesOnX, GetEntityId(), &RecastNavigationSurveyorRequests::GetTilesAlongXDimension);
-        int tilesOnY = 1;
-        RecastNavigationSurveyorRequestBus::EventResult(tilesOnY, GetEntityId(), &RecastNavigationSurveyorRequests::GetTilesAlongYDimension);
-        params.tileWidth = m_worldVolume.GetXExtent() / tilesOnX;
-        params.tileHeight = m_worldVolume.GetYExtent() / tilesOnY;
-        params.maxTiles = tilesOnX * tilesOnY;
+        params.tileWidth = m_meshConfig.m_tileSize * m_meshConfig.m_cellSize;
+        params.tileHeight = m_meshConfig.m_tileSize * m_meshConfig.m_cellSize;
+
+        RecastNavigationSurveyorRequestBus::EventResult(params.maxTiles, GetEntityId(), &RecastNavigationSurveyorRequests::GetNumberOfTiles,
+            m_meshConfig.m_tileSize, m_meshConfig.m_cellSize);
 
         dtStatus status = m_navMesh->init(&params);
         if (dtStatusFailed(status))
@@ -597,16 +611,16 @@ namespace RecastNavigation
         }
 
         //if (!m_navQuery) // query object is re-usable
-        //{
-        //    m_navQuery.reset(dtAllocNavMeshQuery());
-        //}
+        {
+            m_navQuery.reset(dtAllocNavMeshQuery());
+        }
 
-        //status = m_navQuery->init(m_navMesh.get(), 2048);
-        //if (dtStatusFailed(status))
-        //{
-        //    AZ_Error("Navigation", false, "Could not init Detour navmesh query");
-        //    return false;
-        //}
+        status = m_navQuery->init(m_navMesh.get(), 2048);
+        if (dtStatusFailed(status))
+        {
+            AZ_Error("Navigation", false, "Could not init Detour navmesh query");
+            return false;
+        }
 
         return true;
     }
@@ -659,10 +673,10 @@ namespace RecastNavigation
 
             // find an approximate path
             result = m_navQuery->findPath(startPoly, endPoly, nearestStartPoint.data(), nearestEndPoint.data(), &filter, path, &pathLength, maxPathLength);
-            if (result != DT_SUCCESS)
+            /*if (result != DT_SUCCESS)
             {
                 return {};
-            }
+            }*/
 
             //if (cl_navmesh_debug)
             //{
@@ -691,10 +705,10 @@ namespace RecastNavigation
 
             result = m_navQuery->findStraightPath(startRecast.data(), endRecast.data(), path, pathLength, detailedPath[0].data(), detailedPathFlags, detailedPolyPathRefs,
                 &detailedPathCount, maxDetailedPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
-            if (result != DT_SUCCESS)
+            /*if (result != DT_SUCCESS)
             {
                 return {};
-            }
+            }*/
 
             if (cl_navmesh_debug)
             {
