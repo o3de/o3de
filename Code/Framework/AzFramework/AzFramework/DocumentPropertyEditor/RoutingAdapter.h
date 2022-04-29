@@ -19,6 +19,9 @@ namespace AZ::DocumentPropertyEditor
     //! hierarchically merge, and their corresponding patches get applied cleanly.
     class RoutingAdapter : public DocumentAdapter
     {
+    public:
+        RoutingAdapter() = default;
+
     protected:
         //! Clears all routes.
         //! Typically, this should be called at the start of GetContents, so that child routes can be reinitalized.

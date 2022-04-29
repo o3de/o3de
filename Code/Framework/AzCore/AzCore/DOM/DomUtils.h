@@ -54,7 +54,7 @@ namespace AZ::Dom::Utils
         }
         else if constexpr (AZStd::is_integral_v<T> && AZStd::is_signed_v<T>)
         {
-            if (!value.IsInt())
+            if (!value.IsNumber())
             {
                 return {};
             }
@@ -62,7 +62,7 @@ namespace AZ::Dom::Utils
         }
         else if constexpr (AZStd::is_integral_v<T> && !AZStd::is_signed_v<T>)
         {
-            if (!value.IsUint())
+            if (!value.IsNumber())
             {
                 return {};
             }
@@ -70,7 +70,7 @@ namespace AZ::Dom::Utils
         }
         else if constexpr (AZStd::is_floating_point_v<T>)
         {
-            if (!value.IsDouble())
+            if (!value.IsNumber())
             {
                 return {};
             }

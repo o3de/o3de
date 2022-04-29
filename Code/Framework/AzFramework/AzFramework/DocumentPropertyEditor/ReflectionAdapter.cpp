@@ -8,17 +8,17 @@
 
 #pragma once
 
+#include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
-#include <AzCore/DOM/DomUtils.h>
 
 namespace AZ::DocumentPropertyEditor
 {
     struct ReflectionAdapterReflectionImpl : public AZ::Reflection::IReadWrite
     {
-        const ReflectionAdapter* m_adapter;
+        ReflectionAdapter* m_adapter;
         AdapterBuilder m_builder;
         AZStd::unordered_map<AZ::TypeId, AZStd::string_view> m_defaultEditorMap;
 
@@ -38,7 +38,7 @@ namespace AZ::DocumentPropertyEditor
             m_defaultEditorMap[azrtti_typeid<AZStd::string>()] = Nodes::LineEdit::Name;
         }
 
-        ReflectionAdapterReflectionImpl(const ReflectionAdapter* adapter)
+        ReflectionAdapterReflectionImpl(ReflectionAdapter* adapter)
             : m_adapter(adapter)
         {
             PopulateDefaultEditors();
@@ -97,14 +97,23 @@ namespace AZ::DocumentPropertyEditor
                 });
         }
 
-        void VisitValue(Dom::Value value, AZStd::string_view editorType, const Reflection::IAttributes& attributes, AZStd::function<void(const Dom::Value&)> onChanged)
+        void VisitValue(
+            Dom::Value value,
+            AZStd::string_view editorType,
+            const Reflection::IAttributes& attributes,
+            AZStd::function<Dom::Value(const Dom::Value&)> onChanged)
         {
             m_builder.BeginRow();
             ExtractLabel(attributes);
 
             m_builder.BeginPropertyEditor(editorType, AZStd::move(value));
             ForwardAttributes(attributes);
-            m_builder.Attribute(Nodes::PropertyEditor::OnChanged, onChanged);
+            m_builder.OnEditorChanged(
+                [this, onChanged](const Dom::Path& path, const Dom::Value& value)
+                {
+                    Dom::Value newValue = onChanged(value);
+                    m_adapter->OnContentsChanged(path, newValue);
+                });
             m_builder.EndPropertyEditor();
 
             m_builder.EndRow();
@@ -123,6 +132,7 @@ namespace AZ::DocumentPropertyEditor
                     {
                         value = AZStd::move(extractedValue.value());
                     }
+                    return Dom::Utils::ValueFromType(value);
                 });
         }
 
@@ -193,14 +203,14 @@ namespace AZ::DocumentPropertyEditor
             m_builder.EndRow();
         }
 
-        void Visit(
-            const AZStd::string_view value, Reflection::IStringAccess& access, const Reflection::IAttributes& attributes) override
+        void Visit(const AZStd::string_view value, Reflection::IStringAccess& access, const Reflection::IAttributes& attributes) override
         {
             VisitValue(
                 Dom::Utils::ValueFromType(value), GetPropertyEditor(azrtti_typeid<AZStd::string_view>(), attributes), attributes,
                 [&access](const Dom::Value& newValue)
                 {
                     access.Set(newValue.GetString());
+                    return newValue;
                 });
         }
 
@@ -236,7 +246,9 @@ namespace AZ::DocumentPropertyEditor
             (void)attributes;
         }
         void Visit(
-            const AZ::Data::Asset<AZ::Data::AssetData>& asset, Reflection::IAssetAccess& access, const Reflection::IAttributes& attributes) override
+            const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+            Reflection::IAssetAccess& access,
+            const Reflection::IAttributes& attributes) override
         {
             (void)asset;
             (void)access;
@@ -244,7 +256,15 @@ namespace AZ::DocumentPropertyEditor
         }
     };
 
+    ReflectionAdapter::ReflectionAdapter()
+        : RoutingAdapter()
+        , m_impl(AZStd::make_unique<ReflectionAdapterReflectionImpl>(this))
+    {
+    }
+
     ReflectionAdapter::ReflectionAdapter(void* instance, AZ::TypeId typeId)
+        : RoutingAdapter()
+        , m_impl(AZStd::make_unique<ReflectionAdapterReflectionImpl>(this))
     {
         SetValue(instance, AZStd::move(typeId));
     }
@@ -258,10 +278,14 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value ReflectionAdapter::GetContents() const
     {
-        ReflectionAdapterReflectionImpl impl(this);
-        impl.m_builder.BeginAdapter();
-        Reflection::VisitLegacyInMemoryInstance(&impl, m_instance, m_typeId);
-        impl.m_builder.EndAdapter();
-        return impl.m_builder.FinishAndTakeResult();
+        m_impl->m_builder.BeginAdapter();
+        Reflection::VisitLegacyInMemoryInstance(m_impl.get(), m_instance, m_typeId);
+        m_impl->m_builder.EndAdapter();
+        return m_impl->m_builder.FinishAndTakeResult();
+    }
+
+    void ReflectionAdapter::OnContentsChanged(const Dom::Path& path, const Dom::Value& value)
+    {
+        NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, value) });
     }
 } // namespace AZ::DocumentPropertyEditor

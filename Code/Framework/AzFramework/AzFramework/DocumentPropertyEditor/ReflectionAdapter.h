@@ -13,6 +13,8 @@
 
 namespace AZ::DocumentPropertyEditor
 {
+    struct ReflectionAdapterReflectionImpl;
+
     //! ReflectionAdapter turns an in-memory instance of an object backed by
     //! the AZ Reflection system (via SerializeContext & EditContext) and creates
     //! a property grid that supports editing its members in a manner outlined by
@@ -21,7 +23,7 @@ namespace AZ::DocumentPropertyEditor
     {
     public:
         //! Creates an uninitialized (empty) ReflectionAdapter.
-        ReflectionAdapter() = default;
+        ReflectionAdapter();
         //! Creates a ReflectionAdapter with a contents comrpised of the reflected data of
         //! the specified instance.
         //! \see SetValue
@@ -33,9 +35,13 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value GetContents() const override;
 
+        void OnContentsChanged(const Dom::Path& path, const Dom::Value& value);
+
     private:
         void* m_instance = nullptr;
         AZ::TypeId m_typeId;
+
+        mutable AZStd::unique_ptr<ReflectionAdapterReflectionImpl> m_impl;
 
         friend struct ReflectionAdapterReflectionImpl;
     };
