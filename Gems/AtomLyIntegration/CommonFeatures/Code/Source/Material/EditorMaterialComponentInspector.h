@@ -39,7 +39,7 @@ namespace AZ
                 , public AZ::TickBus::Handler
                 , public MaterialComponentNotificationBus::Handler
                 , public EditorMaterialSystemComponentNotificationBus::Handler
-           {
+            {
                 Q_OBJECT
             public:
                 AZ_CLASS_ALLOCATOR(MaterialPropertyInspector, AZ::SystemAllocator, 0);
@@ -66,15 +66,16 @@ namespace AZ
                 const EditorMaterialComponentUtil::MaterialEditData& GetEditData() const;
 
             private:
+                AZ::Data::AssetId GetActiveMaterialAssetIdFromEntity() const;
 
                 // AzToolsFramework::IPropertyEditorNotify overrides...
-                void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
+                void BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override{};
                 void AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-                void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
+                void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override{};
                 void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;
-                void SealUndoStack() override {}
-                void RequestPropertyContextMenu([[maybe_unused]] AzToolsFramework::InstanceDataNode*, const QPoint&) override {}
-                void PropertySelectionChanged([[maybe_unused]] AzToolsFramework::InstanceDataNode*, bool) override {}
+                void SealUndoStack() override{};
+                void RequestPropertyContextMenu([[maybe_unused]] AzToolsFramework::InstanceDataNode*, const QPoint&) override{};
+                void PropertySelectionChanged([[maybe_unused]] AzToolsFramework::InstanceDataNode*, bool) override{};
 
                 // AZ::EntitySystemBus::Handler overrides...
                 void OnEntityInitialized(const AZ::EntityId& entityId) override;
@@ -110,14 +111,11 @@ namespace AZ
 
                 bool AddEditorMaterialFunctors(
                     const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders,
-                    const AZ::RPI::MaterialNameContext& nameContext);   
+                    const AZ::RPI::MaterialNameContext& nameContext);
 
                 AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
                 bool IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const;
                 const char* GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const;
-
-                // Tracking the property that is actively being edited in the inspector
-                const AtomToolsFramework::DynamicProperty* m_activeProperty = {};
 
                 AZ::EntityId m_entityId;
                 AZ::Render::MaterialAssignmentId m_materialAssignmentId;
@@ -131,7 +129,7 @@ namespace AZ
                 bool m_updatePreview = {};
                 QLabel* m_overviewText = {};
                 QLabel* m_overviewImage = {};
-           };
+            };
         } // namespace EditorMaterialComponentInspector
     } // namespace Render
 } // namespace AZ

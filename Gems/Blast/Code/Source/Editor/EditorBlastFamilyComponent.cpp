@@ -45,6 +45,7 @@ namespace Blast
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_blastMaterialAsset, "Blast Material",
                         "Assigned blast material asset")
+                        ->Attribute(AZ::Edit::Attributes::DefaultAsset, &EditorBlastFamilyComponent::GetDefaultBlastAssetId)
                         ->Attribute(AZ_CRC_CE("EditButton"), "")
                         ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Asset Editor")
                         ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
@@ -132,5 +133,13 @@ namespace Blast
     AZ::Data::AssetId EditorBlastFamilyComponent::GetPhysicsMaterialLibraryAssetId() const
     {
         return AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_materialLibraryAsset.GetId();
+    }
+
+    AZ::Data::AssetId EditorBlastFamilyComponent::GetDefaultBlastAssetId() const
+    {
+        // Used for Edit Context.
+        // When the blast material asset property doesn't have an asset assigned it
+        // will show "(default)" to indicate that the default material will be used.
+        return {};
     }
 } // namespace Blast
