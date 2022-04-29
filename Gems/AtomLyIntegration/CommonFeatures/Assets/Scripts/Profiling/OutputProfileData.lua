@@ -98,7 +98,8 @@ function OutputProfileData:OnActivate()
         self.profileCaptureNotificationHandler = ProfilingCaptureNotificationBus.Connect(self)
 
         -- output test metadata
-        ProfilingCaptureRequestBus.Broadcast.CaptureBenchmarkMetadata(self.profileName, tostring(self.outputFolder) .. "/benchmark_metadata.json")
+        ProfilingCaptureRequestBus.Broadcast.CaptureBenchmarkMetadata(
+            self.profileName, tostring(self.outputFolder) .. "/benchmark_metadata.json")
     end
 end
 
