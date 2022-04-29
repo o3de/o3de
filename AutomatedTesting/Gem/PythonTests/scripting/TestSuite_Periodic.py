@@ -114,9 +114,10 @@ class TestAutomation(TestAutomationBase):
         from . import Debugger_HappyPath_TargetMultipleGraphs as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
+    #@pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
+    #@pytest.mark.parametrize("level", ["tmp_level"])
     def test_Debugger_HappyPath_TargetMultipleEntities(self, request, workspace, editor, launcher_platform, project, level):
+        print("entered def block")
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         request.addfinalizer(teardown)
@@ -241,6 +242,7 @@ class TestScriptCanvasTests(object):
             "Asset Editor created with new asset: True",
             "New Script event created in Asset Editor: True",
         ]
+        print("beginning test...")
         hydra.launch_and_validate_results(
             request,
             TEST_DIRECTORY,
