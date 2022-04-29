@@ -74,7 +74,7 @@ class TestFileMenuDefaultNewOpen:
         action.trigger()
 
         # 5) Check tab count again to verify a new tab has been opened
-        result = helper.wait_for_condition(lambda: sc_tabs.count() == initial_tabs_count + 1, TIME_TO_WAIT)
+        result = helper.wait_for_condition(lambda: sc_tabs.count() > initial_tabs_count, TIME_TO_WAIT)
         Report.info(f"{Tests.newTabTestResults}: {result}")
 
         # 6) Trigger open file popup action then close the popup.
