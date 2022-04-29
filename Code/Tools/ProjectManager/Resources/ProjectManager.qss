@@ -459,7 +459,7 @@ QTabBar::tab:focus {
     font-weight:bold;
     font-size:14px;
     qproperty-indent: 0;
-	margin:0;
+    margin:0;
 }
 
 #labelButton QPushButton {
