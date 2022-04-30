@@ -37,10 +37,9 @@ namespace AzToolsFramework
             AZStd::function<void()> handler) override;
         QAction* GetAction(AZStd::string_view actionIdentifier) override;
 
-        // TODO - think about what the best container type would be...
-        AZStd::unordered_map<AZStd::string, EditorActionContext*> m_actionContexts;
+        void ClearActionContextMap();
 
-        // TODO - think about what the best container type would be...
+        AZStd::unordered_map<AZStd::string, EditorActionContext*> m_actionContexts;
         AZStd::unordered_map<AZStd::string, EditorAction> m_actions;
     };
 

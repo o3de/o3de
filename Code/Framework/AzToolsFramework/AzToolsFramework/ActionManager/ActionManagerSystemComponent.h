@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Hotkey/HotkeyManager.h>
@@ -38,11 +39,10 @@ namespace AzToolsFramework
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
-        // TODO - Switch these to unique pointers
-        ActionManager* m_actionManager = nullptr;
-        HotkeyManager* m_hotkeyManager = nullptr;
-        MenuManager* m_menuManager = nullptr;
-        ToolbarManager* m_toolbarManager = nullptr;
+        AZStd::unique_ptr<ActionManager> m_actionManager = nullptr;
+        AZStd::unique_ptr<HotkeyManager> m_hotkeyManager = nullptr;
+        AZStd::unique_ptr<MenuManager> m_menuManager = nullptr;
+        AZStd::unique_ptr<ToolbarManager> m_toolbarManager = nullptr;
     };
 
 } // namespace AzToolsFramework

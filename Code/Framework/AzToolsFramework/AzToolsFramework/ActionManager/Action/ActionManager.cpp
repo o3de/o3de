@@ -18,6 +18,8 @@ namespace AzToolsFramework
     ActionManager::~ActionManager()
     {
         AZ::Interface<ActionManagerInterface>::Unregister(this);
+
+        ClearActionContextMap();
     }
 
     void ActionManager::RegisterActionContext(
@@ -26,7 +28,11 @@ namespace AzToolsFramework
         AZStd::string_view name,
         AZStd::string_view parentIdentifier)
     {
-        // TODO - check if the widget is null?
+        if (!parentWidget)
+        {
+            AZ_Error("Action Manager", false, "Could not register action context \"%s\" to a null widget.", identifier.data());
+            return;
+        }
 
         m_actionContexts.insert({ identifier.data(), new EditorActionContext(identifier, name, parentIdentifier, parentWidget) });
     }
@@ -42,12 +48,12 @@ namespace AzToolsFramework
     {
         if (!m_actionContexts.contains(contextIdentifier))
         {
-            AZ_Error("Action Manager", false, "Could not register action \"%s\" to context \"%s\" that has not been registered.");
+            AZ_Error(
+                "Action Manager", false, "Could not register action \"%s\" - context \"%s\" has not been registered.",
+                identifier.data(), contextIdentifier.data());
             return;
         }
 
-        // TODO - Add iconPath
-        // TODO - Don't reach into the action context, add a getter?
         m_actions.insert({ identifier, EditorAction(m_actionContexts[contextIdentifier]->GetWidget(), identifier, name, description, category, handler) });
     }
 
@@ -59,6 +65,14 @@ namespace AzToolsFramework
         }
 
         return nullptr;
+    }
+
+    void ActionManager::ClearActionContextMap()
+    {
+        for (auto elem : m_actionContexts)
+        {
+            delete elem.second;
+        }
     }
 
 } // namespace AzToolsFramework

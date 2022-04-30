@@ -18,8 +18,8 @@ namespace AzToolsFramework
     {
         if (IsNewActionManagerEnabled())
         {
-            m_actionManager = new ActionManager();
-            m_menuManager = new MenuManager();
+            m_actionManager = AZStd::make_unique<ActionManager>();
+            m_menuManager = AZStd::make_unique<MenuManager>();
         }
     }
 
