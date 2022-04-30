@@ -20,29 +20,30 @@
 
 namespace HttpRequestor
 {
+    //! Handles creation, queuing and execution of Http/Https calls 
     class Manager
     {
     public:
         Manager();
         virtual ~Manager();
 
-        // Add these parameters to a queue of request parameters to send off as an HTTP request as soon as they reach the head of the queue
+        //! Add these parameters to a queue of request parameters to send off as an HTTP request as soon as they reach the head of the queue
         void AddRequest(Parameters && httpRequestParameters);
 
-        // Add these parameters to a queue of request parameters to send off as an HTTP TEXT request as soon as they reach the head of the queue
+        //! Add these parameters to a queue of request parameters to send off as an HTTP TEXT request as soon as they reach the head of the queue
         void AddTextRequest(TextParameters && httpTextRequestParameters);
 
     private:
-        // RequestManager thread loop.
+        //! RequestManager thread loop.
         void ThreadFunction();
 
-        // Called by ThreadFunction. Waits for timeout or until notified and processes any requests queued up.
+        //! Called by ThreadFunction. Waits for timeout or until notified and processes any requests queued up.
         void HandleRequestBatch();
 
-        // Perform an HTTP request, block until a response is received, then give the returned JSON to the callback to parse. Returns the HTTPResponseCode to the callback to handle any errors.
+        //! Perform an HTTP request, block until a response is received, then give the returned JSON to the callback to parse. Returns the HTTPResponseCode to the callback to handle any errors.
         void HandleRequest(const Parameters & httpRequestParameters);
 
-        // Perform an HTTP request, block until a response is received, then give the returned TEXT to the callback to parse. Returns the HTTPResponseCode to the callback to handle any errors.
+        //! Perform an HTTP request, block until a response is received, then give the returned TEXT to the callback to parse. Returns the HTTPResponseCode to the callback to handle any errors.
         void HandleTextRequest(const TextParameters & httpTextRequestParameters);
 
     private:

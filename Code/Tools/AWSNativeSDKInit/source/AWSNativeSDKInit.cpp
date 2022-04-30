@@ -10,6 +10,7 @@
 #include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/Utils/Utils.h>
 
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
 #include <AWSNativeSDKInit/AWSLogSystemInterface.h>
@@ -29,7 +30,7 @@ namespace AWSNativeSDKInit
 
         void CopyCaCertBundle();
 #endif
-    }
+    } // namespace Platform
 
     const char* const InitializationManager::initializationManagerTag = "AWSNativeSDKInitializer";
     AZ::EnvironmentVariable<InitializationManager> InitializationManager::s_initManager = nullptr;
@@ -60,6 +61,7 @@ namespace AWSNativeSDKInit
     {
         return s_initManager.IsConstructed();
     }
+
     void InitializationManager::InitializeAwsApiInternal()
     {
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
@@ -79,6 +81,9 @@ namespace AWSNativeSDKInit
         Platform::CustomizeSDKOptions(m_awsSDKOptions);
         Aws::InitAPI(m_awsSDKOptions);
 
+        //! Disable calls to EC2Metadata service by default
+        AZ::Utils::SetEnv("AWS_EC2_METADATA_DISABLED", "True", true);
+
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     }
 
@@ -89,4 +94,11 @@ namespace AWSNativeSDKInit
         Platform::CustomizeShutdown();
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     }
-}
+
+    void InitializationManager::SetEC2HostedMode()
+    {
+        AZ::Utils::SetEnv("AWS_EC2_METADATA_DISABLED", "False", true);
+    }
+
+
+} // namespace AWSNativeSDKInit
