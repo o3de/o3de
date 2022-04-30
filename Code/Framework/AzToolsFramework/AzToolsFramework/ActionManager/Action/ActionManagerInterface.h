@@ -27,7 +27,7 @@ namespace AzToolsFramework
 
         //! Register a new Action Context to the Action Manager.
         virtual void RegisterActionContext(
-            QWidget* parentWidget,
+            QWidget* widget,
             AZStd::string_view identifier,
             AZStd::string_view name,
             AZStd::string_view parentIdentifier) = 0;

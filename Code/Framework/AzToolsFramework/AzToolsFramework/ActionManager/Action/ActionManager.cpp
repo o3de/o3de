@@ -23,18 +23,18 @@ namespace AzToolsFramework
     }
 
     void ActionManager::RegisterActionContext(
-        QWidget* parentWidget,
+        QWidget* widget,
         AZStd::string_view identifier,
         AZStd::string_view name,
         AZStd::string_view parentIdentifier)
     {
-        if (!parentWidget)
+        if (!widget)
         {
             AZ_Error("Action Manager", false, "Could not register action context \"%s\" to a null widget.", identifier.data());
             return;
         }
 
-        m_actionContexts.insert({ identifier.data(), new EditorActionContext(identifier, name, parentIdentifier, parentWidget) });
+        m_actionContexts.insert({ identifier.data(), new EditorActionContext(identifier, name, parentIdentifier, widget) });
     }
 
     void ActionManager::RegisterAction(
