@@ -42,8 +42,6 @@
 #include <AzFramework/Viewport/CameraInput.h>
 
 // AzToolsFramework
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
@@ -463,40 +461,6 @@ void MainWindow::Initialize()
     if (!IsNewActionManagerEnabled())
     {
         InitActions();
-    }
-    else
-    {
-        // TODO - Test, move to appropriate place
-
-        auto actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
-        if (actionManagerInterface)
-        {
-            actionManagerInterface->RegisterActionContext(this, "o3de.context.editor.mainwindow", "Editor Main Window",  "");
-
-            auto cryEdit = CCryEditApp::instance();
-
-            actionManagerInterface->RegisterAction(
-                "o3de.context.editor.mainwindow", "o3de.action.editor.newlevel", "New Level", "Create a new level", "Level", "",
-                [cryEdit]()
-                {
-                    cryEdit->OnCreateLevel();
-                }
-            );
-        }
-
-        auto menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
-        if (menuManagerInterface)
-        {
-            menuManagerInterface->AddActionToMenu("o3de.action.editor.newlevel", "o3de.menu.editor.mainwindow.file", 42);
-            menuManagerInterface->AddActionToMenu("o3de.action.editor.newlevel", "o3de.menu.editor.mainwindow.edit", 42);
-
-            // Add our menus to the main window menu bar
-            QMenuBar* menuBar = this->menuBar();
-            menuBar->clear();
-
-            menuBar->addMenu(menuManagerInterface->GetMenu("o3de.menu.editor.mainwindow.file"));
-            menuBar->addMenu(menuManagerInterface->GetMenu("o3de.menu.editor.mainwindow.edit"));
-        }
     }
 
     RegisterStdViewClasses();
