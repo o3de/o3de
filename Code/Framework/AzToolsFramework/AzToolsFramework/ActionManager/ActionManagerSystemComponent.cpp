@@ -16,15 +16,15 @@ namespace AzToolsFramework
 {
     void ActionManagerSystemComponent::Init()
     {
-    }
-
-    void ActionManagerSystemComponent::Activate()
-    {
         if (IsNewActionManagerEnabled())
         {
             m_actionManager = new ActionManager();
             m_menuManager = new MenuManager();
         }
+    }
+
+    void ActionManagerSystemComponent::Activate()
+    {
     }
 
     void ActionManagerSystemComponent::Deactivate()
@@ -35,7 +35,7 @@ namespace AzToolsFramework
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // serializeContext->Class<ActionManagerSystemComponent, AZ::Component>()->Version(1);
+            serializeContext->Class<ActionManagerSystemComponent, AZ::Component>()->Version(1);
         }
     }
 

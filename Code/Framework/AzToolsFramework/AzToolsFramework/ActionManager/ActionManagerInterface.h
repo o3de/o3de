@@ -18,8 +18,6 @@ class QAction;
 
 namespace AzToolsFramework
 {
-    class EditorActionContext;
-
     //! ActionManagerInterface
     //! Interface to register and trigger actions in the Editor.
     class ActionManagerInterface

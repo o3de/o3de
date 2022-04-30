@@ -488,12 +488,14 @@ void MainWindow::Initialize()
         if (menuManagerInterface)
         {
             menuManagerInterface->AddActionToMenu("o3de.action.editor.newlevel", "o3de.menu.editor.mainwindow.file", 42);
+            menuManagerInterface->AddActionToMenu("o3de.action.editor.newlevel", "o3de.menu.editor.mainwindow.edit", 42);
 
             // Add our menus to the main window menu bar
             QMenuBar* menuBar = this->menuBar();
             menuBar->clear();
 
             menuBar->addMenu(menuManagerInterface->GetMenu("o3de.menu.editor.mainwindow.file"));
+            menuBar->addMenu(menuManagerInterface->GetMenu("o3de.menu.editor.mainwindow.edit"));
         }
     }
 

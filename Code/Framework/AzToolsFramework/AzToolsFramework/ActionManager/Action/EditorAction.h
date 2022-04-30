@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/function/function_template.h>
 #include <AzCore/std/string/string.h>
 
 #include <QAction>
@@ -18,10 +19,18 @@ namespace AzToolsFramework
     {
     public:
         EditorAction() = default;
+        EditorAction(
+            QWidget* parentWidget,
+            AZStd::string_view identifier,
+            AZStd::string_view name,
+            AZStd::string_view description,
+            AZStd::string_view category,
+            AZStd::function<void()> handler);
+
+        // Returns the pointer to the action.
+        QAction* GetAction();
 
     private:
-        friend class ActionManager;
-
         QAction* m_action = nullptr;
 
         AZStd::string m_identifier;

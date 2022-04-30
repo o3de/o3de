@@ -21,15 +21,17 @@ namespace AzToolsFramework
 
     public:
         EditorActionContext() = default;
+        EditorActionContext(
+            AZStd::string_view identifier, AZStd::string_view name, AZStd::string_view parentIdentifier, QWidget* widget);
+
+        QWidget* GetWidget();
 
     private:
-        friend class ActionManager;
-
         AZStd::string m_identifier;
+        AZStd::string m_parentIdentifier;
         AZStd::string m_name;
 
-        AZStd::string m_parentIdentifier;
-        QWidget* m_parentWidget;
+        QWidget* m_widget;
     };
 
 } // namespace AzToolsFramework
