@@ -7,11 +7,11 @@
 #
 
 set(FILES
-    ActionManager/ActionManager.cpp
-    ActionManager/ActionManager.h
-    ActionManager/ActionManagerInterface.h
     ActionManager/ActionManagerSystemComponent.cpp
     ActionManager/ActionManagerSystemComponent.h
+    ActionManager/Action/ActionManager.cpp
+    ActionManager/Action/ActionManager.h
+    ActionManager/Action/ActionManagerInterface.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h
     ActionManager/Action/EditorActionContext.cpp

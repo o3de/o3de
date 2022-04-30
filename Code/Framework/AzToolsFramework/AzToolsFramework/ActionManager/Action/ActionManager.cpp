@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzToolsFramework/ActionManager/ActionManager.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 
 namespace AzToolsFramework
 {

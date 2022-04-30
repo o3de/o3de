@@ -11,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <AzToolsFramework/ActionManager/ActionManager.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Hotkey/HotkeyManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 #include <AzToolsFramework/ActionManager/Toolbar/ToolbarManager.h>

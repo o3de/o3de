@@ -10,7 +10,7 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 
-#include <AzToolsFramework/ActionManager/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/EditorAction.h>
 #include <AzToolsFramework/ActionManager/Action/EditorActionContext.h>
 

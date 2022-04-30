@@ -42,7 +42,7 @@
 #include <AzFramework/Viewport/CameraInput.h>
 
 // AzToolsFramework
-#include <AzToolsFramework/ActionManager/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Application/Ticker.h>

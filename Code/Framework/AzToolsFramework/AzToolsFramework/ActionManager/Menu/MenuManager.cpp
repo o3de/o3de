@@ -8,7 +8,7 @@
 
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 
-#include <AzToolsFramework/ActionManager/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/EditorMenu.h>
 
 namespace AzToolsFramework
