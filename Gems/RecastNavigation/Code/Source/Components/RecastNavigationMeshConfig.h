@@ -33,12 +33,12 @@ namespace RecastNavigation
         float m_edgeMaxError = 1.3f;
         float m_edgeMaxLen = 12.0f;
 
-        float m_maxVertsPerPoly = 6;
+        int m_maxVertsPerPoly = 6;
         float m_detailSampleDist = 6.0f;
         float m_detailSampleMaxError = 1.0f;
 
-        float m_regionMinSize = 8;
-        float m_regionMergeSize = 20;
+        int m_regionMinSize = 8;
+        int m_regionMergeSize = 20;
 
         bool m_filterLowHangingObstacles = true;
         bool m_filterLedgeSpans = true;

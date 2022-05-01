@@ -40,7 +40,7 @@ namespace RecastNavigation
                     ;
             }
         }
-        
+
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<RecastNavigationSurveyorRequestBus>("RecastNavigationSurveyorRequestBus")
@@ -72,7 +72,7 @@ namespace RecastNavigation
     }
 
     void RecastNavigationSurveyorComponent::AppendColliderGeometry(
-        BoundedGeometry& geometry,
+        TileGeometry& geometry,
         const AzPhysics::SceneQueryHits& overlapHits)
     {
         AZStd::vector<AZ::Vector3> vertices;
@@ -134,15 +134,10 @@ namespace RecastNavigation
         RecastNavigationSurveyorRequestBus::Handler::BusDisconnect();
     }
 
-    void RecastNavigationSurveyorComponent::BindGeometryCollectionEventHandler(AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler& handler)
+    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationSurveyorComponent::CollectGeometry(
+        [[maybe_unused]] float tileSize)
     {
-        handler.Connect(m_geometryCollectedEvent);
-    }
-
-    void RecastNavigationSurveyorComponent::StartCollectingGeometry(
-        [[maybe_unused]] float tileSize, [[maybe_unused]] float cellSize)
-    {
-        AZStd::shared_ptr<BoundedGeometry> geometryData = AZStd::make_unique<BoundedGeometry>();
+        AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
 
         LmbrCentral::ShapeComponentRequestsBus::EventResult(geometryData->m_worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
@@ -162,14 +157,14 @@ namespace RecastNavigation
 
         if (results.m_hits.empty())
         {
-            return;
+            return {};
         }
 
         AZ_Printf("RecastNavigationSurveyorComponent", "found %llu physx meshes", results.m_hits.size());
 
         AppendColliderGeometry(*geometryData, results);
 
-        m_geometryCollectedEvent.Signal(geometryData);
+        return { geometryData };
     }
 
     AZ::Aabb RecastNavigationSurveyorComponent::GetWorldBounds() const

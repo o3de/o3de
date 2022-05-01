@@ -47,6 +47,6 @@ namespace RecastNavigation
         void AddVertex(float x, float y, float z, unsigned int color);
 
         //! If true, debug lines from Recast will be drawn.
-        bool m_drawLines = false;
+        bool m_drawLines = true;
     };
 } // namespace RecastNavigation

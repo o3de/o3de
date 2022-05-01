@@ -59,7 +59,7 @@ namespace RecastNavigation
     };
     
     //! A collection of triangle data within a volume defined by an axis aligned bounding box.
-    class BoundedGeometry
+    class TileGeometry
     {
     public:
         AZ::Aabb m_worldBounds = AZ::Aabb::CreateNull();
@@ -75,8 +75,8 @@ namespace RecastNavigation
             return m_verts.empty();
         }
 
-        //! Reset and clear geometry and the volume.
-        void clear()
+        //! Resets and clears stored geometry and the volume bounds.
+        void Clear()
         {
             m_worldBounds.SetNull();
             m_tileX = 0;

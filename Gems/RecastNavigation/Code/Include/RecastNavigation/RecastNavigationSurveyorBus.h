@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/Component/ComponentBus.h>
+#include <Components/RecastHelpers.h>
 
 namespace RecastNavigation
 {
@@ -15,10 +16,8 @@ namespace RecastNavigation
         : public AZ::ComponentBus
     {
     public:
-        virtual void BindGeometryCollectionEventHandler(AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler& handler) = 0;
-
-        virtual void StartCollectingGeometry(float tileSize, float cellSize) = 0;
-        virtual int GetNumberOfTiles([[maybe_unused]] float tileSize, [[maybe_unused]]float cellSize) const { return 1; }
+        virtual AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize) = 0;
+        virtual int GetNumberOfTiles([[maybe_unused]] float tileSize) const { return 1; }
         
         //! Returns the world bounds that this surveyor is responsible for.
         //! @return An axis aligned bounding box of the world bounds.

@@ -43,14 +43,11 @@ namespace RecastNavigation
         void Deactivate() override;
 
         // RecastNavigationSurveyorRequestBus interface implementation
-        void BindGeometryCollectionEventHandler(AZ::Event<AZStd::shared_ptr<BoundedGeometry>>::Handler& handler) override;
-        void StartCollectingGeometry(float tileSize, float cellSize) override;
+        AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize) override;
         AZ::Aabb GetWorldBounds() const override;
 
     private:
         // Append the geometry within a volume
-        void AppendColliderGeometry(BoundedGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
-
-        AZ::Event<AZStd::shared_ptr<BoundedGeometry>> m_geometryCollectedEvent;
+        void AppendColliderGeometry(TileGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
     };
 } // namespace RecastNavigation
