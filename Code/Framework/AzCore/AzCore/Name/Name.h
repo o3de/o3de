@@ -17,6 +17,11 @@ namespace UnitTest
     class NameDictionaryTester;
 } // namespace UnitTest
 
+namespace AZStd
+{
+    class mutex;
+}
+
 namespace AZ
 {
     class Module;
@@ -95,9 +100,6 @@ namespace AZ
         //! Names created from string literals may exist without a NameDictionary, and may
         //! continue to persist after the NameDictionary is destroyed (even if it is destroyed
         //! multiple times, as in some text fixtures).
-        //!
-        //! \warning FromStringLiteral is not thread-safe and should only be called from the
-        //! main thread.
         static Name FromStringLiteral(AZStd::string_view name);
 
         Name& operator=(const Name&);
@@ -193,6 +195,8 @@ namespace AZ
 
         void LinkStaticName(Name** name);
         void UnlinkStaticName();
+        //! Gets a per-module mutex to protect name literal insertion into the static name list.
+        static AZStd::mutex& GetStaticNameListMutex();
 
         //! If set, this name can be stored at a static scope and defer loading its NameData
         //! until the NameDictionary is actually created. If set, this Name must hold a persistent pointer
@@ -216,7 +220,6 @@ namespace AZ
         //! Pointer to NameData in the NameDictionary. This holds both the hash and string pair.
         AZStd::intrusive_ptr<Internal::NameData> m_data;
 
-        static AZStd::thread::id s_staticNameListThread;
         //! Describes the begin of the static list of Names that were initialized before the NameDictionary was available.
         //! On module initialization, these names are linked into the NameDictionary's static pool and created.
         static Name* s_staticNameBegin;

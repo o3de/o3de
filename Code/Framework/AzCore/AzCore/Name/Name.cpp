@@ -12,13 +12,13 @@
 #include <AzCore/Name/NameJsonSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Script/ScriptContext.h>
 
 namespace AZ
 {
-    AZStd::thread::id Name::s_staticNameListThread = 0;
     Name* Name::s_staticNameBegin = nullptr;
 
     NameRef::NameRef(Name name)
@@ -197,17 +197,13 @@ namespace AZ
     {
         if (!name.empty())
         {
-            if (s_staticNameListThread == 0)
-            {
-                s_staticNameListThread = AZStd::this_thread::get_id();
-            }
-            AZ_Assert(s_staticNameListThread == AZStd::this_thread::get_id(), "Attempted to construct a name literal on a different thread from the first initialized static name, this is unsafe");
             m_view = name;
             if (!NameDictionary::IsReady(false))
             {
                 // Link ourselves into the deferred list if we're not already in there
                 if (!m_supportsDeferredLoad)
                 {
+                    AZStd::lock_guard guard(GetStaticNameListMutex());
                     LinkStaticName(&s_staticNameBegin);
                 }
             }
@@ -265,6 +261,7 @@ namespace AZ
 
     void Name::UnlinkStaticName()
     {
+        AZStd::lock_guard guard(GetStaticNameListMutex());
         if (s_staticNameBegin == this)
         {
             s_staticNameBegin = m_nextName;
@@ -278,6 +275,12 @@ namespace AZ
             m_previousName->m_nextName = m_nextName;
         }
         m_nextName = m_previousName = nullptr;
+    }
+
+    AZStd::mutex& Name::GetStaticNameListMutex()
+    {
+        static AZStd::mutex mutex;
+        return mutex;
     }
 
     void Name::ScriptConstructor(Name* thisPtr, ScriptDataContext& dc)
