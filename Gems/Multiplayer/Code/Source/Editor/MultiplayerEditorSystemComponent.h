@@ -92,7 +92,7 @@ namespace Multiplayer
 
         //! AzFramework::SpawnableAssetEventsBus::Handler overrides
         //! @{
-        void OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZ::Data::AssetId& id) override;
+        void OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZStd::string& id) override;
         //! @
         
         //! EditorEvents::Handler overrides

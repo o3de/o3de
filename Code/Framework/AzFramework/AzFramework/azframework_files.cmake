@@ -291,6 +291,8 @@ set(FILES
     Spawnable/Script/SpawnableScriptMediator.cpp
     Spawnable/Script/SpawnableScriptMediator.h
     Spawnable/Script/SpawnableScriptNotificationsHandler.h
+    Spawnable/InMemorySpawnableAssetContainer.cpp
+    Spawnable/InMemorySpawnableAssetContainer.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
     Spawnable/SpawnableAssetBus.h
