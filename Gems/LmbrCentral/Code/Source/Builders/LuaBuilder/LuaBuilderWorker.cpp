@@ -37,8 +37,7 @@ namespace LuaBuilder
         {
             AZStd::vector<AZ::Data::Asset<AZ::ScriptAsset>> assets;
 
-            AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
-            if (assetSystem)
+            if (AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler())
             {
                 for (auto dependency : dependencySet)
                 {
@@ -50,7 +49,10 @@ namespace LuaBuilder
                     if (assetSystem->GetSourceInfoBySourcePath(sourcePath.c_str(), assetInfo, watchFolder)
                         && assetInfo.m_assetId.IsValid())
                     {
-                        AZ::Data::Asset<AZ::ScriptAsset> asset(AZ::Data::AssetId( assetInfo.m_assetId.m_guid, AZ::ScriptAsset::CompiledAssetSubId), assetInfo.m_assetType, assetInfo.m_relativePath);
+                        AZ::Data::Asset<AZ::ScriptAsset> asset(AZ::Data::AssetId
+                            ( assetInfo.m_assetId.m_guid
+                            , AZ::ScriptAsset::CompiledAssetSubId)
+                            , azrtti_typeid<AZ::ScriptAsset>());
                         asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                         assets.push_back(asset);
                     }
@@ -98,7 +100,17 @@ namespace LuaBuilder
             response.m_result = CreateJobsResultCode::ShuttingDown;
             return;
         }
+
+        AssetBuilderSDK::ProductPathDependencySet dependencySet;
+        AZ::IO::Path path = request.m_watchFolder;
+        path = path / request.m_sourceFile;
+
+        ParseDependencies(path.c_str(), dependencySet);
+        auto dependentAssets = ConvertToAssets(dependencySet);
+
         
+
+
         for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
         {
             JobDescriptor descriptor;
@@ -111,6 +123,17 @@ namespace LuaBuilder
             // automatically.
             descriptor.m_additionalFingerprintInfo = GetAnalysisFingerprint();
             descriptor.m_jobParameters[s_BuildTypeKey] = s_BuildTypeCompiled;
+
+            for (auto& dependentAsset : dependentAssets)
+            {
+                AssetBuilderSDK::JobDependency jobDependency;
+                jobDependency.m_sourceFile.m_sourceFileDependencyUUID = dependentAsset.GetId().m_guid;
+                jobDependency.m_jobKey = "Lua Compile";
+                jobDependency.m_platformIdentifier = info.m_identifier;
+                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                descriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
+            }    
+
             response.m_createJobOutputs.push_back(descriptor);
         }
 
@@ -156,11 +179,10 @@ namespace LuaBuilder
         }
 
         // initialize asset data
-        AssetBuilderSDK::ProductPathDependencySet dependencySet;
-        ParseDependencies(request.m_fullPath, dependencySet);
-
         AZ::LuaScriptData assetData;
         assetData.m_debugName = debugName;
+        AssetBuilderSDK::ProductPathDependencySet dependencySet;
+        ParseDependencies(request.m_fullPath, dependencySet);
         assetData.m_dependencies = ConvertToAssets(dependencySet);
         auto scriptStream = assetData.CreateWriteStream();
         LB_VERIFY(LuaDumpToStream(scriptStream, scriptContext.NativeContext()), "Failed to write lua bytecode to stream.");
@@ -182,7 +204,6 @@ namespace LuaBuilder
                 ( AZ::Utils::SaveObjectToStream<AZ::LuaScriptData>(outputStream, AZ::ObjectStream::ST_BINARY, &assetData, serializeContext)
                 , "Failed to write asset data to disk");
         }        
-
 
         AssetBuilderSDK::JobProduct compileProduct{ destFileName, azrtti_typeid<AZ::ScriptAsset>(), AZ::ScriptAsset::CompiledAssetSubId };
 

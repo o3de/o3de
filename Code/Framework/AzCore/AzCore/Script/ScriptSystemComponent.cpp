@@ -358,7 +358,6 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
     {
         // Lock access to the loaded scripts map
         AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);
-
         // Check if already loaded
         auto scriptIt = container->m_loadedScripts.find(asset.GetId().m_guid);
         if (scriptIt != container->m_loadedScripts.end())
@@ -383,8 +382,6 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
             }
         }
     }
-
-    AZ_TracePrintf("ScriptSystem", "Loading asset: %s", asset.Get()->m_data.GetDebugName());
 
     // Load lua script into the VM
     IO::MemoryStream stream = asset.Get()->m_data.CreateMemoryStream();
@@ -412,6 +409,8 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
     {
         info.m_scriptNames.emplace(debugName);
     }
+
+    info.m_scriptAsset = asset;
     info.m_tableReference = ref;
 
     SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
@@ -422,7 +421,9 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
     {
         // Lock access to the loaded scripts map
         AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);
+        container->m_trackedScripts.emplace(asset.GetId().m_guid, info.m_scriptAsset);
         container->m_loadedScripts.emplace(asset.GetId().m_guid, AZStd::move(info));
+        Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
     }
 
     return { ScriptLoadResult::Status::Initial, lua };
@@ -488,6 +489,10 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
     // Lock access to the loaded scripts map
     AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);
 
+    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+        , "DefaultRequireHook called for %s"
+        , module);
+
     // If script already loaded in this context, just use its resulting table
     auto scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
     if (scriptIt != container->m_loadedScripts.end())
@@ -498,19 +503,23 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
         lua_rawgeti(lua, LUA_REGISTRYINDEX, scriptIt->second.m_tableReference);
         lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
 
-        // If asset reference already populated, just return now. Otherwise, capture reference
-        if (scriptIt->second.m_scriptAsset.GetId().IsValid())
-        {
-            return 1;
-        }
-    }
+        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+            , "adding new name %s, for loaded module %s"
+            , module
+            , scriptIt->second.m_scriptAsset.GetHint().c_str());
 
+        return 1;
+    }
+    
     // Grab a reference to the script asset being loaded
     Data::Asset<ScriptAsset> script = Data::AssetManager::Instance().FindAsset<ScriptAsset>(scriptId, AZ::Data::AssetLoadBehavior::Default);
 
     // If it's not loaded, load it in a blocking manner
     if (!script.IsReady())
     {
+        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+            , "had to force load a required asset, which should have been discovered and pre-loaded: %s"
+            , module);
         script = Data::AssetManager::Instance().GetAsset<ScriptAsset>(scriptId, AZ::Data::AssetLoadBehavior::Default);
         script.BlockUntilLoadComplete();
 
@@ -519,13 +528,6 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
             lua_pushfstring(lua, "Module \"%s\" failed to load.", filePath.c_str());
             return 1;
         }
-    }
-
-    // Now that we have a valid asset reference, stash it and return if the script already loaded and tracked
-    if (scriptIt != container->m_loadedScripts.end())
-    {
-        scriptIt->second.m_scriptAsset = script;
-        return 1;
     }
 
     // If not, load the script, getting the resulting table
@@ -537,15 +539,8 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
 
     // Push function returning the result
     lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
-
-    // Set asset reference on the loaded script
     scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
     scriptIt->second.m_scriptNames.emplace(module);
-    scriptIt->second.m_scriptAsset = script;
-
-    // Connect to the asset bus so that we may know when this script reloads.
-    Data::AssetBus::MultiHandler::BusConnect(script.GetId());
-
     return 1;
 }
 
@@ -574,14 +569,18 @@ int ScriptSystemComponent::InMemoryRequireHook(lua_State* lua, ScriptContext* co
     // Lock access to the loaded scripts map
     AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);
 
+    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+        , "InMemoryRequireHook called for %s"
+        , module);
+
     // If script already loaded in this context, just use its resulting table
     auto scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
     if (scriptIt != container->m_loadedScripts.end())
     {
         SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-            , "Adding table %s to _LOADED for %s"
+            , "adding new name %s, for loaded module %s"
             , module
-            , scriptId.m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+            , scriptIt->second.m_scriptAsset.GetHint().c_str());
 
         // Add the name used for require as an alias
         scriptIt->second.m_scriptNames.emplace(module);
@@ -614,15 +613,9 @@ int ScriptSystemComponent::InMemoryRequireHook(lua_State* lua, ScriptContext* co
 
     // Push function returning the result
     lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
-
     // Set asset reference on the loaded script
     scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
     scriptIt->second.m_scriptNames.emplace(module);
-    scriptIt->second.m_scriptAsset = script;
-
-    // Connect to the asset bus so that we may know when this script reloads.
-    Data::AssetBus::MultiHandler::BusConnect(script.GetId());
-
     return 1;
 }
 
@@ -703,17 +696,7 @@ Data::AssetHandler::LoadResult ScriptSystemComponent::LoadAssetData
         , serializeContext
         , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB)))
     {
-        // Clear cached references in the event of a successful load. This function has to be queued on
-        // AssetBus where NotifyAssetReloaded is also queued, to ensure its execution before NotifyAssetReloaded
-
-        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-            , "Queueing ClearAssetReferences from ScriptSystemComponent::LoadAssetData: %s-%s"
-            , asset.GetHint().c_str()
-            , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-
-        Data::AssetBus::QueueFunction(&ScriptSystemComponent::ClearAssetReferences, this, asset.GetId());
         return Data::AssetHandler::LoadResult::LoadComplete;
-
     }
     else
     {
@@ -776,113 +759,68 @@ void ScriptSystemComponent::GetAssetTypeExtensions(AZStd::vector<AZStd::string>&
 
 //=========================================================================
 // OnAssetPreReload
-// #TEMP: Remove when asset dependencies are in place
-// Before an asset is reloaded, this event is called to remove the previously cached version.
-// This removes all aliases from the _LOADED table. This will prevent require() calls from surfacing antiquated data.
 //=========================================================================
 void ScriptSystemComponent::OnAssetPreReload(Data::Asset<Data::AssetData> asset)
 {
+//     SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+//         , "ScriptSystemComponent::OnAssetPreReload: calling ClearAssetReferences: %s-%s"
+//         , asset.GetHint().c_str()
+//         , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+}
+
+//=========================================================================
+// OnAssetReloaded
+//=========================================================================
+void ScriptSystemComponent::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+{
     SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-        , "Calling ClearAssetReferences from ScriptSystemComponent::OnAssetPreReload: %s-%s"
+        , "ScriptSystemComponent::OnAssetReloaded: calling Clear and LoadReadyAsset: %s-%s"
+        , asset.GetHint().c_str()
+        , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+    ClearAssetReferences(asset.GetId());
+    LoadReadyAsset(asset);
+}
+
+void ScriptSystemComponent::OnAssetReady(Data::Asset<Data::AssetData> asset)
+{
+    // this should never be necessary,
+    // the system only "loads" what it is given (ready assets)
+    // and it only needs to listen for reloads
+
+//      SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+//          , "ScriptSystemComponent::OnAssetReady calling ClearAssetReferences and LoadReadyAsset: %s-%s"
+//          , asset.GetHint().c_str()
+//          , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+//      ClearAssetReferences(asset.GetId());
+//     LoadReadyAsset(asset);
+}
+
+void ScriptSystemComponent::OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, bool /*isSuccessful*/)
+{
+    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+        , "ScriptSystemComponent::OnAssetSaved: calling ClearReferences: %s-%s"
         , asset.GetHint().c_str()
         , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
     ClearAssetReferences(asset.GetId());
 }
 
-//=========================================================================
-// OnAssetReloaded
-// #TEMP: Remove when asset dependencies are in place
-// This function will only be called for the asset that triggered the reload.
-//
-// Track all reload requests and remove them from the map one by one as they are handled. 
-// Once all queued reloads are handled, another full reload can be triggered.
-//=========================================================================
-void ScriptSystemComponent::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+void ScriptSystemComponent::LoadReadyAsset(Data::Asset<Data::AssetData> asset)
 {
-    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-        , "ScriptSystemComponent::OnAssetReloaded disconnected from asset bus on this id: %s-%s"
-        , asset.GetHint().c_str()
-        , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-
-    Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
-
-    auto it = m_queuedReloads.find(asset.GetId());
-    if (it == m_queuedReloads.end())
+    for (auto& context : m_contexts)
     {
-        // This is not a reload queued by us as a "dependency" reload, probably an external change.
-        if (!m_isReloadQueued)
+        if (context.m_isOwner)
         {
-
-            SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-                , "ScriptSystemComponent::OnAssetReloaded id: %s-%s, There is no reload-all queued, schedule one on tick bus."
-                , asset.GetHint().c_str()
-                , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-
-            // There is no reload-all queued, schedule one.
-            m_isReloadQueued = true;
-            auto triggeredByAssetId = asset.GetId();
-            AZStd::function<void()> reloadFn = [this, triggeredByAssetId]() ///< Capture just reloaded asset ID so that it can be excluded from reloading
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(context.m_loadedScriptsMutex);
+            if (context.m_trackedScripts.contains(asset.GetId().m_guid))
             {
                 SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-                    , "ScriptSystemComponent::OnAssetReloaded id: %s, Tick bus function Reload the asset from it's current data"
-                    , triggeredByAssetId.m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+                    , "ScriptSystemComponent::LoadReadyAsset Loading into context: %s-%s"
+                    , asset.GetHint().c_str()
+                    , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
 
-                // Collects all script assets for reloading
-                Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb = [this, triggeredByAssetId](const Data::AssetId id, const Data::AssetInfo& info)
-                {
-                    // Check asset type
-                    if (info.m_assetType == azrtti_typeid<ScriptAsset>())
-                    {
-                        // Ensure that the asset isn't scheduled for a reload already
-                        if (id != triggeredByAssetId && m_queuedReloads.find(id) == m_queuedReloads.end()) ///< Don't reload just reloaded asset or assets already queued for reload
-                        {
-                            auto otherAsset = Data::AssetManager::Instance().FindAsset<ScriptAsset>(id, AZ::Data::AssetLoadBehavior::Default);
-                            if (otherAsset && otherAsset.IsReady())
-                            {
-                                SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-                                    , "ScriptSystemComponent::OnAssetReloaded id: %s-%s, enumerate call  Reload the asset from it's current data"
-                                    , otherAsset.GetHint().c_str()
-                                    , otherAsset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-
-                                // Reload the asset from it's current data
-                                otherAsset.Reload();
-
-                                // Store the ID of the asset that we started reloading. We will use it to detect the moment 
-                                // when all current reload requests are handled, and reloadFn can be called again.
-                                m_queuedReloads.insert(id);
-                                // the 'this->' in the following line is intentional.
-                                // the C++ standard requires the use of this-> on baseclass calls that are templated classes
-                                // most of the time you can get away with it, but in some cases MSVC will not correctly adjust the offset of this
-                                // during the call
-                                this->Data::AssetBus::MultiHandler::BusConnect(id); 
-                            }
-                        }
-                    }
-                };
-                Data::AssetCatalogRequestBus::Broadcast(&Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, nullptr);
-
-                m_isReloadQueued = false;
-            };
-            TickBus::QueueFunction(reloadFn);
+                Load(asset, AZ::k_scriptLoadBinary, context.m_context->GetId());
+            }
         }
-        else
-        {
-            SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-                , "ScriptSystemComponent::OnAssetReloaded hit this path 'This is not a reload queued by us as a \"dependency\" reload, probably an external change.': %s-%s in its queued reloads"
-                , asset.GetHint().c_str()
-                , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-        }
-    }
-    else
-    {
-        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-            , "ScriptSystemComponent::OnAssetReloaded found this id: %s-%s in its queued reloads"
-            , asset.GetHint().c_str()
-            , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-
-        // This is one of the reloads triggered by us via reloadFn, no need to trigger another reload-all call.
-        // Remove it from the queue, so that reloadFn can be triggered again once all dependencies finished reloading.
-        m_queuedReloads.erase(it);
     }
 }
 

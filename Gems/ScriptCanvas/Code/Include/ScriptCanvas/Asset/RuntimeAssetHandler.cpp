@@ -135,8 +135,6 @@ namespace ScriptCanvas
 
     void RuntimeAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
     {
-        RuntimeAsset* runtimeAsset = azrtti_cast<RuntimeAsset*>(ptr);
-        Execution::Context::UnloadData(runtimeAsset->m_runtimeData);
         delete ptr;
     }
 

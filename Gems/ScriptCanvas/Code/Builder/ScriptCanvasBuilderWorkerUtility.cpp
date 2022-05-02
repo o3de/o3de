@@ -270,14 +270,14 @@ namespace ScriptCanvasBuilder
         for (const auto& subgraphAssetID : orderedDependencies.orderedAssetIds)
         {
             const AZ::Data::AssetId dependentSubgraphAssetID(subgraphAssetID.m_guid, RuntimeDataSubId);
-            AZ::Data::Asset<ScriptCanvas::RuntimeAsset> subgraphAsset(dependentSubgraphAssetID, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+            AZ::Data::Asset<ScriptCanvas::RuntimeAsset> subgraphAsset(dependentSubgraphAssetID, azrtti_typeid<ScriptCanvas::RuntimeAsset>());
             subgraphAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
             input.runtimeDataOut.m_requiredAssets.push_back(subgraphAsset);
         }
 
         for (const auto& scriptEventAssetID : dependencyReport.scriptEventsAssetIds)
         {
-            AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> subgraphAsset(scriptEventAssetID, azrtti_typeid<ScriptEvents::ScriptEventsAsset>(), {});
+            AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> subgraphAsset(scriptEventAssetID, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
             subgraphAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
             input.runtimeDataOut.m_requiredScriptEvents.push_back(subgraphAsset);
         }

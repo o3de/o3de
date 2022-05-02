@@ -545,9 +545,14 @@ namespace AzFramework
     {
         LSV_BEGIN(m_context->NativeContext(), 1);
 
+        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+            , "ScriptComponent::LoadInContext requesting load with its own script value: %s-%s"
+            , m_script.GetHint().c_str()
+            , m_script.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+
         // Set the metamethods as we will use the script table as a metatable for entity tables
         bool success = false;
-        EBUS_EVENT_RESULT(success, AZ::ScriptSystemRequestBus, Load, m_script, AZ::k_scriptLoadBinaryOrText, m_contextId);
+        EBUS_EVENT_RESULT(success, AZ::ScriptSystemRequestBus, Load, m_script, AZ::k_scriptLoadBinary, m_contextId);
         if (!success)
         {
             return false;
