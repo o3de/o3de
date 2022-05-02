@@ -84,7 +84,6 @@ namespace ScriptCanvasBuilder
         void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/, bool /*isSuccessful*/) {}
         void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType);
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;

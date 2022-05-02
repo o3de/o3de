@@ -73,7 +73,8 @@ namespace UnitTest
         Data::Asset<ScriptAsset> CreateAndLoadScriptAsset(const AZStd::string& script)
         {
             Data::Asset<ScriptAsset> scriptAsset = Data::AssetManager::Instance().CreateAsset<ScriptAsset>(Uuid::CreateRandom());
-            scriptAsset.Get()->m_scriptBuffer.insert(scriptAsset.Get()->m_scriptBuffer.begin(), script.begin(), script.end());
+            auto& scriptBuffer = scriptAsset.Get()->m_data.m_luaScript;
+            scriptBuffer.insert(scriptBuffer.begin(), script.begin(), script.end());
             EBUS_EVENT(Data::AssetManagerBus, OnAssetReady, scriptAsset);
 
             m_app.Tick();
@@ -101,7 +102,8 @@ namespace UnitTest
 
         static void OverwriteScriptBuffer(Data::Asset<ScriptAsset> scriptAsset, AZStd::string newScript)
         {
-            scriptAsset.Get()->m_scriptBuffer.insert(scriptAsset.Get()->m_scriptBuffer.begin(), newScript.begin(), newScript.end());
+            auto scriptBuffer = scriptAsset.Get()->m_data.m_luaScript;
+            scriptBuffer.insert(scriptBuffer.begin(), newScript.begin(), newScript.end());
         }
 
         ComponentApplication m_app;
