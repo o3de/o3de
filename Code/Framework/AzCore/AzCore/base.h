@@ -27,7 +27,7 @@ namespace AZ::Internal
 
 
 #ifndef AZ_SIZE_ALIGN_UP
-/// Aign to the next bigger/up size
+/// Align to the next bigger/up size
 #   define AZ_SIZE_ALIGN_UP(_size, _align)       ((_size+(_align-1)) & ~(_align-1))
 #endif // AZ_SIZE_ALIGN_UP
 #ifndef AZ_SIZE_ALIGN_DOWN

@@ -100,6 +100,7 @@ namespace AZ
             AZ::EntitySystemBus::Handler::BusConnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
+            MaterialReceiverNotificationBus::Router::BusRouterConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
@@ -112,6 +113,7 @@ namespace AZ
             AZ::EntitySystemBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
+            MaterialReceiverNotificationBus::Router::BusRouterDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
@@ -235,8 +237,9 @@ namespace AZ
             return QPixmap();
         }
 
-        void EditorMaterialSystemComponent::OnEntityDestroyed(const AZ::EntityId& entityId)
+        void EditorMaterialSystemComponent::OnEntityDeactivated(const AZ::EntityId& entityId)
         {
+            // Deleting any preview saved for an entity that is about to be deactivated
             m_materialPreviews.erase(entityId);
         }
 
@@ -246,7 +249,16 @@ namespace AZ
             [[maybe_unused]] const QPixmap& pixmap)
         {
             PurgePreviews();
+
+            // Caching preview so the image will not have to be regenerated every time it's requested
             m_materialPreviews[entityId][materialAssignmentId] = pixmap;
+        }
+
+        void EditorMaterialSystemComponent::OnMaterialAssignmentsChanged()
+        {
+            // Deleting any preview saved for an entity whose material configuration is about to be invalidated
+            const AZ::EntityId entityId = *MaterialReceiverNotificationBus::GetCurrentBusId();
+            m_materialPreviews.erase(entityId);
         }
 
         void EditorMaterialSystemComponent::OnPopulateToolMenuItems()
@@ -307,6 +319,7 @@ namespace AZ
 
         void EditorMaterialSystemComponent::PurgePreviews()
         {
+            // Deleting all saved previews after a certain threshold has been reached
             size_t materialPreviewCount = 0;
             for (const auto& materialPreviewPair : m_materialPreviews)
             {

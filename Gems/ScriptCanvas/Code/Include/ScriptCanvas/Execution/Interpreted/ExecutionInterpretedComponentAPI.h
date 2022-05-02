@@ -5,19 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <QDialog>
-#endif
+struct lua_State;
 
-class FeedbackDialog
-    : public QDialog
+namespace ScriptCanvas
 {
-    Q_OBJECT
-
-public:
-    FeedbackDialog(QWidget* pParent = nullptr);
-
-private:
-};
+    namespace Execution
+    {
+        // Lua: executionState
+        void RegisterComponentAPI(lua_State* lua);
+    }
+}

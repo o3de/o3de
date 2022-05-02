@@ -869,10 +869,6 @@ namespace ScriptCanvas
         //! returns a list of all slots, regardless of type
         SlotList& ModSlots() { return m_slots; }
         
-        // \todo make fast query to the system debugger
-        AZ_INLINE static bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier);
-        AZ_INLINE static bool IsVariableObserved(const VariableId& variableId);
-
         const Datum* FindDatumByIndex(size_t index) const;
         void FindModifiableDatumViewByIndex(size_t index, ModifiableDatumView& controller);
 
@@ -912,13 +908,6 @@ protected:
 
         SlotDataMap CreateInputMap() const;
         SlotDataMap CreateOutputMap() const;
-
-        Signal CreateNodeInputSignal(const SlotId& slotId) const;
-        Signal CreateNodeOutputSignal(const SlotId& slotId) const;
-
-        NodeStateChange CreateNodeStateUpdate() const;
-        VariableChange CreateVariableChange(const GraphVariable& graphVariable) const;
-        VariableChange CreateVariableChange(const Datum& variableDatum, const VariableId& variableId) const;
 
         void ClearDisplayType(const AZ::Crc32& dynamicGroup)
         {
@@ -1075,20 +1064,6 @@ protected:
         template<size_t... inputDatumIndices>
         friend struct SetDefaultValuesByIndex;
     };
-
-    bool Node::IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier)
-    {
-        bool isObserved{};
-        ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsGraphObserved, entityId, identifier);
-        return isObserved;
-    }
-
-    bool Node::IsVariableObserved(const VariableId& variableId)
-    {
-        bool isObserved{};
-        ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsVariableObserved, variableId);
-        return isObserved;
-    }
 
     namespace Internal
     {
