@@ -65,17 +65,5 @@ namespace ScriptCanvasEditor
     */
     AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool makeEntityIdsUnique = true);
 
-    
-    /**
-     * Loads the script canvas from the given string data. Helper class for LoadFromFile primarily used in automated tests.
-     * @param scriptCanvasString the script canvas file stored as a string
-     * @param path Path the file was originally loaded from. Used to populate the result.
-     * @param makeEntityIdsUnique See LoadFromFile for details
-     * @return An outcome with either the handle to the data loaded and a string with deserialization issues, or a failure if the file did
-     * not load.
-     */
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromString(
-        const AZStd::string& scriptCanvasString, AZStd::string_view path, bool makeEntityIdsUnique);
-
     AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream);
 }

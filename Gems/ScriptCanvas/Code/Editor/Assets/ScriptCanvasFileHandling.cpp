@@ -261,14 +261,7 @@ namespace ScriptCanvasEditor
         }
 
         const auto& asString = fileStringOutcome.GetValue();
-        return LoadFromString(asString, path, makeEntityIdsUnique);
-    }
 
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromString(
-        const AZStd::string& scriptCanvasString,
-        AZStd::string_view path,
-        bool makeEntityIdsUnique)
-    {
         ScriptCanvas::DataPtr scriptCanvasData = aznew ScriptCanvas::ScriptCanvasData();
         if (!scriptCanvasData)
         {
@@ -285,8 +278,7 @@ namespace ScriptCanvasEditor
         FileLoadSuccess success;
 
         // attempt JSON deserialization...
-        auto jsonResult = LoadDataFromJson(
-            *scriptCanvasData, AZStd::string_view{ scriptCanvasString.begin(), scriptCanvasString.size() }, *serializeContext);
+        auto jsonResult = LoadDataFromJson(*scriptCanvasData, AZStd::string_view{ asString.begin(), asString.size() }, *serializeContext);
 
         if (jsonResult.IsSuccess())
         {
@@ -296,7 +288,7 @@ namespace ScriptCanvasEditor
         {
             success.deserializationErrors = "JSON deserialization failed. Attempting deprecated ObjectStream read from XML.";
             // ...try legacy xml as a failsafe
-            AZ::IO::ByteContainerStream byteStream(&scriptCanvasString);
+            AZ::IO::ByteContainerStream byteStream(&asString);
             if (!AZ::Utils::LoadObjectFromStreamInPlace
                 ( byteStream
                 , *scriptCanvasData

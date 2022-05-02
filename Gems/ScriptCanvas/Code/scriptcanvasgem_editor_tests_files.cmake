@@ -8,5 +8,4 @@
 
 set(FILES
     Tests/ScriptCanvasBuilderTests.cpp
-    Tests/ScriptCanvasUnitTest_FileHandling.cpp
 )
