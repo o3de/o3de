@@ -19,6 +19,8 @@ namespace UnitTest
 
         m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         ASSERT_TRUE(m_actionManagerInterface != nullptr);
+
+        m_widget = new QWidget();
     }
 
     void ActionManagerFixture::TearDownEditorFixtureImpl()

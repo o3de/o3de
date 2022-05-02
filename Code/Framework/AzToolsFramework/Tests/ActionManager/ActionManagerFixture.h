@@ -17,6 +17,10 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 
+#include <QWidget>
+
+class QWidget;
+
 namespace UnitTest
 {
     class ActionManagerFixture : public ToolsApplicationFixture
@@ -27,6 +31,7 @@ namespace UnitTest
 
     public:
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        QWidget* m_widget = nullptr;
     };
 
 } // namespace UnitTest
