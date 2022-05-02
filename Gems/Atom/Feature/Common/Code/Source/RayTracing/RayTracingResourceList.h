@@ -31,7 +31,7 @@ namespace AZ
         {
         public:
 
-            using ResourceVector = AZStd::vector<TResource*>;
+            using ResourceVector = AZStd::vector<const TResource*>;
             using IndexVector = AZStd::vector<uint32_t>;
 
             RayTracingResourceList() = default;
@@ -39,11 +39,11 @@ namespace AZ
 
             // adds a resource to the list, or increments the reference count, and returns the index of the resource
             // Note: the index returned is an indirection index, meaning it is stable when other entries are removed
-            uint32_t AddResource(TResource* resource);
+            uint32_t AddResource(const TResource* resource);
 
             // removes a resource from the list, or decrements the reference count
             // Note: removing a resource will not affect any previously returned indices for other resources
-            void RemoveResource(TResource* resource);
+            void RemoveResource(const TResource* resource);
 
             // returns the resource list
             ResourceVector& GetResourceList() { return m_resources; }
@@ -68,7 +68,7 @@ namespace AZ
                 uint32_t m_count = 0;
             };
 
-            using ResourceMap = AZStd::map<TResource*, IndexMapEntry>;
+            using ResourceMap = AZStd::map<const TResource*, IndexMapEntry>;
 
             ResourceVector m_resources;
             ResourceMap m_resourceMap;
@@ -76,7 +76,7 @@ namespace AZ
         };
 
         template<class TResource>
-        uint32_t RayTracingResourceList<TResource>::AddResource(TResource* resource)
+        uint32_t RayTracingResourceList<TResource>::AddResource(const TResource* resource)
         {
             if (resource == nullptr)
             {
@@ -111,7 +111,7 @@ namespace AZ
         }
 
         template<class TResource>
-        void RayTracingResourceList<TResource>::RemoveResource(TResource* resource)
+        void RayTracingResourceList<TResource>::RemoveResource(const TResource* resource)
         {
             if (resource == nullptr)
             {
