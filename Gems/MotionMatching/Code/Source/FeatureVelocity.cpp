@@ -76,19 +76,8 @@ namespace EMotionFX::MotionMatching
     }
 
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-        MotionMatchingInstance* instance,
-        const AZ::Vector3& velocity,
-        size_t jointIndex,
-        size_t relativeToJointIndex,
-        const AZ::Color& color)
-    {
-        const ActorInstance* actorInstance = instance->GetActorInstance();
-        const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-        DebugDraw(debugDisplay, *pose, velocity, jointIndex, relativeToJointIndex, color);
-    }
-
-    void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-        MotionMatchingInstance* instance,
+        const Pose& currentPose,
+        const FeatureMatrix& featureMatrix,
         size_t frameIndex)
     {
         if (m_jointIndex == InvalidIndex)
@@ -96,9 +85,8 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        const MotionMatchingData* data = instance->GetData();
-        const AZ::Vector3 velocity = GetFeatureData(data->GetFeatureMatrix(), frameIndex);
-        DebugDraw(debugDisplay, instance, velocity, m_jointIndex, m_relativeToNodeIndex, m_debugColor);
+        const AZ::Vector3 velocity = GetFeatureData(featureMatrix, frameIndex);
+        DebugDraw(debugDisplay, currentPose, velocity, m_jointIndex, m_relativeToNodeIndex, m_debugColor);
     }
 
     float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
