@@ -128,14 +128,10 @@ namespace EMStudio
         m_saveAction                         = nullptr;
     }
 
-
     MotionWindowPlugin::~MotionWindowPlugin()
     {
-        if (m_motionPropertiesWindow)
-        {
-            delete m_motionPropertiesWindow;
-            m_motionPropertiesWindow = nullptr;
-        }
+        delete m_motionPropertiesWindow;
+        m_motionPropertiesWindow = nullptr;
 
         ClearMotionEntries();
 
@@ -149,7 +145,6 @@ namespace EMStudio
         GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
         delete m_dirtyFilesCallback;
     }
-
 
     void MotionWindowPlugin::ClearMotionEntries()
     {

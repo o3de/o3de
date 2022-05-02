@@ -409,9 +409,8 @@ namespace EMStudio
     {
     }
 
-    bool MotionExtractionWindow::SelectActorCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionExtractionWindow::SelectActorCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
-        MCORE_UNUSED(command);
         if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
         {
             return true;
@@ -420,9 +419,8 @@ namespace EMStudio
         return true;
     }
 
-    bool MotionExtractionWindow::SelectActorCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionExtractionWindow::SelectActorCallback::Undo([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
-        MCORE_UNUSED(command);
         if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
         {
             return true;
