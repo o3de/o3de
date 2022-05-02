@@ -19,8 +19,8 @@ namespace TranslationResultCpp
         AddedStaticVariables,
         SupportMemberVariableInputs,
         ExecutionStateSelectionIncludesOnGraphStart,
-        // add your entry above
-        Current
+        Last,
+        DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead
     };
 }
 
@@ -153,10 +153,12 @@ namespace ScriptCanvas
 
         void RuntimeInputs::Reflect(AZ::ReflectContext* reflectContext)
         {
+            using namespace TranslationResultCpp;
+
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
             {
                 serializeContext->Class<RuntimeInputs>()
-                    ->Version(TranslationResultCpp::RuntimeInputsVersion::Current)
+                    ->Version(RuntimeInputsVersion::DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead)
                     ->Field("executionSelection", &RuntimeInputs::m_executionSelection)
                     ->Field("nodeables", &RuntimeInputs::m_nodeables)
                     ->Field("variables", &RuntimeInputs::m_variables)
