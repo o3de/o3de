@@ -45,7 +45,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     private:
         AzFramework::InMemorySpawnableAssetContainer m_assetContainer;
         PrefabConversionUtils::PrefabConversionPipeline m_converter;
-        AZStd::string_view m_stockProfile;
+        AZStd::string_view m_stackProfile;
         PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         PrefabLoaderInterface* m_loaderInterface = nullptr;
     };
