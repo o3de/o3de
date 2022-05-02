@@ -37,15 +37,6 @@
 /SerializeContextAnalysis.bat @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Tools/SerializeContextAnalyzer/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 
-# SIG-Core temporary areas of ownership. Will be moved to SIG-Simulation when that group is created
-/AutomatedTesting/Gem/PythonTests/Blast @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/AutomatedTesting/Gem/PythonTests/NvCloth @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/AutomatedTesting/Gem/PythonTests/Physics @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Gems/Blast/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Gems/NvCloth/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Gems/PhysX/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Gems/PhysXDebug/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-
 # SIG-Content Asset Pipeline ownership area
 /AutomatedTesting/Gem/PythonTests/assetpipeline/ap_fixtures/ @o3de/sig-content-maintainers
 /AutomatedTesting/Gem/PythonTests/assetpipeline/asset_processor_tests/ @o3de/sig-content-maintainers
@@ -55,3 +46,41 @@
 /Code/Tools/AssetProcessor/ @o3de/sig-content-maintainers
 /Code/Tools/SceneAPI/ @o3de/sig-content-maintainers
 /Gems/SceneProcessing/ @o3de/sig-content-maintainers
+
+# SIG-Content Viewport ownership area
+/Code/Framework/AzToolsFramework/AzToolsFramework/ComponentMode/ @o3de/sig-content-maintainers
+/Code/Framework/AzToolsFramework/AzToolsFramework/ComponentModes/ @o3de/sig-content-maintainers
+/Code/Framework/AzToolsFramework/AzToolsFramework/FocusMode/ @o3de/sig-content-maintainers
+/Code/Framework/AzToolsFramework/AzToolsFramework/Manipulators/ @o3de/sig-content-maintainers
+/Code/Framework/AzToolsFramework/AzToolsFramework/Picking/ @o3de/sig-content-maintainers
+/Code/Framework/AzToolsFramework/AzToolsFramework/Viewport/ @o3de/sig-content-maintainers
+/Code/Framework/AzToolsFramework/AzToolsFramework/ViewportSelection/ @o3de/sig-content-maintainers
+/Code/Framework/AzToolsFramework/AzToolsFramework/ViewportUi/ @o3de/sig-content-maintainers
+/Code/Framework/AzFramework/AzFramework/Viewport/ @o3de/sig-content-maintainers
+/Code/Framework/AzFramework/AzFramework/Visibility/ @o3de/sig-content-maintainers
+
+# SIG-Content White Box ownership area
+/AutomatedTesting/Gem/PythonTests/WhiteBox/ @o3de/sig-content-maintainers
+/Gems/WhiteBox/ @o3de/sig-content-maintainers
+
+# SIG-Simulation ownership area
+/Code/Framework/AzCore/AzCore/Math/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Code/Framework/AzFramework/AzFramework/Physics/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/Blast/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/MotionMatching/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/NvCloth/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/PhysX/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/PhysXDebug/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/EMotionFX/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/AutomatedTesting/Gem/PythonTests/Blast @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/AutomatedTesting/Gem/PythonTests/NvCloth @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/AutomatedTesting/Gem/PythonTests/Physics @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+
+# SIG-Build areas of ownership
+/cmake/Platform/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/cmake/Packaging/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/cmake/Packaging* @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/scripts/build/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/scripts/commit_validation/ @o3de/sig-build-maintainers
+/scripts/license_scanner/ @o3de/sig-build-maintainers
+/scripts/signer/ @o3de/sig-build-maintainers

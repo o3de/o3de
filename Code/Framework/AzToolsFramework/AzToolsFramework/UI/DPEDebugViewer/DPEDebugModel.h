@@ -9,8 +9,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
+#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QAbstractItemModel>
@@ -33,36 +33,50 @@ namespace AzToolsFramework
             PropertyEditorNode
         };
 
-        DPEModelNode(NodeType nodeType, size_t domValueIndex, QObject* theModel);
+        DPEModelNode(QObject* theModel);
         ~DPEModelNode();
 
-        int GetChildCount() const;
+        int GetRowChildCount() const;
         int GetColumnChildCount() const;
-        int GetMaxChildColumns() const;
         DPEModelNode* GetParentNode() const;
+        DPEModelNode* GetParentRowNode() const;
+
         QVariant GetData(int role) const;
         bool SetData(int role, const QVariant& value);
         Qt::ItemFlags GetFlags() const;
-        DPEModelNode* GetChildNode(int childIndex);
-        DPEModelNode* GetColumnNode(int columnIndex);
+        DPEModelNode* GetRowChild(int childIndex);
+        DPEModelNode* GetColumnChild(int columnIndex);
+
+        DPEModelNode* GetChildFromDomIndex(size_t domIndex);
 
         int RowOfChild(DPEModelNode* const childNode) const;
-        void Populate(const AZ::Dom::Value& domVal);
+        int ColumnOfChild(DPEModelNode* const childNode) const;
+
+        void SetValue(const AZ::Dom::Value& domVal, bool notifyView);
+        AZ::Dom::Value GetValueFromDom() const;
+
+        size_t GetDomValueIndex() const
+        {
+            return m_domValueIndex;
+        }
+
+        bool IsColumn() const
+        {
+            return !(m_type == NodeType::RootNode || m_type == NodeType::RowNode);
+        }
 
     private:
         DPEDebugModel* GetModel() const;
-        DPEModelNode* AddChild(NodeType childType, size_t domValueIndex, bool isColumn, const QString& value);
-        AZ::Dom::Value GetValue() const;
+        void AddChild(DPEModelNode* childNode, size_t domValueIndex);
+        void ClearChildren();
 
         NodeType m_type = NodeType::RootNode;
         DPEModelNode* m_parent = nullptr;
-        DPEModelNode* m_columnParent = nullptr;
-        QVector<DPEModelNode*> m_children;
-        QVector<DPEModelNode*> m_columnChildren;
-        int m_maxChildColumns = 1;
         size_t m_domValueIndex = 0;
-
         QString m_displayString;
+
+        QVector<DPEModelNode*> m_rowChildren;
+        QVector<DPEModelNode*> m_columnChildren;
     }; // DPEModelNode
 
     class DPEDebugModel : public QAbstractItemModel
@@ -82,8 +96,25 @@ namespace AzToolsFramework
             return m_jsonBackend;
         }
 
+        QModelIndex GetIndexFromNode(DPEModelNode* const theNode) const;
+
+        void SetMaxColumns(int newMax)
+        {
+            m_maxColumns = newMax;
+        }
+        int GetMaxColumns() const
+        {
+            return m_maxColumns;
+        }
+
+        using QAbstractItemModel::beginInsertRows;
+        using QAbstractItemModel::beginRemoveRows;
+        using QAbstractItemModel::endInsertRows;
+        using QAbstractItemModel::endRemoveRows;
+
     protected:
         DPEModelNode* GetNodeFromIndex(const QModelIndex& theIndex) const;
+        DPEModelNode* GetNodeFromPath(const AZ::Dom::Path& thePath) const;
 
         // QAbstractItemModel overrides
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -94,10 +125,16 @@ namespace AzToolsFramework
         int columnCount(const QModelIndex&) const override;
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
+        void HandleReset();
+        void HandleDomChange(const AZ::Dom::Patch& patch);
+
     private:
         AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter = nullptr;
         DPEModelNode* m_rootNode = nullptr;
-        bool m_isResetting = false;
+        int m_maxColumns = 1;
+
         AZ::Dom::JsonBackend<AZ::Dom::Json::ParseFlags::ParseComments, AZ::Dom::Json::OutputFormatting::MinifiedJson> m_jsonBackend;
+        AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
+        AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
     };
 } // namespace AzToolsFramework

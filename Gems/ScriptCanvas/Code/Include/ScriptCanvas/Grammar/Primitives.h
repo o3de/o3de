@@ -214,6 +214,7 @@ namespace ScriptCanvas
             // Statics required for internal, local values that need non-code constructible initialization,
             // when the system can't pass in the input from C++.
             AZStd::vector<AZStd::pair<VariableId, AZStd::any>> m_staticVariables;
+            bool m_refersToSelfEntityId;
         };
 
         struct PropertyExtraction
