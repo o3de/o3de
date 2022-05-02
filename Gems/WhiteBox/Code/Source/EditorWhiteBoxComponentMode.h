@@ -20,6 +20,7 @@ namespace WhiteBox
 {
     class DefaultMode;
     class EdgeRestoreMode;
+    class TransformMode;
 
     //! The type of edge selection the component mode is in (either normal selection of
     //! 'user' edges or selection of all edges ('mesh') in restoration mode).
@@ -80,13 +81,18 @@ namespace WhiteBox
         //! Enter the sub-mode for edge restore.
         void EnterEdgeRestoreMode();
 
+        //!Enter the sub-mode for transforming
+        void EnterTransformMode();
+
         //! Create the Viewport UI cluster for sub mode selection.
         void CreateSubModeSelectionCluster();
         //! Remove the Viewport UI cluster for sub mode selection.
         void RemoveSubModeSelectionCluster();
 
+        void UpdateTransformCluster();
+
         //! The current set of 'sub' modes the white box component mode can be in.
-        AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>> m_modes;
+        AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>, AZStd::unique_ptr<TransformMode>> m_modes;
 
         //! The most up to date intersection and render data for the white box (edge and polygon bounds).
         AZStd::optional<IntersectionAndRenderData> m_intersectionAndRenderData;
@@ -97,12 +103,24 @@ namespace WhiteBox
         SubMode m_currentSubMode = SubMode::Default;
         bool m_restoreModifierHeld = false;
 
+
+        AzToolsFramework::ViewportUi::ClusterId
+            m_transformClusterId; 
+        AzToolsFramework::ViewportUi::ButtonId
+            m_transformTranslateButtonId; 
+        AzToolsFramework::ViewportUi::ButtonId
+            m_transformRotateButtonId; 
+        AzToolsFramework::ViewportUi::ButtonId
+            m_transformScaleButtonId; 
+
         AzToolsFramework::ViewportUi::ClusterId
             m_modeSelectionClusterId; //!< Viewport UI cluster for changing sub mode.
         AzToolsFramework::ViewportUi::ButtonId
             m_defaultModeButtonId; //!< Id of the Viewport UI button for default mode.
         AzToolsFramework::ViewportUi::ButtonId
             m_edgeRestoreModeButtonId; //!< Id of the Viewport UI button for edge restore mode.
+        AzToolsFramework::ViewportUi::ButtonId
+            m_transformModeButtonId; 
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
             m_modeSelectionHandler; //!< Event handler for sub mode changes.
     };

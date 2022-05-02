@@ -16,6 +16,12 @@ namespace AZ
     class Color;
 }
 
+namespace AzToolsFramework 
+{
+    struct ActionOverride;
+} // namespace AzToolsFramework
+
+
 namespace AzFramework
 {
     class DebugDisplayRequests;

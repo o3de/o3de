@@ -62,6 +62,8 @@ set(FILES
     Source/SubComponentModes/EditorWhiteBoxDefaultModeBus.h
     Source/SubComponentModes/EditorWhiteBoxComponentModeCommon.cpp
     Source/SubComponentModes/EditorWhiteBoxComponentModeCommon.h
+    Source/SubComponentModes/EditorWhiteBoxTransformMode.cpp
+    Source/SubComponentModes/EditorWhiteBoxTransformMode.h
     Source/EditorWhiteBoxSystemComponent.cpp
     Source/EditorWhiteBoxSystemComponent.h
 )
