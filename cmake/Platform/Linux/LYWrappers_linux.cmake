@@ -39,3 +39,30 @@ function(ly_handle_custom_output_directory target output_subdirectory)
     endif()
 
 endfunction()
+
+set(LY_STRIP_DEBUG_SYMBOLS FALSE CACHE BOOL "Flag to strip debug symbols from the output executables and binaries")
+
+#! ly_apply_debug_strip_options: Apply debug stripping options to the target output for non-debug configurations.
+#
+#\arg:target Name of the target to perform a post-build stripping of any debug symbol)
+function(ly_apply_debug_strip_options target)
+
+    if (NOT  ${LY_STRIP_DEBUG_SYMBOLS})
+        return()
+    endif()
+
+    find_program(LLVM_STRIP_TOOL llvm-strip)
+    if (NOT LLVM_STRIP_TOOL)
+        message(FATAL_ERROR "Unable to locate 'llvm-strip' tool needed to strip debug symbols from the output target(s). Make sure this is installed on your host machine")
+        return()
+    endif()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/StripDebugSymbols.cmake"
+                "$<TARGET_FILE:${target}>"
+                "$<CONFIG>"
+        COMMENT "Stripping debug symbols ..."
+        VERBATIM
+    )
+
+endfunction()
