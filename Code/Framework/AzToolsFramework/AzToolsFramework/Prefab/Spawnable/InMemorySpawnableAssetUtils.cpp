@@ -53,7 +53,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return m_converter.IsLoaded();
     }
 
-    AZStd::string_view InMemorySpawnableAssetProcessor::GetStockProfile() const
+    AZStd::string_view InMemorySpawnableAssetProcessor::GetStackProfile() const
     {
         return m_stackProfile;
     }
