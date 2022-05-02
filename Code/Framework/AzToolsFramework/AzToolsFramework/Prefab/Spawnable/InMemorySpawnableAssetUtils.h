@@ -41,7 +41,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult CreateInMemorySpawnableAsset(
             AzToolsFramework::Prefab::TemplateId templateId, AZStd::string_view spawnableName, bool loadReferencedAssets = false);
 
-        const AzFramework::InMemorySpawnableAssetContainer& GetAssetContainer() const;
+        const AzFramework::InMemorySpawnableAssetContainer& GetAssetContainerConst() const;
         AzFramework::InMemorySpawnableAssetContainer& GetAssetContainer();
 
     private:

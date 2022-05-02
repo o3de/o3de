@@ -414,7 +414,7 @@ namespace AzToolsFramework
 
     const AzFramework::InMemorySpawnableAssetContainer::SpawnableAssets& PrefabEditorEntityOwnershipService::GetPlayInEditorAssetData() const
     {
-        return m_playInEditorData.m_assetsCache.GetAssetContainer().GetAllInMemorySpawnableAssets();
+        return m_playInEditorData.m_assetsCache.GetAssetContainerConst().GetAllInMemorySpawnableAssets();
     }
 
     void PrefabEditorEntityOwnershipService::OnEntityRemoved(AZ::EntityId entityId)

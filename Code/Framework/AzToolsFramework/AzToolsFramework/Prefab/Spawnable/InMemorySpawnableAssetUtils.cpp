@@ -119,7 +119,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return CreateInMemorySpawnableAsset(templateId, spawnableName, loadReferencedAssets);
     }
 
-    const AzFramework::InMemorySpawnableAssetContainer& InMemorySpawnableAssetProcessor::GetAssetContainer() const
+    const AzFramework::InMemorySpawnableAssetContainer& InMemorySpawnableAssetProcessor::GetAssetContainerConst() const
     {
         return m_assetContainer;
     }
