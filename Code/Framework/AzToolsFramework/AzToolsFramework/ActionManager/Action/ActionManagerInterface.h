@@ -18,6 +18,8 @@ class QAction;
 
 namespace AzToolsFramework
 {
+    using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
+
     //! ActionManagerInterface
     //! Interface to register and trigger actions in the Editor.
     class ActionManagerInterface
@@ -25,17 +27,15 @@ namespace AzToolsFramework
     public:
         AZ_RTTI(ActionManagerInterface, "{2E2A421E-0842-4F90-9F5C-DDE0C4F820DE}");
 
-        // TODO - Should these return outcomes?
-
         //! Register a new Action Context to the Action Manager.
-        virtual void RegisterActionContext(
+        virtual ActionManagerOperationResult RegisterActionContext(
             QWidget* widget,
             AZStd::string_view identifier,
             AZStd::string_view name,
             AZStd::string_view parentIdentifier) = 0;
 
         //! Register a new Action to the Action Manager.
-        virtual void RegisterAction(
+        virtual ActionManagerOperationResult RegisterAction(
             AZStd::string_view contextIdentifier,
             AZStd::string_view identifier,
             AZStd::string_view name,

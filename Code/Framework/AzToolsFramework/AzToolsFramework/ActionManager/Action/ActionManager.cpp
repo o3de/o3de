@@ -22,7 +22,7 @@ namespace AzToolsFramework
         ClearActionContextMap();
     }
 
-    void ActionManager::RegisterActionContext(
+    ActionManagerOperationResult ActionManager::RegisterActionContext(
         QWidget* widget,
         AZStd::string_view identifier,
         AZStd::string_view name,
@@ -30,14 +30,22 @@ namespace AzToolsFramework
     {
         if (!widget)
         {
-            AZ_Error("Action Manager", false, "Could not register action context \"%s\" to a null widget.", identifier.data());
-            return;
+            return AZ::Failure(
+                AZStd::string::format("Action Manager - Could not register action context \"%s\" to a null widget.", identifier.data())
+            );
         }
 
-        m_actionContexts.insert({ identifier.data(), new EditorActionContext(identifier, name, parentIdentifier, widget) });
+        m_actionContexts.insert(
+            {
+                identifier.data(),
+                new EditorActionContext(identifier, name, parentIdentifier, widget)
+            }
+        );
+
+        return AZ::Success();
     }
 
-    void ActionManager::RegisterAction(
+    ActionManagerOperationResult ActionManager::RegisterAction(
         AZStd::string_view contextIdentifier,
         AZStd::string_view identifier,
         AZStd::string_view name,
@@ -48,13 +56,20 @@ namespace AzToolsFramework
     {
         if (!m_actionContexts.contains(contextIdentifier))
         {
-            AZ_Error(
+            return AZ::Failure(AZStd::string::format(
                 "Action Manager", false, "Could not register action \"%s\" - context \"%s\" has not been registered.",
-                identifier.data(), contextIdentifier.data());
-            return;
+                identifier.data(),
+                contextIdentifier.data()
+            ));
         }
 
-        m_actions.insert({ identifier, EditorAction(m_actionContexts[contextIdentifier]->GetWidget(), identifier, name, description, category, handler) });
+        m_actions.insert(
+            {
+                identifier,
+                EditorAction(m_actionContexts[contextIdentifier]->GetWidget(), identifier, name, description, category, handler)
+            }
+        );
+        return AZ::Success();
     }
 
     QAction* ActionManager::GetAction(AZStd::string_view actionIdentifier)

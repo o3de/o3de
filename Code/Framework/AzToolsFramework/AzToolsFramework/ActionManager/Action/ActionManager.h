@@ -25,12 +25,12 @@ namespace AzToolsFramework
 
     private:
         // ActionManagerInterface overrides ...
-        void RegisterActionContext(
+        ActionManagerOperationResult RegisterActionContext(
             QWidget* widget,
             AZStd::string_view identifier,
             AZStd::string_view name,
             AZStd::string_view parentIdentifier) override;
-        void RegisterAction(
+        ActionManagerOperationResult RegisterAction(
             AZStd::string_view contextIdentifier,
             AZStd::string_view identifier,
             AZStd::string_view name,
