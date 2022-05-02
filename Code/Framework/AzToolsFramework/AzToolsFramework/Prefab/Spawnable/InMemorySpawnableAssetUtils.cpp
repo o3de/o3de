@@ -36,14 +36,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         m_loaderInterface = AZ::Interface<Prefab::PrefabLoaderInterface>::Get();
         AZ_Assert(m_loaderInterface, "InMemorySpawnableAssetProcessor - Could not retrieve instance of PrefabLoaderInterface");
 
-        m_stockProfile = stackProfile;
-        return m_converter.LoadStackProfile(m_stockProfile);
+        m_stackProfile = stackProfile;
+        return m_converter.LoadStackProfile(m_stackProfile);
     }
 
     void InMemorySpawnableAssetProcessor::Deactivate()
     {
         m_assetContainer.ClearAllInMemorySpawnableAssets();
-        m_stockProfile = "";
+        m_stackProfile = "";
         m_loaderInterface = nullptr;
         m_prefabSystemComponentInterface = nullptr;
     }
@@ -53,9 +53,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return m_converter.IsLoaded();
     }
 
-    AZStd::string_view InMemorySpawnableAssetProcessor::GetStockProfile() const
+    AZStd::string_view InMemorySpawnableAssetProcessor::GetStackProfile() const
     {
-        return m_stockProfile;
+        return m_stackProfile;
     }
 
     AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetProcessor::CreateInMemorySpawnableAsset(
@@ -63,7 +63,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         if (!IsActivated())
         {
-            return AZ::Failure(AZStd::string::format("Failed to create a prefab processing stack from key '%.*s'.", AZ_STRING_ARG(m_stockProfile)));
+            return AZ::Failure(AZStd::string::format("Failed to create a prefab processing stack from key '%.*s'.", AZ_STRING_ARG(m_stackProfile)));
         }
 
         if (m_assetContainer.HasInMemorySpawnableAsset(spawnableName))
@@ -119,7 +119,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return CreateInMemorySpawnableAsset(templateId, spawnableName, loadReferencedAssets);
     }
 
-    const AzFramework::InMemorySpawnableAssetContainer& InMemorySpawnableAssetProcessor::GetAssetContainer() const
+    const AzFramework::InMemorySpawnableAssetContainer& InMemorySpawnableAssetProcessor::GetAssetContainerConst() const
     {
         return m_assetContainer;
     }

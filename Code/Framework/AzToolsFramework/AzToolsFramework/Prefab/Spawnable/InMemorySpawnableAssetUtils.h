@@ -32,20 +32,22 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         bool Activate(AZStd::string_view stackProfile);
         void Deactivate();
         bool IsActivated() const;
-        AZStd::string_view GetStockProfile() const;
+        AZStd::string_view GetStackProfile() const;
 
+        //! Converts a prefab template into an in-memory spawnable asset.
+        //! Example use case: convert an unsaved prefab into a spawnable asset to be spawned in editor game mode
         AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult CreateInMemorySpawnableAsset(
             AZStd::string_view prefabFilePath, AZStd::string_view spawnableName, bool loadReferencedAssets = false);
         AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult CreateInMemorySpawnableAsset(
             AzToolsFramework::Prefab::TemplateId templateId, AZStd::string_view spawnableName, bool loadReferencedAssets = false);
 
-        const AzFramework::InMemorySpawnableAssetContainer& GetAssetContainer() const;
+        const AzFramework::InMemorySpawnableAssetContainer& GetAssetContainerConst() const;
         AzFramework::InMemorySpawnableAssetContainer& GetAssetContainer();
 
     private:
         AzFramework::InMemorySpawnableAssetContainer m_assetContainer;
         PrefabConversionUtils::PrefabConversionPipeline m_converter;
-        AZStd::string_view m_stockProfile;
+        AZStd::string_view m_stackProfile;
         PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         PrefabLoaderInterface* m_loaderInterface = nullptr;
     };

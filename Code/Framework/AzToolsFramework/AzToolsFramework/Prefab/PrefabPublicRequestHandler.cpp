@@ -135,12 +135,12 @@ namespace AzToolsFramework
 
         bool PrefabPublicRequestHandler::HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const
         {
-            return m_spawnableAssetContainer.GetAssetContainer().HasInMemorySpawnableAsset(spawnableName);
+            return m_spawnableAssetContainer.GetAssetContainerConst().HasInMemorySpawnableAsset(spawnableName);
         }
 
         AZ::Data::AssetId PrefabPublicRequestHandler::GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const
         {
-            return m_spawnableAssetContainer.GetAssetContainer().GetInMemorySpawnableAssetId(spawnableName);
+            return m_spawnableAssetContainer.GetAssetContainerConst().GetInMemorySpawnableAssetId(spawnableName);
         }
 
         void PrefabPublicRequestHandler::RemoveAllInMemorySpawnableAssets()
