@@ -44,14 +44,19 @@ namespace AzFramework
         SpawnableAssets&& MoveAllInMemorySpawnableAssets();
         const SpawnableAssets& GetAllInMemorySpawnableAssets() const;
 
+        //! Creates an in-memory spawnable asset given a list of product asset data
         CreateSpawnableResult CreateInMemorySpawnableAsset(
             AssetDataInfoContainer& assetDataInfoContainer,
             bool loadReferencedAssets,
-            const AZStd::string& spawnableName);
+            const AZStd::string& rootSpawnableName);
 
+        //! Creates an in-memory spawnable asset given a single spawnable.
+        //! Used when a network server receives in-memory spawnable data from the client
         CreateSpawnableResult CreateInMemorySpawnableAsset(
             AzFramework::Spawnable* spawnable,
-            const AZ::Data::AssetId& assetId);
+            const AZ::Data::AssetId& assetId,
+            bool loadReferencedAssets,
+            const AZStd::string& rootSpawnableName);
 
     private:
         void LoadReferencedAssets(SpawnableAssetData& spawnable);
