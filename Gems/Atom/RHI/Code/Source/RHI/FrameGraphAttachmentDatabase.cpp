@@ -75,36 +75,6 @@ namespace AZ
             const AttachmentId& attachmentId,
             Ptr<Image> image)
         {
-            if (!ValidateAttachmentIsUnregistered(attachmentId))
-            {
-                return ResultCode::InvalidArgument;
-            }
-
-            ImageFrameAttachment* attachment = EmplaceFrameAttachment<ImageFrameAttachment>(attachmentId, AZStd::move(image));
-            m_imageAttachments.emplace_back(attachment);
-            m_importedImageAttachments.emplace_back(attachment);
-            return ResultCode::Success;
-        }
-
-        ResultCode FrameGraphAttachmentDatabase::ImportBuffer(
-            const AttachmentId& attachmentId,
-            Ptr<Buffer> buffer)
-        {
-            if (!ValidateAttachmentIsUnregistered(attachmentId))
-            {
-                return ResultCode::InvalidArgument;
-            }
-
-            BufferFrameAttachment* attachment = EmplaceFrameAttachment<BufferFrameAttachment>(attachmentId, AZStd::move(buffer));
-            m_bufferAttachments.emplace_back(attachment);
-            m_importedBufferAttachments.emplace_back(attachment);
-            return ResultCode::Success;
-        }
-
-        ResultCode FrameGraphAttachmentDatabase::ImportImageIfNotPreviouslyImported(
-            const AttachmentId& attachmentId,
-            Ptr<Image> image)
-        {
             // Only import the attachment if it hasn't already been imported
             if (FindAttachment(attachmentId) == nullptr)
             {
@@ -115,7 +85,7 @@ namespace AZ
             return ResultCode::Success;
         }
 
-        ResultCode FrameGraphAttachmentDatabase::ImportBufferIfNotPreviouslyImported(
+        ResultCode FrameGraphAttachmentDatabase::ImportBuffer(
             const AttachmentId& attachmentId,
             Ptr<Buffer> buffer)
         {
