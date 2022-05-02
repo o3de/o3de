@@ -176,11 +176,11 @@ namespace AZ
         AZ::Color color = GetColorForLogLevel(logLevel);
         if (strcmp(window, AZ::Debug::Trace::GetDefaultSystemWindow()) == 0)
         {
-            AddDebugLog( debugLogString, color);
+            AddDebugLog(debugLogString, color);
         }
         else
         {
-            AddDebugLog( AZStd::string::format("(%s) - %s", window, debugLogString), color);
+            AddDebugLog(AZStd::string::format("(%s) - %s", window, debugLogString), color);
         }
     }
 
