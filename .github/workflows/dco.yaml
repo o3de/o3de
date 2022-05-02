@@ -3,7 +3,7 @@ name: DCO
 on:
   push:
 jobs:
-  check:
+  DCO-Check:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
