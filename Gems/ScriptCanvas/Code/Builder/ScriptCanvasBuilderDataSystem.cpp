@@ -110,7 +110,7 @@ namespace ScriptCanvasBuilder
         AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
         ScriptCanvas::RuntimeAssetPtr asset(assetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>());
         asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-        m_assets.insert({ sourceId, BuilderAssetResult{  BuilderAssetStatus::Pending, asset } });
+        m_assets[sourceId] = BuilderAssetResult{ BuilderAssetStatus::Pending, asset };
         BuilderAssetResult& result = m_assets[sourceId];
         result.data.QueueLoad();
         return result;
@@ -208,7 +208,7 @@ namespace ScriptCanvasBuilder
                 = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(luaAsset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad, {});
             luaAsset.QueueLoad();
             luaAsset.BlockUntilLoadComplete();
-            ReportReady(asset);
+            ReportReady(buildResult.data);
         });
     }
 
