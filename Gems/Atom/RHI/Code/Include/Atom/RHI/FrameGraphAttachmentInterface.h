@@ -53,6 +53,13 @@ namespace AZ
                 return m_attachmentDatabase.ImportImage(attachmentId, image);
             }
 
+            //! Imports a persistent image as an attachment if that image has not already been imported (else does nothing).
+            //! \param imageAttachment The image attachment to import.
+            ResultCode ImportImageIfNotPreviouslyImported(const AttachmentId& attachmentId, Ptr<Image> image)
+            {
+                return m_attachmentDatabase.ImportImageIfNotPreviouslyImported(attachmentId, image);
+            }
+
             //! Imports a swap chain image as an attachment.
             //! \param swapChainAttachment The swap chain attachment to import.
             ResultCode ImportSwapChain(const AttachmentId& attachmentId, Ptr<SwapChain> swapChain)
@@ -65,6 +72,13 @@ namespace AZ
             ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<Buffer> buffer)
             {
                 return m_attachmentDatabase.ImportBuffer(attachmentId, buffer);
+            }
+
+            //! Imports a persistent buffer as an attachment if that buffer has not alraedy been imported (else does nothing).
+            //! \param bufferAttachment The buffer attachment to import.
+            ResultCode ImportBufferIfNotPreviouslyImported(const AttachmentId& attachmentId, Ptr<Buffer> buffer)
+            {
+                return m_attachmentDatabase.ImportBufferIfNotPreviouslyImported(attachmentId, buffer);
             }
 
             //! Creates a transient image as an attachment. The provided attachment id is associated with the new attachment.

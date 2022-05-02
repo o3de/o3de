@@ -52,6 +52,12 @@ namespace AZ
             //! Imports a buffer into the database.
             ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<Buffer> buffer);
 
+            //! Imports an image into the database if it hasn't already been imported, else does nothing.
+            ResultCode ImportImageIfNotPreviouslyImported(const AttachmentId& attachmentId, Ptr<Image> image);
+
+            //! Imports a buffer into the database if it hasn't already been imported, else does nothing.
+            ResultCode ImportBufferIfNotPreviouslyImported(const AttachmentId& attachmentId, Ptr<Buffer> buffer);
+
             //! Creates a transient image and inserts it into the database.
             ResultCode CreateTransientImage(const TransientImageDescriptor& descriptor);
 

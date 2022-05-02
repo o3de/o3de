@@ -101,6 +101,34 @@ namespace AZ
             return ResultCode::Success;
         }
 
+        ResultCode FrameGraphAttachmentDatabase::ImportImageIfNotPreviouslyImported(
+            const AttachmentId& attachmentId,
+            Ptr<Image> image)
+        {
+            // Only import the attachment if it hasn't already been imported
+            if (FindAttachment(attachmentId) == nullptr)
+            {
+                ImageFrameAttachment* attachment = EmplaceFrameAttachment<ImageFrameAttachment>(attachmentId, AZStd::move(image));
+                m_imageAttachments.emplace_back(attachment);
+                m_importedImageAttachments.emplace_back(attachment);
+            }
+            return ResultCode::Success;
+        }
+
+        ResultCode FrameGraphAttachmentDatabase::ImportBufferIfNotPreviouslyImported(
+            const AttachmentId& attachmentId,
+            Ptr<Buffer> buffer)
+        {
+            // Only import the attachment if it hasn't already been imported
+            if (FindAttachment(attachmentId) == nullptr)
+            {
+                BufferFrameAttachment* attachment = EmplaceFrameAttachment<BufferFrameAttachment>(attachmentId, AZStd::move(buffer));
+                m_bufferAttachments.emplace_back(attachment);
+                m_importedBufferAttachments.emplace_back(attachment);
+            }
+            return ResultCode::Success;
+        }
+
         ResultCode FrameGraphAttachmentDatabase::CreateTransientImage(const TransientImageDescriptor& descriptor)
         {
             if (!ValidateAttachmentIsUnregistered(descriptor.m_attachmentId))
