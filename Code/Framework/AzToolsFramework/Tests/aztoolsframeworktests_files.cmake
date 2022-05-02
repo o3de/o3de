@@ -8,6 +8,9 @@
 
 set(FILES
     Main.cpp
+    ActionManager/ActionManagerFixture.cpp
+    ActionManager/ActionManagerFixture.h
+    ActionManager/ActionManagerTests.cpp
     ArchiveTests.cpp
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp

@@ -25,6 +25,8 @@ namespace AzToolsFramework
     public:
         AZ_RTTI(ActionManagerInterface, "{2E2A421E-0842-4F90-9F5C-DDE0C4F820DE}");
 
+        // TODO - Should these return outcomes?
+
         //! Register a new Action Context to the Action Manager.
         virtual void RegisterActionContext(
             QWidget* widget,
