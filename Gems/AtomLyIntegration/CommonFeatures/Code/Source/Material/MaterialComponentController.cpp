@@ -467,9 +467,12 @@ namespace AZ
         void MaterialComponentController::SetMaterialOverride(
             const MaterialAssignmentId& materialAssignmentId, const AZ::Data::AssetId& materialAssetId)
         {
-            m_configuration.m_materials[materialAssignmentId].m_materialAsset =
-                AZ::Data::Asset<AZ::RPI::MaterialAsset>(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
-            LoadMaterials();
+            auto& materialAsset = m_configuration.m_materials[materialAssignmentId].m_materialAsset;
+            if (materialAsset.GetId() != materialAssetId)
+            {
+                materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
+                LoadMaterials();
+            }
         }
 
         AZ::Data::AssetId MaterialComponentController::GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const

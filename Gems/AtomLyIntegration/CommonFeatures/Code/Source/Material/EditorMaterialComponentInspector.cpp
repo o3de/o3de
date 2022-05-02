@@ -62,11 +62,14 @@ namespace AZ
             }
 
             bool MaterialPropertyInspector::LoadMaterial(
-                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId)
+                const AZ::EntityId& entityId,
+                const AzToolsFramework::EntityIdSet& entityIdsToEdit,
+                const AZ::Render::MaterialAssignmentId& materialAssignmentId)
             {
                 UnloadMaterial();
 
                 m_entityId = entityId;
+                m_entityIdsToEdit = entityIdsToEdit;
                 m_materialAssignmentId = materialAssignmentId;
                 MaterialComponentNotificationBus::Handler::BusDisconnect();
                 MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
@@ -421,19 +424,26 @@ namespace AZ
                     return;
                 }
 
-                MaterialComponentRequestBus::Event(
-                    m_entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
-                    m_editData.m_materialPropertyOverrideMap);
+                for (const AZ::EntityId& entityId : m_entityIdsToEdit)
+                {
+                    MaterialComponentRequestBus::Event(
+                        entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
+                        m_editData.m_materialPropertyOverrideMap);
+                }
 
                 if (commitChanges)
                 {
                     AzToolsFramework::ScopedUndoBatch undoBatch("Material slot changed.");
-                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, m_entityId);
 
-                    m_internalEditNotification = true;
-                    MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialsEdited);
-                    m_internalEditNotification = false;
+                    for (const AZ::EntityId& entityId : m_entityIdsToEdit)
+                    {
+                        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
+
+                        m_internalEditNotification = true;
+                        MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
+                        m_internalEditNotification = false;
+                    }
                 }
 
                 // m_updatePreview should be set to true here for continuous preview updates as slider/color properties change but needs
@@ -671,9 +681,12 @@ namespace AZ
 
                 QMenu menu(this);
                 action = menu.addAction("Clear Overrides", [this] {
-                    MaterialComponentRequestBus::Event(
-                        m_entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
-                        MaterialPropertyOverrideMap());
+                    for (const AZ::EntityId& entityId : m_entityIdsToEdit)
+                    {
+                        MaterialComponentRequestBus::Event(
+                            entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
+                            MaterialPropertyOverrideMap());
+                    }
                     m_updateUI = true;
                     m_updatePreview = true;
                 });
@@ -819,7 +832,7 @@ namespace AZ
                 }
                 else
                 {
-                    LoadMaterial(m_entityId, m_materialAssignmentId);
+                    LoadMaterial(m_entityId, m_entityIdsToEdit, m_materialAssignmentId);
                 }
             }
         } // namespace EditorMaterialComponentInspector

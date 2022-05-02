@@ -54,7 +54,10 @@ namespace AZ
         private:
             //! EditorMaterialSystemComponentRequestBus::Handler overrides...
             void OpenMaterialEditor(const AZStd::string& sourcePath) override;
-            void OpenMaterialInspector(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
+            void OpenMaterialInspector(
+                const AZ::EntityId& entityId,
+                const AzToolsFramework::EntityIdSet& entityIds,
+                const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
             void RenderMaterialPreview(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
             QPixmap GetRenderedMaterialPreview(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) const override;

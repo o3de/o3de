@@ -18,10 +18,13 @@
 #include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/std/ranges/elements_view.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace AZ
@@ -158,8 +161,44 @@ namespace AZ
 
                 return result && AZ::RPI::JsonUtils::SaveObjectToFile(path, exportData);
             }
+
+            AzToolsFramework::EntityIdSet GetSelectedEntitiesFromActiveInspector()
+            {
+                AzToolsFramework::EntityIdList entityIds;
+                AzToolsFramework::EntityPropertyEditorRequestBus::Broadcast(
+                    &AzToolsFramework::EntityPropertyEditorRequestBus::Events::GetSelectedAndPinnedEntities, entityIds);
+                return AzToolsFramework::EntityIdSet(entityIds.begin(), entityIds.end());
+            }
+
+            AzToolsFramework::EntityIdSet GetSelectedEntitiesFromActiveInspectorMatchingMaterialSlots(const AZ::EntityId& focusedEntityId)
+            {
+                MaterialAssignmentMap originalMaterialSlots;
+                MaterialComponentRequestBus::EventResult(
+                    originalMaterialSlots, focusedEntityId, &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments);
+
+                AzToolsFramework::EntityIdSet entityIds = GetSelectedEntitiesFromActiveInspector();
+                entityIds.insert(focusedEntityId);
+
+                AZStd::erase_if(entityIds, [&](const AZ::EntityId& entityId) {
+                    MaterialAssignmentMap comparedMaterialSlots;
+                    MaterialComponentRequestBus::EventResult(
+                        comparedMaterialSlots, entityId, &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments);
+                    if (originalMaterialSlots.size() != comparedMaterialSlots.size())
+                    {
+                        return true;
+                    }
+                    for (const auto& slotPair : originalMaterialSlots)
+                    {
+                        const auto& slotItr = comparedMaterialSlots.find(slotPair.first);
+                        if (slotItr == comparedMaterialSlots.end())
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+                return entityIds;
+            }
         } // namespace EditorMaterialComponentUtil
     } // namespace Render
 } // namespace AZ
-
-//#include <AtomLyIntegration/CommonFeatures/moc_EditorMaterialComponentUtil.cpp>

@@ -32,7 +32,9 @@ namespace AZ
 
             //! Open material instance editor
             virtual void OpenMaterialInspector(
-                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;
+                const AZ::EntityId& entityId,
+                const AzToolsFramework::EntityIdSet& entityIds,
+                const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;
 
             //! Generate a material preview image
             virtual void RenderMaterialPreview(

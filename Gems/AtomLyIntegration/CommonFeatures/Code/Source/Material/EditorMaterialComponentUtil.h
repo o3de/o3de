@@ -15,6 +15,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 
 namespace AZ
 {
@@ -38,6 +39,9 @@ namespace AZ
 
             bool LoadMaterialEditDataFromAssetId(const AZ::Data::AssetId& assetId, MaterialEditData& editData);
             bool SaveSourceMaterialFromEditData(const AZStd::string& path, const MaterialEditData& editData);
+
+            AzToolsFramework::EntityIdSet GetSelectedEntitiesFromActiveInspector();
+            AzToolsFramework::EntityIdSet GetSelectedEntitiesFromActiveInspectorMatchingMaterialSlots(const AZ::EntityId& focusedEntityId);
         } // namespace EditorMaterialComponentUtil
     } // namespace Render
 } // namespace AZ

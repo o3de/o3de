@@ -47,7 +47,10 @@ namespace AZ
                 MaterialPropertyInspector(QWidget* parent = nullptr);
                 ~MaterialPropertyInspector() override;
 
-                bool LoadMaterial(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId);
+                bool LoadMaterial(
+                    const AZ::EntityId& entityId,
+                    const AzToolsFramework::EntityIdSet& entityIdsToEdit,
+                    const AZ::Render::MaterialAssignmentId& materialAssignmentId);
                 void UnloadMaterial();
                 bool IsLoaded() const;
 
@@ -118,6 +121,7 @@ namespace AZ
                 const char* GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const;
 
                 AZ::EntityId m_entityId;
+                AzToolsFramework::EntityIdSet m_entityIdsToEdit;
                 AZ::Render::MaterialAssignmentId m_materialAssignmentId;
                 EditorMaterialComponentUtil::MaterialEditData m_editData;
                 AZ::Data::Instance<AZ::RPI::Material> m_materialInstance = {};

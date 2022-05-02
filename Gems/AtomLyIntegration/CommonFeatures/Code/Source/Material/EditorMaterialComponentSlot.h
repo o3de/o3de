@@ -45,10 +45,10 @@ namespace AZ
             bool HasSourceData() const;
 
             //! Assign a new material override asset
-            void SetAsset(const Data::AssetId& assetId);
+            void SetAsset(const Data::Asset<RPI::MaterialAsset>& asset);
 
             //! Assign a new material override asset
-            void SetAsset(const Data::Asset<RPI::MaterialAsset>& asset);
+            void SetAssetId(const Data::AssetId& assetId);
 
             //! Remove material and property overrides
             void Clear();
@@ -59,10 +59,10 @@ namespace AZ
             //! Remove property overrides
             void ClearOverrides();
 
-            void OpenMaterialExporter();
             void OpenMaterialEditor() const;
-            void OpenMaterialInspector();
-            void OpenUvNameMapInspector();
+            void OpenMaterialExporter(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
+            void OpenMaterialInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
+            void OpenUvNameMapInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
 
             void ExportMaterial(const AZStd::string& exportPath, bool overwrite);
 
@@ -72,8 +72,8 @@ namespace AZ
 
         private:
             void OpenPopupMenu(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType);
-            void OnMaterialChanged() const;
-            void OnDataChanged() const;
+            void OnMaterialChangedFromRPE() const;
+            void OnDataChanged(const AzToolsFramework::EntityIdSet& entityIdsToEdit) const;
             mutable bool m_updatePreview = true;
         };
 
