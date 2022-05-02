@@ -354,4 +354,3 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
-#pragma optimize("", on)
