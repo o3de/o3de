@@ -104,10 +104,7 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////////////////////////
         // AssetBus
         /// Called before an asset reload has started.
-        void OnAssetPreReload(Data::Asset<Data::AssetData> asset) override;
         void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-        void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
-        void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, bool isSuccessful);
         //////////////////////////////////////////////////////////////////////////////////////////////
         void LoadReadyAsset(Data::Asset<Data::AssetData> asset);
 

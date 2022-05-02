@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_SCRIPT_COMPONENT_H
-#define AZ_SCRIPT_COMPONENT_H
+#pragma once
 
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
@@ -114,27 +113,18 @@ namespace AzFramework
         void Deactivate() override;
         //////////////////////////////////////////////////////////////////////////
 
-        /// Load script (unless already by other instances) and creates the script instance into the VM
-        void LoadScript();
-        /// Removes the script instance and unloads the script (unless needed by other instances)
-        void UnloadScript();
-
         /// Loads the script into the context/VM, \returns true if the script is loaded
         bool LoadInContext();
 
         // Create script instance table.
         void CreateEntityTable();
-        void DestroyEntityTable();
-
+        
         void CreatePropertyGroup(const ScriptPropertyGroup& group, int propertyGroupTableIndex, int parentIndex, int metatableIndex, bool isRoot);
 
-        AZ::ScriptContext*               m_context;              ///< Context in which the script will be running
+        AZ::ScriptContext*                  m_context;              ///< Context in which the script will be running
         AZ::ScriptContextId                 m_contextId;            ///< Id of the script context.
         AZ::Data::Asset<AZ::ScriptAsset>    m_script;               ///< Reference to the script asset used for this component.
         int                                 m_table;                ///< Cached table index
         ScriptPropertyGroup                 m_properties;           ///< List with all properties that were tweaked in the editor and should override values in the m_sourceScriptName class inside m_script.
     };        
 }   // namespace AZ
-
-#endif  // AZ_SCRIPT_COMPONENTH_
-#pragma once

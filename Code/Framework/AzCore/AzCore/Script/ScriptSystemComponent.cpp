@@ -758,17 +758,6 @@ void ScriptSystemComponent::GetAssetTypeExtensions(AZStd::vector<AZStd::string>&
 }
 
 //=========================================================================
-// OnAssetPreReload
-//=========================================================================
-void ScriptSystemComponent::OnAssetPreReload(Data::Asset<Data::AssetData> asset)
-{
-//     SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-//         , "ScriptSystemComponent::OnAssetPreReload: calling ClearAssetReferences: %s-%s"
-//         , asset.GetHint().c_str()
-//         , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-}
-
-//=========================================================================
 // OnAssetReloaded
 //=========================================================================
 void ScriptSystemComponent::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
@@ -779,29 +768,6 @@ void ScriptSystemComponent::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
     ClearAssetReferences(asset.GetId());
     LoadReadyAsset(asset);
-}
-
-void ScriptSystemComponent::OnAssetReady(Data::Asset<Data::AssetData> asset)
-{
-    // this should never be necessary,
-    // the system only "loads" what it is given (ready assets)
-    // and it only needs to listen for reloads
-
-//      SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-//          , "ScriptSystemComponent::OnAssetReady calling ClearAssetReferences and LoadReadyAsset: %s-%s"
-//          , asset.GetHint().c_str()
-//          , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-//      ClearAssetReferences(asset.GetId());
-//     LoadReadyAsset(asset);
-}
-
-void ScriptSystemComponent::OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, bool /*isSuccessful*/)
-{
-    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
-        , "ScriptSystemComponent::OnAssetSaved: calling ClearReferences: %s-%s"
-        , asset.GetHint().c_str()
-        , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-    ClearAssetReferences(asset.GetId());
 }
 
 void ScriptSystemComponent::LoadReadyAsset(Data::Asset<Data::AssetData> asset)

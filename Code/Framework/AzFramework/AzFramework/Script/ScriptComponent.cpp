@@ -500,7 +500,16 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::Activate()
     {
-        LoadScript();
+        AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
+        AZ_Error("LuaComponent", m_script.GetAutoLoadBehavior() == AZ::Data::AssetLoadBehavior::PreLoad, "Runtime LuaComponent script asset not set to Preload");
+        AZ_Error("LuaComponent", m_script.IsReady(), "Runtime LuaComponent script asset not preloaded and ready");
+
+        // Load the script, find the base table...
+        if (LoadInContext())
+        {
+            // ...create the entity table, find the Activate/Deactivate functions in the script and call them
+            CreateEntityTable();
+        }
     }
 
     //=========================================================================
@@ -509,32 +518,40 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::Deactivate()
     {
-       UnloadScript();
-    }
-
-    //=========================================================================
-    // LoadScript
-    //=========================================================================
-    void ScriptComponent::LoadScript()
-    {
-        AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
-
-        // Load the script, find the base table, create the entity table
-        // find the Activate/Deactivate functions in the script and call them
-        if (LoadInContext())
-        {
-            CreateEntityTable();
-        }
-    }
-
-    //=========================================================================
-    // UnloadScript
-    //=========================================================================
-    void ScriptComponent::UnloadScript()
-    {
         AZ_PROFILE_SCOPE(Script, "Unload: %s", m_script.GetHint().c_str());
 
-        DestroyEntityTable();
+        if (m_table != LUA_NOREF)
+        {
+            lua_State* lua = m_context->NativeContext();
+            LSV_BEGIN(lua, 0);
+
+            // call OnDeactivate
+            // load table
+            lua_rawgeti(lua, LUA_REGISTRYINDEX, m_table);
+            if (lua_getmetatable(lua, -1) == 0) // load the base table
+            {
+                AZ_Assert(false, "This should not happen, all entity table should have the base table as a metatable!");
+            }
+            // cache
+            lua_pushliteral(lua, "OnDeactivate");
+            lua_rawget(lua, -2); // ScriptTable[OnDeactivte]
+            if (lua_isfunction(lua, -1))
+            {
+                AZ_PROFILE_SCOPE(Script, "OnDeactivate");
+
+                lua_pushvalue(lua, -3); // push the entity table as the only argument
+                AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnDeactivate
+            }
+            else
+            {
+                lua_pop(lua, 1); // remove the OnDeactivate result
+            }
+            lua_pop(lua, 2); // remove the base table and the entity table
+
+            // release table reference
+            luaL_unref(lua, LUA_REGISTRYINDEX, m_table);
+            m_table = LUA_NOREF;
+        }
     }
 
     //=========================================================================
@@ -735,45 +752,6 @@ namespace AzFramework
         }
 
         lua_pop(lua, 2); // remove the base property table and base script table
-    }
-
-    //=========================================================================
-    // DestroyEntityTable
-    //=========================================================================
-    void ScriptComponent::DestroyEntityTable()
-    {
-        if (m_table != LUA_NOREF)
-        {
-            lua_State* lua = m_context->NativeContext();
-            LSV_BEGIN(lua, 0);
-
-            // call OnDeactivate
-            // load table
-            lua_rawgeti(lua, LUA_REGISTRYINDEX, m_table);
-            if (lua_getmetatable(lua, -1) == 0) // load the base table
-            {
-                AZ_Assert(false, "This should not happen, all entity table should have the base table as a metatable!");
-            }
-            // cache
-            lua_pushliteral(lua, "OnDeactivate");
-            lua_rawget(lua, -2); // ScriptTable[OnDeactivte]
-            if (lua_isfunction(lua, -1))
-            {
-                AZ_PROFILE_SCOPE(Script, "OnDeactivate");
-
-                lua_pushvalue(lua, -3); // push the entity table as the only argument
-                AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnDeactivate
-            }
-            else
-            {
-                lua_pop(lua, 1); // remove the OnDeactivate result
-            }
-            lua_pop(lua, 2); // remove the base table and the entity table
-
-            // release table reference
-            luaL_unref(lua, LUA_REGISTRYINDEX, m_table);
-            m_table = LUA_NOREF;
-        }
     }
 
     //=========================================================================
