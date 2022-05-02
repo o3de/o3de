@@ -14,7 +14,6 @@
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include <MysticQt/Source/DialogStack.h>
 #include "MotionEventPresetsWidget.h"
-#include "MotionEventWidget.h"
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
@@ -65,7 +64,6 @@ namespace EMStudio
     public slots:
         void ReInit();
         void MotionSelectionChanged();
-        void UpdateMotionEventWidget();
         void WindowReInit(bool visible);
         void OnEventPresetDropped(QPoint position);
         bool CheckIfIsPresetReadyToDrop();
@@ -82,7 +80,6 @@ namespace EMStudio
 
         MysticQt::DialogStack*          m_dialogStack;
         MotionEventPresetsWidget*       m_motionEventPresetsWidget;
-        MotionEventWidget*              m_motionEventWidget;
 
         TimeViewPlugin*                 m_timeViewPlugin;
         TrackHeaderWidget*              m_trackHeaderWidget;

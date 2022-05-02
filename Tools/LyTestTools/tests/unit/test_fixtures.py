@@ -87,9 +87,8 @@ class TestFixtures(object):
         mock_config.getoption.return_value = None
 
         expected = os.path.join(mock_cwd,
-                                'TestResults',
-                                '2019-10-11T00-00-00-000000',
-                                'pytest_results')
+                                'pytest_results',
+                                '2019-10-11T00-00-00-000000')
         actual = test_tools_fixtures._get_output_path(mock_config)
 
         assert actual == expected
