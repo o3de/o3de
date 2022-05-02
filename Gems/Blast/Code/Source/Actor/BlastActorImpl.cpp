@@ -166,7 +166,7 @@ namespace Blast
         return m_family;
     }
 
-    Nv::Blast::TkActor& BlastActorImpl::GetTkActor() const
+    const Nv::Blast::TkActor& BlastActorImpl::GetTkActor() const
     {
         return m_tkActor;
     }

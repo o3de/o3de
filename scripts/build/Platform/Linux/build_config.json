@@ -153,6 +153,9 @@
   },
   "asset_profile_nounity": {
     "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
     "COMMAND": "build_asset_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
@@ -287,11 +290,17 @@
         "CMAKE_TARGET": "install"
     }
   },
-  "installer": {
+  "installer_pipe": { 
     "TAGS": [
       "nightly-clean",
       "nightly-installer"
     ],
+    "steps": [
+      "installer"
+    ]
+  },
+  "installer": {
+    "TAGS": [],
     "PIPELINE_ENV":{
       "NODE_LABEL":"linux-707531fc7-packaging"
     },
@@ -345,7 +354,8 @@
     },
     "COMMAND": "deploy_cdk_applications.sh",
     "PARAMETERS": {
-      "NVM_VERSION": "v0.39.1"
+      "NVM_VERSION": "v0.39.1",
+      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
     }
   },
   "awsi_destruction": {
@@ -355,7 +365,8 @@
     },
     "COMMAND": "destroy_cdk_applications.sh",
     "PARAMETERS": {
-      "NVM_VERSION": "v0.39.1"
+      "NVM_VERSION": "v0.39.1",
+      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
     }
   }
 }

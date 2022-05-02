@@ -20,7 +20,6 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-
 namespace EMStudio
 {
     MotionEventsPlugin::MotionEventsPlugin()
@@ -31,7 +30,6 @@ namespace EMStudio
         , m_clearSelectionCallback(nullptr)
         , m_dialogStack(nullptr)
         , m_motionEventPresetsWidget(nullptr)
-        , m_motionEventWidget(nullptr)
         , m_timeViewPlugin(nullptr)
         , m_trackHeaderWidget(nullptr)
         , m_trackDataWidget(nullptr)
@@ -40,7 +38,6 @@ namespace EMStudio
         , m_motion(nullptr)
     {
     }
-
 
     MotionEventsPlugin::~MotionEventsPlugin()
     {
@@ -54,19 +51,11 @@ namespace EMStudio
         delete m_clearSelectionCallback;
     }
 
-
     void MotionEventsPlugin::Reflect(AZ::ReflectContext* context)
     {
         MotionEventPreset::Reflect(context);
         MotionEventPresetManager::Reflect(context);
     }
-
-    // clone the log window
-    EMStudioPlugin* MotionEventsPlugin::Clone()
-    {
-        return new MotionEventsPlugin();
-    }
-
 
     // on before remove plugin
     void MotionEventsPlugin::OnBeforeRemovePlugin(uint32 classID)
@@ -109,12 +98,7 @@ namespace EMStudio
         m_dialogStack->Add(m_motionEventPresetsWidget, "Motion Event Presets", false, true);
         connect(m_dock, &QDockWidget::visibilityChanged, this, &MotionEventsPlugin::WindowReInit);
 
-        // create the motion event properties widget
-        m_motionEventWidget = new MotionEventWidget(m_dialogStack);
-        m_dialogStack->Add(m_motionEventWidget, "Motion Event Properties", false, true);
-
         ValidatePluginLinks();
-        UpdateMotionEventWidget();
 
         return true;
     }
@@ -132,7 +116,6 @@ namespace EMStudio
                 m_trackHeaderWidget  = m_timeViewPlugin->GetTrackHeaderWidget();
 
                 connect(m_trackDataWidget, &TrackDataWidget::MotionEventPresetsDropped, this, &MotionEventsPlugin::OnEventPresetDropped);
-                connect(m_timeViewPlugin, &TimeViewPlugin::SelectionChanged, this, &MotionEventsPlugin::UpdateMotionEventWidget);
                 connect(this, &MotionEventsPlugin::OnColorChanged, m_timeViewPlugin, &TimeViewPlugin::ReInit);
             }
         }
@@ -165,9 +148,6 @@ namespace EMStudio
     void MotionEventsPlugin::ReInit()
     {
         ValidatePluginLinks();
-
-        // update the selection array as well as the motion event widget
-        UpdateMotionEventWidget();
     }
 
 
@@ -257,27 +237,6 @@ namespace EMStudio
             }
         }
     }
-
-
-    void MotionEventsPlugin::UpdateMotionEventWidget()
-    {
-        if (!m_motionEventWidget || !m_timeViewPlugin)
-        {
-            return;
-        }
-
-        m_timeViewPlugin->UpdateSelection();
-        if (m_timeViewPlugin->GetNumSelectedEvents() != 1)
-        {
-            m_motionEventWidget->ReInit();
-        }
-        else
-        {
-            EventSelectionItem selectionItem = m_timeViewPlugin->GetSelectedEvent(0);
-            m_motionEventWidget->ReInit(selectionItem.m_motion, selectionItem.GetMotionEvent());
-        }
-    }
-
 
     // callbacks
     bool ReInitMotionEventsPlugin()

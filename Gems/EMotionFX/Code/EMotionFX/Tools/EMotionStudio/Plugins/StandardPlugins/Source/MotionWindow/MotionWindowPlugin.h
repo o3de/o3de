@@ -11,7 +11,6 @@
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
-#include <MysticQt/Source/DialogStack.h>
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
@@ -28,8 +27,6 @@ namespace EMStudio
     // forward declaration
     class MotionListWindow;
     class MotionPropertiesWindow;
-    class MotionExtractionWindow;
-    class MotionRetargetingWindow;
     class SaveDirtyMotionFilesCallback;
 
     class MotionWindowPlugin
@@ -48,18 +45,15 @@ namespace EMStudio
         ~MotionWindowPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override     { return MCORE_DATE; }
         const char* GetName() const override            { return "Motions"; }
         uint32 GetClassID() const override              { return MotionWindowPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override     { return "O3DE"; }
-        float GetVersion() const override               { return 1.0f;  }
         bool GetIsClosable() const override             { return true;  }
         bool GetIsFloatable() const override            { return true;  }
         bool GetIsVertical() const override             { return false; }
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new MotionWindowPlugin(); }
 
         void LegacyRender(RenderPlugin* renderPlugin, EMStudioPlugin::RenderInfo* renderInfo) override;
 
@@ -84,8 +78,6 @@ namespace EMStudio
 
         static AZStd::vector<EMotionFX::MotionInstance*>& GetSelectedMotionInstances();
 
-        MCORE_INLINE MotionRetargetingWindow* GetMotionRetargetingWindow()                          { return m_motionRetargetingWindow; }
-        MCORE_INLINE MotionExtractionWindow* GetMotionExtractionWindow()                            { return m_motionExtractionWindow; }
         MCORE_INLINE MotionListWindow* GetMotionListWindow()                                        { return m_motionListWindow; }
         MCORE_INLINE const char* GetDefaultNodeSelectionLabelText()                                 { return "Click to select node"; }
 
@@ -99,12 +91,10 @@ namespace EMStudio
     public slots:
         void UpdateInterface();
         void UpdateMotions();
-        void VisibilityChanged(bool visible);
         void OnAddMotions();
         void OnClearMotions();
         void OnRemoveMotions();
         void OnSave();
-
 
     private:
         void ClearMotionEntries();
@@ -123,18 +113,13 @@ namespace EMStudio
 
         AZStd::vector<MotionTableEntry*>                m_motionEntries;
 
-        MysticQt::DialogStack*                          m_dialogStack;
         MotionListWindow*                               m_motionListWindow;
         MotionPropertiesWindow*                         m_motionPropertiesWindow;
-        MotionExtractionWindow*                         m_motionExtractionWindow;
-        MotionRetargetingWindow*                        m_motionRetargetingWindow;
 
         SaveDirtyMotionFilesCallback*                   m_dirtyFilesCallback;
 
         QAction*                                        m_addMotionsAction;
         QAction*                                        m_saveAction;
-
-        QLabel*                                         m_motionNameLabel;
 
         static AZStd::vector<EMotionFX::MotionInstance*> s_internalMotionInstanceSelection;
     };

@@ -32,6 +32,10 @@ class TestUtils(TestAutomationBase):
         unexpected_lines = ["Assert"]
         self._run_test(request, workspace, editor, physmaterial_editor_test_module, expected_lines, unexpected_lines)
 
+    def test_UtilTest_Tracer_PicksErrorsAndWarnings(self, request, workspace, launcher_platform, editor):
+        from .utils import UtilTest_Tracer_PicksErrorsAndWarnings as testcase_module
+        self._run_test(request, workspace, editor, testcase_module, [], [])
+
     def test_FileManagement_FindingFiles(self, workspace, launcher_platform):
         """
         Tests the functionality of "searching for files" with FileManagement._find_files()

@@ -33,6 +33,8 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DisplayMapper/DisplayMapperComponentBus.h
@@ -41,6 +43,7 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/EditorHDRColorGradingBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoBus.h
@@ -58,6 +61,7 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/GradientWeightModifier/GradientWeightModifierComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/ScreenSpace/DeferredFogComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/ScreenSpace/DeferredFogBus.h
+    Include/AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/PhysicalSkyBus.h

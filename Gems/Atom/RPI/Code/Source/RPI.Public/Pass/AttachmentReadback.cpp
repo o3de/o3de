@@ -176,7 +176,7 @@ namespace AZ
 
         bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName)
         {
-            if (AZ::RHI::IsNullRenderer())
+            if (AZ::RHI::IsNullRHI())
             {
                 return false;
             }

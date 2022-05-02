@@ -381,9 +381,14 @@ namespace AssetBuilderSDK
         //! Type of Job Dependency (order or fingerprint)
         JobDependencyType m_type;
 
+        //! An optional list of Asset SubIds to filter the dependency to.  Only products in this list which have changed will cause
+        //! CreateJobs to be called. If the list is empty, AP will assume every emitted product will trigger the dependency.
+        AZStd::vector<AZ::u32> m_productSubIds;
+
         JobDependency() = default;
         JobDependency(const AZStd::string& jobKey, const AZStd::string& platformIdentifier, const JobDependencyType& type, const SourceFileDependency& sourceFile);
 
+        AZStd::string ConcatenateSubIds() const;
         bool operator==(const JobDependency& other) const;
 
         static void Reflect(AZ::ReflectContext* context);

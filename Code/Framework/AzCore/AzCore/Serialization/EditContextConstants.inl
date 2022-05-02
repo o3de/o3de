@@ -124,6 +124,7 @@ namespace AZ
             //! Container attribute that is used to override labels for its elements given the index of the element
             const static AZ::Crc32 IndexedChildNameLabelOverride = AZ_CRC("IndexedChildNameLabelOverride", 0x5f313ac2);
             const static AZ::Crc32 DescriptionTextOverride = AZ_CRC("DescriptionTextOverride", 0x608b64a8);
+            const static AZ::Crc32 ContainerReorderAllow = AZ_CRC_CE("ContainerReorderAllow");
 
             const static AZ::Crc32 PrimaryAssetType = AZ_CRC("PrimaryAssetType", 0xa400a5ce);
             const static AZ::Crc32 DynamicElementType = AZ_CRC("DynamicElementType", 0x7c0b82f9);
@@ -135,6 +136,8 @@ namespace AZ
             const static AZ::Crc32 ShowProductAssetFileName = AZ_CRC("ShowProductAssetFileName");
             //! Regular expression pattern filter for source files
             const static AZ::Crc32 SourceAssetFilterPattern = AZ_CRC_CE("SourceAssetFilterPattern");
+            //! Extension for a product asset to search for
+            const static AZ::Crc32 ProductAssetExtension = AZ_CRC_CE("ProductAssetExtension");
 
             //! Component icon attributes
             const static AZ::Crc32 Icon = AZ_CRC("Icon", 0x659429db);

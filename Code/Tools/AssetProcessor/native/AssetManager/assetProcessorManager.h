@@ -380,7 +380,7 @@ namespace AssetProcessor
 
         //! Checks whether the AP is aware of any source file that has indicated the inputted
         //! source file as its dependency, and if found do we need to put that file back in the asset pipeline queue again
-        QStringList GetSourceFilesWhichDependOnSourceFile(const QString& sourcePath);
+        QStringList GetSourceFilesWhichDependOnSourceFile(const QString& sourcePath, const ProductInfoList& updatedProducts);
 
         /** Given a BuilderSDK SourceFileDependency, try to find out what actual database source name is.
         *   If it cannot be resolved but a UUID is available, the string result will contain the UUID (and we will return true).

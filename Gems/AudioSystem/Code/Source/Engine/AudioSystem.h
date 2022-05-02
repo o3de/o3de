@@ -11,17 +11,17 @@
 
 #include <ATL.h>
 #include <AudioAllocators.h>
-#include <AudioInternalInterfaces.h>
 
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 
 #include <AzCore/std/parallel/binary_semaphore.h>
-#include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/parallel/thread.h>
 
-#define PROVIDE_GETNAME_SUPPORT
+#if !defined(AUDIO_RELEASE)
+    #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#endif // !AUDIO_RELEASE
 
 AZ_DECLARE_BUDGET(Audio);
 
@@ -52,34 +52,17 @@ namespace Audio
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    class AudioSystemInternalRequests
-        : public AZ::EBusTraits
-    {
-    public:
-        virtual ~AudioSystemInternalRequests() = default;
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-        // EBusTraits - Single Bus Address, Single Handler, Mutex, Queued
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const bool EnableEventQueue = true;
-        using MutexType = AZStd::recursive_mutex;
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-
-        virtual void ProcessRequestByPriority(CAudioRequestInternal audioRequestData) = 0;
-    };
-
-    using AudioSystemInternalRequestBus = AZ::EBus<AudioSystemInternalRequests>;
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     class CAudioSystem
-        : public IAudioSystem
-        , public AudioSystemInternalRequestBus::Handler
+        : public AZ::Interface<Audio::IAudioSystem>::Registrar
+        #if !defined(AUDIO_RELEASE)
+        , AzFramework::DebugDisplayEventBus::Handler
+        #endif
     {
         friend class CAudioThread;
 
     public:
-        AUDIO_SYSTEM_CLASS_ALLOCATOR(Audio::CAudioSystem)
+        AZ_RTTI(CAudioSystem, "{96254647-000D-4896-93C4-92E0F258F21D}", IAudioSystem);
+        AZ_CLASS_ALLOCATOR(CAudioSystem, AZ::SystemAllocator, 0);
 
         CAudioSystem();
         ~CAudioSystem() override;
@@ -90,15 +73,12 @@ namespace Audio
         bool Initialize() override;
         void Release() override;
 
-        void PushRequest(const SAudioRequest& audioRequestData) override;
-        void PushRequestBlocking(const SAudioRequest& audioRequestData) override;
-        void PushRequestThreadSafe(const SAudioRequest& audioRequestData) override;
-        void ProcessRequestByPriority(CAudioRequestInternal audioRequestInternalData) override;
+        void PushRequest(AudioRequestVariant&& request) override;
+        void PushRequests(AudioRequestsQueue& requests) override;
+        void PushRequestBlocking(AudioRequestVariant&& request) override;
+        void PushCallback(AudioRequestVariant&& callback) override;
 
         void ExternalUpdate() override;
-
-        void AddRequestListener(AudioRequestCallbackType func, void* const callbackOwner, EAudioRequestType const requestType = eART_AUDIO_ALL_REQUESTS, TATLEnumFlagsType const specificRequestMask = ALL_AUDIO_REQUEST_SPECIFIC_TYPE_FLAGS) override;
-        void RemoveRequestListener(AudioRequestCallbackType func, void* const callbackOwner) override;
 
         TAudioControlID GetAudioTriggerID(const char* const sAudioTriggerName) const override;
         TAudioControlID GetAudioRtpcID(const char* const sAudioRtpcName) const override;
@@ -111,52 +91,35 @@ namespace Audio
         bool ReleaseAudioListenerID(const TAudioObjectID nAudioObjectID) override;
         bool SetAudioListenerOverrideID(const TAudioObjectID nAudioObjectID) override;
 
-        void GetInfo(SAudioSystemInfo& rAudioSystemInfo) override;
         const char* GetControlsPath() const override;
         void UpdateControlsPath() override;
         void RefreshAudioSystem(const char* const levelName) override;
 
-        IAudioProxy* GetFreeAudioProxy() override;
-        void FreeAudioProxy(IAudioProxy* const pIAudioProxy) override;
+        IAudioProxy* GetAudioProxy() override;
+        void RecycleAudioProxy(IAudioProxy* const pIAudioProxy) override;
 
         TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig) override;
         void DestroyAudioSource(TAudioSourceId sourceId) override;
 
-        // When AUDIO_RELEASE is defined, these two functions always return nullptr
-        const char* GetAudioControlName(const EAudioControlType controlType, const TATLIDType atlID) const override;
-        const char* GetAudioSwitchStateName(const TAudioControlID switchID, const TAudioSwitchStateID stateID) const override;
-
-    protected:
-        void ProcessRequestThreadSafe(CAudioRequestInternal audioRequestInternalData);
-
     private:
-        using TAudioRequests = AZStd::deque<CAudioRequestInternal, Audio::AudioSystemStdAllocator>;
         using TAudioProxies = AZStd::vector<CAudioProxy*, Audio::AudioSystemStdAllocator>;
 
         void InternalUpdate();
-        bool ProcessRequests(TAudioRequests& rRequestQueue);
-        void ProcessRequestBlocking(CAudioRequestInternal& audioRequestInternalData);
-
-        void ExecuteRequestCompletionCallbacks(TAudioRequests& requestQueue, AZStd::mutex& requestQueueMutex, bool bTryLock = false);
-        void ExtractCompletedRequests(TAudioRequests& rRequestQueue, TAudioRequests& rSyncCallbacksQueue);
 
         bool m_bSystemInitialized;
 
         using duration_ms = AZStd::chrono::duration<float, AZStd::milli>;
-        const duration_ms m_targetUpdatePeriod = AZStd::chrono::milliseconds(8);
+        const duration_ms m_targetUpdatePeriod = AZStd::chrono::milliseconds(4);
 
         CAudioTranslationLayer m_oATL;
         CAudioThread m_audioSystemThread;
 
-
-        TAudioRequests m_blockingRequestsQueue;     // blocking requests go here, main thread will wait for audio thread to process
-        TAudioRequests m_threadSafeCallbacksQueue;  // requests coming from any thread go here.
-        TAudioRequests m_pendingCallbacksQueue;     // this queue holds pending callbacks, agreggated from processed requests
-
+        AudioRequestsQueue m_blockingRequestsQueue;
+        AudioRequestsQueue m_pendingRequestsQueue;
+        AudioRequestsQueue m_pendingCallbacksQueue;
         AZStd::mutex m_blockingRequestsMutex;
-        AZStd::mutex m_threadSafeCallbacksMutex;
+        AZStd::mutex m_pendingRequestsMutex;
         AZStd::mutex m_pendingCallbacksMutex;
-
 
         // Synchronization objects
         AZStd::binary_semaphore m_mainEvent;
@@ -169,12 +132,7 @@ namespace Audio
         AZStd::string m_controlsPath;
 
     #if !defined(AUDIO_RELEASE)
-        #if defined(PROVIDE_GETNAME_SUPPORT)
-        mutable AZStd::mutex m_debugNameStoreMutex;
-        CATLDebugNameStore m_debugNameStore;
-        #endif // PROVIDE_GETNAME_SUPPORT
-
-        void DrawAudioDebugData();
+        void DrawGlobalDebugInfo() override;
     #endif // !AUDIO_RELEASE
     };
 

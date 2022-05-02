@@ -174,11 +174,17 @@ namespace AZ
 
         void GridComponentController::OnBeginPrepareRender()
         {
+            if (m_configuration.m_gridSize <= 0.0f)
+            {
+                return;
+            }
+
             auto* auxGeomFP = AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::RPI::AuxGeomFeatureProcessorInterface>(m_entityId);
             if (!auxGeomFP)
             {
                 return;
             }
+
             if (auto auxGeom = auxGeomFP->GetDrawQueue())
             {
                 BuildGrid();

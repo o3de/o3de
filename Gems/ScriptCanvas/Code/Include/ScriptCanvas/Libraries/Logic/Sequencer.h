@@ -36,7 +36,7 @@ namespace ScriptCanvas
                     Backward
                 };
 
-                NodeConfiguration GetReplacementNodeConfiguration() const override;
+                NodeReplacementConfiguration GetReplacementNodeConfiguration() const override;
                 void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
             protected:

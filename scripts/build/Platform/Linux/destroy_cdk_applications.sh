@@ -12,7 +12,7 @@
 # 2) Node.js version >= 10.13.0, except for versions 13.0.0 - 13.6.0. A version in active long-term support is recommended.
 
 SOURCE_DIRECTORY=$PWD
-PATH=$SOURCE_DIRECTORY/python:$PATH
+PATH=$SOURCE_DIRECTORY/python/runtime/$PYTHON_RUNTIME/python/bin:$PATH
 GEM_DIRECTORY=$SOURCE_DIRECTORY/Gems
 
 DestroyCDKApplication()
@@ -49,18 +49,6 @@ popd
 return 0
 }
 
-# Create and activate a virtualenv for the CDK deployment
-if ! python/python.sh -m venv .env;
-then
-    echo [cdk_bootstrap] Failed to create a virtualenv for the CDK deployment
-    return 1
-fi
-if ! source .env/bin/activate;
-then
-    echo [cdk_bootstrap] Failed to activate the virtualenv for the CDK deployment
-    exit 1
-fi
-
 echo [cdk_installation] Install nvm $NVM_VERSION
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
@@ -89,6 +77,7 @@ export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
 
 if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
    export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+   export O3DE_AWS_PROJECT_NAME=${O3DE_AWS_PROJECT_NAME///} # remove occurances of "/" b/c not allowed in AWS CFN stack names
 fi
 
 ERROR_EXISTS=0

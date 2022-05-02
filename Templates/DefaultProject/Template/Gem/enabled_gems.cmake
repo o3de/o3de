@@ -19,7 +19,6 @@ set(ENABLED_GEMS
     ImGui
     LandscapeCanvas
     LyShine
-    Multiplayer
     PhysX
     PrimitiveAssets
     PrefabBuilder

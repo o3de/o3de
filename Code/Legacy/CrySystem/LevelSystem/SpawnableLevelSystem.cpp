@@ -536,9 +536,6 @@ namespace LegacyLevelSystem
 
         const AZ::TimeMs beginTimeMs = AZ::GetRealElapsedTimeMs();
 
-        // Clear level entities and prefab instances.
-        EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
-
         if (gEnv->pMovieSystem)
         {
             gEnv->pMovieSystem->Reset(false, false);
@@ -547,6 +544,7 @@ namespace LegacyLevelSystem
 
         OnUnloadComplete(m_lastLevelName.c_str());
 
+        // Delete level entities and remove them from the game entity context
         AzFramework::RootSpawnableInterface::Get()->ReleaseRootSpawnable();
 
         m_lastLevelName.clear();

@@ -459,43 +459,67 @@ public:
     }
 };
 
+struct BuilderDirtiness : public AssetProcessorManagerTest
+{
+    void SetUp() override
+    {
+        AssetProcessorManagerTest::SetUp();
+
+        // Disconnect the mock application manager, our MockBuilderResponder will handle builder registration instead
+        m_mockApplicationManager->BusDisconnect();
+
+        m_mockBuilderResponder.BusConnect();
+    }
+
+    void TearDown() override
+    {
+        m_mockBuilderResponder.BusDisconnect();
+
+        AssetProcessorManagerTest::TearDown();
+    }
+
+    MockBuilderResponder m_mockBuilderResponder;
+};
+
 // if our database was empty before, all builders should be dirty
 // note that this requires us to actually register a builder using the mock.
-TEST_F(AssetProcessorManagerTest, BuilderDirtiness_EmptyDatabase_AllDirty)
+TEST_F(BuilderDirtiness, BuilderDirtiness_EmptyDatabase_AllDirty)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    MockBuilderResponder mockBuilderResponder;
-    mockBuilderResponder.BusConnect();
-
-    mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
-    mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
+    m_mockBuilderResponder.AddBuilder(
+        "builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint1");
+    m_mockBuilderResponder.AddBuilder(
+        "builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint2");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     EXPECT_TRUE(m_assetProcessorManager->m_anyBuilderChange);
     EXPECT_TRUE(m_assetProcessorManager->m_buildersAddedOrRemoved);
     EXPECT_EQ(m_assetProcessorManager->CountDirtyBuilders(), 2);
-    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(mockBuilderResponder.m_assetBuilderDescs[0].m_busId));
-    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(mockBuilderResponder.m_assetBuilderDescs[1].m_busId));
+    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(m_mockBuilderResponder.m_assetBuilderDescs[0].m_busId));
+    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(m_mockBuilderResponder.m_assetBuilderDescs[1].m_busId));
 
-    mockBuilderResponder.BusDisconnect();
+    m_mockBuilderResponder.BusDisconnect();
 }
 
 // if we have the same set of builders the next time, nothing should register as changed.
-TEST_F(AssetProcessorManagerTest, BuilderDirtiness_SameAsLastTime_NoneDirty)
+TEST_F(BuilderDirtiness, BuilderDirtiness_SameAsLastTime_NoneDirty)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    MockBuilderResponder mockBuilderResponder;
-    mockBuilderResponder.BusConnect();
-
-    mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
-    mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
+    m_mockBuilderResponder.AddBuilder(
+        "builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint1");
+    m_mockBuilderResponder.AddBuilder(
+        "builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint2");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
@@ -506,24 +530,25 @@ TEST_F(AssetProcessorManagerTest, BuilderDirtiness_SameAsLastTime_NoneDirty)
     EXPECT_FALSE(m_assetProcessorManager->m_buildersAddedOrRemoved);
     EXPECT_EQ(m_assetProcessorManager->CountDirtyBuilders(), 0);
 
-    mockBuilderResponder.BusDisconnect();
+    m_mockBuilderResponder.BusDisconnect();
 }
 
 // when a new builder appears, the new builder should be dirty,
-TEST_F(AssetProcessorManagerTest, BuilderDirtiness_MoreThanLastTime_NewOneIsDirty)
+TEST_F(BuilderDirtiness, BuilderDirtiness_MoreThanLastTime_NewOneIsDirty)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    MockBuilderResponder mockBuilderResponder;
-    mockBuilderResponder.BusConnect();
-
-    mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
+    m_mockBuilderResponder.AddBuilder(
+        "builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint1");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
-    mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
+    m_mockBuilderResponder.AddBuilder(
+        "builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint2");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
@@ -531,30 +556,30 @@ TEST_F(AssetProcessorManagerTest, BuilderDirtiness_MoreThanLastTime_NewOneIsDirt
     EXPECT_TRUE(m_assetProcessorManager->m_anyBuilderChange);
     EXPECT_TRUE(m_assetProcessorManager->m_buildersAddedOrRemoved);
     EXPECT_EQ(m_assetProcessorManager->CountDirtyBuilders(), 1);
-    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(mockBuilderResponder.m_assetBuilderDescs[1].m_busId));
+    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(m_mockBuilderResponder.m_assetBuilderDescs[1].m_busId));
 
-    mockBuilderResponder.BusDisconnect();
+    m_mockBuilderResponder.BusDisconnect();
 }
-
 
 // when an existing builder disappears there are no dirty builders, but the booleans
 // that track dirtiness should be correct:
-TEST_F(AssetProcessorManagerTest, BuilderDirtiness_FewerThanLastTime_Dirty)
+TEST_F(BuilderDirtiness, BuilderDirtiness_FewerThanLastTime_Dirty)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    MockBuilderResponder mockBuilderResponder;
-    mockBuilderResponder.BusConnect();
-
-    mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
-    mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
+    m_mockBuilderResponder.AddBuilder(
+        "builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint1");
+    m_mockBuilderResponder.AddBuilder(
+        "builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint2");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     // remove one:
-    mockBuilderResponder.m_assetBuilderDescs.pop_back();
+    m_mockBuilderResponder.m_assetBuilderDescs.pop_back();
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
@@ -564,166 +589,165 @@ TEST_F(AssetProcessorManagerTest, BuilderDirtiness_FewerThanLastTime_Dirty)
 }
 
 // if a builder changes its pattern matching, it should be dirty, and also, it should count as add or remove.
-TEST_F(AssetProcessorManagerTest, BuilderDirtiness_ChangedPattern_CountsAsNew)
+TEST_F(BuilderDirtiness, BuilderDirtiness_ChangedPattern_CountsAsNew)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    MockBuilderResponder mockBuilderResponder;
-    mockBuilderResponder.BusConnect();
-
-    mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
-    mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
-    mockBuilderResponder.AddBuilder("builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint3");
-    mockBuilderResponder.AddBuilder("builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint4");
+    m_mockBuilderResponder.AddBuilder(
+        "builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint1");
+    m_mockBuilderResponder.AddBuilder(
+        "builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint2");
+    m_mockBuilderResponder.AddBuilder(
+        "builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint3");
+    m_mockBuilderResponder.AddBuilder(
+        "builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint4");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     // here, we change the actual text of the pattern to match
     size_t whichToChange = 1;
     // here, we change the pattern type but not the pattern to match
-    AssetBuilderPattern oldPattern = mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns[0];
+    AssetBuilderPattern oldPattern = m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns[0];
     oldPattern.m_pattern = "*.somethingElse";
-    mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.clear();
-    mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.emplace_back(oldPattern);
+    m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.clear();
+    m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.emplace_back(oldPattern);
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     EXPECT_TRUE(m_assetProcessorManager->m_anyBuilderChange);
     EXPECT_TRUE(m_assetProcessorManager->m_buildersAddedOrRemoved);
     EXPECT_EQ(m_assetProcessorManager->CountDirtyBuilders(), 1);
-    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
+    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
 
-    mockBuilderResponder.BusDisconnect();
+    m_mockBuilderResponder.BusDisconnect();
 }
 
-TEST_F(AssetProcessorManagerTest, BuilderDirtiness_ChangedPatternType_CountsAsNew)
+TEST_F(BuilderDirtiness, BuilderDirtiness_ChangedPatternType_CountsAsNew)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    MockBuilderResponder mockBuilderResponder;
-    mockBuilderResponder.BusConnect();
-
-    mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
-    mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
-    mockBuilderResponder.AddBuilder("builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint3");
-    mockBuilderResponder.AddBuilder("builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint4");
+    m_mockBuilderResponder.AddBuilder(
+        "builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint1");
+    m_mockBuilderResponder.AddBuilder(
+        "builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint2");
+    m_mockBuilderResponder.AddBuilder(
+        "builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint3");
+    m_mockBuilderResponder.AddBuilder(
+        "builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1,
+        "fingerprint4");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     size_t whichToChange = 2;
     // here, we change the pattern type but not the pattern to match
-    AssetBuilderPattern oldPattern = mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns[0];
+    AssetBuilderPattern oldPattern = m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns[0];
     oldPattern.m_type = AssetBuilderPattern::Regex;
-    mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.clear();
-    mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.emplace_back(oldPattern);
+    m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.clear();
+    m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.emplace_back(oldPattern);
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     EXPECT_TRUE(m_assetProcessorManager->m_anyBuilderChange);
     EXPECT_TRUE(m_assetProcessorManager->m_buildersAddedOrRemoved);
     EXPECT_EQ(m_assetProcessorManager->CountDirtyBuilders(), 1);
-    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
+    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
 
-    mockBuilderResponder.BusDisconnect();
+    m_mockBuilderResponder.BusDisconnect();
 }
 
-TEST_F(AssetProcessorManagerTest, BuilderDirtiness_NewPattern_CountsAsNewBuilder)
+TEST_F(BuilderDirtiness, BuilderDirtiness_NewPattern_CountsAsNewBuilder)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    MockBuilderResponder mockBuilderResponder;
-    mockBuilderResponder.BusConnect();
-
-    mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
-    mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
-    mockBuilderResponder.AddBuilder("builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint3");
-    mockBuilderResponder.AddBuilder("builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint4");
+    m_mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
+    m_mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
+    m_mockBuilderResponder.AddBuilder("builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint3");
+    m_mockBuilderResponder.AddBuilder("builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint4");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     size_t whichToChange = 3;
     // here, we add an additional pattern that wasn't there before:
-    mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.clear();
-    mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.emplace_back(AssetBuilderSDK::AssetBuilderPattern("*.buzz", AssetBuilderPattern::Wildcard));
+    m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.clear();
+    m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_patterns.emplace_back(AssetBuilderSDK::AssetBuilderPattern("*.buzz", AssetBuilderPattern::Wildcard));
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     EXPECT_TRUE(m_assetProcessorManager->m_anyBuilderChange);
     EXPECT_TRUE(m_assetProcessorManager->m_buildersAddedOrRemoved);
     EXPECT_EQ(m_assetProcessorManager->CountDirtyBuilders(), 1);
-    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
+    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
 
-    mockBuilderResponder.BusDisconnect();
+    m_mockBuilderResponder.BusDisconnect();
 }
 
 // changing the "version" of a builder should be equivalent to changing its analysis fingerprint - ie
 // it should not count as adding a new builder.
-TEST_F(AssetProcessorManagerTest, BuilderDirtiness_NewVersionNumber_IsNotANewBuilder)
+TEST_F(BuilderDirtiness, BuilderDirtiness_NewVersionNumber_IsNotANewBuilder)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    MockBuilderResponder mockBuilderResponder;
-    mockBuilderResponder.BusConnect();
-
-    mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
-    mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
-    mockBuilderResponder.AddBuilder("builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint3");
-    mockBuilderResponder.AddBuilder("builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint4");
+    m_mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
+    m_mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
+    m_mockBuilderResponder.AddBuilder("builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint3");
+    m_mockBuilderResponder.AddBuilder("builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint4");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     size_t whichToChange = 3;
-    mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_version++;
+    m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_version++;
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     EXPECT_TRUE(m_assetProcessorManager->m_anyBuilderChange);
     EXPECT_FALSE(m_assetProcessorManager->m_buildersAddedOrRemoved); // <-- note, we don't expect this to be considered a 'new builder'
     EXPECT_EQ(m_assetProcessorManager->CountDirtyBuilders(), 1);
-    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
+    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
 
-    mockBuilderResponder.BusDisconnect();
+    m_mockBuilderResponder.BusDisconnect();
 }
 
 // changing the "analysis fingerprint" of a builder should not count as an addition or removal
 // but should still result in that specific builder being considered as a dirty builder.
-TEST_F(AssetProcessorManagerTest, BuilderDirtiness_NewAnalysisFingerprint_IsNotANewBuilder)
+TEST_F(BuilderDirtiness, BuilderDirtiness_NewAnalysisFingerprint_IsNotANewBuilder)
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    m_mockApplicationManager->BusDisconnect();
-
-    MockBuilderResponder mockBuilderResponder;
-    mockBuilderResponder.BusConnect();
-
-    mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
-    mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
-    mockBuilderResponder.AddBuilder("builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint3");
-    mockBuilderResponder.AddBuilder("builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint4");
+    m_mockBuilderResponder.AddBuilder("builder1", { AssetBuilderSDK::AssetBuilderPattern("*.egg", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint1");
+    m_mockBuilderResponder.AddBuilder("builder2", { AssetBuilderSDK::AssetBuilderPattern("*.foo", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint2");
+    m_mockBuilderResponder.AddBuilder("builder3", { AssetBuilderSDK::AssetBuilderPattern("*.bar", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint3");
+    m_mockBuilderResponder.AddBuilder("builder4", { AssetBuilderSDK::AssetBuilderPattern("*.baz", AssetBuilderPattern::Wildcard) }, AZ::Uuid::CreateRandom(), 1, "fingerprint4");
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     size_t whichToChange = 3;
-    mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_analysisFingerprint = "changed!!";
+    m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_analysisFingerprint = "changed!!";
 
     m_assetProcessorManager->ComputeBuilderDirty();
 
     EXPECT_TRUE(m_assetProcessorManager->m_anyBuilderChange);
     EXPECT_FALSE(m_assetProcessorManager->m_buildersAddedOrRemoved); // <-- note, we don't expect this to be considered a 'new builder'
     EXPECT_EQ(m_assetProcessorManager->CountDirtyBuilders(), 1);
-    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
+    EXPECT_TRUE(m_assetProcessorManager->IsBuilderDirty(m_mockBuilderResponder.m_assetBuilderDescs[whichToChange].m_busId));
 
-    mockBuilderResponder.BusDisconnect();
+    m_mockBuilderResponder.BusDisconnect();
 
     m_mockApplicationManager->BusConnect();
 }
@@ -1819,7 +1843,7 @@ TEST_F(PathDependencyTest, WildcardDependencies_ExcludePathsExisting_ResolveCorr
     result = ProcessAsset(primaryFile2, { { ".asset" }, {} }, {
         {"*p1.txt", ProductPathDependencyType::SourceFile},
         {"*.asset3", ProductPathDependencyType::ProductFile} });
-    ASSERT_TRUE(result) << "Failed to Process main test asset" << primaryFile2.m_name.c_str();;
+    ASSERT_TRUE(result) << "Failed to Process main test asset" << primaryFile2.m_name.c_str();
 
     AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productContainer;
     result = m_sharedConnection->GetProducts(productContainer);
@@ -3647,68 +3671,6 @@ TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_ClearsFingerprint)
 
 //////////////////////////////////////////////////////////////////////////
 
-MockBuilderInfoHandler::~MockBuilderInfoHandler()
-{
-    BusDisconnect();
-    m_builderDesc = {};
-}
-
-void MockBuilderInfoHandler::GetMatchingBuildersInfo([[maybe_unused]] const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList)
-{
-    builderInfoList.push_back(m_builderDesc);
-}
-
-void MockBuilderInfoHandler::GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList)
-{
-    builderInfoList.push_back(m_builderDesc);
-}
-
-void MockBuilderInfoHandler::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
-{
-    response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-
-    for (const auto& platform : request.m_enabledPlatforms)
-    {
-        AssetBuilderSDK::JobDescriptor jobDescriptor;
-        jobDescriptor.m_priority = 0;
-        jobDescriptor.m_critical = true;
-        jobDescriptor.m_jobKey = "Mock Job";
-        jobDescriptor.SetPlatformIdentifier(platform.m_identifier.c_str());
-        jobDescriptor.m_additionalFingerprintInfo = m_jobFingerprint.toUtf8().data();
-
-        if (!m_jobDependencyFilePath.isEmpty())
-        {
-            jobDescriptor.m_jobDependencyList.push_back(AssetBuilderSDK::JobDependency("Mock Job", "pc", AssetBuilderSDK::JobDependencyType::Order,
-                AssetBuilderSDK::SourceFileDependency(m_jobDependencyFilePath.toUtf8().constData(), AZ::Uuid::CreateNull())));
-        }
-
-        if (!m_dependencyFilePath.isEmpty())
-        {
-            response.m_sourceFileDependencyList.push_back(AssetBuilderSDK::SourceFileDependency(m_dependencyFilePath.toUtf8().data(), AZ::Uuid::CreateNull()));
-        }
-        response.m_createJobOutputs.push_back(jobDescriptor);
-        m_createJobsCount++;
-    }
-}
-
-void MockBuilderInfoHandler::ProcessJob([[maybe_unused]] const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
-{
-    response.m_resultCode = AssetBuilderSDK::ProcessJobResultCode::ProcessJobResult_Success;
-}
-
-AssetBuilderSDK::AssetBuilderDesc MockBuilderInfoHandler::CreateBuilderDesc(const QString& builderName, const QString& builderId, const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns)
-{
-    AssetBuilderSDK::AssetBuilderDesc builderDesc;
-
-    builderDesc.m_name = builderName.toUtf8().data();
-    builderDesc.m_patterns = builderPatterns;
-    builderDesc.m_busId = AZ::Uuid::CreateString(builderId.toUtf8().data());
-    builderDesc.m_builderType = AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal;
-    builderDesc.m_createJobFunction = AZStd::bind(&MockBuilderInfoHandler::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-    builderDesc.m_processJobFunction = AZStd::bind(&MockBuilderInfoHandler::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-    return builderDesc;
-}
-
 void FingerprintTest::SetUp()
 {
     AssetProcessorManagerTest::SetUp();
@@ -3857,21 +3819,21 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(dependsOnFilec1_Job, QString("tempdata\n")));
 
     QStringList dependList;
-    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFileb1_Source);
+    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFileb1_Source, {});
     EXPECT_EQ(dependList.size(), 1);
     EXPECT_EQ(dependList[0], absPath.toUtf8().constData());
     dependList.clear();
 
-    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFilec1_Job);
+    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFilec1_Job, {});
     EXPECT_EQ(dependList.size(), 1);
     EXPECT_EQ(dependList[0], absPath.toUtf8().constData());
     dependList.clear();
 
-    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFilea_Source);
+    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFilea_Source, {});
     EXPECT_EQ(dependList.size(), 0);
     dependList.clear();
 
-    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFiled_Job);
+    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFiled_Job, {});
     EXPECT_EQ(dependList.size(), 0);
 
     dependList.clear();
@@ -4136,6 +4098,7 @@ void JobDependencyTest::SetUp()
     m_assetProcessorManager->m_stateData->SetProduct(productEntry);
 
     // Reboot the APM since we added stuff to the database that needs to be loaded on-startup of the APM
+    m_assetProcessorManager = nullptr; // Destroy the existing instance first so we can finish cleanup before creating a new instance
     m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
 
     m_idleConnection = QObject::connect(m_assetProcessorManager.get(), &AssetProcessor::AssetProcessorManager::AssetProcessorManagerIdleState, [this](bool newState)
@@ -4478,7 +4441,7 @@ bool WildcardSourceDependencyTest::Test(
 
 AZStd::vector<AZStd::string> WildcardSourceDependencyTest::FileAddedTest(const QString& path)
 {
-    auto result = m_assetProcessorManager->GetSourceFilesWhichDependOnSourceFile(path);
+    auto result = m_assetProcessorManager->GetSourceFilesWhichDependOnSourceFile(path, {});
 
     return QStringListToVector(result);
 }
@@ -4540,21 +4503,21 @@ void WildcardSourceDependencyTest::SetUp()
     // Relative path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "a.foo", "%a.foo",
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Absolute path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "b.foo", tempPath.absoluteFilePath("%b.foo").toUtf8().constData(),
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Test what happens when we have 2 dependencies on the same file
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "folder/one/d.foo", "%c.foo",
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "folder/one/d.foo", tempPath.absoluteFilePath("%c.foo").toUtf8().constData(),
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
 #ifdef AZ_PLATFORM_WINDOWS
     // Test to make sure a relative wildcard dependency doesn't match an absolute path
@@ -4566,7 +4529,7 @@ void WildcardSourceDependencyTest::SetUp()
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "folder/one/d.foo",
         (test).toUtf8().constData(),
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 #endif
 
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependencies(dependencies));

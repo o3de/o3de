@@ -27,6 +27,8 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
+#include <tests/UnitTestUtilities.h>
+
 #include "resourcecompiler/rccontroller.h"
 
 class AssetProcessorManager_Test;
@@ -143,6 +145,9 @@ public:
 
     using AssetProcessorManager::m_stateData;
     using AssetProcessorManager::ComputeBuilderDirty;
+
+    using AssetProcessorManager::m_anyBuilderChange;
+    using AssetProcessorManager::m_buildersAddedOrRemoved;
 };
 
 class AssetProcessorManagerTest
@@ -225,7 +230,7 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
     AssetBuilderSDK::JobDependency MakeJobDependency(AZ::Uuid uuid);
 
     QString m_absPath;
-    QString m_watchFolderPath; 
+    QString m_watchFolderPath;
     QString m_dependsOnFile1_Source;
     QString m_dependsOnFile2_Source;
     QString m_dependsOnFile1_Job;
@@ -286,27 +291,6 @@ struct WildcardSourceDependencyTest
     void SetUp() override;
 };
 
-struct MockBuilderInfoHandler
-    : public AssetProcessor::AssetBuilderInfoBus::Handler
-{
-    ~MockBuilderInfoHandler();
-
-    //! AssetProcessor::AssetBuilderInfoBus Interface
-    void GetMatchingBuildersInfo(const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList) override;
-    void GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList) override;
-
-    void CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response);
-    void ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response);
-
-    AssetBuilderSDK::AssetBuilderDesc CreateBuilderDesc(const QString& builderName, const QString& builderId, const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns);
-
-    AssetBuilderSDK::AssetBuilderDesc m_builderDesc;
-    QString m_jobFingerprint;
-    QString m_dependencyFilePath;
-    QString m_jobDependencyFilePath;
-    int m_createJobsCount = 0;
-};
-
 
 struct MetadataFileTest
     : public AssetProcessorManagerTest
@@ -323,7 +307,7 @@ struct FingerprintTest
     void RunFingerprintTest(QString builderFingerprint, QString jobFingerprint, bool expectedResult);
 
     QString m_absolutePath;
-    MockBuilderInfoHandler m_mockBuilderInfoHandler;
+    UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
     AZStd::vector<AssetProcessor::JobDetails> m_jobResults;
 };
 
@@ -335,7 +319,7 @@ struct JobDependencyTest
 
     struct StaticData
     {
-        MockBuilderInfoHandler m_mockBuilderInfoHandler;
+        UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
         AZ::Uuid m_builderUuid;
     };
 

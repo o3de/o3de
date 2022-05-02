@@ -1,9 +1,9 @@
 {
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "TestData/Textures/Foliage_Leaves_0_BaseColor.dds",
-        "opacity.doubleSided": true,
+        "general.doubleSided": true,
         "opacity.mode": "Cutout",
         "opacity.textureMap": "TestData/Textures/checker8x8_512.png"
     }

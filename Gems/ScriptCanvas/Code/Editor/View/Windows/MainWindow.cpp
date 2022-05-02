@@ -133,10 +133,10 @@
 #include <Editor/View/Windows/EBusHandlerActionMenu.h>
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 #include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
+#include <Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
-
-#include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
+#include <Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.h>
 
 // Save Format Conversion
 #include <AzCore/Component/EntityUtils.h>
@@ -597,10 +597,7 @@ namespace ScriptCanvasEditor
         m_propertyGrid->setObjectName("NodeInspector");
 
         m_bookmarkDockWidget = aznew GraphCanvas::BookmarkDockWidget(ScriptCanvasEditor::AssetEditorId, this);
-
-        m_variableDockWidget = new VariableDockWidget(this);
-        m_variableDockWidget->setObjectName("VariableManager");
-
+                
         QObject::connect(m_variableDockWidget, &VariableDockWidget::OnVariableSelectionChanged, this, &MainWindow::OnVariableSelectionChanged);
 
         // This needs to happen after the node palette is created, because we scrape for the variable data from inside
@@ -610,9 +607,6 @@ namespace ScriptCanvasEditor
         m_validationDockWidget = aznew GraphValidationDockWidget(this);
         m_validationDockWidget->setObjectName("ValidationDockWidget");
         // End Construction list
-
-        m_loggingWindow = aznew LoggingWindow(this);
-        m_loggingWindow->setObjectName("LoggingWindow");
 
         m_ebusHandlerActionMenu = aznew EBusHandlerActionMenu();
 
@@ -729,6 +723,9 @@ namespace ScriptCanvasEditor
         connect(ui->action_UpgradeTool, &QAction::triggered, this, &MainWindow::RunUpgradeTool);
         ui->action_UpgradeTool->setVisible(true);
 
+        connect(ui->action_Interpreter, &QAction::triggered, this, &MainWindow::ShowInterpreter);
+        ui->action_Interpreter->setVisible(true);
+
         // List of recent files.
         {
             QMenu* recentMenu = new QMenu("Open &Recent");
@@ -789,9 +786,13 @@ namespace ScriptCanvasEditor
         connect(ui->action_ViewProperties, &QAction::triggered, this, &MainWindow::OnViewProperties);
         connect(ui->action_ViewBookmarks, &QAction::triggered, this, &MainWindow::OnBookmarks);
 
+        m_variableDockWidget = new VariableDockWidget(this);
+        m_variableDockWidget->setObjectName("VariableManager");
         connect(ui->action_ViewVariableManager, &QAction::triggered, this, &MainWindow::OnVariableManager);
         connect(m_variableDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
 
+        m_loggingWindow = aznew LoggingWindow(this);
+        m_loggingWindow->setObjectName("LoggingWindow");
         connect(ui->action_ViewLogWindow, &QAction::triggered, this, &MainWindow::OnViewLogWindow);
         connect(m_loggingWindow, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
 
@@ -997,45 +998,38 @@ namespace ScriptCanvasEditor
         return m_variableDockWidget->IsValidVariableType(dataType);
     }
 
-    bool MainWindow::ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, VariablePaletteRequests::SlotSetup& outSetup)
+    VariablePaletteRequests::VariableConfigurationOutput MainWindow::ShowVariableConfigurationWidget
+        ( const VariablePaletteRequests::VariableConfigurationInput& input, const QPoint& scenePosition)
     {
-        AZ_Assert(slot, "A valid slot must be provided");
-        if (slot)
+        VariablePaletteRequests::VariableConfigurationOutput output;
+        m_slotTypeSelector = new VariableConfigurationWidget(GetActiveScriptCanvasId(), input, this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
+        m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
+
+        // Only set the slot name if the user has already configured this slot, so if they are creating
+        // for the first time they will see the placeholder text instead
+        bool isValidVariableType = false;
+        VariablePaletteRequestBus::BroadcastResult(isValidVariableType, &VariablePaletteRequests::IsValidVariableType, input.m_currentType);
+        if (isValidVariableType)
         {
-            m_slotTypeSelector = new SlotTypeSelectorWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
-            m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
-
-            // Only set the slot name if the user has already configured this slot, so if they are creating
-            // for the first time they will see the placeholder text instead
-            bool isValidVariableType = false;
-            VariablePaletteRequestBus::BroadcastResult(isValidVariableType, &VariablePaletteRequests::IsValidVariableType, slot->GetDataType());
-            if (isValidVariableType)
-            {
-                m_slotTypeSelector->SetSlotName(slot->GetName());
-            }
-
-            m_slotTypeSelector->move(scenePosition);
-            m_slotTypeSelector->setEnabled(true);
-            m_slotTypeSelector->update();
-
-            if (m_slotTypeSelector->exec() != QDialog::Rejected)
-            {
-                outSetup.m_name = m_slotTypeSelector->GetSlotName();
-                outSetup.m_type = m_slotTypeSelector->GetSelectedType();
-            }
-            else
-            {
-                delete m_slotTypeSelector;
-
-                return false;
-            }
-
-            delete m_slotTypeSelector;
+            m_slotTypeSelector->SetSlotName(input.m_currentName);
         }
 
-        return true;
-    }
+        m_slotTypeSelector->move(scenePosition);
+        m_slotTypeSelector->setEnabled(true);
+        m_slotTypeSelector->update();
 
+        if (m_slotTypeSelector->exec() != QDialog::Rejected)
+        {
+            output.m_name = m_slotTypeSelector->GetSlotName();
+            output.m_type = Data::FromAZType(m_slotTypeSelector->GetSelectedType());
+            output.m_actionIsValid = true;
+            output.m_nameChanged = input.m_currentName != output.m_name;
+            output.m_typeChanged = input.m_currentType != output.m_type;
+        }
+
+        delete m_slotTypeSelector;
+        return output;
+    }
 
     void MainWindow::OpenValidationPanel()
     {
@@ -1180,11 +1174,6 @@ namespace ScriptCanvasEditor
             return AZ::Failure(AZStd::string("Unable to open asset with invalid asset id"));
         }
 
-        if (!m_isRestoringWorkspace)
-        {
-            SetActiveAsset(scriptCanvasAsset);
-        }
-
         if (!scriptCanvasAsset.IsDescriptionValid())
         {
             if (!m_isRestoringWorkspace)
@@ -1211,21 +1200,21 @@ namespace ScriptCanvasEditor
 
         if (outTabIndex >= 0)
         {
-            if (!m_isRestoringWorkspace)
-            {
-                m_tabBar->SelectTab(fileAssetId);
-            }
-
+            m_tabBar->setCurrentIndex(outTabIndex);
+            SetActiveAsset(scriptCanvasAsset);
             return AZ::Success(outTabIndex);
         }
 
         outTabIndex = CreateAssetTab(fileAssetId, fileState, tabIndex);
+        SetActiveAsset(scriptCanvasAsset);
 
         if (outTabIndex == -1)
         {
             return AZ::Failure(AZStd::string::format("Unable to open existing Script Canvas Asset with id %s in the Script Canvas Editor"
                 , fileAssetId.ToString().c_str()));
         }
+
+        m_tabBar->setCurrentIndex(outTabIndex);
 
         AZStd::string assetPath = scriptCanvasAsset.Path().c_str();
         if (!assetPath.empty() && !m_loadingNewlySavedFile)
@@ -1743,10 +1732,30 @@ namespace ScriptCanvasEditor
     
     void MainWindow::OnSaveCallBack(const VersionExplorer::FileSaveResult& result)
     {
-        const bool saveSuccess = result.fileSaveError.empty();
-        auto completeDescription = CompleteDescription(m_fileSaver->GetSource());
-        auto memoryAsset = completeDescription ? *completeDescription : m_fileSaver->GetSource();
-        int saveTabIndex = m_tabBar->FindTab(memoryAsset);
+        const bool saveSuccess = result.IsSuccess();
+
+        int saveTabIndex = -1;
+        ScriptCanvasEditor::SourceHandle memoryAsset;
+        {
+            int saverIndex = m_tabBar->FindTab(m_fileSaver->GetSource());
+            if (saverIndex >= 0)
+            {
+                saveTabIndex = saverIndex;
+                memoryAsset = m_fileSaver->GetSource();
+            }
+            else
+            {
+                auto completeDescription = CompleteDescription(m_fileSaver->GetSource());
+                if (completeDescription)
+                {
+                    memoryAsset = *completeDescription;
+                    saveTabIndex = m_tabBar->FindTab(memoryAsset);
+                }
+            }
+        }
+
+        AZ_VerifyWarning("ScriptCanvas", saveTabIndex >= 0, "MainWindow::OnSaveCallback failed to find saved graph in tab. Data has been saved, but the ScriptCanvas Editor needs to be closed and re-opened.s")
+
         AZStd::string tabName = saveTabIndex >= 0 ? m_tabBar->tabText(saveTabIndex).toUtf8().data() : "";
 
         if (saveSuccess)
@@ -1754,36 +1763,12 @@ namespace ScriptCanvasEditor
             ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset;
             int currentTabIndex = m_tabBar->currentIndex();
 
-            AZ::Data::AssetId oldId = fileAssetId.Id();
             AZ::Data::AssetInfo assetInfo;
             assetInfo.m_assetId = fileAssetId.Id();
             AZ_VerifyWarning("ScriptCanvas", AssetHelpers::GetAssetInfo(fileAssetId.Path().c_str(), assetInfo)
                 , "Failed to find asset info for source file just saved: %s", fileAssetId.Path().c_str());
 
-            const bool assetIdHasChanged = assetInfo.m_assetId.m_guid != fileAssetId.Id();
             fileAssetId = SourceHandle(fileAssetId, assetInfo.m_assetId.m_guid, fileAssetId.Path());
-
-            // check for saving a graph over another graph with an open tab
-            for (;;)
-            {
-                auto graph = fileAssetId.Get();
-                int tabIndexByGraph = m_tabBar->FindTab(graph);
-                if (tabIndexByGraph == -1)
-                {
-                    AZ_Warning("ScriptCanvas", false, "unable to find graph just saved");
-                    break;
-                }
-
-                int saveOverMatch = m_tabBar->FindSaveOverMatch(fileAssetId);
-                if (saveOverMatch < 0)
-                {
-                    saveTabIndex = tabIndexByGraph;
-                    currentTabIndex = m_tabBar->currentIndex();
-                    break;
-                }
-
-                m_tabBar->CloseTab(saveOverMatch);
-            }
 
             // this path is questionable, this is a save request that is not the current graph
             // We've saved as over a new graph, so we need to close the old one.
@@ -1796,36 +1781,7 @@ namespace ScriptCanvasEditor
             }
 
             AzFramework::StringFunc::Path::GetFileName(memoryAsset.Path().c_str(), tabName);
-
-            if (assetIdHasChanged)
-            {
-                auto entity = memoryAsset.Get()->GetEntity();
-
-                auto editorComponents = AZ::EntityUtils::FindDerivedComponents<EditorScriptCanvasComponent>(entity);
-
-                if (editorComponents.empty())
-                {
-                    if (auto firstRequestBus = EditorScriptCanvasComponentRequestBus::FindFirstHandler(entity->GetId()))
-                    {
-                        firstRequestBus->SetAssetId(memoryAsset.Describe());
-                    }
-                }
-                else
-                {
-                    for (auto editorComponent : editorComponents)
-                    {
-                        if (editorComponent->GetAssetId() == oldId)
-                        {
-                            editorComponent->SetAssetId(memoryAsset.Describe());
-                            break;
-                        }
-                    }
-                }
-            }             
-
-            // Soft switch the asset id here. We'll do a double scene switch down below to actually switch the active assetid
-            m_activeGraph = fileAssetId;
-
+                        
             if (tabName.at(tabName.size() - 1) == '*' || tabName.at(tabName.size() - 1) == '^')
             {
                 tabName = tabName.substr(0, tabName.size() - 2);
@@ -1833,9 +1789,14 @@ namespace ScriptCanvasEditor
 
             auto tabData = m_tabBar->GetTabData(saveTabIndex);
             tabData->m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
+
+            // keep the old data, and take the new ID and path if either have changed.
+            fileAssetId = SourceHandle(tabData->m_assetId, fileAssetId.Id(), fileAssetId.Path());
+
             tabData->m_assetId = fileAssetId;
             m_tabBar->SetTabData(*tabData, saveTabIndex);
             m_tabBar->SetTabText(saveTabIndex, tabName.c_str());
+            m_activeGraph = fileAssetId;
         }
         else
         {
@@ -1843,7 +1804,7 @@ namespace ScriptCanvasEditor
             QMessageBox::critical(this, QString(), QObject::tr(failureMessage.data()));
         }
 
-        if (m_tabBar->currentIndex() != saveTabIndex)
+        if (m_tabBar->currentIndex() != saveTabIndex && saveTabIndex >= 0)
         {
             m_tabBar->setCurrentIndex(saveTabIndex);
         }
@@ -2465,10 +2426,6 @@ namespace ScriptCanvasEditor
             {
                 QSignalBlocker signalBlocker(m_tabBar);
                 m_tabBar->SelectTab(fileAssetId);
-            }
-            else
-            {
-                AZ_Assert(false, "A graph was opened, but a tab was not created for it.");
             }
         }
 
@@ -3130,10 +3087,27 @@ namespace ScriptCanvasEditor
         DeleteConnections(graphCanvasGraphId, { connections.begin(), connections.end() });
     }
 
+    void MainWindow::ShowInterpreter()
+    {
+        using namespace ScriptCanvasEditor;
+
+        if (!m_interpreterWidget)
+        {
+            m_interpreterWidget = AZStd::make_unique<InterpreterWidget>();
+        }
+
+        if (m_interpreterWidget)
+        {
+            m_interpreterWidget->show();
+            m_interpreterWidget->raise();
+            m_interpreterWidget->activateWindow();
+        }
+    }
+
     void MainWindow::RunUpgradeTool()
     {
         using namespace VersionExplorer;
-        auto versionExplorer = aznew VersionExplorer::Controller(this);
+        auto versionExplorer = AZStd::make_unique<Controller>(this);
         versionExplorer->exec();
 
         const ModificationResults* result = nullptr;
@@ -3144,8 +3118,6 @@ namespace ScriptCanvasEditor
             UpgradeHelper* upgradeHelper = new UpgradeHelper(this);
             upgradeHelper->show();
         }
-
-        delete versionExplorer;
     }
 
     void MainWindow::OnShowValidationErrors()
@@ -3895,10 +3867,6 @@ namespace ScriptCanvasEditor
         contextMenu.AddMenuAction(aznew CreateAzEventHandlerSlotMenuAction(&contextMenu));
 
         auto setSlotTypeAction = aznew SetDataSlotTypeMenuAction(&contextMenu);
-        // Changing slot type is disabled temporarily because now that that user data slots are correctly coordinated with their reference
-        // variables, their type cannot be changed. The next change will allow all variables to change their type post creation, and then
-        // that will allow this action to be enabled.
-        setSlotTypeAction->setEnabled(false);
         contextMenu.AddMenuAction(setSlotTypeAction);
 
         return HandleContextMenu(contextMenu, slotId, screenPoint, scenePoint);

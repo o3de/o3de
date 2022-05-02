@@ -43,8 +43,9 @@ namespace UnitTest
         void Activate();
         void Deactivate();
 
-        void RegisterSourceInfo(const char* sourcePath, const AZ::Data::AssetId& assetId);
-        void RegisterSourceInfo(const char* sourcePath, const AZ::Data::AssetInfo& assetInfo, const AZStd::string& watchFolder);
+        void RegisterSourceInfo(const AZStd::string& sourcePath, const AZ::Data::AssetId& assetId);
+        void RegisterSourceInfo(const AZStd::string& sourcePath, const AZ::Data::AssetInfo& assetInfo, const AZStd::string& watchFolder);
+        void RegisterScanFolder(const AZStd::string& scanFolderPath);
 
     private:
         struct SourceInfo
@@ -55,6 +56,7 @@ namespace UnitTest
         
         AZStd::unordered_map<AZStd::string, SourceInfo> m_sourcePath_sourceInfo_map;
         AZStd::unordered_map<AZ::Uuid, SourceInfo> m_sourceGuid_sourceInfo_map;
+        AZStd::vector<AZStd::string> m_scanFolders;
 
         bool GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder) override;
         bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& relativeProductPath) override;

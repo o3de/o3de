@@ -30,6 +30,13 @@ function(o3de_current_file_path path)
 endfunction()
 
 
+o3de_current_file_path(find_o3de_path)
+cmake_path(SET engine_root_folder NORMALIZE ${find_o3de_path}/..)
+set_property(GLOBAL PROPERTY O3DE_ENGINE_ROOT_FOLDER "${engine_root_folder}")
+
+# Inject the CompilerSettings.cmake to be included before the project command
+set(CMAKE_PROJECT_INCLUDE_BEFORE "${engine_root_folder}cmake/CompilerSettings.cmake")
+
 # We are using the engine's CMakeLists.txt to handle initialization/importing targets
 # Since this is external to the project's source, we need to specify an output directory
 # even though we don't build

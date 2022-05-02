@@ -11,7 +11,7 @@
 #include <MaterialEditorApplication.h>
 
 #include <Document/MaterialDocument.h>
-#include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorMainWindow.h>
 
 void InitMaterialEditorResources()
 {
@@ -53,7 +53,6 @@ namespace MaterialEditor
     {
         Base::Reflect(context);
         MaterialDocument::Reflect(context);
-        MaterialViewportSettingsSystem::Reflect(context);
     }
 
     const char* MaterialEditorApplication::GetCurrentConfigurationName() const
@@ -82,9 +81,9 @@ namespace MaterialEditor
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
-        m_viewportSettingsSystem.reset(aznew MaterialViewportSettingsSystem(m_toolId));
+        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
 
-        m_window.reset(aznew MaterialEditorWindow(m_toolId));
+        m_window.reset(aznew MaterialEditorMainWindow(m_toolId));
         m_window->show();
     }
 

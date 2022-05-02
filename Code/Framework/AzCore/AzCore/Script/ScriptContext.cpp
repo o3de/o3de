@@ -98,8 +98,39 @@ namespace AzLsvInternal
 }
 #endif // AZ_LUA_VALIDATE_STACK
 
+namespace ScriptContextCpp
+{
+    // remove Lua packgage.loadlib immediately after loading libraries to prevent use of unsafe function
+    void OpenLuaLibraries(lua_State* m_lua)
+    {
+        // Lua: 
+        luaL_openlibs(m_lua);
+        // Lua: 
+        lua_getglobal(m_lua, "package");
+        // Lua: package 
+        AZ_Assert(lua_type(m_lua, -1) == LUA_TTABLE, "package was not a table");
+        // Lua: package, package.loadlib
+        lua_getfield(m_lua, -1, "loadlib");
+        // Lua: package, package.loadlib
+        AZ_Assert(lua_type(m_lua, -1) == LUA_TFUNCTION, "package.loadlib was not a function");
+        lua_pop(m_lua, 1);
+        // Lua: package
+        lua_pushnil(m_lua);
+        // Lua: package, nil
+        lua_setfield(m_lua, -2, "loadlib"); // package.loadlib = nil
+        // Lua: package
+        lua_getfield(m_lua, -1, "loadlib");
+        // Lua: package, package.loadlib
+        AZ_Assert(lua_type(m_lua, -1) == LUA_TNIL, "package.loadlib was not nil");
+        lua_pop(m_lua, -2);
+        // Lua;
+    }
+}
+
 namespace AZ
 {
+    using namespace ScriptContextCpp;
+
     struct ExposedLambda
     {
         AZ_TYPE_INFO(ExposedLambda, "{B702DB0B-516B-4807-8007-DC50A5CE180A}");
@@ -4334,15 +4365,7 @@ LUA_API const Node* lua_getDummyNode()
                 }
 
                 lua_atpanic(m_lua, &LuaPanic);
-
-                //if (modules & ScriptContext::MODULE_DEFAULT)
-                //{
-                luaL_openlibs(m_lua);
-                //}
-                //else
-                //{
-                //AZ_Assert(false, "Modules not supported!");
-                //}
+                OpenLuaLibraries(m_lua);
 
                 lua_pushglobaltable(m_lua);       ///< push the _G on the stack
 

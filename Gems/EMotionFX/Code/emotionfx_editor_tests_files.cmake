@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Tests/ActorBuilderTests.cpp
     Tests/BlendTreeParameterNodeTests.cpp
     Tests/CommandRemoveMotionTests.cpp
     Tests/EMotionFXTest.cpp
@@ -47,6 +48,7 @@ set(FILES
     Tests/UI/UIFixture.h
     Tests/UI/ModalPopupHandler.cpp
     Tests/UI/ModalPopupHandler.h
+    Tests/UI/PersistentPluginTests.cpp
     Tests/UI/AnimGraphUIFixture.cpp
     Tests/UI/AnimGraphUIFixture.h
     Tests/UI/MenuUIFixture.cpp

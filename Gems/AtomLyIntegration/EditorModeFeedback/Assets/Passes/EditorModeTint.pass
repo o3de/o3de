@@ -1,0 +1,77 @@
+{
+    // Applies a tinting effect as controlled by the tint color and tint amount
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "EditorModeTintTemplate",
+            "PassClass": "EditorModeTintPass",
+            "Slots": [
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depth",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputEntityMask",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_entityMask",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_framebuffer",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputColor"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputAttachment"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "InputColor",
+                    "Output" : "OutputColor"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/EditorModeTint.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}
