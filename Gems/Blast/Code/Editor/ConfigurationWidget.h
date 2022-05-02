@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <Blast/BlastSystemBus.h>
 #include <QWidget>
+#include <AzCore/Memory/SystemAllocator.h>
 #endif
 
 namespace AzQtComponents

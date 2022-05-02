@@ -6,6 +6,8 @@
  *
  */
 
+#include "Editor/EditorBlastFamilyComponent.h"
+
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
