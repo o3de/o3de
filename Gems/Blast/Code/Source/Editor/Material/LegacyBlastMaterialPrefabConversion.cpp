@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 
 #include <Material/BlastMaterialAsset.h>
+#include <Editor/EditorBlastFamilyComponent.h>
 
 namespace Blast
 {
