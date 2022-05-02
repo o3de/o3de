@@ -196,6 +196,9 @@ namespace Multiplayer
             }
 
             AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
+
+            // SpawnableAssetEventsBus would already be disconnected once OnStartPlayInEditor happens, but it's possible to
+            // exit gamemode before the OnStartPlayInEditor is called if the user hits CTRL+G and then ESC really fast.
             AzFramework::SpawnableAssetEventsBus::Handler::BusDisconnect();
 
             // Rebuild the library to clear temporary in-memory spawnable assets
