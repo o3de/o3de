@@ -298,6 +298,8 @@ set(FILES
     Spawnable/SpawnableAssetBus.h
     Spawnable/SpawnableAssetHandler.h
     Spawnable/SpawnableAssetHandler.cpp
+    Spawnable/SpawnableAssetUtils.h
+    Spawnable/SpawnableAssetUtils.cpp
     Spawnable/SpawnableEntitiesContainer.h
     Spawnable/SpawnableEntitiesContainer.cpp
     Spawnable/SpawnableEntitiesInterface.h
