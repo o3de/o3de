@@ -26,14 +26,12 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            state.PauseTiming();
             float worldX = 0.0f;
             AZ::TransformBus::EventResult(worldX, m_entityModify->GetId(), &AZ::TransformInterface::GetWorldX);
 
             // Move the entity and update the template to capture this transform component change.
             AZ::TransformBus::Event(m_entityModify->GetId(), &AZ::TransformInterface::SetWorldX, worldX + 1);
             UpdateTemplate();
-            state.ResumeTiming();
 
             m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
         }
@@ -46,25 +44,17 @@ namespace Benchmark
         m_entityModify->Deactivate();
         for (auto _ : state)
         {
-            state.PauseTiming();
-            ASSERT_EQ(m_entityModify->GetComponents().size(), 1);
-
             // Add another component and update the template to capture this change.
             AZ::Component* inspectorComponent = m_entityModify->CreateComponent<AzToolsFramework::Components::EditorInspectorComponent>();
-            ASSERT_EQ(m_entityModify->GetComponents().size(), 2);
             UpdateTemplate();
-            state.ResumeTiming();
 
             m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
-            state.PauseTiming();
 
             // Remove the second component added. This will make sure that when multiple iterations are done, we will always be going from
             // one components to two components.
             m_entityModify->RemoveComponent(inspectorComponent);
-            ASSERT_EQ(m_entityModify->GetComponents().size(), 1);
             delete inspectorComponent;
             inspectorComponent = nullptr;
-            UpdateTemplate();
         }
 
         state.SetComplexityN(state.range());
@@ -76,25 +66,18 @@ namespace Benchmark
 
         for (auto _ : state)
         {
-            state.PauseTiming();
             const AZStd::vector<AZ::Component*>& components = m_entityModify->GetComponents();
-            ASSERT_EQ(m_entityModify->GetComponents().size(), 1);
             AZ::Component* transformComponent = components.front();
             m_entityModify->RemoveComponent(transformComponent);
             delete transformComponent;
             transformComponent = nullptr;
-            ASSERT_EQ(m_entityModify->GetComponents().size(), 0);
             UpdateTemplate();
-            state.ResumeTiming();
 
             m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
-            state.PauseTiming();
 
             // Add the component back. This will make sure that when multiple iterations are done, we will always be going from
             // zero components to one component.
             m_entityModify->CreateComponent(AZ::TransformComponentTypeId);
-            ASSERT_EQ(m_entityModify->GetComponents().size(), 1);
-            UpdateTemplate();
         }
 
         state.SetComplexityN(state.range());
@@ -104,25 +87,17 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            state.PauseTiming();
-
             // Add an entity and update the template.
             AZStd::unique_ptr<AZ::Entity> newEntity = AZStd::make_unique<AZ::Entity>("Added Entity");
             AZ::EntityId newEntityId = newEntity->GetId();
-            ASSERT_TRUE(newEntity != nullptr);
             m_instanceCreated->AddEntity(AZStd::move(newEntity));
             UpdateTemplate();
-            state.ResumeTiming();
 
             m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
-            state.PauseTiming();
 
             // Remove the entityadded. This will make sure that when multiple iterations are done, we will always be going from
             // 'n' entities to 'n+1' entities.
-            ASSERT_TRUE(newEntity == nullptr);
             newEntity = m_instanceCreated->DetachEntity(newEntityId);
-            ASSERT_TRUE(newEntity != nullptr);
-            UpdateTemplate();
         }
 
         state.SetComplexityN(state.range());
@@ -132,21 +107,15 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            state.PauseTiming();
-
             // Add an entity and update the template.
             AZStd::unique_ptr<AZ::Entity> detachedEntity = m_instanceCreated->DetachEntity(m_entityModify->GetId());
-            ASSERT_TRUE(detachedEntity != nullptr);
             UpdateTemplate();
-            state.ResumeTiming();
 
             m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
-            state.PauseTiming();
 
             // Add back the entity removed. This will make sure that when multiple iterations are done, we will always be going from
             // 'n' entities to 'n-1' entities.
             m_instanceCreated->AddEntity(AZStd::move(detachedEntity));
-            UpdateTemplate();
         }
 
         state.SetComplexityN(state.range());
@@ -156,25 +125,18 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            state.PauseTiming();
-
             // Add an entity and update the template.
             AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>("Added nested instance");
-            ASSERT_TRUE(nestedInstance != nullptr);
             Instance& addedInstance =
                 m_instanceCreated->AddInstance(AZStd::move(m_prefabSystemComponent->InstantiatePrefab(nestedPrefabTemplateId)));
             const InstanceAlias& instanceAlias = addedInstance.GetInstanceAlias();
             UpdateTemplate();
-            state.ResumeTiming();
 
             m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
-            state.PauseTiming();
 
             // Remove the nested prefab added. This will make sure that when multiple iterations are done, we will always be going from
             // 'n' nested prefabs to 'n+1' nested prefabs.
             nestedInstance = m_instanceCreated->DetachNestedInstance(instanceAlias);
-            ASSERT_TRUE(nestedInstance != nullptr);
-            UpdateTemplate();
         }
 
         state.SetComplexityN(state.range());
@@ -184,23 +146,19 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            state.PauseTiming();
-
             AZStd::vector<InstanceAlias> nestedInstanceAliases = m_instanceCreated->GetNestedInstanceAliases(nestedPrefabTemplateId);
             AZStd::unique_ptr<Instance> detachedNestedInstance = m_instanceCreated->DetachNestedInstance(nestedInstanceAliases.back());
-            ASSERT_TRUE(detachedNestedInstance != nullptr);
             UpdateTemplate();
-            state.ResumeTiming();
 
             m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
-            state.PauseTiming();
 
             // Add back the nested instance removed. This will make sure that when multiple iterations are done, we will always be going
             // from 'n' nested instances to 'n-1' nested instances.
             m_instanceCreated->AddInstance(AZStd::move(detachedNestedInstance));
-            UpdateTemplate();
         }
 
+        // After the last iteration, the template should be updated to avoid link deletion failures.
+        UpdateTemplate();
         state.SetComplexityN(state.range());
     }
 } // namespace Benchmark
