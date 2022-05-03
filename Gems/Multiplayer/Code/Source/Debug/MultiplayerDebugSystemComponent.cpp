@@ -303,7 +303,7 @@ namespace Multiplayer
                 const uint32_t port = aznumeric_cast<uint32_t>(networkInterface.second->GetPort());
                 ImGui::Text("%sNetworkInterface open to %s on port %u", protocol, trustZone, port);
 
-                if (ImGui::BeginTable("", 2, flags))
+                if (ImGui::BeginTable("Stats", 2, flags))
                 {
                     const AzNetworking::NetworkInterfaceMetrics& metrics = networkInterface.second->GetMetrics();
                     ImGui::TableSetupColumn("Stat", ImGuiTableColumnFlags_WidthStretch);
@@ -368,7 +368,7 @@ namespace Multiplayer
                     ImGui::EndTable();
                 }
 
-                if (ImGui::BeginTable("", 7, flags))
+                if (ImGui::BeginTable("Connections", 7, flags))
                 {
                     // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
                     ImGui::TableSetupColumn("RemoteAddr", ImGuiTableColumnFlags_WidthStretch);
@@ -444,7 +444,7 @@ namespace Multiplayer
             | ImGuiTableFlags_RowBg
             | ImGuiTableFlags_NoBordersInBody;
 
-        if (ImGui::BeginTable("", 5, flags))
+        if (ImGui::BeginTable("Calls/Bytes", 5, flags))
         {
             // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
             ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);

@@ -10,6 +10,8 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <GraphModel/GraphModelBus.h>
+#include <GraphModel/Model/GraphContext.h>
 
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <Document/MaterialCanvasDocumentRequestBus.h>
@@ -20,6 +22,7 @@ namespace MaterialCanvas
     class MaterialCanvasDocument
         : public AtomToolsFramework::AtomToolsDocument
         , public MaterialCanvasDocumentRequestBus::Handler
+        , public GraphModelIntegration::GraphControllerNotificationBus::Handler
     {
     public:
         AZ_RTTI(MaterialCanvasDocument, "{90299628-AD02-4FEB-9527-7278FA2817AD}", AtomToolsFramework::AtomToolsDocument);
@@ -29,7 +32,10 @@ namespace MaterialCanvas
         static void Reflect(AZ::ReflectContext* context);
 
         MaterialCanvasDocument() = default;
-        MaterialCanvasDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo);
+        MaterialCanvasDocument(
+            const AZ::Crc32& toolId,
+            const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo,
+            AZStd::shared_ptr<GraphModel::GraphContext> graphContext);
         virtual ~MaterialCanvasDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...
@@ -55,5 +61,7 @@ namespace MaterialCanvas
 
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
+        GraphModel::GraphPtr m_graph;
+        AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
     };
 } // namespace MaterialCanvas

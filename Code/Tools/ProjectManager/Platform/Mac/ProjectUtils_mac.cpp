@@ -81,7 +81,7 @@ namespace O3DE::ProjectManager
 
             // Query for the version of xcodebuild (if installed)
             auto queryXcodeBuildVersion = ExecuteCommandResult("xcodebuild", QStringList{ "-version" });
-            if (!queryCmakeInstalled.IsSuccess())
+            if (!queryXcodeBuildVersion.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("Unable to detect XCodeBuilder on this host."));
             }

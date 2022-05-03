@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>307</height>
+    <width>1058</width>
+    <height>394</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -52,8 +52,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>710</width>
-         <height>242</height>
+         <width>1048</width>
+         <height>329</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -182,6 +182,9 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QWidget" name="interpretedWidget" native="true"/>
+              </item>
              </layout>
             </widget>
            </item>
@@ -194,6 +197,12 @@
            </item>
            <item>
             <widget class="QToolButton" name="runValidation">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Ignored">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="toolTip">
               <string>Will run a validation check on the current graph and report any warnings/errors discovered.</string>
              </property>
