@@ -134,6 +134,7 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         # Test steps begin.
         # 1. Add Display Mapper level component to the level entity.
         display_mapper_component = EditorLevelEntity.add_component(AtomComponentProperties.display_mapper())
+        general.idle_wait_frames(1)
         Report.critical_result(
             Tests.display_mapper_component,
             EditorLevelEntity.has_component(AtomComponentProperties.display_mapper()))
