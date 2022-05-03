@@ -244,7 +244,6 @@ namespace ScriptCanvasBuilder
         AzFramework::ConstructScriptAssetPaths(compileRequest);
 
         // compiles in input stream Lua in memory, writes output to disk
-        constexpr bool writeAssetInfo{ true };
         auto compileOutcome = AzFramework::CompileScriptAndSaveAsset(compileRequest);
         if (!compileOutcome.IsSuccess())
         {
