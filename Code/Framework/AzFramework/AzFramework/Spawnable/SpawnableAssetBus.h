@@ -33,11 +33,11 @@ namespace AzFramework
         virtual void OnResolveAliases(
             [[maybe_unused]] Spawnable::EntityAliasVisitor& aliases,
             [[maybe_unused]] const SpawnableMetaData& metadata,
-            [[maybe_unused]] const Spawnable::EntityList& entities){};
+            [[maybe_unused]] const Spawnable::EntityList& entities) {}
 
         //! Notification to allow systems to access a spawnable before it's been modified by aliasing.
         //! This ebus function will be called for all spawnables, even if there are no aliases on the spawnable.
-        virtual void OnPreparingSpawnable([[maybe_unused]]const Spawnable& spawnable, [[maybe_unused]]const AZStd::string& id) {}
+        virtual void OnPreparingSpawnable([[maybe_unused]]const Spawnable& spawnable, [[maybe_unused]]const AZStd::string& assetHint) {}
     };
 
     using SpawnableAssetEventsBus = AZ::EBus<SpawnableAssetEvents>;

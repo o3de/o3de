@@ -130,18 +130,19 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::Activate()
     {
-        AzFramework::GameEntityContextEventBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         MultiplayerEditorServerRequestBus::Handler::BusConnect();
         AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        AzFramework::GameEntityContextEventBus::Handler::BusDisconnect();
         MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
+        AzFramework::SpawnableAssetEventsBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
     void MultiplayerEditorSystemComponent::NotifyRegisterViews()
@@ -196,9 +197,15 @@ namespace Multiplayer
 
             AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
 
+            // SpawnableAssetEventsBus would already be disconnected once OnStartPlayInEditor happens, but it's possible to
+            // exit gamemode before the OnStartPlayInEditor is called if the user hits CTRL+G and then ESC really fast.
+            AzFramework::SpawnableAssetEventsBus::Handler::BusDisconnect();
+
             // Rebuild the library to clear temporary in-memory spawnable assets
             AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
+            // Delete the spawnables we've stored for the server
+            m_preAliasedSpawnablesForServer.clear();
             break;
         }
     }
@@ -302,77 +309,6 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
-    {
-        IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
-        if (!editorsv_enabled || !mpTools)
-        {
-            // Early out if Editor server is not enabled.
-            // This allows to avoid printing an error about missing PrefabEditorEntityOwnershipInterface for non-prefab levels.
-            return;
-        }
-
-        auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        if (!prefabEditorEntityOwnershipInterface)
-        {
-            bool prefabSystemEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
-            return;
-        }
-
-        // BeginGameMode and Prefab Processing have completed at this point
-        const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
-        
-        AZStd::vector<uint8_t> buffer;
-        AZ::IO::ByteContainerStream byteStream(&buffer);
-
-        // Serialize Asset information and AssetData into a potentially large buffer
-        for (auto& [spawnableName, spawnableAssetData] : allAssetData)
-        {
-            for (auto& asset : spawnableAssetData.m_assets)
-            {
-                AZ::Data::AssetId assetId = asset.GetId();
-                AZStd::string assetHint = asset.GetHint();
-                uint32_t hintSize = aznumeric_cast<uint32_t>(assetHint.size());
-
-                byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-                byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
-                byteStream.Write(assetHint.size(), assetHint.data());
-                AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
-            }
-        }
-
-        if (editorsv_launch)
-        {
-            const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
-            if (LocalHost != remoteAddress)
-            {
-                AZ_Warning(
-                    "MultiplayerEditor", false,
-                    "Launching editor server skipped because of incompatible settings. "
-                    "When using editorsv_launch=true editorsv_serveraddr must be set to local address (127.0.0.1) instead %s",
-                    remoteAddress.c_str())
-                return;
-            }
-
-            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
-
-            // Launch the editor-server
-            LaunchEditorServer();
-        }
-        
-        // Keep trying to connect until the port is finally available.
-        m_connectionAttempts = 0;
-        constexpr float retrySeconds = 1.0f;
-        constexpr bool autoRequeue = true;
-        m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
-    }
-
-    void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
-    {
-    }
-
     void MultiplayerEditorSystemComponent::OnServerAcceptanceReceived()
     {
         // We're now accepting the connection to the EditorServer.
@@ -394,25 +330,20 @@ namespace Multiplayer
 
         AZ_Printf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
 
-        const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
 
         AZStd::vector<uint8_t> buffer;
         AZ::IO::ByteContainerStream byteStream(&buffer);
 
         // Serialize Asset information and AssetData into a potentially large buffer
-        for (auto& [spawnableName, spawnableAssetData] : allAssetData)
+        for (const auto& [assetHint, preAliasedSpawnable] : m_preAliasedSpawnablesForServer)
         {
-            for (auto& asset : spawnableAssetData.m_assets)
-            {
-                AZ::Data::AssetId assetId = asset.GetId();
-                AZStd::string assetHint = asset.GetHint();
-                auto hintSize = aznumeric_cast<uint32_t>(assetHint.size());
+            // This is an un-aliased level spawnable (example: Root.spawnable and Root.network.spawnable) which we'll send to the server
+            auto hintSize = aznumeric_cast<uint32_t>(assetHint.size());
 
-                byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-                byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
-                byteStream.Write(assetHint.size(), assetHint.data());
-                AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
-            }
+            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<const void*>(&preAliasedSpawnable->GetId()));
+            byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+            byteStream.Write(assetHint.size(), assetHint.data());
+            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, preAliasedSpawnable.get(), preAliasedSpawnable->GetType());
         }
         
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
@@ -491,10 +422,62 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerEditorSystemComponent::OnPreparingSpawnable(
-        [[maybe_unused]] const AzFramework::Spawnable& spawnable, [[maybe_unused]] const AZStd::string& id)
+    void MultiplayerEditorSystemComponent::OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint)
     {
-        
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        AZ_Assert(serializeContext, "Failed to retrieve application serialization context.")
+        AZ_Assert(!assetHint.empty(), "Asset hint is empty!")
+
+        AZStd::unique_ptr<AzFramework::Spawnable> preAliasedSpawnableClone(serializeContext->CloneObject(&spawnable));
+        m_preAliasedSpawnablesForServer.emplace_back(assetHint, AZStd::move(preAliasedSpawnableClone));
     }
 
+    void MultiplayerEditorSystemComponent::OnStartPlayInEditorBegin()
+    {
+        IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
+        if (!editorsv_enabled || !mpTools)
+        {
+            // Early out if Editor server is not enabled.
+            return;
+        }
+
+        AZ_Assert(m_preAliasedSpawnablesForServer.empty(), "MultiplayerEditorSystemComponent already has pre-aliased spawnables! Please update code to clean-up the table between entering and existing play mode.")
+        AzFramework::SpawnableAssetEventsBus::Handler::BusConnect();
+    }
+
+    void MultiplayerEditorSystemComponent::OnStartPlayInEditor()
+    {
+        IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
+        if (!editorsv_enabled || !mpTools)
+        {
+            // Early out if Editor server is not enabled.
+            return;
+        }
+
+        AzFramework::SpawnableAssetEventsBus::Handler::BusDisconnect();
+
+        if (editorsv_launch)
+        {
+            const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
+            if (LocalHost != remoteAddress)
+            {
+                AZ_Warning(
+                    "MultiplayerEditor", false,
+                    "Launching editor server skipped because of incompatible settings. "
+                    "When using editorsv_launch=true editorsv_serveraddr must be set to local address (127.0.0.1) instead %s",
+                    remoteAddress.c_str()) return;
+            }
+
+            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
+            // Launch the editor-server
+            LaunchEditorServer();
+        }
+
+        // Keep trying to connect until the port is finally available.
+        m_connectionAttempts = 0;
+        constexpr double retrySeconds = 1.0;
+        constexpr bool autoRequeue = true;
+        m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
+    }
 }
