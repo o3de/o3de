@@ -197,8 +197,7 @@ namespace ScriptCanvasBuilder
         {
             SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptCanvas", "DataSystem::ReportReadyFilter executing Lua script processing.");
             const auto assetIdGuid = asset.GetId().m_guid;
-            const auto luaScriptAssetId = AZ::Data::AssetId(assetIdGuid, AZ::ScriptAsset::CompiledAssetSubId);
-
+            
             auto& buildResult = m_assets[assetIdGuid];
             buildResult.data = asset;
             buildResult.data.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
