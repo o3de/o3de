@@ -10,6 +10,13 @@
 #include <Mocks/ISystemMock.h>
 #include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Entity/GameEntityContextComponent.h>
+#include <AzFramework/Asset/AssetSystemComponent.h>
+#include <AzCore/Memory/MemoryComponent.h>
+#include <AzCore/Asset/AssetManagerComponent.h>
+#include <AzCore/IO/Streamer/StreamerComponent.h>
+#include <AzCore/Jobs/JobManagerComponent.h>
+#include <AzCore/Slice/SliceSystemComponent.h>
 
 #include <UiCanvasComponent.h>
 #include <Animation/AnimSequence.h>
@@ -79,6 +86,20 @@ namespace UnitTest
         {
             m_timeSystem.reset();
             m_timeSystem = AZStd::make_unique<UnitTest::AnimationTestStubTimer>();
+        }
+
+        // override and only include system components required for tests.
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        {
+            return AZ::ComponentTypeList{
+                azrtti_typeid<AZ::MemoryComponent>(),
+                azrtti_typeid<AZ::AssetManagerComponent>(),
+                azrtti_typeid<AZ::JobManagerComponent>(),
+                azrtti_typeid<AZ::StreamerComponent>(),
+                azrtti_typeid<AZ::SliceSystemComponent>(),
+                azrtti_typeid<AzFramework::GameEntityContextComponent>(),
+                azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
+            };
         }
 
         UnitTest::AnimationTestStubTimer* GetTimer()
