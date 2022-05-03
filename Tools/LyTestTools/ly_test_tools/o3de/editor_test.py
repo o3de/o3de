@@ -71,47 +71,23 @@ class EditorTestBase(abc.ABC):
 
 class EditorSingleTest(EditorTestBase):
     """
-    Test that will be run alone in one test_launcher, with no parallel test_launcher objects.
+    Test that will be run alone in one editor, with no parallel editors
     """
     def __init__(self):
-        # Extra cmdline arguments to supply to the test_launcher for the test
+        # Extra cmdline arguments to supply to the editor for the test
         self.extra_cmdline_args = []
         # Whether to use null renderer, this will override use_null_renderer for the Suite if not None
         self.use_null_renderer = None
-        # Marks the test as a MaterialEditor test instead of an Editor test which changes the test_launcher.
-        self.material_editor_test = False
-
-    @pytest.fixture(scope="function")
-    def test_launcher(self,
-                        request: _pytest.fixtures.FixtureRequest,
-                        editor: ly_test_tools.Launcher,
-                        material_editor: ly_test_tools.Launcher) -> ly_test_tools.Launcher:
-        """
-        Fixture that determines which launcher to use for the current test.
-        :request: The Pytest request object.
-        :editor: The editor Launcher object.
-        :material_editor: The material_editor Launcher object.
-        :returns: Either the editor or material_editor Launcher object.
-        """
-        return self._test_launcher(request, editor, material_editor)
-
-    def _test_launcher(self, request, editor, material_editor):
-        """
-        A wrapper function for unit testing of this file to call directly. Do not use in production.
-        """
-        if not self.material_editor_test:
-            return editor
-        return editor
 
     @staticmethod
-    def setup(instance, request, workspace, test_launcher, editor_test_results, launcher_platform):
+    def setup(instance, request, workspace, editor, editor_test_results, launcher_platform):
         """
         User-overrideable setup function, which will run before the test
         """
         pass
 
     @staticmethod
-    def wrap_run(instance, request, workspace, test_launcher, editor_test_results, launcher_platform):
+    def wrap_run(instance, request, workspace, editor, editor_test_results, launcher_platform):
         """
         User-overrideable wrapper function, which will run before and after test.
         Any code before the 'yield' statement will run before the test. With code after yield run after the test.
@@ -119,7 +95,7 @@ class EditorSingleTest(EditorTestBase):
         yield
 
     @staticmethod
-    def teardown(instance, request, workspace, test_launcher, editor_test_results, launcher_platform):
+    def teardown(instance, request, workspace, editor, editor_test_results, launcher_platform):
         """
         User-overrideable teardown function, which will run after the test
         """
@@ -153,13 +129,12 @@ class EditorParallelTest(EditorSharedTest):
 class EditorBatchedTest(EditorSharedTest):
     """
     Test that will be batched along with the other batched tests in the same editor instance, though not executed in
-    parallel with other editor instances. Reduces repeated overhead from starting the Editor or MaterialEditor.
+    parallel with other editor instances. Reduces repeated overhead from starting the Editor.
 
     Does not support per test setup/teardown to avoid creating race conditions
     """
     is_batchable = True
     is_parallelizable = False
-
 
 class Result:
 
@@ -178,7 +153,7 @@ class Result:
                 return output
             else:
                 return "-- No output --"
-
+            
         def get_editor_log_str(self):
             # type () -> str
             """
@@ -226,7 +201,7 @@ class Result:
             self.test_spec = test_spec
             self.output = output
             self.editor_log = editor_log
-
+            
         def __str__(self):
             output = (
                 f"Test FAILED\n"
@@ -258,7 +233,7 @@ class Result:
             self.ret_code = ret_code
             self.stacktrace = stacktrace
             self.editor_log = editor_log
-
+            
         def __str__(self):
             stacktrace_str = "-- No stacktrace data found --" if not self.stacktrace else self.stacktrace
             output = (
@@ -293,7 +268,7 @@ class Result:
             self.test_spec = test_spec
             self.time_secs = time_secs
             self.editor_log = editor_log
-
+            
         def __str__(self):
             output = (
                 f"Test ABORTED after not completing within {self.time_secs} seconds\n"
@@ -347,8 +322,6 @@ class EditorTestSuite:
     use_null_renderer = True
     # Maximum time for a single editor to stay open on a shared test
     timeout_editor_shared_test = 300
-    # Marks the test as a MaterialEditor test instead of an Editor test.
-    material_editor_test = False
 
     # Function to calculate number of editors to run in parallel, this can be overridden by the user
     @staticmethod
@@ -388,28 +361,6 @@ class EditorTestSuite:
             editor_utils.kill_all_ly_processes(include_asset_processor=True)
         else:
             editor_utils.kill_all_ly_processes(include_asset_processor=False)
-
-    @pytest.fixture(scope="function")
-    def test_launcher(self,
-                        request: _pytest.fixtures.FixtureRequest,
-                        editor: ly_test_tools.Launcher,
-                        material_editor: ly_test_tools.Launcher) -> ly_test_tools.Launcher:
-        """
-        Fixture that determines which launcher to use for the current test.
-        :request: The Pytest request object.
-        :editor: The editor Launcher object.
-        :material_editor: The material_editor Launcher object.
-        :returns: Either the editor or material_editor Launcher object.
-        """
-        return self._test_launcher(request, editor, material_editor)
-
-    def _test_launcher(self, request, editor, material_editor):
-        """
-        A wrapper function for unit testing of this file to call directly. Do not use in production.
-        """
-        if not self.material_editor_test:
-            return editor
-        return editor
 
     class Runner:
         def __init__(self, name, func, tests):
@@ -474,25 +425,22 @@ class EditorTestSuite:
 
                 def make_test_func(name, test_spec):
                     @set_marks({"run_type": "run_single"})
-                    def single_run(self, request, workspace, test_launcher, editor_test_data, launcher_platform):
+                    def single_run(self, request, workspace, editor, editor_test_data, launcher_platform):
                         # only single tests are allowed to have setup/teardown, however we can have shared tests that
                         # were explicitly set as single, for example via cmdline argument override
                         is_single_test = issubclass(test_spec, EditorSingleTest)
                         if is_single_test:
                             # Setup step for wrap_run
-                            wrap = test_spec.wrap_run(
-                                self, request, workspace, test_launcher, editor_test_data, launcher_platform)
+                            wrap = test_spec.wrap_run(self, request, workspace, editor, editor_test_data, launcher_platform)
                             assert isinstance(wrap, types.GeneratorType), "wrap_run must return a generator, did you forget 'yield'?"
                             next(wrap, None)
                             # Setup step                        
-                            test_spec.setup(
-                                self, request, workspace, test_launcher, editor_test_data, launcher_platform)
+                            test_spec.setup(self, request, workspace, editor, editor_test_data, launcher_platform)
                         # Run
-                        self._run_single_test(request, workspace, test_launcher, editor_test_data, test_spec)
+                        self._run_single_test(request, workspace, editor, editor_test_data, test_spec)
                         if is_single_test:
                             # Teardown
-                            test_spec.teardown(
-                                self, request, workspace, test_launcher, editor_test_data, launcher_platform)
+                            test_spec.teardown(self, request, workspace, editor, editor_test_data, launcher_platform)
                             # Teardown step for wrap_run
                             next(wrap, None)
                     return single_run
@@ -510,16 +458,16 @@ class EditorTestSuite:
 
                 def make_func():
                     @set_marks({"runner": runner, "run_type": "run_shared"})
-                    def shared_run(self, request, workspace, test_launcher, editor_test_data, launcher_platform):
-                        getattr(self, function.__name__)(request, workspace, test_launcher, editor_test_data, runner.tests)
+                    def shared_run(self, request, workspace, editor, editor_test_data, launcher_platform):
+                        getattr(self, function.__name__)(request, workspace, editor, editor_test_data, runner.tests)
                     return shared_run
                 setattr(self.obj, name, make_func())
-
+                
                 # Add the shared tests results, these just succeed/fail based what happened on the Runner.
                 for test_spec in tests:
                     def make_func(test_spec):
                         @set_marks({"runner": runner, "test_spec": test_spec, "run_type": "result"})
-                        def result(self, request, workspace, test_launcher, editor_test_data, launcher_platform):
+                        def result(self, request, workspace, editor, editor_test_data, launcher_platform):
                             # The runner must have filled the editor_test_data.results dict fixture for this test.
                             # Hitting this assert could mean if there was an error executing the runner
                             if test_spec.__name__ not in editor_test_data.results:
@@ -529,13 +477,13 @@ class EditorTestSuite:
                                                                        f"tests.")
                             cls._report_result(test_spec.__name__, editor_test_data.results[test_spec.__name__])
                         return result
-
+                    
                     result_func = make_func(test_spec)
                     if hasattr(test_spec, "pytestmark"):
                         result_func.pytestmark = test_spec.pytestmark
                     setattr(self.obj, test_spec.__name__, result_func)
                 runners.append(runner)
-
+            
             create_runner("run_batched_tests", cls._run_batched_tests, batched_tests)
             create_runner("run_parallel_tests", cls._run_parallel_tests, parallel_tests)
             create_runner("run_parallel_batched_tests", cls._run_parallel_batched_tests, parallel_batched_tests)
@@ -717,26 +665,25 @@ class EditorTestSuite:
             editor_test_data.asset_processor = None
             raise ex
 
-    def _setup_editor_test(self,
-                           test_launcher: ly_test_tools.launchers.platforms.base.Launcher,
+    def _setup_editor_test(self, editor: ly_test_tools.launchers.platforms.base.Launcher,
                            workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                            editor_test_data: TestData) -> None:
         """
         Sets up an editor test by preparing the Asset Processor, killing all other O3DE processes, and configuring
-        :test_launcher: The launcher Editor or MaterialEditor object
+        :editor: The launcher Editor object
         :workspace: The test Workspace object
         :editor_test_data: The TestData from calling editor_test_data()
         :return: None
         """
         self._prepare_asset_processor(workspace, editor_test_data)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        test_launcher.configure_settings()
+        editor.configure_settings()
 
     @staticmethod
     def _get_results_using_output(test_spec_list: list[EditorTestBase], output: str, editor_log_content: str) -> dict[str, Result]:
         """
-        Utility function for parsing the output information from the Editor or MaterialEditor.
-        It deserializes the JSON content printed in the output for every test and returns that information.
+        Utility function for parsing the output information from the editor. It deserializes the JSON content printed in
+        the output for every test and returns that information.
         :test_spec_list: The list of EditorTests
         :output: The Editor from Editor.get_output()
         :editor_log_content: The contents of the editor log as a string
@@ -808,19 +755,16 @@ class EditorTestSuite:
             error_str = f"Test {name}:\n{str(result)}"
             pytest.fail(error_str)
 
-    def _exec_editor_test(self,
-                          request: _pytest.fixtures.FixtureRequest,
+    def _exec_editor_test(self, request: _pytest.fixtures.FixtureRequest,
                           workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                          test_launcher: ly_test_tools.launchers.platforms.base.Launcher,
-                          run_id: int,
-                          log_name: str,
-                          test_spec: EditorTestBase,
+                          editor: ly_test_tools.launchers.platforms.base.Launcher,
+                          run_id: int, log_name: str, test_spec: EditorTestBase,
                           cmdline_args: list[str] = None) -> dict[str, Result]:
         """
         Starts the editor with the given test and retuns an result dict with a single element specifying the result
         :request: The pytest request
         :workspace: The LyTestTools Workspace object
-        :test_launcher: The LyTestTools Editor or MaterialEditor object
+        :editor: The LyTestTools Editor object
         :run_id: The unique run id
         :log_name: The name of the editor log to retrieve
         :test_spec: The type of EditorTestBase
@@ -830,9 +774,6 @@ class EditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        test_run_python_command = "--runpythontest"
-        if self.material_editor_test:
-            test_run_python_command = "--runpython"
         test_cmdline_args += [
             "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
             f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
@@ -852,16 +793,16 @@ class EditorTestSuite:
         results = {}
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
-            test_run_python_command, test_filename,
+            "--runpythontest", test_filename,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
-        test_launcher.args.extend(cmdline)
-        test_launcher.start(backupFiles=False, launch_ap=False, configure_settings=False)
+        editor.args.extend(cmdline)
+        editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
         try:
-            test_launcher.wait(test_spec.timeout)
-            output = test_launcher.get_output()
-            return_code = test_launcher.get_returncode()
+            editor.wait(test_spec.timeout)
+            output = editor.get_output()
+            return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the editor log
             workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
@@ -889,22 +830,19 @@ class EditorTestSuite:
                 else:
                     test_result = Result.Fail(test_spec, output, editor_log_content)
         except WaitTimeoutError:
-            output = test_launcher.get_output()
-            test_launcher.stop()
+            output = editor.get_output()
+            editor.stop()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout(test_spec, output, test_spec.timeout, editor_log_content)
-
+    
         editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, editor_log_content)
         results[test_spec.__name__] = test_result
         return results
 
-    def _exec_editor_multitest(self,
-                               request: _pytest.fixtures.FixtureRequest,
+    def _exec_editor_multitest(self, request: _pytest.fixtures.FixtureRequest,
                                workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                               test_launcher: ly_test_tools.launchers.platforms.base.Launcher,
-                               run_id: int,
-                               log_name: str,
+                               editor: ly_test_tools.launchers.platforms.base.Launcher, run_id: int, log_name: str,
                                test_spec_list: list[EditorTestBase],
                                cmdline_args: list[str] = None) -> dict[str, Result]:
         """
@@ -913,7 +851,7 @@ class EditorTestSuite:
         failed.
         :request: The pytest request
         :workspace: The LyTestTools Workspace object
-        :test_launcher: The LyTestTools Editor or MaterialEditor object
+        :editor: The LyTestTools Editor object
         :run_id: The unique run id
         :log_name: The name of the editor log to retrieve
         :test_spec_list: A list of EditorTestBase tests to run in the same editor instance
@@ -923,9 +861,6 @@ class EditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        test_run_python_command = "--runpythontest"
-        if self.material_editor_test:
-            test_run_python_command = "--runpython"
         test_cmdline_args += [
             "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
             f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
@@ -943,19 +878,19 @@ class EditorTestSuite:
         results = {}
         test_filenames_str = ";".join(editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
         cmdline = [
-            test_run_python_command, test_filenames_str,
+            "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
 
-        test_launcher.args.extend(cmdline)
-        test_launcher.start(backupFiles=False, launch_ap=False, configure_settings=False)
+        editor.args.extend(cmdline)
+        editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
         output = ""
         editor_log_content = ""
         try:
-            test_launcher.wait(self.timeout_editor_shared_test)
-            output = test_launcher.get_output()
-            return_code = test_launcher.get_returncode()
+            editor.wait(self.timeout_editor_shared_test)
+            output = editor.get_output()
+            return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the editor log
             try:
@@ -1012,9 +947,9 @@ class EditorTestSuite:
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash(crashed_result.test_spec, output, return_code,
                                                                crash_error, crashed_result.editor_log)
-        except WaitTimeoutError:
-            test_launcher.stop()
-            output = test_launcher.get_output()
+        except WaitTimeoutError:            
+            editor.stop()
+            output = editor.get_output()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
 
             # The editor timed out when running the tests, get the data from the output to find out which ones ran
@@ -1041,26 +976,26 @@ class EditorTestSuite:
                                                          results[test_spec_name].output,
                                                          self.timeout_editor_shared_test, result.editor_log)
         return results
-
+    
     def _run_single_test(self, request: _pytest.fixtures.FixtureRequest,
                          workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                         test_launcher: ly_test_tools.launchers.platforms.base.Launcher,
+                         editor: ly_test_tools.launchers.platforms.base.Launcher,
                          editor_test_data: TestData, test_spec: EditorSingleTest) -> None:
         """
-        Runs a single test (one test_launcher, one test) with the given specs
+        Runs a single test (one editor, one test) with the given specs
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :test_launcher: The LyTestTools Editor or MaterialEditor object
+        :editor: The LyTestTools Editor object
         :editor_test_data: The TestData from calling editor_test_data()
         :test_spec: The test class that should be a subclass of EditorSingleTest
         :return: None
         """
-        self._setup_editor_test(test_launcher, workspace, editor_test_data)
+        self._setup_editor_test(editor, workspace, editor_test_data)
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
 
-        result = self._exec_editor_test(request, workspace, test_launcher, 1, "editor_test.log", test_spec, extra_cmdline_args)
+        result = self._exec_editor_test(request, workspace, editor, 1, "editor_test.log", test_spec, extra_cmdline_args)
         if result is None:
             logger.error(f"Unexpectedly found no test run in the editor log during {test_spec}")
             result = {"Unknown":
@@ -1074,18 +1009,15 @@ class EditorTestSuite:
         if not isinstance(test_result, Result.Pass):
             editor_utils.save_failed_asset_joblogs(workspace)
 
-    def _run_batched_tests(self,
-                           request: _pytest.fixtures.FixtureRequest,
+    def _run_batched_tests(self, request: _pytest.fixtures.FixtureRequest,
                            workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                           test_launcher: ly_test_tools.launchers.platforms.base.Launcher,
-                           editor_test_data: TestData,
-                           test_spec_list: list[EditorSharedTest],
-                           extra_cmdline_args: list[str] = None) -> None:
+                           editor: ly_test_tools.launchers.platforms.base.Launcher, editor_test_data: TestData,
+                           test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = None) -> None:
         """
-        Runs a batch of tests in one single editor with the given spec list (one test_launcher, multiple tests)
+        Runs a batch of tests in one single editor with the given spec list (one editor, multiple tests)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :test_launcher: The LyTestTools Editor or MaterialEditor object
+        :editor: The LyTestTools Editor object
         :editor_test_data: The TestData from calling editor_test_data()
         :test_spec_list: A list of EditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
@@ -1097,8 +1029,8 @@ class EditorTestSuite:
         if not test_spec_list:
             return
 
-        self._setup_editor_test(test_launcher, workspace, editor_test_data)
-        results = self._exec_editor_multitest(request, workspace, test_launcher, 1, "editor_test.log", test_spec_list,
+        self._setup_editor_test(editor, workspace, editor_test_data)
+        results = self._exec_editor_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list,
                                               extra_cmdline_args)
         editor_test_data.results.update(results)
         # If at least one test did not pass, save assets with errors and warnings
@@ -1110,18 +1042,15 @@ class EditorTestSuite:
                 editor_utils.save_failed_asset_joblogs(workspace)
                 return  # exit early on first batch failure
 
-    def _run_parallel_tests(self,
-                            request: _pytest.fixtures.FixtureRequest,
+    def _run_parallel_tests(self, request: _pytest.fixtures.FixtureRequest,
                             workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                            test_launcher: ly_test_tools.launchers.platforms.base.Launcher,
-                            editor_test_data: TestData,
-                            test_spec_list: list[EditorSharedTest],
-                            extra_cmdline_args: list[str] = None) -> None:
+                            editor: ly_test_tools.launchers.platforms.base.Launcher, editor_test_data: TestData,
+                            test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = None) -> None:
         """
-        Runs multiple editors with one test on each editor (multiple test_launcher objects, one test each)
+        Runs multiple editors with one test on each editor (multiple editor, one test each)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :test_launcher: The LyTestTools Editor or MaterialEditor object
+        :editor: The LyTestTools Editor object
         :editor_test_data: The TestData from calling editor_test_data()
         :test_spec_list: A list of EditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
@@ -1133,7 +1062,7 @@ class EditorTestSuite:
         if not test_spec_list:
             return
 
-        self._setup_editor_test(test_launcher, workspace, editor_test_data)
+        self._setup_editor_test(editor, workspace, editor_test_data)
         parallel_editors = self._get_number_parallel_editors(request)
         assert parallel_editors > 0, "Must have at least one editor"
         
@@ -1145,16 +1074,16 @@ class EditorTestSuite:
             threads = []
             results_per_thread = [None] * total_threads
             for i in range(total_threads):
-                def make_func(test_spec, index, my_test_launcher):
+                def make_func(test_spec, index, my_editor):
                     def run(request, workspace, extra_cmdline_args):
-                        results = self._exec_editor_test(
-                            request, workspace, my_test_launcher, index+1, f"editor_test.log", test_spec, extra_cmdline_args)
+                        results = self._exec_editor_test(request, workspace, my_editor, index+1, f"editor_test.log",
+                                                         test_spec, extra_cmdline_args)
                         assert results is not None
                         results_per_thread[index] = results
                     return run
 
                 # Duplicate the editor using the one coming from the fixture
-                cur_editor = test_launcher.__class__(workspace, test_launcher.args.copy())
+                cur_editor = editor.__class__(workspace, editor.args.copy())
                 f = make_func(tests_for_iteration[i], i, cur_editor)
                 t = threading.Thread(target=f, args=(request, workspace, extra_cmdline_args))
                 t.start()
@@ -1180,18 +1109,15 @@ class EditorTestSuite:
             if save_asset_logs:
                 editor_utils.save_failed_asset_joblogs(workspace)
 
-    def _run_parallel_batched_tests(self,
-                                    request: _pytest.fixtures.FixtureRequest,
+    def _run_parallel_batched_tests(self, request: _pytest.fixtures.FixtureRequest,
                                     workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                                    test_launcher: ly_test_tools.launchers.platforms.base.Launcher,
-                                    editor_test_data: TestData,
-                                    test_spec_list: list[EditorSharedTest],
-                                    extra_cmdline_args: list[str] = None) -> None:
+                                    editor: ly_test_tools.launchers.platforms.base.Launcher, editor_test_data: TestData,
+                                    test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = None) -> None:
         """
-        Runs multiple editors with a batch of tests for each editor (multiple test_launcher objects, multiple tests each)
+        Runs multiple editors with a batch of tests for each editor (multiple editor, multiple tests each)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :test_launcher: The LyTestTools Editor or MaterialEditor object
+        :editor: The LyTestTools Editor object
         :editor_test_data: The TestData from calling editor_test_data()
         :test_spec_list: A list of EditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
@@ -1203,7 +1129,7 @@ class EditorTestSuite:
         if not test_spec_list:
             return
 
-        self._setup_editor_test(test_launcher, workspace, editor_test_data)
+        self._setup_editor_test(editor, workspace, editor_test_data)
         total_threads = self._get_number_parallel_editors(request)
         assert total_threads > 0, "Must have at least one editor"
         threads = []
@@ -1212,12 +1138,12 @@ class EditorTestSuite:
         for i in range(total_threads):
             tests_for_thread = test_spec_list[i*tests_per_editor:(i+1)*tests_per_editor]
 
-            def make_func(test_spec_list_for_test_launcher, index, my_test_launcher):
+            def make_func(test_spec_list_for_editor, index, my_editor):
                 def run(request, workspace, extra_cmdline_args):
                     results = None
-                    if len(test_spec_list_for_test_launcher) > 0:
-                        results = self._exec_editor_multitest(request, workspace, my_test_launcher, index+1,
-                                                              f"editor_test.log", test_spec_list_for_test_launcher,
+                    if len(test_spec_list_for_editor) > 0:
+                        results = self._exec_editor_multitest(request, workspace, my_editor, index+1,
+                                                              f"editor_test.log", test_spec_list_for_editor,
                                                               extra_cmdline_args)
                         assert results is not None
                     else:
@@ -1226,7 +1152,7 @@ class EditorTestSuite:
                 return run
 
             # Duplicate the editor using the one coming from the fixture
-            cur_editor = test_launcher.__class__(workspace, test_launcher.args.copy())
+            cur_editor = editor.__class__(workspace, editor.args.copy())
             f = make_func(tests_for_thread, i, cur_editor)
             t = threading.Thread(target=f, args=(request, workspace, extra_cmdline_args))
             t.start()
