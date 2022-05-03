@@ -11,15 +11,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 
-namespace AzToolsFramework::Prefab
-{
-    class PrefabSystemComponentInterface;
-    class PrefabLoaderInterface;
-}
-
-namespace AzToolsFramework::Prefab::PrefabConversionUtils
+namespace AzFramework
 {
     class InMemorySpawnableAssetContainer
     {
@@ -30,6 +24,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         using CreateSpawnableResult = AZ::Outcome<AZ::Data::Asset<AZ::Data::AssetData>&, AZStd::string>;
         using RemoveSpawnableResult = AZ::Outcome<void, AZStd::string>;
 
+        using AssetDataInfoPair = AZStd::pair<AZ::Data::AssetData*, AZ::Data::AssetInfo>;
+        using AssetDataInfoContainer = AZStd::vector<AssetDataInfoPair>;
+
         struct SpawnableAssetData
         {
             Assets m_assets;
@@ -37,19 +34,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         };
         using SpawnableAssets = AZStd::unordered_map<AZStd::string, SpawnableAssetData>;
 
-        ~InMemorySpawnableAssetContainer();
+        ~InMemorySpawnableAssetContainer() = default;
 
-        bool Activate(AZStd::string_view stackProfile);
-        void Deactivate();
-        bool IsActivated() const;
-        AZStd::string_view GetStockProfile() const;
-
-        CreateSpawnableResult CreateInMemorySpawnableAsset(
-            AZStd::string_view prefabFilePath, AZStd::string_view spawnableName, bool loadReferencedAssets = false);
-        CreateSpawnableResult CreateInMemorySpawnableAsset(
-            AzToolsFramework::Prefab::TemplateId templateId, AZStd::string_view spawnableName, bool loadReferencedAssets = false);
-        CreateSpawnableResult CreateInMemorySpawnableAsset(
-            AzFramework::Spawnable* spawnable, const AZ::Data::AssetId& assetId);
         RemoveSpawnableResult RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName);
         AZ::Data::AssetId GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const;
         bool HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const;
@@ -58,13 +44,23 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         SpawnableAssets&& MoveAllInMemorySpawnableAssets();
         const SpawnableAssets& GetAllInMemorySpawnableAssets() const;
 
+        //! Creates an in-memory spawnable asset given a list of product asset data
+        CreateSpawnableResult CreateInMemorySpawnableAsset(
+            AssetDataInfoContainer& assetDataInfoContainer,
+            bool loadReferencedAssets,
+            const AZStd::string& rootSpawnableName);
+
+        //! Creates an in-memory spawnable asset given a single spawnable.
+        //! Used when a network server receives in-memory spawnable data from the client
+        CreateSpawnableResult CreateInMemorySpawnableAsset(
+            AzFramework::Spawnable* spawnable,
+            const AZ::Data::AssetId& assetId,
+            bool loadReferencedAssets,
+            const AZStd::string& rootSpawnableName);
+
     private:
         void LoadReferencedAssets(SpawnableAssetData& spawnable);
         
         SpawnableAssets m_spawnableAssets;
-        PrefabConversionUtils::PrefabConversionPipeline m_converter;
-        AZStd::string_view m_stockProfile;
-        PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
-        PrefabLoaderInterface* m_loaderInterface = nullptr;
     };
-} // namespace AzToolsFramework::Prefab::PrefabConversionUtils
+} // namespace AzFramework
