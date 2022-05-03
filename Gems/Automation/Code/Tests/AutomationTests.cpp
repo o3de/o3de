@@ -105,11 +105,11 @@ namespace UnitTest
         const char* scriptLog = "Script: Hello World\n";
 
         ASSERT_EQ(m_automationLogs.size(), 2);
-        EXPECT_STREQ(m_automationLogs[0].c_str(), executeScriptLog.c_str());
-        EXPECT_STREQ(m_automationLogs[1].c_str(), scriptLog);
+        EXPECT_EQ(m_automationLogs[0], executeScriptLog);
+        EXPECT_EQ(m_automationLogs[1], scriptLog);
 
         ASSERT_EQ(m_automationWarnings.size(), 1);
-        EXPECT_STREQ(m_automationWarnings[0].c_str(), scriptLog);
+        EXPECT_EQ(m_automationWarnings[0], scriptLog);
     }
 
     TEST_F(TrackedAutomationFixture, ScriptCommandLineArgument_UsesIdleFramesMethod_AllOperationsLogged)
@@ -120,8 +120,8 @@ namespace UnitTest
 
         ASSERT_EQ(m_automationLogs.size(), 3);
         // first log is the "running script ..." line
-        EXPECT_STREQ(m_automationLogs[1].c_str(), "Script: Going to idle for 5 frames\n");
-        EXPECT_STREQ(m_automationLogs[2].c_str(), "Script: Idled for 5 frames\n");
+        EXPECT_EQ(m_automationLogs[1], "Script: Going to idle for 5 frames\n");
+        EXPECT_EQ(m_automationLogs[2], "Script: Idled for 5 frames\n");
     }
 
 
@@ -133,8 +133,8 @@ namespace UnitTest
 
         ASSERT_EQ(m_automationLogs.size(), 3);
         // first log is the "running script ..." line
-        EXPECT_STREQ(m_automationLogs[1].c_str(), "Script: Going to idle for 1 second(s)\n");
-        EXPECT_STREQ(m_automationLogs[2].c_str(), "Script: Idled for 1 second(s)\n");
+        EXPECT_EQ(m_automationLogs[1], "Script: Going to idle for 1 second(s)\n");
+        EXPECT_EQ(m_automationLogs[2], "Script: Idled for 1 second(s)\n");
     }
 } // namespace UnitTest
 

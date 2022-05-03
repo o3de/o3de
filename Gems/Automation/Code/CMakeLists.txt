@@ -7,19 +7,28 @@
 #
 
 ly_add_target(
+    NAME Automation.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        automation_header_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            Include
+)
+
+ly_add_target(
     NAME Automation.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         automation_files.cmake
     INCLUDE_DIRECTORIES
-        PUBLIC
-            Include
         PRIVATE
             Source
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            Gem::Automation.API
 )
 
 ly_add_target(
