@@ -34,7 +34,9 @@ namespace AZ::DocumentPropertyEditor
     {
         AZ_Assert(
             metadata.InheritsFrom<Nodes::PropertyEditor>(),
-            "DPE RegisterPropertyEditor: Attempted to register a node (\"%s\") that is not derived from PropertyEditor as a property editor", metadata.m_name.GetCStr());
+            "DPE RegisterPropertyEditor: Attempted to register a node (\"%s\") that is not derived from PropertyEditor as a property "
+            "editor",
+            metadata.m_name.GetCStr());
         RegisterNode(metadata);
     }
 
@@ -45,6 +47,12 @@ namespace AZ::DocumentPropertyEditor
         if (metadata.m_node != nullptr)
         {
             parentNodeName = metadata.m_node->m_name;
+        }
+        else
+        {
+            AZ_Error(
+                "PropertyEditorSystem", false, "Failed to register attribute, no parent Node specified: %s", metadata.m_name.GetCStr());
+            return;
         }
         m_attributeMetadata[metadata.m_name][parentNodeName] = AZStd::move(metadata);
     }

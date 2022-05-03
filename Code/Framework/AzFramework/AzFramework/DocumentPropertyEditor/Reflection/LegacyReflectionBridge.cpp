@@ -36,8 +36,12 @@ namespace AZ::Reflection
 
             struct AttributeData
             {
+                // Group from the attribute metadata (generally empty with Serialize/EditContext data)
                 Name m_group;
+                // Name of the attribute
                 Name m_name;
+                // DOM value of the attribute - currently only primitive attributes are supported,
+                // but other types may later be supported via opaque values
                 Dom::Value m_value;
             };
 

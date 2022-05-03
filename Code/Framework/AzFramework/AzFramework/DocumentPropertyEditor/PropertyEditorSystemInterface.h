@@ -35,7 +35,7 @@ namespace AZ::DocumentPropertyEditor
         //! Attributes have a name and a type that can be used to validate and extract the contens of a given node.
         virtual void RegisterAttribute(AttributeMetadata metadata) = 0;
 
-        //! Look up the metadata associated with a Node. Reutnrs null if a node definition isn't found.
+        //! Look up the metadata associated with a Node. Returns null if a node definition isn't found.
         virtual const NodeMetadata* FindNode(AZ::Name name) const = 0;
         //! Looks up the metadata associated with a PropertyEditor. Equivalent to FindNode, but this will validate that
         //! the node is a property editor.
@@ -54,7 +54,7 @@ namespace AZ::DocumentPropertyEditor
             RegisterNode(NodeMetadata::FromType<NodeDefinition>());
         }
 
-        //! Register a node from a given NodeDefinitoin struct and its parent NodeDefinition.
+        //! Register a node from a given NodeDefinition struct and its parent NodeDefinition.
         template<typename NodeDefinition, typename ParentNodeDefinition>
         void RegisterNode()
         {

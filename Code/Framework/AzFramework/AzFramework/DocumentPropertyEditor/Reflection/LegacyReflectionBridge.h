@@ -26,7 +26,7 @@ namespace AZ::Reflection
         //! Type: String
         extern Name Label;
         //! Specifies the JSON path to where this property would be located in a JSON serialized instance,
-        //! relative to the instance in a Visit call.
+        //! relative to the instance parameter to a Visit call.
         //! Type: String (can be parsed by AZ::Dom::Path)
         extern Name SerializedPath;
     } // namespace DescriptorAttributes
