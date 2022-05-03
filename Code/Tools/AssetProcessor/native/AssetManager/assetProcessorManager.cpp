@@ -897,7 +897,7 @@ namespace AssetProcessor
                                         ProductAssetWrapper wrapper(outputProduct, outputProductPath);
 
                                         // This will handle outputting debug messages on its own
-                                        wrapper.DeleteFiles();
+                                        wrapper.DeleteFiles(false);
                                     }
 
                                     //let people know what happened
@@ -1653,55 +1653,31 @@ namespace AssetProcessor
                 AZ_Error(AssetProcessor::ConsoleChannel, false, "Source for Product %s not found!!!", product.m_productName.c_str());
             }
 
-            QString fullProductPath = m_cacheRootDir.absoluteFilePath(product.m_productName.c_str());
-            AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(product.m_productName);
-            QFileInfo productFileInfo(fullProductPath);
-            if (productFileInfo.exists())
+            AZStd::string_view platform;
+            auto productPath = AssetUtilities::ProductPath::FromDatabasePath(product.m_productName, &platform);
+            AssetProcessor::ProductAssetWrapper wrapper{ product, productPath };
+
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel,
+                           "Deleting file %s because either its source file %s was removed or the builder did not emit this job.\n",
+                           productPath.GetRelativePath().c_str(), source.m_sourceName.c_str());
+
+            successfullyRemoved = wrapper.DeleteFiles(true);
+
+            if (successfullyRemoved)
             {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Deleting file %s because either its source file %s was removed or the builder did not emit this job.\n", fullProductPath.toUtf8().constData(), source.m_sourceName.c_str());
-
-                AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, fullProductPath.toUtf8().data());
-                bool wasRemoved = QFile::remove(fullProductPath);
-
-                // Another process may be holding on to the file currently, so wait for a very brief period and then retry deleting
-                // once in case we were just too quick to delete the file before.
-                if (!wasRemoved)
+                if (!m_stateData->RemoveProduct(product.m_productID))
                 {
-                    constexpr int DeleteRetryDelay = 10;
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(DeleteRetryDelay));
-                    wasRemoved = QFile::remove(fullProductPath);
+                    AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to remove Product %s", product.m_productName.c_str());
+                    continue;
                 }
 
-                successfullyRemoved &= wasRemoved;
-
-                AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, fullProductPath.toUtf8().data(), false);
-
-                if(productFileInfo.absoluteDir().entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot).empty())
+                if(wrapper.HasCacheProduct())
                 {
-                    const QDir productDir = productFileInfo.absoluteDir();
-                    QDir parentDir = productDir;
-                    parentDir.cdUp();
-                    successfullyRemoved &= parentDir.rmdir(productDir.dirName());
-                }
-
-                if (successfullyRemoved)
-                {
-                    AzToolsFramework::AssetDatabase::JobDatabaseEntry job;
-                    if (!m_stateData->GetJobByProductID(product.m_productID, job))
-                    {
-                        AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to find job for Product %s!!!", product.m_productName.c_str());
-                    }
-
-                    if (!m_stateData->RemoveProduct(product.m_productID))
-                    {
-                        AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to remove Product %s!!!", product.m_productName.c_str());
-                    }
-
                     AZ::Data::AssetId assetId(source.m_sourceGuid, product.m_subID);
                     AZ::Data::AssetId legacyAssetId(product.m_legacyGuid, 0);
                     AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), product.m_subID);
 
-                    AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetRemoved, product.m_assetType, job.m_platform.c_str());
+                    AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, product.m_assetType, AZ::OSString(platform.data(), platform.size()));
                     message.m_assetId = assetId;
 
                     if (legacyAssetId != assetId)
@@ -1714,14 +1690,10 @@ namespace AssetProcessor
                         message.m_legacyAssetIds.push_back(legacySourceAssetId);
                     }
                     Q_EMIT AssetMessage( message);
-
-                    QString parentFolderName = QFileInfo(fullProductPath).absolutePath();
-                    m_checkFoldersToRemove.insert(parentFolderName);
                 }
-            }
-            else
-            {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "An expected product %s was not present.\n", fullProductPath.toUtf8().constData());
+
+                m_checkFoldersToRemove.insert(productPath.GetCachePath().c_str());
+                m_checkFoldersToRemove.insert(productPath.GetIntermediatePath().c_str());
             }
         }
 
@@ -2057,16 +2029,26 @@ namespace AssetProcessor
             {
                 for (const auto& product : products)
                 {
-                    QString fullProductPath = m_cacheRootDir.absoluteFilePath(product.m_productName.c_str());
-                    if (!QFile::exists(fullProductPath))
+                    auto productPath = AssetUtilities::ProductPath::FromDatabasePath(product.m_productName);
+                    ProductAssetWrapper wrapper{ product, productPath };
+
+                    if(!wrapper.ExistOnDisk())
                     {
-                        AZ_TracePrintf(AssetProcessor::DebugChannel, "AnalyzeJob: (%s) is missing a product (%s) on %s\n", jobDetails.m_jobEntry.m_pathRelativeToWatchFolder.toUtf8().constData(), product.m_productName.c_str(), jobDetails.m_jobEntry.m_platformInfo.m_identifier.c_str());
                         shouldProcessAsset = true;
                     }
                     else
                     {
                         QString absoluteCacheRoot = m_cacheRootDir.absolutePath();
-                        AddKnownFoldersRecursivelyForFile(fullProductPath, absoluteCacheRoot);
+                        if(wrapper.HasCacheProduct())
+                        {
+                            AddKnownFoldersRecursivelyForFile(productPath.GetCachePath().c_str(), absoluteCacheRoot);
+                        }
+
+                        if(wrapper.HasIntermediateProduct())
+                        {
+                            AddKnownFoldersRecursivelyForFile(productPath.GetIntermediatePath().c_str(),
+                                AssetUtilities::GetIntermediateAssetsFolder(absoluteCacheRoot.toUtf8().constData()).AsPosix().c_str());
+                        }
                     }
                 }
             }

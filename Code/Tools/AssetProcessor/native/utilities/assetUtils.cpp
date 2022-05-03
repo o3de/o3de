@@ -867,7 +867,7 @@ namespace AssetUtilities
         return true;
     }
 
-    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath)
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath, AZStd::string_view* outputPlatform)
     {
         // Skip over the assetPlatform path segment if it is matches one of the platform defaults
         // Otherwise return the path unchanged
@@ -875,8 +875,14 @@ namespace AssetUtilities
         AZStd::string_view originalPath = relativeProductPath;
         AZStd::optional firstPathSegment = AZ::StringFunc::TokenizeNext(relativeProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
 
-        if (firstPathSegment && AzFramework::PlatformHelper::GetPlatformIdFromName(*firstPathSegment) != AzFramework::PlatformId::Invalid)
+        if (firstPathSegment && (AzFramework::PlatformHelper::GetPlatformIdFromName(*firstPathSegment) != AzFramework::PlatformId::Invalid
+            || firstPathSegment == AssetBuilderSDK::CommonPlatformName))
         {
+            if(outputPlatform)
+            {
+                *outputPlatform = *firstPathSegment;
+            }
+
             return relativeProductPath;
         }
 
@@ -1744,5 +1750,18 @@ namespace AssetUtilities
         m_cachePath = cachePath / platformIdentifier / scanfolderRelativeProductPath;
         m_intermediatePath = AssetUtilities::GetIntermediateAssetsFolder(cachePath) / scanfolderRelativeProductPath;
         m_databasePath = AZ::IO::FixedMaxPath(platformIdentifier) / scanfolderRelativeProductPath;
+    }
+
+    ProductPath ProductPath::FromDatabasePath(AZStd::string_view databasePath, AZStd::string_view* platformOut)
+    {
+        AZStd::string_view platform;
+        AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(databasePath, &platform);
+
+        if(platformOut)
+        {
+            *platformOut = platform;
+        }
+
+        return ProductPath{ relativeProductPath, platform };
     }
 } // namespace AssetUtilities
