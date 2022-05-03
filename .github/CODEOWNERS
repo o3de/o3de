@@ -84,3 +84,21 @@
 /scripts/commit_validation/ @o3de/sig-build-maintainers
 /scripts/license_scanner/ @o3de/sig-build-maintainers
 /scripts/signer/ @o3de/sig-build-maintainers
+
+# SIG-Networking ownership areas
+/AutomatedTesting/Gem/PythonTests/AWS/ @o3de/sig-network-maintainers
+/AutomatedTesting/Gem/PythonTests/Multiplayer/ @o3de/sig-network-maintainers
+/AutomatedTesting/Levels/AWS/ @o3de/sig-network-maintainers
+/AutomatedTesting/Levels/Multiplayer/ @o3de/sig-network-maintainers
+/Code/Framework/AzFramework/AzFramework/Network/ @o3de/sig-network-maintainers
+/Code/Framework/AzNetworking/ @o3de/sig-network-maintainers
+/Code/Tools/AWSNativeSDKInit/ @o3de/sig-network-maintainers
+/Gems/AWSClientAuth/ @o3de/sig-network-maintainers
+/Gems/AWSCore/ @o3de/sig-network-maintainers
+/Gems/AWSGameLift/ @o3de/sig-network-maintainers
+/Gems/AWSMetrics/ @o3de/sig-network-maintainers
+/Gems/HttpRequestor/ @o3de/sig-network-maintainers
+/Gems/Metastream/ @o3de/sig-network-maintainers
+/Gems/Multiplayer/ @o3de/sig-network-maintainers
+/Gems/MultiplayerCompression/ @o3de/sig-network-maintainers
+/Gems/Twitch/ @o3de/sig-network-maintainers
