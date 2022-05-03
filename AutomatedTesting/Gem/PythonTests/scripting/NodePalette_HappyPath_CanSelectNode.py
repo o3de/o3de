@@ -5,18 +5,20 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from PySide2 import QtWidgets
+from editor_python_test_tools.utils import Report
+import azlmbr.legacy.general as general
+import editor_python_test_tools.pyside_utils as pyside_utils
 
-# fmt: off
 class Tests():
     category_selected = ("Category can be selected", "Category cannot be selected")
     node_selected     = ("Node can be selected",     "Node cannot be selected")
-# fmt: on
 
+TIME_TO_WAIT = 3  # seconds
+NODE_CATEGORY = "Math"
+NODE_NAME = "String To Number"
 
-GENERAL_WAIT = 0.5  # seconds
-
-
-def NodePalette_HappyPath_CanSelectNode():
+class TestNodePaletteHappyPathCanSelectNode:
     """
     Summary:
      Categories and Nodes can be selected
@@ -27,10 +29,10 @@ def NodePalette_HappyPath_CanSelectNode():
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
-     2) Get the SC window object
-     3) Expand QTreeView
-     4) Click on category and check if it is selected
-     5) Click on node and check if it is selected
+     2) Get the SC window object and get a handle on the Node Palette
+     3) Get a handle on the node palette's tree of nodes then expand the QTView tree object
+     4) Scroll down to the category we are looking for and verify we can click on it
+     5) Scroll down to the node within the category and verify we can click on it
      6) Close Script Canvas window
 
 
@@ -42,55 +44,45 @@ def NodePalette_HappyPath_CanSelectNode():
     :return: None
     """
 
-    CATEGORY = "AI"
-    NODE = "Find Path To Entity"
+    @pyside_utils.wrap_async
+    async def run_test(self):
 
-    from PySide2 import QtWidgets
+        # Pre conditions
+        general.idle_enable(True)
 
-    import pyside_utils
-    from utils import TestHelper as helper
+        # 1) Open Script Canvas window (Tools > Script Canvas)
+        general.open_pane("Script Canvas")
+        pyside_utils.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), TIME_TO_WAIT)
 
-    import azlmbr.legacy.general as general
+        # 2) Get the SC window object and get a handle on the Node Palette
+        editor_window = pyside_utils.get_editor_main_window()
+        sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
+        if sc.findChild(QtWidgets.QDockWidget, "NodePalette") is None:
+            action = pyside_utils.find_child_by_pattern(sc, {"text": "Node Palette", "type": QtWidgets.QAction})
+            action.trigger()
+        node_palette = sc.findChild(QtWidgets.QDockWidget, "NodePalette")
 
-    # 1) Open Script Canvas window (Tools > Script Canvas)
-    general.idle_enable(True)
-    general.open_pane("Script Canvas")
-    helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 5.0)
+        # 3) Get a handle on the node palette's tree of nodes then expand the QTView tree object
+        tree = node_palette.findChild(QtWidgets.QTreeView, "treeView")
+        tree.expandAll()
 
-    # 2) Get the SC window object
-    editor_window = pyside_utils.get_editor_main_window()
-    sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
-    if sc.findChild(QtWidgets.QDockWidget, "NodePalette") is None:
-        action = pyside_utils.find_child_by_pattern(sc, {"text": "Node Palette", "type": QtWidgets.QAction})
-        action.trigger()
-    node_palette = sc.findChild(QtWidgets.QDockWidget, "NodePalette")
-    tree = node_palette.findChild(QtWidgets.QTreeView, "treeView")
+        # 4) Scroll down to the category we are looking for and verify we can click on it
+        category_index = pyside_utils.find_child_by_hierarchy(tree, NODE_CATEGORY)
+        tree.scrollTo(category_index)
+        pyside_utils.item_view_index_mouse_click(tree, category_index)
+        pyside_utils.wait_for_condition(lambda: tree.selectedIndexes() and tree.selectedIndexes()[0] == category_index, TIME_TO_WAIT)
+        Report.result(Tests.category_selected, tree.selectedIndexes()[0] == category_index)
 
-    # 3) Expand QTreeView
-    tree.expandAll()
+        # 5) Scroll down to the node within the category and verify we can click on it
+        pyside_utils.find_child_by_pattern(tree, NODE_NAME)
+        node_index = pyside_utils.find_child_by_pattern(tree, NODE_NAME)
+        tree.scrollTo(node_index)
+        pyside_utils.item_view_index_mouse_click(tree, node_index)
+        pyside_utils.wait_for_condition(lambda: tree.selectedIndexes() and tree.selectedIndexes()[0] == node_index, TIME_TO_WAIT)
+        Report.result(Tests.node_selected, tree.selectedIndexes()[0] == node_index)
 
-    # 4) Click on category and check if it is selected
-    category_index = pyside_utils.find_child_by_hierarchy(tree, CATEGORY)
-    tree.scrollTo(category_index)
-    pyside_utils.item_view_index_mouse_click(tree, category_index)
-    pyside_utils.wait_for_condition(tree.selectedIndexes() and tree.selectedIndexes()[0] == category_index)
-    Report.result(Tests.category_selected, tree.selectedIndexes()[0] == category_index)
+        # 6) Close Script Canvas window
+        general.close_pane("Script Canvas")
 
-    # 5) Click on node and check if it is selected
-    node_index = pyside_utils.find_child_by_pattern(tree, NODE)
-    helper.wait_for_condition(lambda: tree.isExpanded(node_index), GENERAL_WAIT)
-    pyside_utils.item_view_index_mouse_click(tree, node_index)
-    pyside_utils.wait_for_condition(tree.selectedIndexes()[0] == node_index)
-    Report.result(Tests.node_selected, tree.selectedIndexes()[0] == node_index)
-
-    # 6) Close Script Canvas window
-    general.close_pane("Script Canvas")
-
-
-if __name__ == "__main__":
-    import ImportPathHelper as imports
-
-    imports.init()
-    from utils import Report
-
-    Report.start_test(NodePalette_HappyPath_CanSelectNode)
+test = TestNodePaletteHappyPathCanSelectNode()
+test.run_test()

@@ -61,10 +61,10 @@ class TestAutomation(TestAutomationBase):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
-    def test_NodePalette_HappyPath_CanSelectNode(self, request, workspace, editor, launcher_platform):
-        from . import NodePalette_HappyPath_CanSelectNode as test_module
-        self._run_test(request, workspace, editor, test_module)
+    #@pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
+    #def test_NodePalette_HappyPath_CanSelectNode(self, request, workspace, editor, launcher_platform):
+     #   from . import NodePalette_HappyPath_CanSelectNode as test_module
+      #  self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     @pytest.mark.parametrize("level", ["tmp_level"])
@@ -217,12 +217,26 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
+    def test_NodePalette_HappyPath_CanSelectNode(self, request, editor, launcher_platform):
+        expected_lines = [
+            "Success: Category can be selected",
+            "Success: Node can be selected"
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "NodePalette_HappyPath_CanSelectNode.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
-            "File->New action working as expected: True",
-            "File->Open action working as expected: True",
+            "Verified no tabs open: True",
+            "New tab opened successfully: True",
+            "Open file window triggered successfully: True"
         ]
         hydra.launch_and_validate_results(
             request, 
