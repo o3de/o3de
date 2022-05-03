@@ -1,5 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/Application">
+        <file alias="popout-overlay.svg">Application/popout-overlay.svg</file>
+        <file alias="popout-overlay-hover.svg">Application/popout-overlay-hover.svg</file>
         <file alias="titlebar-close.svg">Application/titlebar-close.svg</file>
         <file alias="titlebar-maximize.svg">Application/titlebar-maximize.svg</file>
         <file alias="titlebar-minimize.svg">Application/titlebar-minimize.svg</file>

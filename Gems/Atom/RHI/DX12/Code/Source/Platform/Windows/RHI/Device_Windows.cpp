@@ -205,7 +205,7 @@ namespace AZ
             {
                 EnableDebugDeviceFeatures(dx12Device);
                 EnableBreakOnD3DError(dx12Device);
-                AddDebugFilters(dx12Device, RHI::ValidationMode::Verbose);
+                AddDebugFilters(dx12Device, validationMode);
             }
 
             Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;

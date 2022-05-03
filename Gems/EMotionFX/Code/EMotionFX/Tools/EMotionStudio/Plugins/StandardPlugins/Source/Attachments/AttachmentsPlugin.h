@@ -8,7 +8,6 @@
 
 #pragma once
 
-// include MCore
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
@@ -24,15 +23,11 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace EMStudio
 {
-    /**
-     *
-     *
-     */
     class AttachmentsPlugin
         : public EMStudio::DockWidgetPlugin
     {
-        Q_OBJECT
-                           MCORE_MEMORYOBJECTCATEGORY(AttachmentsPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
+        Q_OBJECT // AUTOMOC
+        MCORE_MEMORYOBJECTCATEGORY(AttachmentsPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
         enum
@@ -44,18 +39,16 @@ namespace EMStudio
         ~AttachmentsPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Attachments"; }
         uint32 GetClassID() const override                  { return AttachmentsPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override         { return "O3DE"; }
-        float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new AttachmentsPlugin(); }
+
         void ReInit();
         AttachmentsWindow* GetAttachmentsWindow() const     { return m_attachmentsWindow; }
 

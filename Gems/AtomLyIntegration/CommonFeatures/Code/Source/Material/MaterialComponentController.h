@@ -96,7 +96,7 @@ namespace AZ
             void ReleaseMaterials();
             //! Queue applying property overrides to material instances until tick
             void QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId);
-            //! Queue material instance recreation notifiucations until tick
+            //! Queue material instance recreation notifications until tick
             void QueueMaterialUpdateNotification();
 
             //! Converts property overrides storing image asset references into asset IDs. This addresses a problem where image property

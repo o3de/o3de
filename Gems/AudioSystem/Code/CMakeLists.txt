@@ -34,6 +34,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+            Gem::Atom_RPI.Public
 )
 
 ly_add_target(
@@ -195,6 +196,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCore
                 Legacy::EditorCommon
                 Gem::AudioSystem.Static
+                Gem::Atom_RPI.Public
     )
     ly_add_target(
         NAME AudioSystem.Editor GEM_MODULE

@@ -171,14 +171,18 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::Activate()
     {
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceSlopeGradientRequestBus::Handler::BusConnect(GetEntityId());
         SmoothStepRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void SurfaceSlopeGradientComponent::Deactivate()
     {
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
         SurfaceSlopeGradientRequestBus::Handler::BusDisconnect();
         SmoothStepRequestBus::Handler::BusDisconnect();
     }
@@ -225,10 +229,11 @@ namespace GradientSignal
             return;
         }
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
-            points);
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(
+            positions, m_configuration.m_surfaceTagsToSample, points);
 
         const float angleMin = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMin, 0.0f, 90.0f));
         const float angleMax = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMax, 0.0f, 90.0f));
@@ -279,7 +284,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetSlopeMin(float slopeMin)
     {
-        m_configuration.m_slopeMin = slopeMin;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_slopeMin = slopeMin;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -290,7 +301,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetSlopeMax(float slopeMax)
     {
-        m_configuration.m_slopeMax = slopeMax;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_slopeMax = slopeMax;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -306,13 +323,25 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::RemoveTag(int tagIndex)
     {
-        m_configuration.RemoveTag(tagIndex);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.RemoveTag(tagIndex);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void SurfaceSlopeGradientComponent::AddTag(AZStd::string tag)
     {
-        m_configuration.AddTag(tag);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.AddTag(tag);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -323,7 +352,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetRampType(AZ::u8 type)
     {
-        m_configuration.m_rampType = static_cast<SurfaceSlopeGradientConfig::RampType>(type);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_rampType = static_cast<SurfaceSlopeGradientConfig::RampType>(type);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -334,7 +369,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetFallOffRange(float range)
     {
-        m_configuration.m_smoothStep.m_falloffRange = range;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_smoothStep.m_falloffRange = range;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -345,7 +386,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetFallOffStrength(float strength)
     {
-        m_configuration.m_smoothStep.m_falloffStrength = strength;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_smoothStep.m_falloffStrength = strength;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -356,7 +403,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetFallOffMidpoint(float midpoint)
     {
-        m_configuration.m_smoothStep.m_falloffMidpoint = midpoint;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_smoothStep.m_falloffMidpoint = midpoint;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

@@ -143,8 +143,6 @@ namespace AZ
             DirectionalLightFeatureProcessorInterface* directionalLightFeatureProcessor,
             const Camera::Configuration& cameraConfig,
             AZStd::vector<DirectionalLightFeatureProcessorInterface::LightHandle>& lightHandles,
-            Data::Instance<RPI::Material> shadowCatcherMaterial,
-            RPI::MaterialPropertyIndex shadowCatcherOpacityPropertyIndex,
             bool enableAlternateSkybox) const
         {
             if (iblFeatureProcessor)
@@ -203,11 +201,6 @@ namespace AZ
 
                     lightHandles.push_back(lightHandle);
                 }
-            }
-
-            if (shadowCatcherMaterial && shadowCatcherOpacityPropertyIndex.IsValid())
-            {
-                shadowCatcherMaterial->SetPropertyValue(shadowCatcherOpacityPropertyIndex, m_shadowCatcherOpacity);
             }
         }
     } // namespace Render

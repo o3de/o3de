@@ -9,9 +9,9 @@
 #pragma once
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <Viewport/MaterialViewportSettingsSystem.h>
-#include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorMainWindow.h>
 
 namespace MaterialEditor
 {
@@ -40,7 +40,7 @@ namespace MaterialEditor
         QWidget* GetAppMainWindow() override;
 
     private:
-        AZStd::unique_ptr<MaterialEditorWindow> m_window;
-        AZStd::unique_ptr<MaterialViewportSettingsSystem> m_viewportSettingsSystem;
+        AZStd::unique_ptr<MaterialEditorMainWindow> m_window;
+        AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
     };
 } // namespace MaterialEditor

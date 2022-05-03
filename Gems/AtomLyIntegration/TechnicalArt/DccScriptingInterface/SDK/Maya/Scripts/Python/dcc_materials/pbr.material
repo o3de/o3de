@@ -2,8 +2,11 @@
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "properties": {
+        "general": {
+            "doubleSided": false
+        },
         "occlusion": {
             "diffuseFactor": 1.0,
             "diffuseTextureMap": "EngineAssets/TextureMsg/DefaultNoUVs.tif"
@@ -41,7 +44,6 @@
             "textureMap": "EngineAssets/TextureMsg/DefaultNoUVs_ddn.tif"
         },
         "opacity": {
-            "doubleSided": false,
             "factor": 1.0,
             "cutoutAlpha": false,
             "cutoutThreshold": 0.5,

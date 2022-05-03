@@ -61,6 +61,9 @@ namespace ScriptCanvasBuilder
         FixExecutionStateNodeableConstruction,
         SwitchAssetsToBinary,
         ReinforcePreloadBehavior,
+        SeparateFromEntityComponentSystem,
+        DistinguishEntityScriptFromScript,
+        ExecutionStateAsLightUserdata,
         // add new entries above
         Current,
     };

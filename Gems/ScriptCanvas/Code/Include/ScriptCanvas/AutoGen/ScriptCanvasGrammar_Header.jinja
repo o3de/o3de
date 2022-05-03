@@ -69,7 +69,7 @@ public: \
     void ConfigureSlots() override; \
     bool RequiresDynamicSlotOrdering() const override; \
     bool IsDeprecated() const override; \
-{% if deprecationUuid is defined %}    ScriptCanvas::NodeConfiguration GetReplacementNodeConfiguration() const override; \
+{% if deprecationUuid is defined %}    ScriptCanvas::NodeReplacementConfiguration GetReplacementNodeConfiguration() const override; \
 {% endif %}
     using Node::FindDatum; \
 {% if Class.attrib['GraphEntryPoint'] is defined %}    bool IsEntryPoint() const override { return {%if Class.attrib['GraphEntryPoint'] == "True" %}true{%else%}false{%endif%}; } \

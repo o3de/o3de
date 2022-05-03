@@ -111,13 +111,7 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
-    Passes/EditorModeFeedbackParent.pass
-    Passes/EditorModeMask.pass
-    Passes/EditorModeDesaturation.pass
-    Passes/EditorModeTint.pass
-    Passes/EditorModeBlurParent.pass
-    Passes/EditorModeBlur.pass
-    Passes/EditorModeOutline.pass
+    Passes/ChromaticAberration.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -388,13 +382,10 @@ set(FILES
     Shaders/Depth/DepthPassTransparentMin.shader
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseComposite_nomsaa.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample_nomsaa.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationComposite.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationComposite.shader
     Shaders/ImGui/ImGui.azsl
@@ -431,6 +422,8 @@ set(FILES
     Shaders/PostProcessing/BloomCompositeCS.shader
     Shaders/PostProcessing/BloomDownsampleCS.azsl
     Shaders/PostProcessing/BloomDownsampleCS.shader
+    Shaders/PostProcessing/ChromaticAberration.azsl
+    Shaders/PostProcessing/ChromaticAberration.shader
     Shaders/PostProcessing/ContrastAdaptiveSharpening.azsl
     Shaders/PostProcessing/ContrastAdaptiveSharpening.shader
     Shaders/PostProcessing/ConvertToAcescg.azsl
@@ -476,18 +469,6 @@ set(FILES
     Shaders/PostProcessing/FullscreenCopy.shader
     Shaders/PostProcessing/HDRColorGrading.azsl
     Shaders/PostProcessing/HDRColorGrading.shader
-    Shaders/PostProcessing/EditorModeCommon.azsli
-    Shaders/PostProcessing/EditorModeDepthTransition.azsli
-    Shaders/PostProcessing/EditorModeMask.azsl
-    Shaders/PostProcessing/EditorModeMask.shader
-    Shaders/PostProcessing/EditorModeDesaturation.azsl
-    Shaders/PostProcessing/EditorModeDesaturation.shader
-    Shaders/PostProcessing/EditorModeTint.azsl
-    Shaders/PostProcessing/EditorModeTint.shader
-    Shaders/PostProcessing/EditorModeBlur.azsl
-    Shaders/PostProcessing/EditorModeBlur.shader
-    Shaders/PostProcessing/EditorModeOutline.azsl
-    Shaders/PostProcessing/EditorModeOutline.shader
     Shaders/PostProcessing/LookModificationTransform.azsl
     Shaders/PostProcessing/LookModificationTransform.shader
     Shaders/PostProcessing/LuminanceHeatmap.azsl
@@ -537,10 +518,8 @@ set(FILES
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader
-    Shaders/Reflections/ReflectionComposite_nomsaa.azsl
     Shaders/Reflections/ReflectionGlobalFullscreen.azsl
     Shaders/Reflections/ReflectionGlobalFullscreen.shader
-    Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.azsl
     Shaders/Reflections/ReflectionProbeBlendWeight.azsl
     Shaders/Reflections/ReflectionProbeBlendWeight.shader
     Shaders/Reflections/ReflectionProbeRenderCommon.azsli

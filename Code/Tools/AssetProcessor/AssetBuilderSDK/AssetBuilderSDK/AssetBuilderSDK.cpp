@@ -1339,6 +1339,23 @@ namespace AssetBuilderSDK
             && m_type == other.m_type;
     }
 
+    AZStd::string JobDependency::ConcatenateSubIds() const
+    {
+        AZStd::string subIdConcatenation = "";
+
+        for (AZ::u32 subId : m_productSubIds)
+        {
+            if (!subIdConcatenation.empty())
+            {
+                subIdConcatenation.append(",");
+            }
+
+            subIdConcatenation.append(AZStd::string::format("%d", subId));
+        }
+
+        return subIdConcatenation;
+    }
+
     void JobDependency::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -1348,7 +1365,8 @@ namespace AssetBuilderSDK
                 Field("Source File", &JobDependency::m_sourceFile)->
                 Field("Job Key", &JobDependency::m_jobKey)->
                 Field("Platform Identifier", &JobDependency::m_platformIdentifier)->
-                Field("Job Dependency Type", &JobDependency::m_type);
+                Field("Job Dependency Type", &JobDependency::m_type)->
+                Field("Product SubIds", &JobDependency::m_productSubIds);
 
             serializeContext->RegisterGenericType<AZStd::vector<JobDependency>>();
         }
@@ -1361,6 +1379,7 @@ namespace AssetBuilderSDK
                 ->Property("sourceFile", BehaviorValueProperty(&JobDependency::m_sourceFile))
                 ->Property("jobKey", BehaviorValueProperty(&JobDependency::m_jobKey))
                 ->Property("platformIdentifier", BehaviorValueProperty(&JobDependency::m_platformIdentifier))
+                ->Property("productSubIds", BehaviorValueProperty(&JobDependency::m_productSubIds))
                 ->Property("type", BehaviorValueProperty(&JobDependency::m_type))
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Fingerprint)>("Fingerprint")
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Order)>("Order")

@@ -107,7 +107,7 @@ def ImageGradient_ModifiesSurfaces():
     Report.result(Tests.image_gradient_assigned, success)
 
     # 5) Validate the expected number of vegetation instances. Instances should only spawn on the modified surface
-    num_expected_instances = 168
+    num_expected_instances = 169
     success = helper.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(
         spawner_entity.id, num_expected_instances), 5.0)
     Report.result(Tests.instance_validation, success)

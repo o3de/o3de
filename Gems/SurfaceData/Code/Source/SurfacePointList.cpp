@@ -21,7 +21,7 @@ namespace SurfaceData
         // Our expectation is that most of the time, we'll only have to compare 0-1 input positions.
 
         size_t inPositionIndex = m_lastInputPositionIndex;
-        bool foundMatch = false;
+        [[maybe_unused]] bool foundMatch = false;
         for (size_t indexCounter = 0; indexCounter < m_inputPositions.size(); indexCounter++)
         {
             if (m_inputPositions[inPositionIndex] == inPosition)
@@ -51,7 +51,7 @@ namespace SurfaceData
     SurfacePointList::SurfacePointList(AZStd::span<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
     {
         // Construct and finalize the list with the set of passed-in surface points.
-        // This is primarily a convenience for unit tests. 
+        // This is primarily a convenience for unit tests.
         StartListConstruction(surfacePoints);
         EndListConstruction();
     }
@@ -157,7 +157,7 @@ namespace SurfaceData
         }
 
         // If we've made it here, we're adding the point, not merging it.
-        
+
         // Verify we aren't adding more points than expected.
         AZ_Assert(m_numSurfacePointsPerInput[inPositionIndex] < m_maxSurfacePointsPerInput, "Adding too many surface points.");
 
@@ -297,7 +297,7 @@ namespace SurfaceData
     }
 
     void SurfacePointList::EnumeratePoints(
-        size_t inputPositionIndex, 
+        size_t inputPositionIndex,
         AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeights&)>
             pointCallback) const
     {

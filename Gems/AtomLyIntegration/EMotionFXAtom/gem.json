@@ -15,7 +15,6 @@
     "documentation_url": "",
     "dependencies": [
         "EMotionFX",
-        "Atom",
         "Atom_Feature_Common",
         "Atom_RPI",
         "Atom_RHI",

@@ -51,6 +51,9 @@ namespace ScriptCanvasBuilder
         AZStd::vector<ScriptCanvas::GraphVariable> m_overrides;
         AZStd::vector<ScriptCanvas::GraphVariable> m_overridesUnused;
         AZStd::vector<BuildVariableOverrides> m_dependencies;
+
+        // #scriptcanvas_component_extension
+        bool m_isComponentScript = false;
     };
 
     // copy the variables overridden during editor / prefab build time back to runtime data
@@ -58,3 +61,9 @@ namespace ScriptCanvasBuilder
 
     AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree);
 }
+
+namespace AZStd
+{
+    AZStd::string to_string(const ScriptCanvasBuilder::BuildVariableOverrides& overrides);
+}
+

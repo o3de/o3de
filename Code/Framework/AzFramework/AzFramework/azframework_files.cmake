@@ -75,6 +75,7 @@ set(FILES
     Asset/Benchmark/BenchmarkCommands.h
     Asset/Benchmark/BenchmarkSettingsAsset.cpp
     Asset/Benchmark/BenchmarkSettingsAsset.h
+    AutoGen/AzFramework.AutoPackets.xml
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Viewport/ViewportBus.h
@@ -285,6 +286,12 @@ set(FILES
     Render/Intersector.h
     Render/IntersectorInterface.h
     Spawnable/RootSpawnableInterface.h
+    Spawnable/Script/SpawnableScriptAssetRef.cpp
+    Spawnable/Script/SpawnableScriptAssetRef.h
+    Spawnable/Script/SpawnableScriptBus.h
+    Spawnable/Script/SpawnableScriptMediator.cpp
+    Spawnable/Script/SpawnableScriptMediator.h
+    Spawnable/Script/SpawnableScriptNotificationsHandler.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
     Spawnable/SpawnableAssetBus.h
@@ -299,6 +306,7 @@ set(FILES
     Spawnable/SpawnableMetaData.cpp
     Spawnable/SpawnableMetaData.h
     Spawnable/SpawnableMonitor.h
+    Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp
@@ -392,7 +400,6 @@ set(FILES
     Input/Utils/AdjustAnalogInputForDeadZone.h
     Input/Utils/IsAnyKeyOrButton.h
     Input/Utils/ProcessRawInputEventQueues.h
-    TargetManagement/NeighborhoodAPI.cpp
     TargetManagement/NeighborhoodAPI.h
     TargetManagement/TargetManagementAPI.h
     TargetManagement/TargetManagementComponent.cpp

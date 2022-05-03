@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -44,7 +45,17 @@ namespace AZ
                     // We use TraceLevel::None because fallback textures are available and we'll return GetImageAssetResult::Missing below in that case.
                     // Callers of GetImageAssetReference will be responsible for logging warnings or errors as needed.
 
-                    Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, StreamingImageAsset::GetImageAssetSubId(), AssetUtils::TraceLevel::None);
+                    uint32_t subId = 0;
+                    auto typeId = azrtti_typeid<AttachmentImageAsset>();
+
+                    bool isAttachmentImageAsset = imageFilePath.ends_with(AttachmentImageAsset::Extension);
+                    if (!isAttachmentImageAsset)
+                    {
+                        subId = StreamingImageAsset::GetImageAssetSubId();
+                        typeId = azrtti_typeid<StreamingImageAsset>();
+                    }
+
+                    Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, subId, AssetUtils::TraceLevel::None);
                     
                     if (!imageAssetId.IsSuccess())
                     {
@@ -58,7 +69,7 @@ namespace AZ
                         return GetImageAssetResult::Missing;
                     }
                     
-                    imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath};
+                    imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), typeId, imageFilePath};
                     return GetImageAssetResult::Found;
                 }
             }

@@ -330,6 +330,7 @@ namespace AZ
                 ->Method("GetMaterialPropertyValue_Vector4", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Vector4>)
                 ->Method("GetMaterialPropertyValue_Color", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Color>)
                 ->Method("GetMaterialPropertyValue_Image", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Image*>)
+                ->Method("HasMaterialProperty", &LuaMaterialFunctorRuntimeContext::HasMaterialValue)
                 ->Method("SetShaderConstant_bool", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<bool>)
                 ->Method("SetShaderConstant_int", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<int32_t>)
                 ->Method("SetShaderConstant_uint", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<uint32_t>)
@@ -362,6 +363,15 @@ namespace AZ
         Type LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue(const char* name) const
         {
             return LuaMaterialFunctorCommonContext::GetMaterialPropertyValue<Type>(name);
+        }
+
+        bool LuaMaterialFunctorRuntimeContext::HasMaterialValue(const char* name) const
+        {
+            Name propertyFullName{name};
+            m_materialNameContext.ContextualizeProperty(propertyFullName);
+            
+            MaterialPropertyIndex propertyIndex = GetMaterialPropertiesLayout()->FindPropertyIndex(propertyFullName);
+            return propertyIndex.IsValid();
         }
 
         bool LuaMaterialFunctorRuntimeContext::SetShaderOptionValueHelper(const char* name, AZStd::function<bool(ShaderOptionGroup*, ShaderOptionIndex)> setValueCommand)

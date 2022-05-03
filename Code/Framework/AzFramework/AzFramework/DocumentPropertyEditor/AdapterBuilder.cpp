@@ -24,7 +24,7 @@ namespace AZ::DocumentPropertyEditor
     void AdapterBuilder::OnEditorChanged(AZStd::function<void(const Dom::Path&, const Dom::Value&)> onChangedCallback)
     {
         // The value path is the first child of the PropertyEditor node
-        Dom::Path changedPath = GetCurrentPath() / 0;
+        Dom::Path changedPath = GetCurrentPath() / Nodes::Label::Value.GetName();
         CallbackAttribute(
             Nodes::PropertyEditor::OnChanged,
             [changedPath, onChangedCallback](const Dom::Value& value)
@@ -137,7 +137,7 @@ namespace AZ::DocumentPropertyEditor
         }
         if (!value.IsNull())
         {
-            Value(AZStd::move(value));
+            Attribute(Nodes::PropertyEditor::Value.GetName(), AZStd::move(value));
         }
     }
 
@@ -146,10 +146,10 @@ namespace AZ::DocumentPropertyEditor
         EndNode<Nodes::PropertyEditor>();
     }
 
-    void AdapterBuilder::Label(AZStd::string_view text, bool copy)
+    void AdapterBuilder::Label(AZStd::string_view text)
     {
         BeginLabel();
-        Value(Dom::Value(text, copy));
+        Attribute(Nodes::Label::Value, text);
         EndLabel();
     }
 } // namespace AZ::DocumentPropertyEditor

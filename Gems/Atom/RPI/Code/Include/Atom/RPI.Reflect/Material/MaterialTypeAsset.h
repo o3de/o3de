@@ -126,7 +126,7 @@ namespace AZ
             //! Returns the version of the MaterialTypeAsset.
             uint32_t GetVersion() const;
  
-            const AZStd::vector<MaterialVersionUpdate>& GetMaterialVersionUpdateList() const { return m_materialVersionUpdates; }
+            const MaterialVersionUpdates& GetMaterialVersionUpdates() const { return m_materialVersionUpdates; }
 
             //! Possibly renames @propertyId based on the material version update steps.
             //! @return true if the property was renamed
@@ -175,8 +175,8 @@ namespace AZ
             //! to update this MaterialTypeAsset will be in m_materialVersionUpdateMap
             uint32_t m_version = 1;
 
-            //! Contains actions to perform for each material update version.  
-            AZStd::vector<MaterialVersionUpdate> m_materialVersionUpdates;
+            //! Contains actions to perform for each material update version.
+            MaterialVersionUpdates m_materialVersionUpdates;
         };
 
         class MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>

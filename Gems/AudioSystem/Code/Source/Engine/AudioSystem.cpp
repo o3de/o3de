@@ -13,17 +13,18 @@
 #include <AudioSystem_Traits_Platform.h>
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace Audio
 {
-    extern CAudioLogger g_audioLogger;
     static constexpr const char AudioControlsBasePath[]{ "libs/gameaudio/" };
 
     // Save off the threadId of the "Main Thread" that was used to connect EBuses.
     AZStd::thread_id g_mainThreadId;
+    AZStd::thread_id g_audioThreadId;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // CAudioThread
@@ -39,6 +40,7 @@ namespace Audio
     void CAudioThread::Run()
     {
         AZ_Assert(m_audioSystem, "Audio Thread has no Audio System to run!\n");
+        g_audioThreadId = AZStd::this_thread::get_id();
         m_running = true;
         while (m_running)
         {
@@ -85,86 +87,59 @@ namespace Audio
         m_apAudioProxiesToBeFreed.reserve(16);
         m_controlsPath.assign(Audio::AudioControlsBasePath);
 
-        AudioSystemRequestBus::Handler::BusConnect();
-        AudioSystemThreadSafeRequestBus::Handler::BusConnect();
-        AudioSystemInternalRequestBus::Handler::BusConnect();
+        #if !defined(AUDIO_RELEASE)
+        AzFramework::DebugDisplayEventBus::Handler::BusConnect();
+        #endif // !AUDIO_RELEASE
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioSystem::~CAudioSystem()
     {
-        AudioSystemRequestBus::Handler::BusDisconnect();
-        AudioSystemThreadSafeRequestBus::Handler::BusDisconnect();
-        AudioSystemInternalRequestBus::Handler::BusDisconnect();
+        #if !defined(AUDIO_RELEASE)
+        AzFramework::DebugDisplayEventBus::Handler::BusDisconnect();
+        #endif // !AUDIO_RELEASE
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::PushRequest(const SAudioRequest& audioRequestData)
+    void CAudioSystem::PushRequest(AudioRequestVariant&& request)
     {
-        CAudioRequestInternal request(audioRequestData);
-
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::PushRequest - called from non-Main thread!");
-        AZ_Assert(0 == (request.nFlags & eARF_THREAD_SAFE_PUSH), "AudioSystem::PushRequest - called with flag THREAD_SAFE_PUSH!");
-        AZ_Assert(0 == (request.nFlags & eARF_EXECUTE_BLOCKING), "AudioSystem::PushRequest - called with flag EXECUTE_BLOCKING!");
-
-        AudioSystemInternalRequestBus::QueueBroadcast(&AudioSystemInternalRequestBus::Events::ProcessRequestByPriority, request);
+        AZStd::scoped_lock lock(m_pendingRequestsMutex);
+        m_pendingRequestsQueue.push_back(AZStd::move(request));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::PushRequestBlocking(const SAudioRequest& audioRequestData)
+    void CAudioSystem::PushRequests(AudioRequestsQueue& requests)
     {
-        // Main Thread!
-        AZ_PROFILE_FUNCTION(Audio);
-
-        CAudioRequestInternal request(audioRequestData);
-
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::PushRequestBlocking - called from non-Main thread!");
-        AZ_Assert(0 != (request.nFlags & eARF_EXECUTE_BLOCKING), "AudioSystem::PushRequestBlocking - called without EXECUTE_BLOCKING flag!");
-        AZ_Assert(0 == (request.nFlags & eARF_THREAD_SAFE_PUSH), "AudioSystem::PushRequestBlocking - called with THREAD_SAFE_PUSH flag!");
-
-        ProcessRequestBlocking(request);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::PushRequestThreadSafe(const SAudioRequest& audioRequestData)
-    {
-        CAudioRequestInternal request(audioRequestData);
-
-        AZ_Assert(0 != (request.nFlags & eARF_THREAD_SAFE_PUSH), "AudioSystem::PushRequestThreadSafe - called without THREAD_SAFE_PUSH flag!");
-        AZ_Assert(0 == (request.nFlags & eARF_EXECUTE_BLOCKING), "AudioSystem::PushRequestThreadSafe - called with flag EXECUTE_BLOCKING!");
-
-        AudioSystemThreadSafeRequestBus::QueueFunction(AZStd::bind(&CAudioSystem::ProcessRequestThreadSafe, this, request));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::AddRequestListener(
-        AudioRequestCallbackType func,
-        void* const callbackOwner,
-        const EAudioRequestType requestType,
-        const TATLEnumFlagsType specificRequestMask)
-    {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::AddRequestListener - called from a non-Main thread!");
-
-        if (func)
+        AZStd::scoped_lock lock(m_pendingRequestsMutex);
+        for (auto& request : requests)
         {
-            SAudioEventListener listener;
-            listener.m_callbackOwner = callbackOwner;
-            listener.m_fnOnEvent = func;
-            listener.m_requestType = requestType;
-            listener.m_specificRequestMask = specificRequestMask;
-            m_oATL.AddRequestListener(listener);
+            m_pendingRequestsQueue.push_back(AZStd::move(request));
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::RemoveRequestListener(AudioRequestCallbackType func, void* const callbackOwner)
+    void CAudioSystem::PushRequestBlocking(AudioRequestVariant&& request)
     {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::RemoveRequestListener - called from a non-Main thread!");
+        // Add this request to be processed immediately.
+        // Release the m_processingEvent so that when the request is finished the audio thread doesn't
+        // block through it's normal time slice and can immediately re-enter the run loop to process more.
+        // Acquire the m_mainEvent semaphore to block the main thread.
+        // This helps when there's a longer queue of blocking requests so that the back-and-forth between
+        // threads is minimized.
+        {
+            AZStd::scoped_lock lock(m_blockingRequestsMutex);
+            m_blockingRequestsQueue.push_back(AZStd::move(request));
+        }
 
-        SAudioEventListener listener;
-        listener.m_callbackOwner = callbackOwner;
-        listener.m_fnOnEvent = func;
-        m_oATL.RemoveRequestListener(listener);
+        m_processingEvent.release();
+        m_mainEvent.acquire();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CAudioSystem::PushCallback(AudioRequestVariant&& callback)
+    {
+        AZStd::scoped_lock lock(m_pendingCallbacksMutex);
+        m_pendingCallbacksQueue.push_back(AZStd::move(callback));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -173,12 +148,28 @@ namespace Audio
         // Main Thread!
         AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::ExternalUpdate - called from non-Main thread!");
 
-        // Notify callbacks on the pending callbacks queue...
-        // These are requests that were completed then queued for callback processing to happen here.
-        ExecuteRequestCompletionCallbacks(m_pendingCallbacksQueue, m_pendingCallbacksMutex);
+        {
+            AudioRequestsQueue callbacksToProcess{};
+            {
+                AZStd::scoped_lock lock(m_pendingCallbacksMutex);
+                callbacksToProcess.swap(AZStd::move(m_pendingCallbacksQueue));
+            }
 
-        // Notify callbacks from the "thread safe" queue...
-        ExecuteRequestCompletionCallbacks(m_threadSafeCallbacksQueue, m_threadSafeCallbacksMutex, true);
+            while (!callbacksToProcess.empty())
+            {
+                AudioRequestVariant& callbackVariant(callbacksToProcess.front());
+                AZStd::visit(
+                    [](auto&& request)
+                    {
+                        if (request.m_callback)
+                        {
+                            request.m_callback(request);
+                        }
+                    },
+                    callbackVariant);
+                callbacksToProcess.pop_front();
+            }
+        }
 
         // Other notifications to be sent out...
         AudioTriggerNotificationBus::ExecuteQueuedEvents();
@@ -190,48 +181,63 @@ namespace Audio
         }
 
         m_apAudioProxiesToBeFreed.clear();
-
-    #if !defined(AUDIO_RELEASE)
-        DrawAudioDebugData();
-    #endif // !AUDIO_RELEASE
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystem::InternalUpdate()
     {
         // Audio Thread!
+        AZ_Assert(g_audioThreadId == AZStd::this_thread::get_id(), "AudioSystem::InternalUpdate - called from non-Audio thread!");
         AZ_PROFILE_FUNCTION(Audio);
 
         auto startUpdateTime = AZStd::chrono::system_clock::now();        // stamp the start time
 
-        bool handledBlockingRequests = false;
+        // Process a single blocking request, if any, and release the semaphore the main thread is trying to acquire.
+        // This ensures that main thread will become unblocked quickly.
+        // If blocking requests were processed, can skip processing of normal requests and skip having
+        // the audio thread block through the rest of its update period.
+        bool handleBlockingRequest = false;
+        AudioRequestVariant blockingRequest;
+
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_blockingRequestsMutex);
-            handledBlockingRequests = ProcessRequests(m_blockingRequestsQueue);
+            AZStd::scoped_lock lock(m_blockingRequestsMutex);
+            handleBlockingRequest = !m_blockingRequestsQueue.empty();
+            if (handleBlockingRequest)
+            {
+                blockingRequest = AZStd::move(m_blockingRequestsQueue.front());
+                m_blockingRequestsQueue.pop_front();
+            }
         }
 
-        if (!handledBlockingRequests)
+        if (handleBlockingRequest)
         {
-            // Call the ProcessRequestByPriority events queued up...
-            AudioSystemInternalRequestBus::ExecuteQueuedEvents();
+            m_oATL.ProcessRequest(AZStd::move(blockingRequest));
+            m_mainEvent.release();
         }
 
-        // Call the ProcessRequestThreadSafe events queued up...
-        AudioSystemThreadSafeRequestBus::ExecuteQueuedEvents();
+        if (!handleBlockingRequest)
+        {
+            // Normal request processing: lock and swap the pending requests queue
+            // so that the queue can be opened for new requests while the current set
+            // of requests can be processed.
+            AudioRequestsQueue requestsToProcess{};
+            {
+                AZStd::scoped_lock lock(m_pendingRequestsMutex);
+                requestsToProcess.swap(AZStd::move(m_pendingRequestsQueue));
+            }
+
+            while (!requestsToProcess.empty())
+            {
+                // Normal request...
+                AudioRequestVariant& request(requestsToProcess.front());
+                m_oATL.ProcessRequest(AZStd::move(request));
+                requestsToProcess.pop_front();
+            }
+        }
 
         m_oATL.Update();
 
-    #if !defined(AUDIO_RELEASE)
-        #if defined(PROVIDE_GETNAME_SUPPORT)
-        {
-            AZ_PROFILE_SCOPE(Audio, "Sync Debug Name Changes");
-            AZStd::lock_guard<AZStd::mutex> lock(m_debugNameStoreMutex);
-            m_debugNameStore.SyncChanges(m_oATL.GetDebugStore());
-        }
-        #endif // PROVIDE_GETNAME_SUPPORT
-    #endif // !AUDIO_RELEASE
-
-        if (!handledBlockingRequests)
+        if (!handleBlockingRequest)
         {
             auto endUpdateTime = AZStd::chrono::system_clock::now();      // stamp the end time
             auto elapsedUpdateTime = AZStd::chrono::duration_cast<duration_ms>(endUpdateTime - startUpdateTime);
@@ -285,11 +291,8 @@ namespace Audio
         m_apAudioProxiesToBeFreed.clear();
 
         // Release the audio implementation...
-        SAudioRequest request;
-        SAudioManagerRequestData<eAMRT_RELEASE_AUDIO_IMPL> requestData;
-        request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-        request.pData = &requestData;
-        PushRequestBlocking(request);
+        Audio::SystemRequest::Shutdown shutdownRequest;
+        AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(shutdownRequest));
 
         m_audioSystemThread.Deactivate();
         m_oATL.ShutDown();
@@ -353,12 +356,6 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::GetInfo([[maybe_unused]] SAudioSystemInfo& rAudioSystemInfo)
-    {
-        //TODO: 
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     const char* CAudioSystem::GetControlsPath() const
     {
         return m_controlsPath.c_str();
@@ -380,8 +377,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(
-                eALT_ERROR, "AudioSystem::UpdateControlsPath - failed to normalize the controls path '%s'!", controlsPath.c_str());
+            AZLOG_ERROR("AudioSystem::UpdateControlsPath - failed to normalize the controls path '%s'!", controlsPath.c_str());
         }
     }
 
@@ -402,18 +398,18 @@ namespace Audio
             levelPreloadId = GetAudioPreloadRequestID(levelName);
         }
 
-        Audio::SAudioManagerRequestData<Audio::eAMRT_REFRESH_AUDIO_SYSTEM> requestData(audioControlsPath, levelName, levelPreloadId);
-        Audio::SAudioRequest request;
-        request.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-        request.pData = &requestData;
-        PushRequestBlocking(request);
+        Audio::SystemRequest::ReloadAll reloadRequest;
+        reloadRequest.m_controlsPath = audioControlsPath;
+        reloadRequest.m_levelName = levelName;
+        reloadRequest.m_levelPreloadId = levelPreloadId;
+        AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(reloadRequest));
     #endif // !AUDIO_RELEASE
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    IAudioProxy* CAudioSystem::GetFreeAudioProxy()
+    IAudioProxy* CAudioSystem::GetAudioProxy()
     {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetFreeAudioProxy - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetAudioProxy - called from a non-Main thread!");
         CAudioProxy* audioProxy = nullptr;
 
         if (!m_apAudioProxies.empty())
@@ -424,25 +420,20 @@ namespace Audio
         else
         {
             audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator, "AudioProxyEx");
-
-        #if !defined(AUDIO_RELEASE)
-            if (!audioProxy)
-            {
-                g_audioLogger.Log(eALT_ASSERT, "AudioSystem::GetFreeAudioProxy - failed to create new AudioProxy instance!");
-            }
-        #endif // !AUDIO_RELEASE
+            AZ_Assert(audioProxy != nullptr, "AudioSystem::GetAudioProxy - failed to create new AudioProxy instance!");
         }
 
         return static_cast<IAudioProxy*>(audioProxy);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::FreeAudioProxy(IAudioProxy* const audioProxyI)
+    void CAudioSystem::RecycleAudioProxy(IAudioProxy* const audioProxyI)
     {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::FreeAudioProxy - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::RecycleAudioProxy - called from a non-Main thread!");
         auto const audioProxy = static_cast<CAudioProxy*>(audioProxyI);
 
-        if (AZStd::find(m_apAudioProxiesToBeFreed.begin(), m_apAudioProxiesToBeFreed.end(), audioProxy) != m_apAudioProxiesToBeFreed.end() || AZStd::find(m_apAudioProxies.begin(), m_apAudioProxies.end(), audioProxy) != m_apAudioProxies.end())
+        if (AZStd::find(m_apAudioProxiesToBeFreed.begin(), m_apAudioProxiesToBeFreed.end(), audioProxy) != m_apAudioProxiesToBeFreed.end()
+            || AZStd::find(m_apAudioProxies.begin(), m_apAudioProxies.end(), audioProxy) != m_apAudioProxies.end())
         {
             AZ_Warning("AudioSystem", false, "Attempting to free an already freed audio proxy");
             return;
@@ -471,247 +462,15 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    const char* CAudioSystem::GetAudioControlName([[maybe_unused]] const EAudioControlType controlType, [[maybe_unused]] const TATLIDType atlID) const
-    {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetAudioControlName - called from non-Main thread!");
-        const char* sResult = nullptr;
-
-    #if !defined(AUDIO_RELEASE)
-        #if defined(PROVIDE_GETNAME_SUPPORT)
-        AZStd::lock_guard<AZStd::mutex> lock(m_debugNameStoreMutex);
-        switch (controlType)
-        {
-            case eACT_AUDIO_OBJECT:
-            {
-                sResult = m_debugNameStore.LookupAudioObjectName(atlID);
-                break;
-            }
-            case eACT_TRIGGER:
-            {
-                sResult = m_debugNameStore.LookupAudioTriggerName(atlID);
-                break;
-            }
-            case eACT_RTPC:
-            {
-                sResult = m_debugNameStore.LookupAudioRtpcName(atlID);
-                break;
-            }
-            case eACT_SWITCH:
-            {
-                sResult = m_debugNameStore.LookupAudioSwitchName(atlID);
-                break;
-            }
-            case eACT_PRELOAD:
-            {
-                sResult = m_debugNameStore.LookupAudioPreloadRequestName(atlID);
-                break;
-            }
-            case eACT_ENVIRONMENT:
-            {
-                sResult = m_debugNameStore.LookupAudioEnvironmentName(atlID);
-                break;
-            }
-            case eACT_SWITCH_STATE: // not handled here, use GetAudioSwitchStateName!
-            case eACT_NONE:
-            default: // fall-through!
-            {
-                g_audioLogger.Log(eALT_WARNING, "AudioSystem::GetAudioControlName - called with invalid EAudioControlType!");
-                break;
-            }
-        }
-        #endif // PROVIDE_GETNAME_SUPPORT
-    #endif // !AUDIO_RELEASE
-
-        return sResult;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    const char* CAudioSystem::GetAudioSwitchStateName([[maybe_unused]] const TAudioControlID switchID, [[maybe_unused]] const TAudioSwitchStateID stateID) const
-    {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetAudioSwitchStateName - called from non-Main thread!");
-        const char* sResult = nullptr;
-
-    #if !defined(AUDIO_RELEASE)
-        #if defined(PROVIDE_GETNAME_SUPPORT)
-        AZStd::lock_guard<AZStd::mutex> lock(m_debugNameStoreMutex);
-        sResult = m_debugNameStore.LookupAudioSwitchStateName(switchID, stateID);
-        #endif // PROVIDE_GETNAME_SUPPORT
-    #endif // !AUDIO_RELEASE
-
-        return sResult;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::ExtractCompletedRequests(TAudioRequests& requestQueue, TAudioRequests& extractedCallbacks)
-    {
-        auto iter(requestQueue.begin());
-        auto iterEnd(requestQueue.end());
-
-        while (iter != iterEnd)
-        {
-            const CAudioRequestInternal& refRequest = (*iter);
-            if (refRequest.IsComplete())
-            {
-                // the request has completed, eligible for notification callback.
-                // move the request to the extraction queue.
-                extractedCallbacks.push_back(refRequest);
-                iter = requestQueue.erase(iter);
-                iterEnd = requestQueue.end();
-                continue;
-            }
-
-            ++iter;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::ExecuteRequestCompletionCallbacks(TAudioRequests& requestQueue, AZStd::mutex& requestQueueMutex, bool tryLock)
-    {
-        TAudioRequests extractedCallbacks;
-
-        if (tryLock)
-        {
-            if (requestQueueMutex.try_lock())
-            {
-                ExtractCompletedRequests(requestQueue, extractedCallbacks);
-                requestQueueMutex.unlock();
-            }
-        }
-        else
-        {
-            AZStd::lock_guard<AZStd::mutex> lock(requestQueueMutex);
-            ExtractCompletedRequests(requestQueue, extractedCallbacks);
-        }
-
-        // Notify listeners
-        for (const auto& callback : extractedCallbacks)
-        {
-            m_oATL.NotifyListener(callback);
-        }
-
-        extractedCallbacks.clear();
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::ProcessRequestBlocking(CAudioRequestInternal& request)
-    {
-        AZ_PROFILE_FUNCTION(Audio);
-
-        if (m_oATL.CanProcessRequests())
-        {
-            {
-                AZStd::lock_guard<AZStd::mutex> lock(m_blockingRequestsMutex);
-                m_blockingRequestsQueue.push_back(request);
-            }
-
-            m_processingEvent.release();
-            m_mainEvent.acquire();
-
-            ExecuteRequestCompletionCallbacks(m_blockingRequestsQueue, m_blockingRequestsMutex);
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::ProcessRequestThreadSafe(CAudioRequestInternal request)
-    {
-        // Audio Thread!
-        AZ_PROFILE_SCOPE(Audio, "Process Thread-Safe Request");
-
-        if (m_oATL.CanProcessRequests())
-        {
-            if (request.eStatus == eARS_NONE)
-            {
-                request.eStatus = eARS_PENDING;
-                m_oATL.ProcessRequest(request);
-            }
-
-            AZ_Assert(request.eStatus != eARS_PENDING, "AudioSystem::ProcessRequestThreadSafe - ATL finished processing request, but request is still in pending state!");
-            if (request.eStatus != eARS_PENDING)
-            {
-                // push the request onto a callbacks queue for main thread to process later...
-                AZStd::lock_guard<AZStd::mutex> lock(m_threadSafeCallbacksMutex);
-                m_threadSafeCallbacksQueue.push_back(request);
-            }
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::ProcessRequestByPriority(CAudioRequestInternal request)
-    {
-        // Todo: This should handle request priority, use request priority as bus Address and process in priority order.
-
-        AZ_PROFILE_SCOPE(Audio, "Process Normal Request");
-
-        AZ_Assert(g_mainThreadId != AZStd::this_thread::get_id(), "AudioSystem::ProcessRequestByPriority - called from Main thread!");
-
-        if (m_oATL.CanProcessRequests())
-        {
-            if (request.eStatus == eARS_NONE)
-            {
-                request.eStatus = eARS_PENDING;
-                m_oATL.ProcessRequest(request);
-            }
-
-            AZ_Assert(request.eStatus != eARS_PENDING, "AudioSystem::ProcessRequestByPriority - ATL finished processing request, but request is still in pending state!");
-            if (request.eStatus != eARS_PENDING)
-            {
-                // push the request onto a callbacks queue for main thread to process later...
-                AZStd::lock_guard<AZStd::mutex> lock(m_pendingCallbacksMutex);
-                m_pendingCallbacksQueue.push_back(request);
-            }
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    bool CAudioSystem::ProcessRequests(TAudioRequests& requestQueue)
-    {
-        bool success = false;
-
-        for (auto& request : requestQueue)
-        {
-            if (!(request.nInternalInfoFlags & eARIF_WAITING_FOR_REMOVAL))
-            {
-                AZ_PROFILE_SCOPE(Audio, "Process Blocking Request");
-
-                if (request.eStatus == eARS_NONE)
-                {
-                    request.eStatus = eARS_PENDING;
-                    m_oATL.ProcessRequest(request);
-                    success = true;
-                }
-
-                if (request.eStatus != eARS_PENDING)
-                {
-                    if (request.nFlags & eARF_EXECUTE_BLOCKING)
-                    {
-                        request.nInternalInfoFlags |= eARIF_WAITING_FOR_REMOVAL;
-                        m_mainEvent.release();
-                    }
-                }
-                else
-                {
-                    g_audioLogger.Log(eALT_ERROR, "AudioSystem::ProcessRequests - request still in Pending state after being processed by ATL!");
-                }
-            }
-        }
-
-        return success;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(AUDIO_RELEASE)
-    void CAudioSystem::DrawAudioDebugData()
+    void CAudioSystem::DrawGlobalDebugInfo()
     {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::DrawAudioDebugData - called from non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::DrawGlobalDebugInfo - called from non-Main thread!");
 
         if (CVars::s_debugDrawOptions.GetRawFlags() != 0)
         {
-            SAudioRequest oRequest;
-            oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-            SAudioManagerRequestData<eAMRT_DRAW_DEBUG_INFO> oRequestData;
-            oRequest.pData = &oRequestData;
-
-            PushRequestBlocking(oRequest);
+            Audio::SystemRequest::DrawDebug drawDebug;
+            AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(drawDebug));
         }
     }
 #endif // !AUDIO_RELEASE

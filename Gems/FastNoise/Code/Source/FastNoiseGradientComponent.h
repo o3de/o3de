@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <FastNoise/Ebuses/FastNoiseGradientRequestBus.h>
@@ -98,7 +99,7 @@ namespace FastNoiseGem
         FastNoiseGradientConfig m_configuration;
         FastNoise m_generator;
         GradientSignal::GradientTransform m_gradientTransform;
-        mutable AZStd::shared_mutex m_transformMutex;
+        mutable AZStd::shared_mutex m_queryMutex;
 
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientSignal::GradientTransform& newTransform) override;

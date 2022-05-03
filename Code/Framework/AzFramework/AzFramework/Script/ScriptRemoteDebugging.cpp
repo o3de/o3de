@@ -24,8 +24,6 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/atomic.h>
-#include <GridMate/Serialize/Buffer.h>
-#include <GridMate/Serialize/DataMarshal.h>
 
 namespace AzFramework
 {
@@ -447,13 +445,17 @@ namespace AzFramework
             EBUS_EVENT_RESULT(sender, TargetManager::Bus, GetTargetInfo, msg->GetSenderTargetId());
 
             // The only message we accept without a target match is AttachDebugger
-            if (m_debugger.GetNetworkId() != sender.GetNetworkId())
+            if (!m_debugger.IsIdentityEqualTo(sender))
             {
                 ScriptDebugRequest* request = azdynamic_cast<ScriptDebugRequest*>(msg.get());
-                if (!request || (request->m_request != AZ_CRC("AttachDebugger", 0x6590ff36) && request->m_request != AZ_CRC("EnumContexts", 0xbdb959ba)))
+                if (!request ||
+                    (request->m_request != AZ_CRC("AttachDebugger", 0x6590ff36) &&
+                     request->m_request != AZ_CRC("EnumContexts", 0xbdb959ba)))
                 {
-                    AZ_TracePrintf("LUA", "Rejecting msg 0x%x (%s is not the attached debugger)\n", request->m_request, sender.GetDisplayName());
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("AccessDenied", 0xde72ce21)));
+                    AZ_TracePrintf(
+                        "LUA", "Rejecting msg 0x%x (%s is not the attached debugger)\n", request->m_request, sender.GetDisplayName());
+                    EBUS_EVENT(
+                        TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("AccessDenied", 0xde72ce21)));
                     continue;
                 }
             }
@@ -616,28 +618,32 @@ namespace AzFramework
                     ScriptDebugRegisteredClassesResult response;
                     dbgContext->EnumRegisteredClasses(&ScriptDebugAgentInternal::EnumClass, &ScriptDebugAgentInternal::EnumClassMethod, &ScriptDebugAgentInternal::EnumClassProperty, &response.m_classes);
                     EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
-                    // ExecuteScript
+                    // enumerates C++ busses that have been exposed to script
                 }
                 else if (request->m_request == AZ_CRC("EnumRegisteredEBuses", 0x8237bde7))
                 {
                     ScriptDebugRegisteredEBusesResult response;
                     dbgContext->EnumRegisteredEBuses(&ScriptDebugAgentInternal::EnumEBus, &ScriptDebugAgentInternal::EnumEBusSender, &response.m_ebusList);
                     EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                    // ExecuteScript
                 }
                 else if (request->m_request == AZ_CRC("ExecuteScript", 0xc35e01e7))
                 {
-                    if (m_executionState == SDA_STATE_RUNNING)
+                    if (sender.IsSelf() && m_debugger.IsSelf() && m_executionState == SDA_STATE_RUNNING)
                     {
                         AZ_Assert(request->GetCustomBlob(), "ScriptDebugAgent was asked to execute a script but script is missing!");
                         ScriptDebugAckExecute response;
                         response.m_moduleName = request->m_context;
-                        response.m_result = m_curContext->Execute(reinterpret_cast<const char*>(request->GetCustomBlob()), request->m_context.c_str());
+                        response.m_result =
+                            m_curContext->Execute(reinterpret_cast<const char*>(request->GetCustomBlob()), request->m_context.c_str());
                         EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
                     }
                     else
                     {
-                        AZ_TracePrintf("LUA", "Command rejected. 'ExecuteScript' cannot be issued while on a breakpoint.\n");
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
+                        AZ_TracePrintf("LUA", "Command rejected. 'ExecuteScript' cannot be issued while on a breakpoint or remotely.\n");
+                        EBUS_EVENT(
+                            TargetManager::Bus, SendTmMessage, sender,
+                            ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
                     }
                     // AttachDebugger
                 }
@@ -647,7 +653,7 @@ namespace AzFramework
                     {
                         Attach(sender, request->m_context.c_str());
                     }
-                    else
+                    else if (m_debugger.GetNetworkId() != sender.GetNetworkId())
                     {
                         // we need to detach from the current context first
                         AZ_TracePrintf("LUA", "Received connection from %s while still connected to %s! Detaching from %s.\n", sender.GetDisplayName(), m_debugger.GetDisplayName(), m_debugger.GetDisplayName());
@@ -665,7 +671,10 @@ namespace AzFramework
                 {
                     // We need to switch contexts before any more processing, keep remaining messages
                     // in the queue and return.
-                    m_executionState = SDA_STATE_DETACHING;
+                    if (m_executionState != SDA_STATE_DETACHED)
+                    {
+                        m_executionState = SDA_STATE_DETACHING;
+                    }
                     return;
                     // EnumContexts
                 }
@@ -696,7 +705,7 @@ namespace AzFramework
         if (m_executionState != SDA_STATE_DETACHED)
         {
             bool debuggerOnline = false;
-            EBUS_EVENT_RESULT(debuggerOnline, TargetManager::Bus, IsTargetOnline, m_debugger.GetNetworkId());
+            EBUS_EVENT_RESULT(debuggerOnline, TargetManager::Bus, IsTargetOnline, m_debugger.GetPersistentId());
             if (!debuggerOnline)
             {
                 m_executionState = SDA_STATE_DETACHING;
