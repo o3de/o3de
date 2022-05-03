@@ -40,7 +40,7 @@ function(ly_handle_custom_output_directory target output_subdirectory)
 
 endfunction()
 
-set(LY_STRIP_DEBUG_SYMBOLS FALSE CACHE BOOL "Flag to strip debug symbols from the output executables and binaries")
+set(LY_STRIP_DEBUG_SYMBOLS TRUE CACHE BOOL "Flag to strip debug symbols from the (non-debug) output binaries")
 
 #! ly_apply_debug_strip_options: Apply debug stripping options to the target output for non-debug configurations.
 #
