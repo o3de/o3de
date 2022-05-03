@@ -100,8 +100,6 @@ namespace ScriptCanvasTesting
         }
     };
 
-    static void CanNotAcceptNull(AZStd::vector<AZStd::string>& strings);
-
     void GlobalBusTraits::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
