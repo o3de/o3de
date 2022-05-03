@@ -276,7 +276,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    Dom::Value ReflectionAdapter::GetContents() const
+    Dom::Value ReflectionAdapter::GenerateContents() const
     {
         m_impl->m_builder.BeginAdapter();
         Reflection::VisitLegacyInMemoryInstance(m_impl.get(), m_instance, m_typeId);

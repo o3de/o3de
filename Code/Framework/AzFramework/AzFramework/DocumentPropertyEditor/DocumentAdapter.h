@@ -44,9 +44,11 @@ namespace AZ::DocumentPropertyEditor
 
         virtual ~DocumentAdapter() = default;
 
-        //! Retrieves the contents of this adapter. This must be an Adapter DOM node.
-        //! \see AdapterBuilder for building out this DOM structure.
-        virtual Dom::Value GetContents() const = 0;
+        //! Retrieves the contents of this adapter.
+        //! These contents will be lazily initialized and kept cached, allowing cheap access.
+        //! Adapters may send notifications via reset and change notifications to indicate when the
+        //! internal state has changed.
+        Dom::Value GetContents() const;
 
         //! Connects a listener for the reset event, fired when the contents of this adapter have completely changed.
         //! Any views listening to this adapter will need to call GetContents to retrieve the new contents of the adapter.
@@ -60,7 +62,22 @@ namespace AZ::DocumentPropertyEditor
         //! \see RoutingAdapter
         virtual void SetRouter(RoutingAdapter* router, const Dom::Path& route);
 
+        //! If true, debug mode is enabled for all DocumentAdapters.
+        //! \see SetDebugModeEnabled
+        static bool IsDebugModeEnabled();
+        //! Enables or disables debug mode globally for all DocumentAdapters.
+        //! Debug mode adds expensive extra steps to notification operations to ensure the
+        //! adapter is behaving correctly and will report warnings if an issue is detected.
+        //! This can also be set at runtime with the `ed_debugDocumentPropertyEditorUpdates` CVar.
+        static void SetDebugModeEnabled(bool enableDebugMode);
+
     protected:
+        //! Generates the contents of this adapter. This must be an Adapter DOM node.
+        //! These contents will be cached - to notify clients of changes to the structure,
+        //! NotifyResetDocument or NotifyContentsChanged must be used.
+        //! \see AdapterBuilder for building out this DOM structure.
+        virtual Dom::Value GenerateContents() const = 0;
+
         //! Subclasses may call this to trigger a ResetEvent and let the view know that GetContents should be requeried.
         //! Where possible, prefer to use NotifyContentsChanged instead.
         void NotifyResetDocument();
@@ -72,5 +89,7 @@ namespace AZ::DocumentPropertyEditor
     private:
         ResetEvent m_resetEvent;
         ChangedEvent m_changedEvent;
+
+        mutable Dom::Value m_cachedContents;
     };
 } // namespace AZ::DocumentPropertyEditor
