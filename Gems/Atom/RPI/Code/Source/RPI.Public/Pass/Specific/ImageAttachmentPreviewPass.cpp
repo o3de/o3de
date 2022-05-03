@@ -281,6 +281,7 @@ namespace AZ
             // Find srg input indexes
             m_imageTypePreviewInfo[static_cast<uint32_t>(ImageType::Image2d)].m_imageInput = m_passSrg->FindShaderInputImageIndex(Name("m_image"));
             m_imageTypePreviewInfo[static_cast<uint32_t>(ImageType::Image2dMs)].m_imageInput = m_passSrg->FindShaderInputImageIndex(Name("m_msImage"));
+            m_colorRangeMinMaxInput = m_passSrg->FindShaderInputConstantIndex(Name("m_colorRangeMinMax"));
             
             // Setup initial data for pipeline state descriptors. The rest of the data will be set when the draw data is updated
 
@@ -378,6 +379,13 @@ namespace AZ
             return false;
         }
         
+        void ImageAttachmentPreviewPass::SetColorTransformRange(float colorTransformRange[2])
+        {
+            m_attachmentColorTranformRange[0] = AZ::GetMin(colorTransformRange[0], colorTransformRange[1]);
+            m_attachmentColorTranformRange[1] = AZ::GetMax(colorTransformRange[0], colorTransformRange[1]);
+            m_updateDrawData = true;
+        }
+
         void ImageAttachmentPreviewPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             // add attachments to the scope
@@ -447,9 +455,9 @@ namespace AZ
                         auto& previewInfo = m_imageTypePreviewInfo[typeIndex];
                         m_passSrg->SetShaderVariantKeyFallbackValue(previewInfo.m_shaderVariantKeyFallback);
                         m_passSrg->SetImageView(previewInfo.m_imageInput, inputImageView, 0);
+                        m_passSrg->SetConstant(m_colorRangeMinMaxInput, m_attachmentColorTranformRange);
                         m_passSrgChanged = true;
                         previewInfo.m_imageCount = 1;
-                
                     }
                     else
                     {

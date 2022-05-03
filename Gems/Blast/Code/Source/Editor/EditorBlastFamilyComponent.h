@@ -51,6 +51,8 @@ namespace Blast
         /// Return the physics material library asset id. Used to supply MaterialIdWidget with material library.
         AZ::Data::AssetId GetPhysicsMaterialLibraryAssetId() const;
 
+        AZ::Data::AssetId GetDefaultBlastAssetId() const;
+
         // Configurations
         AZ::Data::Asset<BlastAsset> m_blastAsset;
         AZ::Data::Asset<MaterialAsset> m_blastMaterialAsset;
