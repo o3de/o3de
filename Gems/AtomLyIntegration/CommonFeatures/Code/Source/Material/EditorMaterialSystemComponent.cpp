@@ -176,15 +176,10 @@ namespace AZ
             {
                 AZ::Data::AssetId materialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, materialAssignmentId);
+                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId, materialAssignmentId);
                 if (!materialAssetId.IsValid())
                 {
-                    MaterialComponentRequestBus::EventResult(
-                        materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, materialAssignmentId);
-                    if (!materialAssetId.IsValid())
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
