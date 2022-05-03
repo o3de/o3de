@@ -1652,57 +1652,48 @@ namespace AssetProcessor
             {
                 AZ_Error(AssetProcessor::ConsoleChannel, false, "Source for Product %s not found!!!", product.m_productName.c_str());
             }
-            auto productPath = AssetUtilities::ProductPath::FromDatabasePath(product.m_productName);
+
+            AZStd::string_view platform;
+            auto productPath = AssetUtilities::ProductPath::FromDatabasePath(product.m_productName, &platform);
             AssetProcessor::ProductAssetWrapper wrapper{ product, productPath };
 
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel,
+                           "Deleting file %s because either its source file %s was removed or the builder did not emit this job.\n",
+                           productPath.GetRelativePath().c_str(), source.m_sourceName.c_str());
+
+            successfullyRemoved = wrapper.DeleteFiles(true);
+
+            if (successfullyRemoved)
             {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel,
-                    "Deleting file %s because either its source file %s was removed or the builder did not emit this job.\n",
-                    productPath.GetRelativePath().c_str(), source.m_sourceName.c_str());
-
-                successfullyRemoved = wrapper.DeleteFiles(true);
-
-
-
-
-
-                if (successfullyRemoved)
+                if (!m_stateData->RemoveProduct(product.m_productID))
                 {
-                    AzToolsFramework::AssetDatabase::JobDatabaseEntry job;
-                    if (!m_stateData->GetJobByProductID(product.m_productID, job))
-                    {
-                        AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to find job for Product %s", product.m_productName.c_str());
-                    }
-
-                    if (!m_stateData->RemoveProduct(product.m_productID))
-                    {
-                        AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to remove Product %s", product.m_productName.c_str());
-                    }
-
-                    if(wrapper.HasCacheProduct())
-                    {
-                        AZ::Data::AssetId assetId(source.m_sourceGuid, product.m_subID);
-                        AZ::Data::AssetId legacyAssetId(product.m_legacyGuid, 0);
-                        AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), product.m_subID);
-
-                        AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, product.m_assetType, job.m_platform.c_str());
-                        message.m_assetId = assetId;
-
-                        if (legacyAssetId != assetId)
-                        {
-                            message.m_legacyAssetIds.push_back(legacyAssetId);
-                        }
-
-                        if (legacySourceAssetId != assetId)
-                        {
-                            message.m_legacyAssetIds.push_back(legacySourceAssetId);
-                        }
-                        Q_EMIT AssetMessage( message);
-                    }
-
-                    m_checkFoldersToRemove.insert(productPath.GetCachePath().c_str());
-                    m_checkFoldersToRemove.insert(productPath.GetIntermediatePath().c_str());
+                    AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to remove Product %s", product.m_productName.c_str());
+                    continue;
                 }
+
+                if(wrapper.HasCacheProduct())
+                {
+                    AZ::Data::AssetId assetId(source.m_sourceGuid, product.m_subID);
+                    AZ::Data::AssetId legacyAssetId(product.m_legacyGuid, 0);
+                    AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), product.m_subID);
+
+                    AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, product.m_assetType, AZ::OSString(platform.data(), platform.size()));
+                    message.m_assetId = assetId;
+
+                    if (legacyAssetId != assetId)
+                    {
+                        message.m_legacyAssetIds.push_back(legacyAssetId);
+                    }
+
+                    if (legacySourceAssetId != assetId)
+                    {
+                        message.m_legacyAssetIds.push_back(legacySourceAssetId);
+                    }
+                    Q_EMIT AssetMessage( message);
+                }
+
+                m_checkFoldersToRemove.insert(productPath.GetCachePath().c_str());
+                m_checkFoldersToRemove.insert(productPath.GetIntermediatePath().c_str());
             }
         }
 
@@ -2584,13 +2575,13 @@ namespace AssetProcessor
                 }
 
                 if (!overrider.isEmpty())
-                    {
-                        // this file is being overridden by an earlier file.
-                        // ignore us, and pretend the other file changed:
-                        AZ_TracePrintf(AssetProcessor::DebugChannel, "File overridden by %s.\n", overrider.toUtf8().constData());
-                        CheckSource(FileEntry(overrider, false, examineFile.m_isFromScanner));
-                        continue;
-                    }
+                {
+                    // this file is being overridden by an earlier file.
+                    // ignore us, and pretend the other file changed:
+                    AZ_TracePrintf(AssetProcessor::DebugChannel, "File overridden by %s.\n", overrider.toUtf8().constData());
+                    CheckSource(FileEntry(overrider, false, examineFile.m_isFromScanner));
+                    continue;
+                }
 
                 // its an input file or a file we don't care about...
                 // note that if the file now exists, we have to treat it as an input asset even if it came in as a delete.

@@ -1752,10 +1752,15 @@ namespace AssetUtilities
         m_databasePath = AZ::IO::FixedMaxPath(platformIdentifier) / scanfolderRelativeProductPath;
     }
 
-    ProductPath ProductPath::FromDatabasePath(AZStd::string_view databasePath)
+    ProductPath ProductPath::FromDatabasePath(AZStd::string_view databasePath, AZStd::string_view* platformOut)
     {
         AZStd::string_view platform;
         AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(databasePath, &platform);
+
+        if(platformOut)
+        {
+            *platformOut = platform;
+        }
 
         return ProductPath{ relativeProductPath, platform };
     }
