@@ -1651,7 +1651,7 @@ namespace AZ
                         // So use the classTypeId instead
                         AZ_UNUSED(classTypeId);
                         AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s",
-                            classTypeId.ToString<AZStd::fixed_string<AZ::TypeId::MaxStringBuffer>>().c_str());
+                            classTypeId.ToFixedString().c_str());
                         return true;
                     }
                     if (m_writeElementResultStack.back())

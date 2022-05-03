@@ -75,6 +75,7 @@ export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
 export O3DE_AWS_DEPLOY_ACCOUNT=$(echo "$ASSUME_ROLE_ARN" | cut -d':' -f5)
 if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
    export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+   export O3DE_AWS_PROJECT_NAME=${O3DE_AWS_PROJECT_NAME///} # remove occurances of "/" b/c not allowed in AWS CFN stack names
 fi
 
 # Bootstrap and deploy the CDK applications

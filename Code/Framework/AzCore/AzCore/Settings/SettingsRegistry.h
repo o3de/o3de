@@ -250,7 +250,7 @@ namespace AZ
         //! @param resultTypeId The type id of the target that's being written to.
         //! @param path The path to the value.
         //! @return Whether or not the value was stored. An invalid path will return false;
-        virtual bool GetObject(void* result, Uuid resultTypeID, AZStd::string_view path) const = 0;
+        virtual bool GetObject(void* result, AZ::Uuid resultTypeID, AZStd::string_view path) const = 0;
         //! Gets the json object value at the provided path serialized to the target struct/class. Classes retrieved
         //! through this call needs to be registered with the Serialize Context.
         //! @param result The target to write the result to.
@@ -294,7 +294,7 @@ namespace AZ
         //! @param value The new value to store.
         //! @param valueTypeId The type id of the target that's being stored.
         //! @return Whether or not the value was stored. An invalid path will return false;
-        virtual bool SetObject(AZStd::string_view path, const void* value, Uuid valueTypeID) = 0;
+        virtual bool SetObject(AZStd::string_view path, const void* value, AZ::Uuid valueTypeID) = 0;
         template<typename T>
         //! Sets the value at the provided path to the serialized version of the provided struct/class.
         //! Classes used for this call need to be registered with the Serialize Context.

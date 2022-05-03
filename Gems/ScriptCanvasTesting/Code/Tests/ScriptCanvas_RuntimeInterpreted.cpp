@@ -83,14 +83,9 @@ public:
     }
 };
 
-TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
-}
-
 TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
+    ExpectParseError("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
 }
 
 TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)
@@ -674,6 +669,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResults)
 TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResultsByValue)
 {
     RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResultsByValue", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnSameTypeResults)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnSameTypeResults", ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedMultipleStartNodes)

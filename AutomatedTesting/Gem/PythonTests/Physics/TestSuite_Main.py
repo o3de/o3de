@@ -315,9 +315,6 @@ class TestAutomation(EditorTestSuite):
     class Joints_HingeSoftLimitsConstrained(EditorSharedTest):
         from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
 
-    class Joints_BallSoftLimitsConstrained(EditorSharedTest):
-        from .tests.joints import Joints_BallSoftLimitsConstrained as test_module
-
     class Joints_BallLeadFollowerCollide(EditorSharedTest):
         from .tests.joints import Joints_BallLeadFollowerCollide as test_module
         

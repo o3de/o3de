@@ -195,6 +195,15 @@ namespace GraphCanvas
 
         if (m_filter.isEmpty())
         {
+            // When item has no children, put it at front; otherwise follow alphabetical order
+            if (model->hasChildren(source_left) && !model->hasChildren(source_right))
+            {
+                return false;
+            }
+            else if (!model->hasChildren(source_left) && model->hasChildren(source_right))
+            {
+                return true;
+            }
             return left < right;
         }
         else
@@ -335,13 +344,13 @@ namespace GraphCanvas
         // Then ignore all whitespace by adding \s* (regex optional whitespace match) in between every other character.
         // We use \s* instead of simply removing all whitespace from the filter and node-names in order to preserve the node-name and accurately highlight the matching portion.
         // Example: "OnGraphStart" or "On Graph Start"
-        m_filter = QRegExp::escape(filter.simplified().replace(" ", ""));
+        m_filter = filter.simplified().replace(" ", "");
         
-        QString regExIgnoreWhitespace(m_filter[0]);
+        QString regExIgnoreWhitespace = QRegExp::escape(QString(m_filter[0]));
         for (int i = 1; i < m_filter.size(); ++i)
         {
             regExIgnoreWhitespace.append("\\s*");
-            regExIgnoreWhitespace.append(m_filter[i]);
+            regExIgnoreWhitespace.append(QRegExp::escape(QString(m_filter[i])));
         }
         
         m_filterRegex = QRegExp(regExIgnoreWhitespace, Qt::CaseInsensitive);

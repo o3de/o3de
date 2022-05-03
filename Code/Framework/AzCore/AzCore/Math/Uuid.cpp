@@ -419,6 +419,11 @@ namespace AZ
         return CreateData(&mergedData, AZ_ARRAY_SIZE(mergedData));
     }
 
+    Uuid::FixedString Uuid::ToFixedString(bool isBrackets, bool isDashes) const
+    {
+        return ToString<FixedString>(isBrackets, isDashes);
+    }
+
 #if AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION
     //=========================================================================
     // Uuid

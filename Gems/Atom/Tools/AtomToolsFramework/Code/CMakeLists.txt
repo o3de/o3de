@@ -46,6 +46,8 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
+            Gem::GraphCanvasWidgets
+            Gem::GraphModel.Editor.Static
             Gem::ImageProcessingAtom.Headers
 )
 
@@ -73,8 +75,15 @@ ly_add_target(
         Gem::Atom_RHI_Null.Private
         Gem::Atom_RPI.Editor
         Gem::EditorPythonBindings.Editor
+        Gem::GraphCanvas.Editor
+        Gem::GraphCanvasWidgets
+        Gem::GraphModel.Editor
         Gem::ImageProcessingAtom.Editor
 )
+
+# Add a 'builders' alias to allow the AtomToolsFramework root gem path to be added to the generated
+# cmake_dependencies.<project>.assetprocessor.setreg to allow the asset scan folder for it to be added
+ly_create_alias(NAME AtomToolsFramework.Builders NAMESPACE Gem)
 
 ################################################################################
 # Tests

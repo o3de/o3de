@@ -131,10 +131,12 @@ namespace Terrain
         //! 0.25 and margin of 4 would have a safe distance of (1024 * 0.5 - 4) * 0.25 = 127.0f.
         float GetWorldSpaceSafeDistance() const;
 
+        //! Returns the normalized center of the clipmap within [0, 1].
+        AZ::Vector2 GetNormalizedCenter() const;
     private:
 
         //! Returns the center point snapped to a multiple of m_clipmapUpdateMultiple. This isn't
-        //! a simple rounding operation. The value returned will only be different from the curernt
+        //! a simple rounding operation. The value returned will only be different from the current
         //! center if the value passed in is greater than m_clipmapUpdateMultiple away from the center.
         Vector2i GetSnappedCenter(const Vector2i& center);
 

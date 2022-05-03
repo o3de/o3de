@@ -160,7 +160,6 @@ namespace AZ
             AZStd::swap(m_materialsWithDirtyProperties, materialsWithDirtyProperties);
 
             // Iterate through all MaterialAssignmentId's that have property overrides and attempt to apply them
-            // if material instance is already compiling, delay application of property overrides until next frame
             for (const auto& materialAssignmentId : materialsWithDirtyProperties)
             {
                 const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
@@ -168,7 +167,7 @@ namespace AZ
                 {
                     if (!materialIt->second.ApplyProperties())
                     {
-                        // If a material cannot currently be compiled then it must be queued again
+                        // If the material had properties to apply and it could not be compiled then queue it again
                         m_materialsWithDirtyProperties.emplace(materialAssignmentId);
                     }
                 }

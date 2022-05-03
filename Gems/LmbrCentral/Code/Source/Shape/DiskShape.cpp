@@ -63,13 +63,17 @@ namespace LmbrCentral
 
     void DiskShape::InvalidateCache(InvalidateShapeCacheReason reason)
     {
+        AZStd::unique_lock lock(m_mutex);
         m_intersectionDataCache.InvalidateCache(reason);
     }
 
     void DiskShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        m_currentTransform = world;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_currentTransform = world;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
@@ -77,13 +81,17 @@ namespace LmbrCentral
 
     DiskShapeConfig DiskShape::GetDiskConfiguration()
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_diskShapeConfig;
     }
 
     void DiskShape::SetRadius(float radius)
     {
-        m_diskShapeConfig.m_radius = radius;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_diskShapeConfig.m_radius = radius;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
@@ -91,18 +99,22 @@ namespace LmbrCentral
 
     float DiskShape::GetRadius()
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_diskShapeConfig.m_radius;
     }
 
     const AZ::Vector3& DiskShape::GetNormal()
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, m_mutex);
+
         return m_intersectionDataCache.m_normal;
     }
 
     AZ::Aabb DiskShape::GetEncompassingAabb()
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, m_mutex);
 
         const AZ::Vector3& normal = m_intersectionDataCache.m_normal;
         const float radius = m_intersectionDataCache.m_radius;
@@ -117,6 +129,7 @@ namespace LmbrCentral
 
     void DiskShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
     {
+        AZStd::shared_lock lock(m_mutex);
         const float radius = m_diskShapeConfig.m_radius;
         bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-radius, -radius, 0.0f), AZ::Vector3(radius, radius, 0.0f));
         transform = m_currentTransform;
@@ -129,7 +142,8 @@ namespace LmbrCentral
 
     float DiskShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, m_mutex);
 
         // Find closest point to the plane the disk is on
         AZ::Plane plane = AZ::Plane::CreateFromNormalAndPoint(m_intersectionDataCache.m_normal, m_currentTransform.GetTranslation());
@@ -150,7 +164,8 @@ namespace LmbrCentral
 
     bool DiskShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, m_mutex);
 
         return AZ::Intersect::IntersectRayDisk(
             src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, m_intersectionDataCache.m_normal, distance);
@@ -167,21 +182,25 @@ namespace LmbrCentral
 
     const DiskShapeConfig& DiskShape::GetDiskConfiguration() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_diskShapeConfig;
     }
 
     void DiskShape::SetDiskConfiguration(const DiskShapeConfig& diskShapeConfig)
     {
+        AZStd::unique_lock lock(m_mutex);
         m_diskShapeConfig = diskShapeConfig;
     }
 
     const AZ::Transform& DiskShape::GetCurrentTransform() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_currentTransform;
     }
 
     ShapeComponentConfig& DiskShape::ModifyShapeComponent()
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_diskShapeConfig;
     }
 

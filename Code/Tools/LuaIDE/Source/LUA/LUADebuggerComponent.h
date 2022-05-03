@@ -58,10 +58,6 @@ namespace LUADebugger
         virtual void EnumRegisteredEBuses(const char* scriptContextName);
         // Request enumeration of global methods and properties registered in the current context
         virtual void EnumRegisteredGlobals(const char* scriptContextName);
-        // Execute a script.  If executeInEditor is true, this means execute it in THIS script context that belongs to the editor
-        // otherwise we'll have to use target management.
-        // the debugname is the name of this script blob for breakpoint purposes, and the buffer length is how long the data is, including a null.
-        virtual void ExecuteScript(const AZStd::string& debugName, const char* scriptData, AZStd::size_t bufferLength);
         // create a breakpoint.  The debugName is the name that was given when the script was executed and represents
         // the 'document' (or blob of script) that the breakpoint is for.  The line number is relative to the start of that blob.
         // the combination of line number and debug name uniquely identify a debug breakpoint.
