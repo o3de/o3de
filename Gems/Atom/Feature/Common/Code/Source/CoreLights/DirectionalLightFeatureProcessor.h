@@ -94,7 +94,7 @@ namespace AZ
             // Reduce acne by applying a small amount of bias to apply along shadow-space z.
             float m_shadowBias = 0.0f;
             // Reduces acne by biasing the shadowmap lookup along the geometric normal.
-            float m_normalShadowBias;
+            float m_normalShadowBias = 0.0f;
             uint32_t m_filteringSampleCount = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
