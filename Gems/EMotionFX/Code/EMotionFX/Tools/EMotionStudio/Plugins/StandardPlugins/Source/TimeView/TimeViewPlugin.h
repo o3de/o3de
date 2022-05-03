@@ -31,6 +31,7 @@ namespace EMStudio
     class MotionWindowPlugin;
     class MotionEventsPlugin;
     class MotionListWindow;
+    class MotionEventWidget;
     class MotionEventPresetsWidget;
     class MotionSetsWindowPlugin;
 
@@ -263,5 +264,7 @@ namespace EMStudio
         QPen                m_penTimeHandles;
         QPen                m_penCurTimeHelper;
         QBrush              m_brushCurTimeHandle;
+
+        MotionEventWidget* m_motionEventWidget = nullptr;
     };
 }   // namespace EMStudio

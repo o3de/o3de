@@ -86,6 +86,12 @@ int main(int argc, char** argv)
 
     QPointer<DPEDebugView::DPEDebugWindow> theWindow = new DPEDebugView::DPEDebugWindow(nullptr);
     theWindow->m_treeView->setModel(&adapterModel);
+
+    for (int columnIndex = 0, maxColumns = adapterModel.GetMaxColumns(); columnIndex < maxColumns; ++columnIndex)
+    {
+        // resize the columns to accommodate the displayed data
+        theWindow->m_treeView->resizeColumnToContents(columnIndex);
+    }
     theWindow->show();
 
     return qtApp.exec();

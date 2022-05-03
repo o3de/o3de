@@ -44,7 +44,7 @@ namespace AZ::SceneAPI::SceneBuilder
     // Find the first bone with the name of the given node.
     const aiBone* FindFirstBoneByNodeName(const aiNode* node, AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap);
 
-    // Check if the given node or any of its children, or children of children, is a bone by checking if the node name is part of the given map.
-    bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap);
+    // Check if the given node or any of its children, or children of children, is a bone by checking if the node name is part of the given maps.
+    bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap, const AZStd::unordered_set<AZStd::string>& animatedNodesMap);
 } // namespace AZ
 
