@@ -39,8 +39,8 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_DeleteEntity_UnderLevelPrefab(EditorSharedTest):
         from .tests.delete_entity import DeleteEntity_UnderLevelPrefab as test_module
 
-    class test_ReparentPrefab_UnderAnotherPrefab(EditorSharedTest):
-        from .tests.reparent_prefab import ReparentPrefab_UnderAnotherPrefab as test_module
+    class test_ReparentPrefab_UnderPrefabAndEntityHierarchies(EditorSharedTest):
+        from .tests.reparent_prefab import ReparentPrefab_UnderPrefabAndEntityHierarchies as test_module
 
     class test_DetachPrefab_UnderAnotherPrefab(EditorSharedTest):
         from .tests.detach_prefab import DetachPrefab_UnderAnotherPrefab as test_module
