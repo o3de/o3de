@@ -9,6 +9,7 @@ import os
 import pytest
 
 from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
+from ly_test_tools.o3de.material_editor_test import MaterialEditorSharedTest, MaterialEditorTestSuite
 
 logger = logging.getLogger(__name__)
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
@@ -130,9 +131,7 @@ class TestAutomation(EditorTestSuite):
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_material_editor'])
-class TestMaterialEditor(EditorTestSuite):
+class TestMaterialEditor(MaterialEditorTestSuite):
 
-    material_editor_test = True
-
-    class MaterialEditor_Atom_LaunchMaterialEditor(EditorSharedTest):
+    class MaterialEditor_Atom_LaunchMaterialEditor(MaterialEditorSharedTest):
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module

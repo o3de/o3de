@@ -22,6 +22,8 @@ def pytest_addoption(parser: argparse.ArgumentParser) -> None:
     parser.addoption("--no-editor-batch", action="store_true", help="Don't batch multiple tests in single editor")
     parser.addoption("--no-editor-parallel", action="store_true", help="Don't run multiple editors in parallel")
     parser.addoption("--editors-parallel", type=int, action="store", help="Override the number editors to run at the same time")
+    parser.addoption("--material-editors-parallel", type=int, action="store",
+                     help="Override the number of material_editor instances to run at the same time")
 
 def pytest_pycollect_makeitem(collector: PyCollector, name: str, obj: object) -> PyCollector:
     """
