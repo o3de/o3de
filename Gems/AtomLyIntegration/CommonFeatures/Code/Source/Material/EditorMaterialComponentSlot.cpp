@@ -165,12 +165,15 @@ namespace AZ
 
         AZ::Data::AssetId EditorMaterialComponentSlot::GetActiveAssetId() const
         {
-            return m_materialAsset.GetId().IsValid() ? m_materialAsset.GetId() : GetDefaultAssetId();
+            AZ::Data::AssetId assetId = {};
+            MaterialComponentRequestBus::EventResult(
+                assetId, m_entityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId, m_id);
+            return assetId;
         }
 
         AZ::Data::AssetId EditorMaterialComponentSlot::GetDefaultAssetId() const
         {
-            AZ::Data::AssetId assetId;
+            AZ::Data::AssetId assetId = {};
             MaterialComponentRequestBus::EventResult(
                 assetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, m_id);
             return assetId;
@@ -306,14 +309,16 @@ namespace AZ
 
         void EditorMaterialComponentSlot::OpenPopupMenu([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType)
         {
-            const auto& entityIdsToEdit = EditorMaterialComponentUtil::GetSelectedEntitiesFromActiveInspectorMatchingMaterialSlots(m_entityId);
+            const auto& entityIdsToEdit = EditorMaterialComponentUtil::GetSelectedEntitiesFromActiveInspector();
+            const bool hasMatchingSlots = EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialSlots(m_entityId, entityIdsToEdit);
+            const bool hasMatchingMaterials = EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterials(m_entityId, entityIdsToEdit, m_id);
 
             QMenu menu;
 
             QAction* action = nullptr;
 
             action = menu.addAction("Generate/Manage Source Material...", [this, entityIdsToEdit]() { OpenMaterialExporter(entityIdsToEdit); });
-            action->setEnabled(GetDefaultAssetId().IsValid());
+            action->setEnabled(GetDefaultAssetId().IsValid() && hasMatchingSlots);
 
             menu.addSeparator();
 
@@ -321,10 +326,10 @@ namespace AZ
             action->setEnabled(HasSourceData());
 
             action = menu.addAction("Edit Material Instance...", [this, entityIdsToEdit]() { OpenMaterialInspector(entityIdsToEdit); });
-            action->setEnabled(GetActiveAssetId().IsValid());
+            action->setEnabled(GetActiveAssetId().IsValid() && hasMatchingMaterials);
 
             action = menu.addAction("Edit Material Instance UV Map...", [this, entityIdsToEdit]() { OpenUvNameMapInspector(entityIdsToEdit); });
-            action->setEnabled(GetActiveAssetId().IsValid());
+            action->setEnabled(GetActiveAssetId().IsValid() && hasMatchingMaterials);
 
             menu.addSeparator();
 
@@ -340,7 +345,7 @@ namespace AZ
                 OnDataChanged(entityIdsToEdit);
             });
 
-            action = menu.addAction("Clear", [this, entityIdsToEdit]() {
+            action = menu.addAction("Clear Material And Properties", [this, entityIdsToEdit]() {
                 m_materialAsset = {};
                 for (const AZ::EntityId& entityId : entityIdsToEdit)
                 {
@@ -366,10 +371,6 @@ namespace AZ
             // Handle undo, update configuration, and refresh the inspector to display the new values
             AzToolsFramework::ScopedUndoBatch undoBatch("Material slot changed.");
 
-            EditorMaterialSystemComponentRequestBus::Broadcast(
-                &EditorMaterialSystemComponentRequestBus::Events::RenderMaterialPreview, m_entityId, m_id);
-            m_updatePreview = false;
-
             for (const AZ::EntityId& entityId : entityIdsToEdit)
             {
                 AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
@@ -378,8 +379,13 @@ namespace AZ
                 MaterialComponentRequestBus::Event(
                     entityId, &MaterialComponentRequestBus::Events::SetMaterialOverride, m_id, m_materialAsset.GetId());
 
+                EditorMaterialSystemComponentRequestBus::Broadcast(
+                    &EditorMaterialSystemComponentRequestBus::Events::RenderMaterialPreview, entityId, m_id);
+
                 MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
             }
+
+            m_updatePreview = false;
 
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
