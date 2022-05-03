@@ -96,7 +96,7 @@ namespace LmbrCentral
     private:
         ReferenceShapeConfig m_configuration;
         mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety
-        bool m_allowNotifications = false; ///< temporarily disable sending notifications to avoid redundancies
+        bool m_allowNotifications = true; ///< temporarily disable sending notifications to avoid redundancies
 
         bool AllowRequest() const;
         bool AllowNotification() const;
