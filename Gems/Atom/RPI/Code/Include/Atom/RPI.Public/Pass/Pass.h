@@ -134,6 +134,9 @@ namespace AZ
             //! Returns the depth of this pass in the tree hierarchy (Root depth is 0)
             uint32_t GetTreeDepth() const;
 
+            //! Returns the index in the parent's array of children that this pass occupies (used for sorting passes)
+            uint32_t GetParentChildIndex() const;
+
             //! Returns the number of input attachment bindings
             uint32_t GetInputCount() const;
 
@@ -592,6 +595,10 @@ namespace AZ
             // Depth of the tree hierarchy this pass is at.
             // Example: Root would be depth 0, Root.Ssao.Downsample depth 2
             uint32_t m_treeDepth = 0;
+
+            // The index in the parent's array of children that this pass occupies
+            // Used for sorting passes during update.
+            uint32_t m_parentChildIndex = 0;
 
             // Used to track what phase of build/execution the pass is in
             PassState m_state = PassState::Uninitialized;
