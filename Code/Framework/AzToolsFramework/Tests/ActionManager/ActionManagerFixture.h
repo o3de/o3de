@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
@@ -15,6 +16,7 @@
 
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 
 #include <QWidget>
@@ -30,6 +32,7 @@ namespace UnitTest
         void TearDownEditorFixtureImpl() override;
 
     public:
+        AZStd::unique_ptr<AzToolsFramework::ActionManager> m_actionManager;
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
         QWidget* m_widget = nullptr;
     };
