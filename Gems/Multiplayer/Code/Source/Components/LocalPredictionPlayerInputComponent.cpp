@@ -382,9 +382,13 @@ namespace Multiplayer
 
         if (cl_EnableDesyncDebugging)
         {
-            const NetworkInput& startReplayInput = m_inputHistory[startReplayIndex];
-            AZLOG_WARN("** Autonomous Desync - Correcting clientInputId=%d from host frame=%d", aznumeric_cast<int32_t>(inputId),
-                aznumeric_cast<int32_t>(startReplayInput.GetHostFrameId()));
+            int32_t inputFrameId = 0;
+            if (startReplayIndex < inputHistorySize)
+            {
+                inputFrameId = aznumeric_cast<int32_t>(m_inputHistory[startReplayIndex].GetHostFrameId());
+            }
+
+            AZLOG_WARN("** Autonomous Desync - Correcting clientInputId=%d from host frame=%d", aznumeric_cast<int32_t>(inputId), inputFrameId);
 
 #ifndef AZ_RELEASE_BUILD
             auto iter = m_predictiveStateHistory.find(inputId);
@@ -399,8 +403,7 @@ namespace Multiplayer
                 SerializeEntityCorrection(serverValues);
                 MultiplayerAuditingElement detail;
                 PrintCorrectionDifferences(*iter->second, serverValues, &detail);
-                detail.m_name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from host frame=%d",
-                    aznumeric_cast<int32_t>(inputId), aznumeric_cast<int32_t>(startReplayInput.GetHostFrameId()));
+                detail.m_name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from host frame=%d", aznumeric_cast<int32_t>(inputId), inputFrameId);
                 AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(AuditCategory::Desync, inputId,
                     correctedInput.GetHostFrameId(), GetEntity()->GetName(), { AZStd::move(detail) });
             }

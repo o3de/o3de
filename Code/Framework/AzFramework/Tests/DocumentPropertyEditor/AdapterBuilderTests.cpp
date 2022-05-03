@@ -34,20 +34,20 @@ namespace AZ::DocumentPropertyEditor::Tests
         Expect the following structure:
         <Adapter>
             <Row>
-                <Label>label</Label>
-                <PropertyEditor type="TextEditor" attr=2>value</TextEditor>
+                <Label Value="label"/>
+                <PropertyEditor type="TextEditor" attr=2 Value="lorem ipsum"/>
             </Row>
         </Adapter>
         */
         Dom::Value expectedDom = Dom::Value::CreateNode(Nodes::Adapter::Name);
         Dom::Value row = Dom::Value::CreateNode(Nodes::Row::Name);
         Dom::Value label = Dom::Value::CreateNode(Nodes::Label::Name);
-        label.SetNodeValue(Dom::Value("label", true));
+        label[Nodes::Label::Value.GetName()] = Dom::Value("label", true);
         row.ArrayPushBack(label);
         Dom::Value editor = Dom::Value::CreateNode(Nodes::PropertyEditor::Name);
         editor[Nodes::PropertyEditor::Type.GetName()] = Dom::Value("TextEditor", true);
         editor["attr"] = 2;
-        editor.SetNodeValue(Dom::Value("lorem ipsum", true));
+        editor[Nodes::PropertyEditor::Value.GetName()] = Dom::Value("lorem ipsum", true);
         row.ArrayPushBack(editor);
         expectedDom.ArrayPushBack(row);
 

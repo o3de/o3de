@@ -52,8 +52,8 @@ namespace AZ::Render
 
         m_filterParamBufferHandler = GpuBufferHandler(desc);
         
-        m_shadowmapAtlasSizeIndex = viewSrgLayout->FindShaderInputConstantIndex(Name("m_shadowmapAtlasSize"));
-        m_invShadowmapAtlasSizeIndex = viewSrgLayout->FindShaderInputConstantIndex(Name("m_invShadowmapAtlasSize"));
+        m_shadowmapAtlasSizeIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_shadowmapAtlasSize"));
+        m_invShadowmapAtlasSizeIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_invShadowmapAtlasSize"));
 
         CachePasses();
         EnableSceneNotification();
@@ -211,10 +211,14 @@ namespace AZ::Render
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowProperties().");
         ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
-        shadowProperty.m_desc = descriptor;
-        UpdateShadowView(shadowProperty);
-        m_shadowmapPassNeedsUpdate = true;
-        m_filterParameterNeedsUpdate = true;
+
+        if (shadowProperty.m_desc != descriptor)
+        {
+            shadowProperty.m_desc = descriptor;
+            UpdateShadowView(shadowProperty);
+            // Don't set m_shadowmapPassNeedsUpdate=true here because that would cause the pass to rebuild every time a light moves
+            // Don't set m_filterParameterNeedsUpdate=true here because that's handled by UpdateShadowView(), and only when filtering is relevant
+        }
     }
     
     auto ProjectedShadowFeatureProcessor::GetShadowProperties(ShadowId id) -> const ProjectedShadowDescriptor&
@@ -321,7 +325,7 @@ namespace AZ::Render
     void ProjectedShadowFeatureProcessor::CacheProjectedShadowmapsPass()
     {
         m_projectedShadowmapsPasses.clear();
-        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("ProjectedShadowmapsTemplate"), GetParentScene());
+        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(AZ_NAME_LITERAL("ProjectedShadowmapsTemplate"), GetParentScene());
         RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
                 ProjectedShadowmapsPass* shadowPass = static_cast<ProjectedShadowmapsPass*>(pass);
@@ -331,15 +335,13 @@ namespace AZ::Render
     }
 
     void ProjectedShadowFeatureProcessor::CacheEsmShadowmapsPass()
-    {
-        const Name LightTypeName = Name("projected");
-                
+    {                
         m_esmShadowmapsPasses.clear();
-        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("EsmShadowmapsTemplate"), GetParentScene());
-        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, LightTypeName](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(AZ_NAME_LITERAL("EsmShadowmapsTemplate"), GetParentScene());
+        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
                 EsmShadowmapsPass* esmPass = static_cast<EsmShadowmapsPass*>(pass);
-                if (esmPass->GetLightTypeName() == LightTypeName)
+                if (esmPass->GetLightTypeName() == AZ_NAME_LITERAL("projected"))
                 {
                     m_esmShadowmapsPasses.emplace_back(esmPass);
                 }
@@ -499,7 +501,7 @@ namespace AZ::Render
         }
     }
     
-    void ProjectedShadowFeatureProcessor::Render(const ProjectedShadowFeatureProcessor::RenderPacket& packet)
+    void ProjectedShadowFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
     {
         AZ_PROFILE_SCOPE(RPI, "ProjectedShadowFeatureProcessor: Render");
 
