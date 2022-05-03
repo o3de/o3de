@@ -98,6 +98,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ButtonText, GenerateMaterialsButtonText)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponent::OpenMaterialExporterFromRPE)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_defaultMaterialSlot, "Default Material", "Materials assigned to this slot will be applied to the entire model unless specific model or LOD material overrides are set.")
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponent::OnConfigurationChanged)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_materialSlots, "Model Materials", "Materials assigned to these slots will be applied to every part of the model with same material slot name unless an overriding LOD material is specified.")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponent::OnConfigurationChanged)
@@ -158,7 +159,7 @@ namespace AZ
 
         void EditorMaterialComponent::AddContextMenuActions(QMenu* menu)
         {
-            const auto& entityIdsToEdit = EditorMaterialComponentUtil::GetSelectedEntitiesFromActiveInspectorMatchingMaterialSlots(GetEntityId());
+            const auto& entityIdsToEdit = EditorMaterialComponentUtil::GetSelectedEntitiesFromActiveInspector();
 
             QAction* action = nullptr;
 
@@ -166,6 +167,7 @@ namespace AZ
 
             action = menu->addAction(GenerateMaterialsButtonText, [this, entityIdsToEdit]() { OpenMaterialExporter(entityIdsToEdit); });
             action->setToolTip(GenerateMaterialsToolTipText);
+            action->setEnabled(EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialSlots(GetEntityId(), entityIdsToEdit));
 
             menu->addSeparator();
 
@@ -371,8 +373,8 @@ namespace AZ
 
         AZ::u32 EditorMaterialComponent::OpenMaterialExporterFromRPE()
         {
-            const auto& entityIdsToEdit = EditorMaterialComponentUtil::GetSelectedEntitiesFromActiveInspectorMatchingMaterialSlots(GetEntityId());
-            return OpenMaterialExporter(entityIdsToEdit);
+            return OpenMaterialExporter(EditorMaterialComponentUtil::GetEntitiesMatchingMaterialSlots(
+                GetEntityId(), EditorMaterialComponentUtil::GetSelectedEntitiesFromActiveInspector()));
         }
 
         AZ::u32 EditorMaterialComponent::OpenMaterialExporter(const AzToolsFramework::EntityIdSet& entityIdsToEdit)
