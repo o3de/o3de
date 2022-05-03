@@ -273,20 +273,6 @@ namespace AZ::IO
             delete m_application;
             m_application = nullptr;
 
-            for (size_t i = 0; i < m_testFileCount; ++i)
-            {
-                AZStd::string name = AZStd::string::format("TestFile_%zu.test", i);
-
-#if AZ_TRAIT_TEST_APPEND_ROOT_FOLDER_TO_PATH
-                AZ::IO::Path testFullPath(AZ_TRAIT_TEST_ROOT_FOLDER);
-#else
-                AZ::IO::Path testFullPath;
-#endif
-                testFullPath /= name;
-
-                FileIOBase::GetInstance()->DestroyPath(testFullPath.c_str());
-            }
-
             FileIOBase::SetInstance(m_prevFileIO);
 
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
@@ -314,11 +300,7 @@ namespace AZ::IO
         {
             AZStd::string name = AZStd::string::format("TestFile_%zu.test", m_testFileCount++);
 
-#if AZ_TRAIT_TEST_APPEND_ROOT_FOLDER_TO_PATH
-            AZ::IO::Path testFullPath(AZ_TRAIT_TEST_ROOT_FOLDER);
-#else
-            AZ::IO::Path testFullPath;
-#endif
+            AZ::IO::Path testFullPath = m_tempDirectory.GetDirectory();
             testFullPath /= name;
 
             AZStd::unique_ptr<MockFileBase> result = CreateMockFile();
@@ -374,6 +356,7 @@ namespace AZ::IO
             ASSERT_TRUE(readSuccessful);
         }
 
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
         UnitTest::TestFileIOBase m_fileIO;
         FileIOBase* m_prevFileIO{ nullptr };
         IStreamer* m_streamer{ nullptr };
