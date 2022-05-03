@@ -17,29 +17,27 @@ namespace UnitTest::IntersectTest
         const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c,
         AZ::Vector3& normal, float& t)
     {
-        AZ::Vector3 ab, ac, h, ap, q, qp;
-        float d, f, u, v;
-        ab = b - a;
-        ac = c - a;
-        ap = p - a;
-        qp = rayEnd - p;
+        AZ::Vector3 ab = b - a;
+        AZ::Vector3 ac = c - a;
+        AZ::Vector3 ap = p - a;
+        AZ::Vector3 qp = rayEnd - p;
 
-        h = qp.Cross(ac);
-        d = ab.Dot(h);
+        AZ::Vector3 h = qp.Cross(ac);
+        float d = ab.Dot(h);
 
         if ((d < AZ::Constants::FloatEpsilon) && (oneSided || (d > -AZ::Constants::FloatEpsilon)))
         {
             return false;
         }
 
-        f = 1.0f / d;
-        u = f * ap.Dot(h);
+        float f = 1.0f / d;
+        float u = f * ap.Dot(h);
         if (u < 0.0f || u > 1.0f)
         {
             return false;
         }
-        q = ap.Cross(ab);
-        v = f * qp.Dot(q);
+        AZ::Vector3 q = ap.Cross(ab);
+        float v = f * qp.Dot(q);
         if (v < 0.0f || u + v > 1.0f)
         {
             return false;
@@ -80,8 +78,6 @@ namespace UnitTest::IntersectTest
         const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c,
         AZ::Vector3& normal, float& t)
     {
-        float v, w;
-
         AZ::Vector3 ab = b - a;
         AZ::Vector3 ac = c - a;
         AZ::Vector3 qp = p - q;
@@ -121,12 +117,12 @@ namespace UnitTest::IntersectTest
 
         // Compute barycentric coordinate components and test if within bounds
         AZ::Vector3 e = qp.Cross(ap);
-        v = ac.Dot(e);
+        float v = ac.Dot(e);
         if (v < 0.0f || v > d)
         {
             return false;
         }
-        w = -ab.Dot(e);
+        float w = -ab.Dot(e);
         if (w < 0.0f || ((v + w) > d))
         {
             return false;
@@ -148,8 +144,6 @@ namespace UnitTest::IntersectTest
         const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c,
         AZ::Vector3& normal, float& t)
     {
-        float v, w;
-
         AZ::Vector3 ab = b - a;
         AZ::Vector3 ac = c - a;
         AZ::Vector3 qp = p - q;
@@ -193,12 +187,12 @@ namespace UnitTest::IntersectTest
         }
 
         // Compute barycentric coordinate components and test if within bounds
-        v = ac.Dot(e);
+        float v = ac.Dot(e);
         if (v < 0.0f || v > d)
         {
             return false;
         }
-        w = -ab.Dot(e);
+        float w = -ab.Dot(e);
         if (w < 0.0f || v + w > d)
         {
             return false;

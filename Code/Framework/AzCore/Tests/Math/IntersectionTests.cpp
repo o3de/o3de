@@ -289,12 +289,12 @@ namespace UnitTest
         // when run with a high enough quantity of generated segments.
 
         // Generate a ~20k triangle sphere of unit size centered at the origin.
-        const uint8_t subdivisionDepth = 5;
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(subdivisionDepth);
+        constexpr uint8_t SubdivisionDepth = 5;
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
 
         // Create random number generators in the positive 2-50 range so that we're outside the sphere bounds.
-        const unsigned int seed = 1;
-        std::mt19937_64 rng(seed);
+        constexpr unsigned int Seed = 1;
+        std::mt19937_64 rng(Seed);
         std::uniform_real_distribution<float> unif(2.0f, 50.0f);
 
         // When getting the random number, return numbers in the [-50, -2] or [2, 50] ranges so that we cover both negative and positive
@@ -307,7 +307,7 @@ namespace UnitTest
 
         // This is enough iterations to generate a failing result on both the Arenberg and the Moller Trumbore algorithms.
         // (Specific triangles causing their failures have been captured and tested in a separate regression unit test)
-        const int NumTests = 2500;
+        constexpr int NumTests = 2500;
 
         // We'll keep track of the specific segment/triangle information for any hit so that it's easier to add false negatives
         // and false positives to the regression unit test.
@@ -406,8 +406,8 @@ namespace UnitTest
         // all three produce identical correct results, but have previously been run at > 10M iterations. The few failures that showed up
         // across those iterations have been cross-checked for accuracy and then added to specific-case regression unit test below.
 
-        const unsigned int seed = 1;
-        std::mt19937_64 rng(seed);
+        constexpr unsigned int Seed = 1;
+        std::mt19937_64 rng(Seed);
         std::uniform_real_distribution<float> unif(-1000.0f, 1000.0f);
 
         // Track the number of hits, misses, and differences we have across the iterations.
@@ -421,7 +421,7 @@ namespace UnitTest
         float outDistance[3];
         AZ::Vector3 outNormal[3];
 
-        const int NumTests = 10000;
+        constexpr int NumTests = 10000;
 
         for (int test = 0; test < NumTests; test++)
         {
@@ -503,12 +503,12 @@ namespace UnitTest
 
         struct RayTriangleTest
         {
-            AZ::Vector3 rayStart;
-            AZ::Vector3 rayEnd;
-            AZ::Vector3 triVerts[3];
-            bool shouldHit;
-            float hitDistance;
-            AZ::Vector3 hitNormal;
+            AZ::Vector3 m_rayStart;
+            AZ::Vector3 m_rayEnd;
+            AZ::Vector3 m_triVerts[3];
+            bool m_shouldHit;
+            float m_hitDistance;
+            AZ::Vector3 m_hitNormal;
         };
 
         RayTriangleTest tests[] =
@@ -572,13 +572,13 @@ namespace UnitTest
             AZ::Vector3 outNormal = AZ::Vector3::CreateZero();
             float outDistance = 0.0f;
             bool result = AZ::Intersect::IntersectSegmentTriangleCCW(
-                test.rayStart, test.rayEnd, test.triVerts[0], test.triVerts[1], test.triVerts[2], outNormal, outDistance);
+                test.m_rayStart, test.m_rayEnd, test.m_triVerts[0], test.m_triVerts[1], test.m_triVerts[2], outNormal, outDistance);
 
             ClearResultsOnMiss(result, outNormal, outDistance);
 
-            EXPECT_EQ(test.shouldHit, result);
-            EXPECT_NEAR(test.hitDistance, outDistance, 0.0001f);
-            EXPECT_TRUE(test.hitNormal.IsClose(outNormal));
+            EXPECT_EQ(test.m_shouldHit, result);
+            EXPECT_NEAR(test.m_hitDistance, outDistance, 0.0001f);
+            EXPECT_TRUE(test.m_hitNormal.IsClose(outNormal));
         }
     }
 

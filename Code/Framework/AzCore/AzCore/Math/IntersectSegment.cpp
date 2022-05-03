@@ -33,44 +33,42 @@ namespace AZ
         // absolute value. This is calculated by comparing the absolute value of the 3 dimensions and then creating axis remapping
         // indices that put the largest axis onto the z dimension. The other 2 axes are mapped based on preserving the triangle
         // winding order. 
+        const float xMagnitude = abs(m_pq.GetX());
+        const float yMagnitude = abs(m_pq.GetY());
+        const float zMagnitude = abs(m_pq.GetZ());
+
+        // Start with initializing the remapping to seg Y -> kx, seg Z -> ky, seg X -> kz .
+        // We'll only keep this remapping if the X component of the segment is the largest.
+        m_kz = 0;
+        m_kx = 1;
+        m_ky = 2;
+
+        if (zMagnitude >= yMagnitude)
         {
-            float xMagnitude = abs(m_pq.GetX());
-            float yMagnitude = abs(m_pq.GetY());
-            float zMagnitude = abs(m_pq.GetZ());
-
-            // Start with initializing the remapping to seg Y -> kx, seg Z -> ky, seg X -> kz .
-            // We'll only keep this remapping if the X component of the segment is the largest.
-            m_kz = 0;
-            m_kx = 1;
-            m_ky = 2;
-
-            if (zMagnitude >= yMagnitude)
+            if (zMagnitude >= xMagnitude)
             {
-                if (zMagnitude >= xMagnitude)
-                {
-                    // The Z component is the largest, so instead remap to seg X -> kx, seg Y -> ky, seg Z -> kz 
-                    m_kz = 2;
-                    m_kx = 0;
-                    m_ky = 1;
-                }
+                // The Z component is the largest, so instead remap to seg X -> kx, seg Y -> ky, seg Z -> kz 
+                m_kz = 2;
+                m_kx = 0;
+                m_ky = 1;
             }
-            else
+        }
+        else
+        {
+            if (yMagnitude >= xMagnitude)
             {
-                if (yMagnitude >= xMagnitude)
-                {
-                    // The Y component is the largest, so instead remap to seg Z -> kx, seg X -> ky, seg Y -> kz
-                    m_kz = 1;
-                    m_kx = 2;
-                    m_ky = 0;
-                }
+                // The Y component is the largest, so instead remap to seg Z -> kx, seg X -> ky, seg Y -> kz
+                m_kz = 1;
+                m_kx = 2;
+                m_ky = 0;
             }
+        }
 
-            // If the largest segment component (kz) is negative, reverse the winding order of the axes so that kz is pointing
-            // upwards.
-            if (m_pq.GetElement(m_kz) < 0.0f)
-            {
-                AZStd::swap(m_kx, m_ky);
-            }
+        // If the largest segment component (kz) is negative, reverse the winding order of the axes so that kz is pointing
+        // upwards.
+        if (m_pq.GetElement(m_kz) < 0.0f)
+        {
+            AZStd::swap(m_kx, m_ky);
         }
 
         // Now that the axis remappings have been calculated, use the remapped axes to calculate the shearing constants that
@@ -136,7 +134,7 @@ namespace AZ
         }
 
         // Calculate the determinant for the system of barycentric coordinate equations
-        float det = U + V + W;
+        const float det = U + V + W;
 
         // If the determinant is 0, the ray is co-planar to the triangle, so it cannot intersect.
         if (det == 0.0f)
@@ -169,7 +167,7 @@ namespace AZ
         {
             // For two-sided triangles, we either need to have 0 <= T <= det if det is positive,
             // or 0 <= -T <= -det if det is negative. Otherwise, T is beyond the endpoints.
-            float detSign = signbit(det) ? -1.0f : 1.0f;
+            const float detSign = signbit(det) ? -1.0f : 1.0f;
             if ((T * detSign) < 0.0f || (T * detSign) > (det * detSign))
             {
                 return false;
@@ -185,10 +183,11 @@ namespace AZ
         const float detReciprocal = 1.0f / det;
         t = T * detReciprocal;
 
-        //  If the barycentric coordinates of the hit point are needed, they would be need to be normalized into [0,1] space here as well:
-        // u = U * rcpDet;
-        // v = V * rcpDet;
-        // w = W * rcpDet;
+        // If the barycentric coordinates of the hit point are ever needed, they would need to be normalized into [0,1] space
+        // before getting returned:
+        // u = U * detReciprocal;
+        // v = V * detReciprocal;
+        // w = W * detReciprocal;
 
         return true;
     }
