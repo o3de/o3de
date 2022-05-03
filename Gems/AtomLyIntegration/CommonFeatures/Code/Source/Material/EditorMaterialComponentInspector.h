@@ -108,7 +108,7 @@ namespace AZ
                 void AddPropertiesGroup();
 
                 void LoadOverridesFromEntity();
-                void SaveOverridesToEntity(bool commitChanges);
+                void SaveOverridesToEntity(const AtomToolsFramework::DynamicProperty& property, bool commitChanges);
                 void RunEditorMaterialFunctors();
                 void UpdateMaterialInstanceProperty(const AtomToolsFramework::DynamicProperty& property);
 
