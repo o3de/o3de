@@ -21,10 +21,10 @@ if (${CONFIG_LOWER} STREQUAL "debug")
 
 elseif (GNU_STRIP_TOOL)
 
+    message(STATUS "Stripping debug symbols from ${CMAKE_ARGV3}")
     execute_process(COMMAND
         ${GNU_STRIP_TOOL} --strip-debug ${CMAKE_ARGV3}
     )
-    message(STATUS "Stripping debug symbols from ${CMAKE_ARGV3}")
 
 else()
 
