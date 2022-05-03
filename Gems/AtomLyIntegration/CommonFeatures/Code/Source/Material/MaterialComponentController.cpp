@@ -36,6 +36,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Event("GetOriginalMaterialAssignments", &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments)
                     ->Event("FindMaterialAssignmentId", &MaterialComponentRequestBus::Events::FindMaterialAssignmentId)
+                    ->Event("GetActiveMaterialAssetId", &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId)
                     ->Event("GetDefaultMaterialAssetId", &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId)
                     ->Event("GetMaterialSlotLabel", &MaterialComponentRequestBus::Events::GetMaterialSlotLabel)
                     ->Event("SetMaterialOverrides", &MaterialComponentRequestBus::Events::SetMaterialOverrides)
@@ -296,6 +297,12 @@ namespace AZ
             MaterialReceiverRequestBus::EventResult(
                 materialAssignmentId, m_entityId, &MaterialReceiverRequestBus::Events::FindMaterialAssignmentId, lod, label);
             return materialAssignmentId;
+        }
+
+        AZ::Data::AssetId MaterialComponentController::GetActiveMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const
+        {
+            const AZ::Data::AssetId materialAssetId = GetMaterialOverride(materialAssignmentId);
+            return materialAssetId.IsValid() ? materialAssetId : GetDefaultMaterialAssetId(materialAssignmentId);
         }
 
         AZ::Data::AssetId MaterialComponentController::GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const
