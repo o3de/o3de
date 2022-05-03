@@ -56,10 +56,11 @@ namespace AzNetworking
     //! 
     //! If the raw packet size exceeds the configured maximum transmission unit (MTU) then the packet is broken into
     //! multiple fragments to avoid fragmentation at the routing level. Fragment reliability is controlled by the cvar
-    //! net_FragmentsAlwaysReliable. When true, fragments are always reliable to ensure the source packet can be reconstructed.
-    //! This means unreliable packets exceeding MTU will be split into several reliable packets with retransmit to guarantee delivery.
-    //! When false, fragments use the reliability type of their source packet. This will cause large non-reliable packets to fail
-    //! if even one fragment fails to be delivered due to network conditions.
+    //! net_FragmentsAlwaysReliable.
+    //! When true, fragments are always sent reliably to ensure the source packet can be reconstructed. This means unreliable
+    //! packets exceeding MTU will be split into several reliable packets to guarantee delivery but at a cost of extra network processing.
+    //! (Default) When false, fragments inherit the reliability type of their source packet. This may cause non-reliable packet
+    //! transmission to fail if packet is fragmented, if even one fragment fails to be delivered due to network conditions.
     //!
     //! Optimizing packets to remain under MTU and appropriate usage of reliable packets is recommended before enabling
     //! net_FragmentsAlwaysReliable.
