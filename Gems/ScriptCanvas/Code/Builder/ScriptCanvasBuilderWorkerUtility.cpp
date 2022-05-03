@@ -105,13 +105,11 @@ namespace ScriptCanvasBuilder
         AZ::Data::Asset<AZ::ScriptAsset> asset;
         AZ::Data::AssetId scriptAssetId(editAsset.Id(), AZ::ScriptAsset::CompiledAssetSubId);
         asset.Create(scriptAssetId);
-        auto writeStream = asset.Get()->m_data.CreateWriteStream();
 
         AZ::IO::MemoryStream inputStream(translation.m_text.data(), translation.m_text.size());
         AzFramework::ScriptCompileRequest compileRequest;
         compileRequest.m_errorWindow = s_scriptCanvasBuilder;
         compileRequest.m_input = &inputStream;
-        compileRequest.m_output = &writeStream;
 
         AzFramework::ConstructScriptAssetPaths(compileRequest);
         auto compileOutcome = AzFramework::CompileScript(compileRequest);
@@ -119,6 +117,8 @@ namespace ScriptCanvasBuilder
         {
             return AZ::Failure(AZStd::string(compileOutcome.TakeError()));
         }
+
+        asset->m_data = compileRequest.m_luaScriptDataOut;
 
         ScriptCanvas::Translation::LuaAssetResult result;
         result.m_scriptAsset = asset;

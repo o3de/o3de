@@ -98,7 +98,7 @@ namespace AzFramework
     {
         AZ_TracePrintf(request.m_errorWindow.data(), "Starting script compile.\n");
 
-        AZ::LuaScriptData assetData;
+        AZ::LuaScriptData& assetData = request.m_luaScriptDataOut;
         assetData.m_debugName = "@";
         assetData.m_debugName += request.m_sourceFile;
         AZStd::to_lower(assetData.m_debugName.begin(), assetData.m_debugName.end());
@@ -108,13 +108,6 @@ namespace AzFramework
         COMPILE_VERIFY(scriptContext.LoadFromStream(request.m_input, assetData.m_debugName.c_str(), AZ::k_scriptLoadRawText), "%s", lua_tostring(scriptContext.NativeContext(), -1));
         AZ_TracePrintf(request.m_errorWindow.data(), "Beginning writing of script data.\n");
         COMPILE_VERIFY(ScriptComponentCpp::LuaDumpToStream(request.m_errorWindow, scriptStream, scriptContext.NativeContext()), "Failed to write lua script to stream.");
-
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        COMPILE_VERIFY(serializeContext, "Unable to retrieve serialize context.");
-        COMPILE_VERIFY(AZ::Utils::SaveObjectToStream<AZ::LuaScriptData>(*request.m_output, AZ::ObjectStream::ST_BINARY, &assetData, serializeContext)
-            , "Failed to write asset data to stream");
-
         return AZ::Success();
     }
 
@@ -122,19 +115,25 @@ namespace AzFramework
     {
         using namespace AZ::IO;
         FileIOStream outputStream;
-
         if (!outputStream.Open(request.m_destPath.c_str(), OpenMode::ModeWrite | OpenMode::ModeBinary))
         {
             return AZ::Failure(AZStd::string("Failed to open output file %s", request.m_destPath.data()));
         }
-
-        request.m_output = &outputStream;
 
         auto compileOutcome = CompileScript(request);
         if (!compileOutcome.IsSuccess())
         {
             return AZ::Failure(compileOutcome.TakeError());
         }
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        COMPILE_VERIFY(serializeContext, "Unable to retrieve serialize context.");
+        COMPILE_VERIFY(AZ::Utils::SaveObjectToStream<AZ::LuaScriptData>
+            ( outputStream
+            , AZ::ObjectStream::ST_BINARY
+            , &request.m_luaScriptDataOut, serializeContext)
+            , "Failed to write asset data to stream");
 
         return AZ::Success(request.m_destFileName);
     }

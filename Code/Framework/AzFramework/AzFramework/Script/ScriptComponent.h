@@ -32,8 +32,6 @@ namespace AzFramework
 {
     struct ScriptCompileRequest;
 
-    using WriteFunction = AZStd::function< AZ::Outcome<void, AZStd::string>(const ScriptCompileRequest&, AZ::IO::GenericStream& in, AZ::IO::GenericStream& out) >;
-
     struct ScriptCompileRequest
     {
         AZStd::string_view m_errorWindow;
@@ -42,10 +40,9 @@ namespace AzFramework
         AZStd::string_view m_fileName;
         AZStd::string_view m_tempDirPath;        
         AZ::IO::GenericStream* m_input = nullptr;
-        AZ::IO::GenericStream* m_output = nullptr;
-
         AZStd::string m_destFileName;
         AZStd::string m_destPath;
+        AZ::LuaScriptData m_luaScriptDataOut;
     };
 
     void ConstructScriptAssetPaths(ScriptCompileRequest& request);
