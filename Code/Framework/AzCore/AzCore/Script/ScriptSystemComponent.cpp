@@ -384,7 +384,7 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
     }
 
     // Load lua script into the VM
-    IO::MemoryStream stream = asset.Get()->m_data.CreateMemoryStream();
+    IO::MemoryStream stream = asset.Get()->m_data.CreateScriptReadStream();
     if (!context->LoadFromStream(&stream, asset.Get()->m_data.GetDebugName(), mode, lua))
     {
         context->Error(ScriptContext::ErrorType::Error, "%s", lua_tostring(lua, -1));

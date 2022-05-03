@@ -184,7 +184,7 @@ namespace LuaBuilder
         AssetBuilderSDK::ProductPathDependencySet dependencySet;
         ParseDependencies(request.m_fullPath, dependencySet);
         assetData.m_dependencies = ConvertToAssets(dependencySet);
-        auto scriptStream = assetData.CreateWriteStream();
+        auto scriptStream = assetData.CreateScriptWriteStream();
         LB_VERIFY(LuaDumpToStream(scriptStream, scriptContext.NativeContext()), "Failed to write lua bytecode to stream.");
 
         {

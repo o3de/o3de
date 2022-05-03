@@ -102,7 +102,7 @@ namespace AzFramework
         assetData.m_debugName = "@";
         assetData.m_debugName += request.m_sourceFile;
         AZStd::to_lower(assetData.m_debugName.begin(), assetData.m_debugName.end());
-        auto scriptStream = assetData.CreateWriteStream();
+        auto scriptStream = assetData.CreateScriptWriteStream();
 
         // parse source
         COMPILE_VERIFY(scriptContext.LoadFromStream(request.m_input, assetData.m_debugName.c_str(), AZ::k_scriptLoadRawText), "%s", lua_tostring(scriptContext.NativeContext(), -1));
@@ -501,7 +501,7 @@ namespace AzFramework
     {
         AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
         AZ_Error("LuaComponent", m_script.GetAutoLoadBehavior() == AZ::Data::AssetLoadBehavior::PreLoad, "Runtime LuaComponent script asset not set to Preload");
-        AZ_Error("LuaComponent", m_script.IsReady(), "Runtime LuaComponent script asset not preloaded and ready");
+        AZ_Error("LuaComponent", m_script.Get(), "Runtime LuaComponent script asset not preloaded and ready");
 
         // Load the script, find the base table...
         if (LoadInContext())

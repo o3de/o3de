@@ -34,8 +34,8 @@ namespace AZ
         AZStd::vector<AZ::Data::Asset<ScriptAsset>> m_dependencies;
         AZStd::vector<char> m_luaScript;
 
-        IO::MemoryStream CreateMemoryStream();
-        IO::ByteContainerStream<AZStd::vector<char>> CreateWriteStream();
+        IO::MemoryStream CreateScriptReadStream();
+        IO::ByteContainerStream<AZStd::vector<char>> CreateScriptWriteStream();
         const char* GetDebugName();
         const AZStd::vector<char>& GetScriptBuffer();
     };

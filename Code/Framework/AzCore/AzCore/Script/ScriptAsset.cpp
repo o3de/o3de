@@ -35,12 +35,12 @@ namespace AZ
     {
     }
 
-    IO::MemoryStream LuaScriptData::CreateMemoryStream()
+    IO::MemoryStream LuaScriptData::CreateScriptReadStream()
     {
         return IO::MemoryStream(m_luaScript.data(), m_luaScript.size());
     }
 
-    IO::ByteContainerStream<AZStd::vector<char>> LuaScriptData::CreateWriteStream()
+    IO::ByteContainerStream<AZStd::vector<char>> LuaScriptData::CreateScriptWriteStream()
     {
         return IO::ByteContainerStream<AZStd::vector<char>>(&m_luaScript, m_luaScript.size());
     }
