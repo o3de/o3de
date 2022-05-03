@@ -6,6 +6,15 @@
 #
 #
 
+# Check if llvm-strip is available before we can set the option to strip debug symbols from output binaries
+find_program(LLVM_STRIP_TOOL llvm-strip)
+if (LLVM_STRIP_TOOL)
+    set(LY_STRIP_DEBUG_SYMBOLS FALSE CACHE BOOL "Flag to strip debug symbols from the (non-debug) output binaries")
+else()
+    message(WARNING "Unable to locate 'llvm-strip' tool needed to strip debug symbols from the output target(s). Debug symbol "
+                    "stripping (LY_STRIP_DEBUG_SYMBOLS) will not be supported. Make sure the llvm tools are installed.")
+endif()
+
 function(ly_apply_platform_properties target)
     # Noop
 endfunction()
@@ -40,20 +49,12 @@ function(ly_handle_custom_output_directory target output_subdirectory)
 
 endfunction()
 
-set(LY_STRIP_DEBUG_SYMBOLS TRUE CACHE BOOL "Flag to strip debug symbols from the (non-debug) output binaries")
-
 #! ly_apply_debug_strip_options: Apply debug stripping options to the target output for non-debug configurations.
 #
 #\arg:target Name of the target to perform a post-build stripping of any debug symbol)
 function(ly_apply_debug_strip_options target)
 
     if (NOT  ${LY_STRIP_DEBUG_SYMBOLS})
-        return()
-    endif()
-
-    find_program(LLVM_STRIP_TOOL llvm-strip)
-    if (NOT LLVM_STRIP_TOOL)
-        message(FATAL_ERROR "Unable to locate 'llvm-strip' tool needed to strip debug symbols from the output target(s). Make sure this is installed on your host machine")
         return()
     endif()
 
