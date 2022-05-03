@@ -335,18 +335,15 @@ namespace Multiplayer
         AZ::IO::ByteContainerStream byteStream(&buffer);
 
         // Serialize Asset information and AssetData into a potentially large buffer
-        for (const auto& [assetHint, spawnable] : m_preAliasedSpawnablesForServer)
+        for (const auto& [assetHint, preAliasedSpawnable] : m_preAliasedSpawnablesForServer)
         {
-            // Create a random assetid for the new in-memory spawnable we're about to create
-            // This is an un-aliased level spawnable (Root.spawnable) which we'll send to the server
-            const AZ::Data::AssetId assetId(AZ::Uuid::CreateRandom());
-            
+            // This is an un-aliased level spawnable (example: Root.spawnable and Root.network.spawnable) which we'll send to the server
             auto hintSize = aznumeric_cast<uint32_t>(assetHint.size());
 
-            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<const void*>(&assetId));
+            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<const void*>(&preAliasedSpawnable->GetId()));
             byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
             byteStream.Write(assetHint.size(), assetHint.data());
-            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, spawnable.get(), spawnable->GetType());
+            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, preAliasedSpawnable.get(), preAliasedSpawnable->GetType());
         }
         
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
@@ -431,10 +428,9 @@ namespace Multiplayer
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Failed to retrieve application serialization context.")
         AZ_Assert(!assetHint.empty(), "Asset hint is empty!")
-        AZ_Assert(!m_preAliasedSpawnablesForServer.contains(assetHint), "Pre-aliases spawnable table already contains an entry for '%s'!", assetHint.c_str())
 
-        AZStd::unique_ptr<AzFramework::Spawnable> spawnableClone(serializeContext->CloneObject(&spawnable));
-        m_preAliasedSpawnablesForServer.emplace(assetHint, AZStd::move(spawnableClone));
+        AZStd::unique_ptr<AzFramework::Spawnable> preAliasedSpawnableClone(serializeContext->CloneObject(&spawnable));
+        m_preAliasedSpawnablesForServer.emplace_back(assetHint, AZStd::move(preAliasedSpawnableClone));
     }
 
     void MultiplayerEditorSystemComponent::OnStartPlayInEditorBegin()

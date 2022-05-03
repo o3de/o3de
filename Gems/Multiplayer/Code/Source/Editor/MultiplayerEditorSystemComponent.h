@@ -125,6 +125,6 @@ namespace Multiplayer
         AZ::ScheduledEvent m_connectionEvent = AZ::ScheduledEvent([this]{this->Connect();}, AZ::Name("MultiplayerEditorConnect"));
         uint16_t m_connectionAttempts = 0;
 
-        AZStd::map<AZStd::string, AZStd::unique_ptr<AzFramework::Spawnable>> m_preAliasedSpawnablesForServer;
+        AZStd::vector<AZStd::pair<AZStd::string, AZStd::unique_ptr<AzFramework::Spawnable>>> m_preAliasedSpawnablesForServer;
     };
 }
