@@ -5,14 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+ 
+#define MULTILAYER 1
+#define ENABLE_ALPHA_CLIP 0
+#define SHADOWMAP 1
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
-
-#include "MaterialInputs/ParallaxInput.azsli"
 
 #include "MaterialInputs/ParallaxInput.azsli"
 COMMON_OPTIONS_PARALLAX(o_layer1_)
@@ -27,7 +29,4 @@ COMMON_OPTIONS_PARALLAX(o_layer3_)
 #include "MaterialFunctions/EvaluateTangentFrame.azsli"
 #include "MaterialFunctions/MultilayerParallaxDepth.azsli"
 
-#define MULTILAYER 1
-#define ENABLE_ALPHA_CLIP 0
-#define SHADOWS 1
 #include "DepthPass_WithPS.azsli"
