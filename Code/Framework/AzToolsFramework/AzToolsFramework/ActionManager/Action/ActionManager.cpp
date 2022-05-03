@@ -57,7 +57,7 @@ namespace AzToolsFramework
         if (!m_actionContexts.contains(contextIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager", false, "Could not register action \"%s\" - context \"%s\" has not been registered.",
+                "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
                 identifier.data(),
                 contextIdentifier.data()
             ));
