@@ -314,9 +314,9 @@ public:
             creator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
 
             const uint32_t positionElementCount = aznumeric_cast<uint32_t>(positions.size() / 3);
-            const uint32_t positionElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 3);
+            constexpr uint32_t PositionElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 3);
             const uint32_t indexElementCount = aznumeric_cast<uint32_t>(indices.size());
-            const uint32_t indexElementSize = aznumeric_cast<uint32_t>(sizeof(uint32_t));
+            constexpr uint32_t IndexElementSize = aznumeric_cast<uint32_t>(sizeof(uint32_t));
 
             // Calculate the Aabb for the given positions.
             AZ::Aabb aabb;
@@ -329,13 +329,13 @@ public:
             creator.BeginMesh();
             creator.SetMeshAabb(AZStd::move(aabb));
             creator.SetMeshMaterialSlot(0);
-            creator.SetMeshIndexBuffer({ BuildTestBuffer(indices.data(), indexElementCount, indexElementSize),
-                                         AZ::RHI::BufferViewDescriptor::CreateStructured(0, indexElementCount, indexElementSize)
+            creator.SetMeshIndexBuffer({ BuildTestBuffer(indices.data(), indexElementCount, IndexElementSize),
+                                         AZ::RHI::BufferViewDescriptor::CreateStructured(0, indexElementCount, IndexElementSize)
                 });
             creator.AddMeshStreamBuffer(
                 AZ::RHI::ShaderSemantic(AZ::Name("POSITION")), AZ::Name(),
-                { BuildTestBuffer(positions.data(), positionElementCount, positionElementSize),
-                  AZ::RHI::BufferViewDescriptor::CreateStructured(0, positionElementCount, positionElementSize) });
+                { BuildTestBuffer(positions.data(), positionElementCount, PositionElementSize),
+                  AZ::RHI::BufferViewDescriptor::CreateStructured(0, positionElementCount, PositionElementSize) });
             creator.EndMesh();
             creator.End(lodAsset);
         }
