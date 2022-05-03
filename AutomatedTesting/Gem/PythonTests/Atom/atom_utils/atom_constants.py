@@ -95,6 +95,16 @@ BAKED_CUBEMAP_QUALITY = {
     'Very High': 4
 }
 
+#Diffuse Probe Grid number of rays to cast per probe from enum DiffuseProbeGridNumRaysPerProbe
+NUM_RAYS_PER_PROBE = {
+    'NumRaysPerProbe_144': 0,
+    'NumRaysPerProbe_288': 1,
+    'NumRaysPerProbe_432': 2,
+    'NumRaysPerProbe_576': 3,
+    'NumRaysPerProbe_720': 4,
+    'NumRaysPerProbe_864': 5,
+    'NumRaysPerProbe_1008': 6,
+}
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -316,12 +326,28 @@ class AtomComponentProperties:
         """
         Diffuse Probe Grid component properties. Requires one of 'shapes'.
           - 'shapes' a list of supported shapes as component names.
+          - 'Scrolling' Toggle the translation of probes with the entity (bool)
+          - 'Show Inactive Probes' Toggle the visualization of inactive probes (bool)
+          - 'Show Visualization' Toggles the probe grid visualization (bool)
+          - 'Visualization Sphere Radius' Sets the radius of probe visualization spheres (float 0.1 to inf)
+          - 'Normal Bias' Adjusts normal bias (float 0.0 to 1.0)
+          - 'Ambient Multiplier' adjusts multiplier for irradiance intensity (float 0.0 to 10.0)
+          - 'View Bias'Adjusts view bias (float 0.0 to 1.0)
+          - 'Number of Rays Per Probe' Number of rays to cast per probe from atom_constants.py NUM_RAYS_PER_PROBE
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Diffuse Probe Grid',
-            'shapes': ['Axis Aligned Box Shape', 'Box Shape']
+            'shapes': ['Axis Aligned Box Shape', 'Box Shape'],
+            'Scrolling': 'Grid Settings|Scrolling',
+            'Show Inactive Probes': 'Visualization|Show Inactive Probes',
+            'Show Visualization': 'Visualization|Show Visualization',
+            'Visualization Sphere Radius': 'Visualization|Visualization Sphere Radius',
+            'Normal Bias': 'Grid Settings|Normal Bias',
+            'Ambient Multiplier': 'Grid Settings|Ambient Multiplier',
+            'View Bias': 'Grid Settings|View Bias',
+            'Number of Rays Per Probe': 'Grid Settings|Number of Rays Per Probe',
         }
         return properties[property]
 

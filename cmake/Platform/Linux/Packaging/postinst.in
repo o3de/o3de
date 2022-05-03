@@ -10,10 +10,6 @@
 set -o errexit # exit on the first failure encountered
 
 {
-    if [[ ! -f "/usr/lib/x86_64-linux-gnu/libffi.so.6" ]]; then
-        sudo ln -s /usr/lib/x86_64-linux-gnu/libffi.so.7 /usr/lib/x86_64-linux-gnu/libffi.so.6
-    fi
-
     pushd @CPACK_PACKAGING_INSTALL_PREFIX@
     python/get_python.sh
     chown -R $SUDO_USER .
