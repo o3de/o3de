@@ -31,7 +31,7 @@ namespace AzToolsFramework
         AZStd::string m_parentIdentifier;
         AZStd::string m_name;
 
-        QWidget* m_widget;
+        QWidget* m_widget = nullptr;
     };
 
 } // namespace AzToolsFramework

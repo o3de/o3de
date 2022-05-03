@@ -50,6 +50,27 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, RegisterActionTwice)
+    {
+        m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
+
+        m_actionManagerInterface->RegisterAction(
+            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
+            []()
+            {
+                ;
+            });
+
+        auto outcome = m_actionManagerInterface->RegisterAction(
+            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
+            []()
+            {
+                ;
+            });
+
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
     TEST_F(ActionManagerFixture, GetUnregisteredAction)
     {
         QAction* action = m_actionManagerInterface->GetAction("o3de.action.test");

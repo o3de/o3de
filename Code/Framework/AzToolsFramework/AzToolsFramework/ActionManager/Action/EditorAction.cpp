@@ -25,9 +25,10 @@ namespace AzToolsFramework
         m_action = new QAction(name.data(), nullptr);
 
         QObject::connect(
-            m_action, &QAction::triggered, parentWidget, [handler]()
+            m_action, &QAction::triggered, parentWidget,
+            [h = AZStd::move(handler)]()
             {
-                handler();
+                h();
             }
         );
     }

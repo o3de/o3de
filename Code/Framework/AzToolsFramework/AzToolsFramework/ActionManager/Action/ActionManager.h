@@ -16,12 +16,14 @@
 
 namespace AzToolsFramework
 {
-    class ActionManager
+    //! Action Manager class definition.
+    //! Handles Editor Actions and allows registration and access across tools.
+    class ActionManager final
         : private ActionManagerInterface
     {
     public:
         ActionManager();
-        virtual ~ActionManager();
+        ~ActionManager();
 
     private:
         // ActionManagerInterface overrides ...
@@ -39,6 +41,7 @@ namespace AzToolsFramework
             AZStd::string_view iconPath,
             AZStd::function<void()> handler) override;
         QAction* GetAction(AZStd::string_view actionIdentifier) override;
+        const QAction* GetActionConst(AZStd::string_view actionIdentifier) override;
 
         void ClearActionContextMap();
 

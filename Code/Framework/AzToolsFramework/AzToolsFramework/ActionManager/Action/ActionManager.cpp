@@ -30,14 +30,14 @@ namespace AzToolsFramework
     {
         if (!widget)
         {
-            return AZ::Failure(
-                AZStd::string::format("Action Manager - Could not register action context \"%s\" to a null widget.", identifier.data())
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not register action context \"%.s\" to a null widget.", AZ_STRING_ARG(identifier))
             );
         }
 
         m_actionContexts.insert(
             {
-                identifier.data(),
+                identifier,
                 new EditorActionContext(identifier, name, parentIdentifier, widget)
             }
         );
@@ -57,10 +57,16 @@ namespace AzToolsFramework
         if (!m_actionContexts.contains(contextIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
-                identifier.data(),
-                contextIdentifier.data()
+                "Action Manager - Could not register action \"%.s\" - context \"%.s\" has not been registered.",
+                AZ_STRING_ARG(identifier),
+                AZ_STRING_ARG(contextIdentifier)
             ));
+        }
+
+        if (m_actions.contains(identifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not register action \"%.s\" twice.", AZ_STRING_ARG(identifier)));
         }
 
         m_actions.insert(
@@ -73,6 +79,16 @@ namespace AzToolsFramework
     }
 
     QAction* ActionManager::GetAction(AZStd::string_view actionIdentifier)
+    {
+        if (m_actions.contains(actionIdentifier))
+        {
+            return m_actions[actionIdentifier].GetAction();
+        }
+
+        return nullptr;
+    }
+
+    const QAction* ActionManager::GetActionConst(AZStd::string_view actionIdentifier)
     {
         if (m_actions.contains(actionIdentifier))
         {
