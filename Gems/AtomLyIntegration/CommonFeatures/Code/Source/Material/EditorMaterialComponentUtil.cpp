@@ -162,6 +162,61 @@ namespace AZ
                 return result && AZ::RPI::JsonUtils::SaveObjectToFile(path, exportData);
             }
 
+            bool DoEntitiesHaveMatchingMaterials(
+                const AZ::EntityId& primaryEntityId,
+                const AzToolsFramework::EntityIdSet& secondaryEntityIds,
+                const MaterialAssignmentId& materialAssignmentId)
+            {
+                AZ::Data::AssetId primaryMaterialAssetId = {};
+                MaterialComponentRequestBus::EventResult(
+                    primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
+                    materialAssignmentId);
+
+                return AZStd::all_of(
+                    secondaryEntityIds.begin(), secondaryEntityIds.end(),
+                    [&](const AZ::EntityId& secondaryEntityId)
+                    {
+                        AZ::Data::AssetId secondaryMaterialAssetId = {};
+                        MaterialComponentRequestBus::EventResult(
+                            secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
+                            materialAssignmentId);
+                        return primaryMaterialAssetId.IsValid() && primaryMaterialAssetId == secondaryMaterialAssetId;
+                    });
+            }
+
+            bool DoEntitiesHaveMatchingMaterialSlots(
+                const AZ::EntityId& primaryEntityId, const AzToolsFramework::EntityIdSet& secondaryEntityIds)
+            {
+                MaterialAssignmentMap primaryMaterialSlots;
+                MaterialComponentRequestBus::EventResult(
+                    primaryMaterialSlots, primaryEntityId, &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments);
+
+                return AZStd::all_of(
+                    secondaryEntityIds.begin(), secondaryEntityIds.end(),
+                    [&](const AZ::EntityId& secondaryEntityId)
+                    {
+                        MaterialAssignmentMap secondaryMaterialSlots;
+                        MaterialComponentRequestBus::EventResult(
+                            secondaryMaterialSlots, secondaryEntityId,
+                            &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments);
+
+                        if (primaryMaterialSlots.size() != secondaryMaterialSlots.size())
+                        {
+                            return false;
+                        }
+
+                        for (const auto& slotPair : primaryMaterialSlots)
+                        {
+                            const auto& slotItr = secondaryMaterialSlots.find(slotPair.first);
+                            if (slotItr == secondaryMaterialSlots.end())
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+            }
+
             AzToolsFramework::EntityIdSet GetSelectedEntitiesFromActiveInspector()
             {
                 AzToolsFramework::EntityIdList entityIds;
@@ -170,33 +225,18 @@ namespace AZ
                 return AzToolsFramework::EntityIdSet(entityIds.begin(), entityIds.end());
             }
 
-            AzToolsFramework::EntityIdSet GetSelectedEntitiesFromActiveInspectorMatchingMaterialSlots(const AZ::EntityId& focusedEntityId)
+            AzToolsFramework::EntityIdSet GetEntitiesMatchingMaterialSlots(
+                const AZ::EntityId& primaryEntityId, const AzToolsFramework::EntityIdSet& secondaryEntityIds)
             {
-                MaterialAssignmentMap originalMaterialSlots;
-                MaterialComponentRequestBus::EventResult(
-                    originalMaterialSlots, focusedEntityId, &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments);
+                AzToolsFramework::EntityIdSet entityIds = secondaryEntityIds;
 
-                AzToolsFramework::EntityIdSet entityIds = GetSelectedEntitiesFromActiveInspector();
-                entityIds.insert(focusedEntityId);
+                AZStd::erase_if(
+                    entityIds,
+                    [&](const AZ::EntityId& secondaryEntityId)
+                    {
+                        return !DoEntitiesHaveMatchingMaterialSlots(primaryEntityId, { secondaryEntityId });
+                    });
 
-                AZStd::erase_if(entityIds, [&](const AZ::EntityId& entityId) {
-                    MaterialAssignmentMap comparedMaterialSlots;
-                    MaterialComponentRequestBus::EventResult(
-                        comparedMaterialSlots, entityId, &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments);
-                    if (originalMaterialSlots.size() != comparedMaterialSlots.size())
-                    {
-                        return true;
-                    }
-                    for (const auto& slotPair : originalMaterialSlots)
-                    {
-                        const auto& slotItr = comparedMaterialSlots.find(slotPair.first);
-                        if (slotItr == comparedMaterialSlots.end())
-                        {
-                            return true;
-                        }
-                    }
-                    return false;
-                });
                 return entityIds;
             }
         } // namespace EditorMaterialComponentUtil
