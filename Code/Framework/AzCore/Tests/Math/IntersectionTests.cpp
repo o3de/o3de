@@ -564,7 +564,19 @@ namespace UnitTest
                 { 20.5424690, -33.8884621, 26.2357140 }, { -20.5424690, 33.8884621, -26.2357140 }, // segment
                 { { 0.403728217, -0.713824689, 0.572239339 }, { 0.415217489, -0.732416809, 0.539592505 }, { 0.437129468, -0.707290292, 0.555570245 } }, // triangle
                 false, 0.0, {0.0, 0.0, 0.0} // expected results
-            }
+            },
+
+            // These failures previously came from the vegetation system and the Editor using FLT_MAX as segment start or end values.
+            {
+                { 5.0f, -15.0f, 1.0f }, { 5.0f, -15.0f, -FLT_MAX }, // segment
+                { { 0.0f, -10.0f, 0.0f }, { 0.0f, -20.0f, 0.0f }, { 10.0f, -10.0f, 0.0f } }, // triangle
+                true, 0.0f, {0.0f, 0.0f, 1.0f} // expected results
+            },
+            {
+                { 5.0f, -15.0f, FLT_MAX }, { 5.0f, -15.0f, -1.0f }, // segment
+                { { 0.0f, -10.0f, 0.0f }, { 0.0f, -20.0f, 0.0f }, { 10.0f, -10.0f, 0.0f } }, // triangle
+                true, 1.0f, {0.0f, 0.0f, 1.0f} // expected results
+            },
         };
 
         for (auto& test : tests)
