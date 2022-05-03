@@ -54,7 +54,12 @@ endfunction()
 #\arg:target Name of the target to perform a post-build stripping of any debug symbol)
 function(ly_apply_debug_strip_options target)
 
-    if (NOT  ${LY_STRIP_DEBUG_SYMBOLS})
+    find_program(LLVM_STRIP_TOOL llvm-strip)
+    if (NOT LLVM_STRIP_TOOL)
+        return()
+    endif()
+
+    if (NOT ${LY_STRIP_DEBUG_SYMBOLS})
         return()
     endif()
 
