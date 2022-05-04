@@ -16,7 +16,6 @@
 #include <AzFramework/Spawnable/SpawnableAssetBus.h>
 #include <AzFramework/Spawnable/SpawnableAssetUtils.h>
 
-#pragma optimize("", off)
 namespace AzFramework
 {
     bool InMemorySpawnableAssetContainer::HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const
@@ -81,8 +80,13 @@ namespace AzFramework
                 auto spawnable = azrtti_cast<AzFramework::Spawnable*>(assetData);
 
                 AzFramework::SpawnableAssetEventsBus::Broadcast(&AzFramework::SpawnableAssetEvents::OnPreparingSpawnable,
+<<<<<<< HEAD:Code/Framework/AzToolsFramework/AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.cpp
+                    *spawnable, product.GetId());
+                spawnables.push_back(spawnable);
+=======
                     *spawnable, assetInfo.m_relativePath);
                 spawnables.push_back(AZStd::make_pair<AzFramework::Spawnable*, const AZStd::string&>(spawnable, assetInfo.m_relativePath));
+>>>>>>> origin/srikappa/NestedPrefabNetworkingSupport:Code/Framework/AzFramework/AzFramework/Spawnable/InMemorySpawnableAssetContainer.cpp
 
                 if (assetInfo.m_relativePath == rootProductId)
                 {
@@ -133,26 +137,23 @@ namespace AzFramework
     }
 
     InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetContainer::CreateInMemorySpawnableAsset(
-        Spawnable* spawnable,
+        AzFramework::Spawnable* spawnable,
         const AZ::Data::AssetId& assetId,
         bool loadReferencedAssets,
-        const AZStd::string& assetRelativePath)
+        const AZStd::string& rootSpawnableName)
     {
+        AZStd::string rootProductId(rootSpawnableName);
+        rootProductId += AzFramework::Spawnable::DotFileExtension;
+
         AZ::Data::AssetInfo assetInfo;
         assetInfo.m_assetId = assetId;
         assetInfo.m_assetType = spawnable->GetType();
-        assetInfo.m_relativePath = assetRelativePath;
+        assetInfo.m_relativePath = rootSpawnableName;
         AZ::Data::AssetData* assetData = spawnable;
-        AssetDataInfoContainer assetDataInfoContainer;
+        AzFramework::InMemorySpawnableAssetContainer::AssetDataInfoContainer assetDataInfoContainer;
         assetDataInfoContainer.emplace_back(AZStd::make_pair<AZ::Data::AssetData*, AZ::Data::AssetInfo>(assetData, assetInfo));
 
-        // Remove the .spawnable file extension before passing it to the other CreateInMemorySpawnableAsset method, which will add it back in
-        AZStd::string spawablePathSansFileExtension = assetRelativePath;
-        if (spawablePathSansFileExtension.ends_with(Spawnable::DotFileExtension))
-        {
-            spawablePathSansFileExtension = assetRelativePath.substr(0, assetRelativePath.length() - strlen(Spawnable::DotFileExtension));
-        }
-        return CreateInMemorySpawnableAsset(assetDataInfoContainer, loadReferencedAssets, spawablePathSansFileExtension);
+        return CreateInMemorySpawnableAsset(assetDataInfoContainer, loadReferencedAssets, rootSpawnableName);
     }
 
     void InMemorySpawnableAssetContainer::ClearAllInMemorySpawnableAssets()
@@ -261,5 +262,3 @@ namespace AzFramework
         }
     }
 } // namespace AzFramework
-
-#pragma optimize("", on)

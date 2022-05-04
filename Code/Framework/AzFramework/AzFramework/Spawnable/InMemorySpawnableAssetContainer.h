@@ -52,11 +52,13 @@ namespace AzFramework
 
         //! Creates an in-memory spawnable asset given a single spawnable.
         //! Used when a network server receives in-memory spawnable data from the client
+        //! assetRelativePath: The in-memory spawnable's asset hint.
+        //!   Example: The in-memory editor level name is "Root.spawnable" and "Root.network.spawnable"
         CreateSpawnableResult CreateInMemorySpawnableAsset(
-            AzFramework::Spawnable* spawnable,
+            Spawnable* spawnable,
             const AZ::Data::AssetId& assetId,
             bool loadReferencedAssets,
-            const AZStd::string& rootSpawnableName);
+            const AZStd::string& assetRelativePath);
 
     private:
         void LoadReferencedAssets(SpawnableAssetData& spawnable);

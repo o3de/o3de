@@ -98,7 +98,11 @@ namespace Multiplayer
 
         //! AzFramework::SpawnableAssetEventsBus::Handler overrides
         //! @{
+<<<<<<< HEAD
         void OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint) override;
+=======
+        void OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZStd::string& id) override;
+>>>>>>> origin/srikappa/NestedPrefabNetworkingSupport
         //! @
         
         //! EditorEvents::Handler overrides
@@ -125,13 +129,6 @@ namespace Multiplayer
         AZ::ScheduledEvent m_connectionEvent = AZ::ScheduledEvent([this]{this->Connect();}, AZ::Name("MultiplayerEditorConnect"));
         uint16_t m_connectionAttempts = 0;
 
-        struct PreAliasedSpawnableData
-        {
-            AZStd::unique_ptr<AzFramework::Spawnable> spawnable;
-            AZStd::string assetHint;
-            AZ::Data::AssetId assetId;
-        };
-        
-        AZStd::vector<PreAliasedSpawnableData> m_preAliasedSpawnablesForServer;
+        AZStd::vector<AZStd::pair<AZStd::string, AZStd::unique_ptr<AzFramework::Spawnable>>> m_preAliasedSpawnablesForServer;
     };
 }
