@@ -908,6 +908,9 @@ namespace AZ
                 }
                 else
                 {
+                    AZ_Assert(
+                        srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
+                        "Bindless SRG slot needs to match the one described in the shader.");
                     // TODO(BINDLESS): Come up with a better mechanism for this
                     vkDescriptorSet = m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet();
                 }

@@ -94,6 +94,7 @@ namespace AZ
 
             RHI::ResultCode BuildNativeDescriptorSetLayout();
             RHI::ResultCode BuildDescriptorSetLayoutBindings();
+            bool IsBindlessSRGLayout();
 
             bool ValidateUniformBufferDeviceLimits(const RHI::ShaderInputBufferDescriptor& desc);
 
