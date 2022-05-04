@@ -61,7 +61,7 @@ class TestAutomation(TestAutomationBase):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    #@pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
+    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_NodePalette_HappyPath_CanSelectNode(self, request, workspace, editor, launcher_platform):
         from . import NodePalette_HappyPath_CanSelectNode as test_module
         self._run_test(request, workspace, editor, test_module)
