@@ -31,7 +31,7 @@ namespace AzToolsFramework
         if (!widget)
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register action context \"%.s\" to a null widget.", AZ_STRING_ARG(identifier))
+                "Action Manager - Could not register action context \"%s\" to a null widget.", AZStd::string(identifier.data(), identifier.size()).c_str())
             );
         }
 
@@ -57,16 +57,16 @@ namespace AzToolsFramework
         if (!m_actionContexts.contains(contextIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register action \"%.s\" - context \"%.s\" has not been registered.",
-                AZ_STRING_ARG(identifier),
-                AZ_STRING_ARG(contextIdentifier)
+                "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
+                AZStd::string(identifier.data(), identifier.size()).c_str(), 
+                AZStd::string(contextIdentifier.data(), contextIdentifier.size()).c_str()
             ));
         }
 
         if (m_actions.contains(identifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register action \"%.s\" twice.", AZ_STRING_ARG(identifier)));
+                "Action Manager - Could not register action \"%.s\" twice.", AZStd::string(identifier.data(), identifier.size()).c_str()));
         }
 
         m_actions.insert(
