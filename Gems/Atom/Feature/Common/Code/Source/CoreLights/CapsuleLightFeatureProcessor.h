@@ -45,6 +45,8 @@ namespace AZ
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetCapsuleLineSegment(LightHandle handle, const Vector3& startPoint, const Vector3& endPoint) override;
             void SetCapsuleRadius(LightHandle handle, float radius) override;
+            void SetAffectsGI(LightHandle handle, bool affectsGI) override;
+            void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
             void SetCapsuleData(LightHandle handle, const CapsuleLightData& data) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer()const;

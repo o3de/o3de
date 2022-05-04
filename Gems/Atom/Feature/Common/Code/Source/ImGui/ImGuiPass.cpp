@@ -566,6 +566,7 @@ namespace AZ
             const uint32_t fontTextureIndex = 0;
             m_resourceGroup->SetImage(m_texturesIndex, m_fontAtlas, fontTextureIndex);
             io.Fonts->TexID = reinterpret_cast<ImTextureID>(m_fontAtlas.get());
+            m_imguiFontTexId = io.Fonts->TexID;
 
             // ImGuiPass will support binding 16 textures at most per frame. 
             const uint8_t instanceData[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
@@ -605,7 +606,7 @@ namespace AZ
             // Create all the DrawIndexeds so they can be submitted in parallel on BuildCommandListInternal()
             uint32_t vertexOffset = 0;
             uint32_t indexOffset = 0;
-
+            
             m_userTextures.clear();
             for (ImDrawData& drawData : m_drawData)
             {
@@ -625,7 +626,7 @@ namespace AZ
 
                         // check if texture id needs to be bound to the srg
                         uint32_t index = 0;
-                        if (drawCmd.TextureId != ImGui::GetIO().Fonts->TexID)
+                        if (drawCmd.TextureId && drawCmd.TextureId != m_imguiFontTexId)
                         {
                             if (m_userTextures.size() < MaxUserTextures)
                             {
@@ -659,7 +660,7 @@ namespace AZ
                 }
             }
             m_drawData.clear();
-
+            
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             ImGui::GetIO().MouseWheel = m_lastFrameMouseWheel;
             m_lastFrameMouseWheel = 0.0;

@@ -147,8 +147,6 @@ namespace AZ
             }
             else if (!m_luaSourceFile.empty())
             {
-                // The sub ID for script assets must be explicit.
-                // LUA source files output a compiled as well as an uncompiled asset, sub Ids of 1 and 2.
                 auto loadOutcome =
                     RPI::AssetUtils::LoadAsset<ScriptAsset>(materialTypeSourceFilePath, m_luaSourceFile, ScriptAsset::CompiledAssetSubId);
                 if (!loadOutcome)

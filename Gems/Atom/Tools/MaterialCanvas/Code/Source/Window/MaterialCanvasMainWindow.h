@@ -20,7 +20,8 @@
 #include <GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
-#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+#include <MaterialCanvasUtil.h>
+
 #include <QTranslator>
 #endif
 
@@ -36,7 +37,8 @@ namespace MaterialCanvas
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
-        MaterialCanvasMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
+        MaterialCanvasMainWindow(
+            const AZ::Crc32& toolId, const CreateNodePaletteItemsCallback& createNodePaletteItemsCallback, QWidget* parent = 0);
         ~MaterialCanvasMainWindow();
 
     protected:
@@ -55,8 +57,6 @@ namespace MaterialCanvas
         void OpenHelp() override;
 
     private:
-        GraphCanvas::GraphCanvasTreeItem* GetNodePaletteRootTreeItem() const;
-
         AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};

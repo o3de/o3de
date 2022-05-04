@@ -6,18 +6,16 @@
  *
  */
 
-#include <AzCore/Component/EntityUtils.h>
-#include <AzCore/Script/ScriptSystemBus.h>
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/Entity/EntityContextBus.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Nodeable.h>
+#include <ScriptCanvas/Execution/ExecutionStateStorage.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
-#include <ScriptCanvas/Execution/RuntimeComponent.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPerActivation.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPure.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.h>
 
-#include "ExecutionContext.h"
-#include "AzCore/Slice/SliceComponent.h"
-#include "AzFramework/Entity/SliceEntityOwnershipServiceBus.h"
+#include <ScriptCanvas/Execution/ExecutionContext.h>
 
 namespace ExecutionContextCpp
 {
@@ -57,7 +55,7 @@ namespace ScriptCanvas
             }
         }
 
-        ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData, [[maybe_unused]] const AZ::EntityId& forSliceSupportOnly)
+        ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData)
         {
             const RuntimeData& runtimeData = activationData.runtimeData;
             ActivationInputRange rangeOut = runtimeData.m_activationInputRange;
@@ -112,7 +110,23 @@ namespace ScriptCanvas
             return rangeOut;
         }
 
-        void Context::IntializeActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
+        void Context::InitializeStaticActivationData(RuntimeData& runtimeData)
+        {
+            AZ::BehaviorContext* behaviorContext(nullptr);
+            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+            if (!behaviorContext)
+            {
+                AZ_Error("Behavior Context", false, "A behavior context is required!");
+                return;
+            }
+
+            // \todo, the stack push functions could be retrieved here
+            InitializeStaticCreationFunction(runtimeData);
+            InitializeStaticActivationInputs(runtimeData, *behaviorContext);
+            InitializeStaticCloners(runtimeData, *behaviorContext);
+        }
+
+        void Context::InitializeStaticActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
         {
             AZStd::vector<AZ::BehaviorValueParameter>& parameters = runtimeData.m_activationInputStorage;
             auto& range = runtimeData.m_activationInputRange;
@@ -157,23 +171,8 @@ namespace ScriptCanvas
             range.totalCount = range.nodeableCount + range.variableCount + range.entityIdCount;
         }
 
-        void Context::InitializeActivationData(RuntimeData& runtimeData)
-        {
-            AZ::BehaviorContext* behaviorContext(nullptr);
-            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
-            if (!behaviorContext)
-            {
-                AZ_Error("Behavior Context", false, "A behavior context is required!");
-                return;
-            }
-
-            // \todo, the stack push functions could be retrieved here
-            IntializeActivationInputs(runtimeData, *behaviorContext);
-            IntializeStaticCloners(runtimeData, *behaviorContext);
-        }
-
         // This does not have to recursively initialize dependent assets, as this is called by asset handler
-        void Context::IntializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
+        void Context::InitializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
         {
             runtimeData.m_cloneSources.reserve(runtimeData.m_input.m_staticVariables.size());
 
@@ -186,11 +185,51 @@ namespace ScriptCanvas
             }
         }
 
-        void Context::UnloadData(RuntimeData& runtimeData)
+        void Context::InitializeStaticCreationFunction(RuntimeData& runtimeData)
         {
-            Execution::InterpretedUnloadData(runtimeData);
+            const Grammar::ExecutionStateSelection selection = runtimeData.m_input.m_executionSelection;
+
+            switch (selection)
+            {
+            case Grammar::ExecutionStateSelection::InterpretedPure:
+                runtimeData.m_createExecution = &Execution::CreatePure;
+                break;
+
+            case Grammar::ExecutionStateSelection::InterpretedPureOnGraphStart:
+                runtimeData.m_createExecution = &Execution::CreatePureOnGraphStart;
+                break;
+
+            case Grammar::ExecutionStateSelection::InterpretedObject:
+                runtimeData.m_createExecution = &Execution::CreatePerActivation;
+                break;
+
+            case Grammar::ExecutionStateSelection::InterpretedObjectOnGraphStart:
+                runtimeData.m_createExecution = &Execution::CreatePerActivationOnGraphStart;
+                break;
+
+            default:
+                SC_RUNTIME_CHECK(false, "Unsupported ScriptCanvas execution selection");
+                runtimeData.m_createExecution =
+                    [](Execution::StateStorage&, ExecutionStateConfig&)->ExecutionState* { return nullptr; };
+                break;
+            }
         }
 
-    }
+        TypeErasedReference::TypeErasedReference(void* address, const AZ::TypeId& type)
+            : m_address(address)
+            , m_type(type)
+        {
+            SC_RUNTIME_CHECK(address, "Null address is not allowed in type erased Reference object");
+        }
 
+        void* TypeErasedReference::Address() const
+        {
+            return m_address;
+        }
+
+        const AZ::TypeId& TypeErasedReference::Type() const
+        {
+            return m_type;
+        }
+    }
 }

@@ -110,7 +110,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_ShaderEnable.lua"
+                "file": "Materials/Types/StandardPBR_ShaderEnable.lua"
             }
         }
     ],

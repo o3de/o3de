@@ -10,6 +10,16 @@
 
 namespace AzNetworking
 {
+    StringifySerializer::StringifySerializer()
+    {
+        ;
+    }
+
+    StringifySerializer::~StringifySerializer()
+    {
+        ;
+    }
+
     const StringifySerializer::ValueMap& StringifySerializer::GetValueMap() const
     {
         return m_valueMap;

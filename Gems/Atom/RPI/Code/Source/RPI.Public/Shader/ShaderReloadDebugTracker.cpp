@@ -32,10 +32,10 @@ namespace AZ
             ShaderReloadDebugTrackerInternal::s_enabled.Reset();
             ShaderReloadDebugTrackerInternal::s_indent.Reset();
         }
-        
+
         void ShaderReloadDebugTracker::MakeReady()
         {
-            if (!ShaderReloadDebugTrackerInternal::s_enabled.IsValid())
+            if (!ShaderReloadDebugTrackerInternal::s_enabled)
             {
                 ShaderReloadDebugTrackerInternal::s_enabled = AZ::Environment::CreateVariable<bool>(AZ::Crc32(ShaderReloadDebugTrackerInternal::EnabledVariableName), false);
                 ShaderReloadDebugTrackerInternal::s_indent = AZ::Environment::CreateVariable<int>(AZ::Crc32(ShaderReloadDebugTrackerInternal::IndentVariableName), 0);
@@ -54,7 +54,7 @@ namespace AZ
             return false;
 #endif
         }
-        
+
         void ShaderReloadDebugTracker::AddIndent()
         {
             MakeReady();
@@ -66,7 +66,7 @@ namespace AZ
             MakeReady();
             ShaderReloadDebugTrackerInternal::s_indent.Get() -= IndentSpaces;
         }
-        
+
         int ShaderReloadDebugTracker::GetIndent()
         {
             MakeReady();

@@ -802,3 +802,13 @@ bool CUndoManager::IsUndoSuspended() const
 {
     return m_suspendCount != 0;
 }
+
+CScopedSuspendUndo::CScopedSuspendUndo()
+{
+    GetIEditor()->SuspendUndo();
+}
+
+CScopedSuspendUndo::~CScopedSuspendUndo()
+{
+    GetIEditor()->ResumeUndo();
+}
