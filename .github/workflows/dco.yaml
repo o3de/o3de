@@ -11,9 +11,11 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: '3.x'
+    - name: Set up dco-check
+      run: |
+        pip3 install -U dco-check
     - name: Check DCO
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        pip3 install -U dco-check
-        dco-check
+        dco-check      
