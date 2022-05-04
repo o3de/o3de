@@ -701,11 +701,16 @@ namespace AZ
 
                 QMenu menu(this);
                 action = menu.addAction("Clear Overrides", [this] {
-                    for (const AZ::EntityId& entityId : m_entityIdsToEdit)
+                    AzToolsFramework::ScopedUndoBatch undoBatch("Clear material property overrides.");
+                        m_editData.m_materialPropertyOverrideMap.clear();
+                        for (const AZ::EntityId& entityId : m_entityIdsToEdit)
                     {
+                        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
                         MaterialComponentRequestBus::Event(
                             entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
-                            MaterialPropertyOverrideMap());
+                            m_editData.m_materialPropertyOverrideMap);
+                        MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
                     }
                     m_updateUI = true;
                     m_updatePreview = true;
