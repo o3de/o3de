@@ -7,13 +7,23 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Holds constants used across both hydra and non-hydra scripts.
 """
 
-#UI headers
+"""
+Constants for window and tab names
+
+"""
 SCRIPT_CANVAS_UI = "Script Canvas"
 NODE_PALETTE_UI = "Node Palette"
 
-#wait times
-WAIT_TIME_3 = 3
 
-#QtWidgets
+"""
+Constants for QtWidgets.
+Different from window/tab names because they do not have spaces
+"""
 NODE_PALETTE_QT = "NodePalette"
 TREE_VIEW_QT = "treeView"
+
+
+"""
+General constants
+"""
+WAIT_TIME_3 = 3

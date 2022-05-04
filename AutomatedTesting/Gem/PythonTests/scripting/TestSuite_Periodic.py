@@ -15,16 +15,25 @@ imports.init()
 
 import hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
+from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 from ly_test_tools import LAUNCHERS
 from base import TestAutomationBase
 
 TEST_DIRECTORY = os.path.dirname(__file__)
 
+#Bat
+@pytest.mark.SUITE_periodic
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestScriptCanvas(EditorTestSuite):
+    class test_NodePalette_HappyPath_CanSelectNode(EditorBatchedTest):
+        import NodePalette_HappyPath_CanSelectNode as test_module
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
+
     def test_Pane_HappyPath_OpenCloseSuccessfully(self, request, workspace, editor, launcher_platform):
         from . import Pane_HappyPath_OpenCloseSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -212,20 +221,6 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
-    def test_NodePalette_HappyPath_CanSelectNode(self, request, editor, launcher_platform):
-        expected_lines = [
-            "Success: Category can be selected",
-            "Success: Node can be selected"
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "NodePalette_HappyPath_CanSelectNode.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
 
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
