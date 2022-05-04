@@ -467,11 +467,6 @@ namespace AzToolsFramework
                 // This is a workaround until the replacement for GameEntityContext is done
                 AzFramework::GameEntityContextEventBus::Broadcast(
                     &AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesStarted);
-
-                auto* spawnable = createRootSpawnableResult.GetValue().GetAs<AzFramework::Spawnable>();
-                AzFramework::Spawnable::EntityAliasVisitor aliases = spawnable->TryGetAliases();
-                AzFramework::SpawnableAssetEventsBus::Broadcast(
-                    &AzFramework::SpawnableAssetEvents::OnResolveAliases, aliases, spawnable->GetMetaData(), spawnable->GetEntities());
             }
             else
             {
