@@ -250,8 +250,7 @@ namespace AZ
     template<class Context>
     Context* EBusEnvironmentStoragePolicy<Context>::Get()
     {
-        if ((!s_defaultGlobalContext || (s_defaultGlobalContext && !s_defaultGlobalContext.IsConstructed()))
-            && Environment::IsReady())
+        if (!s_defaultGlobalContext && Environment::IsReady())
         {
             s_defaultGlobalContext = Environment::FindVariable<Context>(GetVariableId());
         }
