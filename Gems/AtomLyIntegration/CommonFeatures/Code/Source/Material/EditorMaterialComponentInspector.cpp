@@ -58,27 +58,36 @@ namespace AZ
                 AZ::TickBus::Handler::BusDisconnect();
                 AZ::EntitySystemBus::Handler::BusDisconnect();
                 EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
-                MaterialComponentNotificationBus::Handler::BusDisconnect();
+                MaterialComponentNotificationBus::MultiHandler::BusDisconnect();
             }
 
             bool MaterialPropertyInspector::LoadMaterial(
-                const AZ::EntityId& entityId,
+                const AZ::EntityId& primaryEntityId,
                 const AzToolsFramework::EntityIdSet& entityIdsToEdit,
                 const AZ::Render::MaterialAssignmentId& materialAssignmentId)
             {
                 UnloadMaterial();
 
-                if (!EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialTypes(entityId, entityIdsToEdit, materialAssignmentId))
+                // Only allow the load to succeed if all of the affected entities have matching material types to guarantee that the
+                // inspector configuration matches all of the entities
+                if (!EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialTypes(primaryEntityId, entityIdsToEdit, materialAssignmentId))
                 {
                     UnloadMaterial();
                     return false;
                 }
 
-                m_entityId = entityId;
+                m_primaryEntityId = primaryEntityId;
                 m_entityIdsToEdit = entityIdsToEdit;
                 m_materialAssignmentId = materialAssignmentId;
-                MaterialComponentNotificationBus::Handler::BusDisconnect();
-                MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
+
+                // Connect all of the affected entities to the material component notification bus so that the UI can be updated or
+                // invalidated whenever any of their configurations change in a way that may not be compatible with the other entities 
+                MaterialComponentNotificationBus::MultiHandler::BusDisconnect();
+                MaterialComponentNotificationBus::MultiHandler::BusConnect(m_primaryEntityId);
+                for (const AZ::EntityId& entityId : m_entityIdsToEdit)
+                {
+                    MaterialComponentNotificationBus::MultiHandler::BusConnect(entityId);
+                }
 
                 const AZ::Data::AssetId materialAssetId = GetActiveMaterialAssetIdFromEntity();
                 if (!materialAssetId.IsValid())
@@ -130,9 +139,9 @@ namespace AZ
                 // The inspector only has a valid configuration if the entity ID, material assignment ID, and material asset are all valid
                 // and match what is on the selected entity. If there is a mismatch, the content must be reloaded.
                 const AZ::Data::AssetId materialAssetId = GetActiveMaterialAssetIdFromEntity();
-                return m_entityId.IsValid() && m_materialInstance && m_editData.m_materialAsset.IsReady() &&
+                return m_primaryEntityId.IsValid() && m_materialInstance && m_editData.m_materialAsset.IsReady() &&
                     m_editData.m_materialAsset.GetId() == materialAssetId && m_editData.m_materialAssetId == materialAssetId &&
-                    EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialTypes(m_entityId, m_entityIdsToEdit, m_materialAssignmentId);
+                    EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialTypes(m_primaryEntityId, m_entityIdsToEdit, m_materialAssignmentId);
             }
 
             void MaterialPropertyInspector::Reset()
@@ -196,11 +205,11 @@ namespace AZ
                     AZ::RPI::AssetUtils::GetSourcePathByAssetId(m_editData.m_materialParentAsset.GetId()).c_str());
 
                 AZStd::string entityName;
-                AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, m_entityId);
+                AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, m_primaryEntityId);
 
                 AZStd::string slotName;
                 MaterialComponentRequestBus::EventResult(
-                    slotName, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialSlotLabel, m_materialAssignmentId);
+                    slotName, m_primaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialSlotLabel, m_materialAssignmentId);
 
                 QString materialInfo;
                 materialInfo += tr("<table>");
@@ -234,7 +243,7 @@ namespace AZ
 
                 QPixmap pixmap;
                 EditorMaterialSystemComponentRequestBus::BroadcastResult(
-                    pixmap, &EditorMaterialSystemComponentRequestBus::Events::GetRenderedMaterialPreview, m_entityId,
+                    pixmap, &EditorMaterialSystemComponentRequestBus::Events::GetRenderedMaterialPreview, m_primaryEntityId,
                     m_materialAssignmentId);
                 m_overviewImage->setPixmap(pixmap);
                 m_overviewImage->setVisible(true);
@@ -371,7 +380,7 @@ namespace AZ
 
                 m_editData.m_materialPropertyOverrideMap.clear();
                 MaterialComponentRequestBus::EventResult(
-                    m_editData.m_materialPropertyOverrideMap, m_entityId, &MaterialComponentRequestBus::Events::GetPropertyOverrides,
+                    m_editData.m_materialPropertyOverrideMap, m_primaryEntityId, &MaterialComponentRequestBus::Events::GetPropertyOverrides,
                     m_materialAssignmentId);
 
                 // Apply any automatic property renames so that the material inspector will be properly initialized with the right values
@@ -426,13 +435,14 @@ namespace AZ
                 UpdateHeading();
             }
 
-            void MaterialPropertyInspector::SaveOverridesToEntity(const AtomToolsFramework::DynamicProperty& property, bool commitChanges)
+            void MaterialPropertyInspector::SaveOverrideToEntities(const AtomToolsFramework::DynamicProperty& property, bool commitChanges)
             {
                 if (!IsLoaded())
                 {
                     return;
                 }
 
+                // Apply the incoming property override to all pinned entities
                 for (const AZ::EntityId& entityId : m_entityIdsToEdit)
                 {
                     MaterialComponentRequestBus::Event(
@@ -442,17 +452,18 @@ namespace AZ
 
                 if (commitChanges)
                 {
+                    // If editing is complete and these changes are being committed we must mark all of the entities dirty for undo redo
                     AzToolsFramework::ScopedUndoBatch undoBatch("Material slot changed.");
 
+                    m_internalEditNotification = true;
                     for (const AZ::EntityId& entityId : m_entityIdsToEdit)
                     {
                         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                             &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
 
-                        m_internalEditNotification = true;
                         MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
-                        m_internalEditNotification = false;
                     }
+                    m_internalEditNotification = false;
                 }
 
                 // m_updatePreview should be set to true here for continuous preview updates as slider/color properties change but needs
@@ -690,13 +701,13 @@ namespace AZ
 
                 QMenu menu(this);
                 action = menu.addAction("Clear Overrides", [this] {
-                        for (const AZ::EntityId& entityId : m_entityIdsToEdit)
-                        {
-                            MaterialComponentRequestBus::Event(
-                                entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
-                                MaterialPropertyOverrideMap());
-                        }
-                        m_updateUI = true;
+                    for (const AZ::EntityId& entityId : m_entityIdsToEdit)
+                    {
+                        MaterialComponentRequestBus::Event(
+                            entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
+                            MaterialPropertyOverrideMap());
+                    }
+                    m_updateUI = true;
                     m_updatePreview = true;
                 });
                 action->setEnabled(IsLoaded());
@@ -729,7 +740,7 @@ namespace AZ
             {
                 AZ::Data::AssetId materialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId, m_materialAssignmentId);
+                    materialAssetId, m_primaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId, m_materialAssignmentId);
                 return materialAssetId;
             }
 
@@ -740,7 +751,7 @@ namespace AZ
                 {
                     m_editData.m_materialPropertyOverrideMap[property->GetId()] = property->GetValue();
                     UpdateMaterialInstanceProperty(*property);
-                    SaveOverridesToEntity(*property, false);
+                    SaveOverrideToEntities(*property, false);
                 }
             }
 
@@ -754,14 +765,14 @@ namespace AZ
                 {
                     m_editData.m_materialPropertyOverrideMap[property->GetId()] = property->GetValue();
                     UpdateMaterialInstanceProperty(*property);
-                    SaveOverridesToEntity(*property, true);
+                    SaveOverrideToEntities(*property, true);
                     RunEditorMaterialFunctors();
                 }
             }
 
             void MaterialPropertyInspector::OnEntityInitialized(const AZ::EntityId& entityId)
             {
-                if (m_entityId == entityId)
+                if (m_entityIdsToEdit.count(entityId) > 0)
                 {
                     UnloadMaterial();
                 }
@@ -769,7 +780,7 @@ namespace AZ
 
             void MaterialPropertyInspector::OnEntityDestroyed(const AZ::EntityId& entityId)
             {
-                if (m_entityId == entityId)
+                if (m_entityIdsToEdit.count(entityId) > 0)
                 {
                     UnloadMaterial();
                 }
@@ -777,12 +788,12 @@ namespace AZ
 
             void MaterialPropertyInspector::OnEntityActivated(const AZ::EntityId& entityId)
             {
-                m_updateUI |= (m_entityId == entityId);
+                m_updateUI |= (m_entityIdsToEdit.count(entityId) > 0);
             }
 
             void MaterialPropertyInspector::OnEntityDeactivated(const AZ::EntityId& entityId)
             {
-                if (m_entityId == entityId)
+                if (m_entityIdsToEdit.count(entityId) > 0)
                 {
                     UnloadMaterial();
                 }
@@ -791,7 +802,7 @@ namespace AZ
             void MaterialPropertyInspector::OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name)
             {
                 AZ_UNUSED(name);
-                m_updateUI |= (m_entityId == entityId);
+                m_updateUI |= (m_primaryEntityId == entityId);
             }
 
             void MaterialPropertyInspector::OnTick(float deltaTime, ScriptTimePoint time)
@@ -824,7 +835,7 @@ namespace AZ
             void MaterialPropertyInspector::OnRenderMaterialPreviewComplete(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap)
             {
-                if (m_overviewImage && m_entityId == entityId && m_materialAssignmentId == materialAssignmentId)
+                if (m_overviewImage && m_primaryEntityId == entityId && m_materialAssignmentId == materialAssignmentId)
                 {
                     m_overviewImage->setPixmap(pixmap);
                 }
@@ -838,7 +849,7 @@ namespace AZ
                 }
                 else
                 {
-                    LoadMaterial(m_entityId, m_entityIdsToEdit, m_materialAssignmentId);
+                    LoadMaterial(m_primaryEntityId, m_entityIdsToEdit, m_materialAssignmentId);
                 }
             }
         } // namespace EditorMaterialComponentInspector

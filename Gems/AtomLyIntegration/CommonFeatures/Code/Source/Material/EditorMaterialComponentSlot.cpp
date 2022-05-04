@@ -365,6 +365,7 @@ namespace AZ
 
         void EditorMaterialComponentSlot::OnMaterialChangedFromRPE() const
         {
+            // Because this function is being from an edit context attribute it will automatically be applied to all selected entities
             OnDataChanged({ m_entityId }, true);
         }
 

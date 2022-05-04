@@ -20,6 +20,8 @@ namespace AZ
     namespace Render
     {
         //! Details for a single editable material assignment
+        //! When changes are applied to this material slot, it will attempt to forward all of those changes to applicable selected entities
+        //! and their materials
         struct EditorMaterialComponentSlot final
         {
             AZ_RTTI(EditorMaterialComponentSlot, "{344066EB-7C3D-4E92-B53D-3C9EBD546488}");
@@ -59,11 +61,19 @@ namespace AZ
             //! Remove property overrides
             void ClearProperties();
 
+            //! Launch the material editor application and open the active material for this slot
             void OpenMaterialEditor() const;
+
+            //! Open the material exporter, aka generate source materials dialog, and apply resulting materials to a set of entities
             void OpenMaterialExporter(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
+
+            //! Open the material instance inspector, displaying this entity's active material, applying changes to all entities in the set
             void OpenMaterialInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
+
+            //! Opens the dialog for you mapping UV channels for models and materials
             void OpenUvNameMapInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
 
+            //! Bypass the UI to export the active material to the export path 
             void ExportMaterial(const AZStd::string& exportPath, bool overwrite);
 
             AZ::EntityId m_entityId;

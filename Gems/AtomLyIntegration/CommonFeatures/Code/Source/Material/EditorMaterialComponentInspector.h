@@ -32,12 +32,14 @@ namespace AZ
     {
         namespace EditorMaterialComponentInspector
         {
+            //! Inspector window for displaying and editing entity material instance properties
+            //! If multiple entities are selected and pinned to this inspector then their corresponding properties will also be updated
             class MaterialPropertyInspector
                 : public AtomToolsFramework::InspectorWidget
                 , public AzToolsFramework::IPropertyEditorNotify
                 , public AZ::EntitySystemBus::Handler
                 , public AZ::TickBus::Handler
-                , public MaterialComponentNotificationBus::Handler
+                , public MaterialComponentNotificationBus::MultiHandler
                 , public EditorMaterialSystemComponentNotificationBus::Handler
             {
                 Q_OBJECT
@@ -47,16 +49,25 @@ namespace AZ
                 MaterialPropertyInspector(QWidget* parent = nullptr);
                 ~MaterialPropertyInspector() override;
 
+                //! Loads the material edit data for the active material on the primary entity ID.
+                //! The function will fail and return false if the data cannot be loaded or the rest of the entities are not compatible with
+                //! the primary entity materials.
                 bool LoadMaterial(
-                    const AZ::EntityId& entityId,
+                    const AZ::EntityId& primaryEntityId,
                     const AzToolsFramework::EntityIdSet& entityIdsToEdit,
                     const AZ::Render::MaterialAssignmentId& materialAssignmentId);
+
+                //! Releases all of the edit data and assets, clearing the inspector of all content
                 void UnloadMaterial();
+
+                //! Returns true if all of the edit data has been loaded, the instance has been created, the primary entity and material
+                //! slot has not changed the assigned material, and all of the entities share material types
                 bool IsLoaded() const;
 
                 // AtomToolsFramework::InspectorRequestBus::Handler overrides...
                 void Reset() override;
 
+                //! Builds all of the properties and generates the user interface for the inspector
                 void Populate();
 
                 bool SaveMaterial() const;
@@ -90,7 +101,7 @@ namespace AZ
                 //! AZ::TickBus::Handler overrides...
                 void OnTick(float deltaTime, ScriptTimePoint time) override;
 
-                //! MaterialComponentNotificationBus::Handler overrides...
+                //! MaterialComponentNotificationBus::MultiHandler overrides...
                 void OnMaterialsEdited() override;
 
                 //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
@@ -108,7 +119,7 @@ namespace AZ
                 void AddPropertiesGroup();
 
                 void LoadOverridesFromEntity();
-                void SaveOverridesToEntity(const AtomToolsFramework::DynamicProperty& property, bool commitChanges);
+                void SaveOverrideToEntities(const AtomToolsFramework::DynamicProperty& property, bool commitChanges);
                 void RunEditorMaterialFunctors();
                 void UpdateMaterialInstanceProperty(const AtomToolsFramework::DynamicProperty& property);
 
@@ -120,7 +131,7 @@ namespace AZ
                 bool IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const;
                 const char* GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const;
 
-                AZ::EntityId m_entityId;
+                AZ::EntityId m_primaryEntityId;
                 AzToolsFramework::EntityIdSet m_entityIdsToEdit;
                 AZ::Render::MaterialAssignmentId m_materialAssignmentId;
                 EditorMaterialComponentUtil::MaterialEditData m_editData;

@@ -173,14 +173,14 @@ namespace AZ
 
             action = menu->addAction("Clear All Materials", [this, entityIdsToEdit]() {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Clearing all materials.");
+                m_materialSlotsByLodEnabled = false;
                 for (const AZ::EntityId& entityId : entityIdsToEdit)
                 {
                     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
                     MaterialComponentRequestBus::Event(entityId, &MaterialComponentRequestBus::Events::ClearAllMaterialOverrides);
+                    MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
                 }
-                m_materialSlotsByLodEnabled = false;
-
                 UpdateMaterialSlots();
             });
             action->setToolTip("Clear all materials and properties then rebuild material slots from the associated model.");
@@ -192,6 +192,7 @@ namespace AZ
                     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
                     MaterialComponentRequestBus::Event(entityId, &MaterialComponentRequestBus::Events::ClearModelMaterialOverrides);
+                    MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
                 }
                 UpdateMaterialSlots();
             });
@@ -199,14 +200,14 @@ namespace AZ
 
             action = menu->addAction("Clear LOD Materials", [this, entityIdsToEdit]() {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Clearing LOD materials.");
+                m_materialSlotsByLodEnabled = false;
                 for (const AZ::EntityId& entityId : entityIdsToEdit)
                 {
                     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
                     MaterialComponentRequestBus::Event(entityId, &MaterialComponentRequestBus::Events::ClearLodMaterialOverrides);
+                    MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
                 }
-                m_materialSlotsByLodEnabled = false;
-
                 UpdateMaterialSlots();
             });
             action->setToolTip("Clear LOD materials and properties then rebuild material slots from the associated model.");
@@ -219,6 +220,7 @@ namespace AZ
                         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
                     MaterialComponentRequestBus::Event(
                         entityId, &MaterialComponentRequestBus::Events::ClearIncompatibleMaterialOverrides);
+                    MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
                 }
                 UpdateMaterialSlots();
             });
@@ -231,6 +233,7 @@ namespace AZ
                     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
                     MaterialComponentRequestBus::Event(entityId, &MaterialComponentRequestBus::Events::ClearInvalidMaterialOverrides);
+                    MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
                 }
                 UpdateMaterialSlots();
             });
@@ -243,6 +246,7 @@ namespace AZ
                     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
                     MaterialComponentRequestBus::Event(entityId, &MaterialComponentRequestBus::Events::RepairInvalidMaterialOverrides);
+                    MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
                 }
                 UpdateMaterialSlots();
             });
@@ -252,10 +256,15 @@ namespace AZ
                 AzToolsFramework::ScopedUndoBatch undoBatch("Applying automatic property updates.");
                 for (const AZ::EntityId& entityId : entityIdsToEdit)
                 {
+                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
+
                     uint32_t propertiesUpdated = 0;
                     MaterialComponentRequestBus::EventResult(
                         propertiesUpdated, entityId, &MaterialComponentRequestBus::Events::ApplyAutomaticPropertyUpdates);
                     AZ_Printf("EditorMaterialComponent", "Updated %u property(s).", propertiesUpdated);
+
+                    MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
                 }
                 UpdateMaterialSlots();
             });

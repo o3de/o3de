@@ -197,12 +197,8 @@ namespace AZ
                     primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
                     materialAssignmentId);
                 AZ::Data::AssetId primaryMaterialTypeAssetId = GetMaterialTypeAssetIdFromMaterialAssetId(primaryMaterialAssetId);
-                if (!primaryMaterialTypeAssetId.IsValid())
-                {
-                    return false;
-                }
 
-                return AZStd::all_of(
+                return primaryMaterialTypeAssetId.IsValid() && AZStd::all_of(
                     secondaryEntityIds.begin(), secondaryEntityIds.end(),
                     [&](const AZ::EntityId& secondaryEntityId)
                     {
@@ -211,11 +207,6 @@ namespace AZ
                             secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
                             materialAssignmentId);
                         AZ::Data::AssetId secondaryMaterialTypeAssetId = GetMaterialTypeAssetIdFromMaterialAssetId(secondaryMaterialAssetId);
-                        if (!secondaryMaterialTypeAssetId.IsValid())
-                        {
-                            return false;
-                        }
-
                         return primaryMaterialTypeAssetId == secondaryMaterialTypeAssetId;
                     });
             }
@@ -230,7 +221,7 @@ namespace AZ
                     primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
                     materialAssignmentId);
 
-                return AZStd::all_of(
+                return primaryMaterialAssetId.IsValid() && AZStd::all_of(
                     secondaryEntityIds.begin(), secondaryEntityIds.end(),
                     [&](const AZ::EntityId& secondaryEntityId)
                     {
@@ -238,7 +229,7 @@ namespace AZ
                         MaterialComponentRequestBus::EventResult(
                             secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
                             materialAssignmentId);
-                        return primaryMaterialAssetId.IsValid() && primaryMaterialAssetId == secondaryMaterialAssetId;
+                        return primaryMaterialAssetId == secondaryMaterialAssetId;
                     });
             }
 
