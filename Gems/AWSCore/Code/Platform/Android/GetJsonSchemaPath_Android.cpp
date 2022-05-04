@@ -19,7 +19,7 @@ namespace AWSCore
             static constexpr const char ResourceMapppingJsonSchemaFilePath[] =
                 "@products@/resource_mapping_schema.json";
 
-            AZ::IO::FixedMaxPath resolvedSchemaPath;;
+            AZ::IO::FixedMaxPath resolvedSchemaPath;
             if (!AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(resolvedSchemaPath, ResourceMapppingJsonSchemaFilePath))
             {
                 return "";
