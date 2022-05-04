@@ -23,6 +23,8 @@
 
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 
+#pragma optimize("", off)
+
 namespace AZ
 {
     namespace RPI
@@ -293,14 +295,14 @@ namespace AZ
         {
             AZ_Assert(m_scene == nullptr, "Pipeline was added to another scene");
             m_scene = scene;
-            PassSystemInterface::Get()->AddRenderPipeline(RenderPipelinePtr(this));
+            PassSystemInterface::Get()->AddRenderPipeline(this);
         }
 
         void RenderPipeline::OnRemovedFromScene([[maybe_unused]] Scene* scene)
         {
             AZ_Assert(m_scene == scene, "Pipeline isn't added to the specified scene");
             m_scene = nullptr;
-            PassSystemInterface::Get()->RemoveRenderPipeline(RenderPipelinePtr(this));
+            PassSystemInterface::Get()->RemoveRenderPipeline(this);
 
             m_drawFilterTag.Reset();
             m_drawFilterMask = 0;
@@ -637,3 +639,4 @@ namespace AZ
         }
     }
 }
+#pragma optimize("", on)

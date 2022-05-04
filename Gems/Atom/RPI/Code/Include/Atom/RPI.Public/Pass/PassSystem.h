@@ -76,8 +76,8 @@ namespace AZ
             PassSystemState GetState() const override;
             SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const override;
             void DebugBreakOnPass(const Pass* pass) const override;
-            void AddRenderPipeline(RenderPipelinePtr renderPipeline) override;
-            void RemoveRenderPipeline(RenderPipelinePtr renderPipeline) override;
+            void AddRenderPipeline(RenderPipeline* renderPipeline) override;
+            void RemoveRenderPipeline(RenderPipeline* renderPipeline) override;
 
             // PassSystemInterface statistics related functions
             void IncrementFrameDrawItemCount(u32 numDrawItems) override;
@@ -131,7 +131,7 @@ namespace AZ
             // Collection of passes that don't belong to any rendering pipeline
             PassContainer m_passesWithoutPipeline;
 
-            AZStd::vector< RenderPipelinePtr > m_renderPipelines;
+            AZStd::vector< RenderPipeline* > m_renderPipelines;
 
             // Library of pass descriptors that can be instantiated through data driven pass requests
             PassLibrary m_passLibrary;

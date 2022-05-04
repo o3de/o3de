@@ -12,6 +12,8 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
+#pragma optimize("", off)
+
 namespace AZ::RPI
 {
     void PassContainer::RemovePasses()
@@ -42,6 +44,8 @@ namespace AZ::RPI
         m_passesChangedThisFrame = m_passesChangedThisFrame || !m_buildPassList.empty();
 
         u32 buildCount = 0;
+        AZStd::vector< Ptr<Pass> > initialBuildList = m_buildPassList;
+        PassUtils::SortPassListAscending(initialBuildList);
 
         // While loop is for the event in which passes being built add more pass to m_buildPassList
         while (!m_buildPassList.empty())
@@ -52,12 +56,9 @@ namespace AZ::RPI
             m_buildPassList.clear();
 
             // Erase passes which were removed from pass tree already (which parent is empty)
-            auto unused = AZStd::remove_if(buildListCopy.begin(), buildListCopy.end(),
-                [](const RHI::Ptr<Pass>& currentPass)
-                {
+            erase_if(buildListCopy, [](const RHI::Ptr<Pass>& currentPass) {
                     return !currentPass->m_flags.m_partOfHierarchy;
                 });
-            buildListCopy.erase(unused, buildListCopy.end());
 
             PassUtils::SortPassListAscending(buildListCopy);
 
@@ -162,3 +163,5 @@ namespace AZ::RPI
     }
 
 }
+
+#pragma optimize("", on)

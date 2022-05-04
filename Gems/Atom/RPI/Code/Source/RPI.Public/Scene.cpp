@@ -26,6 +26,8 @@
 
 #include <AzFramework/Entity/EntityContext.h>
 
+#pragma optimize("", off)
+
 namespace AZ
 {
     namespace RPI
@@ -1036,3 +1038,5 @@ namespace AZ
         }
     }
 }
+
+#pragma optimize("", on)

@@ -49,6 +49,14 @@ namespace AZ::RPI
 
         bool m_passesChangedThisFrame = false;
         PassContainerState m_state = PassContainerState::Unitialized;
+
+        template<class Predicate>
+        void EraseFromLists(Predicate predicate)
+        {
+            //erase_if(m_removePassList,      predicate);
+            erase_if(m_buildPassList,       predicate);
+            erase_if(m_initializePassList,  predicate);
+        }
     };
 
 

@@ -85,8 +85,8 @@ namespace AZ
             //! Returns the root of the pass hierarchy
             virtual const Ptr<ParentPass>& GetRootPass() = 0;
 
-            virtual void AddRenderPipeline(RenderPipelinePtr renderPipeline) = 0;
-            virtual void RemoveRenderPipeline(RenderPipelinePtr renderPipeline) = 0;
+            virtual void AddRenderPipeline(RenderPipeline* renderPipeline) = 0;
+            virtual void RemoveRenderPipeline(RenderPipeline* renderPipeline) = 0;
 
             //! Processes pass tree changes that were queued by QueueFor*() functions. This is called
             //! automatically in FrameUpdate(), but may be called manually when needed, like when 

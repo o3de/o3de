@@ -41,6 +41,8 @@
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 #include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 
+#pragma optimize("", off)
+
 namespace AZ
 {
     namespace RPI
@@ -100,10 +102,21 @@ namespace AZ
             m_rootPass->m_flags.m_partOfHierarchy = true;
             m_rootPass->m_flags.m_createChildren = false;
 
+            //ProcessQueuedChanges();
+
+            AZ_Assert(m_passesWithoutPipeline.m_buildPassList.size() == 1, "Passes other than Root pass are queued for build at PassSystem::Init()!");
+
+            // Manually clear pass list and build root pass since it is subject to enqueing expections
+            m_passesWithoutPipeline.m_buildPassList.clear();
+            m_rootPass->Build();
+            m_rootPass->Initialize();
+            m_rootPass->OnInitializationFinished();
+
             m_passesWithoutPipeline.m_rootPass = CreatePass<ParentPass>(Name{ "PassesWithoutPipeline" });
             m_passesWithoutPipeline.m_rootPass->m_flags.m_createChildren = false;
-
             m_rootPass->AddChild(m_passesWithoutPipeline.m_rootPass);
+
+            ProcessQueuedChanges();
 
             // Here you can specify the name of a pass you would like to break into during execution
             // If you enable AZ_RPI_ENABLE_PASS_DEBUGGING, then any pass matching the specified name will debug
@@ -197,12 +210,17 @@ namespace AZ
             // Track whether pass hierarchy has changed or not this frame
             bool change = false;
 
-            for (RenderPipelinePtr& pipeline : m_renderPipelines)
+            m_passesWithoutPipeline.EraseFromLists([](const RHI::Ptr<Pass>& currentPass)
+                {
+                    return (currentPass->m_pipeline != nullptr);
+                });
+
+            m_passesWithoutPipeline.ProcessQueuedChanges(change);
+
+            for (RenderPipeline*& pipeline : m_renderPipelines)
             {
                 pipeline->m_passes.ProcessQueuedChanges(change);
             }
-
-            m_passesWithoutPipeline.ProcessQueuedChanges(change);
 
             if (change)
             {
@@ -223,12 +241,12 @@ namespace AZ
             m_state = PassSystemState::Rendering;
             Pass::FramePrepareParams params{ &frameGraphBuilder };
 
-            for (RenderPipelinePtr& pipeline : m_renderPipelines)
+            m_passesWithoutPipeline.m_rootPass->FrameBegin(params);
+
+            for (RenderPipeline*& pipeline : m_renderPipelines)
             {
                 pipeline->PassSystemFrameBegin(params);
             }
-
-            m_passesWithoutPipeline.m_rootPass->FrameBegin(params);
         }
 
         void PassSystem::FrameEnd()
@@ -237,15 +255,15 @@ namespace AZ
 
             m_state = PassSystemState::FrameEnd;
 
-            for (RenderPipelinePtr& pipeline : m_renderPipelines)
+            m_passesWithoutPipeline.m_rootPass->FrameEnd();
+
+            for (RenderPipeline*& pipeline : m_renderPipelines)
             {
                 pipeline->PassSystemFrameEnd();
             }
 
-            m_passesWithoutPipeline.m_rootPass->FrameEnd();
-
             // remove any pipelines that are marked as ExecuteOnce
-            for (RenderPipelinePtr& pipeline : m_renderPipelines)
+            for (RenderPipeline*& pipeline : m_renderPipelines)
             {
                 if (pipeline && pipeline->IsExecuteOnce())
                 {
@@ -276,17 +294,20 @@ namespace AZ
             return m_rootPass;
         }
 
-        void PassSystem::AddRenderPipeline(RenderPipelinePtr renderPipeline)
+        void PassSystem::AddRenderPipeline(RenderPipeline* renderPipeline)
         {
             m_renderPipelines.push_back(renderPipeline);
             m_rootPass->AddChild(renderPipeline->m_passes.m_rootPass);
         }
 
-        void PassSystem::RemoveRenderPipeline(RenderPipelinePtr renderPipeline)
+        void PassSystem::RemoveRenderPipeline(RenderPipeline* renderPipeline)
         {
-            erase(m_renderPipelines, renderPipeline);
+            bool change = false;
             renderPipeline->m_passes.m_rootPass->SetEnabled(false);
             renderPipeline->m_passes.m_rootPass->QueueForRemoval();
+            renderPipeline->m_passes.ProcessQueuedChanges(change);
+
+            erase(m_renderPipelines, renderPipeline);
         }
 
         PassSystemState PassSystem::GetState() const
@@ -458,3 +479,5 @@ namespace AZ
 
     }   // namespace RPI
 }   // namespace AZ
+
+#pragma optimize("", on)
