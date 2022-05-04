@@ -93,7 +93,7 @@ namespace AZ::DocumentPropertyEditor
         m_crcToName[AZ::Crc32(name.GetStringView())] = AZStd::move(name);
     }
 
-    AZ::Name PropertyEditorSystem::LookupNameFromCrc(AZ::Crc32 crc) const
+    AZ::Name PropertyEditorSystem::LookupNameFromId(AZ::Crc32 crc) const
     {
         auto crcIt = m_crcToName.find(crc);
         if (crcIt != m_crcToName.end())

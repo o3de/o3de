@@ -20,9 +20,9 @@ namespace AZ::Reflection
 {
     namespace DescriptorAttributes
     {
-        Name Handler = Name::FromStringLiteral("Handler");
-        Name Label = Name::FromStringLiteral("Label");
-        Name SerializedPath = Name::FromStringLiteral("SerializedPath");
+        const Name Handler = Name::FromStringLiteral("Handler");
+        const Name Label = Name::FromStringLiteral("Label");
+        const Name SerializedPath = Name::FromStringLiteral("SerializedPath");
     } // namespace DescriptorAttributes
 
     namespace LegacyReflectionInternal
@@ -66,34 +66,28 @@ namespace AZ::Reflection
                 , m_serializeContext(serializeContext)
             {
                 m_stack.push({ instance, typeId });
-                RegisterPrimitiveHandlers<bool, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, float, double>();
+                RegisterPrimitiveHandlers<bool, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
             }
 
             template<typename T>
             void RegisterHandler(AZStd::function<bool(T&)> handler)
             {
-                m_handlers[azrtti_typeid<T>()] = [this, handler]() -> bool
+                m_handlers[azrtti_typeid<T>()] = [this, handler = AZStd::move(handler)]() -> bool
                 {
                     return handler(*reinterpret_cast<T*>(m_stack.top().m_instance));
                 };
             }
 
-            template<typename T>
+            template<typename... T>
             void RegisterPrimitiveHandlers()
             {
-                RegisterHandler<T>(
-                    [this](T& value) -> bool
-                    {
-                        m_visitor->Visit(value, *this);
-                        return false;
-                    });
-            }
-
-            template<typename T1, typename T2, typename... Rest>
-            void RegisterPrimitiveHandlers()
-            {
-                RegisterPrimitiveHandlers<T1>();
-                RegisterPrimitiveHandlers<T2, Rest...>();
+                (RegisterHandler<T>(
+                     [this](T& value) -> bool
+                     {
+                         m_visitor->Visit(value, *this);
+                         return false;
+                     }),
+                 ...);
             }
 
             void Visit()
@@ -174,7 +168,7 @@ namespace AZ::Reflection
             }
 
             template<typename T>
-            bool TryReadAttribute(void* instance, AZ::Attribute* attribute, Dom::Value& result) const
+            bool TryReadAttributeInternal(void* instance, AZ::Attribute* attribute, Dom::Value& result) const
             {
                 AZ::AttributeReader reader(instance, attribute);
                 T value;
@@ -186,14 +180,10 @@ namespace AZ::Reflection
                 return false;
             }
 
-            template<typename First, typename Second, typename... Rest>
+            template<typename... T>
             bool TryReadAttribute(void* instance, AZ::Attribute* attribute, Dom::Value& result) const
             {
-                if (TryReadAttribute<First>(instance, attribute, result))
-                {
-                    return true;
-                }
-                return TryReadAttribute<Second, Rest...>(instance, attribute, result);
+                return (TryReadAttributeInternal<T>(instance, attribute, result) || ...);
             }
 
             void CacheAttributes()
@@ -214,7 +204,7 @@ namespace AZ::Reflection
 
                 auto checkAttribute = [&](const AZ::AttributePair* it)
                 {
-                    AZ::Name name = propertyEditorSystem->LookupNameFromCrc(it->first);
+                    AZ::Name name = propertyEditorSystem->LookupNameFromId(it->first);
                     if (!name.IsEmpty())
                     {
                         // If a more specific attribute is already loaded, ignore the new value
@@ -225,7 +215,7 @@ namespace AZ::Reflection
                         visitedAttributes.insert(name);
                         Dom::Value attributeValue;
                         const bool readSucceeded = TryReadAttribute<
-                            bool, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, AZStd::string, float, double>(
+                            bool, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, AZStd::string, float, double>(
                             nodeData.m_instance, it->second, attributeValue);
                         if (readSucceeded)
                         {
@@ -250,7 +240,7 @@ namespace AZ::Reflection
                     {
                         if (elementEditData->m_elementId)
                         {
-                            AZ::Name handlerName = propertyEditorSystem->LookupNameFromCrc(elementEditData->m_elementId);
+                            AZ::Name handlerName = propertyEditorSystem->LookupNameFromId(elementEditData->m_elementId);
                             if (!handlerName.IsEmpty())
                             {
                                 nodeData.m_cachedAttributes.push_back(

@@ -21,14 +21,14 @@ namespace AZ::Reflection
     {
         //! The UIHandler (or PropertyEditor Type) this property should use.
         //! Type: String
-        extern Name Handler;
+        extern const Name Handler;
         //! If specified, this property should have a label with the specified text.
         //! Type: String
-        extern Name Label;
+        extern const Name Label;
         //! Specifies the JSON path to where this property would be located in a JSON serialized instance,
         //! relative to the instance parameter to a Visit call.
         //! Type: String (can be parsed by AZ::Dom::Path)
-        extern Name SerializedPath;
+        extern const Name SerializedPath;
     } // namespace DescriptorAttributes
 
     void VisitLegacyInMemoryInstance(

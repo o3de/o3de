@@ -214,45 +214,35 @@ namespace AZ::DocumentPropertyEditor
                 });
         }
 
-        void Visit(Reflection::IArrayAccess& access, const Reflection::IAttributes& attributes) override
+        void Visit([[maybe_unused]] Reflection::IArrayAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
-        void Visit(Reflection::IMapAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] Reflection::IMapAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
-        void Visit(Reflection::IDictionaryAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] Reflection::IDictionaryAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
-        void Visit(int64_t value, const Reflection::IEnumAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] int64_t value, [[maybe_unused]] const Reflection::IEnumAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)value;
-            (void)access;
-            (void)attributes;
         }
-        void Visit(Reflection::IPointerAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] Reflection::IPointerAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
-        void Visit(Reflection::IBufferAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] Reflection::IBufferAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
+
         void Visit(
-            const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-            Reflection::IAssetAccess& access,
-            const Reflection::IAttributes& attributes) override
+            [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+            [[maybe_unused]] Reflection::IAssetAccess& access,
+            [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)asset;
-            (void)access;
-            (void)attributes;
         }
     };
 
@@ -279,7 +269,10 @@ namespace AZ::DocumentPropertyEditor
     Dom::Value ReflectionAdapter::GetContents() const
     {
         m_impl->m_builder.BeginAdapter();
-        Reflection::VisitLegacyInMemoryInstance(m_impl.get(), m_instance, m_typeId);
+        if (m_instance != nullptr)
+        {
+            Reflection::VisitLegacyInMemoryInstance(m_impl.get(), m_instance, m_typeId);
+        }
         m_impl->m_builder.EndAdapter();
         return m_impl->m_builder.FinishAndTakeResult();
     }

@@ -28,7 +28,7 @@ namespace AZ::DocumentPropertyEditor
         const NodeMetadata* FindNode(AZ::Name name) const override;
         const PropertyEditorMetadata* FindPropertyEditor(AZ::Name name) const override;
         const AttributeMetadata* FindAttribute(AZ::Name name, const PropertyEditorMetadata* parent) const override;
-        AZ::Name LookupNameFromCrc(AZ::Crc32 crc) const override;
+        AZ::Name LookupNameFromId(AZ::Crc32 crc) const override;
 
     private:
         void AddNameToCrcTable(AZ::Name name);

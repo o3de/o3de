@@ -45,7 +45,7 @@ namespace AZ::DocumentPropertyEditor
         virtual const AttributeMetadata* FindAttribute(AZ::Name name, const PropertyEditorMetadata* parent = nullptr) const = 0;
         //! For a given CRC, looks up an equivalent Name.
         //! The pool of valid CRCs is registered from registered Node, PropertyEditor, and Attribute names.
-        virtual AZ::Name LookupNameFromCrc(AZ::Crc32 crc) const = 0;
+        virtual AZ::Name LookupNameFromId(AZ::Crc32 crc) const = 0;
 
         //! Register a node from a given NodeDefinition struct.
         template<typename NodeDefinition>

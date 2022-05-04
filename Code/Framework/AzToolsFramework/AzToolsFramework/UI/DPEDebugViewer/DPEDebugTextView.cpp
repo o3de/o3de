@@ -189,7 +189,7 @@ namespace AzToolsFramework
                 bool m_key = false;
                 bool m_nodeOpen = false;
                 bool m_firstValue = true;
-                QString m_separator = "";
+                QString m_separator = QStringLiteral("");
                 QString m_nodeName;
                 int m_indent = 0;
             };
@@ -219,6 +219,7 @@ namespace AzToolsFramework
             {
                 for (int i = 0; i < indent; ++i)
                 {
+                    // We're using two-space indents for now, to give more horizontal real estate to deeply nested Adapters
                     Write(QStringLiteral("  "));
                 }
             }

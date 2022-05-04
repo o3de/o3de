@@ -39,7 +39,7 @@ namespace AZ::DocumentPropertyEditor
 
     private:
         void* m_instance = nullptr;
-        AZ::TypeId m_typeId;
+        AZ::TypeId m_typeId = AZ::TypeId::CreateNull();
 
         mutable AZStd::unique_ptr<ReflectionAdapterReflectionImpl> m_impl;
 
