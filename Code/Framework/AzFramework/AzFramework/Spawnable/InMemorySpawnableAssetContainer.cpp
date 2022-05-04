@@ -135,6 +135,7 @@ namespace AzFramework
     InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetContainer::CreateInMemorySpawnableAsset(
         Spawnable* spawnable,
         const AZ::Data::AssetId& assetId,
+        size_t assetSize,
         bool loadReferencedAssets,
         const AZStd::string& assetRelativePath)
     {
@@ -142,13 +143,14 @@ namespace AzFramework
         assetInfo.m_assetId = assetId;
         assetInfo.m_assetType = spawnable->GetType();
         assetInfo.m_relativePath = assetRelativePath;
+        assetInfo.m_sizeBytes = assetSize;
         AZ::Data::AssetData* assetData = spawnable;
         AssetDataInfoContainer assetDataInfoContainer;
-        assetDataInfoContainer.emplace_back(AZStd::make_pair<AZ::Data::AssetData*, AZ::Data::AssetInfo>(assetData, assetInfo));
+        assetDataInfoContainer.emplace_back(assetData, assetInfo);
 
         // Remove the .spawnable file extension before passing it to the other CreateInMemorySpawnableAsset method, which will add it back in
         AZStd::string spawablePathSansFileExtension = assetRelativePath;
-        if (spawablePathSansFileExtension.ends_with(Spawnable::DotFileExtension))
+        if (AZ::StringFunc::Path::HasExtension(spawablePathSansFileExtension.c_str()))
         {
             spawablePathSansFileExtension = assetRelativePath.substr(0, assetRelativePath.length() - strlen(Spawnable::DotFileExtension));
         }

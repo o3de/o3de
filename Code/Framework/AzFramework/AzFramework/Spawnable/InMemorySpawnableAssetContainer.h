@@ -57,6 +57,7 @@ namespace AzFramework
         CreateSpawnableResult CreateInMemorySpawnableAsset(
             Spawnable* spawnable,
             const AZ::Data::AssetId& assetId,
+            size_t assetSize,
             bool loadReferencedAssets,
             const AZStd::string& assetRelativePath);
 

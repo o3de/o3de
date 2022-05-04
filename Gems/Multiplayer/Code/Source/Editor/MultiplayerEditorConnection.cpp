@@ -113,15 +113,16 @@ namespace Multiplayer
                 m_byteStream.Read(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
                 assetHint.resize(hintSize);
                 m_byteStream.Read(hintSize, assetHint.data());
-
+                size_t assetSize = m_byteStream.GetCurPos();
                 AzFramework::Spawnable* spawnable = AZ::Utils::LoadObjectFromStream<AzFramework::Spawnable>(m_byteStream, nullptr);
                 if (!spawnable)
                 {
                     AZLOG_ERROR("EditorServerLevelData packet contains no asset data. Asset: %s", assetHint.c_str())
                     return false;
                 }
+                assetSize = m_byteStream.GetCurPos() - assetSize;
 
-                m_inMemorySpawnableAssetContainer->CreateInMemorySpawnableAsset(spawnable, assetId, true, assetHint);
+                m_inMemorySpawnableAssetContainer->CreateInMemorySpawnableAsset(spawnable, assetId, assetSize, true, assetHint);
             }
 
             // Now that we've deserialized, clear the byte stream
