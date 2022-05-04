@@ -36,6 +36,7 @@
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
+#pragma optimize("", off)
 
 namespace AZ
 {
@@ -1363,17 +1364,23 @@ namespace AZ
 
         void Pass::SetRenderPipeline(RenderPipeline* pipeline)
         {
+            AZ_Assert(!m_pipeline || !pipeline || m_pipeline == pipeline,
+                "Switching passes between pipelines is not supported and may result in undefined behavior");
+
             if (m_pipeline != pipeline)
             {
                 m_pipeline = pipeline;
 
-                // Re-queue
-                PassState currentState = m_state;
-                m_queueState = PassQueueState::NoQueue;
-                QueueForBuildAndInitialization();
-                if (currentState == PassState::Reset)
+                // Re-queue for new pipeline. 
+                if (m_pipeline != nullptr)
                 {
-                    m_state = PassState::Reset;
+                    PassState currentState = m_state;
+                    m_queueState = PassQueueState::NoQueue;
+                    QueueForBuildAndInitialization();
+                    if (currentState == PassState::Reset)
+                    {
+                        m_state = PassState::Reset;
+                    }
                 }
             }
         }
@@ -1746,3 +1753,4 @@ namespace AZ
     }   // namespace RPI
 }   // namespace AZ
 
+#pragma optimize("", on)

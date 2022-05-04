@@ -98,13 +98,10 @@ namespace AZ
             m_passLibrary.Init();
             m_passFactory.Init(&m_passLibrary);
 
+            // Build root pass
             m_rootPass = CreatePass<ParentPass>(Name{"Root"});
             m_rootPass->m_flags.m_partOfHierarchy = true;
             m_rootPass->m_flags.m_createChildren = false;
-
-            //ProcessQueuedChanges();
-
-            AZ_Assert(m_passesWithoutPipeline.m_buildPassList.size() == 1, "Passes other than Root pass are queued for build at PassSystem::Init()!");
 
             // Manually clear pass list and build root pass since it is subject to enqueing expections
             m_passesWithoutPipeline.m_buildPassList.clear();
@@ -112,6 +109,7 @@ namespace AZ
             m_rootPass->Initialize();
             m_rootPass->OnInitializationFinished();
 
+            // Build root pass for PassesWithoutPipeline collection
             m_passesWithoutPipeline.m_rootPass = CreatePass<ParentPass>(Name{ "PassesWithoutPipeline" });
             m_passesWithoutPipeline.m_rootPass->m_flags.m_createChildren = false;
             m_rootPass->AddChild(m_passesWithoutPipeline.m_rootPass);
@@ -144,11 +142,7 @@ namespace AZ
             JsonSerializationUtils::SaveObjectToFile(&passAsset, assetFilePath);
         }
 
-        // 
-
-
-        // --- Queue Functions --- 
-
+        // --- Queue Functions ---
 
         void PassSystem::QueueForBuild(Pass* pass)
         {
@@ -215,11 +209,11 @@ namespace AZ
                     return (currentPass->m_pipeline != nullptr);
                 });
 
-            m_passesWithoutPipeline.ProcessQueuedChanges(change);
+            change = m_passesWithoutPipeline.ProcessQueuedChanges() || change;
 
             for (RenderPipeline*& pipeline : m_renderPipelines)
             {
-                pipeline->m_passes.ProcessQueuedChanges(change);
+                change = pipeline->m_passes.ProcessQueuedChanges() || change;
             }
 
             if (change)
@@ -278,14 +272,15 @@ namespace AZ
 
         void PassSystem::Shutdown()
         {
-            // AKM_MARKER
-            //RemovePasses();
-            //m_buildPassList.clear();
-
+            m_passesWithoutPipeline.ClearQueues();
+            m_passesWithoutPipeline.m_rootPass = nullptr;
             m_rootPass = nullptr;
+
+            AZ_Assert(m_passCounter == 0, "Pass leaking has occurred! There are %d passes that have not been deleted.\n", m_passCounter);
+
             m_passFactory.Shutdown();
             m_passLibrary.Shutdown();
-            AZ_Assert(m_passCounter == 0, "Pass leaking has occurred! There are %d passes that have not been deleted.\n", m_passCounter);
+
             Interface<PassSystemInterface>::Unregister(this);
         }
 
@@ -302,12 +297,17 @@ namespace AZ
 
         void PassSystem::RemoveRenderPipeline(RenderPipeline* renderPipeline)
         {
-            bool change = false;
+            renderPipeline->m_passes.ProcessQueuedChanges();
             renderPipeline->m_passes.m_rootPass->SetEnabled(false);
             renderPipeline->m_passes.m_rootPass->QueueForRemoval();
-            renderPipeline->m_passes.ProcessQueuedChanges(change);
+            renderPipeline->m_passes.ProcessQueuedChanges();
 
             erase(m_renderPipelines, renderPipeline);
+        }
+
+        void PassSystem::AddNonePipelinePass(const Ptr<Pass>& pass)
+        {
+            m_passesWithoutPipeline.m_rootPass->AddChild(pass);
         }
 
         PassSystemState PassSystem::GetState() const

@@ -139,6 +139,9 @@ namespace AZ
 
             const Ptr<ParentPass>& GetRootPass() const;
 
+            //! Processes passes in the pipeline that are queued for build, initialization or removal
+            void ProcessQueuedPassChanges();
+
             //! This function need to be called by Pass class when any passes are added/removed in this pipeline's pass tree.
             void SetPassModified();
 

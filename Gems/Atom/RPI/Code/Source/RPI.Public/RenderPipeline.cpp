@@ -308,13 +308,17 @@ namespace AZ
             m_drawFilterMask = 0;
         }
 
+        void RenderPipeline::ProcessQueuedPassChanges()
+        {
+            m_passes.ProcessQueuedChanges();
+        }
+
         void RenderPipeline::OnPassModified()
         {
             if (m_needsPassRecreate)
             {
                 // Process any queued changes before we attempt to reload the pipeline
-                bool changed = false;
-                m_passes.ProcessQueuedChanges(changed);
+                m_passes.ProcessQueuedChanges();
 
                 // Attempt to re-create hierarchy under root pass
                 Ptr<ParentPass> newRoot = azrtti_cast<ParentPass*>(m_passes.m_rootPass->Recreate().get());
@@ -374,7 +378,7 @@ namespace AZ
         {
             if (m_scene == nullptr)
             {
-                AZ_Assert(false, "Pipeline isn't added to the any scene");
+                AZ_Assert(false, "RenderPipeline::RemoveFromScene: Pipeline [%s] isn't added to any scene", m_nameId.GetCStr());
                 return;
             }
 
@@ -639,4 +643,5 @@ namespace AZ
         }
     }
 }
+
 #pragma optimize("", on)

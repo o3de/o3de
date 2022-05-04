@@ -78,6 +78,7 @@ namespace AZ
             void DebugBreakOnPass(const Pass* pass) const override;
             void AddRenderPipeline(RenderPipeline* renderPipeline) override;
             void RemoveRenderPipeline(RenderPipeline* renderPipeline) override;
+            void AddNonePipelinePass(const Ptr<Pass>& pass) override;
 
             // PassSystemInterface statistics related functions
             void IncrementFrameDrawItemCount(u32 numDrawItems) override;

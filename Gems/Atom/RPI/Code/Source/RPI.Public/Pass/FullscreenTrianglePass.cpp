@@ -23,6 +23,8 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/std/algorithm.h>
 
+#pragma optimize("", off)
+
 namespace AZ
 {
     namespace RPI
@@ -241,3 +243,5 @@ namespace AZ
         
     }   // namespace RPI
 }   // namespace AZ
+
+#pragma optimize("", on)

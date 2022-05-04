@@ -85,8 +85,14 @@ namespace AZ
             //! Returns the root of the pass hierarchy
             virtual const Ptr<ParentPass>& GetRootPass() = 0;
 
+            //! Registers a render pipeline with the pass system
             virtual void AddRenderPipeline(RenderPipeline* renderPipeline) = 0;
+
+            //! Removes a render pipeline from the pass system
             virtual void RemoveRenderPipeline(RenderPipeline* renderPipeline) = 0;
+
+            //! Function for adding passes that do not pertain to any render pipeline
+            virtual void AddNonePipelinePass(const Ptr<Pass>& pass) = 0;
 
             //! Processes pass tree changes that were queued by QueueFor*() functions. This is called
             //! automatically in FrameUpdate(), but may be called manually when needed, like when 

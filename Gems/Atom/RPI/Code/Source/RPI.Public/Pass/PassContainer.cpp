@@ -12,10 +12,22 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
-#pragma optimize("", off)
-
 namespace AZ::RPI
 {
+    void PassContainer::EraseFromLists(AZStd::function<bool(const RHI::Ptr<Pass>&)> predicate)
+    {
+        erase_if(m_removePassList, predicate);
+        erase_if(m_buildPassList, predicate);
+        erase_if(m_initializePassList, predicate);
+    }
+
+    void PassContainer::ClearQueues()
+    {
+        m_removePassList.clear();
+        m_buildPassList.clear();
+        m_initializePassList.clear();
+    }
+
     void PassContainer::RemovePasses()
     {
         m_state = PassContainerState::RemovingPasses;
@@ -105,12 +117,9 @@ namespace AZ::RPI
             m_initializePassList.clear();
 
             // Erase passes which were removed from pass tree already (which parent is empty)
-            auto unused = AZStd::remove_if(initListCopy.begin(), initListCopy.end(),
-                [](const RHI::Ptr<Pass>& currentPass)
-                {
+            erase_if(initListCopy, [](const RHI::Ptr<Pass>& currentPass) {
                     return !currentPass->m_flags.m_partOfHierarchy;
                 });
-            initListCopy.erase(unused, initListCopy.end());
 
             PassUtils::SortPassListAscending(initListCopy);
 
@@ -150,18 +159,16 @@ namespace AZ::RPI
         m_state = PassContainerState::Idle;
     }
 
-    void PassContainer::ProcessQueuedChanges(bool& outChanged)
+    bool PassContainer::ProcessQueuedChanges()
     {
-        AZ_PROFILE_SCOPE(RPI, "PassContainer::ProcessQueuedChanges");
         RemovePasses();
         BuildPasses();
         InitializePasses();
         Validate();
 
-        outChanged = outChanged || m_passesChangedThisFrame;
+        bool changedThisFrame = m_passesChangedThisFrame;
         m_passesChangedThisFrame = false;
+        return changedThisFrame;
     }
 
 }
-
-#pragma optimize("", on)

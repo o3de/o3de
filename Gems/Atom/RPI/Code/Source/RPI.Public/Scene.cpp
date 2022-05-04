@@ -123,15 +123,13 @@ namespace AZ
             }
             SceneRequestBus::Handler::BusDisconnect();
 
-            // Remove all the render pipelines. Need to process queued changes with pass system before and after remove render pipelines
-            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
+            // Remove all the render pipelines.
             for (auto it = m_pipelines.begin(); it != m_pipelines.end(); ++it)
             {
                 RenderPipelinePtr pipelineToRemove = (*it);
                 pipelineToRemove->OnRemovedFromScene(this);
             }
             m_pipelines.clear();
-            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
 
             Deactivate();
 
@@ -313,7 +311,7 @@ namespace AZ
             {
                 fp->ApplyRenderPipelineChange(pipeline);
             }
-            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
+            pipeline->ProcessQueuedPassChanges();
         }
 
         void Scene::AddRenderPipeline(RenderPipelinePtr pipeline)
@@ -345,7 +343,7 @@ namespace AZ
 
             TryApplyRenderPipelineChanges(pipeline.get());
 
-            PassSystemInterface::Get()->ProcessQueuedChanges();
+            pipeline->ProcessQueuedPassChanges();
             pipeline->BuildPipelineViews();
 
             // Force to update the lookup table since adding render pipeline would effect any pipeline states created before pass system tick
@@ -361,8 +359,6 @@ namespace AZ
             {
                 if (pipelineId == (*it)->GetId())
                 {
-                    // process queued changes first before remove pipeline passes
-                    AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
                     RenderPipelinePtr pipelineToRemove = (*it);
 
                     if (m_defaultPipeline == pipelineToRemove)
@@ -383,9 +379,6 @@ namespace AZ
                         m_defaultPipeline = m_pipelines[0];
                     }
 
-                    // AKM_MARKER
-                    // Comment/replace the call to ProcessQueuedChanges here?
-                    AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
                     RebuildPipelineStatesLookup();
 
                     removed = true;

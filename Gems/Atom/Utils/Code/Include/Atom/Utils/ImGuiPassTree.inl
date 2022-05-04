@@ -123,7 +123,7 @@ namespace AZ::Render
             {
                 if (!m_previewPass->GetParent())
                 {
-                    RPI::PassSystemInterface::Get()->GetRootPass()->AddChild(m_previewPass);
+                    RPI::PassSystemInterface::Get()->AddNonePipelinePass(m_previewPass);
                 }
                 AZ::RPI::PassAttachment* attachment = FindPassAttachment(m_selectedPass, m_attachmentId);
                 if (attachment)

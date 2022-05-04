@@ -28,36 +28,44 @@ namespace AZ::RPI
         FrameEnd,           // Finishing a frame. Transitions to Idle
     };
 
+    // Helper class used by the PassSystem and RenderPipeline to contain and update passes
+    // Passes owned by the container are stored as a tree under the container's root pass
+    // The container has queues for pass building, initialization and removal. These queues
+    // are so that logic modifying or removing passes isn't triggered while the passes are 
+    // rendering, but instead at the start of the frame when it is safe to do so.
     class PassContainer
     {
+        // Everything is private, class should only be used by PassSystem and RenderPipeline
         friend class PassSystem;
         friend class RenderPipeline;
 
+        // Used to remove passes from the update list
+        void EraseFromLists(AZStd::function<bool(const RHI::Ptr<Pass>&)> predicate);
+
+        // Clears all queues
+        void ClearQueues();
+
+        // Functions used for pass building, initialization and removal at the start of the frame before the pass system renders
         void RemovePasses();
         void BuildPasses();
         void InitializePasses();
         void Validate();
-        void ProcessQueuedChanges(bool& outChanged);
+        bool ProcessQueuedChanges();
 
+        // The root pass of the container holds all passes belonging to the container
         Ptr<ParentPass> m_rootPass = nullptr;
 
-        // Lists for queuing passes for various function calls
-        // Name of the list reflects the pass function it will call
+        // Lists for queuing passes for various function calls so they can be updating when the frame is not rendering.
+        // The names of the lists reflect the pass functions they will call
         AZStd::vector< Ptr<Pass> > m_buildPassList;
         AZStd::vector< Ptr<Pass> > m_removePassList;
         AZStd::vector< Ptr<Pass> > m_initializePassList;
 
-        bool m_passesChangedThisFrame = false;
+        // State enum used for validation and debugging
         PassContainerState m_state = PassContainerState::Unitialized;
 
-        template<class Predicate>
-        void EraseFromLists(Predicate predicate)
-        {
-            //erase_if(m_removePassList,      predicate);
-            erase_if(m_buildPassList,       predicate);
-            erase_if(m_initializePassList,  predicate);
-        }
+        // Tracks whether any changes to the passes in this container have occurred in the frame
+        bool m_passesChangedThisFrame = false;
+
     };
-
-
 }
