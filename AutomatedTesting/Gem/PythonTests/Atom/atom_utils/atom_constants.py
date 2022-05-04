@@ -110,7 +110,7 @@ NUM_RAYS_PER_PROBE = {
 LUT_RESOLUTION = {
     '16x16x16': 0,
     '32x32x32': 1,
-    '64,64,64': 2,
+    '64x64x64': 2,
 }
 
 # Shaper Type options for the HDR Color Grading component.

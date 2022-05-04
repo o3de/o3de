@@ -244,13 +244,13 @@ def AtomEditorComponents_HDRColorGrading_AddedToEntity():
     37) Hue Shift (float range 0.0 to 1.0)
     38) LUT Resolution (from atom_constants.py LUT_RESOLUTION, default 16x16x16)
     39) Set the Shaper Type parameter (from atom_constants.py SHAPER_TYPE, default none)
-    42) Enter/Exit game mode.
-    43) Test IsHidden.
-    44) Test IsVisible.
-    45) Delete HDR Color Grading entity.
-    46) UNDO deletion.
-    47) REDO deletion.
-    48) Look for errors.
+    40) Enter/Exit game mode.
+    41) Test IsHidden.
+    42) Test IsVisible.
+    43) Delete HDR Color Grading entity.
+    44) UNDO deletion.
+    45) REDO deletion.
+    46) Look for errors.
 
     :return: None
     """
@@ -305,11 +305,24 @@ def AtomEditorComponents_HDRColorGrading_AddedToEntity():
         Report.result(Tests.hdr_color_grading_enabled, hdr_color_grading_component.is_enabled())
 
         # 8. Toggle "Enable HDR Color Grading".
+        # Toggle "Enable HDR Color Grading" on.
         hdr_color_grading_component.set_component_property_value(
             AtomComponentProperties.hdr_color_grading('Enable HDR color grading'), True)
         Report.result(Tests.toggle_enable_parameter_on,
                       hdr_color_grading_component.get_component_property_value(
                           AtomComponentProperties.hdr_color_grading('Enable HDR color grading')) is True)
+
+        # Toggle "Enable HDR Color Grading" off.
+        hdr_color_grading_component.set_component_property_value(
+            AtomComponentProperties.hdr_color_grading('Enable HDR color grading'), False)
+        Report.result(Tests.toggle_enable_parameter_off,
+                      hdr_color_grading_component.get_component_property_value(
+                          AtomComponentProperties.hdr_color_grading('Enable HDR color grading')) is False)
+
+        # Toggle "Enable HDR Color Grading" back on for testing.
+        hdr_color_grading_component.set_component_property_value(
+            AtomComponentProperties.hdr_color_grading('Enable HDR color grading'), True)
+
 
         # 9. Color Adjustment|Weight (float range 0.0 to 1.0, default 1.0)
         # Set Color Adjustment|Weight to its minimum value.
@@ -504,7 +517,7 @@ def AtomEditorComponents_HDRColorGrading_AddedToEntity():
             AtomComponentProperties.hdr_color_grading('Split Toning Highlights Color'))
         Report.result(Tests.edit_split_toning_highlights_color, st_highlights_color_value.IsClose(st_highlights_color))
 
-        # 24. Update the SMH Weight parameter (float range 0.0 to 1.0)
+        # 24. Update the Shadows Midtones Highlights|Weight parameter (float range 0.0 to 1.0)
         # Set SMH|Weight to its maximum value to enable the parameter.
         hdr_color_grading_component.set_component_property_value(
             AtomComponentProperties.hdr_color_grading('SMH Weight'), 1.0)
@@ -696,35 +709,35 @@ def AtomEditorComponents_HDRColorGrading_AddedToEntity():
                 Report.result(test_shaper_type, hdr_color_grading_component.get_component_property_value(
                     AtomComponentProperties.hdr_color_grading('Shaper Type')) == SHAPER_TYPE[shaper_type])
 
-        # 42. Enter/Exit game mode.
+        # 40. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 43. Test IsHidden.
+        # 41. Test IsHidden.
         hdr_color_grading_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, hdr_color_grading_entity.is_hidden() is True)
 
-        # 44. Test IsVisible.
+        # 42. Test IsVisible.
         hdr_color_grading_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, hdr_color_grading_entity.is_visible() is True)
 
-        # 45. Delete HDR Color Grading entity.
+        # 43. Delete HDR Color Grading entity.
         hdr_color_grading_entity.delete()
         Report.result(Tests.entity_deleted, not hdr_color_grading_entity.exists())
 
-        # 46. UNDO deletion.
+        # 44. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, hdr_color_grading_entity.exists())
 
-        # 47. REDO deletion.
+        # 45. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not hdr_color_grading_entity.exists())
 
-        # 48. Look for errors and asserts.
+        # 46. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
