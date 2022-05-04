@@ -312,7 +312,6 @@ namespace AZ
         {
             const auto& entityIdsToEdit = EditorMaterialComponentUtil::GetSelectedEntitiesFromActiveInspector();
             const bool hasMatchingSlots = EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialSlots(m_entityId, entityIdsToEdit);
-            const bool hasMatchingMaterials = EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterials(m_entityId, entityIdsToEdit, m_id);
             const bool hasMatchingMaterialTypes = EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialTypes(m_entityId, entityIdsToEdit, m_id);
 
             QMenu menu;
