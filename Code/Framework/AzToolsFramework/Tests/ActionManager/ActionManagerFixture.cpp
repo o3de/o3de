@@ -12,27 +12,22 @@
 
 namespace UnitTest
 {
-    void ActionManagerFixture::SetUpEditorFixtureImpl()
+    void ActionManagerFixture::SetUp()
     {
-        // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
-        // in the unit tests.
-        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+        AllocatorsTestFixture::SetUp();
 
-        // Only create the Action Manager if it is not instantiated by the application.
-        if (!AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            m_actionManager = AZStd::make_unique<AzToolsFramework::ActionManager>();
-        }
-
+        m_actionManager = AZStd::make_unique<AzToolsFramework::ActionManager>();
         m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         ASSERT_TRUE(m_actionManagerInterface != nullptr);
 
         m_widget = new QWidget();
     }
 
-    void ActionManagerFixture::TearDownEditorFixtureImpl()
+    void ActionManagerFixture::TearDown()
     {
+
+
+        AllocatorsTestFixture::TearDown();
     }
 
 } // namespace UnitTest

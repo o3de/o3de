@@ -25,11 +25,11 @@ class QWidget;
 
 namespace UnitTest
 {
-    class ActionManagerFixture : public ToolsApplicationFixture
+    class ActionManagerFixture : public AllocatorsTestFixture
     {
     protected:
-        void SetUpEditorFixtureImpl() override;
-        void TearDownEditorFixtureImpl() override;
+        void SetUp() override;
+        void TearDown() override;
 
     public:
         AZStd::unique_ptr<AzToolsFramework::ActionManager> m_actionManager;
