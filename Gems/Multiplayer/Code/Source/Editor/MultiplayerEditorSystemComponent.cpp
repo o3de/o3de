@@ -25,7 +25,6 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
-#pragma optimize("", off)
 namespace Multiplayer
 {
     using namespace AzNetworking;
@@ -481,4 +480,3 @@ namespace Multiplayer
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
 } // namespace Multiplayer
-#pragma optimize("", on)

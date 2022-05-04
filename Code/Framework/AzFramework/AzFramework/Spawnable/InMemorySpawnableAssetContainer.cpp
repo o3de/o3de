@@ -16,7 +16,6 @@
 #include <AzFramework/Spawnable/SpawnableAssetBus.h>
 #include <AzFramework/Spawnable/SpawnableAssetUtils.h>
 
-#pragma optimize("", off)
 namespace AzFramework
 {
     bool InMemorySpawnableAssetContainer::HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const
@@ -258,5 +257,3 @@ namespace AzFramework
         }
     }
 } // namespace AzFramework
-
-#pragma optimize("", on)

@@ -25,7 +25,6 @@
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzFramework/Spawnable/InMemorySpawnableAssetContainer.h>
 
-#pragma optimize("", off)
 namespace Multiplayer
 {
     using namespace AzNetworking;
@@ -114,7 +113,8 @@ namespace Multiplayer
                 assetHint.resize(hintSize);
                 m_byteStream.Read(hintSize, assetHint.data());
                 size_t assetSize = m_byteStream.GetCurPos();
-                AzFramework::Spawnable* spawnable = AZ::Utils::LoadObjectFromStream<AzFramework::Spawnable>(m_byteStream, nullptr);
+                
+                AzFramework::Spawnable* spawnable = AZ::Utils::LoadObjectFromStream<AzFramework::Spawnable>(m_byteStream);
                 if (!spawnable)
                 {
                     AZLOG_ERROR("EditorServerLevelData packet contains no asset data. Asset: %s", assetHint.c_str())
@@ -133,9 +133,8 @@ namespace Multiplayer
             AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
             // Load the level via the root spawnable that was registered
-            const AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
             const auto console = AZ::Interface<AZ::IConsole>::Get();
-            console->PerformCommand(loadLevelString.c_str());
+            console->PerformCommand("LoadLevel Root.spawnable");
 
             // Setup the normal multiplayer connection
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
@@ -225,4 +224,3 @@ namespace Multiplayer
         return MultiplayerEditorPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
 } // namespace Multiplayer
-#pragma optimize("", on)
