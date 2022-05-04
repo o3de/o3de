@@ -11,6 +11,7 @@
 #include <QCoreApplication>
 #include <tests/assetmanager/MockAssetProcessorManager.h>
 #include <tests/assetmanager/MockFileProcessor.h>
+#include <AzToolsFramework/Archive/ArchiveComponent.h>
 
 namespace UnitTests
 {
@@ -87,5 +88,14 @@ namespace UnitTests
 
         EXPECT_TRUE(m_mockFileProcessor->m_events[Added].WaitAndCheck()) << "File Processor Added event failed";
         EXPECT_TRUE(m_mockFileProcessor->m_events[Deleted].WaitAndCheck()) << "File Processor Deleted event failed";
+    }
+
+    TEST(AssetProcessorAZApplicationTest, AssetProcessorAZApplication_ArchiveComponent_Exists)
+    {
+        int argc = 0;
+        AssetProcessorAZApplication assetProcessorAZApplication {&argc, nullptr};
+        auto componentList = assetProcessorAZApplication.GetRequiredSystemComponents();
+        auto iterator = AZStd::find(componentList.begin(), componentList.end(), azrtti_typeid<AzToolsFramework::ArchiveComponent>());
+        EXPECT_NE(iterator, componentList.end()) << "AzToolsFramework::ArchiveComponent is not a required component";
     }
 }

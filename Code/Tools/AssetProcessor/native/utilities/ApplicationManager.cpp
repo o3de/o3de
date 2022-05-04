@@ -25,6 +25,7 @@
 
 #include <QSettings>
 
+#include <AzToolsFramework/Archive/ArchiveComponent.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityFixupComponent.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogComponent.h>
@@ -139,6 +140,7 @@ AZ::ComponentTypeList AssetProcessorAZApplication::GetRequiredSystemComponents()
             || *iter == AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}") // ScriptDebugAgent
             || *iter == AZ::Uuid("{CAF3A025-FAC9-4537-B99E-0A800A9326DF}") // InputSystemComponent
             || *iter == azrtti_typeid<AssetProcessor::ToolsAssetCatalogComponent>()
+            || *iter == azrtti_typeid<AzToolsFramework::ArchiveComponent>() // AP manages compressed files using ArchiveComponent
            )
         {
             // AP does not require the above components to be active
