@@ -60,4 +60,5 @@ set(ENABLED_GEMS
     Multiplayer
     DevTextures
     PrimitiveAssets
+    Stars
 )

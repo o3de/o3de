@@ -32,6 +32,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct Label : NodeDefinition
     {
         static constexpr AZStd::string_view Name = "Label";
+        static constexpr auto Value = AttributeDefinition<AZStd::string_view>("Value");
     };
 
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
@@ -41,6 +42,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr AZStd::string_view Name = "PropertyEditor";
         static constexpr auto Type = AttributeDefinition<AZStd::string_view>("Type");
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&)>("OnChanged");
+        static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
     };
 
     template<typename T>

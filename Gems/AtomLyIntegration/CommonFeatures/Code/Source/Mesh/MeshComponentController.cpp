@@ -410,7 +410,8 @@ namespace AZ
                 AtomMeshNotificationBus::Event(entityId, &AtomMeshNotificationBus::Events::OnAcquireMesh, &m_meshHandle);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
-                const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
+                const AZ::Transform& transform =
+                    m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
 
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
@@ -422,6 +423,12 @@ namespace AZ
                 // If the model instance or asset already exists, announce a model change to let others know it's loaded.
                 HandleModelChange(m_meshFeatureProcessor->GetModel(m_meshHandle));
             }
+            else
+            {
+                // If there is no model asset to be loaded then we need to invalidate the material slot configuration
+                MaterialReceiverNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+            }
         }
 
         void MeshComponentController::UnregisterModel()
@@ -431,6 +438,10 @@ namespace AZ
                 MeshComponentNotificationBus::Event(
                     m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnModelPreDestroy);
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
+
+                // Model has been released which invalidates the material slot configuration
+                MaterialReceiverNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
             }
         }
 

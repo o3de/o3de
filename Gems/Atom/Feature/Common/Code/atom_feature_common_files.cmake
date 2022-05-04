@@ -122,8 +122,6 @@ set(FILES
     Source/Debug/RenderDebugFeatureProcessor.cpp
     Source/Debug/RenderDebugSettings.h
     Source/Debug/RenderDebugSettings.cpp
-    Source/Decals/DecalFeatureProcessor.h
-    Source/Decals/DecalFeatureProcessor.cpp
     Source/Decals/DecalTextureArray.h
     Source/Decals/DecalTextureArray.cpp
     Source/Decals/AsyncLoadTracker.h
@@ -294,6 +292,8 @@ set(FILES
     Source/PostProcessing/TaaPass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
+    Source/RayTracing/RayTracingResourceList.h
+    Source/RayTracing/RayTracingIndexList.h
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
     Source/RayTracing/RayTracingPass.cpp

@@ -14,9 +14,48 @@
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <TerrainRenderer/ClipmapBounds.h>
 
 namespace Terrain
 {
+    struct ClipmapConfiguration
+    {
+        AZ_CLASS_ALLOCATOR(ClipmapConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(ClipmapConfiguration, "{5CC8A81E-B850-46BA-A577-E21530D9ED04}");
+
+        ClipmapConfiguration() = default;
+        virtual ~ClipmapConfiguration() = default;
+
+        //! Max clipmap number that can have. Used to initialize fixed arrays.
+        static constexpr uint32_t MacroClipmapStackSizeMax = 16;
+        static constexpr uint32_t DetailClipmapStackSizeMax = 16;
+
+        //! The size of the clipmap image in each layer.
+        uint32_t m_clipmapSize = 1024u;
+
+        //! Max render radius that the lowest resolution clipmap can cover.
+        //! Radius in: meters.
+        float m_macroClipmapMaxRenderRadius = 2048.0f;
+        float m_detailClipmapMaxRenderRadius = 512.0f;
+
+        //! Max resolution of the clipmap stack.
+        //! The actual max resolution may be bigger due to rounding.
+        //! Resolution in: texels per meter.
+        float m_macroClipmapMaxResolution = 2.0f;
+        float m_detailClipmapMaxResolution = 256.0f;
+
+        //! The scale base between two adjacent clipmap layers.
+        //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times
+        //! to what is covered by the nth clipmap.
+        float m_macroClipmapScaleBase = 2.0f;
+        float m_detailClipmapScaleBase = 3.0f;
+
+        //! Calculate how many layers of clipmap is needed.
+        //! Final result must be less or equal than the MacroClipmapStackSizeMax/DetailClipmapStackSizeMax.
+        uint32_t CalculateMacroClipmapStackSize() const;
+        uint32_t CalculateDetailClipmapStackSize() const;
+    };
+
     class TerrainClipmapManager
     {
         friend class TerrainClipmapGenerationPass;
@@ -34,9 +73,10 @@ namespace Terrain
             DetailColor,
             DetailNormal,
             DetailHeight,
-            // Miscellany clipmap combining:
-            // roughness, specularF0, metalness, occlusion
-            DetailMisc,
+            DetailRoughness,
+            DetailSpecularF0,
+            DetailMetalness,
+            DetailOcclusion,
 
             Count
         };
@@ -49,7 +89,10 @@ namespace Terrain
             "m_detailColorClipmaps",
             "m_detailNormalClipmaps",
             "m_detailHeightClipmaps",
-            "m_detailMiscClipmaps"
+            "m_detailRoughnessClipmaps",
+            "m_detailSpecularF0Clipmaps",
+            "m_detailMetalnessClipmaps",
+            "m_detailOcclusionClipmaps",
         };
 
         void Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
@@ -67,18 +110,11 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::AttachmentImage> GetClipmapImage(ClipmapName clipmapName) const;
     private:
         void UpdateClipmapData(const AZ::Vector3& cameraPosition);
+        void InitializeClipmapBounds();
         void InitializeClipmapData();
         void InitializeClipmapImages();
 
-        static constexpr uint32_t MacroClipmapStackSize = 3;
-        static constexpr uint32_t DetailClipmapStackSize = 5;
-        static constexpr uint32_t ClipmapSizeWidth = 1024;
-        static constexpr uint32_t ClipmapSizeHeight = 1024;
-
-        static_assert(DetailClipmapStackSize >= MacroClipmapStackSize,
-            "Macro clipmaps use lower resolutions. Array construction will use"
-            "max(DetailClipmapStackSize, MacroClipmapStackSize).");
-
+        //! Data to be passed to shaders
         struct ClipmapData
         {
             //! The 2D xy-plane view position where the main camera is.
@@ -90,30 +126,52 @@ namespace Terrain
             AZStd::array<float, 2> m_worldBoundsMax;
 
             //! The max range that the clipmap is covering.
-            AZStd::array<float, 2> m_maxRenderSize;
+            float m_macroClipmapMaxRenderRadius;
+            float m_detailClipmapMaxRenderRadius;
 
-            //! The size of a single clipmap.
-            AZStd::array<float, 2> m_clipmapSize;
+            //! The scale base between two adjacent clipmap layers.
+            //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times
+            //! to what is covered by the nth clipmap.
+            float m_macroClipmapScaleBase;
+            float m_detailClipmapScaleBase;
+
+            //! Size of the clipmap stack.
+            uint32_t m_macroClipmapStackSize;
+            uint32_t m_detailClipmapStackSize;
+
+            //! The size of the clipmap image in each layer.
+            float m_clipmapSize;
+
+            uint32_t m_padding;
 
             //! Clipmap centers in normalized UV coordinates [0, 1].
-            // 0,1: previous clipmap centers; 2,3: current clipmap centers.
-            // They are used for toroidal addressing and may move each frame based on the view point movement.
-            // The move distance is scaled differently in each layer.
-            AZStd::array<AZStd::array<float, 4>, DetailClipmapStackSize> m_clipmapCenters;
+            //! 0,1: previous clipmap centers; 2,3: current clipmap centers.
+            //! They are used for toroidal addressing and may move each frame based on the view point movement.
+            //! The move distance is scaled differently in each layer.
+            AZStd::array<AZStd::array<float, 4>, ClipmapConfiguration::MacroClipmapStackSizeMax> m_macroClipmapCenters;
+            AZStd::array<AZStd::array<float, 4>, ClipmapConfiguration::DetailClipmapStackSizeMax> m_detailClipmapCenters;
 
             //! A list of reciprocal the clipmap scale [s],
             //! where 1 pixel in the current layer of clipmap represents s meters.
             //! Fast lookup list to avoid redundant calculation in shaders.
-            AZStd::array<AZStd::array<float, 4>, DetailClipmapStackSize> m_clipmapScaleInv;
+            //! x: macro; y: detail
+            AZStd::array<AZStd::array<float, 4>, AZStd::max(ClipmapConfiguration::MacroClipmapStackSizeMax, ClipmapConfiguration::DetailClipmapStackSizeMax)> m_clipmapScaleInv;
         };
 
         ClipmapData m_clipmapData;
+
+        AZStd::vector<ClipmapBounds> m_macroClipmapBounds;
+        AZStd::vector<ClipmapBounds> m_detailClipmapBounds;
 
         AZ::RHI::ShaderInputNameIndex m_terrainSrgClipmapDataIndex = ClipmapDataShaderInput;
         AZ::RHI::ShaderInputNameIndex m_terrainSrgClipmapImageIndex[ClipmapName::Count];
 
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_clipmaps[ClipmapName::Count];
 
+        uint32_t m_macroClipmapStackSize;
+        uint32_t m_detailClipmapStackSize;
+
+        ClipmapConfiguration m_config;
         bool m_isInitialized = false;
     };
 }
