@@ -141,7 +141,9 @@ namespace AZ
             // So we use this filter to ignore the image assets
             Data::AssetLoadParameters dontLoadImageAssets{ [](const AZ::Data::AssetFilterInfo& filterInfo)
                                                            {
-                                                               if (filterInfo.m_assetType == AZ::AzTypeInfo<StreamingImageAsset>::Uuid())
+                                                               if (filterInfo.m_assetType == AZ::AzTypeInfo<StreamingImageAsset>::Uuid() ||
+                                                                   filterInfo.m_assetType == AZ::AzTypeInfo<AttachmentImageAsset>::Uuid() ||
+                                                                   filterInfo.m_assetType == AZ::AzTypeInfo<ImageAsset>::Uuid())
                                                                {
                                                                    return false;
                                                                }
