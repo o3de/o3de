@@ -58,6 +58,7 @@ def MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully():
     # 3) Add/ remove Surface Tags
     tag = surface_data.SurfaceTag()
     tag.SetTag("water")
+    azlmbr.legacy.general.idle_wait_frames(1)
     pte = hydra.get_property_tree(entity.components[0])
     path = "Configuration|Generated Tags"
     pte.add_container_item(path, 0, tag)

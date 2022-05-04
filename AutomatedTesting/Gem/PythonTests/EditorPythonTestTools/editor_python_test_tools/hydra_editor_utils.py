@@ -316,6 +316,8 @@ class Entity:
 
         editor.EditorComponentAPIBus(bus.Broadcast, "SetComponentProperty", component, path, value)
 
+        general.idle_wait_frames(1)
+
         new_value = get_component_property_value(self.components[component_index], path)
 
         if new_value is not None:

@@ -163,6 +163,8 @@ def SlotConnections_UpdateComponentReferences():
                                                                                                       positionY))
     gradientMixerEntityId = newEntityId
 
+    general.idle_wait_frames(1)
+
     boundsSlotId = graph.GraphModelSlotId('Bounds')
     previewBoundsSlotId = graph.GraphModelSlotId('PreviewBounds')
     inboundGradientSlotId = graph.GraphModelSlotId('InboundGradient')

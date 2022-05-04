@@ -260,6 +260,7 @@ namespace AzToolsFramework
             ClearEntities();
 
             m_nestedInstances.clear();
+            m_cachedInstanceDom.SetNull();
             m_containerEntity.reset(aznew AZ::Entity());
             RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
 

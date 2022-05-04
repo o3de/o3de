@@ -141,6 +141,7 @@ def GradientMixer_NodeConstruction():
     gradientMixerNode = landscapecanvas.LandscapeCanvasNodeFactoryRequestBus(bus.Broadcast, 'CreateNodeForTypeName', newGraph,
                                                                              'GradientMixerNode')
     graph.GraphControllerRequestBus(bus.Event, 'AddNode', newGraphId, gradientMixerNode, math.Vector2(positionX, positionY))
+    general.idle_wait_frames(1)
     gradientMixerEntityId = newEntityId
 
     boundsSlotId = graph.GraphModelSlotId('Bounds')

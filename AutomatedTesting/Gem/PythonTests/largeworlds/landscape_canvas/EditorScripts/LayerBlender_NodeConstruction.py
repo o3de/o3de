@@ -125,6 +125,8 @@ def LayerBlender_NodeConstruction():
     positionX += offsetX
     positionY += offsetY
 
+    general.idle_wait_frames(1)
+
     outboundAreaSlotId = graph.GraphModelSlotId('OutboundArea')
     inboundAreaSlotId = graph.GraphModelSlotId('InboundArea')
     inboundAreaSlotId2 = graph.GraphControllerRequestBus(bus.Event, 'ExtendSlot', newGraphId, layerBlenderNode,
