@@ -143,10 +143,22 @@ namespace ScriptCanvasTesting
     class TestGlobalMethods
     {
     public:
+
+        static void CanNotAcceptNull(AZStd::vector<AZStd::string>& strings)
+        {
+            AZ_TracePrintf("ScriptCanvas", "Used for testing parse errors");
+            strings.push_back("Cannot accept null input");
+        }
+
         static void Reflect(AZ::ReflectContext* context)
         {
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
+                behaviorContext->Method("ScriptCanvasTesting_TestGlobalMethods_CanNotAcceptNull", &CanNotAcceptNull)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests")
+                    ;
+
                 auto IsPositive = [](int input) -> bool
                 {
                     return input > 0;
