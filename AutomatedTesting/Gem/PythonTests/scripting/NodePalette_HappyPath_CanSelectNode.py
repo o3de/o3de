@@ -42,8 +42,8 @@ def NodePalette_HappyPath_CanSelectNode():
     :return: None
     """
 
-    CATEGORY = "Math"
-    NODE = "Length"
+    CATEGORY = "AI"
+    NODE = "Find Path To Entity"
 
     from PySide2 import QtWidgets
 
