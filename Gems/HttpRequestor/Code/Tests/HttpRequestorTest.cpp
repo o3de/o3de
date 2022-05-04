@@ -10,7 +10,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/parallel/condition_variable.h>
 #include "HttpRequestManager.h"
-#include "AzCore/Interface/Interface.h"
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/IEventLogger.h>
@@ -105,7 +105,7 @@ TEST_F(HttpTest, HttpRequesterTest)
 
     for (const auto& message : m_gatheredMessages)
     {
-        // Expect to see zero lines about reading credentials
+        // Expect to see zero lines about reading credentials from the Amazon EC2 instance metadata service (IMDS). 
         EXPECT_FALSE(message.contains("EC2MetadataClient - Http request to retrieve credentials failed")) << "Found unexpected line in output: " << message.c_str();
     }
 }

@@ -43,10 +43,6 @@ namespace AWSNativeSDKInit
         static void InitAwsApi();
         static bool IsInitialized();
 
-        //! Call this to enable calls to the EC2 metadata service to find region and other information if hosted on EC2
-        //! By default this is disabled.
-        static void SetEC2HostedMode();
-
         // Remove our reference
         static void Shutdown();
 

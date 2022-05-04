@@ -7,6 +7,9 @@
  */
 
 
+#include <AzCore/Console/IConsoleTypes.h>
+#include <AzCore/Console/IConsole.h>
+
 #include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 
 #include <AzCore/Module/Environment.h>
@@ -22,6 +25,17 @@
 
 namespace AWSNativeSDKInit
 {
+    // Prevent/allow the use of the Amazon EC2 instance metadata service (IMDS). 
+    // AWS C++ SDK can reach out to EC2 metadata service for region, config or credentials, but unless code
+    // is running on EC2 compute such calls will fail and waste network resources.
+    void OnBlockEC2MetadataCalls(const bool& setMode)
+    {
+        AZ::Utils::SetEnv("AWS_EC2_METADATA_DISABLED", (setMode ? "True" : "False"), true);
+    }
+
+    AZ_CVAR(bool, bg_blockEC2IMDS, true, OnBlockEC2MetadataCalls, AZ::ConsoleFunctorFlags::Null,
+        "Controls if AWS SDK can attempt calls to the Amazon EC2 instance metadata service (IMDS). This should only be set to false when hosted on EC2 compute to avoid network overhead.");
+
     namespace Platform
     {
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
@@ -81,7 +95,7 @@ namespace AWSNativeSDKInit
         Platform::CustomizeSDKOptions(m_awsSDKOptions);
         Aws::InitAPI(m_awsSDKOptions);
 
-        //! Disable calls to EC2Metadata service by default
+        //! Prevent calls to EC2Metadata service by default
         AZ::Utils::SetEnv("AWS_EC2_METADATA_DISABLED", "True", true);
 
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
@@ -94,11 +108,5 @@ namespace AWSNativeSDKInit
         Platform::CustomizeShutdown();
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     }
-
-    void InitializationManager::SetEC2HostedMode()
-    {
-        AZ::Utils::SetEnv("AWS_EC2_METADATA_DISABLED", "False", true);
-    }
-
 
 } // namespace AWSNativeSDKInit
