@@ -11,8 +11,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
-
-#include <EditorModeFeedback/EditorModeFeedbackInterface.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace AZ
@@ -248,13 +246,6 @@ namespace AZ
                     stats.m_triCount += mesh.GetIndexCount() / 3;
                 }
                 m_stats.m_meshStatsForLod.emplace_back(AZStd::move(stats));
-            }
-
-            // Register this component with the editor mode feedback system
-            if (auto* editorModeFeedbackInterface = AZ::Interface<EditorModeFeedbackInterface>::Get())
-            {
-                editorModeFeedbackInterface->RegisterOrUpdateDrawableComponent(
-                    EntityComponentIdPair{ GetEntityId(), GetId() }, m_controller.m_meshHandle);
             }
 
             // Refresh the tree when the model loads to update UI based on the model.

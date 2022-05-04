@@ -25,6 +25,7 @@
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/AtomMeshBus.h>
 
 namespace AZ
 {
@@ -59,6 +60,7 @@ namespace AZ
 
         class MeshComponentController final
             : private MeshComponentRequestBus::Handler
+            , private AtomMeshRequestBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
             , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
             , private TransformNotificationBus::Handler
@@ -97,6 +99,9 @@ namespace AZ
             void SetModelAssetPath(const AZStd::string& modelAssetPath) override;
             AZStd::string GetModelAssetPath() const override;
             AZ::Data::Instance<RPI::Model> GetModel() const override;
+
+            // AtomMeshRequestBus::Handler overrides ...
+            const MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
 
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <FocusedEntity/FocusedMeshEntity.h>
+
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
@@ -23,7 +25,6 @@ namespace AZ
 {
     namespace RPI
     {
-        class MeshDrawPacket;
         class Material;
     }
 
@@ -41,6 +42,7 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
+            EditorModeFeedbackSystemComponent();
             ~EditorModeFeedbackSystemComponent();
 
             // EditorComponentBase overrides ...
@@ -49,8 +51,6 @@ namespace AZ
 
             // EditorModeFeedbackInterface overrides ...
             bool IsEnabled() const override;
-            void RegisterOrUpdateDrawableComponent(
-                EntityComponentIdPair entityComponentId, const MeshFeatureProcessorInterface::MeshHandle& meshHandle) override;
 
         private:
             // ViewportEditorModeNotificationsBus overrides ...
@@ -69,19 +69,6 @@ namespace AZ
             //! Flag to specify whether or not the editor feedback effects are active.
             bool m_enabled = false;
 
-            //! Data to construct draw packets for meshes.
-            struct MeshHandleDrawPackets
-            {
-                ~MeshHandleDrawPackets();
-
-                const MeshFeatureProcessorInterface::MeshHandle* m_meshHandle;
-                RPI::ModelLodIndex m_modelLodIndex = RPI::ModelLodIndex::Null; 
-                AZStd::vector<RPI::MeshDrawPacket> m_meshDrawPackets;
-            };
-            
-            //! Map for entities and their drawable components.
-            AZStd::unordered_map<EntityId, AZStd::unordered_map<ComponentId, MeshHandleDrawPackets>> m_entityComponentMeshHandleDrawPackets;
-
             //! Material for sending draw packets to the entity mask pass.
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;
 
@@ -90,6 +77,9 @@ namespace AZ
 
             //! Used for loading the pass templates.
             RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
+
+            //!
+            AZStd::unordered_map<EntityId, FocusedEntity> m_focusedEntities;
         };
     } // namespace Render
 } // namespace AZ

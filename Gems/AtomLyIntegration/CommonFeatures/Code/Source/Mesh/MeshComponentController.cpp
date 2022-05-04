@@ -8,6 +8,7 @@
 
 #include <Mesh/MeshComponentController.h>
 
+#include <AtomLyIntegration/CommonFeatures/Mesh/AtomMeshBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
@@ -252,6 +253,7 @@ namespace AZ
 
             const auto entityContextId = FindOwningContextId(entityId);
             MeshComponentRequestBus::Handler::BusConnect(entityId);
+            AtomMeshRequestBus::Handler::BusConnect(entityId);
             TransformNotificationBus::Handler::BusConnect(entityId);
             MaterialReceiverRequestBus::Handler::BusConnect(entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
@@ -270,10 +272,11 @@ namespace AZ
 
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusDisconnect();
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
-            MeshComponentRequestBus::Handler::BusDisconnect();
-            TransformNotificationBus::Handler::BusDisconnect();
-            MaterialReceiverRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
+            MaterialReceiverRequestBus::Handler::BusDisconnect();
+            TransformNotificationBus::Handler::BusDisconnect();
+            MeshComponentRequestBus::Handler::BusDisconnect();
+            AtomMeshRequestBus::Handler::BusDisconnect();
 
             m_nonUniformScaleChangedHandler.Disconnect();
 
@@ -404,6 +407,7 @@ namespace AZ
                 meshDescriptor.m_requiresCloneCallback = RequiresCloning;
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
+                AtomMeshNotificationBus::Event(entityId, &AtomMeshNotificationBus::Events::OnAcquireMesh, &m_meshHandle);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
                 const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
@@ -646,6 +650,11 @@ namespace AZ
             }
 
             return result;
+        }
+
+        const MeshFeatureProcessorInterface::MeshHandle* MeshComponentController::GetMeshHandle() const
+        {
+            return &m_meshHandle;
         }
     } // namespace Render
 } // namespace AZ

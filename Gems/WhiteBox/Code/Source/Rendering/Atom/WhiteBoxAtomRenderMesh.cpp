@@ -20,10 +20,43 @@
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/AtomMeshBus.h>
 #include <AzCore/Math/PackedVector3.h>
 
 namespace WhiteBox
 {
+    class AtomRenderMesh::AtomBusDelegate
+        : private AZ::Render::AtomMeshRequestBus::Handler
+    {
+    public:
+        AtomBusDelegate(AZ::EntityId entityId, AZ::Render::MeshFeatureProcessorInterface::MeshHandle* meshHandle)
+            : m_entityId(entityId)
+            , m_meshHandle(meshHandle)
+        {
+            AZ::Render::AtomMeshRequestBus::Handler::BusConnect(m_entityId);
+        }
+
+        ~AtomBusDelegate()
+        {
+            AZ::Render::AtomMeshRequestBus::Handler::BusDisconnect();
+        }
+
+    private:
+        // AtomMeshRequestBus::Handler overrides ...
+        const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
+
+        AZ::EntityId m_entityId;
+        const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* m_meshHandle = nullptr;
+    };
+
+    const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* AtomRenderMesh::AtomBusDelegate::GetMeshHandle() const
+    {
+        return m_meshHandle;
+    }
+
+    AtomRenderMesh::AtomRenderMesh() = default;
+    AtomRenderMesh::~AtomRenderMesh() = default;
+
     bool AtomRenderMesh::AreAttributesValid() const
     {
         bool attributesAreValid = true;
@@ -178,6 +211,8 @@ namespace WhiteBox
 
         m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
         m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset });
+        m_atomBusDelegate = AZStd::make_unique<AtomBusDelegate>(entityId, &m_meshHandle);
+        //AZ::Render::AtomMeshNotificationBus::Event(entityId, &AZ::Render::AtomMeshNotificationBus::Events::OnAcquireMesh, &m_meshHandle);
         return true;
     }
 

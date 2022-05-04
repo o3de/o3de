@@ -34,6 +34,9 @@ namespace WhiteBox
     public:
         AZ_RTTI(AtomRenderMesh, "{1F48D2F5-037C-400B-977C-7C0C9A34B84C}", RenderMeshInterface);
 
+        AtomRenderMesh();
+        ~AtomRenderMesh();
+
         // RenderMeshInterface ...
         void BuildMesh(
             const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal, AZ::EntityId entityId) override;
@@ -95,5 +98,8 @@ namespace WhiteBox
 
         //! White box model name.
         static constexpr AZStd::string_view ModelName = "WhiteBoxMesh";
+
+        class AtomBusDelegate;
+        AZStd::unique_ptr<AtomBusDelegate> m_atomBusDelegate;
     };
 } // namespace WhiteBox
