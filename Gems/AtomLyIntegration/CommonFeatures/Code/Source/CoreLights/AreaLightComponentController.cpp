@@ -81,6 +81,11 @@ namespace AZ::Render
                 ->Event("GetEsmExponent", &AreaLightRequestBus::Events::GetEsmExponent)
                 ->Event("SetEsmExponent", &AreaLightRequestBus::Events::SetEsmExponent)
 
+                ->Event("GetAffectsGI", &AreaLightRequestBus::Events::GetAffectsGI)
+                ->Event("SetAffectsGI", &AreaLightRequestBus::Events::SetAffectsGI)
+                ->Event("GetAffectsGIFactor", &AreaLightRequestBus::Events::GetAffectsGIFactor)
+                ->Event("SetAffectsGIFactor", &AreaLightRequestBus::Events::SetAffectsGIFactor)
+
                 ->VirtualProperty("AttenuationRadius", "GetAttenuationRadius", "SetAttenuationRadius")
                 ->VirtualProperty("Color", "GetColor", "SetColor")
                 ->VirtualProperty("EmitsLightBothDirections", "GetEmitsLightBothDirections", "SetEmitsLightBothDirections")
@@ -97,8 +102,10 @@ namespace AZ::Render
                 ->VirtualProperty("ShadowmapMaxSize", "GetShadowmapMaxSize", "SetShadowmapMaxSize")
                 ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
                 ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
-                ->VirtualProperty("EsmExponent", "GetEsmExponent", "SetEsmExponent");
-            ;
+                ->VirtualProperty("EsmExponent", "GetEsmExponent", "SetEsmExponent")
+
+                ->VirtualProperty("AffectsGI", "GetAffectsGI", "SetAffectsGI")
+                ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor");
         }
     }
 
@@ -249,6 +256,8 @@ namespace AZ::Render
         {
             m_lightShapeDelegate->SetLightEmitsBothDirections(m_configuration.m_lightEmitsBothDirections);
             m_lightShapeDelegate->SetUseFastApproximation(m_configuration.m_useFastApproximation);
+            m_lightShapeDelegate->SetAffectsGI(m_configuration.m_affectsGI);
+            m_lightShapeDelegate->SetAffectsGIFactor(m_configuration.m_affectsGIFactor);
         }
     }
 
@@ -563,6 +572,32 @@ namespace AZ::Render
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetEsmExponent(esmExponent);
+        }
+    }
+
+    bool AreaLightComponentController::GetAffectsGI() const
+    {
+        return m_configuration.m_affectsGI;
+    }
+
+    void AreaLightComponentController::SetAffectsGI(bool affectsGI) const
+    {
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetAffectsGI(affectsGI);
+        }
+    }
+
+    float AreaLightComponentController::GetAffectsGIFactor() const
+    {
+        return m_configuration.m_affectsGIFactor;
+    }
+
+    void AreaLightComponentController::SetAffectsGIFactor(float affectsGIFactor) const
+    {
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetAffectsGIFactor(affectsGIFactor);
         }
     }
 

@@ -65,7 +65,12 @@ set(FILES
     Prefab/Benchmark/PrefabInstantiateBenchmarks.cpp
     Prefab/Benchmark/PrefabLoadBenchmarks.cpp
     Prefab/Benchmark/PrefabUpdateInstancesBenchmarks.cpp
+    Prefab/Benchmark/Propagation/PropagationBenchmarkFixture.cpp
+    Prefab/Benchmark/Propagation/PropagationBenchmarkFixture.h
+    Prefab/Benchmark/Propagation/SingleInstanceMultipleNestedInstancesBenchmarks.cpp
+    Prefab/Benchmark/Propagation/SingleInstanceMultipleNestedInstancesBenchmarks.h
     Prefab/Benchmark/Propagation/SingleInstanceMultipleEntityBenchmarks.cpp
+    Prefab/Benchmark/Propagation/SingleInstanceMultipleEntityBenchmarks.h
     Prefab/Benchmark/SpawnableCreateBenchmarks.cpp
     Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.h
     Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.cpp

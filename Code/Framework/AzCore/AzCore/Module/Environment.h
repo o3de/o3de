@@ -434,22 +434,22 @@ namespace AZ
 
         T& operator*() const
         {
-            AZ_Assert(IsValid(), "You can't dereference a null pointer");
-            AZ_Assert(m_data->IsConstructed(), "You are using an invalid variable, the owner has removed it!");
+            AZ_Assert(m_data, "You can't dereference a null pointer");
+            AZ_Assert(IsConstructed(), "You are using an invalid variable, the owner has removed it!");
             return *reinterpret_cast<T*>(&m_data->m_value);
         }
 
         T* operator->() const
         {
-            AZ_Assert(IsValid(), "You can't dereference a null pointer");
-            AZ_Assert(m_data->IsConstructed(), "You are using an invalid variable, the owner has removed it!");
+            AZ_Assert(m_data, "You can't dereference a null pointer");
+            AZ_Assert(IsConstructed(), "You are using an invalid variable, the owner has removed it!");
             return reinterpret_cast<T*>(&m_data->m_value);
         }
 
         T& Get() const
         {
-            AZ_Assert(IsValid(), "You can't dereference a null pointer");
-            AZ_Assert(m_data->IsConstructed(), "You are using an invalid variable, the owner has removed it!");
+            AZ_Assert(m_data, "You can't dereference a null pointer");
+            AZ_Assert(IsConstructed(), "You are using an invalid variable, the owner has removed it!");
             return *reinterpret_cast<T*>(&m_data->m_value);
         }
 
@@ -465,20 +465,18 @@ namespace AZ
 
         explicit operator bool() const
         {
-            return IsValid();
+            return IsConstructed();
         }
-        bool operator! () const { return !IsValid(); }
+        bool operator! () const
+        {
+            return !IsConstructed();
+        }
 
         void Swap(EnvironmentVariable& rhs)
         {
             HolderType* tmp = m_data;
             m_data = rhs.m_data;
             rhs.m_data = tmp;
-        }
-
-        bool IsValid() const
-        {
-            return m_data;
         }
 
         bool IsOwner() const
@@ -489,12 +487,6 @@ namespace AZ
         bool IsConstructed() const
         {
             return m_data && m_data->IsConstructed();
-        }
-
-        void Construct()
-        {
-            AZ_Assert(IsValid(), "You can't dereference a null pointer");
-            m_data->Construct();
         }
 
     protected:
@@ -540,25 +532,25 @@ namespace AZ
     template <class T>
     bool operator==(EnvironmentVariable<T> const& a, std::nullptr_t)
     {
-        return !a.IsValid();
+        return !a.IsConstructed();
     }
 
     template <class T>
     bool operator!=(EnvironmentVariable<T> const& a, std::nullptr_t)
     {
-        return a.IsValid();
+        return a.IsConstructed();
     }
 
     template <class T>
     bool operator==(std::nullptr_t, EnvironmentVariable<T> const& a)
     {
-        return !a.IsValid();
+        return !a.IsConstructed();
     }
 
     template <class T>
     bool operator!=(std::nullptr_t, EnvironmentVariable<T> const& a)
     {
-        return a.IsValid();
+        return a.IsConstructed();
     }
 
     template <class T>
