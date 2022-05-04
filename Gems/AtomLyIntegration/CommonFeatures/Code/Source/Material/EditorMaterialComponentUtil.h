@@ -40,6 +40,19 @@ namespace AZ
             bool LoadMaterialEditDataFromAssetId(const AZ::Data::AssetId& assetId, MaterialEditData& editData);
             bool SaveSourceMaterialFromEditData(const AZStd::string& path, const MaterialEditData& editData);
 
+            //! Retrieves the material type asset ID for a given material asset ID
+            AZ::Data::AssetId GetMaterialTypeAssetIdFromMaterialAssetId(const AZ::Data::AssetId& materialAssetId);
+
+            //! Determines if a set of entities have the same active material type on a given material slot
+            //! @param primaryEntityId The entity whose material types will be compared against all others in the set
+            //! @param secondaryEntityIds Set of entities that will be compared against material types on the primaryEntityId
+            //! @param materialAssignmentId ID of the material type slot that will be tested for quality
+            //! @returns True if all of the entities share the same active material type asset on the specified slot
+            bool DoEntitiesHaveMatchingMaterialTypes(
+                const AZ::EntityId& primaryEntityId,
+                const AzToolsFramework::EntityIdSet& secondaryEntityIds,
+                const MaterialAssignmentId& materialAssignmentId);
+
             //! Determines if a set of entities have the same active material on a given material slot
             //! @param primaryEntityId The entity whose materials will be compared against all others in the set
             //! @param secondaryEntityIds Set of entities that will be compared against materials on the primaryEntityId

@@ -162,6 +162,64 @@ namespace AZ
                 return result && AZ::RPI::JsonUtils::SaveObjectToFile(path, exportData);
             }
 
+            AZ::Data::AssetId GetMaterialTypeAssetIdFromMaterialAssetId(const AZ::Data::AssetId& materialAssetId)
+            {
+                if (materialAssetId.IsValid())
+                {
+                    AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> dependencyResult = AZ::Failure(AZStd::string());
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        dependencyResult, &AZ::Data::AssetCatalogRequestBus::Events::GetAllProductDependencies, materialAssetId);
+                    if (dependencyResult)
+                    {
+                        for (const auto& dependency : dependencyResult.GetValue())
+                        {
+                            AZ::Data::AssetInfo info;
+                            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                                info, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, dependency.m_assetId);
+                            if (info.m_assetType == azrtti_typeid<AZ::RPI::MaterialTypeAsset>())
+                            {
+                                return info.m_assetId;
+                            }
+                        }
+                    }
+                }
+
+                return {};
+            }
+
+            bool DoEntitiesHaveMatchingMaterialTypes(
+                const AZ::EntityId& primaryEntityId,
+                const AzToolsFramework::EntityIdSet& secondaryEntityIds,
+                const MaterialAssignmentId& materialAssignmentId)
+            {
+                AZ::Data::AssetId primaryMaterialAssetId = {};
+                MaterialComponentRequestBus::EventResult(
+                    primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
+                    materialAssignmentId);
+                AZ::Data::AssetId primaryMaterialTypeAssetId = GetMaterialTypeAssetIdFromMaterialAssetId(primaryMaterialAssetId);
+                if (!primaryMaterialTypeAssetId.IsValid())
+                {
+                    return false;
+                }
+
+                return AZStd::all_of(
+                    secondaryEntityIds.begin(), secondaryEntityIds.end(),
+                    [&](const AZ::EntityId& secondaryEntityId)
+                    {
+                        AZ::Data::AssetId secondaryMaterialAssetId = {};
+                        MaterialComponentRequestBus::EventResult(
+                            secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
+                            materialAssignmentId);
+                        AZ::Data::AssetId secondaryMaterialTypeAssetId = GetMaterialTypeAssetIdFromMaterialAssetId(secondaryMaterialAssetId);
+                        if (!secondaryMaterialTypeAssetId.IsValid())
+                        {
+                            return false;
+                        }
+
+                        return primaryMaterialTypeAssetId == secondaryMaterialTypeAssetId;
+                    });
+            }
+
             bool DoEntitiesHaveMatchingMaterials(
                 const AZ::EntityId& primaryEntityId,
                 const AzToolsFramework::EntityIdSet& secondaryEntityIds,
