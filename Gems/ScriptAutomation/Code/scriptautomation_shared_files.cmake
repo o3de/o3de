@@ -7,9 +7,5 @@
 #
 
 set(FILES
-    Source/AutomationScriptBindings.cpp
-    Source/AutomationScriptBindings.h
-    Source/AutomationSystemComponent.cpp
-    Source/AutomationSystemComponent.h
+    Source/ScriptAutomationModule.cpp
 )
-

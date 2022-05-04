@@ -6,19 +6,19 @@
  *
  */
 
-#include <Automation/AutomationBus.h>
-#include <AutomationApplicationFixture.h>
+#include <ScriptAutomation/ScriptAutomationBus.h>
+#include <ScriptAutomationApplicationFixture.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
 namespace UnitTest
 {
-    TEST_F(AutomationApplicationFixture, GetAutomationContext_FromAutomationInterface_HasCoreMethods)
+    TEST_F(ScriptAutomationApplicationFixture, GetAutomationContext_FromScriptAutomationInterface_HasCoreMethods)
     {
         CreateApplication({ });
 
-        auto automationSystem = Automation::AutomationInterface::Get();
+        auto automationSystem = ScriptAutomation::ScriptAutomationInterface::Get();
         ASSERT_TRUE(automationSystem);
 
         auto behaviorContext = automationSystem->GetAutomationContext();
@@ -35,13 +35,13 @@ namespace UnitTest
     }
 
     class TrackedAutomationFixture
-        : public AutomationApplicationFixture
+        : public ScriptAutomationApplicationFixture
         , public AZ::Debug::TraceMessageBus::Handler
     {
     public:
         void SetUp() override
         {
-            AutomationApplicationFixture::SetUp();
+            ScriptAutomationApplicationFixture::SetUp();
 
             AZ::Debug::TraceMessageBus::Handler::BusConnect();
         }
@@ -53,7 +53,7 @@ namespace UnitTest
             m_automationWarnings.set_capacity(0);
             m_automationLogs.set_capacity(0);
 
-            AutomationApplicationFixture::TearDown();
+            ScriptAutomationApplicationFixture::TearDown();
         }
 
     protected:
@@ -70,7 +70,7 @@ namespace UnitTest
 
         bool OnWarning(const char* window, const char* message) override
         {
-            if (azstricmp(window, "Automation") == 0)
+            if (azstricmp(window, "ScriptAutomation") == 0)
             {
                 m_automationWarnings.push_back(message);
             }
@@ -79,7 +79,7 @@ namespace UnitTest
 
         bool OnPrintf(const char* window, const char* message) override
         {
-            if (azstricmp(window, "Automation") == 0)
+            if (azstricmp(window, "ScriptAutomation") == 0)
             {
                 m_automationLogs.push_back(message);
             }

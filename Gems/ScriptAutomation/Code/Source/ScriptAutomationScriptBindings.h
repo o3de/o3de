@@ -13,7 +13,7 @@ namespace AZ
     class BehaviorContext;
 }
 
-namespace Automation
+namespace ScriptAutomation
 {
     void ReflectScriptBindings(AZ::BehaviorContext* context);
-} // namespace Automation
+} // namespace ScriptAutomation

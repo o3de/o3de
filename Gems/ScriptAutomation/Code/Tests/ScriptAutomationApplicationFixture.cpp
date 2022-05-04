@@ -6,9 +6,9 @@
  *
  */
 
-#include <AutomationApplicationFixture.h>
+#include <ScriptAutomationApplicationFixture.h>
 
-#include <Automation/AutomationBus.h>
+#include <ScriptAutomation/ScriptAutomationBus.h>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
@@ -17,12 +17,12 @@
 
 namespace UnitTest
 {
-    void AutomationApplicationFixture::SetUp()
+    void ScriptAutomationApplicationFixture::SetUp()
     {
         AllocatorsFixture::SetUp();
     }
 
-    void AutomationApplicationFixture::TearDown()
+    void ScriptAutomationApplicationFixture::TearDown()
     {
         if (m_application)
         {
@@ -32,9 +32,9 @@ namespace UnitTest
         AllocatorsFixture::TearDown();
     }
 
-    AzFramework::Application* AutomationApplicationFixture::CreateApplication(const char* scriptPath, bool exitOnFinish)
+    AzFramework::Application* ScriptAutomationApplicationFixture::CreateApplication(const char* scriptPath, bool exitOnFinish)
     {
-        // The Automation gem uses the AssetManager to load the script assets. The AssetManager will try to make the asset path relative to 
+        // The ScriptAutomation gem uses the AssetManager to load the script assets. The AssetManager will try to make the asset path relative to 
         // the cache root folder. If we pass in an abosolute path to the asset, the AssetManager ends up removing the leading slash on MacOS 
         // and Linux in the call to Application::MakePathRelative. So we need to override the cache path for these tests. First, we override 
         // the asset platform folder since we're going to be reading from the gem tests folder for all platforms.
@@ -58,14 +58,14 @@ namespace UnitTest
 
         m_application = aznew AzFramework::Application(&argc, &argv);
 
-        // ensure the Automation gem is active
-        AZ::Test::AddActiveGem("Automation", *AZ::SettingsRegistry::Get(), AZ::IO::FileIOBase::GetInstance());
+        // ensure the ScriptAutomation gem is active
+        AZ::Test::AddActiveGem("ScriptAutomation", *AZ::SettingsRegistry::Get(), AZ::IO::FileIOBase::GetInstance());
 
         AZ::ComponentApplication::Descriptor appDesc;
         appDesc.m_useExistingAllocator = true;
 
         AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
-        dynamicModuleDescriptor.m_dynamicLibraryPath = "Automation";
+        dynamicModuleDescriptor.m_dynamicLibraryPath = "ScriptAutomation";
         appDesc.m_modules.push_back(dynamicModuleDescriptor);
 
         // We need the resolved gem root folder since storing aliases in the settings registry will cause StorageDrive to try to read from 
@@ -73,7 +73,7 @@ namespace UnitTest
         // path here instead of passing it as a command line parameter above. The cache root folder is the <project_cache_path>/<asset_platform_folder>.
         if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
         {
-            const auto gemPathKey = AZ::StringFunc::Path::FixedString::format("%s/Automation/Path", AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
+            const auto gemPathKey = AZ::StringFunc::Path::FixedString::format("%s/ScriptAutomation/Path", AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
             if (AZ::IO::Path gemRootPath; registry->Get(gemRootPath.Native(), gemPathKey))
             {
                 AZ::IO::Path cachePath = gemRootPath / "Code/Tests/Scripts";
@@ -87,7 +87,7 @@ namespace UnitTest
         return m_application;
     }
 
-    void AutomationApplicationFixture::DestroyApplication()
+    void ScriptAutomationApplicationFixture::DestroyApplication()
     {
         m_application->Stop();
         delete m_application;

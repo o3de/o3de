@@ -18,7 +18,7 @@
 
 namespace UnitTest
 {
-    class AutomationApplicationFixture
+    class ScriptAutomationApplicationFixture
         : public AllocatorsFixture
     {
     public:

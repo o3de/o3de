@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    Source/AutomationModule.cpp
+    Include/ScriptAutomation/ScriptAutomationBus.h
 )

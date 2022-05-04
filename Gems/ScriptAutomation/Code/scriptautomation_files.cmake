@@ -7,8 +7,9 @@
 #
 
 set(FILES
-    Tests/AutomationApplicationFixture.cpp
-    Tests/AutomationApplicationFixture.h
-    Tests/AutomationTests.cpp
+    Source/ScriptAutomationScriptBindings.cpp
+    Source/ScriptAutomationScriptBindings.h
+    Source/ScriptAutomationSystemComponent.cpp
+    Source/ScriptAutomationSystemComponent.h
 )
 

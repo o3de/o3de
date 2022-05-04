@@ -6,28 +6,28 @@
  *
  */
 
-#include <AutomationSystemComponent.h>
+#include <ScriptAutomationSystemComponent.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
-namespace Automation
+namespace ScriptAutomation
 {
-    class AutomationModule
+    class ScriptAutomationModule
         : public AZ::Module
     {
     public:
-        AZ_RTTI(AutomationModule, "{1B94CF12-A1C3-47DC-86DD-CC44A6979F73}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AutomationModule, AZ::SystemAllocator, 0);
+        AZ_RTTI(ScriptAutomationModule, "{1B94CF12-A1C3-47DC-86DD-CC44A6979F73}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(ScriptAutomationModule, AZ::SystemAllocator, 0);
 
-        AutomationModule()
+        ScriptAutomationModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
-                AutomationSystemComponent::CreateDescriptor(),
+                ScriptAutomationSystemComponent::CreateDescriptor(),
             });
         }
 
@@ -37,10 +37,10 @@ namespace Automation
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<AutomationSystemComponent>(),
+                azrtti_typeid<ScriptAutomationSystemComponent>(),
             };
         }
     };
-}// namespace Automation
+}// namespace ScriptAutomation
 
-AZ_DECLARE_MODULE_CLASS(AutomationModule, Automation::AutomationModule)
+AZ_DECLARE_MODULE_CLASS(ScriptAutomationModule, ScriptAutomation::ScriptAutomationModule)

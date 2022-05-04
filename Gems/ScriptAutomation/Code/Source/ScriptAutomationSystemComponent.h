@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Automation/AutomationBus.h>
+#include <ScriptAutomation/ScriptAutomationBus.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -19,7 +19,7 @@ namespace AZ
     class ScriptContext;
 } // namespace AZ
 
-namespace Automation
+namespace ScriptAutomation
 {
     //! Manages running lua scripts for test automation.
     //! This initializes a lua context, binds C++ callback functions and does per-frame processing
@@ -32,13 +32,13 @@ namespace Automation
     //! Note that this means the C++ functions we expose to lua cannot return dynamic data; the only
     //! data we can return are constants like the number of samples available, or stateless utility
     //! functions
-    class AutomationSystemComponent
+    class ScriptAutomationSystemComponent
         : public AZ::Component
         , public AZ::TickBus::Handler
-        , public AutomationRequestBus::Handler
+        , public ScriptAutomationRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(AutomationSystemComponent, "{755280BF-F227-4048-B323-D5E28EC55D61}", AutomationRequests);
+        AZ_COMPONENT(ScriptAutomationSystemComponent, "{755280BF-F227-4048-B323-D5E28EC55D61}", ScriptAutomationRequests);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -47,8 +47,8 @@ namespace Automation
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        AutomationSystemComponent();
-        ~AutomationSystemComponent();
+        ScriptAutomationSystemComponent();
+        ~ScriptAutomationSystemComponent();
 
         void SetIdleFrames(int numFrames);
         void SetIdleSeconds(float numSeconds);
@@ -61,18 +61,18 @@ namespace Automation
         // AZ::TickBus implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // AutomationRequests implementation
+        // ScriptAutomationRequests implementation
         AZ::BehaviorContext* GetAutomationContext() override;
         void PauseAutomation(float timeout = DefaultPauseTimeout) override;
         void ResumeAutomation() override;
-        void QueueScriptOperation(AutomationRequests::ScriptOperation&& operation) override;
+        void QueueScriptOperation(ScriptAutomationRequests::ScriptOperation&& operation) override;
 
         void ExecuteScript(const char* scriptFilePath);
 
         AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext; //< Provides the lua scripting system
         AZStd::unique_ptr<AZ::BehaviorContext> m_scriptBehaviorContext; //< Used to bind script callback functions to lua
 
-        AZStd::queue<AutomationRequests::ScriptOperation> m_scriptOperations;
+        AZStd::queue<ScriptAutomationRequests::ScriptOperation> m_scriptOperations;
 
         AZStd::string m_automationScript;
 
@@ -85,4 +85,4 @@ namespace Automation
         bool m_isStarted = false;
         bool m_exitOnFinish = false;
     };
-} // namespace Automation
+} // namespace ScriptAutomation

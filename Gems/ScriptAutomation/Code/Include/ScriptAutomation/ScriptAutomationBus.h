@@ -18,18 +18,18 @@ namespace AZ
     class BehaviorContext;
 } // namespace AZ
 
-namespace Automation
+namespace ScriptAutomation
 {
     static constexpr float DefaultPauseTimeout = 5.0f;
     static constexpr AZ::Crc32 AutomationServiceCrc = AZ_CRC_CE("AutomationService");
 
-    class AutomationRequests
+    class ScriptAutomationRequests
     {
     public:
         using ScriptOperation = AZStd::function<void()>;
 
-        AZ_RTTI(AutomationRequests, "{403E1E72-5070-4683-BFF8-289364791723}");
-        virtual ~AutomationRequests() = default;
+        AZ_RTTI(ScriptAutomationRequests, "{403E1E72-5070-4683-BFF8-289364791723}");
+        virtual ~ScriptAutomationRequests() = default;
 
         //! Retrieve the specialized behaviour context used for automation purposes
         virtual AZ::BehaviorContext* GetAutomationContext() = 0;
@@ -43,7 +43,7 @@ namespace Automation
         virtual void QueueScriptOperation(ScriptOperation&& action) = 0;
     };
 
-    class AutomationRequestsBusTraits
+    class ScriptAutomationRequestsBusTraits
         : public AZ::EBusTraits
     {
     public:
@@ -51,18 +51,18 @@ namespace Automation
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
 
-    using AutomationRequestBus = AZ::EBus<AutomationRequests, AutomationRequestsBusTraits>;
-    using AutomationInterface = AZ::Interface<AutomationRequests>;
+    using ScriptAutomationRequestBus = AZ::EBus<ScriptAutomationRequests, ScriptAutomationRequestsBusTraits>;
+    using ScriptAutomationInterface = AZ::Interface<ScriptAutomationRequests>;
 
 
-    class AutomationNotifications
+    class ScriptAutomationNotifications
         : public AZ::EBusTraits
     {
     public:
-        virtual ~AutomationNotifications() = default;
+        virtual ~ScriptAutomationNotifications() = default;
 
         virtual void OnAutomationStarted() = 0;
         virtual void OnAutomationFinished() = 0;
     };
-    using AutomationNotificationBus = AZ::EBus<AutomationNotifications>;
-} // namespace Automation
+    using ScriptAutomationNotificationBus = AZ::EBus<ScriptAutomationNotifications>;
+} // namespace ScriptAutomation

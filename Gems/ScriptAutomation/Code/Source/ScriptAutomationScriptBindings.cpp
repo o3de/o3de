@@ -6,9 +6,9 @@
  *
  */
 
-#include <AutomationSystemComponent.h>
+#include <ScriptAutomationSystemComponent.h>
 
-#include <AutomationScriptBindings.h>
+#include <ScriptAutomationScriptBindings.h>
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MathReflection.h>
@@ -16,7 +16,7 @@
 
 #include <AzFramework/Components/ConsoleBus.h>
 
-namespace Automation
+namespace ScriptAutomation
 {
     namespace Bindings
     {
@@ -24,30 +24,30 @@ namespace Automation
         {
             auto func = [message]()
             {
-                AZ_TracePrintf("Automation", "Script: %s\n", message.c_str());
+                AZ_TracePrintf("ScriptAutomation", "Script: %s\n", message.c_str());
             };
 
-            AutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
         }
 
         void Warning(const AZStd::string& message)
         {
             auto func = [message]()
             {
-                AZ_Warning("Automation", false, "Script: %s", message.c_str());
+                AZ_Warning("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
-            AutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
         }
 
         void Error(const AZStd::string& message)
         {
             auto func = [message]()
             {
-                AZ_Error("Automation", false, "Script: %s", message.c_str());
+                AZ_Error("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
-            AutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
         }
 
         void ExecuteConsoleCommand(const AZStd::string& command)
@@ -58,33 +58,33 @@ namespace Automation
                     &AzFramework::ConsoleRequests::ExecuteConsoleCommand, command.c_str());
             };
 
-            AutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
         }
 
         void IdleFrames(int numFrames)
         {
             auto func = [numFrames]()
             {
-                auto automationInterface = AutomationInterface::Get();
-                auto automationComponent = azrtti_cast<AutomationSystemComponent*>(automationInterface);
+                auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
+                auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
 
                 automationComponent->SetIdleFrames(numFrames);
             };
 
-            AutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
         }
 
         void IdleSeconds(float numSeconds)
         {
             auto func = [numSeconds]()
             {
-                auto automationInterface = AutomationInterface::Get();
-                auto automationComponent = azrtti_cast<AutomationSystemComponent*>(automationInterface);
+                auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
+                auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
 
                 automationComponent->SetIdleSeconds(numSeconds);
             };
 
-            AutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
         }
     } // namespace Bindings
 
@@ -101,4 +101,4 @@ namespace Automation
         behaviorContext->Method("IdleFrames", &Bindings::IdleFrames);
         behaviorContext->Method("IdleSeconds", &Bindings::IdleSeconds);
     }
-} // namespace Automation
+} // namespace ScriptAutomation

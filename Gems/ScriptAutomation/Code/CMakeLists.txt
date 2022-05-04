@@ -7,20 +7,20 @@
 #
 
 ly_add_target(
-    NAME Automation.API HEADERONLY
+    NAME ScriptAutomation.API HEADERONLY
     NAMESPACE Gem
     FILES_CMAKE
-        automation_header_files.cmake
+        scriptautomation_header_files.cmake
     INCLUDE_DIRECTORIES
         INTERFACE
             Include
 )
 
 ly_add_target(
-    NAME Automation.Static STATIC
+    NAME ScriptAutomation.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        automation_files.cmake
+        scriptautomation_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
@@ -28,14 +28,14 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            Gem::Automation.API
+            Gem::ScriptAutomation.API
 )
 
 ly_add_target(
-    NAME Automation ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ScriptAutomation ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
-        automation_shared_files.cmake
+        scriptautomation_shared_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -43,20 +43,20 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Automation.Static
+            Gem::ScriptAutomation.Static
 )
 
-ly_create_alias(NAME Automation.Servers NAMESPACE Gem TARGETS Gem::Automation)
-ly_create_alias(NAME Automation.Builders NAMESPACE Gem TARGETS Gem::Automation)
-ly_create_alias(NAME Automation.Clients NAMESPACE Gem TARGETS Gem::Automation)
-ly_create_alias(NAME Automation.Tools NAMESPACE Gem TARGETS Gem::Automation)
+ly_create_alias(NAME ScriptAutomation.Servers NAMESPACE Gem TARGETS Gem::ScriptAutomation)
+ly_create_alias(NAME ScriptAutomation.Builders NAMESPACE Gem TARGETS Gem::ScriptAutomation)
+ly_create_alias(NAME ScriptAutomation.Clients NAMESPACE Gem TARGETS Gem::ScriptAutomation)
+ly_create_alias(NAME ScriptAutomation.Tools NAMESPACE Gem TARGETS Gem::ScriptAutomation)
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME Automation.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ScriptAutomation.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
-            automation_tests_files.cmake
+            scriptautomation_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Include
@@ -65,12 +65,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzFramework
-                Gem::Automation.Static
+                Gem::ScriptAutomation.Static
         RUNTIME_DEPENDENCIES
-            Gem::Automation
+            Gem::ScriptAutomation
     )
 
     ly_add_googletest(
-        NAME Gem::Automation.Tests
+        NAME Gem::ScriptAutomation.Tests
     )
 endif()

@@ -7,5 +7,8 @@
 #
 
 set(FILES
-    Include/Automation/AutomationBus.h
+    Tests/ScriptAutomationApplicationFixture.cpp
+    Tests/ScriptAutomationApplicationFixture.h
+    Tests/ScriptAutomationTests.cpp
 )
+

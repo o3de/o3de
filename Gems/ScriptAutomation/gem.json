@@ -1,6 +1,6 @@
 {
-    "gem_name": "Automation",
-    "display_name": "Automation",
+    "gem_name": "ScriptAutomation",
+    "display_name": "ScriptAutomation",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
@@ -11,7 +11,7 @@
         "Gem"
     ],
     "user_tags": [
-        "Automation"
+        "ScriptAutomation"
     ],
     "icon_path": "preview.png",
     "requirements": ""
