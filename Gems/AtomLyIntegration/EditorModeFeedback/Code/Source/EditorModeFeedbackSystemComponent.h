@@ -75,8 +75,8 @@ namespace AZ
             //! Used for loading the pass templates.
             RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
 
-            //! Map of focused entitu
-            AZStd::unordered_map<EntityId, FocusedEntity> m_focusedEntities;
+            //! Map of focused entity
+            AZStd::unordered_map<EntityId, FocuseMeshdEntity> m_focusedEntities;
         };
     } // namespace Render
 } // namespace AZ

@@ -218,7 +218,7 @@ namespace WhiteBox
         m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
         m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset });
 
-        // We don't need to broadcast AZ::Render::AtomMeshNotificationBus::Events::OnAcquireMesh as our delegate is reconnects each time
+        // We don't need to broadcast AZ::Render::AtomMeshNotificationBus::Events::OnAcquireMesh as our delegate reconnects each time
         // to the bus, however if in the future this delegate is made obsolete then a call to this bus will be required
         m_atomBusDelegate = AZStd::make_unique<AtomBusDelegate>(entityId, &m_meshHandle);
         

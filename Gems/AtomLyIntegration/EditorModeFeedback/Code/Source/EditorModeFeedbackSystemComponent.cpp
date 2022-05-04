@@ -28,7 +28,7 @@ namespace AZ
 {
     namespace Render
     {
-        // Creates the material for the mask pass shader.
+        // Creates the material for the mask pass shader
         static Data::Instance<RPI::Material> CreateMaskMaterial()
         {
             const AZStd::string path = "shaders/editormodemask.azmaterial";

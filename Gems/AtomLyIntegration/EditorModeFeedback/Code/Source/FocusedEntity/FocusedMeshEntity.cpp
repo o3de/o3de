@@ -22,7 +22,7 @@ namespace AZ
 {
     namespace Render
     {
-        // Gets the view for the specified scene.
+        // Gets the view for the specified scene
         static const RPI::ViewPtr GetViewFromScene(const RPI::Scene* scene)
         {
             const auto viewportContextRequests = RPI::ViewportContextRequests::Get();
@@ -31,7 +31,7 @@ namespace AZ
             return viewPtr;
         }
 
-        // Get the world transform for the specified entity.
+        // Get the world transform for the specified entity
         static AZ::Transform GetWorldTransformForEntity(EntityId entityId)
         {
             AZ::Transform worldTM;
@@ -43,33 +43,38 @@ namespace AZ
         class DrawableMetaData
         {
         public:
-            DrawableMetaData(EntityId entityId)
-            {
-                m_scene = RPI::Scene::GetSceneForEntityId(entityId);
-                m_view = GetViewFromScene(m_scene);
-                m_featureProcessor = m_scene->GetFeatureProcessor<MeshFeatureProcessorInterface>();
-            }
-
-            RPI::Scene* GetScene() const
-            {
-                return m_scene;
-            }
-
-            const RPI::ViewPtr GetView() const
-            {
-                return m_view;
-            }
-
-            const MeshFeatureProcessorInterface* GetFeatureProcessor() const
-            {
-                return m_featureProcessor;
-            }
+            DrawableMetaData(EntityId entityId);
+            RPI::Scene* GetScene() const;
+            const RPI::ViewPtr GetView() const;
+            const MeshFeatureProcessorInterface* GetFeatureProcessor() const;
 
         private:
             RPI::Scene* m_scene = nullptr;
             RPI::ViewPtr m_view = nullptr;
             MeshFeatureProcessorInterface* m_featureProcessor = nullptr;
         };
+
+        DrawableMetaData::DrawableMetaData(EntityId entityId)
+        {
+            m_scene = RPI::Scene::GetSceneForEntityId(entityId);
+            m_view = GetViewFromScene(m_scene);
+            m_featureProcessor = m_scene->GetFeatureProcessor<MeshFeatureProcessorInterface>();
+        }
+
+        RPI::Scene* DrawableMetaData::GetScene() const
+        {
+            return m_scene;
+        }
+
+        const RPI::ViewPtr DrawableMetaData::GetView() const
+        {
+            return m_view;
+        }
+
+        const MeshFeatureProcessorInterface* DrawableMetaData::GetFeatureProcessor() const
+        {
+            return m_featureProcessor;
+        }
 
         FocuseMeshdEntity::FocuseMeshdEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial)
             : m_entityId(entityId)
