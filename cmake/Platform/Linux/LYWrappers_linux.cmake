@@ -12,7 +12,7 @@ set(LY_STRIP_DEBUG_SYMBOLS FALSE CACHE BOOL "Flag to strip debug symbols from th
 find_program(GNU_STRIP_TOOL strip)
 if (NOT GNU_STRIP_TOOL AND LY_STRIP_DEBUG_SYMBOLS)
     message(WARNING "Unable to locate 'strip' tool needed to strip debug symbols from the output target(s). Debug symbol "
-                    "stripping (LY_STRIP_DEBUG_SYMBOLS) will not be supported. Make sure the llvm tools are installed.")
+                    "stripping (LY_STRIP_DEBUG_SYMBOLS) will not be supported. Make sure the 'strip' is installed.")
 endif()
 
 function(ly_apply_platform_properties target)
