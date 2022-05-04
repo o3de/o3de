@@ -146,6 +146,7 @@ namespace EMotionFX::MotionMatching
 
         const FrameDatabase& frameDatabase = m_data->GetFrameDatabase();
         const FeatureSchema& featureSchema = m_data->GetFeatureSchema();
+        const FeatureMatrix& featureMatrix = m_data->GetFeatureMatrix();
 
         // Find the frame index in the frame database that belongs to the currently used pose.
         const size_t currentFrame = frameDatabase.FindFrameIndex(m_motionInstance->GetMotion(), m_motionInstance->GetCurrentTime());
@@ -153,11 +154,12 @@ namespace EMotionFX::MotionMatching
         // Render the feature debug visualizations for the current frame.
         if (currentFrame != InvalidIndex)
         {
+            const Pose& currentPose = *m_actorInstance->GetTransformData()->GetCurrentPose();
             for (Feature* feature: featureSchema.GetFeatures())
             {
                 if (feature->GetDebugDrawEnabled())
                 {
-                    feature->DebugDraw(debugDisplay, this, currentFrame);
+                    feature->DebugDraw(debugDisplay, currentPose, featureMatrix, currentFrame);
                 }
             }
         }

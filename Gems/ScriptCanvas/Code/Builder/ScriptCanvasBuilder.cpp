@@ -425,6 +425,34 @@ namespace ScriptCanvasBuilder
 
         return AZ::Success(result);
     }
+
+    bool ReplaceAsset(ScriptCanvas::RuntimeDataOverrides& overrides, ScriptCanvas::RuntimeAssetPtr asset)
+    {
+        if (!asset.Get())
+        {
+            return false;
+        }
+
+        overrides.m_runtimeAsset = asset;
+        auto dependencyCount = overrides.m_dependencies.size();
+
+        if (dependencyCount == asset->m_runtimeData.m_requiredAssets.size())
+        {
+            for (size_t index = 0; index < dependencyCount; ++index)
+            {
+                if (!ReplaceAsset(overrides.m_dependencies[index], asset->m_runtimeData.m_requiredAssets[index]))
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
 
 namespace AZStd

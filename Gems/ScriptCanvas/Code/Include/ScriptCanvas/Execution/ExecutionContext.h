@@ -50,7 +50,6 @@ namespace ScriptCanvas
 
             static ActivationInputRange CreateActivateInputRange(ActivationData& activationData);
             static void InitializeStaticActivationData(RuntimeData& runtimeData);
-            static void UnloadData(RuntimeData& runtimeData);
 
         private:
             static void InitializeStaticActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext);

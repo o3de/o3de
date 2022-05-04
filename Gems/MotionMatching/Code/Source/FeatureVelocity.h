@@ -46,15 +46,9 @@ namespace EMotionFX::MotionMatching
             size_t relativeToJointIndex,
             const AZ::Color& color);
 
-        static void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
-            const AZ::Vector3& velocity, // in relative-to-joint space
-            size_t jointIndex,
-            size_t relativeToJointIndex,
-            const AZ::Color& color);
-
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
+            const Pose& currentPose,
+            const FeatureMatrix& featureMatrix,
             size_t frameIndex) override;
 
         float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const override;

@@ -39,8 +39,6 @@ namespace ScriptCanvas
 
         int InterpretedSafeCall(lua_State* lua, int argCount, int returnValueCount);
 
-        void InterpretedUnloadData(RuntimeData& runtimeData);
-
         void InitializeInterpretedStatics(RuntimeData& runtimeData);
 
         int InitializeNodeableOutKeys(lua_State* lua);
