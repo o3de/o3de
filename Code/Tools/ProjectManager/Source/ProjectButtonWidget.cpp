@@ -11,6 +11,7 @@
 #include <ProjectUtils.h>
 #include <ProjectManager_Traits_Platform.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/Path/Path.h>
 
@@ -251,7 +252,7 @@ namespace O3DE::ProjectManager
         hLayout->setContentsMargins(0, 0, 0, 0);
         projectFooter->setLayout(hLayout);
         {
-            QLabel* projectNameLabel = new QLabel(m_projectInfo.GetProjectDisplayName(), this);
+            AzQtComponents::ElidingLabel* projectNameLabel = new AzQtComponents::ElidingLabel(m_projectInfo.GetProjectDisplayName(), this);
             projectNameLabel->setToolTip(m_projectInfo.m_path);
             hLayout->addWidget(projectNameLabel);
 
