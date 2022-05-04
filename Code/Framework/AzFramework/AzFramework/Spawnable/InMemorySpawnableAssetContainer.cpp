@@ -116,15 +116,10 @@ namespace AzFramework
         // Delay resolving aliases to guarantee that the depended spawnables are already registered.
         for (auto spawnablePair : spawnables)
         {
-            AzFramework::Spawnable* spawnable = spawnablePair.first;
+            Spawnable* spawnable = spawnablePair.first;
             const AZStd::string& spawnableName = spawnablePair.second;
-
-            AzFramework::Spawnable::EntityAliasVisitor aliases = spawnable->TryGetAliases();
-            AZ_Assert(aliases.IsValid(), "Unable to obtain lock for spawnable.");
-            if (aliases.HasAliases())
-            {
-                SpawnableAssetUtils::ResolveEntityAliases(spawnable, spawnableName);
-            }
+            
+            SpawnableAssetUtils::ResolveEntityAliases(spawnable, spawnableName);
         }
 
         auto& spawnableAssetDataAdded = m_spawnableAssets.emplace(rootSpawnableName, spawnableAssetData).first->second;
@@ -150,7 +145,7 @@ namespace AzFramework
 
         // Remove the .spawnable file extension before passing it to the other CreateInMemorySpawnableAsset method, which will add it back in
         AZStd::string spawablePathSansFileExtension = assetRelativePath;
-        if (AZ::StringFunc::Path::HasExtension(spawablePathSansFileExtension.c_str()))
+        if (StringFunc::Path::HasExtension(spawablePathSansFileExtension.c_str()))
         {
             spawablePathSansFileExtension = assetRelativePath.substr(0, assetRelativePath.length() - strlen(Spawnable::DotFileExtension));
         }
