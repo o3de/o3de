@@ -278,10 +278,16 @@ namespace AZ
                 uint32_t slotIndex = pipelineLayout.GetIndexBySlot(slot);
  
                 //Check explicitly for Bindless SRG. This needs to be data driven (todo)
-                if(slotIndex != RHI::Limits::Pipeline::ShaderResourceGroupCountMax && shaderResourceGroup == nullptr &&
-                   bindings.m_srgsByIndex[slot] == nullptr)
+                if (srgSlot != RHI::Limits::Pipeline::ShaderResourceGroupCountMax && shaderResourceGroup == nullptr)
                 {
-                    bindings.m_srgsByIndex[slot] = shaderResourceGroup;
+                    // Skip in case the global static heap is already bound
+                    if (m_state.m_bindBindlessHeap)
+                    {
+                        continue;
+                    }
+                    AZ_Assert(
+                        slot == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId,
+                        "Bindless SRG slot needs to match the one described in the shader.");
                     
                     //Add the bindless AB info to the arrays in order to bind it to the appropriate encoder
                     m_device->GetBindlessArgumentBuffer().BindBindlessArgumentBuffer(slotIndex, m_commandEncoderType,
@@ -294,6 +300,7 @@ namespace AZ
                     m_device->GetBindlessArgumentBuffer().MakeBindlessArgumentBuffersResident(m_commandEncoderType,
                                                                                               resourcesToMakeResidentGraphics,
                                                                                               resourcesToMakeResidentCompute);                                 
+                    m_state.m_bindBindlessHeap = true;
                     continue;
                 }
                 

@@ -126,7 +126,11 @@ namespace AZ
                 
                 RHI::Viewport m_viewport;
                 // Array of shader resource bindings, indexed by command pipe.
-                AZStd::array<ShaderResourceBindings, static_cast<size_t>(RHI::PipelineStateType::Count)> m_bindingsByPipe;                
+                AZStd::array<ShaderResourceBindings, static_cast<size_t>(RHI::PipelineStateType::Count)> m_bindingsByPipe;
+
+                // Signal that the global bindless heap is bound
+                bool m_bindBindlessHeap = false;
+
             } m_state;
         };
         

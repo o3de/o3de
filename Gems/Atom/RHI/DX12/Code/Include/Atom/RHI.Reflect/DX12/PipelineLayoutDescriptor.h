@@ -39,7 +39,7 @@ namespace AZ
 
             /// The root indices of the SRG unbounded array resource descriptor tables (if any).
             /// TODO: This restriction should be lifted
-            static const uint32_t MaxUnboundedArrays = 8;
+            static const uint32_t MaxUnboundedArrays = 2;
             RootParameterIndex m_unboundedArrayResourceTables[MaxUnboundedArrays];
 
             /// If unbounded arrays are present, the bindless parameter index refers to the root argument designated for the bindless table

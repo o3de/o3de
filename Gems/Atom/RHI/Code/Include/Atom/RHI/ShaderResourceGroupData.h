@@ -215,7 +215,15 @@ namespace AZ
                 RTAccelerationStructure,
                 Count
             };
-            
+
+            // This number matches FrequencyId of SRG_Bindless within SRGSemanctics.azsli
+            // ShaderResourceGroupSemantic SRG_Bindless
+            // {
+            //     FrequencyId = 7;
+            // };
+            // TODO::Need a more data driven way here 
+            static const uint32_t BindlessSRGFrequencyId = 7;
+
             // Structure to hold all the bindless views and the BindlessResourceType related to it
             struct BindlessResourceViews
             {
