@@ -24,7 +24,6 @@ namespace AzNetworking
 #if AZ_TRAIT_USE_OPENSSL
     AZ_CVAR(bool, net_UdpUseEncryption, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Enable encryption on Udp based connections");
     AZ_CVAR(uint32_t, net_SslInflationOverhead, 32, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "A SSL fudge overhead value to take out of fragmented packet payloads");
-
 #else
     static const bool net_UdpUseEncryption = false;
     static const uint32_t net_SslInflationOverhead = 0;
@@ -38,6 +37,7 @@ namespace AzNetworking
     AZ_CVAR(int32_t, net_MaxTimeoutsPerFrame, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of packet timeouts to allow to process in a single frame");
     AZ_CVAR(float, net_RttFudgeScalar, 2.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scalar value to multiply computed Rtt by to determine an optimal packet timeout threshold");
     AZ_CVAR(uint32_t, net_FragmentedHeaderOverhead, 32, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "A fudge overhead value to take out of fragmented packet payloads");
+    AZ_CVAR(bool, net_FragmentsAlwaysReliable, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether fragmented packets should be reliable by default or use their source packet's reliability type");
     AZ_CVAR(AZ::CVarFixedString, net_UdpCompressor, "MultiplayerCompressor", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "UDP compressor to use."); // WARN: similar to encryption this needs to be set once and only once before creating the network interface
 
     static uint64_t ConstructTimeoutId(ConnectionId connectionId, PacketId packetId, ReliabilityType reliability)
@@ -549,7 +549,9 @@ namespace AzNetworking
                 const uint32_t nextChunkSize = AZStd::min(bytesRemaining, chunkSize);
                 chunkBuffer.CopyValues(chunkStart, nextChunkSize);
                 CorePackets::FragmentedPacket fragmentedPacket(ToSequenceId(localPacketId), fragmentedSequence, aznumeric_cast<uint8_t>(chunkIndex), aznumeric_cast<uint8_t>(numChunks), chunkBuffer);
-                const SequenceId chunkReliableId = (reliabilityType == ReliabilityType::Reliable) ? connection.m_reliableQueue.GetNextSequenceId() : InvalidSequenceId;
+                const SequenceId chunkReliableId = (net_FragmentsAlwaysReliable || reliabilityType == ReliabilityType::Reliable)
+                    ? connection.m_reliableQueue.GetNextSequenceId()
+                    : InvalidSequenceId;
                 SendPacket(connection, fragmentedPacket, chunkReliableId);
                 bytesRemaining -= nextChunkSize;
                 chunkStart += nextChunkSize;
