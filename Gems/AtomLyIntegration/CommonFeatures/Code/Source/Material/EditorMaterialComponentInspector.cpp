@@ -68,7 +68,7 @@ namespace AZ
             {
                 UnloadMaterial();
 
-                if (!EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterials(entityId, entityIdsToEdit, materialAssignmentId))
+                if (!EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialTypes(entityId, entityIdsToEdit, materialAssignmentId))
                 {
                     UnloadMaterial();
                     return false;
@@ -132,7 +132,7 @@ namespace AZ
                 const AZ::Data::AssetId materialAssetId = GetActiveMaterialAssetIdFromEntity();
                 return m_entityId.IsValid() && m_materialInstance && m_editData.m_materialAsset.IsReady() &&
                     m_editData.m_materialAsset.GetId() == materialAssetId && m_editData.m_materialAssetId == materialAssetId &&
-                    EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterials(m_entityId, m_entityIdsToEdit, m_materialAssignmentId);
+                    EditorMaterialComponentUtil::DoEntitiesHaveMatchingMaterialTypes(m_entityId, m_entityIdsToEdit, m_materialAssignmentId);
             }
 
             void MaterialPropertyInspector::Reset()

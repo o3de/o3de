@@ -57,7 +57,7 @@ namespace AZ
             void ClearMaterial();
 
             //! Remove property overrides
-            void ClearOverrides();
+            void ClearProperties();
 
             void OpenMaterialEditor() const;
             void OpenMaterialExporter(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
@@ -73,7 +73,7 @@ namespace AZ
         private:
             void OpenPopupMenu(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType);
             void OnMaterialChangedFromRPE() const;
-            void OnDataChanged(const AzToolsFramework::EntityIdSet& entityIdsToEdit) const;
+            void OnDataChanged(const AzToolsFramework::EntityIdSet& entityIdsToEdit, bool updateAsset) const;
             mutable bool m_updatePreview = true;
         };
 
