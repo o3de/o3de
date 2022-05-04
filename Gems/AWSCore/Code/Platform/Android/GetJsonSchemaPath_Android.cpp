@@ -19,13 +19,13 @@ namespace AWSCore
             static constexpr const char ResourceMapppingJsonSchemaFilePath[] =
                 "@products@/resource_mapping_schema.json";
 
-            char resolvedSchemaPath[AZ_MAX_PATH_LEN] = { 0 };
-            if (!AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(ResourceMapppingJsonSchemaFilePath, resolvedSchemaPath, AZ_MAX_PATH_LEN))
+            AZ::IO::FixedMaxPath resolvedSchemaPath;;
+            if (!AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(resolvedSchemaPath, ResourceMapppingJsonSchemaFilePath))
             {
                 return "";
             }
 
-            return resolvedSchemaPath;
+            return resolvedSchemaPath.c_str();
         }
     } // namespace Platform
 }
