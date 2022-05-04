@@ -42,9 +42,6 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
-            EditorModeFeedbackSystemComponent();
-            ~EditorModeFeedbackSystemComponent();
-
             // EditorComponentBase overrides ...
             void Activate() override;
             void Deactivate() override;
@@ -78,7 +75,7 @@ namespace AZ
             //! Used for loading the pass templates.
             RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
 
-            //!
+            //! Map of focused entitu
             AZStd::unordered_map<EntityId, FocusedEntity> m_focusedEntities;
         };
     } // namespace Render

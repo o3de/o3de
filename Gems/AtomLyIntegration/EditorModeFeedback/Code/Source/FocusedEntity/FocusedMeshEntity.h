@@ -18,43 +18,51 @@ namespace AZ
 {
     namespace Render
     {
-        class FocusedEntity
+        //! Representation of a focused entity's Atom mesh (if any).
+        //! @note It is not an error for an entity to not have any Atom mesh.
+        class FocuseMeshdEntity
             : private AZ::Render::AtomMeshNotificationBus::Handler
         {
         public:
-            FocusedEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial);
+            FocuseMeshdEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial);
+            ~FocuseMeshdEntity();
 
-            //FocusedEntity(const FocusedEntity& other);
-            //FocusedEntity(FocusedEntity&& other);
-
-            ~FocusedEntity();
-
+            //! Returns true if this entity can be drawn, otherwise false.
             bool CanDraw() const;
+
+            //! Draws the entity's Atom mesh.
             void Draw();
 
         private:
+
+            //! Retrieves the levol of detail index for this entity's Atom mesh.
             RPI::ModelLodIndex GetModelLodIndex(const RPI::ViewPtr view, Data::Instance<RPI::Model> model) const;
 
             //AtomMeshNotificationBus overrides ...
             void OnAcquireMesh(const MeshFeatureProcessorInterface::MeshHandle* meshHandle) override;
 
+            //! Builds the entity's drawable mesh data from scratch, overwriting any existing data.
             void CreateOrUpdateMeshDrawPackets(
                 const MeshFeatureProcessorInterface* featureProcessor,
                 const RPI::ModelLodIndex modelLodIndex,
                 Data::Instance<RPI::Model> model);
 
+            //! Clears the entity's mesh draw packets and other draw state.
             void ClearDrawData();
 
-            void AtomBusConnect();
-            //void AtomBusSoftConnect();
-            void AtomBusDisconnect();
+            // Builds the mesh draw packets for the Atom mesh.
+            void BuildMeshDrawPackets(
+                const Data::Asset<RPI::ModelAsset> modelAsset, Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg);
+
+            // Creates the mask shader resource group for the Atom mesh.
+            Data::Instance<RPI::ShaderResourceGroup> CreateMaskShaderResourceGroup(
+                const MeshFeatureProcessorInterface* featureProcessor) const;
 
             EntityId m_entityId;
             const MeshFeatureProcessorInterface::MeshHandle* m_meshHandle = nullptr;
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;
             RPI::ModelLodIndex m_modelLodIndex = RPI::ModelLodIndex::Null;
             AZStd::vector<RPI::MeshDrawPacket> m_meshDrawPackets;
-            //bool m_consumeMeshAcquisition = true;
         };
     } // namespace Render
 } // namespace AZ

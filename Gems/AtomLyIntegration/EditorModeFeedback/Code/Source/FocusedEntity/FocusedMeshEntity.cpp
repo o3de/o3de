@@ -39,45 +39,7 @@ namespace AZ
             return worldTM;
         }
 
-        // Creates the mask shader resource group for the specified mesh.
-        static Data::Instance<RPI::ShaderResourceGroup> CreateMaskShaderResourceGroup(
-            const MeshFeatureProcessorInterface* featureProcessor,
-            const MeshFeatureProcessorInterface::MeshHandle& meshHandle,
-            Data::Instance<RPI::Material> maskMaterial)
-        {
-            const auto& shaderAsset = maskMaterial->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
-            const auto& objectSrgLayout = maskMaterial->GetAsset()->GetObjectSrgLayout();
-            const auto maskMeshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
-
-            // Set the object id so the correct MVP matrices can be selected in the shader
-            const auto objectId = featureProcessor->GetObjectId(meshHandle).GetIndex();
-            RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
-            maskMeshObjectSrg->SetConstant(objectIdIndex, objectId);
-            maskMeshObjectSrg->Compile();
-
-            return maskMeshObjectSrg;
-        }
-
-        // Builds the mesh draw packets for the specified model.
-        static AZStd::vector<RPI::MeshDrawPacket> BuildMeshDrawPackets(
-            const RPI::ModelLodIndex& modelLodIndex,
-            const Data::Asset<RPI::ModelAsset> modelAsset,
-            Data::Instance<RPI::Material> material,
-            Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg)
-        {
-            AZStd::vector<RPI::MeshDrawPacket> meshDrawPackets;
-            const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[modelLodIndex.m_index];
-            Data::Instance<RPI::ModelLod> modelLod = RPI::ModelLod::FindOrCreate(modelLodAsset, modelAsset).get();
-
-            for (size_t i = 0; i < modelLod->GetMeshes().size(); i++)
-            {
-                RPI::MeshDrawPacket drawPacket(*modelLod, i, material, meshObjectSrg);
-                meshDrawPackets.emplace_back(drawPacket);
-            }
-
-            return meshDrawPackets;
-        }
-
+        // Utility class for common drawable data
         class DrawableMetaData
         {
         public:
@@ -109,70 +71,30 @@ namespace AZ
             MeshFeatureProcessorInterface* m_featureProcessor = nullptr;
         };
 
-        FocusedEntity::FocusedEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial)
+        FocuseMeshdEntity::FocuseMeshdEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial)
             : m_entityId(entityId)
             , m_maskMaterial(maskMaterial)
         {
-            AtomBusConnect();
-        }
-
-        //FocusedEntity::FocusedEntity(const FocusedEntity& other)
-        //{
-        //    m_entityId = other.m_entityId;
-        //    m_maskMaterial = other.m_maskMaterial;
-        //    m_meshHandle = other.m_meshHandle;
-        //    m_modelLodIndex = other.m_modelLodIndex;
-        //    //m_meshDrawPackets = other.m_meshDrawPackets;
-        //
-        //    AtomBusConnect();
-        //}
-        //
-        //FocusedEntity::FocusedEntity(FocusedEntity&& other)
-        //{
-        //    m_entityId = other.m_entityId;
-        //    m_maskMaterial = other.m_maskMaterial;
-        //    m_meshHandle = other.m_meshHandle;
-        //    m_modelLodIndex = other.m_modelLodIndex;
-        //    m_meshDrawPackets = AZStd::move(other.m_meshDrawPackets);
-        //
-        //    //AtomBusSoftConnect();
-        //    AtomBusConnect();
-        //    other.AtomBusDisconnect();
-        //}
-        
-        FocusedEntity::~FocusedEntity()
-        {
-            AtomBusDisconnect();
-        }
-
-        void FocusedEntity::AtomBusConnect()
-        {
             AZ::Render::AtomMeshNotificationBus::Handler::BusConnect(m_entityId);
         }
-
-        //void FocusedEntity::AtomBusSoftConnect()
-        //{
-        //    m_consumeMeshAcquisition = false;
-        //    AtomBusConnect();
-        //}
-
-        void FocusedEntity::AtomBusDisconnect()
+        
+        FocuseMeshdEntity::~FocuseMeshdEntity()
         {
             AZ::Render::AtomMeshNotificationBus::Handler::BusDisconnect();
         }
 
-        void FocusedEntity::ClearDrawData()
+        void FocuseMeshdEntity::ClearDrawData()
         {
             m_modelLodIndex = RPI::ModelLodIndex::Null;
             m_meshDrawPackets.clear();
         }
         
-        bool FocusedEntity::CanDraw() const
+        bool FocuseMeshdEntity::CanDraw() const
         {
             return !m_meshDrawPackets.empty();
         }
 
-        void FocusedEntity::Draw()
+        void FocuseMeshdEntity::Draw()
         {
             if (!CanDraw())
             {
@@ -186,6 +108,8 @@ namespace AZ
             }
         
             const DrawableMetaData drawabaleMetaData(m_entityId);
+
+            // If the mesh level of detail index has changed, rebuild the mesh draw packets with the new index
             const auto model = drawabaleMetaData.GetFeatureProcessor()->GetModel(*m_meshHandle);
             if (const auto modelLodIndex = GetModelLodIndex(drawabaleMetaData.GetView(), model);
                 m_modelLodIndex != modelLodIndex)
@@ -201,32 +125,22 @@ namespace AZ
             }
         }
          
-        RPI::ModelLodIndex FocusedEntity::GetModelLodIndex(const RPI::ViewPtr view, Data::Instance<RPI::Model> model) const
+        RPI::ModelLodIndex FocuseMeshdEntity::GetModelLodIndex(const RPI::ViewPtr view, Data::Instance<RPI::Model> model) const
         {
             const auto worldTM = GetWorldTransformForEntity(m_entityId);
             return RPI::ModelLodUtils::SelectLod(view.get(), worldTM, *model);
         }
         
-        void FocusedEntity::OnAcquireMesh(const MeshFeatureProcessorInterface::MeshHandle* meshHandle)
+        void FocuseMeshdEntity::OnAcquireMesh(const MeshFeatureProcessorInterface::MeshHandle* meshHandle)
         {
-            //if (!m_consumeMeshAcquisition)
-            //{
-            //    m_consumeMeshAcquisition = true;
-            //    return;
-            //}
-
-            AZ_Printf("OnAcquireMesh", "%s", m_entityId.ToString().c_str());
-
             m_meshHandle = meshHandle;
-            const auto scene = RPI::Scene::GetSceneForEntityId(m_entityId);
-            const auto view = GetViewFromScene(scene);
-            const auto* featureProcessor = scene->GetFeatureProcessor<MeshFeatureProcessorInterface>();
-            const auto model = featureProcessor->GetModel(*m_meshHandle);
-            const auto modelLodIndex = GetModelLodIndex(view, model);
-            CreateOrUpdateMeshDrawPackets(featureProcessor, modelLodIndex, model);
+            const DrawableMetaData drawabaleMetaData(m_entityId);
+            const auto model = drawabaleMetaData.GetFeatureProcessor()->GetModel(*m_meshHandle);
+            const auto modelLodIndex = GetModelLodIndex(drawabaleMetaData.GetView(), model);
+            CreateOrUpdateMeshDrawPackets(drawabaleMetaData.GetFeatureProcessor(), modelLodIndex, model);
         }
         
-        void FocusedEntity::CreateOrUpdateMeshDrawPackets(
+        void FocuseMeshdEntity::CreateOrUpdateMeshDrawPackets(
             const MeshFeatureProcessorInterface* featureProcessor, const RPI::ModelLodIndex modelLodIndex, Data::Instance<RPI::Model> model)
         {
             if (!m_meshHandle || !m_meshHandle->IsValid())
@@ -235,22 +149,42 @@ namespace AZ
             }
         
             ClearDrawData();
-        
-            // Build the mesh draw packets for this mesh if no draw packets currently exist or if the LoD for the
-            // draw packets no longer matches the loD of the model
+
             if (m_meshHandle->IsValid())
             {
-                // The id value to write to the mask texture for this entity (unused in the current use case)
-                const auto maskMeshObjectSrg =
-                    CreateMaskShaderResourceGroup(featureProcessor, *m_meshHandle, m_maskMaterial);
+                const auto maskMeshObjectSrg = CreateMaskShaderResourceGroup(featureProcessor);
                 m_modelLodIndex = modelLodIndex;
-        
-                m_meshDrawPackets = BuildMeshDrawPackets(
-                    m_modelLodIndex,
-                    model->GetModelAsset(),
-                    m_maskMaterial,
-                    maskMeshObjectSrg);
+                BuildMeshDrawPackets(model->GetModelAsset(), maskMeshObjectSrg);
             }
+        }
+
+        void FocuseMeshdEntity::BuildMeshDrawPackets(
+            const Data::Asset<RPI::ModelAsset> modelAsset, Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg)
+        {
+            const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[m_modelLodIndex.m_index];
+            Data::Instance<RPI::ModelLod> modelLod = RPI::ModelLod::FindOrCreate(modelLodAsset, modelAsset).get();
+
+            for (size_t i = 0; i < modelLod->GetMeshes().size(); i++)
+            {
+                RPI::MeshDrawPacket drawPacket(*modelLod, i, m_maskMaterial, meshObjectSrg);
+                m_meshDrawPackets.emplace_back(drawPacket);
+            }
+        }
+
+        Data::Instance<RPI::ShaderResourceGroup> FocuseMeshdEntity::CreateMaskShaderResourceGroup(
+            const MeshFeatureProcessorInterface* featureProcessor) const
+        {
+            const auto& shaderAsset = m_maskMaterial->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+            const auto& objectSrgLayout = m_maskMaterial->GetAsset()->GetObjectSrgLayout();
+            const auto maskMeshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
+
+            // Set the object id so the correct MVP matrices can be selected in the shader
+            const auto objectId = featureProcessor->GetObjectId(*m_meshHandle).GetIndex();
+            RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
+            maskMeshObjectSrg->SetConstant(objectIdIndex, objectId);
+            maskMeshObjectSrg->Compile();
+
+            return maskMeshObjectSrg;
         }
     } // namespace Render
 } // namespace AZ

@@ -99,6 +99,8 @@ namespace WhiteBox
         //! White box model name.
         static constexpr AZStd::string_view ModelName = "WhiteBoxMesh";
 
+        //! Delegate for AtomMesh bus connection due to the EntityId at the time of instantiation
+        //! being different from the EntityId at the time of the calls to BuildMesh.
         class AtomBusDelegate;
         AZStd::unique_ptr<AtomBusDelegate> m_atomBusDelegate;
     };

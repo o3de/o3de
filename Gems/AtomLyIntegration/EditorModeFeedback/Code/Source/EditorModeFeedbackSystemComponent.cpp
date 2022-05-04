@@ -59,9 +59,6 @@ namespace AZ
             EditorModeFeatureProcessor::Reflect(context);
         }
 
-        EditorModeFeedbackSystemComponent::EditorModeFeedbackSystemComponent() = default;
-        EditorModeFeedbackSystemComponent::~EditorModeFeedbackSystemComponent() = default;
-
         void EditorModeFeedbackSystemComponent::Activate()
         {
             AzFramework::ApplicationRequests::Bus::Broadcast(
@@ -164,13 +161,13 @@ namespace AZ
             {
                 return;
             }
-            
+
             const auto focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
             if (!focusModeInterface)
             {
                 return;
             }
-            
+ 
             if (!m_maskMaterial)
             {
                 m_maskMaterial = CreateMaskMaterial();
@@ -182,8 +179,6 @@ namespace AZ
                 if (auto focusedEntity = m_focusedEntities.find(focusedEntityId);
                     focusedEntity == m_focusedEntities.end())
                 {
-                    //auto keyVal = AZStd::pair<EntityId, FocusedEntity>(focusedEntityId, AZStd::move(FocusedEntity(focusedEntityId, m_maskMaterial)));
-                    //m_focusedEntities.emplace(AZStd::make_pair<EntityId, FocusedEntity>(focusedEntityId, AZStd::move(FocusedEntity(focusedEntityId, m_maskMaterial))));
                     m_focusedEntities.emplace(AZStd::piecewise_construct, AZStd::forward_as_tuple(focusedEntityId), AZStd::forward_as_tuple(focusedEntityId, m_maskMaterial));
                 }
             }
