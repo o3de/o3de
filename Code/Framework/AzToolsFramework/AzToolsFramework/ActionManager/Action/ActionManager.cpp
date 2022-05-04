@@ -88,7 +88,7 @@ namespace AzToolsFramework
         return nullptr;
     }
 
-    const QAction* ActionManager::GetActionConst(AZStd::string_view actionIdentifier)
+    const QAction* ActionManager::GetActionConst(AZStd::string_view actionIdentifier) const
     {
         if (m_actions.contains(actionIdentifier))
         {

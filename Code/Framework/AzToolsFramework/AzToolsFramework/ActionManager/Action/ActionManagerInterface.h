@@ -47,7 +47,7 @@ namespace AzToolsFramework
 
         //! Retrieve a QAction via its identifier.
         virtual QAction* GetAction(AZStd::string_view actionIdentifier) = 0;
-        virtual const QAction* GetActionConst(AZStd::string_view actionIdentifier) = 0;
+        virtual const QAction* GetActionConst(AZStd::string_view actionIdentifier) const = 0;
     };
 
 } // namespace AzToolsFramework
