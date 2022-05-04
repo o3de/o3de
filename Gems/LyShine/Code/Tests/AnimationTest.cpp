@@ -9,14 +9,8 @@
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
 #include <AzCore/UnitTest/Mocks/MockITime.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Application/Application.h>
-#include <AzFramework/Entity/GameEntityContextComponent.h>
-#include <AzFramework/Asset/AssetSystemComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/IO/Streamer/StreamerComponent.h>
-#include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Slice/SliceSystemComponent.h>
 
 #include <UiCanvasComponent.h>
 #include <Animation/AnimSequence.h>
@@ -88,20 +82,6 @@ namespace UnitTest
             m_timeSystem = AZStd::make_unique<UnitTest::AnimationTestStubTimer>();
         }
 
-        // override and only include system components required for tests.
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override
-        {
-            return AZ::ComponentTypeList{
-                azrtti_typeid<AZ::MemoryComponent>(),
-                azrtti_typeid<AZ::AssetManagerComponent>(),
-                azrtti_typeid<AZ::JobManagerComponent>(),
-                azrtti_typeid<AZ::StreamerComponent>(),
-                azrtti_typeid<AZ::SliceSystemComponent>(),
-                azrtti_typeid<AzFramework::GameEntityContextComponent>(),
-                azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
-            };
-        }
-
         UnitTest::AnimationTestStubTimer* GetTimer()
         {
             return azdynamic_cast<UnitTest::AnimationTestStubTimer*>(m_timeSystem.get());
@@ -128,6 +108,11 @@ namespace UnitTest
             m_systemEntity = m_application->Create(appDesc);
             m_systemEntity->Init();
             m_systemEntity->Activate();
+
+            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
+            // in the unit tests.
+            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         }
 
         void SetupEnvironment() override
