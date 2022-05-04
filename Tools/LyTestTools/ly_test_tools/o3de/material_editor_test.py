@@ -752,7 +752,7 @@ class MaterialEditorTestSuite:
             if name not in found_jsons.keys():
                 results[test_spec.__name__] = Result.Unknown(
                     test_spec, output,
-                    f"Found no test run information on stdout for {name} in the editor log",
+                    f"Found no test run information on stdout for {name} in the MaterialEditor log",
                     material_editor_log_content)
             else:
                 result = None
@@ -813,7 +813,6 @@ class MaterialEditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        test_run_python_command = "--runpythontest"
         test_cmdline_args += [
             "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
             f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
@@ -833,9 +832,9 @@ class MaterialEditorTestSuite:
         results = {}
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
-                      test_run_python_command, test_filename, "--exitaftercommands",
-                      "-logfile", f"@log@/{log_name}",
-                      "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+           "--runpythontest", test_filename, "--exitaftercommands",
+           "-logfile", f"@log@/{log_name}",
+           "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
@@ -905,7 +904,6 @@ class MaterialEditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        test_run_python_command = "--runpython"
         test_cmdline_args += [
             "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
             f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
@@ -924,9 +922,9 @@ class MaterialEditorTestSuite:
         test_filenames_str = ";".join(
             editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
         cmdline = [
-                      test_run_python_command, test_filenames_str, "--exitaftercommands",
-                      "-logfile", f"@log@/{log_name}",
-                      "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+            "--runpythontest", test_filenames_str,
+            "-logfile", f"@log@/{log_name}",
+            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
 
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -1052,7 +1050,7 @@ class MaterialEditorTestSuite:
             result = {"Unknown":
                 Result.Unknown(
                     test_spec=test_spec,
-                    extra_info="Unexpectedly found no test run information on stdout in the editor log")}
+                    extra_info="Unexpectedly found no test run information on stdout in the MaterialEditor log")}
         material_editor_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
