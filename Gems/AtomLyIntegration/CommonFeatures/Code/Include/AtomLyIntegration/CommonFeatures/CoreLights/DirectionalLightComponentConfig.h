@@ -118,6 +118,10 @@ namespace AZ
             // If true, sample between two adjacent shadow map cascades in a small boundary area to smooth out the transition.
             bool m_cascadeBlendingEnabled = false;
 
+            // Global Illumination
+            bool m_affectsGI = true;
+            float m_affectsGIFactor = 1.0f;
+
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
             bool IsCascadeCorrectionDisabled() const;
