@@ -81,7 +81,7 @@ namespace WhiteBox
         //! Enter the sub-mode for edge restore.
         void EnterEdgeRestoreMode();
 
-        //!Enter the sub-mode for transforming
+        //! Enter the sub-mode for transforming
         void EnterTransformMode();
 
         //! Create the Viewport UI cluster for sub mode selection.

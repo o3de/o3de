@@ -494,7 +494,6 @@ namespace WhiteBox
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_modeSelectionClusterId);
 
-
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_transformClusterId);
@@ -517,7 +516,7 @@ namespace WhiteBox
         // create and register the buttons
         m_defaultModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
         m_edgeRestoreModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "RestoreMode");
-        m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "select_object");
+        m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "TransformMode");
 
         // set button tooltips
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(

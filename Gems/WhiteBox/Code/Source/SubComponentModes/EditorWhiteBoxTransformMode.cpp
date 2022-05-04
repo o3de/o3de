@@ -1,6 +1,6 @@
 
-#include "EditorWhiteBoxComponentModeCommon.h"
 #include "EditorWhiteBoxTransformMode.h"
+#include "EditorWhiteBoxComponentModeCommon.h"
 #include "Viewport/WhiteBoxModifierUtil.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 
@@ -15,28 +15,31 @@
 
 namespace WhiteBox
 {
-        AZ_CLASS_ALLOCATOR_IMPL(TransformMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TransformMode, AZ::SystemAllocator, 0)
 
-        void TransformMode::Refresh() {
+    void TransformMode::Refresh()
+    {
+    }
 
-        }
-
-        AZStd::vector<AzToolsFramework::ActionOverride> TransformMode::PopulateActions(
-            const AZ::EntityComponentIdPair& entityComponentIdPair) {
-            return {};
-        }
-        void TransformMode::Display(
-            const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Transform& worldFromLocal,
-            const IntersectionAndRenderData& renderData, const AzFramework::ViewportInfo& viewportInfo,
-            AzFramework::DebugDisplayRequests& debugDisplay) {
-            
-            }
-        bool TransformMode::HandleMouseInteraction(
-            const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
-            const AZ::EntityComponentIdPair& entityComponentIdPair,
-            const AZStd::optional<EdgeIntersection>& edgeIntersection,
-            const AZStd::optional<PolygonIntersection>& polygonIntersection,
-            const AZStd::optional<VertexIntersection>& vertexIntersection) {
-                return false;
-            }
-} // namespace Whitebox
+    AZStd::vector<AzToolsFramework::ActionOverride> TransformMode::PopulateActions(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    {
+        return {};
+    }
+    void TransformMode::Display(
+        const AZ::EntityComponentIdPair& entityComponentIdPair,
+        const AZ::Transform& worldFromLocal,
+        const IntersectionAndRenderData& renderData,
+        const AzFramework::ViewportInfo& viewportInfo,
+        AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+    }
+    bool TransformMode::HandleMouseInteraction(
+        const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
+        const AZ::EntityComponentIdPair& entityComponentIdPair,
+        const AZStd::optional<EdgeIntersection>& edgeIntersection,
+        const AZStd::optional<PolygonIntersection>& polygonIntersection,
+        const AZStd::optional<VertexIntersection>& vertexIntersection)
+    {
+        return false;
+    }
+} // namespace WhiteBox
