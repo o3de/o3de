@@ -328,6 +328,11 @@ set(FILES
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h
+    UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
+    UI/DocumentPropertyEditor/PropertyHandlerWidget.h
+    UI/DocumentPropertyEditor/PropertyHandlerRegistryInterface.h>
+    UI/DocumentPropertyEditor/PropertyHandlerRegistry.cpp>
+    UI/DocumentPropertyEditor/PropertyHandlerRegistry.h>
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/Layer/AddToLayerMenu.cpp
