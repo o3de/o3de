@@ -65,7 +65,13 @@ namespace Multiplayer
         }
     }
 
-    MultiplayerEditorConnection::~MultiplayerEditorConnection() = default;
+    MultiplayerEditorConnection::~MultiplayerEditorConnection()
+    {
+        if (m_inMemorySpawnableAssetContainer != nullptr)
+        {
+            m_inMemorySpawnableAssetContainer->ClearAllInMemorySpawnableAssets();
+        }
+    }
 
     void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
     {

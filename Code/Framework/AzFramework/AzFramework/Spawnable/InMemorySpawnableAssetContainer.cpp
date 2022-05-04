@@ -144,10 +144,8 @@ namespace AzFramework
 
         // Remove the .spawnable file extension before passing it to the other CreateInMemorySpawnableAsset method, which will add it back in
         AZStd::string spawablePathSansFileExtension = assetRelativePath;
-        if (StringFunc::Path::HasExtension(spawablePathSansFileExtension.c_str()))
-        {
-            spawablePathSansFileExtension = assetRelativePath.substr(0, assetRelativePath.length() - strlen(Spawnable::DotFileExtension));
-        }
+        StringFunc::Path::StripExtension(spawablePathSansFileExtension);
+        
         return CreateInMemorySpawnableAsset(assetDataInfoContainer, loadReferencedAssets, spawablePathSansFileExtension);
     }
 
