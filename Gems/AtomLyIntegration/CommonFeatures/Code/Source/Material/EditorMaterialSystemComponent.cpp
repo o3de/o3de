@@ -151,8 +151,8 @@ namespace AZ
         }
 
         void EditorMaterialSystemComponent::OpenMaterialInspector(
-            const AZ::EntityId& entityId,
-            const AzToolsFramework::EntityIdSet& entityIds,
+            const AZ::EntityId& primaryEntityId,
+            const AzToolsFramework::EntityIdSet& entityIdsToEdit,
             const AZ::Render::MaterialAssignmentId& materialAssignmentId)
         {
             auto dockWidget = AzToolsFramework::InstanceViewPane("Material Property Inspector");
@@ -161,7 +161,7 @@ namespace AZ
                 auto inspector = static_cast<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector*>(dockWidget->widget());
                 if (inspector)
                 {
-                    inspector->LoadMaterial(entityId, entityIds, materialAssignmentId);
+                    inspector->LoadMaterial(primaryEntityId, entityIdsToEdit, materialAssignmentId);
                 }
             }
         }

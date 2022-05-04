@@ -67,7 +67,7 @@ namespace AZ
             //! Open the material exporter, aka generate source materials dialog, and apply resulting materials to a set of entities
             void OpenMaterialExporter(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
 
-            //! Open the material instance inspector, displaying this entity's active material, applying changes to all entities in the set
+            //! Open the material instance inspector to edit material property overrides for a set of entities 
             void OpenMaterialInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
 
             //! Opens the dialog for you mapping UV channels for models and materials
