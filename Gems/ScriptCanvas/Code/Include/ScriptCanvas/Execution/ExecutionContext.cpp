@@ -215,11 +215,6 @@ namespace ScriptCanvas
             }
         }
 
-        void Context::UnloadData(RuntimeData& runtimeData)
-        {
-            Execution::InterpretedUnloadData(runtimeData);
-        }
-
         TypeErasedReference::TypeErasedReference(void* address, const AZ::TypeId& type)
             : m_address(address)
             , m_type(type)

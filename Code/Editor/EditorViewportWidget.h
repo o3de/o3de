@@ -6,38 +6,35 @@
  *
  */
 
-
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-
 #include <QSet>
 
-#include "Viewport.h"
+#include "EditorModularViewportCameraComposer.h"
+#include "EditorViewportSettings.h"
 #include "Objects/DisplayContext.h"
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
-#include "EditorViewportSettings.h"
-#include "EditorModularViewportCameraComposer.h"
+#include "Viewport.h"
 
+#include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/RPI.Public/ViewportContext.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzFramework/Viewport/ViewportBus.h>
+#include <AzFramework/Visibility/EntityVisibilityQuery.h>
+#include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <MathConversion.h>
-#include <Atom/RPI.Public/ViewportContext.h>
-#include <Atom/RPI.Public/SceneBus.h>
-#include <AzFramework/Components/CameraBus.h>
 #endif
-
-#include <AzFramework/Windowing/WindowBus.h>
-#include <AzFramework/Visibility/EntityVisibilityQuery.h>
-#include <AzFramework/Viewport/ViewportBus.h>
 
 // forward declarations.
 class CBaseObject;
@@ -50,7 +47,7 @@ struct IVariable;
 namespace AZ::ViewportHelpers
 {
     class EditorEntityNotifications;
-} //namespace AZ::ViewportHelpers
+} // namespace AZ::ViewportHelpers
 
 namespace AtomToolsFramework
 {
@@ -84,7 +81,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     bool HelpersVisible() const override;
 };
 
-// EditorViewportWidget window
+//! EditorViewportWidget window
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API EditorViewportWidget final
@@ -100,8 +97,8 @@ class SANDBOX_API EditorViewportWidget final
     , private AzFramework::AssetCatalogEventBus::Handler
     , private AZ::RPI::SceneNotificationBus::Handler
 {
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     Q_OBJECT
 
 public:
@@ -120,7 +117,8 @@ public:
     void DisconnectViewportInteractionRequestBus();
 
     // QtViewport/IDisplayViewport/CViewport
-    // These methods are made public in the derived class because they are called with an object whose static type is known to be this class type.
+    // These methods are made public in the derived class because they are called with an object whose static type is known to be this class
+    // type.
     void SetFOV(float fov) override;
     float GetFOV() const override;
 
@@ -140,7 +138,9 @@ private:
 
     enum class PlayInEditorState
     {
-        Editor, Starting, Started
+        Editor,
+        Starting,
+        Started
     };
 
     enum class KeyPressedState
@@ -162,14 +162,28 @@ private:
     void mousePressEvent(QMouseEvent* event) override;
 
     // QtViewport/IDisplayViewport/CViewport overrides ...
-    EViewportType GetType() const override { return ET_ViewportCamera; }
-    void SetType([[maybe_unused]] EViewportType type) override { assert(type == ET_ViewportCamera); };
+    EViewportType GetType() const override
+    {
+        return ET_ViewportCamera;
+    }
+
+    void SetType([[maybe_unused]] EViewportType type) override
+    {
+        assert(type == ET_ViewportCamera);
+    };
+
     AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteraction(
         Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point) override;
     void SetViewportId(int id) override;
     QPoint WorldToView(const Vec3& wp) const override;
     Vec3 WorldToView3D(const Vec3& wp, int nFlags = 0) const override;
-    Vec3 ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override;
+    Vec3 ViewToWorld(
+        const QPoint& vp,
+        bool* collideWithTerrain = nullptr,
+        bool onlyTerrain = false,
+        bool bSkipVegetation = false,
+        bool bTestRenderMesh = false,
+        bool* collideWithObject = nullptr) const override;
     void ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const override;
     Vec3 ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh = false) override;
     float GetScreenScaleFactor(const Vec3& worldPoint) const override;
@@ -298,7 +312,11 @@ private:
     QPoint ViewportToWidget(const QPoint& point) const;
     QSize WidgetToViewport(const QSize& size) const;
 
-    const DisplayContext& GetDisplayContext() const { return m_displayContext; }
+    const DisplayContext& GetDisplayContext() const
+    {
+        return m_displayContext;
+    }
+
     CBaseObject* GetCameraObject() const;
 
     void UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const;
