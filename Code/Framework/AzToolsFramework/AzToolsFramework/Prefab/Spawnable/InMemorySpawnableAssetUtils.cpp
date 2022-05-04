@@ -10,13 +10,10 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
 #include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetUtils.h>
-#include <AzFramework/Spawnable/Spawnable.h>
-#include <AzFramework/Spawnable/SpawnableAssetBus.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
