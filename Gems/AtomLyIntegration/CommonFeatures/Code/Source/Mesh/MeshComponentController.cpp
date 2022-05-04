@@ -126,11 +126,11 @@ namespace AZ
             }
 
             values.reserve(lodCount + 1);
-            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default (Highest)" });
+            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default LOD 0 (Highest Detail)" });
 
             for (uint32_t i = 1; i < lodCount; ++i)
             {
-                AZStd::string enumDescription = AZStd::string::format("Lod %i", i);
+                AZStd::string enumDescription = AZStd::string::format("LOD %i", i);
                 values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(i), enumDescription.c_str() });
             }
 

@@ -31,10 +31,10 @@ class TestGradientRequiresShape(object):
             "New entity with no parent created: SUCCESS",
             "Mesh component added to entity: SUCCESS",
             "Entity has a Mesh component: SUCCESS",
-            "GetSetCompare Test Controller|Configuration|Mesh Asset: SUCCESS",
-            "GetSetCompare Clear Controller|Configuration|Mesh Asset: SUCCESS",
-            "PTE Test Controller|Configuration|Mesh Asset: SUCCESS",
-            "PTE Clear Controller|Configuration|Mesh Asset: SUCCESS",
+            "GetSetCompare Test Controller|Configuration|Model Asset: SUCCESS",
+            "GetSetCompare Clear Controller|Configuration|Model Asset: SUCCESS",
+            "PTE Test Controller|Configuration|Model Asset: SUCCESS",
+            "PTE Clear Controller|Configuration|Model Asset: SUCCESS",
             ]
         
         test_case_file = os.path.join(os.path.dirname(__file__), 'ComponentAssetCommands_test_case.py')

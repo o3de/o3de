@@ -126,7 +126,7 @@ if(pteObj.IsSuccess()):
 
 # Tests for the Asset<> case
 testAssetId = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', 'assets/objects/foliage/cedar.azmodel', math.Uuid(), False)
-GetSetCompareTest(component, "Controller|Configuration|Mesh Asset", testAssetId)
-PteTest(pte, "Controller|Configuration|Mesh Asset", testAssetId)
+GetSetCompareTest(component, "Controller|Configuration|Model Asset", testAssetId)
+PteTest(pte, "Controller|Configuration|Model Asset", testAssetId)
 
 editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'ExitNoPrompt')
