@@ -39,11 +39,8 @@ local SourceProjectUserPathRegistryKey <const> = "/O3DE/Runtime/FilePaths/Source
 local ConsoleCommandQuitRegistryKey <const> = "/Amazon/AzCore/Runtime/ConsoleCommands/quit"
 
 function OutputProfileData:TryDisconnect()
-    if (self.active) then
-        self.active = false
-        self.profileCaptureNotificationHandler:Disconnect()
-        self.tickHandler:Disconnect()
-    end
+    self.profileCaptureNotificationHandler:Disconnect()
+    self.tickHandler:Disconnect()
 end
 
 function OutputProfileData:TryQuitOnComplete()
@@ -71,7 +68,6 @@ function OutputProfileData:OnActivate()
         local frameTimeRecordingActivateValue = g_SettingsRegistry:GetBool(FrameTimeRecordingActiveRegistryKey)
         if (not frameTimeRecordingActivateValue:has_value() or not frameTimeRecordingActivateValue:value()) then
             Debug:Log("OutputProfileData:OnActivate - Missing registry setting to activate frame time recording, aborting data collection")
-            self:TryQuitOnComplete()
             return
         end
 
@@ -100,11 +96,18 @@ function OutputProfileData:OnActivate()
         -- register for ebus callbacks
         self.tickHandler = TickBus.Connect(self)
         self.profileCaptureNotificationHandler = ProfilingCaptureNotificationBus.Connect(self)
-        self.active = true
+
+        -- output test metadata
+        ProfilingCaptureRequestBus.Broadcast.CaptureBenchmarkMetadata(
+            self.profileName, tostring(self.outputFolder) .. "/benchmark_metadata.json")
     end
 end
 
 function OutputProfileData:OnTick()
+    if (not self.active) then -- wait for benchmark metadata to get written before starting
+        return
+    end
+
     self.frameCount = self.frameCount + 1
     if (self.frameCount <= self.frameDelayCount) then
         return
@@ -123,6 +126,19 @@ end
 function OutputProfileData:OnCaptureCpuFrameTimeFinished(successful, capture_output_path)
     if (self.captureInProgress and self.cpuTimingsOutputPath == capture_output_path) then
         self:CaptureFinished()
+    end
+end
+
+function OutputProfileData:OnCaptureBenchmarkMetadataFinished(successful, info)
+    if (not successful) then
+        Debug:Log("OutputProfileData - Failed to capture benchmark metadata, aborting data collection")
+        -- force profile to end asap without trying to record
+        self.frameCount = self.frameDelayCount
+        self.captureCount = self.FrameCaptureCount
+        self:TryDisconnect()
+        self:TryQuitOnComplete()
+    else
+        self.active = true
     end
 end
 
