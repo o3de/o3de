@@ -8,42 +8,41 @@
 
 #pragma once
 
-// include MCore
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <MCore/Source/StandardHeaders.h>
-#include <EMotionFX/Source/PlayBackInfo.h>
 #include <QWidget>
-#include <QLabel>
 #endif
 
-
 QT_FORWARD_DECLARE_CLASS(QPushButton)
-
 
 namespace EMStudio
 {
     // forward declarations
+    class MotionExtractionWindow;
+    class MotionRetargetingWindow;
     class MotionWindowPlugin;
 
     class MotionPropertiesWindow
         : public QWidget
     {
-        Q_OBJECT
-        MCORE_MEMORYOBJECTCATEGORY(MotionPropertiesWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
+        Q_OBJECT // AUTOMOC
 
     public:
-        enum
-        {
-            CLASS_ID = 0x00000005
-        };
-
         MotionPropertiesWindow(QWidget* parent, MotionWindowPlugin* motionWindowPlugin);
         ~MotionPropertiesWindow();
 
-        void Init();
+        void UpdateMotions();
+        void UpdateInterface();
 
         void AddSubProperties(QWidget* widget);
         void FinalizeSubProperties();
+
+    private:
+        MotionWindowPlugin* m_motionWindowPlugin = nullptr;
+        MotionExtractionWindow* m_motionExtractionWindow = nullptr;
+        MotionRetargetingWindow* m_motionRetargetingWindow = nullptr;
+
+        static constexpr const char* s_headerIcon = ":/EMotionFX/ActorComponent.svg";
     };
 } // namespace EMStudio

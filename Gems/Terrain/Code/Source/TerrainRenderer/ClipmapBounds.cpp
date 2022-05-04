@@ -275,4 +275,12 @@ namespace Terrain
             clipSpaceAabb.m_max.m_x * m_scale, clipSpaceAabb.m_max.m_y * m_scale, 0.0f
         );
     }
+
+    AZ::Vector2 ClipmapBounds::GetNormalizedCenter() const
+    {
+        AZ::Vector2 normalizedCenter(aznumeric_cast<float>(m_modCenter.m_x) + 0.5f, aznumeric_cast<float>(m_modCenter.m_y) + 0.5f);
+        normalizedCenter /= aznumeric_cast<float>(m_size);
+        return normalizedCenter;
+    }
+
 }

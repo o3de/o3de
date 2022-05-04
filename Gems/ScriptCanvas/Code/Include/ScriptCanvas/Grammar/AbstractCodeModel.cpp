@@ -45,7 +45,7 @@ namespace AbstractCodeModelCpp
     (const AZStd::unordered_multimap<const Nodes::Core::FunctionDefinitionNode*, ExecutionTreePtr>& lhs
         , const AZStd::unordered_set< const Nodes::Core::FunctionDefinitionNode*>& rhs)
     {
-        AZStd::unordered_set< const Nodes::Core::FunctionDefinitionNode*> intersection;
+        AZStd::unordered_set<const Nodes::Core::FunctionDefinitionNode*> intersection;
 
         for (auto candidate : lhs)
         {
@@ -254,7 +254,13 @@ namespace ScriptCanvas
 
                 variable->m_isExposedToConstruction = sourceVariable->IsComponentProperty();
                 // also, all nodeables with !empty editor data have to be exposed
-                // \todo future optimizations will involve checking equality against a default constructed object   
+                // \todo future optimizations will involve checking equality against a default constructed object
+
+                if (IsEntityIdAndValueIsNotUseable(variable))
+                {
+                    AddError(AZ::EntityId(), nullptr, ParseErrors::DirectEntityReferencesNotAllowed);
+                }
+                // \todo add warning on invalid entity id, it's probably never useful
             }
         }
 
@@ -2360,6 +2366,8 @@ namespace ScriptCanvas
             ParseConstructionInputVariables();
             // now that externally initialized data has been identified, associate local, static initializers with individual functions
             ParseFunctionLocalStaticUseage();
+            // #scriptcanvas_component_extension
+            ParseComponentExtension();
 
             // The Order Matters: end
 
@@ -2650,6 +2658,19 @@ namespace ScriptCanvas
             execution->SetSymbol(Symbol::Break);
         }
 
+        void AbstractCodeModel::ParseComponentExtension()
+        {
+            auto roots = GetAllExecutionRoots();
+            for (auto& root : roots)
+            {
+                if (root->RefersToSelfEntityId())
+                {
+                    m_subgraphInterface.MarkRefersToSelfEntityId();
+                    return;
+                }
+            }
+        }
+
         VariableConstPtr AbstractCodeModel::ParseConnectedInputData(const Slot& inputSlot, ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode)
         {
             if (auto inScopeVar = FindConnectedInputInScope(executionWithInput, scriptCanvasNodesConnectedToInput, firstNode))
@@ -2714,6 +2735,8 @@ namespace ScriptCanvas
                 switch (constructionRequirement)
                 {
                 case VariableConstructionRequirement::None:
+                    [[fallthrough]];
+                case VariableConstructionRequirement::SelfEntityId:
                     break;
 
                 case VariableConstructionRequirement::InputEntityId:
@@ -2997,36 +3020,12 @@ namespace ScriptCanvas
 
                 if (auto& input = slotAndVariable.m_value)
                 {
-                    if (!input->m_sourceVariableId.IsValid() && IsEntityIdThatRequiresRuntimeRemap(input))
+                    if (IsEntityIdAndValueIsNotUseable(input))
                     {
-                        input->m_sourceVariableId = MakeParserGeneratedId(m_generatedIdCount++);
-                        input->m_source = nullptr;
-                        // promote to member variable for at this stage, optimizations on data flow will occur later
-                        input->m_isMember = true;
-
-                        AZStd::string entityVariableName;
-
-                        if (slotAndVariable.m_slot)
-                        {
-                            if (execution->GetId().m_node)
-                            {
-                                entityVariableName.append(execution->GetId().m_node->GetNodeName());
-                                entityVariableName.append(".");
-                                entityVariableName.append(slotAndVariable.m_slot->GetName());
-                            }
-                            else
-                            {
-                                entityVariableName.append(slotAndVariable.m_slot->GetName());
-                            }
-                        }
-                        else
-                        {
-                            entityVariableName = input->m_name;
-                        }
-
-                        input->m_name = m_graphScope->AddVariableName(entityVariableName);
-                        AddVariable(input);
+                        AddError(execution->GetId().m_node ?  execution->GetId().m_node->GetEntityId() : AZ::EntityId()
+                            , nullptr, ParseErrors::DirectEntityReferencesNotAllowed);
                     }
+                    // \todo add warning on invalid entity id, it's probably never useful
                 }
                 else
                 {
