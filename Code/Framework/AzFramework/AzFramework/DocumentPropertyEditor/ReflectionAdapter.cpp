@@ -25,14 +25,14 @@ namespace AZ::DocumentPropertyEditor
         void PopulateDefaultEditors()
         {
             m_defaultEditorMap[azrtti_typeid<bool>()] = Nodes::CheckBox::Name;
-            m_defaultEditorMap[azrtti_typeid<uint8_t>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<uint16_t>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<uint32_t>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<uint64_t>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<int8_t>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<int16_t>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<int32_t>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<int64_t>()] = Nodes::IntSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::u8>()] = Nodes::UintSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::u16>()] = Nodes::UintSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::u32>()] = Nodes::UintSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::u64>()] = Nodes::UintSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::s8>()] = Nodes::IntSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::s16>()] = Nodes::IntSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::s32>()] = Nodes::IntSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::s64>()] = Nodes::IntSpinBox::Name;
             m_defaultEditorMap[azrtti_typeid<float>()] = Nodes::DoubleSpinBox::Name;
             m_defaultEditorMap[azrtti_typeid<double>()] = Nodes::DoubleSpinBox::Name;
             m_defaultEditorMap[azrtti_typeid<AZStd::string>()] = Nodes::LineEdit::Name;
@@ -141,42 +141,42 @@ namespace AZ::DocumentPropertyEditor
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(int8_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::s8& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(int16_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::s16& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(int32_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::s32& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(int64_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::s64& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(uint8_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::u8& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(uint16_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::u16& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(uint32_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::u32& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(uint64_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::u64& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
@@ -226,7 +226,7 @@ namespace AZ::DocumentPropertyEditor
         {
         }
 
-        void Visit([[maybe_unused]] int64_t value, [[maybe_unused]] const Reflection::IEnumAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
+        void Visit([[maybe_unused]] AZ::s64 value, [[maybe_unused]] const Reflection::IEnumAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
         }
 

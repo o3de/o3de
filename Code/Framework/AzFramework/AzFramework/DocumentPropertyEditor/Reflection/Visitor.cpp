@@ -14,35 +14,35 @@ namespace AZ::Reflection
     {
     }
 
-    void IRead::Visit(int8_t, const IAttributes&)
+    void IRead::Visit(AZ::s8, const IAttributes&)
     {
     }
 
-    void IRead::Visit(int16_t, const IAttributes&)
+    void IRead::Visit(AZ::s16, const IAttributes&)
     {
     }
 
-    void IRead::Visit(int32_t, const IAttributes&)
+    void IRead::Visit(AZ::s32, const IAttributes&)
     {
     }
 
-    void IRead::Visit(int64_t, const IAttributes&)
+    void IRead::Visit(AZ::s64, const IAttributes&)
     {
     }
 
-    void IRead::Visit(uint8_t, const IAttributes&)
+    void IRead::Visit(AZ::u8, const IAttributes&)
     {
     }
 
-    void IRead::Visit(uint16_t, const IAttributes&)
+    void IRead::Visit(AZ::u16, const IAttributes&)
     {
     }
 
-    void IRead::Visit(uint32_t, const IAttributes&)
+    void IRead::Visit(AZ::u32, const IAttributes&)
     {
     }
 
-    void IRead::Visit(uint64_t, const IAttributes&)
+    void IRead::Visit(AZ::u64, const IAttributes&)
     {
     }
 
@@ -94,35 +94,35 @@ namespace AZ::Reflection
     {
     }
 
-    void IReadWrite::Visit(int8_t&, const IAttributes&)
+    void IReadWrite::Visit(AZ::s8&, const IAttributes&)
     {
     }
 
-    void IReadWrite::Visit(int16_t&, const IAttributes&)
+    void IReadWrite::Visit(AZ::s16&, const IAttributes&)
     {
     }
 
-    void IReadWrite::Visit(int32_t&, const IAttributes&)
+    void IReadWrite::Visit(AZ::s32&, const IAttributes&)
     {
     }
 
-    void IReadWrite::Visit(int64_t&, const IAttributes&)
+    void IReadWrite::Visit(AZ::s64&, const IAttributes&)
     {
     }
 
-    void IReadWrite::Visit(uint8_t&, const IAttributes&)
+    void IReadWrite::Visit(AZ::u8&, const IAttributes&)
     {
     }
 
-    void IReadWrite::Visit(uint16_t&, const IAttributes&)
+    void IReadWrite::Visit(AZ::u16&, const IAttributes&)
     {
     }
 
-    void IReadWrite::Visit(uint32_t&, const IAttributes&)
+    void IReadWrite::Visit(AZ::u32&, const IAttributes&)
     {
     }
 
-    void IReadWrite::Visit(uint64_t&, const IAttributes&)
+    void IReadWrite::Visit(AZ::u64&, const IAttributes&)
     {
     }
 
@@ -158,7 +158,7 @@ namespace AZ::Reflection
     {
     }
 
-    void IReadWrite::Visit(int64_t, const IEnumAccess&, const IAttributes&)
+    void IReadWrite::Visit(AZ::s64, const IEnumAccess&, const IAttributes&)
     {
     }
 
