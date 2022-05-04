@@ -11,9 +11,13 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/MemoryComponent.h>
+#include <AzFramework/Components/TransformComponent.h>
 
 #include <LmbrCentral/Shape/MockShapes.h>
+#include <Shape/BoxShapeComponent.h>
 #include <Shape/ReferenceShapeComponent.h>
+#include <Shape/SphereShapeComponent.h>
+#include <ShapeThreadsafeTest.h>
 
 namespace UnitTest
 {
@@ -201,5 +205,68 @@ namespace UnitTest
             resultIntersectRay, entity->GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IntersectRay, AZ::Vector3::CreateZero(),
             AZ::Vector3::CreateZero(), 0.0f);
         EXPECT_EQ(resultIntersectRay, false);
+    }
+
+    TEST_F(ReferenceComponentTests, ShapeHasThreadsafeGetSetCalls)
+    {
+        // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
+        // correct, consistent results.
+
+        m_app.RegisterComponentDescriptor(LmbrCentral::BoxShapeComponent::CreateDescriptor());
+        m_app.RegisterComponentDescriptor(AzFramework::TransformComponent::CreateDescriptor());
+
+        // Create two box shapes with the correct dimensions to pass the test.
+        AZ::Entity boxEntities[2];
+        for (auto& boxEntity : boxEntities)
+        {
+            boxEntity.CreateComponent<LmbrCentral::BoxShapeComponent>();
+            boxEntity.CreateComponent<AzFramework::TransformComponent>();
+            boxEntity.Init();
+            boxEntity.Activate();
+            LmbrCentral::BoxShapeComponentRequestsBus::Event(
+                boxEntity.GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions,
+                AZ::Vector3(1.0f, 1.0f, ShapeThreadsafeTest::ShapeHeight));
+        }
+
+        // Create a reference shape that's initially pointing to the first box.
+        LmbrCentral::ReferenceShapeConfig config;
+        int boxEntityIndex = 0;
+        config.m_shapeEntityId = boxEntities[boxEntityIndex].GetId();
+        LmbrCentral::ReferenceShapeComponent* component;
+        auto entity = CreateEntity(config, &component);
+
+        // Define the function for setting unimportant dimensions on the shape while queries take place.
+        auto setDimensionFn = [&boxEntities, &boxEntityIndex]
+            (AZ::EntityId shapeEntityId, [[maybe_unused]] float minDimension, [[maybe_unused]] uint32_t dimensionVariance, [[maybe_unused]] float height)
+        {
+            // On every iteration, switch which box we're pointing to, then AFTER switching, set the previous box to invalid dimensions.
+            // If the calls are threadsafe, we should always be querying a box with the correct dimensions.
+            // If they aren't, we'll either be querying when not hooked up at all, or we'll get incorrect dimensions from querying a
+            // "stale" box ID.
+
+            int oldBoxEntityIndex = boxEntityIndex;
+            boxEntityIndex = (boxEntityIndex + 1) % 2;
+
+            // Make sure the new box we're switching to has valid dimensions that will pass the test.
+            LmbrCentral::BoxShapeComponentRequestsBus::Event(
+                boxEntities[boxEntityIndex].GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions,
+                AZ::Vector3(1.0f, 1.0f, height));
+
+            // Switch to the new box
+            LmbrCentral::ReferenceShapeRequestBus::Event(
+                shapeEntityId, &LmbrCentral::ReferenceShapeRequestBus::Events::SetShapeEntityId, boxEntities[boxEntityIndex].GetId());
+
+            // Set the previous box to invalid dimensions. If the get/set calls are threadsafe, nothing should be querying this shape
+            // at this point, so this shouldn't have any effect.
+            LmbrCentral::BoxShapeComponentRequestsBus::Event(
+                boxEntities[oldBoxEntityIndex].GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions,
+                AZ::Vector3(1.0f, 1.0f, height / 4.0f));
+        };
+
+        // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
+        // The number of iterations is arbitrary - it's set high enough to catch most failures, but low enough to keep the test
+        // time to a minimum.
+        const int numIterations = 30000;
+        ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(*entity, numIterations, setDimensionFn);
     }
 } // namespace UnitTest

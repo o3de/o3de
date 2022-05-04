@@ -2948,11 +2948,7 @@ namespace AZ
         {
             if (classTypeIt != m_typeToClassMap.end())
             {
-                // class already reflected, display name and uuid
-                char uuidName[AZ::Uuid::MaxStringBuffer];
-                classTypeIt->first.ToString(uuidName, AZ::Uuid::MaxStringBuffer);
-
-                AZ_Error("Reflection", false, "Class '%s' is already registered using Uuid: %s!", name, uuidName);
+                AZ_Error("Reflection", false, "Class '%s' is already registered using Uuid: %s!", name, classTypeIt->first.ToFixedString().c_str());
                 return ClassBuilder<T>(this, static_cast<BehaviorClass*>(nullptr));
             }
 

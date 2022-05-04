@@ -30,25 +30,27 @@
 #include "IEditor.h"
 #endif
 
+class ActionManager;
 class AssetImporterManager;
-class LevelEditorMenuHandler;
-class CMainFrame;
-class UndoStackStateAdapter;
-class QComboBox;
-class KeyboardCustomizationSettings;
-class QToolButton;
-class MainStatusBar;
-class CLayoutWnd;
-struct QtViewPane;
 class CLayoutViewPane;
-class QtViewport;
-class QtViewPaneManager;
+class CLayoutWnd;
+class CMainFrame;
 class EngineConnectionListener;
+class KeyboardCustomizationSettings;
+class LevelEditorMenuHandler;
+class MainStatusBar;
+class ShortcutDispatcher;
 class ToolbarManager;
 class ToolbarCustomizationDialog;
+class UndoStackStateAdapter;
+
+class QComboBox;
+class QToolButton;
+class QtViewport;
+class QtViewPaneManager;
 class QWidgetAction;
-class ActionManager;
-class ShortcutDispatcher;
+
+struct QtViewPane;
 
 namespace AzQtComponents
 {
@@ -238,15 +240,15 @@ private:
     QtViewPaneManager* m_viewPaneManager;
     ShortcutDispatcher* m_shortcutDispatcher = nullptr;
     ActionManager* m_actionManager = nullptr;
+    ToolbarManager* m_toolbarManager = nullptr;
     UndoStackStateAdapter* m_undoStateAdapter;
 
     KeyboardCustomizationSettings* m_keyboardCustomization;
     CLayoutViewPane* m_activeView;
     QSettings m_settings;
-    ToolbarManager* const m_toolbarManager;
 
     AssetImporterManager* m_assetImporterManager;
-    LevelEditorMenuHandler* m_levelEditorMenuHandler;
+    LevelEditorMenuHandler* m_levelEditorMenuHandler = nullptr;
 
     CLayoutWnd* m_pLayoutWnd;
 

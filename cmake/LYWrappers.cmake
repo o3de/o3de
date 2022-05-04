@@ -59,6 +59,7 @@ define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
 # \arg:STATIC (bool) defines this target to be a static library
 # \arg:GEM_STATIC (bool) defines this target to be a static library while also setting the GEM_MODULE property
 # \arg:SHARED (bool) defines this target to be a dynamic library
+# \arg:GEM_SHARED (bool) defines this target to be a dynamic library while also setting the GEM_MODULE property
 # \arg:MODULE (bool) defines this target to be a module library
 # \arg:GEM_MODULE (bool) defines this target to be a module library while also marking the target as a "Gem" via the GEM_MODULE property
 # \arg:HEADERONLY (bool) defines this target to be a header only library. A ${NAME}_HEADERS project will be created for the IDE
@@ -87,7 +88,7 @@ define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_STATIC GEM_SHARED GEM_MODULE HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
@@ -110,6 +111,10 @@ function(ly_add_target)
     # If the GEM_STATIC tag is passed mark the target as STATIC
     if(ly_add_target_GEM_STATIC)
         set(ly_add_target_STATIC ${ly_add_target_GEM_STATIC})
+    endif()
+    # If the GEM_SHARED tag is passed mark the target as SHARED
+    if(ly_add_target_GEM_SHARED)
+        set(ly_add_target_SHARED ${ly_add_target_GEM_SHARED})
     endif()
 
     foreach(file_cmake ${ly_add_target_FILES_CMAKE})
@@ -217,10 +222,12 @@ function(ly_add_target)
         else()
             ly_handle_custom_output_directory(${ly_add_target_NAME} "")
         endif()
-
+        ly_apply_debug_strip_options(${ly_add_target_NAME})
+    elseif(ly_add_target_STATIC)
+        ly_apply_debug_strip_options(${ly_add_target_NAME})
     endif()
 
-    if(ly_add_target_GEM_MODULE OR ly_add_target_GEM_STATIC)
+    if(ly_add_target_GEM_MODULE OR ly_add_target_GEM_STATIC OR ly_add_target_GEM_SHARED)
         set_target_properties(${ly_add_target_NAME} PROPERTIES GEM_MODULE TRUE)
     endif()
 
@@ -602,7 +609,6 @@ macro(ly_configure_target_platform_properties)
         ly_source_groups_from_folders("${platform_include_file}")
 
         if(LY_FILES_CMAKE)
-            set(ALLFILES)
             foreach(file_cmake ${LY_FILES_CMAKE})
                 ly_include_cmake_file_list(${file_cmake})
             endforeach()

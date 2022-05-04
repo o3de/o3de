@@ -19,6 +19,7 @@ QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QLayout)
 QT_FORWARD_DECLARE_CLASS(FlowLayout)
+QT_FORWARD_DECLARE_CLASS(QFileSystemWatcher)
 
 namespace O3DE::ProjectManager
 {
@@ -59,6 +60,8 @@ namespace O3DE::ProjectManager
 
         void paintEvent(QPaintEvent* event) override;
 
+        void HandleProjectFilePathChanged(const QString& path);
+
     private:
         QFrame* CreateFirstTimeContent();
         QFrame* CreateProjectsContent();
@@ -78,6 +81,7 @@ namespace O3DE::ProjectManager
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;
         FlowLayout* m_projectsFlowLayout = nullptr;
+        QFileSystemWatcher* m_fileSystemWatcher = nullptr;
         QStackedWidget* m_stack = nullptr;
         QHash<QString, ProjectButton*> m_projectButtons;
         QList<ProjectInfo> m_requiresBuild;

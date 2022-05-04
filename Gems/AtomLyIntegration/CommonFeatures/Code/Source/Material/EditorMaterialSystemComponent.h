@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>
@@ -28,6 +30,7 @@ namespace AZ
             , public AZ::EntitySystemBus::Handler
             , public EditorMaterialSystemComponentNotificationBus::Handler
             , public EditorMaterialSystemComponentRequestBus::Handler
+            , public MaterialReceiverNotificationBus::Router
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , public AzToolsFramework::EditorMenuNotificationBus::Handler
             , public AzToolsFramework::EditorEvents::Bus::Handler
@@ -57,11 +60,14 @@ namespace AZ
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) const override;
 
             // AZ::EntitySystemBus::Handler overrides...
-            void OnEntityDestroyed(const AZ::EntityId& entityId) override;
+            void OnEntityDeactivated(const AZ::EntityId& entityId) override;
 
             //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
             void OnRenderMaterialPreviewComplete(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap) override;
+
+            //! MaterialReceiverNotificationBus::Router overrides...
+            void OnMaterialAssignmentsChanged() override;
 
             //! AssetBrowserInteractionNotificationBus::Handler overrides...
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;

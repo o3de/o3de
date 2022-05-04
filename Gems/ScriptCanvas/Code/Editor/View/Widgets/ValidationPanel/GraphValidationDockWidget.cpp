@@ -591,7 +591,6 @@ namespace ScriptCanvasEditor
 
         m_proxyModel->setSourceModel(aznew GraphValidationModel()); 
         ui->statusTableView->setModel(m_proxyModel);
-
         ui->statusTableView->horizontalHeader()->setStretchLastSection(false);
 
         ui->statusTableView->horizontalHeader()->setSectionResizeMode(GraphValidationModel::Description, QHeaderView::ResizeMode::Stretch);
