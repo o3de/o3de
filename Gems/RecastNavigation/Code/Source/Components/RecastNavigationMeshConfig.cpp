@@ -31,7 +31,7 @@ namespace RecastNavigation
                 ->Field("Filter Ledge Spans", &Self::m_filterLedgeSpans)
                 ->Field("Filter Low Hanging Obstacles", &Self::m_filterLowHangingObstacles)
                 ->Field("Filter Walkable Low Height Spans", &Self::m_filterWalkableLowHeightSpans)
-                ->Field("Max Vertices Per Poly", &Self::m_maxVertsPerPoly)
+                ->Field("Max Vertices Per Poly", &Self::m_maxVerticesPerPoly)
                 ->Field("Region Merge Size", &Self::m_regionMergeSize)
                 ->Field("Region Min Size", &Self::m_regionMinSize)
                 ->Field("Tile Size", &Self::m_tileSize)
@@ -77,7 +77,7 @@ namespace RecastNavigation
                         "Allows the formation of walkable regions that will flow over low lying objects such as curbs, and up structures such as stairways. ")
                     ->DataElement(nullptr, &Self::m_filterWalkableLowHeightSpans, "Filter Walkable Low Height Spans",
                         "For this filter, the clearance above the span is the distance from the span's maximum to the next higher span's minimum. (Same grid column.)")
-                    ->DataElement(nullptr, &Self::m_maxVertsPerPoly, "Max Vertices Per Poly",
+                    ->DataElement(nullptr, &Self::m_maxVerticesPerPoly, "Max Vertices Per Poly",
                         "The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process. [Limit: >= 3]")
                     ->DataElement(nullptr, &Self::m_regionMergeSize, "Region Merge Size",
                         "Any regions with a span count smaller than this value will, if possible, be merged with larger regions. [Limit: >=0]")

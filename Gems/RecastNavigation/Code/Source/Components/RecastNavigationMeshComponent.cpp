@@ -148,25 +148,20 @@ namespace RecastNavigation
             &RecastNavigationSurveyorRequests::CollectGeometry,
             m_meshConfig.m_tileSize);
 
-        while (tiles.empty() == false)
+        for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
         {
-            AZStd::shared_ptr<TileGeometry> tileData = tiles.back();
-            tiles.pop_back();
-
-            if (tileData->IsEmpty())
+            if (tile->IsEmpty())
             {
                 continue;
             }
 
-            NavigationTileData navigationTileData = CreateNavigationTile(tileData.get(),
+            NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
                 m_meshConfig, m_context.get());
 
-            //m_navMesh->removeTile(m_navMesh->getTileRefAt(tileData->m_tileX, tileData->m_tileX, 0), nullptr, nullptr);
+            m_navMesh->removeTile(m_navMesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0), nullptr, nullptr);
 
             if (navigationTileData.IsValid())
             {
-                AZ_Printf(__FUNCTION__, "attaching tile %d-%d", tileData->m_tileX, tileData->m_tileY);
-
                 AttachNavigationTileToMesh(navigationTileData);
             }
         }
@@ -185,8 +180,8 @@ namespace RecastNavigation
         RecastPointer<rcPolyMesh> polyMesh;
         RecastPointer<rcPolyMeshDetail> polyMeshDetail;
 
-        const float* vertices = &geom->m_verts.front().m_x;
-        const int vertexCount = static_cast<int>(geom->m_verts.size());
+        const float* vertices = &geom->m_vertices.front().m_x;
+        const int vertexCount = static_cast<int>(geom->m_vertices.size());
         const int* triangleData = &geom->m_indices[0];
         const int triangleCount = static_cast<int>(geom->m_indices.size()) / 3;
 
@@ -206,7 +201,7 @@ namespace RecastNavigation
         config.maxSimplificationError = meshConfig.m_edgeMaxError;
         config.minRegionArea = rcSqr(meshConfig.m_regionMinSize);		// Note: area = size*size
         config.mergeRegionArea = rcSqr(meshConfig.m_regionMergeSize);	// Note: area = size*size
-        config.maxVertsPerPoly = meshConfig.m_maxVertsPerPoly;
+        config.maxVertsPerPoly = meshConfig.m_maxVerticesPerPoly;
         config.detailSampleDist = meshConfig.m_detailSampleDist < 0.9f ? 0 : meshConfig.m_cellSize * meshConfig.m_detailSampleDist;
         config.detailSampleMaxError = meshConfig.m_cellHeight * meshConfig.m_detailSampleMaxError;
 
@@ -226,16 +221,14 @@ namespace RecastNavigation
 
         rcVcopy(config.bmin, &worldMin.m_x);
         rcVcopy(config.bmax, &worldMax.m_x);
-        config.bmin[0] -= config.borderSize * config.cs;
-        config.bmin[2] -= config.borderSize * config.cs;
-        config.bmax[0] += config.borderSize * config.cs;
-        config.bmax[2] += config.borderSize * config.cs;
-
-        //rcCalcGridSize(config.bmin, config.bmax, config.cs, &config.width, &config.height);
+        config.bmin[0] -= aznumeric_cast<float>(config.borderSize) * config.cs;
+        config.bmin[2] -= aznumeric_cast<float>(config.borderSize) * config.cs;
+        config.bmax[0] += aznumeric_cast<float>(config.borderSize) * config.cs;
+        config.bmax[2] += aznumeric_cast<float>(config.borderSize) * config.cs;
 
         context->log(RC_LOG_PROGRESS, "Building navigation:");
         context->log(RC_LOG_PROGRESS, " - %d x %d cells", config.width, config.height);
-        context->log(RC_LOG_PROGRESS, " - %d verts, %d triangles", vertexCount, triangleCount);
+        context->log(RC_LOG_PROGRESS, " - %d vertices, %d triangles", vertexCount, triangleCount);
 
         //
         // Step 2. Rasterize input polygon soup.
@@ -266,7 +259,7 @@ namespace RecastNavigation
         rcMarkWalkableTriangles(context, config.walkableSlopeAngle, vertices,
             vertexCount, triangleData, triangleCount, trianglesAreas.data());
         if (!rcRasterizeTriangles(context, vertices, vertexCount, triangleData,
-            trianglesAreas.data(), triangleCount, *solid /*, m_config.walkableClimb*/))
+            trianglesAreas.data(), triangleCount, *solid))
         {
             context->log(RC_LOG_ERROR, "buildNavigation: Could not rasterize triangles.");
             return {};
@@ -287,13 +280,7 @@ namespace RecastNavigation
             rcFilterLedgeSpans(context, config.walkableHeight, config.walkableClimb, *solid);
         if (meshConfig.m_filterWalkableLowHeightSpans)
             rcFilterWalkableLowHeightSpans(context, config.walkableHeight, *solid);
-
-        //if (cl_navmesh_debug)
-        //{
-        //    m_customDebugDraw.SetColor(AZ::Color(1.F, 0, 0, 0.1F));
-        //    duDebugDrawHeightfieldSolid(&m_customDebugDraw, *m_solid);
-        //}
-
+        
         //
         // Step 4. Partition walkable surface to simple regions.
         //
@@ -331,12 +318,6 @@ namespace RecastNavigation
             return {};
         }
 
-        //if (cl_navmesh_debug)
-        //{
-        //    m_customDebugDraw.SetColor(AZ::Color(0.F, 1, 0, 1));
-        //    duDebugDrawCompactHeightfieldSolid(&m_customDebugDraw, *m_chf);
-        //}
-
         //
         // Step 5. Trace and simplify region contours.
         //
@@ -355,12 +336,6 @@ namespace RecastNavigation
             return {};
         }
 
-        //if (cl_navmesh_debug)
-        //{
-        //    m_customDebugDraw.SetColor(AZ::Color(0.F, 0, 1, 1));
-        //    duDebugDrawContours(&m_customDebugDraw, *m_contourSet);
-        //}
-
         //
         // Step 6. Build polygons mesh from contours.
         //
@@ -377,12 +352,6 @@ namespace RecastNavigation
             context->log(RC_LOG_ERROR, "buildNavigation: Could not triangulate contours.");
             return {};
         }
-
-        //if (cl_navmesh_debug)
-        //{
-        //    m_customDebugDraw.SetColor(AZ::Color(0.F, 1, 1, 1));
-        //    duDebugDrawPolyMesh(&m_customDebugDraw, *m_pmesh);
-        //}
 
         //
         // Step 7. Create detail mesh which allows to access approximate height on each polygon.
@@ -401,17 +370,8 @@ namespace RecastNavigation
             return {};
         }
 
-        //if (cl_navmesh_debug)
-        //{
-        //    m_customDebugDraw.SetColor(AZ::Color(0.5F, 1, 1, 1));
-        //    duDebugDrawPolyMeshDetail(&m_customDebugDraw, *m_detailMesh);
-        //}
-
         compactHeightfield = nullptr;
         contourSet = nullptr;
-
-        // At this point the navigation mesh data is ready, you can access it from m_pmesh.
-        // See duDebugDrawPolyMesh or dtCreateNavMeshData as examples how to access the data.
 
         //
         // Step 8. Create Detour data from Recast poly mesh.
@@ -460,11 +420,6 @@ namespace RecastNavigation
 
             rcVcopy(params.bmin, polyMesh->bmin);
             rcVcopy(params.bmax, polyMesh->bmax);
-
-            /*params.bmin[0] += config.borderSize * config.cs;
-            params.bmin[2] += config.borderSize * config.cs;
-            params.bmax[0] -= config.borderSize * config.cs;
-            params.bmax[2] -= config.borderSize * config.cs;*/
 
             AZ_Printf("TEST", "rcConfig              bmin %f,%f,%f; bmax %f,%f,%f;\n"
                 "dtNavMeshCreateParams bmin %f,%f,%f; bmax %f,%f,%f",
@@ -613,15 +568,10 @@ namespace RecastNavigation
 
             // find an approximate path
             result = m_navQuery->findPath(startPoly, endPoly, nearestStartPoint.data(), nearestEndPoint.data(), &filter, path, &pathLength, maxPathLength);
-            /*if (result != DT_SUCCESS)
+            if (dtStatusFailed(result))
             {
                 return {};
-            }*/
-
-            //if (cl_navmesh_debug)
-            //{
-            //    AZ_Printf("NavMesh", "from %d to %d, findPath = %d", startPoly, endPoly, pathLength);
-            //}
+            }
 
             AZStd::vector<RecastVector3> approximatePath;
             approximatePath.resize(pathLength);
@@ -630,11 +580,6 @@ namespace RecastNavigation
             {
                 RecastVector3 center = GetPolyCenter(m_navMesh.get(), path[pathIndex]);
                 approximatePath.push_back(center);
-
-                //if (cl_navmesh_debug)
-                //{
-                //    AZ_Printf("NavMesh", "path %d = %s", pathIndex, AZ::ToString(center.AsVector3()).c_str());
-                //}
             }
 
             constexpr int maxDetailedPathLength = 100;
@@ -645,19 +590,13 @@ namespace RecastNavigation
 
             result = m_navQuery->findStraightPath(startRecast.data(), endRecast.data(), path, pathLength, detailedPath[0].data(), detailedPathFlags, detailedPolyPathRefs,
                 &detailedPathCount, maxDetailedPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
-            /*if (result != DT_SUCCESS)
+            if (dtStatusFailed(result))
             {
                 return {};
-            }*/
+            }
 
             if (cl_navmesh_debug)
             {
-                //for (size_t pathIndex = 1; pathIndex < approximatePath.size(); ++pathIndex)
-                //{
-                //    DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                //        approximatePath[pathIndex - 1].AsVector3(), approximatePath[pathIndex].AsVector3(), AZ::Color(1.F, 0, 0, 1), 30.F);
-                //}
-
                 constexpr AZ::Crc32 ViewportId = AzFramework::g_defaultSceneEntityDebugDisplayId;
                 AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
                 AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, ViewportId);

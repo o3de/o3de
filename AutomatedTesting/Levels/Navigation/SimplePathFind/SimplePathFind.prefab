@@ -127,146 +127,147 @@
                 "Component_[4943753206567059416]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 4943753206567059416,
-                    "m_name": "find_navigation_path_example.scriptcanvas",
-                    "runtimeDataOverrides": {
-                        "source": {
+                    "configuration": {
+                        "sourceHandle": {
                             "id": "{CCC5174E-B1C9-53D5-BD13-8ECE3087910A}",
                             "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/find_navigation_path_example.scriptcanvas"
                         },
-                        "variables": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 12
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "Color",
-                                    "value": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0
-                                    ]
-                                },
-                                "VariableId": {
-                                    "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
-                                },
-                                "VariableName": "Draw Path Color",
-                                "InitialValueSource": 1
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{CCC5174E-B1C9-53D5-BD13-8ECE3087910A}",
+                                "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/find_navigation_path_example.scriptcanvas"
                             },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 3
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "double",
-                                    "value": 0.0
-                                },
-                                "VariableId": {
-                                    "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
-                                },
-                                "VariableName": "Draw Path Duration",
-                                "InitialValueSource": 1
-                            }
-                        ],
-                        "entityId": [
-                            [
+                            "variables": [
                                 {
-                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 12
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "Color",
+                                        "value": [
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            1.0
+                                        ]
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
+                                    },
+                                    "VariableName": "Draw Path Color",
+                                    "InitialValueSource": 1
                                 },
-                                ""
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 0.0
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
+                                    },
+                                    "VariableName": "Draw Path Duration",
+                                    "InitialValueSource": 1
+                                }
                             ],
-                            [
+                            "entityId": [
+                                [
+                                    {
+                                        "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                    },
+                                    ""
+                                ],
+                                [
+                                    {
+                                        "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                    },
+                                    ""
+                                ]
+                            ],
+                            "overrides": [
                                 {
-                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 12
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "Color",
+                                        "value": [
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            1.0
+                                        ]
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
+                                    },
+                                    "VariableName": "Draw Path Color",
+                                    "InitialValueSource": 1
                                 },
-                                ""
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 30.0
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
+                                    },
+                                    "VariableName": "Draw Path Duration",
+                                    "InitialValueSource": 1
+                                },
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[689399540125]"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                    },
+                                    "VariableName": "Navigation Mesh",
+                                    "InitialValueSource": 1
+                                },
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[898030444827]"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                    },
+                                    "VariableName": "Goal Entity",
+                                    "InitialValueSource": 1
+                                }
                             ]
-                        ],
-                        "overrides": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 12
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "Color",
-                                    "value": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0
-                                    ]
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
-                                },
-                                "VariableName": "Draw Path Color",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 3
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "double",
-                                    "value": 30.0
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
-                                },
-                                "VariableName": "Draw Path Duration",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[689399540125]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
-                                },
-                                "VariableName": "Navigation Mesh",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[898030444827]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
-                                },
-                                "VariableName": "Goal Entity",
-                                "InitialValueSource": 1
-                            }
-                        ]
-                    },
-                    "sourceHandle": {
-                        "id": "{CCC5174E-B1C9-53D5-BD13-8ECE3087910A}",
-                        "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/find_navigation_path_example.scriptcanvas"
+                        }
                     }
                 },
                 "Component_[602188882902659475]": {
@@ -1154,44 +1155,45 @@
                 "Component_[2008841985879124726]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 2008841985879124726,
-                    "m_name": "update_nav_mesh_on_key_released.scriptcanvas",
-                    "runtimeDataOverrides": {
-                        "source": {
+                    "configuration": {
+                        "sourceHandle": {
                             "id": "{061917A8-B0EF-5888-8BE0-D576152A2BDE}",
                             "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/update_nav_mesh_on_key_released.scriptcanvas"
                         },
-                        "entityId": [
-                            [
-                                {
-                                    "m_id": "{FECF3F3A-A839-4763-831D-6D6A56B77DC1}"
-                                },
-                                ""
-                            ]
-                        ],
-                        "overrides": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{061917A8-B0EF-5888-8BE0-D576152A2BDE}",
+                                "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/update_nav_mesh_on_key_released.scriptcanvas"
+                            },
+                            "entityId": [
+                                [
+                                    {
+                                        "m_id": "{FECF3F3A-A839-4763-831D-6D6A56B77DC1}"
                                     },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[689399540125]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{FECF3F3A-A839-4763-831D-6D6A56B77DC1}"
-                                },
-                                "VariableName": "Nav Mesh Entity",
-                                "InitialValueSource": 1
-                            }
-                        ]
-                    },
-                    "sourceHandle": {
-                        "id": "{061917A8-B0EF-5888-8BE0-D576152A2BDE}",
-                        "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/update_nav_mesh_on_key_released.scriptcanvas"
+                                    ""
+                                ]
+                            ],
+                            "overrides": [
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[689399540125]"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{FECF3F3A-A839-4763-831D-6D6A56B77DC1}"
+                                    },
+                                    "VariableName": "Nav Mesh Entity",
+                                    "InitialValueSource": 1
+                                }
+                            ]
+                        }
                     }
                 },
                 "Component_[3118050914568994311]": {
@@ -1294,146 +1296,147 @@
                 "Component_[4943753206567059416]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 4943753206567059416,
-                    "m_name": "find_navigation_path_example.scriptcanvas",
-                    "runtimeDataOverrides": {
-                        "source": {
+                    "configuration": {
+                        "sourceHandle": {
                             "id": "{CCC5174E-B1C9-53D5-BD13-8ECE3087910A}",
                             "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/find_navigation_path_example.scriptcanvas"
                         },
-                        "variables": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 12
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "Color",
-                                    "value": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0
-                                    ]
-                                },
-                                "VariableId": {
-                                    "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
-                                },
-                                "VariableName": "Draw Path Color",
-                                "InitialValueSource": 1
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{CCC5174E-B1C9-53D5-BD13-8ECE3087910A}",
+                                "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/find_navigation_path_example.scriptcanvas"
                             },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 3
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "double",
-                                    "value": 0.0
-                                },
-                                "VariableId": {
-                                    "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
-                                },
-                                "VariableName": "Draw Path Duration",
-                                "InitialValueSource": 1
-                            }
-                        ],
-                        "entityId": [
-                            [
+                            "variables": [
                                 {
-                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 12
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "Color",
+                                        "value": [
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            1.0
+                                        ]
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
+                                    },
+                                    "VariableName": "Draw Path Color",
+                                    "InitialValueSource": 1
                                 },
-                                ""
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 0.0
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
+                                    },
+                                    "VariableName": "Draw Path Duration",
+                                    "InitialValueSource": 1
+                                }
                             ],
-                            [
+                            "entityId": [
+                                [
+                                    {
+                                        "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                    },
+                                    ""
+                                ],
+                                [
+                                    {
+                                        "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                    },
+                                    ""
+                                ]
+                            ],
+                            "overrides": [
                                 {
-                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 12
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "Color",
+                                        "value": [
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            1.0
+                                        ]
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
+                                    },
+                                    "VariableName": "Draw Path Color",
+                                    "InitialValueSource": 1
                                 },
-                                ""
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 30.0
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
+                                    },
+                                    "VariableName": "Draw Path Duration",
+                                    "InitialValueSource": 1
+                                },
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[689399540125]"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                    },
+                                    "VariableName": "Navigation Mesh",
+                                    "InitialValueSource": 1
+                                },
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[43401095296263]"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                    },
+                                    "VariableName": "Goal Entity",
+                                    "InitialValueSource": 1
+                                }
                             ]
-                        ],
-                        "overrides": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 12
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "Color",
-                                    "value": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0
-                                    ]
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{1DBDFAA3-8B5C-4F68-815F-EDFE78800893}"
-                                },
-                                "VariableName": "Draw Path Color",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 3
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "double",
-                                    "value": 30.0
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{97CA2F21-5EDF-439A-9411-6C80F3F55469}"
-                                },
-                                "VariableName": "Draw Path Duration",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[689399540125]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
-                                },
-                                "VariableName": "Navigation Mesh",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[43401095296263]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
-                                },
-                                "VariableName": "Goal Entity",
-                                "InitialValueSource": 1
-                            }
-                        ]
-                    },
-                    "sourceHandle": {
-                        "id": "{CCC5174E-B1C9-53D5-BD13-8ECE3087910A}",
-                        "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/find_navigation_path_example.scriptcanvas"
+                        }
                     }
                 },
                 "Component_[602188882902659475]": {
@@ -1506,8 +1509,10 @@
                 "Component_[18213539476955925626]": {
                     "$type": "EditorAxisAlignedBoxShapeComponent",
                     "Id": 18213539476955925626,
+                    "DisplayFilled": false,
                     "AxisAlignedBoxShape": {
                         "Configuration": {
+                            "IsFilled": false,
                             "Dimensions": [
                                 40.0,
                                 40.0,
@@ -1589,103 +1594,104 @@
                 "Component_[14617594558287344890]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 14617594558287344890,
-                    "m_name": "navigate_towards_entity.scriptcanvas",
-                    "runtimeDataOverrides": {
-                        "source": {
+                    "configuration": {
+                        "sourceHandle": {
                             "id": "{EA9C0A49-3873-5FF2-9CBD-6A5F50A6B81C}",
                             "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/navigate_towards_entity.scriptcanvas"
                         },
-                        "variables": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 3
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "double",
-                                    "value": 0.0
-                                },
-                                "VariableId": {
-                                    "m_id": "{7D0D03A0-D00B-41A2-AB7B-B8399A1CB117}"
-                                },
-                                "VariableName": "Speed",
-                                "InitialValueSource": 1
-                            }
-                        ],
-                        "entityId": [
-                            [
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{EA9C0A49-3873-5FF2-9CBD-6A5F50A6B81C}",
+                                "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/navigate_towards_entity.scriptcanvas"
+                            },
+                            "variables": [
                                 {
-                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
-                                },
-                                ""
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 0.0
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{7D0D03A0-D00B-41A2-AB7B-B8399A1CB117}"
+                                    },
+                                    "VariableName": "Speed",
+                                    "InitialValueSource": 1
+                                }
                             ],
-                            [
+                            "entityId": [
+                                [
+                                    {
+                                        "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                    },
+                                    ""
+                                ],
+                                [
+                                    {
+                                        "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                    },
+                                    ""
+                                ]
+                            ],
+                            "overrides": [
                                 {
-                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 3.0
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{7D0D03A0-D00B-41A2-AB7B-B8399A1CB117}"
+                                    },
+                                    "VariableName": "Speed",
+                                    "InitialValueSource": 1
                                 },
-                                ""
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[689399540125]"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
+                                    },
+                                    "VariableName": "Navigation Mesh",
+                                    "InitialValueSource": 1
+                                },
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[43401095296263]"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
+                                    },
+                                    "VariableName": "Goal Entity",
+                                    "InitialValueSource": 1
+                                }
                             ]
-                        ],
-                        "overrides": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 3
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "double",
-                                    "value": 3.0
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{7D0D03A0-D00B-41A2-AB7B-B8399A1CB117}"
-                                },
-                                "VariableName": "Speed",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[689399540125]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{A0B14AFC-CAEC-4B0E-89E6-7BC74B7AA3CF}"
-                                },
-                                "VariableName": "Navigation Mesh",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[43401095296263]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{CE1059AF-C3CC-4035-AA34-F4CE8C4A499A}"
-                                },
-                                "VariableName": "Goal Entity",
-                                "InitialValueSource": 1
-                            }
-                        ]
-                    },
-                    "sourceHandle": {
-                        "id": "{EA9C0A49-3873-5FF2-9CBD-6A5F50A6B81C}",
-                        "path": "git/o3de/AutomatedTesting/ScriptCanvas/NavigationScritps/navigate_towards_entity.scriptcanvas"
+                        }
                     }
                 },
                 "Component_[15936921183796017957]": {

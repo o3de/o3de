@@ -33,7 +33,7 @@ namespace RecastNavigation
         float m_edgeMaxError = 1.3f;
         float m_edgeMaxLen = 12.0f;
 
-        int m_maxVertsPerPoly = 6;
+        int m_maxVerticesPerPoly = 6;
         float m_detailSampleDist = 6.0f;
         float m_detailSampleMaxError = 1.0f;
 

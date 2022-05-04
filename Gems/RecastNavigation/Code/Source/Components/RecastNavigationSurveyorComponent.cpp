@@ -103,7 +103,7 @@ namespace RecastNavigation
                         const AZ::Vector3 translated = t.TransformPoint(vertex);
                         //AZ_Printf("NavMesh", "physx vertex %s -> %s", AZ::ToString(vertex).c_str(), AZ::ToString(translated).c_str());
 
-                        geometry.m_verts.push_back(RecastVector3(translated));
+                        geometry.m_vertices.push_back(RecastVector3(translated));
                     }
 
                     for (size_t i = 2; i < indices.size(); i += 3)

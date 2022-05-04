@@ -64,15 +64,15 @@ namespace RecastNavigation
     public:
         AZ::Aabb m_worldBounds = AZ::Aabb::CreateNull();
 
-        int m_tileX = 0;
-        int m_tileY = 0;
+        int m_tileX = 0; // tile coordinate within the navigation grid along X-axis
+        int m_tileY = 0; // tile coordinate within the navigation grid along Y-axis
 
-        AZStd::vector<RecastVector3> m_verts;
+        AZStd::vector<RecastVector3> m_vertices;
         AZStd::vector<AZ::s32> m_indices;
 
         bool IsEmpty() const
         {
-            return m_verts.empty();
+            return m_vertices.empty();
         }
 
         //! Resets and clears stored geometry and the volume bounds.
@@ -81,7 +81,7 @@ namespace RecastNavigation
             m_worldBounds.SetNull();
             m_tileX = 0;
             m_tileY = 0;
-            m_verts.clear();
+            m_vertices.clear();
             m_indices.clear();
         }
     };
