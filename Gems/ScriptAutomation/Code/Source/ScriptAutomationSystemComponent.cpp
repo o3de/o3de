@@ -30,14 +30,14 @@ namespace ScriptAutomation
     {
         AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const char* productPath)
         {
-            char resolvedPath[AZ_MAX_PATH_LEN] = {0};
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath(productPath, resolvedPath, AZ_MAX_PATH_LEN);
+            AZ::IO::FixedMaxPath resolvedPath;
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, productPath);
 
             AZ::Data::AssetId assetId;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                 assetId,
                 &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                resolvedPath,
+                resolvedPath.c_str(),
                 AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid(),
                 true
             );
@@ -51,7 +51,7 @@ namespace ScriptAutomation
 
                 if (!asset.IsReady())
                 {
-                    AZ_Assert(false, "Could not load '%s'", resolvedPath);
+                    AZ_Assert(false, "Could not load '%s'", resolvedPath.c_str());
                     return {};
                 }
 
