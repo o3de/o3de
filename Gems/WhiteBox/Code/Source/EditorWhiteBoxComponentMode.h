@@ -80,7 +80,6 @@ namespace WhiteBox
         void EnterDefaultMode();
         //! Enter the sub-mode for edge restore.
         void EnterEdgeRestoreMode();
-
         //! Enter the sub-mode for transforming
         void EnterTransformMode();
 
@@ -103,7 +102,6 @@ namespace WhiteBox
         SubMode m_currentSubMode = SubMode::Default;
         bool m_restoreModifierHeld = false;
 
-
         AzToolsFramework::ViewportUi::ClusterId
             m_transformClusterId; 
         AzToolsFramework::ViewportUi::ButtonId
@@ -114,15 +112,15 @@ namespace WhiteBox
             m_transformScaleButtonId; 
 
         AzToolsFramework::ViewportUi::ClusterId
-            m_modeSelectionClusterId; //!< Viewport UI cluster for changing sub mode.
+            m_modeSelectionClusterId;  //! Viewport UI cluster for changing sub mode.
         AzToolsFramework::ViewportUi::ButtonId
-            m_defaultModeButtonId; //!< Id of the Viewport UI button for default mode.
+            m_defaultModeButtonId;     //! Id of the Viewport UI button for default mode.
         AzToolsFramework::ViewportUi::ButtonId
-            m_edgeRestoreModeButtonId; //!< Id of the Viewport UI button for edge restore mode.
+            m_edgeRestoreModeButtonId; //! Id of the Viewport UI button for edge restore mode.
         AzToolsFramework::ViewportUi::ButtonId
-            m_transformModeButtonId; 
+            m_transformModeButtonId;   //! Id of the Viewport UI button for transform mode.
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
-            m_modeSelectionHandler; //!< Event handler for sub mode changes.
+            m_modeSelectionHandler;    //! Event handler for sub mode changes.
     };
 
     inline SubMode EditorWhiteBoxComponentMode::GetCurrentSubMode() const

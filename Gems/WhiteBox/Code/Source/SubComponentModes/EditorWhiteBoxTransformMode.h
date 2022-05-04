@@ -3,6 +3,26 @@
 
 #include "EditorWhiteBoxComponentModeTypes.h"
 
+namespace AZ
+{
+    class EntityComponentIdPair;
+}
+
+namespace AzFramework
+{
+    struct ViewportInfo;
+}
+
+namespace AzToolsFramework
+{
+    namespace ViewportInteraction
+    {
+        struct MouseInteractionEvent;
+    }
+
+    struct ActionOverride;
+} // namespace AzToolsFramework
+
 namespace WhiteBox
 {
     struct IntersectionAndRenderData;

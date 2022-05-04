@@ -13,7 +13,9 @@
 #include "Viewport/WhiteBoxViewportConstants.h"
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/sort.h>
+
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
@@ -24,6 +26,8 @@
 
 namespace WhiteBox
 {
+    constexpr AZStd::string_view WhiteBoxTransformFeature = "/O3DE/Preferences/WhiteBox/TransformFeature";
+
     AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator, 0)
 
     // helper function to return what modifier keys move us to restore mode
@@ -516,7 +520,20 @@ namespace WhiteBox
         // create and register the buttons
         m_defaultModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
         m_edgeRestoreModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "RestoreMode");
-        m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "TransformMode");
+
+        // temporary setting to disable this feature
+        if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+        {
+            bool hasTransformMode = false;
+            if (!settingsRegistry->Get(hasTransformMode, WhiteBoxTransformFeature))
+            {
+                hasTransformMode = false;
+            }
+            if (hasTransformMode)
+            {
+                m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "TransformMode");
+            }
+        }
 
         // set button tooltips
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
