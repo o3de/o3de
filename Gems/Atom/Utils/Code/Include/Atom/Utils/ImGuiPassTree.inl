@@ -56,7 +56,7 @@ namespace AZ::Render
         {
             // Draw the header
             // some options for pass attachments
-            if (Scriptable_ImGui::Checkbox("Preview Attachment", &m_previewAttachment))
+            if (Scriptable_ImGui::Checkbox("Preview Attachment", &m_shouldPreviewAttachment))
             {
                 m_selectedChanged = true;
                 if (!m_previewPass)
@@ -65,7 +65,7 @@ namespace AZ::Render
                     m_previewPass = RPI::ImageAttachmentPreviewPass::Create(descriptor);
                 }
 
-                if (!m_previewAttachment)
+                if (!m_shouldPreviewAttachment)
                 {
                     m_previewPass->ClearPreviewAttachment();
                     if (m_previewPass->GetParent())
@@ -83,6 +83,11 @@ namespace AZ::Render
                     m_attachmentId = AZ::RHI::AttachmentId{};
                     m_slotName = AZ::Name{};
                 }
+            }
+
+            if (m_showAttachments)
+            {
+                ImGui::SliderFloat2("Color Range", m_attachmentColorTranformRange, 0.0f, 1.0f);
             }
 
             if (Scriptable_ImGui::Button("Save Attachment"))
@@ -116,7 +121,7 @@ namespace AZ::Render
         }
         m_lastSelectedPass = m_selectedPass;
 
-        if (m_previewAttachment && m_selectedChanged)
+        if (m_shouldPreviewAttachment && m_selectedChanged)
         {
             m_selectedChanged = false;
             if (!m_attachmentId.IsEmpty() && m_selectedPass)
@@ -141,6 +146,11 @@ namespace AZ::Render
                     m_previewPass->QueueForRemoval();
                 }
             }
+        }
+
+        if (m_shouldPreviewAttachment)
+        {
+            m_previewPass->SetColorTransformRange(m_attachmentColorTranformRange);
         }
 
         if (needSaveAttachment)
@@ -386,7 +396,7 @@ namespace AZ::Render
 
     inline void ImGuiPassTree::Reset()
     {
-        m_previewAttachment = false;
+        m_shouldPreviewAttachment = false;
         m_showAttachments = false;
 
         m_selectedPassPath = AZ::Name{};

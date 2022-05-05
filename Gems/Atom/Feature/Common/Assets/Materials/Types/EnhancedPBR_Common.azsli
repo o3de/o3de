@@ -41,6 +41,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     COMMON_SRG_INPUTS_DETAIL_MAPS()
     
     uint m_parallaxUvIndex;
+    float m_parallax_pdo_shadowFactor;
 
     float3x3 m_uvMatrix;                    // The combined transform for the uv coordinates having translation, 
     float4 m_pad1; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.

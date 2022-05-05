@@ -90,8 +90,8 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float2 m_worldBoundsMax;
 
         //! The max range that the clipmap is covering.
-        float m_macroClipmapMaxRenderDistance;
-        float m_detailClipmapMaxRenderDistance;
+        float m_macroClipmapMaxRenderRadius;
+        float m_detailClipmapMaxRenderRadius;
 
         //! The scale base between two adjacent clipmap layers.
         //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times

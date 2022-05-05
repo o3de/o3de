@@ -86,6 +86,10 @@ namespace AZ
             void SetNormalShadowBias(float bias) override;            
             bool GetCascadeBlendingEnabled() const override;
             void SetCascadeBlendingEnabled(bool enable) override;
+            bool GetAffectsGI() const override;
+            void SetAffectsGI(bool affectsGI) override;
+            float GetAffectsGIFactor() const override;
+            void SetAffectsGIFactor(float affectsGIFactor) override;
 
         private:
             friend class EditorDirectionalLightComponent;

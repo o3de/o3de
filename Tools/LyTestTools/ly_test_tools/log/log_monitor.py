@@ -84,7 +84,7 @@ class LogMonitor(object):
         waiter.wait_for(
             lambda: os.path.exists(self.log_file_path),
             timeout=self.log_creation_max_wait_time,
-            exc=f"Log file '{self.log_file_path}' was never created by another process.",
+            exc=LogMonitorException(f"Log file '{self.log_file_path}' was never created by another process."),
             interval=1,
         )
 
