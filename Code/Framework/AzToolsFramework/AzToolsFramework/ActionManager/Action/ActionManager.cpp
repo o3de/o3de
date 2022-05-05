@@ -88,6 +88,16 @@ namespace AzToolsFramework
         return nullptr;
     }
 
+    const QAction* ActionManager::GetActionConst(const AZStd::string& actionIdentifier)
+    {
+        if (m_actions.contains(actionIdentifier))
+        {
+            return m_actions[actionIdentifier].GetAction();
+        }
+
+        return nullptr;
+    }
+
     void ActionManager::ClearActionContextMap()
     {
         for (auto elem : m_actionContexts)

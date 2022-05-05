@@ -40,6 +40,7 @@ namespace AzToolsFramework
             const AZStd::string& iconPath,
             AZStd::function<void()> handler) override;
         QAction* GetAction(const AZStd::string& actionIdentifier) override;
+        const QAction* GetActionConst(const AZStd::string& actionIdentifier) override;
 
         void ClearActionContextMap();
 
