@@ -23,13 +23,14 @@ class MaterialsHelper(QtWidgets.QWidget):
 
         self.setParent(mayaMainWindow)
         self.setWindowFlags(QtCore.Qt.Window)
-        self.setGeometry(200, 200, 400, 500)
+        self.setGeometry(200, 200, 450, 600)
         self.setObjectName('MaterialsHelper')
         self.setWindowTitle('Materials Helper')
         self.isTopLevel()
         self.operation = operation
         self.scope = 0
         self.output_location = None
+        self.process_dictionary = None
         self.source = None
         self.desktop_location = os.path.join(os.environ['USERPROFILE'], 'Desktop')
         self.bold_font = QtGui.QFont("Plastique", 8, QtGui.QFont.Bold)
@@ -59,12 +60,29 @@ class MaterialsHelper(QtWidgets.QWidget):
         self.task_button_group.addButton(self.task_radio_two, 1)
         self.main_container.addLayout(self.create_spacer_line())
 
+        # Export Object Settings
+        self.object_settings_label = QtWidgets.QLabel('Export Object Settings')
+        self.object_settings_label.setFont(self.bold_font)
+        self.main_container.addWidget(self.object_settings_label)
+        self.main_container.addSpacing(5)
+        self.object_settings_layout = QtWidgets.QHBoxLayout()
+        self.object_settings_layout.setAlignment(QtCore.Qt.AlignLeft)
+        self.main_container.addLayout(self.object_settings_layout)
+        self.preserve_transforms_checkbox = QtWidgets.QCheckBox('Preserve Transform Values')
+        self.preserve_transforms_checkbox.setChecked(True)
+        self.object_settings_layout.addWidget(self.preserve_transforms_checkbox)
+        self.object_settings_layout.addSpacing(30)
+        self.preserve_grouped_checkbox = QtWidgets.QCheckBox('Preserve Grouped Objects')
+        self.object_settings_layout.addWidget(self.preserve_grouped_checkbox)
+        self.main_container.addLayout(self.create_spacer_line())
+
         # Scope Section
         self.scope_label = QtWidgets.QLabel('Scope')
         self.scope_label.setFont(self.bold_font)
         self.main_container.addWidget(self.scope_label)
         self.main_container.addSpacing(5)
         self.scope_button_container = QtWidgets.QHBoxLayout()
+        self.scope_button_container.setAlignment(QtCore.Qt.AlignLeft)
         self.main_container.addLayout(self.scope_button_container)
         self.main_container.addSpacing(5)
         self.scope_button_group = QtWidgets.QButtonGroup()
@@ -74,12 +92,15 @@ class MaterialsHelper(QtWidgets.QWidget):
         self.scope_radio_one = QtWidgets.QRadioButton(self.scope_settings[0])
         self.scope_radio_one.setChecked(True)
         self.scope_button_container.addWidget(self.scope_radio_one)
+        self.scope_button_container.addSpacing(30)
         self.scope_button_group.addButton(self.scope_radio_one, 0)
         self.scope_radio_two = QtWidgets.QRadioButton(self.scope_settings[1])
         self.scope_button_container.addWidget(self.scope_radio_two)
+        self.scope_button_container.addSpacing(30)
         self.scope_button_group.addButton(self.scope_radio_two, 1)
         self.scope_radio_three = QtWidgets.QRadioButton(self.scope_settings[2])
         self.scope_button_container.addWidget(self.scope_radio_three)
+        self.scope_button_container.addSpacing(30)
         self.scope_button_group.addButton(self.scope_radio_three, 2)
         self.scope_radio_four = QtWidgets.QRadioButton(self.scope_settings[3])
         self.scope_button_container.addWidget(self.scope_radio_four)
@@ -104,6 +125,7 @@ class MaterialsHelper(QtWidgets.QWidget):
         self.export_path_layout = QtWidgets.QHBoxLayout()
         self.main_container.addLayout(self.export_path_layout)
         self.export_line_edit = QtWidgets.QLineEdit()
+        self.export_line_edit.textChanged.connect(self.set_export_path)
         self.export_line_edit.setFixedHeight(25)
         self.export_path_layout.addWidget(self.export_line_edit)
         self.export_set_button = QtWidgets.QPushButton('Set')
@@ -118,6 +140,7 @@ class MaterialsHelper(QtWidgets.QWidget):
         self.main_container.addWidget(self.output_label)
         self.main_container.addSpacing(5)
         self.output_file_combobox = QtWidgets.QComboBox()
+        self.output_file_combobox.currentIndexChanged.connect(self.output_combobox_changed)
         self.output_file_combobox.setFixedHeight(25)
         self.main_container.addWidget(self.output_file_combobox)
         self.output_window = QtWidgets.QTextEdit()
@@ -128,16 +151,20 @@ class MaterialsHelper(QtWidgets.QWidget):
         self.process_materials_button.clicked.connect(self.process_materials_clicked)
         self.process_materials_button.setFixedHeight(50)
         self.main_container.addWidget(self.process_materials_button)
-
         self.set_window()
 
     def process_materials(self):
         if self.validate_task():
-            process_dictionary = material_utilities.process_materials('Maya', self.operation,
-                                                                      '_'.join(self.scope_settings[self.scope].split(
-                                                                       ' ')).lower(), self.output_location, self.source)
-            _LOGGER.info(f'ProcessDict: {process_dictionary}')
-            # self.set_output_window(process_dictionary)
+            # Include export options
+            export_options = []
+            for checkbox in [self.preserve_grouped_checkbox, self.preserve_transforms_checkbox]:
+                if checkbox.isChecked():
+                    export_options.append(checkbox.text())
+
+            self.process_dictionary = material_utilities.process_materials('Maya', self.operation, '_'.join(
+                self.scope_settings[self.scope].split(' ')).lower(), export_options, self.output_location, self.source)
+            self.set_output_combobox()
+            self.set_output_window()
 
     def enable_scope_buttons(self, txt, btn):
         self.scope_line_edit.setEnabled(txt)
@@ -148,14 +175,20 @@ class MaterialsHelper(QtWidgets.QWidget):
         if self.source:
             if self.operation == 'convert':
                 if not self.output_location:
+                    self.set_error_window('export_path', 'missing')
                     return False
                 elif not os.path.isdir(self.output_location):
+                    self.set_error_window('export_path', 'bad_path')
                     return False
-        return True
+            return True
+        return False
 
     # +++++++++++++++++++++++++-->
     # Getters/Setters +++++++++--->
     # +++++++++++++++++++++++++-->
+
+    def set_error_window(self, error_location, error_type):
+        pass
 
     def set_window(self):
         if self.operation == 'convert':
@@ -175,13 +208,19 @@ class MaterialsHelper(QtWidgets.QWidget):
         scope_listing = scope_value if scope_value else ''
         self.scope_line_edit.setText(scope_listing)
 
-    def set_output_window(self, process_dictionary):
-        # Combobox
+    def set_output_combobox(self):
         self.output_file_combobox.clear()
+        self.output_file_combobox.blockSignals(True)
+        output_keys = []
+        for key, values in self.process_dictionary.items():
+            for k, v in values.items():
+                output_keys.append(k)
+        self.output_file_combobox.addItems(output_keys)
+        self.output_file_combobox.blockSignals(False)
 
-        # Textfield
+    def set_output_window(self):
         self.output_window.clear()
-        self.output_window.setText(self.get_formatted_output(process_dictionary))
+        self.output_window.setText(self.get_formatted_output())
 
         # Increase Line Spacing for better readability
         block_format = QtGui.QTextBlockFormat()
@@ -194,7 +233,6 @@ class MaterialsHelper(QtWidgets.QWidget):
     def set_output_location(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Target Directory', self.desktop_location)
         if directory:
-            self.output_location = directory
             self.export_line_edit.setText(self.output_location)
 
     def set_scope_location(self):
@@ -215,8 +253,9 @@ class MaterialsHelper(QtWidgets.QWidget):
             if material_utils.get_object_by_name(target_object):
                 source_list.append(target_object)
         elif scope_value == 'Scene':
-            current_scene = material_utils.get_current_scene()
-            if current_scene:
+            if self.scope_line_edit.text() == '':
+                source_list = material_utils.get_scene_objects()
+            else:
                 source_list.append(current_scene)
         elif scope_value == 'Directory':
             if os.path.isdir(target_object):
@@ -231,11 +270,19 @@ class MaterialsHelper(QtWidgets.QWidget):
     def get_scope_value(self):
         return self.scope_settings[self.scope]
 
-    def get_formatted_output(self, output_dict):
+    def get_object_settings(self, object_name):
+        for key, values in self.process_dictionary.items():
+            for k, v in values.items():
+                if object_name in k:
+                    return {key: {k: v}}
+        return {}
+
+    def get_formatted_output(self):
+        current_selection = self.output_file_combobox.currentText()
+        output_dict = self.get_object_settings(current_selection)
         output_string = ''
         for target_file, object_list in output_dict.items():
             output_string += f'\nPROCESSED FILE NAME:\n{target_file}\n'
-            _LOGGER.info(f'ObjectList: {type(object_list)}   --- {object_list}')
             try:
                 for object_name, object_properties in object_list.items():
                     output_string += self.get_formatted_object_name(object_name)
@@ -244,7 +291,10 @@ class MaterialsHelper(QtWidgets.QWidget):
                         output_string += f"MATERIAL TYPE: {material_properties['material_type']}\n"
                         output_string += f'\nASSIGNED TEXTURES:\n'
                         for texture_key, texture_values in material_properties['textures'].items():
-                            output_string += f'--> {texture_key}\n'
+                            if texture_values:
+                                for k, v in texture_values.items():
+                                    if k == 'path':
+                                        output_string += f'--> {texture_key} ::: {v}\n'
                         output_string += f'\nSETTINGS:\n'
                         for property_name, property_value in material_properties['settings'].items():
                             output_string += f'{property_name} ::: {property_value}\n'
@@ -253,7 +303,8 @@ class MaterialsHelper(QtWidgets.QWidget):
             output_string += '\n\n'
         return output_string
 
-    def get_formatted_object_name(self, object_name):
+    @staticmethod
+    def get_formatted_object_name(object_name):
         separator = '#' * (len(object_name) + 6)
         formatted_string = f'\n{separator}\nMESH: {object_name}\n{separator}\n\n'
         return formatted_string
@@ -272,8 +323,15 @@ class MaterialsHelper(QtWidgets.QWidget):
     def set_scope_clicked(self):
         self.set_scope_location()
 
+    def set_export_path(self):
+        target_path = self.export_line_edit.text()
+        self.output_location = target_path if Path(target_path).is_dir() else None
+
     def process_materials_clicked(self):
         self.process_materials()
+
+    def output_combobox_changed(self):
+        self.set_output_window()
 
     # +++++++++++++++++++++++++-->
     # Static Methods ++++++++++--->
@@ -315,14 +373,3 @@ def show_ui(operation):
     ui = MaterialsHelper(operation, mayaMainWindow)
     ui.show()
 
-
-"""
-Entry point of the material operations process.
-:param dcc_app: Source application where conversion files were created
-:param operation: Specifies operation to perform - 'query', 'validate', 'modify', 'convert'
-:param scope: What gets converted- 'selected', 'by_name', 'scene', 'directory'
-:param output_path: Specifies location of output (if applicable)
-:param source: Provides a slot for passing file location when handling directory and/or scene requests outside of
-the currently open file
-:return:
-"""

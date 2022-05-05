@@ -13,7 +13,7 @@
 """! @brief This module assists with material operations involving Maya aiStandardSurface (Arnold) materials. """
 
 ##
-# @file convert_arnold_material.py
+# @file convert_aiStandardSurface_material.py
 #
 # @brief This module contains several common materials utilities/operations for extracting/converting material
 # information contained in Maya aiStandardSurface. This includes gathering file texture information, and input/output
@@ -27,7 +27,7 @@ from SDK.Python import general_utilities as helpers
 import logging as _logging
 import maya.cmds as mc
 
-_LOGGER = _logging.getLogger('azpy.dcc.maya.helpers.convert_arnold_material')
+_LOGGER = _logging.getLogger('azpy.dcc.maya.helpers.convert_aiStandardSurface_material')
 
 
 def get_material_info(target_material: str):

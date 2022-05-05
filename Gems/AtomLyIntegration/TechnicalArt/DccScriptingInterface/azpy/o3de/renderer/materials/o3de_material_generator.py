@@ -22,17 +22,19 @@ import json
 import os
 
 
-_LOGGER = _logging.getLogger('azpy.o3de.renderer.materials.MaterialGenerator')
+_LOGGER = _logging.getLogger('azpy.o3de.renderer.materials.o3de_material_generator')
 
 
 class MaterialGenerator:
     debug_mode = True
 
-    def __init__(self, input_material, output_material, material_attributes, output_base_path):
-        self.input_material = input_material
-        self.output_material = output_material
-        self.material_attributes = material_attributes
-        self.output_base_path = output_base_path
+    def __init__(self, input, output, attributes, base_path, options, master_paths):
+        self.input_material = input
+        self.output_material = output
+        self.material_attributes = attributes
+        self.output_base_path = base_path
+        self.export_options = options
+        self.master_paths = master_paths
         self.asset_directory = None
         self.textures_directory = None
         self.dcc_application = None
@@ -43,7 +45,8 @@ class MaterialGenerator:
         self.mesh_export_location = None
         self.mesh_name = None
         self.material_name = None
-        self.material_properties_dict = material_utilities.get_all_properties_description(output_material)
+        self.parent_hierarchy = None
+        self.material_properties_dict = material_utilities.get_all_properties_description(output)
         self.material_definition = Box({})
         self.parse_material_attributes()
         self.transferable_properties = self.get_transferable_properties()
@@ -58,25 +61,22 @@ class MaterialGenerator:
         """! This organizes material attributes into a number of separate class attributes to make accessing the
         respective information a little more easily.
         """
-        for key, values in self.material_attributes.items():
-            for object_key, object_values in values.items():
-                self.set_export_directory(object_key)
-                for material_key, material_values in object_values.items():
-                    self.dcc_material_name = material_key
-                    for k, v in material_values.items():
-                        if k == 'dcc_application':
-                            self.dcc_application = v
-                            self.get_default_material_settings()
-                        elif k == 'textures':
-                            self.texture_list = v
-                        elif k == 'mesh_export_location':
-                            self.mesh_export_location = v
-                        elif k == 'settings':
-                            self.dcc_material_settings = v
-
-    def reset(self, input_material, output_material, material_attributes, output_base_path):
-        """! Resets all material values in order to quickly process lists of materials one after the other. """
-        self.__init__(input_material, output_material, material_attributes, output_base_path)
+        for object_key, material_data in self.material_attributes.items():
+            for material_key, material_values in material_data.items():
+                self.dcc_material_name = material_key
+                for k, v in material_values.items():
+                    if k == 'dcc_application':
+                        self.dcc_application = v
+                        self.get_default_material_settings()
+                    elif k == 'textures':
+                        self.texture_list = v
+                    elif k == 'mesh_export_location':
+                        self.mesh_export_location = v
+                    elif k == 'settings':
+                        self.dcc_material_settings = v
+                    elif k == 'parent_hierarchy':
+                        self.parent_hierarchy = v
+            self.set_export_directory(object_key)
 
     ###################
     # Getters/Setters #
@@ -108,25 +108,41 @@ class MaterialGenerator:
         for material_property, property_value in property_values.items():
             for key, value in self.transferable_properties.items():
                 if value == material_property:
+                    _LOGGER.info(f'MaterialProperty: {material_property}')
                     property_components = material_property.split('.')
                     # Handle Textures ------------------------>>
                     if property_components[1] == 'textureMap':
                         key_match = self.get_matching_key([key, property_components[0]], self.texture_list)
                         if key_match:
-                            properties_dictionary[material_property] = self.texture_list[key_match]['path']
-                            # TODO- Check if line below is necessary if textureMap is defined (I'm guessing no?)
-                            # properties_dictionary[f'{property_components[0]}.useTexture'] = True
+                            try:
+                                target_path = self.texture_list[key_match]['path']
+                                _LOGGER.info(f'\n\n++++++++++++++ MaterialProperty: {material_property}')
+                                _LOGGER.info(f'--> {key_match} -- {target_path}')
+                                properties_dictionary[material_property] = target_path
+                            except TypeError:
+                                pass
+                            except KeyError:
+                                pass
                     else:
                         # Handle Procedural Settings --------->>
+                        # Please note- this section is meant to catch changes to default shader values. If a change
+                        # is found to the values, an attempt to carry over the value to a transferable O3DE material
+                        # property will be made. After much troubleshooting, I believe that the Stingray material
+                        # creation bug I found for creating new StingrayPBS materials in Standalone mode is also
+                        # present in IDE-driven Maya sessions. If you create an instance of this material
+                        # programmatically several key attributes needed to assign texture maps as well as procedural
+                        # settings are missing in the attributes. This passage should work for all other material types,
+                        # but will currently not work on StingrayPBS
                         try:
                             key_match = self.get_matching_key([key, property_components[0]],
                                                               self.default_dcc_material_settings['settings'])
                             target_value = self.get_default_value(key_match)
                             if target_value != 'default':
                                 properties_dictionary[material_property] = target_value
-                        except Exception as e:
-                            _LOGGER.info(f'GetPropertyValues error[{type(e)}]: {e}')
+                        except KeyError:
+                            pass
         properties_dictionary = self.set_properties_formatting(properties_dictionary)
+        _LOGGER.info(f'++++++++ PropertiesDictionary: {properties_dictionary}')
         return properties_dictionary
 
     def get_default_value(self, key):
@@ -145,18 +161,34 @@ class MaterialGenerator:
         return f'{Path(self.mesh_export_location).stem}_{self.dcc_material_name}.material'
 
     def get_material_output_path(self):
-        return Path(self.mesh_export_location).parent / self.get_material_name()
+        if not self.parent_hierarchy:
+            return Path(self.mesh_export_location).parent / self.get_material_name()
+        else:
+            return Path(self.output_base_path) / self.parent_hierarchy[-1] / \
+                   f'{self.parent_hierarchy[-1]}_{self.dcc_material_name}.material'
 
     def get_relative_path(self, asset_path):
         """! O3DE material definitions use relative paths in the definitions- this will truncate paths so that the
         asset processor finds assets based on this relative path requirement
         """
-        asset_path = asset_path.replace('\\', '/')
-        base_path_key = Path(self.output_base_path).name
         path_list = Path(asset_path).parts
         for index, part in enumerate(path_list):
-            if part == base_path_key:
-                return '/'.join(path_list[index:])
+            if part == 'Assets':
+                target_index = index + 1
+                return '/'.join(path_list[target_index:])
+
+    # Below is the version I was using WITHOUT exporting assets into Gem Formatted directories. You should probably
+    # include functionality to create Gem or just create converted assets that would be distributed ad hoc
+    # def get_relative_path(self, asset_path):
+    #     """! O3DE material definitions use relative paths in the definitions- this will truncate paths so that the
+    #     asset processor finds assets based on this relative path requirement
+    #     """
+    #     asset_path = asset_path.replace('\\', '/')
+    #     base_path_key = Path(self.output_base_path).name
+    #     path_list = Path(asset_path).parts
+    #     for index, part in enumerate(path_list):
+    #         if part == base_path_key:
+    #             return '/'.join(path_list[index:])
 
     @staticmethod
     def get_matching_key(search_list_items, target_dictionary):
@@ -179,12 +211,13 @@ class MaterialGenerator:
         object's name in the scene
         """
         self.mesh_name = object_name
+        object_name = self.parent_hierarchy[-1] if self.parent_hierarchy else object_name
         self.textures_directory = Path(self.output_base_path) / object_name / 'textures'
         try:
             self.textures_directory.mkdir(parents=True)
-            self.asset_directory = self.textures_directory.parent
         except FileExistsError:
             pass
+        self.asset_directory = self.textures_directory.parent
 
     @staticmethod
     def set_properties_formatting(properties_dictionary):
@@ -214,15 +247,26 @@ class MaterialGenerator:
         helpers.set_json_data(all_properties_data, self.material_properties_dict)
 
     def export_mesh(self):
-        material_utilities.export_mesh(self.dcc_application, self.mesh_name, self.mesh_export_location)
+        if 'Preserve Grouped Objects' not in self.export_options:
+            material_utilities.export_mesh(self.dcc_application, self.mesh_name, self.mesh_export_location,
+                                           self.export_options)
 
     def export_textures(self):
         for texture_type, texture_info in self.texture_list.items():
             if texture_info:
-                texture_path = Path(texture_info['path'])
-                dst = self.textures_directory / texture_path.name
-                shutil.copy(str(texture_path), str(dst))
-                self.texture_list[texture_type]['path'] = self.get_relative_path(str(dst))
+                src = Path(texture_info['path'])
+                t = str(src).replace('\\', '/')
+                dst = Path(self.output_base_path) / self.master_paths[t]['object'] / 'textures' / src.name
+                os.makedirs(os.path.dirname(str(dst)), exist_ok=True)
+
+                if not dst.is_file():
+                    try:
+                        shutil.copy(str(src), str(dst))
+                        self.texture_list[texture_type]['path'] = self.get_relative_path(str(dst))
+                    except FileNotFoundError:
+                        _LOGGER.info(f'Texture [{self.texture_list[texture_type]["path"]}] not found. Skipping...')
+                else:
+                    self.texture_list[texture_type]['path'] = self.get_relative_path(str(dst))
 
     def export_material(self):
         """! Takes constructed 'material_definition' dictionary with information gathered in the process and saves with
@@ -236,6 +280,7 @@ class MaterialGenerator:
         #     self.export_json()
 
         material_output_path = self.get_material_output_path()
+        _LOGGER.info(f'ExportingMaterial..... {material_output_path}')
         helpers.set_json_data(material_output_path, self.material_definition)
 
 
@@ -244,8 +289,8 @@ class MaterialGenerator:
 # ++++++++++++++++-------------------------------------------------->>
 
 class MayaMaterialGenerator(MaterialGenerator):
-    def __init__(self, input_material, output_material, material_attributes, output_base_path):
-        super().__init__(input_material, output_material, material_attributes, output_base_path)
+    def __init__(self, input, output, attributes, base_path, options, master_paths):
+        super().__init__(input, output, attributes, base_path, options, master_paths)
 
     def generate_material(self):
         _LOGGER.info('\n\n+++++++++++++++++++++++++++++++++++++\nMayaMaterialGenerator instance created\n'
@@ -254,18 +299,21 @@ class MayaMaterialGenerator(MaterialGenerator):
         _LOGGER.info(f'MaterialAttributes: {self.material_attributes}')
         _LOGGER.info(f'OutputBasePath: {self.output_base_path}')
         _LOGGER.info(f'Transferable properties: {self.transferable_properties}')
+        _LOGGER.info(f'Export options: {self.export_options}')
 
         self.export_mesh()
         self.export_textures()
         self.material_name = self.get_material_name()
 
+        _LOGGER.info(f'MaterialName: {self.material_name}')
+        _LOGGER.info(f'MaterialsPropertiesDict: {self.material_properties_dict}')
+
         for key, values in self.material_properties_dict.items():
-            if key != 'propertyValues':
-                self.material_definition[key] = values
-            else:
-                self.material_definition[key] = self.get_property_values(values)
+            self.material_definition[key] = values if key != 'propertyValues' else self.get_property_values(values)
+        _LOGGER.info(f'MaterialDefinition: {self.material_definition}')
 
         try:
+            _LOGGER.info(f'MaterialExport [{self.material_name}]: {self.material_definition}')
             self.export_material()
             return {self.mesh_export_location: {self.material_name: self.material_definition}}
         except Exception as e:
@@ -278,8 +326,8 @@ class MayaMaterialGenerator(MaterialGenerator):
 # +++++++++++++++++++----------------------------------------------->>
 
 class BlenderMaterialGenerator(MaterialGenerator):
-    def __init__(self, input_material, output_material, material_attributes, output_base_path):
-        super().__init__(input_material, output_material, material_attributes, output_base_path)
+    def __init__(self, input, output, attributes, base_path, options, master_paths):
+        super().__init__(input, output, attributes, base_path, options, master_paths)
 
         self.transferable_properties = material_utilities.get_transferable_properties('Blender', self.input_material)
 
@@ -297,35 +345,55 @@ class BlenderMaterialGenerator(MaterialGenerator):
 # TRANSLATION ASSIGNMENT +----------------------------------------->>
 # ++++++++++++++++++++++++------------------------------------->>
 
-def export_standard_pbr_materials(material_info, output_path):
+
+def get_dcc_application(target_dictionary):
+    for scene_name, translation_values in target_dictionary.items():
+        for object_key, material_data in translation_values.items():
+            for material_name, material_values in material_data.items():
+                return material_values['dcc_application']
+
+
+def export_grouped_objects(material_info, output_path, dcc_application, export_options):
+    for key, values in material_info.items():
+        parents = get_scene_export_hierarchy(values)
+        if not parents:
+            output_path = Path(output_path) / key / f'{key}.fbx'
+            os.makedirs(os.path.dirname(str(output_path)), exist_ok=True)
+            material_utilities.export_mesh(dcc_application, key, output_path, export_options)
+
+
+def get_scene_export_hierarchy(translation_values):
+    for material_name, material_values in translation_values.items():
+        return material_values['parent_hierarchy']
+
+
+def export_standard_pbr_materials(material_info, base_path, options, master_paths):
     exported_materials = {}
-    maya_translator = None
-    blender_translator = None
-    for scene_name, scene_values in material_info.items():
-        translator = None
-        for material_key, material_values in scene_values.items():
-            for k, v in material_values.items():
-                dcc_application = v['dcc_application']
-                input_material = v['material_type']
-                output_material = 'standardPBR'
+    dcc_application = get_dcc_application(material_info)
+    for scene_name, translation_values in material_info.items():
+        if 'Preserve Grouped Objects' in options:
+            export_grouped_objects(translation_values, base_path, dcc_application, options)
+
+        for object_key, material_data in translation_values.items():
+            _LOGGER.info(f'\n\nObjectKey: {object_key}')
+            t = None
+            for material_name, material_values in material_data.items():
+                _LOGGER.info(f'-----> MaterialName: {material_name}  MaterialValues: {material_values}')
+                input = material_values['material_type']
+                _LOGGER.info(f'------------> InputMaterial: {input}')
+                attributes = {object_key: material_data}
+                _LOGGER.info(f'------------> MaterialAttributes: {attributes}')
+                _LOGGER.info(f'------------> OutputPath: {base_path}')
+                _LOGGER.info(f'------------> Export Options: {options}')
+                _LOGGER.info(f'------------> DccApplication: {dcc_application}')
 
                 if dcc_application == 'Maya':
-                    if maya_translator:
-                        maya_translator.reset(input_material, output_material, material_info, output_path)
-                    else:
-                        maya_translator = MayaMaterialGenerator(input_material, output_material, material_info,
-                                                                output_path)
-                    translator = maya_translator
+                    t = MayaMaterialGenerator(input, 'standardPBR', attributes, base_path, options, master_paths)
                 elif dcc_application == 'Blender':
-                    if blender_translator:
-                        blender_translator.reset(input_material, output_material, material_info, output_path)
-                    else:
-                        blender_translator = BlenderMaterialGenerator(input_material, output_material, material_info,
-                                                                      output_path)
-                    translator = blender_translator
+                    t = BlenderMaterialGenerator(input, 'standardPBR', attributes, base_path, options, master_paths)
 
-                material_definition = translator.generate_material()
+                material_definition = t.generate_material()
+                _LOGGER.info(f'MaterialDefinition: {material_definition}')
                 exported_materials.update(material_definition)
-
     return exported_materials
 

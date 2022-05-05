@@ -29,9 +29,9 @@ import os
 import logging as _logging
 from pathlib import Path
 import maya.cmds as mc
-mc.loadPlugin("fbxmaya")
 from azpy.dcc.maya.utils import pycharm_debugger
-from azpy.dcc.maya.helpers import convert_arnold_material as arnold
+from azpy.dcc.maya.helpers import convert_aiStandard_material as aiStandard
+from azpy.dcc.maya.helpers import convert_aiStandardSurface_material as aiStandardSurface
 from azpy.dcc.maya.helpers import convert_stingray_material as stingray
 
 
@@ -43,8 +43,13 @@ _LOGGER = _logging.getLogger('azpy.dcc.maya.utils.maya_materials_conversion')
 
 supported_material_types = [
     'StingrayPBS',
-    'aiStandardSurface'
+    'aiStandardSurface',
+    'aiStandard'
 ]
+
+# Activate FBX plugin
+if 'fbxmaya' not in mc.pluginInfo(query=True, listPlugins=True):
+    mc.loadPlugin("fbxmaya")
 
 
 def prepare_material_export(target_mesh, export_location):
@@ -135,6 +140,22 @@ def run_operation(process_dictionary, operation, output):
         _LOGGER.info('* Set up conversion here *')
 
 
+def get_object_hierarchy(target_object):
+    object_hierarchy = []
+    while True:
+        parent = mc.listRelatives(target_object, allParents=True)
+        if parent:
+            mc.select(parent[0], hi=True)
+            current_shape = mc.ls(sl=True, shapes=True)[0]
+            if mc.objectType(current_shape, isType='mesh'):
+                object_hierarchy.append(parent[0])
+                target_object = parent[0]
+            else:
+                return object_hierarchy
+        else:
+            return object_hierarchy
+
+
 def get_materials_in_scene():
     """! Audits scene to gather all materials present in the Hypershade.
 
@@ -183,8 +204,8 @@ def get_material_attributes(target_material: str, target_keys: list):
             try:
                 target_value = mc.getAttr(target_material + '.' + target_key)
                 attribute_dictionary[target_key] = target_value
-            except RuntimeError:
-                pass
+            except RuntimeError as e:
+                _LOGGER.info(f'GetMaterialAttributes error: {e}')
     return attribute_dictionary
 
 
@@ -230,6 +251,22 @@ def get_mesh_export_path(target_mesh, export_location):
 
 
 def get_mesh_materials(target_mesh):
+    """! Gathers single materials attached to mesh passed as argument. This will not return additional materials
+    attached to parented objects
+
+    @param target_mesh The target mesh to pull attached material information from.
+    @return list - Attached material name.
+    """
+    mc.select(target_mesh, r=True)
+    for object in mc.ls(sl=True, s=1, dag=1):
+        transform_node = mc.listRelatives(object, parent=True, fullPath=True)[0]
+        mesh_selection = transform_node.split('|')[-1]
+        if mesh_selection == target_mesh:
+            sg = mc.listConnections(object, type='shadingEngine')
+            return mc.listConnections(sg[0] + '.surfaceShader')
+
+
+def get_all_mesh_materials(target_mesh):
     """! Gathers a list of all materials attached to each mesh's shader.
 
     @param target_mesh The target mesh to pull attached material information from.
@@ -262,10 +299,8 @@ def get_material(material_name: str) -> list:
     sha = None
     sg = None
     if material_name in get_materials_in_scene():
-        _LOGGER.info('Deleting material: {}'.format(material_name))
         mc.delete(material_name)
 
-    _LOGGER.info('Creating Stingray material: {}'.format(material_name))
     try:
         sha = mc.shadingNode('StingrayPBS', asShader=True, name=material_name)
         sg = mc.sets(renderable=True, noSurfaceShader=True, empty=True)
@@ -284,7 +319,9 @@ def get_material_info(target_material: str):
     mc.select(target_material, r=True)
     material_type = get_material_type(mc.ls(sl=True, long=True) or [])
     if material_type == 'aiStandardSurface':
-        return arnold.get_material_info(target_material)
+        return aiStandardSurface.get_material_info(target_material)
+    elif material_type == 'aiStandard':
+        return aiStandard.get_material_info(target_material)
     elif material_type == 'StingrayPBS':
         return stingray.get_material_info(target_material)
 
@@ -294,19 +331,16 @@ def get_default_material_settings(material_type):
     new instance of the target material type and generates a dictionary of default values to compare with the
     target material being read/parsed in the system.
     """
-
+    # TODO - combine this with get_material above
     default_settings = None
-    try:
-        mc.sphere(n='templateSphere')
-        sg = set_new_material(material_type, 'templateShader', [])
-        default_settings = get_material_info('templateShader')
-        _LOGGER.info(f'DefaultSettings: {default_settings}')
-        # mc.select(clear=True)
-        # mc.select('templateSphere', r=True)
-        # mc.select(sg, add=True)
-        # mc.delete()
-    except Exception as e:
-        _LOGGER.info(f'Unable to retrieve default material settings. EXCEPTION [{type(e)}]: {e}')
+    if material_type in mc.listNodeTypes('shader'):
+        try:
+            mc.sphere(n='templateSphere')
+            sg = set_new_material(material_type, 'templateShader', ['templateSphere'])
+            default_settings = get_material_info('templateShader')
+            mc.delete('templateSphere', 'templateShader', sg)
+        except KeyError:
+            _LOGGER.info(f'KeyError... Unable to retrieve default material settings.')
     return default_settings
 
 
@@ -329,9 +363,18 @@ def get_object_by_name(target_object):
     return object_exists
 
 
+def get_object_position(target_object):
+    object_position = []
+    for item in ['translateX', 'translateY', 'translateZ']:
+        object_position.append(mc.getAttr(f'{target_object}.{item}'))
+    return object_position
+
+
 def get_transferable_properties(material_type):
     if material_type == 'aiStandardSurface':
-        return arnold.get_transferable_properties()
+        return aiStandardSurface.get_transferable_properties()
+    elif material_type == 'aiStandard':
+        return aiStandard.get_transferable_properties()
     elif material_type == 'StingrayPBS':
         return stingray.get_transferable_properties()
 
@@ -339,16 +382,20 @@ def get_transferable_properties(material_type):
 def set_new_material(material_type: str, material_name: str, mesh_assignment: list):
     # Create material if it doesn't already exist
     sg = None
-    if not mc.objExists(material_name):
-        sha = mc.shadingNode(material_type, asShader=True, name=material_name)
-        sg = mc.sets(renderable=True, noSurfaceShader=True, empty=True)
-        mc.connectAttr(sha + '.outColor', sg + '.surfaceShader', force=True)
-
     try:
-        mc.select(mesh_assignment, replace=True)
-        mc.hyperShade(assign=material_name)
+        if not mc.objExists(material_name):
+            sha = mc.shadingNode(material_type, asShader=True, name=material_name)
+            sg = mc.sets(renderable=True, noSurfaceShader=True, empty=True)
+            mc.connectAttr(sha + '.outColor', sg + '.surfaceShader', force=True)
+
+        for mesh_target in mesh_assignment:
+            try:
+                mc.select(mesh_target, replace=True)
+                mc.hyperShade(assign=material_name)
+            except Exception as e:
+                _LOGGER.info(f'SetNewMaterialError [type(e)]: {e}')
     except Exception as e:
-        _LOGGER.info(f'SetNewMaterialError [type(e)]: {e}')
+        _LOGGER.info(f'Set Material failed [{type(e)}]: {e}')
     return sg
 
 
@@ -428,14 +475,18 @@ def set_textures(material_name: str, texture_dict: dict):
             _LOGGER.info('Conversion failed: {}'.format(e))
 
 
-def export_mesh(target_object, mesh_export_location):
+def export_mesh(target_object, mesh_export_location, export_options):
+    _LOGGER.info(f'Export Mesh firing[{target_object}]: {mesh_export_location}')
+    object_position = get_object_position(target_object)
     try:
-        mc.move(0, 0, 0, target_object, absolute=True)
+        if 'Preserve Transform Values' not in export_options:
+            mc.move(0, 0, 0, target_object, absolute=True)
         mc.select(target_object, replace=True)
-        mc.file(mesh_export_location, force=True, type='FBX export', exportSelected=True)
+        mc.file(str(mesh_export_location), force=True, type='FBX export', exportSelected=True)
+        mc.move(object_position[0], object_position[1], object_position[2], target_object, absolute=True)
         return True
     except Exception as e:
-        _LOGGER.info('ExportMesh failed [type(e)]: {e}')
+        _LOGGER.info(f'ExportMesh failed [type(e)]: {e}')
 
 
 def cleanup(target_objects):

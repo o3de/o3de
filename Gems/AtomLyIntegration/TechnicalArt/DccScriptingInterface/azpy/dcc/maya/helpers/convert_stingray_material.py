@@ -75,7 +75,6 @@ def get_material_textures(target_material: str):
                     'node': node,
                     'path': helpers.get_clean_path(texture_path.__str__())
                 }
-
     return material_textures_dict
 
 
@@ -150,8 +149,31 @@ def get_transferable_properties():
     material information. "*" Indicates a texture slot- if textures don't exist this likely can be controlled with
     RGB values. This should probably be moved to a constants file once we work out how we are set everything up
     """
-    # TODO - This is not as straightforward as it is for Arnold materials... will look into this when I have more time
-    return {}
+    target_properties = {
+
+        'TEX_color_map': 'baseColor.textureMap',        # Color Map
+        'use_color_map': 'baseColor.useTexture',        # Use Color Map
+        'base_color': 'baseColor.color',                # Base Color
+        'TEX_normal_map': 'normal.textureMap',          # Normal Map
+        'use_normal_map': 'normal.useTexture',          # Use Normal Map
+        'TEX_metallic_map': 'metallic.textureMap',      # Metallic Map
+        'use_metallic_map': 'metallic.useTexture',      # Use Metallic Map
+        'metallic': 'metallic.factor',                  # Metallic
+        'TEX_roughness_map': 'roughness.textureMap',    # Roughness Map
+        'use_roughness_map': 'roughness.useTexture',    # Use Roughness Map
+        'roughness': 'roughness.factor',                # Roughness
+        'TEX_emissive_map': 'emissive.textureMap',      # Emissive Map
+        'use_emissive_map': 'emissive.useTexture',      # Use Emissive Map
+        'emissive': 'emissive.color',                   # Emissive
+        'emissive_intensity': 'emissive.intensity',     # Emissive Intensity
+        'TEX_ao_map': 'occlusion.diffuseTextureMap',    # Ao Map
+        'use_ao_map': 'occlusion.diffuseUseTexture',    # Use Ao Map
+        'uv_offsetX': 'uv.offsetU',                     # UV Offset (first listing)
+        'uv_offsetY': 'uv.offsetV',                     # UV Offset (second listing)
+        'uv_scaleX': 'uv.scale'                         # Uv Scale (I'm just using scaleX value to control... O3DE
+                                                        # Has a single control, where Stingray has two)
+    }
+    return target_properties
 
 
 def set_stingray_materials(material_dict: dict):

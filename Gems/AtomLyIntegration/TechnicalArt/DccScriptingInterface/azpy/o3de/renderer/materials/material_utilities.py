@@ -27,59 +27,47 @@ import click
 import json
 import os
 
-"""
 
-convert_material.py
-
-Location:
-azpy/o3de/renderer/materials/
-
-Main functions:
-- Get all properties material info
-- Validate material
-- read atom material
-- write atom material
-- convert legacy material
-- convert spec/gloss to metal/rough
-
-"""
-
-_LOGGER = _logging.getLogger('azpy.dcc.maya.utils.maya_materials')
+_LOGGER = _logging.getLogger('azpy.o3de.renderer.materials.material_utilities')
 
 
 def run_cli():
     _LOGGER.info('Material Conversion called in CLI Mode')
 
 
-def process_materials(dcc_app: str, operation: str, scope: str, output_path=None, source=None) -> dict:
+def process_materials(dcc_app: str, operation: str, scope: str, options: list, output_path=None, source=None) -> dict:
     """
     Entry point of the material operations process.
-    :param dcc_app: Source application where conversion files were created
-    :param operation: Specifies operation to perform - 'query', 'validate', 'modify', 'convert'
-    :param scope: What gets converted- 'selected', 'by_name', 'scene', 'directory'
-    :param output_path: Specifies location of output (if applicable)
-    :param source: Provides a slot for passing file location when handling directory and/or scene requests outside of
+
+    @param dcc_app Source application where conversion files were created
+    @param operation Specifies operation to perform - 'query', 'validate', 'modify', 'convert'
+    @param scope What gets converted- 'selected', 'by_name', 'scene', 'directory'
+    @param options Export options for object export activated in UI
+    @param output_path Specifies location of output (if applicable)
+    @param source Provides a slot for passing file location when handling directory and/or scene requests outside of
     the currently open file
-    :return:
+    @return process_dictionary Data collected in the conversion
     """
     # Gather material information
     controller = get_dcc_controller(dcc_app)
     process_dictionary = {}
     if scope == 'selected' or scope == 'by_name':
-        process_dictionary = process_object_materials(controller, operation, source, output_path)
+        process_dictionary = process_object_materials(controller, operation, output_path, source)
     elif scope == 'scene':
-        process_dictionary = process_scene_materials(controller, operation, source, output_path)
+        if self.get_source_type(source[0]) == 'file':
+            process_dictionary = process_scene_materials(controller, operation, output_path, source)
     elif scope == 'directory':
-        pass
+        if self.get_source_type(source[0]) == 'directory':
+            process_dictionary = process_directory_materials(controller, operation, output_path, source)
 
     # Export Material
     if operation == 'convert':
-        process_dictionary = exporter.export_standard_pbr_materials(process_dictionary, output_path)
+        master_paths = get_master_paths(process_dictionary)
+        exporter.export_standard_pbr_materials(process_dictionary, output_path, options, master_paths)
     return process_dictionary
 
 
-def process_object_materials(controller, operation, source, output):
-    _LOGGER.info(f'ProcessObjectMaterials: Operation: {operation}  Source: {source}  Output: {output}')
+def process_object_materials(controller, operation, output_path, source):
     source_file = helpers.get_clean_path(controller.get_current_scene().__str__())
     process_dictionary = Box({source_file: {}})
     target_objects = source if source else controller.get_selected_objects()
@@ -87,10 +75,11 @@ def process_object_materials(controller, operation, source, output):
     for target_object in target_objects:
         temp_dict = {}
         target_object = target_object[1:] if target_object.startswith('|') else target_object
-        object_export_path, object_materials = controller.prepare_material_export(target_object, output)
+        object_export_path, object_materials = controller.prepare_material_export(target_object, output_path)
         for target_material in object_materials:
             temp_dict[target_material] = controller.get_material_info(target_material)
             temp_dict[target_material].update({'mesh_export_location': object_export_path})
+            temp_dict[target_material].update({'parent_hierarchy': controller.get_object_hierarchy(target_object)})
         process_dictionary[source_file].update({target_object: temp_dict})
     # controller.run_operation(process_dictionary, operation, output)
     controller.cleanup(target_objects)
@@ -98,14 +87,43 @@ def process_object_materials(controller, operation, source, output):
     return process_dictionary if process_dictionary else []
 
 
-def process_scene_materials(controller, operation, source, output):
-    scene_objects = controller.get_scene_objects()
-    process_dictionary = process_object_materials(controller, operation, scene_objects, output)
+def process_scene_materials(controller, operation, output_path, source):
+    if source:
+        _LOGGER.info('::::::: You will have to launch standalone instance here')
+    else:
+        source = controller.get_scene_objects()
+    process_dictionary = process_object_materials(controller, operation, output_path, source)
     return process_dictionary
 
 
-def process_directory_materials(controller, operation, source, output):
-    pass
+def process_directory_materials(controller, operation, output_path, source):
+    process_dictionary = None
+
+    return process_dictionary
+
+
+def get_source_type(source):
+    if source:
+        if Path(source[0]).is_file():
+            return 'file'
+        elif Path(source[0]).is_dir():
+            return 'directory'
+        else:
+            return 'object'
+
+
+def get_master_paths(process_dictionary):
+    master_paths = {}
+    for scene_file, scene_values in process_dictionary.items():
+        for object_name, material_values in scene_values.items():
+            for material_name, material_attributes in material_values.items():
+                for texture_key, texture_values in material_attributes['textures'].items():
+                    if texture_values:
+                        if 'path' in texture_values.keys():
+                            target_path = texture_values['path']
+                            if target_path not in master_paths.keys():
+                                master_paths.update({target_path: {'source': scene_file, 'object': object_name}})
+    return master_paths
 
 
 def get_dcc_controller(target_application: str) -> str:
@@ -157,9 +175,9 @@ def get_default_material_settings(target_application: str, material_type):
     return controller.get_default_material_settings(material_type)
 
 
-def export_mesh(dcc_application, mesh_name, mesh_export_location):
+def export_mesh(dcc_application, mesh_name, mesh_export_location, export_options):
     controller = get_dcc_controller(dcc_application)
-    controller.export_mesh(mesh_name, mesh_export_location)
+    controller.export_mesh(mesh_name, mesh_export_location, export_options)
 
 
 if __name__ == '__main__':
