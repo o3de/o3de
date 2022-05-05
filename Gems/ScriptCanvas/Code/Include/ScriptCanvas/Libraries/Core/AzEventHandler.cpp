@@ -70,8 +70,7 @@ namespace AzEventHandlerCpp
 
             auto outputEntry = reinterpret_cast<AzEventEntry*>(outputValue);
             JSR::ResultCode result(JSR::Tasks::ReadField);
-            AZ::Uuid typeId = AZ::Uuid::CreateNull();
-
+            
             auto data_v0 = inputValue.FindMember("AzEventEntryData_v0");
             if (data_v0 != inputValue.MemberEnd())
             {
