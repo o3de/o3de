@@ -10,8 +10,9 @@ ly_install_directory(
     DIRECTORIES
         AssetGem
         CppToolGem
-        PythonToolGem
         DefaultGem
+        PrebuiltGem
+        PythonToolGem
         DefaultProject
         MinimalProject
         GemRepo

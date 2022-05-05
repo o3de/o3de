@@ -12,6 +12,8 @@
 #include <${Name}EditorSystemComponent.h>
 #include <AzToolsFramework/API/PythonLoader.h>
 
+#include <QtGlobal>
+
 void Init${SanitizedCppName}Resources()
 {
     // We must register our Qt resources (.qrc file) since this is being loaded from a separate module (gem)

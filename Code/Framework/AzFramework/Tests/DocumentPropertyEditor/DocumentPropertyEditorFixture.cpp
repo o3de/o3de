@@ -16,12 +16,14 @@ namespace AZ::DocumentPropertyEditor::Tests
         UnitTest::AllocatorsFixture::SetUp();
         NameDictionary::Create();
         AZ::AllocatorInstance<Dom::ValueAllocator>::Create();
+        m_system = AZStd::make_unique<PropertyEditorSystem>();
         m_adapter = AZStd::make_unique<BasicAdapter>();
     }
 
     void DocumentPropertyEditorTestFixture::TearDown()
     {
         m_adapter.reset();
+        m_system.reset();
         AZ::AllocatorInstance<Dom::ValueAllocator>::Destroy();
         NameDictionary::Destroy();
         UnitTest::AllocatorsFixture::TearDown();
