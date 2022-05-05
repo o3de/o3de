@@ -10,6 +10,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <EMotionFX/Source/Actor.h>
+#include <EMotionFX/Source/ActorInstance.h>
+#include <EmotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <Editor/ColliderContainerWidget.h>
@@ -154,6 +156,18 @@ namespace EMotionFX
                 m_ragdollNodeCard->show();
                 m_jointLimitWidget->show();
                 m_collidersWidget->show();
+
+                RagdollManipulatorData ragdollManipulatorData;
+                auto* actorInstance = GetActorInstance();
+                auto* selectedNode = GetNode();
+                if (actorInstance && selectedNode)
+                {
+                    const Transform& nodeWorldTransform = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(selectedNode->GetNodeIndex());
+                    ragdollManipulatorData.m_nodeWorldTransform = AZ::Transform::CreateFromQuaternionAndTranslation(nodeWorldTransform.m_rotation, nodeWorldTransform.m_position);
+                    ragdollManipulatorData.m_colliderNodeConfiguration = colliderNodeConfig;
+                    ragdollManipulatorData.m_valid = true;
+                }
+                m_ragdollViewportUiCluster.CreateClusterIfNoneExists(ragdollManipulatorData);
             }
             else
             {
@@ -164,6 +178,7 @@ namespace EMotionFX
                 m_jointLimitWidget->Update(QModelIndex());
                 m_jointLimitWidget->hide();
                 m_collidersWidget->hide();
+                m_ragdollViewportUiCluster.DestroyClusterIfExists();
             }
         }
         else
@@ -171,6 +186,7 @@ namespace EMotionFX
             m_ragdollNodeEditor->ClearInstances(true);
             m_jointLimitWidget->Update(QModelIndex());
             m_collidersWidget->Reset();
+            m_ragdollViewportUiCluster.DestroyClusterIfExists();
         }
     }
 
@@ -192,6 +208,7 @@ namespace EMotionFX
     void RagdollNodeWidget::OnAddCollider(const AZ::TypeId& colliderType)
     {
         ColliderHelpers::AddCollider(GetSelectedModelIndices(), PhysicsSetup::Ragdoll, colliderType);
+        InternalReinit();
     }
 
     void RagdollNodeWidget::OnCopyCollider(size_t colliderIndex)
@@ -202,11 +219,13 @@ namespace EMotionFX
     void RagdollNodeWidget::OnPasteCollider(size_t colliderIndex, bool replace)
     {
         ColliderHelpers::PasteColliderFromClipboard(GetSelectedModelIndices().first(), colliderIndex, PhysicsSetup::Ragdoll, replace);
+        InternalReinit();
     }
 
     void RagdollNodeWidget::OnRemoveCollider(size_t colliderIndex)
     {
         CommandColliderHelpers::RemoveCollider(GetActor()->GetID(), GetNode()->GetNameString(), PhysicsSetup::Ragdoll, colliderIndex);
+        InternalReinit();
     }
 
     Physics::RagdollConfiguration* RagdollNodeWidget::GetRagdollConfig() const

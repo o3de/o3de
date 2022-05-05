@@ -14,6 +14,7 @@
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <Editor/SkeletonModelJointWidget.h>
 #include <QWidget>
+#include <Editor/Plugins/Ragdoll/RagdollViewportUiCluster.h>
 #endif
 
 
@@ -88,5 +89,7 @@ namespace EMotionFX
         ColliderContainerWidget*    m_collidersWidget;
 
         AZStd::string               m_copiedJointLimit;
+
+        RagdollViewportUiCluster    m_ragdollViewportUiCluster;
     };
 } // namespace EMotionFX
