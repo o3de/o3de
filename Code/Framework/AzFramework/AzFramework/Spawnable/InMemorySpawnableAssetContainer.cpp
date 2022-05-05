@@ -115,15 +115,10 @@ namespace AzFramework
         // Delay resolving aliases to guarantee that the depended spawnables are already registered.
         for (auto spawnablePair : spawnables)
         {
-            AzFramework::Spawnable* spawnable = spawnablePair.first;
+            Spawnable* spawnable = spawnablePair.first;
             const AZStd::string& spawnableName = spawnablePair.second;
-
-            AzFramework::Spawnable::EntityAliasVisitor aliases = spawnable->TryGetAliases();
-            AZ_Assert(aliases.IsValid(), "Unable to obtain lock for spawnable.");
-            if (aliases.HasAliases())
-            {
-                SpawnableAssetUtils::ResolveEntityAliases(spawnable, spawnableName);
-            }
+            
+            SpawnableAssetUtils::ResolveEntityAliases(spawnable, spawnableName);
         }
 
         auto& spawnableAssetDataAdded = m_spawnableAssets.emplace(rootSpawnableName, spawnableAssetData).first->second;
@@ -132,23 +127,26 @@ namespace AzFramework
     }
 
     InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetContainer::CreateInMemorySpawnableAsset(
-        AzFramework::Spawnable* spawnable,
+        Spawnable* spawnable,
         const AZ::Data::AssetId& assetId,
+        size_t assetSize,
         bool loadReferencedAssets,
-        const AZStd::string& rootSpawnableName)
+        const AZStd::string& assetRelativePath)
     {
-        AZStd::string rootProductId(rootSpawnableName);
-        rootProductId += AzFramework::Spawnable::DotFileExtension;
-
         AZ::Data::AssetInfo assetInfo;
         assetInfo.m_assetId = assetId;
         assetInfo.m_assetType = spawnable->GetType();
-        assetInfo.m_relativePath = rootSpawnableName;
+        assetInfo.m_relativePath = assetRelativePath;
+        assetInfo.m_sizeBytes = assetSize;
         AZ::Data::AssetData* assetData = spawnable;
-        AzFramework::InMemorySpawnableAssetContainer::AssetDataInfoContainer assetDataInfoContainer;
-        assetDataInfoContainer.emplace_back(AZStd::make_pair<AZ::Data::AssetData*, AZ::Data::AssetInfo>(assetData, assetInfo));
+        AssetDataInfoContainer assetDataInfoContainer;
+        assetDataInfoContainer.emplace_back(assetData, assetInfo);
 
-        return CreateInMemorySpawnableAsset(assetDataInfoContainer, loadReferencedAssets, rootSpawnableName);
+        // Remove the .spawnable file extension before passing it to the other CreateInMemorySpawnableAsset method, which will add it back in
+        AZStd::string spawablePathSansFileExtension = assetRelativePath;
+        StringFunc::Path::StripExtension(spawablePathSansFileExtension);
+        
+        return CreateInMemorySpawnableAsset(assetDataInfoContainer, loadReferencedAssets, spawablePathSansFileExtension);
     }
 
     void InMemorySpawnableAssetContainer::ClearAllInMemorySpawnableAssets()

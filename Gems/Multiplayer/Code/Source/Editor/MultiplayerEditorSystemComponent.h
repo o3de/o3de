@@ -125,6 +125,13 @@ namespace Multiplayer
         AZ::ScheduledEvent m_connectionEvent = AZ::ScheduledEvent([this]{this->Connect();}, AZ::Name("MultiplayerEditorConnect"));
         uint16_t m_connectionAttempts = 0;
 
-        AZStd::vector<AZStd::pair<AZStd::string, AZStd::unique_ptr<AzFramework::Spawnable>>> m_preAliasedSpawnablesForServer;
+        struct PreAliasedSpawnableData
+        {
+            AZStd::unique_ptr<AzFramework::Spawnable> spawnable;
+            AZStd::string assetHint;
+            AZ::Data::AssetId assetId;
+        };
+        
+        AZStd::vector<PreAliasedSpawnableData> m_preAliasedSpawnablesForServer;
     };
 }

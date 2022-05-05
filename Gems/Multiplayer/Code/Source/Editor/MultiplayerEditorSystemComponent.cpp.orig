@@ -25,6 +25,7 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
+
 namespace Multiplayer
 {
     using namespace AzNetworking;
@@ -334,15 +335,15 @@ namespace Multiplayer
         AZ::IO::ByteContainerStream byteStream(&buffer);
 
         // Serialize Asset information and AssetData into a potentially large buffer
-        for (const auto& preAliasedSpawnableData : m_preAliasedSpawnablesForServer)
+        for (const auto& [assetHint, preAliasedSpawnable] : m_preAliasedSpawnablesForServer)
         {
             // This is an un-aliased level spawnable (example: Root.spawnable and Root.network.spawnable) which we'll send to the server
-            auto hintSize = aznumeric_cast<uint32_t>(preAliasedSpawnableData.assetHint.size());
+            auto hintSize = aznumeric_cast<uint32_t>(assetHint.size());
 
-            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<const void*>(&preAliasedSpawnableData.assetId));
+            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<const void*>(&preAliasedSpawnable->GetId()));
             byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
-            byteStream.Write(preAliasedSpawnableData.assetHint.size(), preAliasedSpawnableData.assetHint.data());
-            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, preAliasedSpawnableData.spawnable.get(), preAliasedSpawnableData.spawnable->GetType());
+            byteStream.Write(assetHint.size(), assetHint.data());
+            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, preAliasedSpawnable.get(), preAliasedSpawnable->GetType());
         }
         
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
@@ -421,7 +422,12 @@ namespace Multiplayer
         }
     }
 
+<<<<<<< HEAD
     void MultiplayerEditorSystemComponent::OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint)
+=======
+    void MultiplayerEditorSystemComponent::OnPreparingSpawnable(
+        [[maybe_unused]] const AzFramework::Spawnable& spawnable, [[maybe_unused]] const AZStd::string& id)
+>>>>>>> origin/srikappa/NestedPrefabNetworkingSupport
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -429,7 +435,7 @@ namespace Multiplayer
         AZ_Assert(!assetHint.empty(), "Asset hint is empty!")
 
         AZStd::unique_ptr<AzFramework::Spawnable> preAliasedSpawnableClone(serializeContext->CloneObject(&spawnable));
-        m_preAliasedSpawnablesForServer.push_back({ AZStd::move(preAliasedSpawnableClone), assetHint, spawnable.GetId() });
+        m_preAliasedSpawnablesForServer.emplace_back(assetHint, AZStd::move(preAliasedSpawnableClone));
     }
 
     void MultiplayerEditorSystemComponent::OnStartPlayInEditorBegin()
@@ -479,4 +485,4 @@ namespace Multiplayer
         constexpr bool autoRequeue = true;
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
-} // namespace Multiplayer
+}

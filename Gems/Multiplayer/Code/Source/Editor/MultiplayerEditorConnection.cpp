@@ -6,6 +6,8 @@
  *
  */
 
+#include "AzFramework/Spawnable/InMemorySpawnableAssetContainer.h"
+
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
@@ -13,7 +15,6 @@
 #include <Editor/MultiplayerEditorConnection.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 
-#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -22,6 +23,7 @@
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzFramework/Spawnable/InMemorySpawnableAssetContainer.h>
 
 namespace Multiplayer
 {
@@ -63,6 +65,14 @@ namespace Multiplayer
         }
     }
 
+    MultiplayerEditorConnection::~MultiplayerEditorConnection()
+    {
+        if (m_inMemorySpawnableAssetContainer != nullptr)
+        {
+            m_inMemorySpawnableAssetContainer->ClearAllInMemorySpawnableAssets();
+        }
+    }
+
     void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
     {
         if (m_isActivated || !editorsv_isDedicated)
@@ -80,7 +90,7 @@ namespace Multiplayer
     (
         [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] MultiplayerEditorPackets::EditorServerLevelData& packet
+        MultiplayerEditorPackets::EditorServerLevelData& packet
     )
     {
         // Editor Server Init is intended for non-release targets
@@ -91,6 +101,12 @@ namespace Multiplayer
         {
             // This is the last expected packet
             // Read all assets out of the buffer
+            // Create in-memory spawnables for the level, root.spawnable and root.network.spawnable (if level contains network entities)
+            if (m_inMemorySpawnableAssetContainer != nullptr)
+            {
+                m_inMemorySpawnableAssetContainer->ClearAllInMemorySpawnableAssets();
+            }
+            m_inMemorySpawnableAssetContainer = AZStd::make_unique<AzFramework::InMemorySpawnableAssetContainer>();
             m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
             AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> assetData;
             while (m_byteStream.GetCurPos() < m_byteStream.GetLength())
@@ -102,29 +118,17 @@ namespace Multiplayer
                 m_byteStream.Read(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
                 assetHint.resize(hintSize);
                 m_byteStream.Read(hintSize, assetHint.data());
-
                 size_t assetSize = m_byteStream.GetCurPos();
-                AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(m_byteStream, nullptr);
-                if (!assetDatum)
+                
+                AzFramework::Spawnable* spawnable = AZ::Utils::LoadObjectFromStream<AzFramework::Spawnable>(m_byteStream);
+                if (!spawnable)
                 {
                     AZLOG_ERROR("EditorServerLevelData packet contains no asset data. Asset: %s", assetHint.c_str())
                     return false;
                 }
                 assetSize = m_byteStream.GetCurPos() - assetSize;
-                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::Asset<AZ::Data::AssetData>(assetId, assetDatum, AZ::Data::AssetLoadBehavior::NoLoad);
-                asset.SetHint(assetHint);
 
-                AZ::Data::AssetInfo assetInfo;
-                assetInfo.m_assetId = asset.GetId();
-                assetInfo.m_assetType = asset.GetType();
-                assetInfo.m_relativePath = asset.GetHint();
-                assetInfo.m_sizeBytes = assetSize;
-
-                // Register Asset to AssetManager
-                AZ::Data::AssetManager::Instance().AssignAssetData(asset);
-                AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::RegisterAsset, asset.GetId(), assetInfo);
-
-                assetData.push_back(asset);
+                m_inMemorySpawnableAssetContainer->CreateInMemorySpawnableAsset(spawnable, assetId, assetSize, true, assetHint);
             }
 
             // Now that we've deserialized, clear the byte stream
@@ -135,9 +139,8 @@ namespace Multiplayer
             AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
             // Load the level via the root spawnable that was registered
-            const AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
             const auto console = AZ::Interface<AZ::IConsole>::Get();
-            console->PerformCommand(loadLevelString.c_str());
+            console->PerformCommand("LoadLevel Root.spawnable");
 
             // Setup the normal multiplayer connection
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
@@ -226,4 +229,4 @@ namespace Multiplayer
     {
         return MultiplayerEditorPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
-}
+} // namespace Multiplayer
