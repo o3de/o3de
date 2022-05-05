@@ -134,6 +134,13 @@ namespace AZ::Render
             featureProcessor->SetAtmosphereRadius(id, config.m_atmosphereRadius);
             featureProcessor->SetMinMaxSamples(id, config.m_minSamples, config.m_maxSamples);
             featureProcessor->SetPlanetRadius(id, config.m_planetRadius);
+            
+            // update the transform again in case the sun entity changed
+            const AZ::Transform& transform = m_controller.m_transformInterface ? m_controller.m_transformInterface->GetWorldTM() : Transform::Identity();
+            auto sunTransformInterface = TransformBus::FindFirstHandler(m_controller.m_configuration.m_sun);
+            AZ::Transform sunTransform = sunTransformInterface ? sunTransformInterface->GetWorldTM() : transform;
+            featureProcessor->SetSunDirection(id, -sunTransform.GetBasisY());
+
             m_controller.UpdatePlanetOrigin();
         }
 
