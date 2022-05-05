@@ -1858,7 +1858,7 @@ namespace ScriptCanvasEditor
         AZStd::string assetPath = AZStd::string::format("%s/scriptcanvas", assetRoot.c_str());
         QString filter;
 
-        AZStd::set<AZStd::string> filterSet { ".scriptcanvas" };
+        AZStd::set<AZStd::string> filterSet { ".scriptcanvas", ".scriptevent"};
 
         QStringList nameFilters;
 
