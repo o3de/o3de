@@ -16,6 +16,11 @@ namespace AZ
     class ReflectContext;
 }
 
+//! Macros to self-register AutoGen functions into ScriptCanvas
+//! Which takes the same library name as provided in .ScriptCanvasFunction.xml
+#define REGISTER_SCRIPTCANVAS_FUNCTION(LIBRARY)\
+    static ScriptCanvas##LIBRARY s_ScriptCanvas##LIBRARY;
+
 namespace ScriptCanvas
 {
     class IScriptCanvasFunctionRegistry

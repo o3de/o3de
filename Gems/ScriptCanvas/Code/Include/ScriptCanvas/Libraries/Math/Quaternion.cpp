@@ -12,6 +12,8 @@ namespace ScriptCanvas
 {
     namespace QuaternionFunctions
     {
+        REGISTER_SCRIPTCANVAS_FUNCTION(QuaternionFunctions);
+
         using namespace Data;
 
         QuaternionType Conjugate(QuaternionType source)

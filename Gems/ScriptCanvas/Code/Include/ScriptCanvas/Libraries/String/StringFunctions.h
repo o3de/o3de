@@ -10,6 +10,7 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <Include/ScriptCanvas/Libraries/String/StringFunctions.generated.h>
 
 namespace ScriptCanvas
 {

@@ -12,6 +12,8 @@ namespace ScriptCanvas
 {
     namespace OBBFunctions
     {
+        REGISTER_SCRIPTCANVAS_FUNCTION(OBBFunctions);
+
         using namespace Data;
 
         OBBType FromAabb(const AABBType& source)

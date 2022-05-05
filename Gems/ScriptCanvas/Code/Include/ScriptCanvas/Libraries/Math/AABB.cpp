@@ -12,6 +12,8 @@ namespace ScriptCanvas
 {
     namespace AABBFunctions
     {
+        REGISTER_SCRIPTCANVAS_FUNCTION(AABBFunctions);
+
         AZ::Aabb AddAABB(AZ::Aabb a, const AZ::Aabb& b)
         {
             a.AddAabb(b);

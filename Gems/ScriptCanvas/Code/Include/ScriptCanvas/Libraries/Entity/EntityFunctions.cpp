@@ -15,6 +15,8 @@ namespace ScriptCanvas
 {
     namespace EntityFunctions
     {
+        REGISTER_SCRIPTCANVAS_FUNCTION(EntityFunctions);
+
         AZ::Vector3 GetEntityRight(AZ::EntityId entityId, double scale)
         {
             AZ::Transform worldTransform = {};

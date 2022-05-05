@@ -12,6 +12,8 @@ namespace ScriptCanvas
 {
     namespace Vector4Functions
     {
+        REGISTER_SCRIPTCANVAS_FUNCTION(Vector4Functions);
+
         using namespace Data;
 
         Vector4Type Absolute(const Vector4Type source)

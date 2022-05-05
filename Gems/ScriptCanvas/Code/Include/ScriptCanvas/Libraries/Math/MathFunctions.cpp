@@ -16,6 +16,8 @@ namespace ScriptCanvas
 {
     namespace MathFunctions
     {
+        REGISTER_SCRIPTCANVAS_FUNCTION(MathFunctions);
+
         Data::NumberType MultiplyAndAdd(Data::NumberType multiplicand, Data::NumberType multiplier, Data::NumberType addend)
         {
             // result = src0 * src1 + src2
@@ -30,6 +32,8 @@ namespace ScriptCanvas
 
     namespace MathRandoms
     {
+        REGISTER_SCRIPTCANVAS_FUNCTION(MathRandoms);
+
         Data::ColorType RandomColor(Data::ColorType minValue, Data::ColorType maxValue)
         {
             return Data::ColorType(MathNodeUtilities::GetRandomReal<float>(minValue.GetR(), maxValue.GetR()),

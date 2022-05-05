@@ -21,6 +21,8 @@ namespace ScriptCanvasPhysics
 {
     namespace WorldFunctions
     {
+        REGISTER_SCRIPTCANVAS_FUNCTION(WorldFunctions);
+
         Result RayCastWorldSpaceWithGroup(
             const AZ::Vector3& start,
             const AZ::Vector3& direction,

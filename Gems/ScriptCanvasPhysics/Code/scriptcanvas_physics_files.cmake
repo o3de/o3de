@@ -9,6 +9,7 @@
 get_property(scriptcanvas_gem_root GLOBAL PROPERTY "@GEMROOT:ScriptCanvas@")
 
 set(FILES
+    ${scriptcanvas_gem_root}/Code/Include/ScriptCanvas/AutoGen/ScriptCanvasFunction_Header.jinja
     ${scriptcanvas_gem_root}/Code/Include/ScriptCanvas/AutoGen/ScriptCanvasFunction_Source.jinja
     Source/ScriptCanvasPhysicsSystemComponent.cpp
     Source/ScriptCanvasPhysicsSystemComponent.h

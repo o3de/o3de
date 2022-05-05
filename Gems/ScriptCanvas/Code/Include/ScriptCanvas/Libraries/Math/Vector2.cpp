@@ -12,6 +12,8 @@ namespace ScriptCanvas
 {
     namespace Vector2Functions
     {
+        REGISTER_SCRIPTCANVAS_FUNCTION(Vector2Functions);
+
         using namespace Data;
 
         Vector2Type Absolute(const Vector2Type source)

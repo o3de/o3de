@@ -9,6 +9,7 @@
 #pragma once
 
 #include <ScriptCanvas/Data/NumericData.h>
+#include <Include/ScriptCanvas/Libraries/Math/CRC.generated.h>
 
 namespace ScriptCanvas
 {
