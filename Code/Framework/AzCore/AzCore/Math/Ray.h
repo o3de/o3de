@@ -24,9 +24,8 @@ namespace O3DE
 
         bool Intersects(const AZ::Aabb aabb) const;
 
-        const AZ::Vector3& getOrigin() const;
-        const AZ::Vector3& getDirection() const;
-
+        const AZ::Vector3& GetOrigin() const;
+        const AZ::Vector3& GetDirection() const;
 
         Ray& operator=(const Ray& rhs);
         bool operator==(const Ray& rhs) const;

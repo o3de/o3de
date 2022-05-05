@@ -21,13 +21,24 @@ namespace O3DE
         explicit LineSegment(const AZ::Vector3& start, const AZ::Vector3& end);
 
         const AZ::Vector3& GetStart() const;
-        const AZ::Vector3& getEnd() const;
-
-        const AZ::Vector3 Get();
+        const AZ::Vector3& GetEnd() const;
         
         LineSegment& operator=(const LineSegment& rhs);
         bool operator==(const LineSegment& rhs) const;
         bool operator!=(const LineSegment& rhs) const;
+
+        //TODO: implement
+        //!
+        float GetLength();
+    
+        //!
+        AZ::Vector3 GetDirection();
+        
+        //!
+        AZ::Vector3 GetPoint(float t);
+        
+        //!
+        bool IsPointOnSegment(const AZ::Vector3& point);
 
     private:
         AZ::Vector3 m_start;

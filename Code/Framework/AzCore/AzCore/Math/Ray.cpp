@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Math/Ray.h>
-#include <AzCore/Math/
 
 namespace O3DE
 {
@@ -18,12 +17,12 @@ namespace O3DE
         AZ_MATH_ASSERT(m_direction.IsNormalized(), "This normal is not normalized");
     }
 
-    const AZ::Vector3& Ray::getOrigin() const
+    const AZ::Vector3& Ray::GetOrigin() const
     {
         return m_origin;
     }
-    
-    const AZ::Vector3& Ray::getDirection() const
+
+    const AZ::Vector3& Ray::GetDirection() const
     {
         return m_direction;
     }

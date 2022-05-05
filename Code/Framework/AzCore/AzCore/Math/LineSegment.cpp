@@ -20,7 +20,7 @@ namespace O3DE
     {
         return m_start;
     }
-    const AZ::Vector3& LineSegment::getEnd() const
+    const AZ::Vector3& LineSegment::GetEnd() const
     {
         return m_end;
     }
