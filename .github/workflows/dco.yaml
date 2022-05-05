@@ -13,9 +13,10 @@ jobs:
         python-version: '3.x'
     - name: Set up dco-check
       run: |
-        pip3 install -U dco-check
+        # pip3 install -U dco-check
+        curl https://raw.githubusercontent.com/amzn-changml/dco-check/fixup-feature/dco_check/dco_check.py -o dco_check.py
     - name: Check DCO
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        dco-check      
+        python dco-check -f
