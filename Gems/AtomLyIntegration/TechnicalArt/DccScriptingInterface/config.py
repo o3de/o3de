@@ -60,6 +60,11 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
+# global scope, set up module logging, etc.
+_MODULENAME = 'config'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+
 # if we know we are running in O3DE, there are assumptions we can make,
 # or things we can inspect/discover and thus perform optimizations
 _O3DE_RUNNING=None    
@@ -72,9 +77,6 @@ except:
 
 
 # -------------------------------------------------------------------------
-# global scope, set up module logging, etc.
-_MODULENAME = 'config'
-
 #os.environ['PYTHONINSPECT'] = 'True'
 _MODULE_PATH = os.path.abspath(__file__)
 
@@ -87,46 +89,20 @@ os.environ['PATH_DCCSIG'] = _PATH_DCCSIG
 # ^ we assume this config is in the root of the DCCsi
 # if it's not, be sure to set envar 'PATH_DCCSIG' to ensure it
 site.addsitedir(_PATH_DCCSIG)  # must be done for azpy
-# -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
 # now we have dccsi azpy api access
-import azpy
+import azpy.config_utils
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG
+from azpy.constants import FRMT_LOG_LONG   
 
 # defaults, can be overriden/forced here for development
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
-
-# default loglevel to info unless set
-_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
-if _DCCSI_GDEBUG:
-    # override loglevel if runnign debug
-    _DCCSI_LOGLEVEL = _logging.DEBUG
-    
-# set up module logging
-#for handler in _logging.root.handlers[:]:
-    #_logging.root.removeHandler(handler)
-    
-# configure basic logger
-# note: not using a common logger to reduce cyclical imports
-_logging.basicConfig(level=_DCCSI_LOGLEVEL,
-                    format=FRMT_LOG_LONG,
-                    datefmt='%m-%d %H:%M')
-
-_LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
-_LOGGER.debug('site.addsitedir({})'.format(_PATH_DCCSIG))
-_LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
-_LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
-_LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
 # -------------------------------------------------------------------------
 
 
@@ -715,7 +691,11 @@ def get_config_settings(engine_path=_O3DE_DEV,
 # -------------------------------------------------------------------------
 def export_settings(settings,
                     dccsi_sys_path=_DCCSI_SYS_PATH,
-                    dccsi_pythonpath=_DCCSI_PYTHONPATH):
+                    dccsi_pythonpath=_DCCSI_PYTHONPATH,
+                    settings_filepath='settings.local.json',
+                    use_dynabox=False,
+                    env=None,
+                    merge=False):
     
     # To Do: when running script from IDE settings.local.json are
     # correctly written to the < dccsi > root folder (script is cwd?)
@@ -736,6 +716,8 @@ def export_settings(settings,
     # To Do: need to add malformed json validation to <dccsi>\settings.json
     # this can cause a bad error that is deep and hard to debug
 
+    # this just ensures that the settings.local.json file has a marker
+    # we can use this marker to know the local settings exist
     os.environ['DYNACONF_DCCSI_LOCAL_SETTINGS'] = "True"  
 
     # make sure the dnyaconf synthetic env is updated before writting settings
@@ -745,36 +727,59 @@ def export_settings(settings,
     # we did not use list_to_addsitedir() because we are just ensuring
     # the managed envar path list is updated so paths are written to settings
     
-    # update settings
-    from dynaconf import settings
-    settings.setenv()
+    if not use_dynabox:
+        # update settings
+        from dynaconf import settings
+        settings.setenv()
     
-    # writting settings
-    from dynaconf import loaders
-    from dynaconf.utils.boxing import DynaBox
-
-    _settings_dict = settings.as_dict()
+        _settings_dict = settings.as_dict()
+        
+        # default temp filename
+        _settings_file = Path(settings_filepath)
     
-    # default temp filename
-    _settings_file = Path('settings.local.json')
+        # we want to possibly modify or stash our settings into a o3de .setreg
+        from box import Box
+        _settings_box = Box(_settings_dict)
     
-    # writes to a file, the format is inferred by extension
-    # can be .yaml, .toml, .ini, .json, .py
-    #loaders.write(_settings_file, DynaBox(data).to_dict(), merge=False, env='development')
-    #loaders.write(_settings_file, DynaBox(data).to_dict())
-
-    # we want to possibly modify or stash our settings into a o3de .setreg
-    from box import Box
-    _settings_box = Box(_settings_dict)
-
-    _LOGGER.info('Pretty print, _settings_box: {}'.format(_settings_file))
-    _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
-                                           indent=4)))
+        _LOGGER.info('Pretty print, _settings_box: {}'.format(_settings_file))
+        _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
+                                               indent=4)))
+        
+        # writes settings box
+        _settings_box.to_json(filename=_settings_file.as_posix(),
+                               sort_keys=True,
+                               indent=4)
+        return _settings_box
     
-    # writes settings box
-    _settings_box.to_json(filename=_settings_file.as_posix(),
-                           sort_keys=True,
-                           indent=4)
+    # experimental, have not utilized this yet but it would be the native 
+    # way for dynaconf to write settings, i went with a Box dictionary
+    # as it is ordered and I can ensure the setttings are pretty
+    elif use_dynabox:
+        # writting settings using dynabox
+        from dynaconf import loaders
+        from dynaconf.utils.boxing import DynaBox
+        
+        _settings_box = DynaBox(settings).to_dict()
+    
+        if not env:
+            # writes to a file, the format is inferred by extension
+            # can be .yaml, .toml, .ini, .json, .py
+            loaders.write(_settings_file.as_posix(), _settings_box)
+            return _settings_box
+        
+        elif env:
+            # the env can also be written, though this isn't yet utilized by config.py
+            #loaders.write(_settings_file, DynaBox(data).to_dict(), merge=False, env='development')
+            loaders.write(_settings_file.as_posix(), _settings_box, merge, env)
+            return _settings_box
+            
+        else:
+            _LOGGER.warning('something went wrong')
+            return
+            
+    else:
+        _LOGGER.warning('something went wrong')
+        return
 # --- END -----------------------------------------------------------------
 
 
@@ -784,22 +789,40 @@ def export_settings(settings,
 if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
     
-    import time
-    main_start = time.process_time() # start tracking
+    while 0: # temp internal debug flag
+        _DCCSI_GDEBUG = True
+        break    
     
-    _MODULENAME = 'DCCsi.config'
+    import time
+    main_start = time.process_time() # start tracking 
     
     from azpy.constants import STR_CROSSBAR
     
-    while 0: # temp internal debug flag
-        _DCCSI_GDEBUG = True
-        break
+    _MODULENAME = 'DCCsi.config'
     
-    # overide logger for standalone to be more verbose and log to file
-    _LOGGER = azpy.initialize_logger(_MODULENAME,
-                                     log_to_file=_DCCSI_GDEBUG,
-                                     default_log_level=_DCCSI_LOGLEVEL)
-
+    # default loglevel to info unless set
+    _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
+    if _DCCSI_GDEBUG:
+        # override loglevel if runnign debug
+        _DCCSI_LOGLEVEL = _logging.DEBUG
+        
+    # set up module logging
+    #for handler in _logging.root.handlers[:]:
+        #_logging.root.removeHandler(handler)
+        
+    # configure basic logger
+    # note: not using a common logger to reduce cyclical imports
+    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                        format=FRMT_LOG_LONG,
+                        datefmt='%m-%d %H:%M')
+    
+    _LOGGER = _logging.getLogger(_MODULENAME)
+    _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+    _LOGGER.debug('site.addsitedir({})'.format(_PATH_DCCSIG))
+    _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
+    _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
+    _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
+    
     # happy print
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info('~ {}.py ... Running script as __main__'.format(_MODULENAME))
@@ -816,76 +839,103 @@ if __name__ == '__main__':
                         required=False,
                         default=False,
                         help='Enables global debug flag.')
+    
     parser.add_argument('-sd', '--set-debugger',
                         type=str,
                         required=False,
                         default='WING',
                         help='Default debugger: WING, (not implemented) others: PYCHARM and VSCODE.')
+    
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables dev mode for early auto attaching debugger.')
+    
     parser.add_argument('-ep', '--engine-path',
                         type=pathlib.Path,
                         required=False,
                         default=Path('{ to do: implement }'),                        
                         help='The path to the o3de engine.')
+    
     parser.add_argument('-eb', '--engine-bin-path',
                         type=pathlib.Path,
                         required=False,
                         default=Path('{ to do: implement }'), 
                         help='The path to the o3de engine binaries (build/bin/profile).')
+    
     parser.add_argument('-bf', '--build-folder',
                         type=str,
                         required=False,
                         default='build',
                         help='The name (tag) of the o3de build folder, example build or windows.')
+    
     parser.add_argument('-pp', '--project-path',
                         type=pathlib.Path,
                         required=False,
                         default=Path('{ to do: implement }'), 
                         help='The path to the project.')
+    
     parser.add_argument('-pn', '--project-name',
                         type=str,
                         required=False,
                         default='{ to do: implement }',
                         help='The name of the project.')
+    
     parser.add_argument('-py', '--enable-python',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables O3DE python access.')
+    
     parser.add_argument('-qt', '--enable-qt',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables O3DE Qt & PySide2 access.')
+    
     parser.add_argument('-pc', '--project-config',
                         type=bool,
                         required=False,
                         default=False,
                         help='(not implemented) Enables reading the < >project >/registry/dccsi_configuration.setreg.')
+    
+    parser.add_argument('-cls', '--cache-local-settings',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Ensures setting.local.json is written to cache settings')
+    
     parser.add_argument('-es', '--export-settings',
                         type=pathlib.Path,
                         required=False,
                         default=False,
-                        help='(not implemented) Writes managed settings to specified path.')
+                        help='Writes managed settings to specified path.')
+    
+    parser.add_argument('-ls', '--load-settings',
+                        type=pathlib.Path,
+                        required=False,
+                        default=False,
+                        help='(Not Implemented) Would load and read settings from a specified path.')
+    
     parser.add_argument('-ec', '--export-configuration',
                         type=bool,
                         required=False,
                         default=False,
                         help='(not implemented) writes settings as a O3DE < project >/registry/dccsi_configuration.setreg.')
+    
     parser.add_argument('-tp', '--test-pyside2',
                         type=bool,
                         required=False,
                         default=False,
                         help='Runs Qt/PySide2 tests and reports.')
+    
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
                         default=False,
                         help='Exits python. Do not exit if you want to be in interactive interpretter after config')
+    
     args = parser.parse_args()
 
     # easy overrides
@@ -904,11 +954,14 @@ if __name__ == '__main__':
     # need to do a little plumbing
     if not args.engine_path:
         args.engine_path=_O3DE_DEV
+        
     if not args.build_folder:
         from azpy.constants import TAG_DIR_O3DE_BUILD_FOLDER
         args.build_folder = TAG_DIR_O3DE_BUILD_FOLDER
+        
     if not args.engine_bin_path:
         args.engine_bin_path=_PATH_O3DE_BIN
+        
     if not args.project_path:
         args.project_path=_PATH_O3DE_PROJECT
         
@@ -986,10 +1039,13 @@ if __name__ == '__main__':
     
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
     
-    if _DCCSI_GDEBUG or args.export_settings:
-        export_settings(settings)
-        # this should be set if there are local settings!?
-        _LOGGER.debug('DCCSI_LOCAL_SETTINGS: {}'.format(settings.DCCSI_LOCAL_SETTINGS))
+    if _DCCSI_GDEBUG or args.cache_local_settings:
+        if args.export_settings:
+            export_settings(settings=settings, settings_filepath=args.export_settings)
+        else:
+            export_settings(settings)
+            # this should be set if there are local settings!?
+            _LOGGER.debug('DCCSI_LOCAL_SETTINGS: {}'.format(settings.DCCSI_LOCAL_SETTINGS))
         
     # end tracking here, the pyside test exits before hitting the end of script
     _LOGGER.info('DCCsi: config.py TOTAL: {} sec'.format(time.process_time() - main_start)) 
