@@ -99,6 +99,12 @@ namespace AZ
                     , "DatumSerializer::Load failed to load the AZ TypeId of the value");
             }
 
+            // temp conversion from SpawnTicketInstance to EntitySpawnTicket
+            if (typeId == "{2B5EB938-8962-4A43-A97B-112F398C604B}")
+            {
+                typeId = "{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}";
+            }
+
             AZStd::any storage = context.GetSerializeContext()->CreateAny(typeId);
             if (storage.empty() || storage.type() != typeId)
             {
