@@ -46,8 +46,9 @@ namespace ScriptAutomation
                 inputStream.Close();
                 if (outcome.IsSuccess())
                 {
-                    AZ::Uuid id = AZ::Uuid::CreateRandom();
-                    AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::ScriptAsset>(AZ::Data::AssetId(id));
+                    AZ::Uuid id = AZ::Uuid::CreateName(productPath);
+                    AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::ScriptAsset>(AZ::Data::AssetId(id)
+                        , AZ::Data::AssetLoadBehavior::Default);
                     scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
 
                     return scriptAsset;
