@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ
 {
@@ -127,7 +128,11 @@ namespace AZ
         {
             // For two-sided triangle intersection tests, the segment misses the triangle if at least one coordinate is < 0
             // and at least one coordinate is > 0.
-            if (oneSided || (U > 0.0f || V > 0.0f || W > 0.0f))
+            if constexpr(oneSided)
+            {
+                return false;
+            }
+            else if (U > 0.0f || V > 0.0f || W > 0.0f)
             {
                 return false;
             }
@@ -151,7 +156,7 @@ namespace AZ
 
         // Since we're testing a segment, not a ray, T/det needs to be in [0,1] to be considered a hit, as anything outside those
         // bounds will fall beyond the endpoints of the segment. 
-        if (oneSided)
+        if constexpr(oneSided)
         {
             // For one-sided triangles, we need to have 0 <= T < = det, or else T is beyond the endpoints.
             if (T < 0.0f || T > det)
