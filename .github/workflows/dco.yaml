@@ -19,4 +19,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        python /tmp/dco-check.py -f
+        python /tmp/dco_check.py -f
