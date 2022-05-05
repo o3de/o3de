@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma optimize("", off)
+
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/JSON/prettywriter.h>
@@ -453,4 +453,3 @@ namespace AzToolsFramework
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework
-#pragma optimize("", on)
