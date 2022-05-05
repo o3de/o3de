@@ -110,16 +110,16 @@ namespace ScriptCanvasEditor
             }
 
             auto overrides = ConvertToRuntime(m_configuration.GetOverrides());
-            overrides.m_runtimeAsset = asset;
-            m_executor.TakeRuntimeDataOverrides(AZStd::move(overrides));
-            m_executor.Initialize();
-            m_runtimePropertiesDirty = false;
-            return true;
+            if (ReplaceAsset(overrides, asset))
+            {
+                m_executor.TakeRuntimeDataOverrides(AZStd::move(overrides));
+                m_executor.Initialize();
+                m_runtimePropertiesDirty = false;
+                return true;
+            }
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     bool Interpreter::IsExecutable() const

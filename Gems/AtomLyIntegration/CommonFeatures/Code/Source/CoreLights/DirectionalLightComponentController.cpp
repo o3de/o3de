@@ -90,6 +90,10 @@ namespace AZ
                     ->Event("SetNormalShadowBias", &DirectionalLightRequestBus::Events::SetNormalShadowBias)
                     ->Event("GetCascadeBlendingEnabled", &DirectionalLightRequestBus::Events::GetCascadeBlendingEnabled)
                     ->Event("SetCascadeBlendingEnabled", &DirectionalLightRequestBus::Events::SetCascadeBlendingEnabled)
+                    ->Event("GetAffectsGI", &DirectionalLightRequestBus::Events::GetAffectsGI)
+                    ->Event("SetAffectsGI", &DirectionalLightRequestBus::Events::SetAffectsGI)
+                    ->Event("GetAffectsGIFactor", &DirectionalLightRequestBus::Events::GetAffectsGIFactor)
+                    ->Event("SetAffectsGIFactor", &DirectionalLightRequestBus::Events::SetAffectsGIFactor)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
@@ -107,7 +111,9 @@ namespace AZ
                     ->VirtualProperty("ShadowReceiverPlaneBiasEnabled", "GetShadowReceiverPlaneBiasEnabled", "SetShadowReceiverPlaneBiasEnabled")
                     ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias")
                     ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias")
-                    ->VirtualProperty("BlendBetweenCascadesEnabled", "GetCascadeBlendingEnabled", "SetCascadeBlendingEnabled");
+                    ->VirtualProperty("BlendBetweenCascadesEnabled", "GetCascadeBlendingEnabled", "SetCascadeBlendingEnabled")
+                    ->VirtualProperty("AffectsGI", "GetAffectsGI", "SetAffectsGI")
+                    ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor");
                 ;
             }
         }
@@ -453,6 +459,33 @@ namespace AZ
             }
         }
 
+        bool DirectionalLightComponentController::GetAffectsGI() const
+        {
+            return m_configuration.m_affectsGI;
+        }
+
+        void DirectionalLightComponentController::SetAffectsGI(bool affectsGI)
+        {
+            m_configuration.m_affectsGI = affectsGI;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetAffectsGI(m_lightHandle, m_configuration.m_affectsGI);
+            }
+        }
+
+        float DirectionalLightComponentController::GetAffectsGIFactor() const
+        {
+            return m_configuration.m_affectsGIFactor;
+        }
+
+        void DirectionalLightComponentController::SetAffectsGIFactor(float affectsGIFactor)
+        {
+            m_configuration.m_affectsGIFactor = affectsGIFactor;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetAffectsGIFactor(m_lightHandle, m_configuration.m_affectsGIFactor);
+            }
+        }
 
         const DirectionalLightComponentConfig& DirectionalLightComponentController::GetConfiguration() const
         {
@@ -541,6 +574,8 @@ namespace AZ
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
             SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
             SetCascadeBlendingEnabled(m_configuration.m_cascadeBlendingEnabled);
+            SetAffectsGI(m_configuration.m_affectsGI);
+            SetAffectsGIFactor(m_configuration.m_affectsGIFactor);
 
             // [GFX TODO][ATOM-1726] share config for multiple light (e.g., light ID).
             // [GFX TODO][ATOM-2416] adapt to multiple viewports.
