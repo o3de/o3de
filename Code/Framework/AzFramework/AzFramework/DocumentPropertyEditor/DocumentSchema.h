@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -52,11 +53,49 @@ namespace AZ::DocumentPropertyEditor
         return AZ::Name(NodeDefinition::Name);
     }
 
-    //! Defines a definition for a PropertyEditor, specified as the type of a PropertyEditor node
-    struct PropertyEditorDefinition
+    //! Runtime data describing a NodeDescriptor.
+    //! This is used to look up a descriptor from a given name in the PropertyEditorSystem.
+    struct NodeMetadata
     {
-        static constexpr AZStd::string_view Name = "<undefined editor name>";
+        //! Helper method, extracts runtime metadata from a NodeDefinition.
+        template<typename NodeDefinition>
+        static NodeMetadata FromType(const NodeMetadata* parent = nullptr)
+        {
+            NodeMetadata metadata;
+            metadata.m_name = GetNodeName<NodeDefinition>();
+            metadata.m_parent = parent;
+            metadata.m_canAddToParentNode = &NodeDefinition::CanAddToParentNode;
+            metadata.m_canBeParentToValue = &NodeDefinition::CanBeParentToValue;
+            return metadata;
+        }
+
+        //! Returns true if this node, or any of its parents, have any ancestor with ParentNode's name.
+        template<typename ParentNode>
+        bool InheritsFrom() const
+        {
+            const Name targetParentName = GetNodeName<ParentNode>();
+            const NodeMetadata* parent = this;
+            while (parent != nullptr)
+            {
+                if (parent->m_name == targetParentName)
+                {
+                    return true;
+                }
+                parent = parent->m_parent;
+            }
+            return false;
+        }
+
+        AZ::Name m_name;
+        AZStd::function<bool(const Dom::Value&)> m_canAddToParentNode;
+        AZStd::function<bool(const Dom::Value&)> m_canBeParentToValue;
+        const NodeMetadata* m_parent = nullptr;
     };
+
+    //! PropertyEditors store themselves as nodes, even though they're actually a PropertyEditor node with a type attribute.
+    //! All functionality (custom attribute per editor type, etc) works the same.
+    using PropertyEditorMetadata = NodeMetadata;
+    using PropertyEditorDefinition = NodeDefinition;
 
     //! Defines an attribute applicable to a Node.
     //! Attributes may be defined inline inside of a NodeDefinition.
@@ -81,29 +120,58 @@ namespace AZ::DocumentPropertyEditor
         //! Converts a value of this attribute's type to a DOM value.
         Dom::Value ValueToDom(const AttributeType& attribute) const
         {
-            if constexpr (AZStd::is_same_v<AZStd::string_view, AttributeType>)
-            {
-                return Dom::Value(attribute, true);
-            }
-            else if constexpr (AZStd::is_constructible_v<Dom::Value, const AttributeType&>)
-            {
-                return Dom::Value(attribute);
-            }
-            else
-            {
-                return Dom::Value::FromOpaqueValue(AZStd::any(attribute));
-            }
+            return Dom::Utils::ValueFromType(attribute);
         }
 
         //! Converts a DOM value to an instance of AttributeType.
-        AttributeType&& DomToValue(const Dom::Value& value) const
+        AZStd::optional<AttributeType> DomToValue(const Dom::Value& value) const
         {
-            AZ_Assert(false, "DomToValue is not yet implemented");
-            return {};
+            return Dom::Utils::ValueToType<AttributeType>(value);
+        }
+
+        //! Extracts this value from a given Node, if this attribute is set there.
+        AZStd::optional<AttributeType> ExtractFromDomNode(const Dom::Value& node) const
+        {
+            if (!node.IsNode() && !node.IsObject())
+            {
+                return {};
+            }
+
+            auto memberIt = node.FindMember(GetName());
+            if (memberIt == node.MemberEnd())
+            {
+                return {};
+            }
+
+            return DomToValue(memberIt->second);
+        }
+
+        //! Gets this attribute's type ID
+        const AZ::TypeId& GetTypeId() const
+        {
+            return azrtti_typeid<AttributeType>();
         }
 
     protected:
         AZStd::fixed_string<128> m_name;
+    };
+
+    //! Runtime data describing an AttributeDefinition tied to a NodeDefinition.
+    //! This is used to look up an attribution from a given name and parent node in the PropertyEditorSystem.
+    struct AttributeMetadata
+    {
+        //! Helper method, creates a definition from an AttributeDefinition instance for a given node.
+        template<typename AttributeDefinition>
+        static AttributeMetadata FromDefinition(const AttributeDefinition& definition, const NodeMetadata* node)
+        {
+            AttributeMetadata metadata;
+            metadata.m_name = definition.GetName();
+            metadata.m_node = node;
+            return metadata;
+        }
+
+        AZ::Name m_name;
+        const NodeMetadata* m_node;
     };
 
     //! Defines a callback applicable to a Node.
@@ -136,7 +204,7 @@ namespace AZ::DocumentPropertyEditor
             }
         };
 
-        template <typename... Args>
+        template<typename... Args>
         struct Traits<void(Args...)>
         {
             using ResultType = AZ::Outcome<void, ErrorType>;
