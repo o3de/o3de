@@ -12,6 +12,10 @@
 #include <tests/assetmanager/MockAssetProcessorManager.h>
 #include <tests/assetmanager/MockFileProcessor.h>
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
+#include <native/utilities/AssetServerHandler.h>
+#include <native/resourcecompiler/rcjob.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 
 namespace UnitTests
 {
@@ -97,5 +101,63 @@ namespace UnitTests
         auto componentList = assetProcessorAZApplication.GetRequiredSystemComponents();
         auto iterator = AZStd::find(componentList.begin(), componentList.end(), azrtti_typeid<AzToolsFramework::ArchiveComponent>());
         EXPECT_NE(iterator, componentList.end()) << "AzToolsFramework::ArchiveComponent is not a required component";
+    }
+
+    TEST(AssetProcessorAssetServerHandler, AssetServerHandler_FutureCalls_FailsNoExceptions)
+    {
+        UnitTest::ScopedAllocatorFixture fixture;
+
+        char executablePath[AZ_MAX_PATH_LEN];
+        AZ::Utils::GetExecutablePathReturnType result = AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
+
+        struct MockAssetServerInfoBus final
+            : public AssetProcessor::AssetServerInfoBus::Handler
+        {
+            explicit MockAssetServerInfoBus(const char* filename)
+                : m_filename(filename)
+            {
+                AssetProcessor::AssetServerInfoBus::Handler::BusConnect();
+            }
+
+            ~MockAssetServerInfoBus()
+            {
+                AssetProcessor::AssetServerInfoBus::Handler::BusDisconnect();
+            }
+
+            const AZStd::string& ComputeArchiveFilePath(const AssetProcessor::BuilderParams&) override
+            {
+                return m_filename;
+            }
+
+            AZStd::string m_filename;
+        };
+
+        AssetProcessor::JobDetails jobDetails;
+        jobDetails.m_jobEntry.m_sourceFileUUID = AZ::Uuid::CreateRandom();
+        jobDetails.m_checkServer = true;
+
+        AssetProcessor::RCJob rcJob;
+        rcJob.Init(jobDetails);
+
+        AssetProcessor::BuilderParams buildParams { &rcJob };
+        buildParams.m_processJobRequest.m_sourceFile = executablePath;
+        buildParams.m_serverKey = "fake.product";
+
+        // These should fail, but not throw an exception
+
+        // mock storing an archive
+        {
+            MockAssetServerInfoBus mockAssetServerInfoBus("fake.asset");
+            AssetProcessor::AssetServerHandler assetServerHandler{};
+            AZStd::vector<AZStd::string> files({ buildParams.m_serverKey.toUtf8().toStdString().c_str() });
+            EXPECT_FALSE(assetServerHandler.StoreJobResult(buildParams, files));
+        }
+
+        // mock retrieving an archive
+        {
+            MockAssetServerInfoBus mockAssetServerInfoBus(executablePath);
+            AssetProcessor::AssetServerHandler assetServerHandler{};
+            EXPECT_FALSE(assetServerHandler.RetrieveJobResult(buildParams));
+        }
     }
 }
