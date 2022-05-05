@@ -56,6 +56,10 @@ namespace AZ::DocumentPropertyEditor
         //! GetContents() result).
         void ConnectChangedHandler(ChangedEvent::Handler& handler);
 
+        //! Sets a router responsible for chaining nested adapters, if supported.
+        //! \see RoutingAdapter
+        virtual void SetRouter(RoutingAdapter* router, const Dom::Path& route);
+
     protected:
         //! Subclasses may call this to trigger a ResetEvent and let the view know that GetContents should be requeried.
         //! Where possible, prefer to use NotifyContentsChanged instead.
