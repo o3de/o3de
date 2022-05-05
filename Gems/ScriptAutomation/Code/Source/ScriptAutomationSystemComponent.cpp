@@ -65,7 +65,7 @@ namespace ScriptAutomation
                 return {};
             }
         }
-    }
+    } // namespace
 
     void ScriptAutomationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
