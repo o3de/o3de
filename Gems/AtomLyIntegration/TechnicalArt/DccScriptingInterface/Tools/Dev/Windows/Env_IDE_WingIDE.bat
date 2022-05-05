@@ -20,7 +20,7 @@ PUSHD %~dp0
 :: WingIDE version Major
 IF "%DCCSI_WING_VERSION_MAJOR%"=="" (set DCCSI_WING_VERSION_MAJOR=7)
 :: WingIDE version Major
-IF "%DCCSI_WING_VERSION_MINOR%"=="" (set DCCSI_WING_VERSION_MINOR=1)
+IF "%DCCSI_WING_VERSION_MINOR%"=="" (set DCCSI_WING_VERSION_MINOR=2)
 
 :: Initialize env
 CALL %~dp0\Env_O3DE_Core.bat
