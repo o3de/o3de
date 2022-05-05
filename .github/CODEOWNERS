@@ -121,5 +121,5 @@
 /Gems/Twitch/ @o3de/sig-network-maintainers
 
 # SIG-Graphics-Audio ownership areas
-/Gems/Atom*/ @o3de/sig-graphics-audio-maintainers
-/Gems/Terrain/ @o3de/sig-graphics-audio-maintainers
+/Gems/Atom*/ @o3de/sig-graphics-audio-maintainers @o3de/sig-graphics-audio-reviewers
+/Gems/Terrain/ @o3de/sig-graphics-audio-maintainers @o3de/sig-graphics-audio-reviewers
