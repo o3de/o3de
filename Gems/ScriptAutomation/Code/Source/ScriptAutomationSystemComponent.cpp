@@ -267,7 +267,7 @@ namespace ScriptAutomation
             }
         );
 
-        if (!m_scriptContext->Execute(scriptAsset->GetScriptBuffer().data(), scriptFilePath, scriptAsset->GetScriptBuffer().size()))
+        if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), scriptFilePath, scriptAsset->m_data.GetScriptBuffer().size()))
         {
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
