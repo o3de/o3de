@@ -12,17 +12,17 @@ namespace AzToolsFramework
 {
     EditorAction::EditorAction(
         QWidget* parentWidget,
-        AZStd::string_view identifier,
-        AZStd::string_view name,
-        AZStd::string_view description,
-        AZStd::string_view category,
+        AZStd::string identifier,
+        AZStd::string name,
+        AZStd::string description,
+        AZStd::string category,
         AZStd::function<void()> handler)
-        : m_identifier(identifier)
-        , m_name(name)
-        , m_description(description)
-        , m_category(category)
+        : m_identifier(AZStd::move(identifier))
+        , m_name(AZStd::move(name))
+        , m_description(AZStd::move(description))
+        , m_category(AZStd::move(category))
     {
-        m_action = new QAction(name.data(), nullptr);
+        m_action = new QAction(m_name.c_str(), nullptr);
 
         QObject::connect(
             m_action, &QAction::triggered, parentWidget,

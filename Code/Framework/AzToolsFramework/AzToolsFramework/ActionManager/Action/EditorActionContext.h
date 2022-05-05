@@ -21,8 +21,7 @@ namespace AzToolsFramework
 
     public:
         EditorActionContext() = default;
-        EditorActionContext(
-            AZStd::string_view identifier, AZStd::string_view name, AZStd::string_view parentIdentifier, QWidget* widget);
+        EditorActionContext(AZStd::string identifier, AZStd::string name, AZStd::string parentIdentifier, QWidget* widget);
 
         QWidget* GetWidget();
 

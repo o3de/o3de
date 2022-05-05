@@ -30,24 +30,23 @@ namespace AzToolsFramework
         //! Register a new Action Context to the Action Manager.
         virtual ActionManagerOperationResult RegisterActionContext(
             QWidget* widget,
-            AZStd::string_view identifier,
-            AZStd::string_view name,
-            AZStd::string_view parentIdentifier) = 0;
+            const AZStd::string& identifier,
+            const AZStd::string& name,
+            const AZStd::string& parentIdentifier) = 0;
 
         //! Register a new Action to the Action Manager.
         virtual ActionManagerOperationResult RegisterAction(
-            AZStd::string_view contextIdentifier,
-            AZStd::string_view identifier,
-            AZStd::string_view name,
-            AZStd::string_view description,
-            AZStd::string_view category,
-            AZStd::string_view iconPath,
+            const AZStd::string& contextIdentifier,
+            const AZStd::string& identifier,
+            const AZStd::string& name,
+            const AZStd::string& description,
+            const AZStd::string& category,
+            const AZStd::string& iconPath,
             AZStd::function<void()> handler
         ) = 0;
 
         //! Retrieve a QAction via its identifier.
-        virtual QAction* GetAction(AZStd::string_view actionIdentifier) = 0;
-        virtual const QAction* GetActionConst(AZStd::string_view actionIdentifier) const = 0;
+        virtual QAction* GetAction(const AZStd::string& actionIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

@@ -11,10 +11,10 @@
 namespace AzToolsFramework
 {
     EditorActionContext::EditorActionContext(
-        AZStd::string_view identifier, AZStd::string_view name, AZStd::string_view parentIdentifier, QWidget* widget)
-        : m_identifier(identifier)
-        , m_name(name)
-        , m_parentIdentifier(parentIdentifier)
+        AZStd::string identifier, AZStd::string name, AZStd::string parentIdentifier, QWidget* widget)
+        : m_identifier(AZStd::move(identifier))
+        , m_name(AZStd::move(name))
+        , m_parentIdentifier(AZStd::move(parentIdentifier))
         , m_widget(widget)
     {
     }

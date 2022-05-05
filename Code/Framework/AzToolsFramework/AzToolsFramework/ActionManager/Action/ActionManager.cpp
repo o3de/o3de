@@ -24,14 +24,14 @@ namespace AzToolsFramework
 
     ActionManagerOperationResult ActionManager::RegisterActionContext(
         QWidget* widget,
-        AZStd::string_view identifier,
-        AZStd::string_view name,
-        AZStd::string_view parentIdentifier)
+        const AZStd::string& identifier,
+        const AZStd::string& name,
+        const AZStd::string& parentIdentifier)
     {
         if (!widget)
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register action context \"%s\" to a null widget.", AZStd::string(identifier.data(), identifier.size()).c_str())
+                "Action Manager - Could not register action context \"%s\" to a null widget.", identifier.c_str())
             );
         }
 
@@ -46,27 +46,27 @@ namespace AzToolsFramework
     }
 
     ActionManagerOperationResult ActionManager::RegisterAction(
-        AZStd::string_view contextIdentifier,
-        AZStd::string_view identifier,
-        AZStd::string_view name,
-        AZStd::string_view description,
-        AZStd::string_view category,
-        [[maybe_unused]] AZStd::string_view iconPath,
+        const AZStd::string& contextIdentifier,
+        const AZStd::string& identifier,
+        const AZStd::string& name,
+        const AZStd::string& description,
+        const AZStd::string& category,
+        [[maybe_unused]] const AZStd::string& iconPath,
         AZStd::function<void()> handler)
     {
         if (!m_actionContexts.contains(contextIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
-                AZStd::string(identifier.data(), identifier.size()).c_str(), 
-                AZStd::string(contextIdentifier.data(), contextIdentifier.size()).c_str()
+                identifier.c_str(), 
+                contextIdentifier.c_str()
             ));
         }
 
         if (m_actions.contains(identifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register action \"%.s\" twice.", AZStd::string(identifier.data(), identifier.size()).c_str()));
+                "Action Manager - Could not register action \"%.s\" twice.", identifier.c_str()));
         }
 
         m_actions.insert(
@@ -78,17 +78,7 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    QAction* ActionManager::GetAction(AZStd::string_view actionIdentifier)
-    {
-        if (m_actions.contains(actionIdentifier))
-        {
-            return m_actions[actionIdentifier].GetAction();
-        }
-
-        return nullptr;
-    }
-
-    const QAction* ActionManager::GetActionConst(AZStd::string_view actionIdentifier) const
+    QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)
     {
         if (m_actions.contains(actionIdentifier))
         {

@@ -21,10 +21,10 @@ namespace AzToolsFramework
         EditorAction() = default;
         EditorAction(
             QWidget* parentWidget,
-            AZStd::string_view identifier,
-            AZStd::string_view name,
-            AZStd::string_view description,
-            AZStd::string_view category,
+            AZStd::string identifier,
+            AZStd::string name,
+            AZStd::string description,
+            AZStd::string category,
             AZStd::function<void()> handler);
 
         // Returns the pointer to the action.
