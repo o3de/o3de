@@ -48,7 +48,6 @@ namespace ScriptAutomation
                 {
                     AZ::Uuid id = AZ::Uuid::CreateRandom();
                     AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::ScriptAsset>(AZ::Data::AssetId(id));
-                    scriptAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                     scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
 
                     return scriptAsset;
