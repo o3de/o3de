@@ -11,7 +11,6 @@
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
 #include <Atom/RPI.Public/Pass/Pass.h>
-#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
 namespace AZ

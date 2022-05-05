@@ -26,7 +26,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-
 namespace AZ
 {
     namespace RPI

@@ -6,10 +6,7 @@
  *
  */
 
-#include <Atom/RPI.Reflect/Pass/RenderPassData.h>
-
 #include <Atom/RPI.Public/Pass/PassContainer.h>
-#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
 namespace AZ::RPI
