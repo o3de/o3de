@@ -10,10 +10,13 @@
 
 #include <ScriptAutomationScriptBindings.h>
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptAsset.h>
+#include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -25,38 +28,42 @@
 
 namespace ScriptAutomation
 {
-    AZ::Data::Asset<AZ::ScriptAsset> ScriptAutomationSystemComponent::LoadScriptAssetFromPath(const char* productPath)
+    namespace
     {
-        AZ::IO::FixedMaxPath resolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, productPath);
-
-        AZ::IO::FileIOStream inputStream;
-        if (inputStream.Open(resolvedPath.c_str(), AZ::IO::OpenMode::ModeRead))
+        AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const char* productPath, AZ::ScriptContext& context)
         {
-            AzFramework::ScriptCompileRequest compileRequest;
-            compileRequest.m_sourceFile = resolvedPath.c_str();
-            compileRequest.m_input = &inputStream;
+            AZ::IO::FixedMaxPath resolvedPath;
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, productPath);
 
-            auto outcome = AzFramework::CompileScript(compileRequest, *m_scriptContext.get());
-            if (outcome.IsSuccess())
+            AZ::IO::FileIOStream inputStream;
+            if (inputStream.Open(resolvedPath.c_str(), AZ::IO::OpenMode::ModeRead))
             {
-                AZ::Uuid id = AZ::Uuid::CreateRandom();
-                AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::ScriptAsset>(AZ::Data::AssetId(id));
-                scriptAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-                scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
+                AzFramework::ScriptCompileRequest compileRequest;
+                compileRequest.m_sourceFile = resolvedPath.c_str();
+                compileRequest.m_input = &inputStream;
 
-                return scriptAsset;
+                auto outcome = AzFramework::CompileScript(compileRequest, context);
+                inputStream.Close();
+                if (outcome.IsSuccess())
+                {
+                    AZ::Uuid id = AZ::Uuid::CreateRandom();
+                    AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::ScriptAsset>(AZ::Data::AssetId(id));
+                    scriptAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+                    scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
+
+                    return scriptAsset;
+                }
+                else
+                {
+                    AZ_Assert(false, "Failed to compile script asset '%s'. Reason: '%s'", resolvedPath.c_str(), outcome.GetError().c_str());
+                    return {};
+                }
             }
             else
             {
-                AZ_Assert(false, "Failed to compile script asset '%s'. Reason: '%s'", resolvedPath.c_str(), outcome.GetError().c_str());
+                AZ_Assert(false, "Unable to find product asset '%s'. Has the source asset finished building?", resolvedPath.c_str());
                 return {};
             }
-        }
-        else
-        {
-            AZ_Assert(false, "Unable to find product asset '%s'. Has the source asset finished building?", resolvedPath.c_str());
-            return {};
         }
     }
 
@@ -126,11 +133,8 @@ namespace ScriptAutomation
     {
         ScriptAutomationRequestBus::Handler::BusConnect();
 
-        m_scriptContext = AZStd::make_unique<AZ::ScriptContext>(m_id);
+        m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
         m_scriptBehaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
-
-        // Custom script context needs to be registered with ScriptSystem to find reflected methods.
-        EBUS_EVENT(AZ::ScriptSystemRequestBus, AddContext, m_scriptContext.get(), -1);
 
         ReflectScriptBindings(m_scriptBehaviorContext.get());
         m_scriptContext->BindTo(m_scriptBehaviorContext.get());
@@ -246,7 +250,7 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath)
     {
-        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath);
+        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath, *m_scriptContext.get());
         if (!scriptAsset)
         {
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
