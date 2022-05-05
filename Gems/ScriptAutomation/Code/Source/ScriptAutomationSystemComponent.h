@@ -10,14 +10,12 @@
 
 #include <ScriptAutomation/ScriptAutomationBus.h>
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-
-namespace AZ
-{
-    class ScriptContext;
-} // namespace AZ
+#include <AzCore/Script/ScriptAsset.h>
+#include <AzCore/Script/ScriptContext.h>
 
 namespace ScriptAutomation
 {
@@ -84,5 +82,9 @@ namespace ScriptAutomation
 
         bool m_isStarted = false;
         bool m_exitOnFinish = false;
+    
+    private:
+        AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const char* productPath);
+        const AZ::ScriptContextId m_id = 2;
     };
 } // namespace ScriptAutomation
