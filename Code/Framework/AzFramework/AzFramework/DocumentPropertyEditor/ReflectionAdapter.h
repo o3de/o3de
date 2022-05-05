@@ -28,6 +28,7 @@ namespace AZ::DocumentPropertyEditor
         //! the specified instance.
         //! \see SetValue
         ReflectionAdapter(void* instance, AZ::TypeId typeId);
+        ~ReflectionAdapter();
 
         //! Sets the instance to reflect. If typeId is a type registered to SerializeContext,
         //! this adapter will produce a property grid based on its contents.

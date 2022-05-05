@@ -257,6 +257,9 @@ namespace AZ::DocumentPropertyEditor
         SetValue(instance, AZStd::move(typeId));
     }
 
+    // Declare dtor in implementation to make the unique_ptr deleter for m_impl accessible
+    ReflectionAdapter::~ReflectionAdapter() = default;
+
     void ReflectionAdapter::SetValue(void* instance, AZ::TypeId typeId)
     {
         m_instance = instance;
