@@ -11,7 +11,7 @@
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Reflect/Model/ModelLodIndex.h>
 #include <AtomCore/Instance/Instance.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/AtomMeshBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ
@@ -20,12 +20,12 @@ namespace AZ
     {
         //! Representation of a focused entity's Atom mesh (if any).
         //! @note It is not an error for an entity to not have any Atom mesh.
-        class FocuseMeshdEntity
-            : private AZ::Render::AtomMeshNotificationBus::Handler
+        class FocusedMeshEntity
+            : private AZ::Render::MeshHandleStateNotificationBus::Handler
         {
         public:
-            FocuseMeshdEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial);
-            ~FocuseMeshdEntity();
+            FocusedMeshEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial);
+            ~FocusedMeshEntity();
 
             //! Returns true if this entity can be drawn, otherwise false.
             bool CanDraw() const;
@@ -38,8 +38,8 @@ namespace AZ
             //! Retrieves the levol of detail index for this entity's Atom mesh.
             RPI::ModelLodIndex GetModelLodIndex(const RPI::ViewPtr view, Data::Instance<RPI::Model> model) const;
 
-            //AtomMeshNotificationBus overrides ...
-            void OnAcquireMesh(const MeshFeatureProcessorInterface::MeshHandle* meshHandle) override;
+            // MeshHandleStateNotificationBus overrides ...
+            void OnMeshHandleSet(const MeshFeatureProcessorInterface::MeshHandle* meshHandle) override;
 
             //! Builds the entity's drawable mesh data from scratch, overwriting any existing data.
             void CreateOrUpdateMeshDrawPackets(

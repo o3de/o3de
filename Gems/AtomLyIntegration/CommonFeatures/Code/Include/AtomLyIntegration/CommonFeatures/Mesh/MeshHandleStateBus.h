@@ -16,8 +16,8 @@ namespace AZ
 {
     namespace Render
     {
-        //! Bus for retrieving data about a given entity's Atom mesh.
-        class AtomMeshRequests
+        //! Bus for retrieving data about a given entity's mesh handle state.
+        class MeshHandleStateRequests
         : public AZ::EBusTraits
         {
         public:
@@ -25,14 +25,14 @@ namespace AZ
             static const EBusAddressPolicy AddressPolicy = EBusAddressPolicy::ById;
             using BusIdType = EntityId;
 
-            //! Returns the handle to the Atom mesh.
+            //! Returns the handle to the mesh.
             virtual const MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const = 0;
         };
 
-        using AtomMeshRequestBus = EBus<AtomMeshRequests>;
+        using MeshHandleStateRequestBus = EBus<MeshHandleStateRequests>;
         
-        //! Bus for receiving notifications about a given entity's Atom mesh state.
-        class AtomMeshNotifications
+        //! Bus for receiving notifications about a given entity's mesh handle state.
+        class MeshHandleStateNotifications
         : public AZ::EBusTraits
         {
         public:
@@ -40,8 +40,8 @@ namespace AZ
             static const EBusAddressPolicy AddressPolicy = EBusAddressPolicy::ById;
             using BusIdType = EntityId;
 
-            //! Notification for when the Atom mesh handle has been acquired (and thus ready for use).
-            virtual void OnAcquireMesh(const MeshFeatureProcessorInterface::MeshHandle* meshHandle) = 0;
+            //! Notification for when the mesh handle has been set (and thus ready for use).
+            virtual void OnMeshHandleSet(const MeshFeatureProcessorInterface::MeshHandle* meshHandle) = 0;
 
             //! When connecting to this bus, if the handle is ready you will immediately get an OnMeshHandleAcquire notification.
             template<class Bus>
@@ -57,23 +57,23 @@ namespace AZ
                 {
                     AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
 
-                    // If this entity has no AtomMeshRequests handler treat this call as a no-op.
-                    if(!AtomMeshRequestBus::HasHandlers(id))
+                    // If this entity has no MeshHandleStateRequests handler treat this call as a no-op.
+                    if(!MeshHandleStateRequestBus::HasHandlers(id))
                     {
                         return;
                     }
 
-                    const MeshFeatureProcessorInterface::MeshHandle* meshHandle;
-                    AtomMeshRequestBus::EventResult(meshHandle, id, &AtomMeshRequestBus::Events::GetMeshHandle);
+                    const MeshFeatureProcessorInterface::MeshHandle* meshHandle = nullptr;
+                    MeshHandleStateRequestBus::EventResult(meshHandle, id, &MeshHandleStateRequestBus::Events::GetMeshHandle);
 
                     if (meshHandle && meshHandle->IsValid())
                     {
-                        handler->OnAcquireMesh(meshHandle);
+                        handler->OnMeshHandleSet(meshHandle);
                     }
                 }
             };
         };
 
-        using AtomMeshNotificationBus = EBus<AtomMeshNotifications>;
+        using MeshHandleStateNotificationBus = EBus<MeshHandleStateNotifications>;
     } // namespace Render
 } // namespace Render

@@ -10,7 +10,6 @@
 
 namespace WhiteBox
 {
-    // TODO: LYN-786
     void WhiteBoxNullRenderMesh::BuildMesh(
         [[maybe_unused]] const WhiteBoxRenderData& renderData, [[maybe_unused]] const AZ::Transform& worldFromLocal)
     {

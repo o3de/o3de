@@ -167,7 +167,7 @@ namespace AZ
             {
                 return;
             }
- 
+
             if (!m_maskMaterial)
             {
                 m_maskMaterial = CreateMaskMaterial();

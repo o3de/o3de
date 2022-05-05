@@ -14,7 +14,7 @@
 #include <Rendering/WhiteBoxRenderMeshInterface.h>
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/AtomMeshBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Name/Name.h>
 
@@ -32,13 +32,13 @@ namespace WhiteBox
     //! A concrete implementation of RenderMeshInterface to support Atom rendering for the White Box Tool.
     class AtomRenderMesh
         : public RenderMeshInterface
-        , private AZ::Render::AtomMeshRequestBus::Handler
+        , private AZ::Render::MeshHandleStateRequestBus::Handler
 
     {
     public:
         AZ_RTTI(AtomRenderMesh, "{1F48D2F5-037C-400B-977C-7C0C9A34B84C}", RenderMeshInterface);
 
-        AtomRenderMesh(AZ::EntityId entityId);
+        explicit AtomRenderMesh(AZ::EntityId entityId);
         ~AtomRenderMesh();
 
         // RenderMeshInterface ...
@@ -67,7 +67,7 @@ namespace WhiteBox
             att->UpdateData(data);
         }
 
-        // AtomMeshRequestBus::Handler overrides ...
+        // AtomMeshRequestBus overrides ...
         const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
 
         bool CreateMeshBuffers(const WhiteBoxMeshAtomData& meshData);
@@ -99,7 +99,6 @@ namespace WhiteBox
             m_attributes;
 
         //! Default white box mesh material.
-        // TODO: LYN-784
         static constexpr AZStd::string_view TexturedMaterialPath = "materials/defaultpbr.azmaterial";
         static constexpr AZStd::string_view SolidMaterialPath = "materials/defaultpbr.azmaterial";
         static constexpr AZ::RPI::ModelMaterialSlot::StableId OneMaterialSlotId = 0;

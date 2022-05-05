@@ -8,8 +8,8 @@
 
 #include <Mesh/MeshComponentController.h>
 
-#include <AtomLyIntegration/CommonFeatures/Mesh/AtomMeshBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
@@ -253,7 +253,7 @@ namespace AZ
 
             const auto entityContextId = FindOwningContextId(entityId);
             MeshComponentRequestBus::Handler::BusConnect(entityId);
-            AtomMeshRequestBus::Handler::BusConnect(entityId);
+            MeshHandleStateRequestBus::Handler::BusConnect(entityId);
             TransformNotificationBus::Handler::BusConnect(entityId);
             MaterialReceiverRequestBus::Handler::BusConnect(entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
@@ -276,7 +276,7 @@ namespace AZ
             MaterialReceiverRequestBus::Handler::BusDisconnect();
             TransformNotificationBus::Handler::BusDisconnect();
             MeshComponentRequestBus::Handler::BusDisconnect();
-            AtomMeshRequestBus::Handler::BusDisconnect();
+            MeshHandleStateRequestBus::Handler::BusDisconnect();
 
             m_nonUniformScaleChangedHandler.Disconnect();
 
@@ -407,7 +407,7 @@ namespace AZ
                 meshDescriptor.m_requiresCloneCallback = RequiresCloning;
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
-                AtomMeshNotificationBus::Event(entityId, &AtomMeshNotificationBus::Events::OnAcquireMesh, &m_meshHandle);
+                MeshHandleStateNotificationBus::Event(entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
                 const AZ::Transform& transform =

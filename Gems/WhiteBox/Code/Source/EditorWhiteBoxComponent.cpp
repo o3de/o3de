@@ -437,7 +437,6 @@ namespace WhiteBox
                 }
 
                 // generate the mesh
-                // TODO: LYN-786
                 (*m_renderMesh)->BuildMesh(m_renderData, m_worldFromLocal);
             }
         }

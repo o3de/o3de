@@ -41,7 +41,6 @@ namespace WhiteBox
         AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         // generate the mesh
-        // TODO: LYN-786
         m_renderMesh->BuildMesh(m_whiteBoxRenderData, worldFromLocal);
         m_renderMesh->SetVisiblity(m_whiteBoxRenderData.m_material.m_visible);
 

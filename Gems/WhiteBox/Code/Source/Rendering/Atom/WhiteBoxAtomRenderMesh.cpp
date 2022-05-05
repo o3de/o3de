@@ -27,12 +27,12 @@ namespace WhiteBox
     AtomRenderMesh::AtomRenderMesh(AZ::EntityId entityId)
         : m_entityId(entityId)
     {
-        AZ::Render::AtomMeshRequestBus::Handler::BusConnect(m_entityId);
+        AZ::Render::MeshHandleStateRequestBus::Handler::BusConnect(m_entityId);
     }
 
     AtomRenderMesh::~AtomRenderMesh()
     {
-        AZ::Render::AtomMeshRequestBus::Handler::BusDisconnect();
+        AZ::Render::MeshHandleStateRequestBus::Handler::BusDisconnect();
     }
 
     bool AtomRenderMesh::AreAttributesValid() const
@@ -189,7 +189,7 @@ namespace WhiteBox
 
         m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
         m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset });
-        AZ::Render::AtomMeshNotificationBus::Event(m_entityId, &AZ::Render::AtomMeshNotificationBus::Events::OnAcquireMesh, &m_meshHandle);
+        AZ::Render::MeshHandleStateNotificationBus::Event(m_entityId, &AZ::Render::MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
 
         return true;
     }
@@ -203,7 +203,6 @@ namespace WhiteBox
     {
         if (!CreateLodAsset(meshData))
         {
-            // TODO: LYN-808
             return false;
         }
 
@@ -211,7 +210,6 @@ namespace WhiteBox
 
         if (!CreateModel())
         {
-            // TODO: LYN-808
             return false;
         }
 
@@ -239,7 +237,6 @@ namespace WhiteBox
         {
             if (!CreateMesh(meshData))
             {
-                // TODO: LYN-808
                 return;
             }
         }
@@ -247,7 +244,6 @@ namespace WhiteBox
         {
             if (!UpdateMeshBuffers(meshData))
             {
-                // TODO: LYN-808
                 return;
             }
         }
@@ -262,7 +258,6 @@ namespace WhiteBox
 
     void AtomRenderMesh::UpdateMaterial([[maybe_unused]] const WhiteBoxMaterial& material)
     {
-        // TODO: LYN-784
         // colors: vertex colors probs not used.
         // (use constant color for material -> material editor)
         //
@@ -294,13 +289,11 @@ namespace WhiteBox
 
     bool AtomRenderMesh::IsVisible() const
     {
-        // TODO: LYN-788
         return true;
     }
 
     void AtomRenderMesh::SetVisiblity([[maybe_unused]] bool visibility)
     {
-        // TODO: LYN-788
         // hide: m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
         // show: m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_modelAsset);
     }

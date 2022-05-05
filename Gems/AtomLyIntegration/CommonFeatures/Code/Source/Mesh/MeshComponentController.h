@@ -25,7 +25,7 @@
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/AtomMeshBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 
 namespace AZ
 {
@@ -60,7 +60,7 @@ namespace AZ
 
         class MeshComponentController final
             : private MeshComponentRequestBus::Handler
-            , private AtomMeshRequestBus::Handler
+            , private MeshHandleStateRequestBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
             , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
             , private TransformNotificationBus::Handler
@@ -91,7 +91,7 @@ namespace AZ
         private:
             AZ_DISABLE_COPY(MeshComponentController);
 
-            // MeshComponentRequestBus::Handler overrides ...
+            // MeshComponentRequestBus overrides ...
             void SetModelAsset(Data::Asset<RPI::ModelAsset> modelAsset) override;
             Data::Asset<const RPI::ModelAsset> GetModelAsset() const override;
             void SetModelAssetId(Data::AssetId modelAssetId) override;
@@ -100,7 +100,7 @@ namespace AZ
             AZStd::string GetModelAssetPath() const override;
             AZ::Data::Instance<RPI::Model> GetModel() const override;
 
-            // AtomMeshRequestBus::Handler overrides ...
+            // AtomMeshRequestBus overrides ...
             const MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
 
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;

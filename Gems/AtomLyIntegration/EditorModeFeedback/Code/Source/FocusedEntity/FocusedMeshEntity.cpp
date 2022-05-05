@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 namespace AZ
 {
@@ -29,14 +30,6 @@ namespace AZ
             const auto viewportContext = viewportContextRequests->GetViewportContextByScene(scene);
             const RPI::ViewPtr viewPtr = viewportContext->GetDefaultView();
             return viewPtr;
-        }
-
-        // Get the world transform for the specified entity
-        static AZ::Transform GetWorldTransformForEntity(EntityId entityId)
-        {
-            AZ::Transform worldTM;
-            AZ::TransformBus::EventResult(worldTM, entityId, &AZ::TransformBus::Events::GetWorldTM);
-            return worldTM;
         }
 
         // Utility class for common drawable data
@@ -76,30 +69,30 @@ namespace AZ
             return m_featureProcessor;
         }
 
-        FocuseMeshdEntity::FocuseMeshdEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial)
+        FocusedMeshEntity::FocusedMeshEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial)
             : m_entityId(entityId)
             , m_maskMaterial(maskMaterial)
         {
-            AZ::Render::AtomMeshNotificationBus::Handler::BusConnect(m_entityId);
+            AZ::Render::MeshHandleStateNotificationBus::Handler::BusConnect(m_entityId);
         }
         
-        FocuseMeshdEntity::~FocuseMeshdEntity()
+        FocusedMeshEntity::~FocusedMeshEntity()
         {
-            AZ::Render::AtomMeshNotificationBus::Handler::BusDisconnect();
+            AZ::Render::MeshHandleStateNotificationBus::Handler::BusDisconnect();
         }
 
-        void FocuseMeshdEntity::ClearDrawData()
+        void FocusedMeshEntity::ClearDrawData()
         {
             m_modelLodIndex = RPI::ModelLodIndex::Null;
             m_meshDrawPackets.clear();
         }
         
-        bool FocuseMeshdEntity::CanDraw() const
+        bool FocusedMeshEntity::CanDraw() const
         {
             return !m_meshDrawPackets.empty();
         }
 
-        void FocuseMeshdEntity::Draw()
+        void FocusedMeshEntity::Draw()
         {
             if (!CanDraw())
             {
@@ -130,13 +123,13 @@ namespace AZ
             }
         }
          
-        RPI::ModelLodIndex FocuseMeshdEntity::GetModelLodIndex(const RPI::ViewPtr view, Data::Instance<RPI::Model> model) const
+        RPI::ModelLodIndex FocusedMeshEntity::GetModelLodIndex(const RPI::ViewPtr view, Data::Instance<RPI::Model> model) const
         {
-            const auto worldTM = GetWorldTransformForEntity(m_entityId);
+            const auto worldTM = AzToolsFramework::GetWorldTransform(m_entityId);
             return RPI::ModelLodUtils::SelectLod(view.get(), worldTM, *model);
         }
         
-        void FocuseMeshdEntity::OnAcquireMesh(const MeshFeatureProcessorInterface::MeshHandle* meshHandle)
+        void FocusedMeshEntity::OnMeshHandleSet(const MeshFeatureProcessorInterface::MeshHandle* meshHandle)
         {
             m_meshHandle = meshHandle;
             const DrawableMetaData drawabaleMetaData(m_entityId);
@@ -145,7 +138,7 @@ namespace AZ
             CreateOrUpdateMeshDrawPackets(drawabaleMetaData.GetFeatureProcessor(), modelLodIndex, model);
         }
         
-        void FocuseMeshdEntity::CreateOrUpdateMeshDrawPackets(
+        void FocusedMeshEntity::CreateOrUpdateMeshDrawPackets(
             const MeshFeatureProcessorInterface* featureProcessor, const RPI::ModelLodIndex modelLodIndex, Data::Instance<RPI::Model> model)
         {
             if (!m_meshHandle || !m_meshHandle->IsValid())
@@ -163,7 +156,7 @@ namespace AZ
             }
         }
 
-        void FocuseMeshdEntity::BuildMeshDrawPackets(
+        void FocusedMeshEntity::BuildMeshDrawPackets(
             const Data::Asset<RPI::ModelAsset> modelAsset, Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg)
         {
             const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[m_modelLodIndex.m_index];
@@ -176,7 +169,7 @@ namespace AZ
             }
         }
 
-        Data::Instance<RPI::ShaderResourceGroup> FocuseMeshdEntity::CreateMaskShaderResourceGroup(
+        Data::Instance<RPI::ShaderResourceGroup> FocusedMeshEntity::CreateMaskShaderResourceGroup(
             const MeshFeatureProcessorInterface* featureProcessor) const
         {
             const auto& shaderAsset = m_maskMaterial->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
