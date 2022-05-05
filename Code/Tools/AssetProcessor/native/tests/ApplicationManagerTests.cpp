@@ -108,7 +108,7 @@ namespace UnitTests
         UnitTest::ScopedAllocatorFixture fixture;
 
         char executablePath[AZ_MAX_PATH_LEN];
-        AZ::Utils::GetExecutablePathReturnType result = AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
+        AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
 
         struct MockAssetServerInfoBus final
             : public AssetProcessor::AssetServerInfoBus::Handler
