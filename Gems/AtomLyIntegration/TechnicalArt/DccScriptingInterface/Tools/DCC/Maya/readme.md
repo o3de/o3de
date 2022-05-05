@@ -40,7 +40,7 @@ If pip is not available yet for your mayapy, there are a couple ways to address 
 First find out where the site-packages is located
 
 C:\Program Files\Autodesk\Maya2020\bin>
-    
+
     mayapy -m site
 
 this will report something like the following
@@ -116,7 +116,7 @@ The following will install those requirements into a sandbox area that we can bo
 C:\Program Files\Autodesk\Maya2020\bin>
 
     mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
-    
+
 ![image](https://user-images.githubusercontent.com/23222931/155037696-cab81e13-7910-433d-b038-75a07e6690ad.png)
 
 ## Other versions of Maya (2022 and beyond)
@@ -135,17 +135,17 @@ C:\WINDOWS\system32>
 This will change directories into Maya's binaries location (where mayapy lives)
 
     cd C:\Program Files\Autodesk\Maya2022\bin
-    
+
 This command will ensure that pip is installed
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip
-    
+
 This command will upgrade pip (for instance if a secutiry patch is released)
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip --upgrade
-    
+
 The following will install those requirements into a sandbox area that we can boostrap in DCC tools running py2.7
-    
+
     mayapy2 -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
 
 ![image](https://user-images.githubusercontent.com/23222931/155037710-79bee421-1355-484b-8c96-f672157da40a.png)
@@ -159,18 +159,17 @@ This also is not very different, you just need to modify some of the commands. A
 This will change directories into Maya's binaries location (where mayapy lives)
 
     cd C:\Program Files\Autodesk\Maya2022\bin
-    
+
 This command will ensure that pip is installed
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip
-    
+
 This command will upgrade pip (for instance if a secutiry patch is released)
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip --upgrade
-    
+
 The following will install those requirements into a sandbox area that we can boostrap in DCC tools running py3.7.x 
-    
+
     mayapy -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.7.x\site-packages
 
 ![image](https://user-images.githubusercontent.com/23222931/155037723-8f514a85-194f-46e8-b726-55a04f0860bb.png)
-
