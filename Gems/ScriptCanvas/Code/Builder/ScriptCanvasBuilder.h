@@ -58,6 +58,9 @@ namespace ScriptCanvasBuilder
 
     // copy the variables overridden during editor / prefab build time back to runtime data
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& overrides);
+    /// Replace the provided overrides asset hierarchy with the provided loaded one.
+    /// Returns false if there is a size mismatch in dependencies or if any of the asset has not yet loaded
+    bool ReplaceAsset(ScriptCanvas::RuntimeDataOverrides& overrides, ScriptCanvas::RuntimeAssetPtr asset);
 
     AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree);
 }

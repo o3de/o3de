@@ -303,6 +303,7 @@ namespace ScriptCanvas
                 m_dotLua.WriteLine("if _G.%s then", Grammar::k_InterpretedConfigurationRelease);
                 m_dotLua.WriteLine(k_stars);
                 m_dotLua.WriteLine("-- ****** release configuration, no debug information available, no performance markers");
+                m_dotLua.WriteNewLine();
             }
 
             TranslateBody();
@@ -314,6 +315,7 @@ namespace ScriptCanvas
                 m_dotLua.WriteLine("elseif _G.%s then", Grammar::k_InterpretedConfigurationPerformance);
                 m_dotLua.WriteLine(k_stars);
                 m_dotLua.WriteLine("-- ***** performance configuration, no debug information available, performance markers in place");
+                m_dotLua.WriteNewLine();
             }
             else if (configuration == BuildConfiguration::Performance)
             {
@@ -1135,10 +1137,7 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateStaticInitialization()
         {
-            if (m_buildConfiguration == BuildConfiguration::Debug)
-            {
-                m_dotLua.WriteLine("%s.%s = \"%s\"", m_tableName.data(), Grammar::k_internalClassName, m_tableName.data());
-            }
+            m_dotLua.WriteLine("%s.%s = \"%s\"", m_tableName.data(), Grammar::k_internalClassName, m_tableName.data());
 
             if (m_runtimeInputs.m_staticVariables.empty())
             {

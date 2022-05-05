@@ -192,6 +192,18 @@ namespace AZ
             //! Sets whether the directional shadow map has cascade blending enabled.
             //! @param enable flag specifying whether to enable cascade blending.
             virtual void SetCascadeBlendingEnabled(bool enable) = 0;
+
+            //! Returns true if this light affects global illumination
+            virtual bool GetAffectsGI() const = 0;
+
+            //! Set whether this light affects global illumination
+            virtual void SetAffectsGI(bool affectsGI) = 0;
+
+            //! Returns the contribution multiplier for global illumination
+            virtual float GetAffectsGIFactor() const = 0;
+
+            //! Sets the contribution multiplier for global illumination
+            virtual void SetAffectsGIFactor(float affectsGIFactor) = 0;
         };
         using DirectionalLightRequestBus = EBus<DirectionalLightRequests>;
 
