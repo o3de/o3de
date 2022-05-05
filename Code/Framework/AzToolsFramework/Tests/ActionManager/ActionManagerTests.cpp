@@ -130,8 +130,9 @@ namespace UnitTest
             }
         );
 
-        m_actionManagerInterface->TriggerAction("o3de.action.test");
+        auto outcome = m_actionManagerInterface->TriggerAction("o3de.action.test");
 
+        EXPECT_TRUE(outcome.IsSuccess());
         EXPECT_TRUE(actionTriggered);
     }
 
