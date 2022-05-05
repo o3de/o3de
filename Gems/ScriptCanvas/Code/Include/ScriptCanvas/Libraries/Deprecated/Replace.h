@@ -11,7 +11,7 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Internal/Nodes/StringFormatted.h>
 
-#include <Include/ScriptCanvas/Libraries/String/Deprecated/Contains.generated.h>
+#include <Include/ScriptCanvas/Libraries/Deprecated/Replace.generated.h>
 
 namespace ScriptCanvas
 {
@@ -19,17 +19,16 @@ namespace ScriptCanvas
     {
         namespace String
         {
-            //! Deprecated: see String class reflection of method "Contains String"
-            class Contains
+            //! Deprecated: see String class reflection of "Replace String"
+            class Replace
                 : public Node
             {
             public:
 
-                SCRIPTCANVAS_NODE(Contains);
+                SCRIPTCANVAS_NODE(Replace);
 
                 void OnInit() override;
                 void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
-
             };
         }
     }

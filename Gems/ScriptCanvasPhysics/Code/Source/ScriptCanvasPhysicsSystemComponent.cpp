@@ -11,12 +11,14 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include "ScriptCanvasPhysicsSystemComponent.h"
-#include "PhysicsNodeLibrary.h"
+#include <ScriptCanvasAutoGenRegistry.h>
 
 namespace ScriptCanvasPhysics
 {
     void ScriptCanvasPhysicsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        ScriptCanvas::AutoGenRegistry::Reflect(context);
+
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<ScriptCanvasPhysicsSystemComponent, AZ::Component>()
@@ -33,8 +35,6 @@ namespace ScriptCanvasPhysics
                 ;
             }
         }
-
-        PhysicsNodeLibrary::Reflect(context);
     }
 
     void ScriptCanvasPhysicsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -59,7 +59,6 @@ namespace ScriptCanvasPhysics
 
     void ScriptCanvasPhysicsSystemComponent::Init()
     {
-        PhysicsNodeLibrary::InitNodeRegistry(ScriptCanvas::GetNodeRegistry().Get());
     }
 
     void ScriptCanvasPhysicsSystemComponent::Activate()

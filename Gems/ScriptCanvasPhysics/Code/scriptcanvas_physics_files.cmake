@@ -6,10 +6,13 @@
 #
 #
 
+get_property(scriptcanvas_gem_root GLOBAL PROPERTY "@GEMROOT:ScriptCanvas@")
+
 set(FILES
-    Source/PhysicsNodeLibrary.cpp
-    Source/PhysicsNodeLibrary.h
+    ${scriptcanvas_gem_root}/Code/Include/ScriptCanvas/AutoGen/ScriptCanvasFunction_Source.jinja
     Source/ScriptCanvasPhysicsSystemComponent.cpp
     Source/ScriptCanvasPhysicsSystemComponent.h
-    Source/WorldNodes.h
+    Source/World.cpp
+    Source/World.h
+    Source/World.ScriptCanvasFunction.xml
 )

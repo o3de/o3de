@@ -178,9 +178,36 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/Start.h
     Include/ScriptCanvas/Libraries/Core/Start.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.h
-    Include/ScriptCanvas/Libraries/Entity/Deprecated/Entity.h
-    Include/ScriptCanvas/Libraries/Entity/Deprecated/EntityNodes.h
-    Include/ScriptCanvas/Libraries/Entity/Deprecated/RotateMethod.h
+    Include/ScriptCanvas/Libraries/Deprecated/AABBNodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/ColorNodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/Contains.h
+    Include/ScriptCanvas/Libraries/Deprecated/Contains.ScriptCanvasGrammar.xml
+    Include/ScriptCanvas/Libraries/Deprecated/CRCNodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/DeprecatedNodeLibrary.h
+    Include/ScriptCanvas/Libraries/Deprecated/Divide.h
+    Include/ScriptCanvas/Libraries/Deprecated/EntityNodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/MathGenerics.h
+    Include/ScriptCanvas/Libraries/Deprecated/MathRandom.h
+    Include/ScriptCanvas/Libraries/Deprecated/Matrix3x3Nodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/Matrix4x4Nodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/Multiply.h
+    Include/ScriptCanvas/Libraries/Deprecated/OBBNodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/PlaneNodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/Replace.h
+    Include/ScriptCanvas/Libraries/Deprecated/Replace.ScriptCanvasGrammar.xml
+    Include/ScriptCanvas/Libraries/Deprecated/RotateMethod.h
+    Include/ScriptCanvas/Libraries/Deprecated/RotationNodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/StringGenerics.h
+    Include/ScriptCanvas/Libraries/Deprecated/StringMethods.h
+    Include/ScriptCanvas/Libraries/Deprecated/Subtract.h
+    Include/ScriptCanvas/Libraries/Deprecated/Sum.h
+    Include/ScriptCanvas/Libraries/Deprecated/TransformNodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/Utilities.h
+    Include/ScriptCanvas/Libraries/Deprecated/Utilities.ScriptCanvasGrammar.xml
+    Include/ScriptCanvas/Libraries/Deprecated/Vector2Nodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/Vector3Nodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/Vector4Nodes.h
+    Include/ScriptCanvas/Libraries/Deprecated/WorldNodes.h
     Include/ScriptCanvas/Libraries/Entity/EntityFunctions.h
     Include/ScriptCanvas/Libraries/Entity/EntityFunctions.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Logic/And.h
@@ -213,31 +240,12 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/WeightedRandomSequencer.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Logic/While.h
     Include/ScriptCanvas/Libraries/Logic/While.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Math/Deprecated/AABBNodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/ColorNodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/CRCNodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Divide.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/MathGenerics.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/MathRandom.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Matrix3x3Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Matrix4x4Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Multiply.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/OBBNodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/PlaneNodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/RotationNodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Subtract.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Sum.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/TransformNodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Vector2Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Vector3Nodes.h
-    Include/ScriptCanvas/Libraries/Math/Deprecated/Vector4Nodes.h
     Include/ScriptCanvas/Libraries/Math/AABB.h
     Include/ScriptCanvas/Libraries/Math/AABB.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Color.h
     Include/ScriptCanvas/Libraries/Math/Color.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/CRC.h
     Include/ScriptCanvas/Libraries/Math/CRC.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Math/Math.h
     Include/ScriptCanvas/Libraries/Math/MathExpression.h
     Include/ScriptCanvas/Libraries/Math/MathExpression.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Math/MathFunctions.h
@@ -294,19 +302,10 @@ set(FILES
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.ScriptCanvasNodeable.xml
-    Include/ScriptCanvas/Libraries/String/Deprecated/Contains.h
-    Include/ScriptCanvas/Libraries/String/Deprecated/Contains.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/String/Deprecated/Replace.h
-    Include/ScriptCanvas/Libraries/String/Deprecated/Replace.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/String/Deprecated/StringGenerics.h
-    Include/ScriptCanvas/Libraries/String/Deprecated/StringMethods.h
-    Include/ScriptCanvas/Libraries/String/Deprecated/Utilities.h
-    Include/ScriptCanvas/Libraries/String/Deprecated/Utilities.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/String/Format.h
     Include/ScriptCanvas/Libraries/String/Format.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/String/Print.h
     Include/ScriptCanvas/Libraries/String/Print.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/String/String.h
     Include/ScriptCanvas/Libraries/String/StringFunctions.h
     Include/ScriptCanvas/Libraries/String/StringFunctions.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.h

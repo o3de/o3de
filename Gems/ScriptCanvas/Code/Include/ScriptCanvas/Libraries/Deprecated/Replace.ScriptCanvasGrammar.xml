@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScriptCanvas Include="Include/ScriptCanvas/Libraries/String/Deprecated/Replace.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Deprecated/Replace.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="Replace"
 	       QualifiedName="ScriptCanvas::Nodes::String::Replace"
 	       PreferredClassName="Replace String"

@@ -24,29 +24,6 @@ namespace ScriptCanvasPhysics
 {
     namespace WorldNodes
     {
-        class World
-        {
-        public:
-            AZ_TYPE_INFO(World, "{55A54AF1-B545-4C12-9F74-01D30789CA1D}");
-
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-                {
-                    serializeContext->Class<World>()
-                        ->Version(0)
-                        ;
-
-                    if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                    {
-                        editContext->Class<World>("World", "")
-                            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ;
-                    }
-                }
-            }
-        };
-
         using Result = AZStd::tuple<
             bool /*true if an object was hit*/,
             AZ::Vector3 /*world space position*/,
@@ -105,21 +82,10 @@ namespace ScriptCanvasPhysics
             }
             return AZStd::make_tuple(false, AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero(), 0.0f, AZ::EntityId(), AZ::Crc32());
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastWorldSpaceWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            RayCastWorldSpaceWithGroup,
             k_categoryName,
-            "{695EE108-68C1-40E3-ADA5-8ED9AB74D054}",
-            "Returns the first entity hit by a ray cast in world space from the start position in the specified direction.",
-            "Start",
-            "Direction",
-            "Distance",
-            "Collision group",
-            "Ignore",
-            "Object hit",
-            "Position",
-            "Normal",
-            "Distance",
-            "EntityId",
-            "Surface");
+            "{695EE108-68C1-40E3-ADA5-8ED9AB74D054}", "ScriptCanvasPhysics_WorldFunctions_RayCastWorldSpaceWithGroup");
 
         AZ_INLINE Result RayCastFromScreenWithGroup(
             const AZ::Vector2& screenPosition,
@@ -143,20 +109,10 @@ namespace ScriptCanvasPhysics
             return AZStd::make_tuple(false, AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero(), 0.0f, AZ::EntityId(), AZ::Crc32());
         }
 
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastFromScreenWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            RayCastFromScreenWithGroup,
             k_categoryName,
-            "{8F98A766-A93F-4DA7-B281-482C3DB20649}",
-            "Returns the first entity hit by a ray cast from the provided absolute 2D screen position.",
-            "Screen Position",
-            "Distance",
-            "Collision group",
-            "Ignore",
-            "Object hit",
-            "Position",
-            "Normal",
-            "Distance",
-            "EntityId",
-            "Surface");
+            "{8F98A766-A93F-4DA7-B281-482C3DB20649}", "ScriptCanvasPhysics_WorldFunctions_RayCastFromScreenWithGroup");
 
         AZ_INLINE Result RayCastLocalSpaceWithGroup(const AZ::EntityId& fromEntityId,
             const AZ::Vector3& direction,
@@ -170,21 +126,10 @@ namespace ScriptCanvasPhysics
             return RayCastWorldSpaceWithGroup(worldSpaceTransform.GetTranslation(), worldSpaceTransform.TransformVector(direction.GetNormalized()),
                 distance, collisionGroup, ignore);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastLocalSpaceWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            RayCastLocalSpaceWithGroup,
             k_categoryName,
-            "{938E0C6E-C6A3-4716-9233-941EFA70241A}",
-            "Returns the first entity hit by a ray cast in local space from the source entity in the specified direction.",
-            "Source",
-            "Direction",
-            "Distance",
-            "Collision group",
-            "Ignore",
-            "Object hit",
-            "Position",
-            "Normal",
-            "Distance",
-            "EntityId",
-            "Surface");
+            "{938E0C6E-C6A3-4716-9233-941EFA70241A}", "ScriptCanvasPhysics_WorldFunctions_RayCastLocalSpaceWithGroup");
 
         AZ_INLINE AZStd::vector<AzPhysics::SceneQueryHit> RayCastMultipleLocalSpaceWithGroup(const AZ::EntityId& fromEntityId,
             const AZ::Vector3& direction,
@@ -220,16 +165,10 @@ namespace ScriptCanvasPhysics
             }
             return result.m_hits;
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastMultipleLocalSpaceWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            RayCastMultipleLocalSpaceWithGroup,
             k_categoryName,
-            "{A867FC55-6610-42C2-97E8-C614450CAE92}",
-            "Returns all entities hit by a ray cast in local space from the source entity in the specified direction.",
-            "Source",
-            "Direction",
-            "Distance",
-            "Collision group",
-            "Ignore",
-            "Objects hit");
+            "{A867FC55-6610-42C2-97E8-C614450CAE92}", "ScriptCanvasPhysics_WorldFunctions_RayCastMultipleLocalSpaceWithGroup");
 
         OverlapResult OverlapQuery(const AZ::Transform& pose,
             AZStd::shared_ptr<Physics::ShapeConfiguration> shape,
@@ -277,15 +216,10 @@ namespace ScriptCanvasPhysics
             return OverlapQuery(AZ::Transform::CreateTranslation(position),
                 AZStd::make_shared<Physics::SphereShapeConfiguration>(radius), collisionGroup, ignore);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(OverlapSphereWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            OverlapSphereWithGroup,
             k_categoryName,
-            "{0A2831AB-E994-4533-8E64-700631994E64}",
-            "Returns the objects overlapping a sphere at a position",
-            "Position",
-            "Radius",
-            "Collision group",
-            "Ignore"
-        );
+            "{0A2831AB-E994-4533-8E64-700631994E64}", "ScriptCanvasPhysics_WorldFunctions_OverlapSphereWithGroup");
 
         AZ_INLINE OverlapResult OverlapBoxWithGroup(const AZ::Transform& pose,
             const AZ::Vector3& dimensions,
@@ -295,15 +229,10 @@ namespace ScriptCanvasPhysics
             return OverlapQuery(pose,
                 AZStd::make_shared<Physics::BoxShapeConfiguration>(dimensions), collisionGroup, ignore);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(OverlapBoxWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            OverlapBoxWithGroup,
             k_categoryName,
-            "{1991BA3D-3848-4BF0-B696-C39C42CFE49A}",
-            "Returns the objects overlapping a box at a position",
-            "Pose",
-            "Dimensions",
-            "Collision group",
-            "Ignore"
-        );
+            "{1991BA3D-3848-4BF0-B696-C39C42CFE49A}", "ScriptCanvasPhysics_WorldFunctions_OverlapBoxWithGroup");
 
         AZ_INLINE OverlapResult OverlapCapsuleWithGroup(const AZ::Transform& pose,
             float height,
@@ -314,16 +243,10 @@ namespace ScriptCanvasPhysics
             return OverlapQuery(pose,
                 AZStd::make_shared<Physics::CapsuleShapeConfiguration>(height, radius), collisionGroup, ignore);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(OverlapCapsuleWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            OverlapCapsuleWithGroup,
             k_categoryName,
-            "{1DD49D7A-348A-4CB1-82C0-D93FE01FEFA1}",
-            "Returns the objects overlapping a capsule at a position",
-            "Pose",
-            "Height",
-            "Radius",
-            "Collision group",
-            "Ignore"
-        );
+            "{1DD49D7A-348A-4CB1-82C0-D93FE01FEFA1}", "ScriptCanvasPhysics_WorldFunctions_OverlapCapsuleWithGroup");
 
         Result ShapecastQuery(float distance,
             const AZ::Transform& pose,
@@ -380,12 +303,10 @@ namespace ScriptCanvasPhysics
             return ShapecastQuery(distance, pose, direction,
                 AZStd::make_shared<Physics::SphereShapeConfiguration>(radius), collisionGroup, ignore);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(SphereCastWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            SphereCastWithGroup,
             k_categoryName,
-            "{7A4D8893-51F5-444F-9C77-64D179F9C9BB}", "SphereCast",
-            "Distance", "Pose", "Direction", "Radius", "Collision group", "Ignore", // In Params
-            "Object Hit", "Position", "Normal", "Distance", "EntityId", "Surface" // Out Params
-        );
+            "{7A4D8893-51F5-444F-9C77-64D179F9C9BB}", "ScriptCanvasPhysics_WorldFunctions_SphereCastWithGroup");
 
         AZ_INLINE Result BoxCastWithGroup(float distance,
             const AZ::Transform& pose,
@@ -397,12 +318,10 @@ namespace ScriptCanvasPhysics
             return ShapecastQuery(distance, pose, direction,
                 AZStd::make_shared<Physics::BoxShapeConfiguration>(dimensions), collisionGroup, ignore);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(BoxCastWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            BoxCastWithGroup,
             k_categoryName,
-            "{E7C2CFE0-3FB9-438B-9A8A-A5D333AB0791}", "BoxCast",
-            "Distance", "Pose", "Direction", "Dimensions", "Collision group", "Ignore", // In Params
-            "Object Hit", "Position", "Normal", "Distance", "EntityId", "Surface" // Out Params
-        );
+            "{E7C2CFE0-3FB9-438B-9A8A-A5D333AB0791}", "ScriptCanvasPhysics_WorldFunctions_BoxCastWithGroup");
 
         AZ_INLINE Result CapsuleCastWithGroup(float distance,
             const AZ::Transform& pose,
@@ -415,12 +334,10 @@ namespace ScriptCanvasPhysics
             return ShapecastQuery(distance, pose, direction,
                 AZStd::make_shared<Physics::CapsuleShapeConfiguration>(height, radius), collisionGroup, ignore);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(CapsuleCastWithGroup,
+        SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(
+            CapsuleCastWithGroup,
             k_categoryName,
-            "{938B047C-6282-4510-8AFE-21D58426061D}", "CapsuleCast",
-            "Distance", "Pose", "Direction", "Height", "Radius", "Collision group", "Ignore", // In Params
-            "Object Hit", "Position", "Normal", "Distance", "EntityId", "Surface" // Out Params
-        );
+            "{938B047C-6282-4510-8AFE-21D58426061D}", "ScriptCanvasPhysics_WorldFunctions_CapsuleCastWithGroup");
 
         ///////////////////////////////////////////////////////////////
         using Registrar = ScriptCanvas::RegistrarGeneric

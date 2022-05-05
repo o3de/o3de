@@ -117,8 +117,12 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/SendScriptEvent.cpp
     Include/ScriptCanvas/Libraries/Core/SetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.cpp
-    Include/ScriptCanvas/Libraries/Entity/Deprecated/Entity.cpp
-    Include/ScriptCanvas/Libraries/Entity/Deprecated/RotateMethod.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Contains.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/DeprecatedNodeLibrary.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Replace.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/RotateMethod.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/StringMethods.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Utilities.cpp
     Include/ScriptCanvas/Libraries/Entity/EntityFunctions.cpp
     Include/ScriptCanvas/Libraries/Logic/Any.cpp
     Include/ScriptCanvas/Libraries/Logic/Break.cpp
@@ -163,10 +167,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.cpp
-    Include/ScriptCanvas/Libraries/String/Deprecated/Contains.cpp
-    Include/ScriptCanvas/Libraries/String/Deprecated/Replace.cpp
-    Include/ScriptCanvas/Libraries/String/Deprecated/StringMethods.cpp
-    Include/ScriptCanvas/Libraries/String/Deprecated/Utilities.cpp
     Include/ScriptCanvas/Libraries/String/String.cpp
     Include/ScriptCanvas/Libraries/String/StringFunctions.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectEqual.cpp
