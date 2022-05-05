@@ -158,6 +158,11 @@ namespace AzToolsFramework
 
     void DPEModelNode::SetValue(const AZ::Dom::Value& domVal, bool notifyView)
     {
+        if (!domVal.IsNode())
+        {
+            AZ_Warning("DPE", false, "Received a non-node value");
+            return;
+        }
         auto domName = domVal.GetNodeName().GetStringView();
 
         // these will only be used if we're notifying the view
