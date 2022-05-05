@@ -111,4 +111,28 @@ namespace UnitTest
         EXPECT_TRUE(actionTriggered);
     }
 
+    TEST_F(ActionManagerFixture, TriggerUnregisteredAction)
+    {
+        auto outcome = m_actionManagerInterface->TriggerAction("o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, TriggerAction)
+    {
+        bool actionTriggered = false;
+
+        m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
+        m_actionManagerInterface->RegisterAction(
+            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
+            [&actionTriggered]()
+            {
+                actionTriggered = true;
+            }
+        );
+
+        m_actionManagerInterface->TriggerAction("o3de.action.test");
+
+        EXPECT_TRUE(actionTriggered);
+    }
+
 } // namespace UnitTest
