@@ -18,50 +18,53 @@
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 
-namespace AZ::RPI
+namespace AZ
 {
-    namespace PassUtils
+    namespace RPI
     {
-        //! Function for applying shader data mappings from a PassDescriptor to a shader resource group
-        bool BindDataMappingsToSrg(const PassDescriptor& descriptor, ShaderResourceGroup* shaderResourceGroup);
-
-        //! Retrieves PassData from a PassDescriptor
-        const PassData* GetPassData(const PassDescriptor& descriptor);
-
-        //! Finds all PipelineGlobalConnections in the descriptor and adds them to the provided list
-        void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList);
-
-        //! Retrieves PassData from a PassDescriptor
-        AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor);
-
-        //! Templated function for retrieving specific data types from a PassDescriptor
-        template<typename PassDataType>
-        const PassDataType* GetPassData(const PassDescriptor& descriptor)
+        namespace PassUtils
         {
-            const PassDataType* passData = nullptr;
+            //! Function for applying shader data mappings from a PassDescriptor to a shader resource group
+            bool BindDataMappingsToSrg(const PassDescriptor& descriptor, ShaderResourceGroup* shaderResourceGroup);
 
-            // Try custom data from PassRequest
-            if (descriptor.m_passRequest != nullptr)
+            //! Retrieves PassData from a PassDescriptor
+            const PassData* GetPassData(const PassDescriptor& descriptor);
+
+            //! Finds all PipelineGlobalConnections in the descriptor and adds them to the provided list
+            void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList);
+
+            //! Retrieves PassData from a PassDescriptor
+            AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor);
+
+            //! Templated function for retrieving specific data types from a PassDescriptor
+            template<typename PassDataType>
+            const PassDataType* GetPassData(const PassDescriptor& descriptor)
             {
-                passData = azrtti_cast<const PassDataType*>(descriptor.m_passRequest->m_passData.get());
+                const PassDataType* passData = nullptr;
+
+                // Try custom data from PassRequest
+                if (descriptor.m_passRequest != nullptr)
+                {
+                    passData = azrtti_cast<const PassDataType*>(descriptor.m_passRequest->m_passData.get());
+                }
+
+                // Try custom data from PassTemplate
+                if (passData == nullptr && descriptor.m_passTemplate != nullptr)
+                {
+                    passData = azrtti_cast<const PassDataType*>(descriptor.m_passTemplate->m_passData.get());
+                }
+
+                if (passData == nullptr)
+                {
+                    passData = azrtti_cast<const PassDataType*>(descriptor.m_passData.get());
+                }
+
+                return passData;
             }
 
-            // Try custom data from PassTemplate
-            if (passData == nullptr && descriptor.m_passTemplate != nullptr)
-            {
-                passData = azrtti_cast<const PassDataType*>(descriptor.m_passTemplate->m_passData.get());
-            }
-
-            if (passData == nullptr)
-            {
-                passData = azrtti_cast<const PassDataType*>(descriptor.m_passData.get());
-            }
-
-            return passData;
+            void SortPassListAscending(AZStd::vector< Ptr<Pass> >& passList);
+            void SortPassListDescending(AZStd::vector< Ptr<Pass> >& passList);
         }
-
-        void SortPassListAscending(AZStd::vector< Ptr<Pass> >& passList);
-        void SortPassListDescending(AZStd::vector< Ptr<Pass> >& passList);
     }
 }
 

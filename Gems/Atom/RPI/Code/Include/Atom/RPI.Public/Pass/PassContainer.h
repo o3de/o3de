@@ -15,19 +15,6 @@
 
 namespace AZ::RPI
 {
-    // Enum to track the different states of PassContainer (used for validation and debugging)
-    enum class PassContainerState : u32
-    {
-        Unitialized,        // Default state, 
-        RemovingPasses,     // Processing passes queued for Removal. Transitions to Idle
-        BuildingPasses,     // Processing passes queued for Build (and their child passes). Transitions to Idle
-        InitializingPasses, // Processing passes queued for Initialization (and their child passes). Transitions to Idle
-        ValidatingPasses,   // Validating the hierarchy under root pass is in a valid state after Build and Initialization. Transitions to Idle
-        Idle,               // Container is idle and can transition to any other state (except FrameEnd)
-        Rendering,          // Rendering a frame. Transitions to FrameEnd
-        FrameEnd,           // Finishing a frame. Transitions to Idle
-    };
-
     // Helper class used by the PassSystem and RenderPipeline to contain and update passes
     // Passes owned by the container are stored as a tree under the container's root pass
     // The container has queues for pass building, initialization and removal. These queues
@@ -61,11 +48,7 @@ namespace AZ::RPI
         AZStd::vector< Ptr<Pass> > m_removePassList;
         AZStd::vector< Ptr<Pass> > m_initializePassList;
 
-        // State enum used for validation and debugging
-        PassContainerState m_state = PassContainerState::Unitialized;
-
         // Tracks whether any changes to the passes in this container have occurred in the frame
         bool m_passesChangedThisFrame = false;
-
     };
 }

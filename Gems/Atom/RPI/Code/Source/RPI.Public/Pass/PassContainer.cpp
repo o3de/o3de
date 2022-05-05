@@ -30,7 +30,6 @@ namespace AZ::RPI
 
     void PassContainer::RemovePasses()
     {
-        m_state = PassContainerState::RemovingPasses;
         AZ_PROFILE_SCOPE(RPI, "PassContainer::RemovePasses");
 
         if (!m_removePassList.empty())
@@ -44,26 +43,20 @@ namespace AZ::RPI
 
             m_removePassList.clear();
         }
-
-        m_state = PassContainerState::Idle;
     }
 
     void PassContainer::BuildPasses()
     {
-        m_state = PassContainerState::BuildingPasses;
         AZ_PROFILE_SCOPE(RPI, "PassContainer::BuildPasses");
 
         m_passesChangedThisFrame = m_passesChangedThisFrame || !m_buildPassList.empty();
-
-        u32 buildCount = 0;
-        AZStd::vector< Ptr<Pass> > initialBuildList = m_buildPassList;
-        PassUtils::SortPassListAscending(initialBuildList);
 
         // While loop is for the event in which passes being built add more pass to m_buildPassList
         while (!m_buildPassList.empty())
         {
             AZ_Assert(m_removePassList.empty(), "Passes shouldn't be queued removal during build attachment process");
 
+            // Copy the list and clear it, so that further passes can be queue during this phase
             AZStd::vector< Ptr<Pass> > buildListCopy = m_buildPassList;
             m_buildPassList.clear();
 
@@ -81,13 +74,7 @@ namespace AZ::RPI
             for (const Ptr<Pass>& pass : buildListCopy)
             {
                 pass->Build(true);
-                ++buildCount;
             }
-        }
-
-        if (buildCount > 0)
-        {
-            AZ_Assert(!m_initializePassList.empty(), "SHIT! SOMETHING WENT WRONG! WHY DIDN'T WE QUEUE FOR INITIALIZATION??");
         }
 
         if (m_passesChangedThisFrame)
@@ -100,19 +87,17 @@ namespace AZ::RPI
             }
 #endif
         }
-
-        m_state = PassContainerState::Idle;
     }
 
     void PassContainer::InitializePasses()
     {
-        m_state = PassContainerState::InitializingPasses;
         AZ_PROFILE_SCOPE(RPI, "PassContainer::InitializePasses");
 
         m_passesChangedThisFrame = m_passesChangedThisFrame || !m_initializePassList.empty();
 
         while (!m_initializePassList.empty())
         {
+            // Copy the list and clear it, so that further passes can be queue during this phase
             AZStd::vector< Ptr<Pass> > initListCopy = m_initializePassList;
             m_initializePassList.clear();
 
@@ -134,14 +119,10 @@ namespace AZ::RPI
             // Signal all passes that we have finished initialization
             m_rootPass->OnInitializationFinished();
         }
-
-        m_state = PassContainerState::Idle;
     }
 
     void PassContainer::Validate()
     {
-        m_state = PassContainerState::ValidatingPasses;
-
         if (PassValidation::IsEnabled())
         {
             if (!m_passesChangedThisFrame)
@@ -155,8 +136,6 @@ namespace AZ::RPI
             m_rootPass->Validate(validationResults);
             validationResults.PrintValidationIfError();
         }
-
-        m_state = PassContainerState::Idle;
     }
 
     bool PassContainer::ProcessQueuedChanges()

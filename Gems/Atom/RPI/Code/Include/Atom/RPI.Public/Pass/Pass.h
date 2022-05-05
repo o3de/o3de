@@ -658,12 +658,7 @@ namespace AZ
 // This macro will break in pass code (functions that belong to Pass or it's child classes)
 // if the name of the pass being executed is the same as the one specified for targeted debugging
 // in the pass system (see functions with "TargetedPassDebugging" above)
-#define AZ_RPI_BREAK_ON_TARGET_PASS                                                          \
-    if(!GetName().IsEmpty() &&                                                               \
-        GetName() == AZ::RPI::PassSystemInterface::Get()->GetTargetedPassDebuggingName())    \
-    {                                                                                        \
-        AZ::Debug::Trace::Break();                                                           \
-    }
+#define AZ_RPI_BREAK_ON_TARGET_PASS  AZ::RPI::PassSystemInterface::Get()->DebugBreakOnPass(this);
 
 #else
 

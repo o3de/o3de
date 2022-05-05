@@ -23,7 +23,6 @@
 
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -643,5 +642,3 @@ namespace AZ
         }
     }
 }
-
-#pragma optimize("", on)

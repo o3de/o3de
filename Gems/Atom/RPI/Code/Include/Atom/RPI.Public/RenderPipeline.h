@@ -245,7 +245,10 @@ namespace AZ
             // Build pipeline views from the pipeline pass tree. It's usually called when pass tree changed.
             void BuildPipelineViews();
 
+            // Called by Pass System at the start of rendering the frame
             void PassSystemFrameBegin(Pass::FramePrepareParams params);
+
+            // Called by Pass System at the end of rendering the frame
             void PassSystemFrameEnd();
 
             //////////////////////////////////////////////////
@@ -274,6 +277,7 @@ namespace AZ
             // The Scene this pipeline was added to.
             Scene* m_scene = nullptr;
 
+            // Holds the passes belonging to the pipeline
             PassContainer m_passes;
 
             // Attachment bindings/connections that can be referenced from any pass in the pipeline in a global manner

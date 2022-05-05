@@ -129,10 +129,11 @@ namespace AZ
             // Resets the frame statistic counters
             void ResetFrameStatistics();
 
+            // List of render pipelines to be rendered by the pass system
+            AZStd::vector< RenderPipeline* > m_renderPipelines;
+
             // Collection of passes that don't belong to any rendering pipeline
             PassContainer m_passesWithoutPipeline;
-
-            AZStd::vector< RenderPipeline* > m_renderPipelines;
 
             // Library of pass descriptors that can be instantiated through data driven pass requests
             PassLibrary m_passLibrary;

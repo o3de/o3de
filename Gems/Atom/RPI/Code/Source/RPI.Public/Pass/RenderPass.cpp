@@ -26,7 +26,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -566,5 +565,3 @@ namespace AZ
         }
     }   // namespace RPI
 }   // namespace AZ
-
-#pragma optimize("", on)

@@ -36,7 +36,6 @@
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -563,8 +562,6 @@ namespace AZ
                     AZ_RPI_PASS_WARNING(false,
                         "Pass::ProcessConnection - Pass [%s] is no longer part of the heirarchy and about to be removed",
                         m_path.GetCStr());
-
-                    __debugbreak();
                 }
                 else if (foundPass)
                 {
@@ -572,8 +569,6 @@ namespace AZ
                         m_path.GetCStr(),
                         connectedSlotName.GetCStr(),
                         connectedPassName.GetCStr());
-
-                    __debugbreak();
                 }
                 else
                 {
@@ -581,8 +576,6 @@ namespace AZ
                         false, "Pass::ProcessConnection - Pass [%s] could not find neighbor or child pass named [%s].",
                         m_path.GetCStr(),
                         connectedPassName.GetCStr());
-
-                    __debugbreak();
                 }
             }
         }
@@ -1307,11 +1300,6 @@ namespace AZ
 
             AZ_Assert(m_state == PassState::Idle, "Pass::FrameBegin - Pass [%s] is attempting to render, but is not in the Idle state.", m_path.GetCStr());
 
-            if (m_state != PassState::Idle)
-            {
-                __debugbreak();
-            }
-
             m_state = PassState::Rendering;
 
             UpdateConnectedInputBindings();
@@ -1752,5 +1740,3 @@ namespace AZ
 
     }   // namespace RPI
 }   // namespace AZ
-
-#pragma optimize("", on)

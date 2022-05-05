@@ -14,116 +14,118 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
-namespace AZ::RPI
+namespace AZ
 {
-    namespace PassUtils
+    namespace RPI
     {
-        const PassData* GetPassData(const PassDescriptor& descriptor)
+        namespace PassUtils
         {
-            const PassData* passData = nullptr;
+            const PassData* GetPassData(const PassDescriptor& descriptor)
+            {
+                const PassData* passData = nullptr;
 
-            // Try custom data from PassRequest
-            if (descriptor.m_passRequest != nullptr)
-            {
-                passData = descriptor.m_passRequest->m_passData.get();
-            }
-            // Try custom data from PassTemplate
-            if (passData == nullptr && descriptor.m_passTemplate != nullptr)
-            {
-                passData = descriptor.m_passTemplate->m_passData.get();
-            }
-            if (passData == nullptr)
-            {
-                passData = descriptor.m_passData.get();
-            }
-            return passData;
-        }
-
-        AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor)
-        {
-            AZStd::shared_ptr<PassData> passData = nullptr;
-
-            if (descriptor.m_passRequest != nullptr)
-            {
-                passData = descriptor.m_passRequest->m_passData;
-            }
-            if (passData == nullptr && descriptor.m_passTemplate != nullptr)
-            {
-                passData = descriptor.m_passTemplate->m_passData;
-            }
-            if (passData == nullptr)
-            {
-                passData = descriptor.m_passData;
-            }
-            return passData;
-        }
-
-        void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList)
-        {
-            for (const PipelineGlobalConnection& connection : passData->m_pipelineGlobalConnections)
-            {
-                outList.push_back(connection);
-            }
-        }
-
-        bool BindDataMappingsToSrg(const PassDescriptor& descriptor, ShaderResourceGroup* shaderResourceGroup)
-        {
-            bool success = true;
-
-            // Apply mappings from PassTemplate
-            const RenderPassData* passData = nullptr;
-            if (descriptor.m_passTemplate != nullptr)
-            {
-                passData = azrtti_cast<const RenderPassData*>(descriptor.m_passTemplate->m_passData.get());
-                if (passData)
+                // Try custom data from PassRequest
+                if (descriptor.m_passRequest != nullptr)
                 {
-                    success = shaderResourceGroup->ApplyDataMappings(passData->m_mappings);
+                    passData = descriptor.m_passRequest->m_passData.get();
+                }
+                // Try custom data from PassTemplate
+                if (passData == nullptr && descriptor.m_passTemplate != nullptr)
+                {
+                    passData = descriptor.m_passTemplate->m_passData.get();
+                }
+                if (passData == nullptr)
+                {
+                    passData = descriptor.m_passData.get();
+                }
+                return passData;
+            }
+
+            AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor)
+            {
+                AZStd::shared_ptr<PassData> passData = nullptr;
+
+                if (descriptor.m_passRequest != nullptr)
+                {
+                    passData = descriptor.m_passRequest->m_passData;
+                }
+                if (passData == nullptr && descriptor.m_passTemplate != nullptr)
+                {
+                    passData = descriptor.m_passTemplate->m_passData;
+                }
+                if (passData == nullptr)
+                {
+                    passData = descriptor.m_passData;
+                }
+                return passData;
+            }
+
+            void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList)
+            {
+                for (const PipelineGlobalConnection& connection : passData->m_pipelineGlobalConnections)
+                {
+                    outList.push_back(connection);
                 }
             }
 
-            // Apply mappings from PassRequest
-            passData = nullptr;
-            if (descriptor.m_passRequest != nullptr)
+            bool BindDataMappingsToSrg(const PassDescriptor& descriptor, ShaderResourceGroup* shaderResourceGroup)
             {
-                passData = azrtti_cast<const RenderPassData*>(descriptor.m_passRequest->m_passData.get());
+                bool success = true;
+
+                // Apply mappings from PassTemplate
+                const RenderPassData* passData = nullptr;
+                if (descriptor.m_passTemplate != nullptr)
+                {
+                    passData = azrtti_cast<const RenderPassData*>(descriptor.m_passTemplate->m_passData.get());
+                    if (passData)
+                    {
+                        success = shaderResourceGroup->ApplyDataMappings(passData->m_mappings);
+                    }
+                }
+
+                // Apply mappings from PassRequest
+                passData = nullptr;
+                if (descriptor.m_passRequest != nullptr)
+                {
+                    passData = azrtti_cast<const RenderPassData*>(descriptor.m_passRequest->m_passData.get());
+                    if (passData)
+                    {
+                        success = success && shaderResourceGroup->ApplyDataMappings(passData->m_mappings);
+                    }
+                }
+
+                // Apply mappings from custom data in the descriptor
+                passData = azrtti_cast<const RenderPassData*>(descriptor.m_passData.get());
                 if (passData)
                 {
                     success = success && shaderResourceGroup->ApplyDataMappings(passData->m_mappings);
                 }
+
+                return success;
             }
 
-            // Apply mappings from custom data in the descriptor
-            passData = azrtti_cast<const RenderPassData*>(descriptor.m_passData.get());
-            if (passData)
+            // Sort so passes with less depth (closer to the root) are first. Used when changes 
+            // in the parent passes can affect the child passes, like with attachment building.
+            void SortPassListAscending(AZStd::vector< Ptr<Pass> >& passList)
             {
-                success = success && shaderResourceGroup->ApplyDataMappings(passData->m_mappings);
+                AZStd::sort(passList.begin(), passList.end(),
+                    [](const Ptr<Pass>& lhs, const Ptr<Pass>& rhs)
+                    {
+                        return (lhs->GetTreeDepth() < rhs->GetTreeDepth());
+                    });
             }
 
-            return success;
+            // Sort so passes with greater depth (further from the root) get called first. Used in the case of
+            // delete, as we want to avoid deleting the parent first since this invalidates the child pointer.
+            void SortPassListDescending(AZStd::vector< Ptr<Pass> >& passList)
+            {
+                AZStd::sort(passList.begin(), passList.end(),
+                    [](const Ptr<Pass>& lhs, const Ptr<Pass>& rhs)
+                    {
+                        return (lhs->GetTreeDepth() > rhs->GetTreeDepth());
+                    }
+                );
+            }
         }
-
-        // Sort so passes with less depth (closer to the root) are first. Used when changes 
-        // in the parent passes can affect the child passes, like with attachment building.
-        void SortPassListAscending(AZStd::vector< Ptr<Pass> >& passList)
-        {
-            AZStd::sort(passList.begin(), passList.end(),
-                [](const Ptr<Pass>& lhs, const Ptr<Pass>& rhs)
-                {
-                    return (lhs->GetTreeDepth() < rhs->GetTreeDepth());
-                });
-        }
-
-        // Sort so passes with greater depth (further from the root) get called first. Used in the case of
-        // delete, as we want to avoid deleting the parent first since this invalidates the child pointer.
-        void SortPassListDescending(AZStd::vector< Ptr<Pass> >& passList)
-        {
-            AZStd::sort(passList.begin(), passList.end(),
-                [](const Ptr<Pass>& lhs, const Ptr<Pass>& rhs)
-                {
-                    return (lhs->GetTreeDepth() > rhs->GetTreeDepth());
-                }
-            );
-        }
-
     }
 }

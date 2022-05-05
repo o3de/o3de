@@ -26,7 +26,6 @@
 
 #include <AzFramework/Entity/EntityContext.h>
 
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -1031,5 +1030,3 @@ namespace AZ
         }
     }
 }
-
-#pragma optimize("", on)

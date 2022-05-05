@@ -41,7 +41,6 @@
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 #include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -204,18 +203,22 @@ namespace AZ
             // Track whether pass hierarchy has changed or not this frame
             bool change = false;
 
-            m_passesWithoutPipeline.EraseFromLists([](const RHI::Ptr<Pass>& currentPass)
-                {
-                    return (currentPass->m_pipeline != nullptr);
-                });
-
-            change = m_passesWithoutPipeline.ProcessQueuedChanges() || change;
-
+            // Process render pipelines
             for (RenderPipeline*& pipeline : m_renderPipelines)
             {
                 change = pipeline->m_passes.ProcessQueuedChanges() || change;
             }
 
+            // Erase any passes with pipelines from the passes without pipeline container
+            m_passesWithoutPipeline.EraseFromLists([](const RHI::Ptr<Pass>& currentPass)
+                {
+                    return (currentPass->m_pipeline != nullptr);
+                });
+
+            // Process passes that don't have a pipeline
+            change = m_passesWithoutPipeline.ProcessQueuedChanges() || change;
+
+            // If any changes to the hierarchy were made this frame
             if (change)
             {
 #if AZ_RPI_ENABLE_PASS_DEBUGGING
@@ -235,12 +238,11 @@ namespace AZ
             m_state = PassSystemState::Rendering;
             Pass::FramePrepareParams params{ &frameGraphBuilder };
 
-            m_passesWithoutPipeline.m_rootPass->FrameBegin(params);
-
             for (RenderPipeline*& pipeline : m_renderPipelines)
             {
                 pipeline->PassSystemFrameBegin(params);
             }
+            m_passesWithoutPipeline.m_rootPass->FrameBegin(params);
         }
 
         void PassSystem::FrameEnd()
@@ -249,12 +251,11 @@ namespace AZ
 
             m_state = PassSystemState::FrameEnd;
 
-            m_passesWithoutPipeline.m_rootPass->FrameEnd();
-
             for (RenderPipeline*& pipeline : m_renderPipelines)
             {
                 pipeline->PassSystemFrameEnd();
             }
+            m_passesWithoutPipeline.m_rootPass->FrameEnd();
 
             // remove any pipelines that are marked as ExecuteOnce
             for (RenderPipeline*& pipeline : m_renderPipelines)
@@ -479,5 +480,3 @@ namespace AZ
 
     }   // namespace RPI
 }   // namespace AZ
-
-#pragma optimize("", on)

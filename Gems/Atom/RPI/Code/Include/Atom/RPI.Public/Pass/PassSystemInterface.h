@@ -91,7 +91,7 @@ namespace AZ
             //! Removes a render pipeline from the pass system
             virtual void RemoveRenderPipeline(RenderPipeline* renderPipeline) = 0;
 
-            //! Function for adding passes that do not pertain to any render pipeline
+            //! Used to add passes that do not belong to any render pipeline
             virtual void AddNonePipelinePass(const Ptr<Pass>& pass) = 0;
 
             //! Processes pass tree changes that were queued by QueueFor*() functions. This is called
@@ -139,10 +139,10 @@ namespace AZ
             // Get frame statistics from the Pass System
             virtual PassSystemFrameStatistics GetFrameStatistics() = 0;
 
-            // Function for debug breaking into a pass given provided the criteria for the break are met
-            // By default the criteria is that the pass's name matches the TargetedPassDebuggingName (see above)
-            // Users can add customize the logic in this function for their own debug purposes, but these customizations
-            // should never be submitted.
+            // Function for debug breaking into a pass provided the criteria for the break are met
+            // The default criteria is that the pass's name matches the TargetedPassDebuggingName (see above)
+            // Users can customize the logic in this function to suit their own debugging needs
+            // BUT these customizations should never be submitted and remain local changes only
             virtual void DebugBreakOnPass(const Pass* pass) const = 0;
 
             // --- Pass Factory related functionality ---
