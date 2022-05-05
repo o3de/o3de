@@ -20,48 +20,20 @@
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/AtomMeshBus.h>
 #include <AzCore/Math/PackedVector3.h>
 
 namespace WhiteBox
 {
-    // The EntityId available at the time of AtomRenderMesh instantiation is different from the EntityId passed to it
-    // with calls to BuildMesh so RAII to connect and disconnect to and from the AtomMesh bus will not work, instead
-    // this delegate class will be used
-    class AtomRenderMesh::AtomBusDelegate
-        : private AZ::Render::AtomMeshRequestBus::Handler
-    {
-    public:
-        AtomBusDelegate(AZ::EntityId entityId, AZ::Render::MeshFeatureProcessorInterface::MeshHandle* meshHandle);
-        ~AtomBusDelegate();
-
-    private:
-        // AtomMeshRequestBus::Handler overrides ...
-        const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
-
-        AZ::EntityId m_entityId;
-        const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* m_meshHandle = nullptr;
-    };
-
-    AtomRenderMesh::AtomBusDelegate::AtomBusDelegate(AZ::EntityId entityId, AZ::Render::MeshFeatureProcessorInterface::MeshHandle* meshHandle)
+    AtomRenderMesh::AtomRenderMesh(AZ::EntityId entityId)
         : m_entityId(entityId)
-        , m_meshHandle(meshHandle)
     {
         AZ::Render::AtomMeshRequestBus::Handler::BusConnect(m_entityId);
     }
 
-    AtomRenderMesh::AtomBusDelegate ::~AtomBusDelegate()
+    AtomRenderMesh::~AtomRenderMesh()
     {
         AZ::Render::AtomMeshRequestBus::Handler::BusDisconnect();
     }
-
-    const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* AtomRenderMesh::AtomBusDelegate::GetMeshHandle() const
-    {
-        return m_meshHandle;
-    }
-
-    AtomRenderMesh::AtomRenderMesh() = default;
-    AtomRenderMesh::~AtomRenderMesh() = default;
 
     bool AtomRenderMesh::AreAttributesValid() const
     {
@@ -201,11 +173,11 @@ namespace WhiteBox
         modelCreator.End(m_modelAsset);
     }
 
-    bool AtomRenderMesh::CreateModel(AZ::EntityId entityId)
+    bool AtomRenderMesh::CreateModel()
     {
         m_model = AZ::RPI::Model::FindOrCreate(m_modelAsset);
         m_meshFeatureProcessor =
-            AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(entityId);
+            AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(m_entityId);
 
         if (!m_meshFeatureProcessor)
         {
@@ -217,11 +189,8 @@ namespace WhiteBox
 
         m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
         m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset });
+        AZ::Render::AtomMeshNotificationBus::Event(m_entityId, &AZ::Render::AtomMeshNotificationBus::Events::OnAcquireMesh, &m_meshHandle);
 
-        // We don't need to broadcast AZ::Render::AtomMeshNotificationBus::Events::OnAcquireMesh as our delegate reconnects each time
-        // to the bus, however if in the future this delegate is made obsolete then a call to this bus will be required
-        m_atomBusDelegate = AZStd::make_unique<AtomBusDelegate>(entityId, &m_meshHandle);
-        
         return true;
     }
 
@@ -230,7 +199,7 @@ namespace WhiteBox
         return meshData.VertexCount() != m_vertexCount;
     }
 
-    bool AtomRenderMesh::CreateMesh(const WhiteBoxMeshAtomData& meshData, AZ::EntityId entityId)
+    bool AtomRenderMesh::CreateMesh(const WhiteBoxMeshAtomData& meshData)
     {
         if (!CreateLodAsset(meshData))
         {
@@ -240,7 +209,7 @@ namespace WhiteBox
 
         CreateModelAsset();
 
-        if (!CreateModel(entityId))
+        if (!CreateModel())
         {
             // TODO: LYN-808
             return false;
@@ -261,15 +230,14 @@ namespace WhiteBox
         return true; // meshData.VertexCount() != m_vertexCount;
     }
 
-    void AtomRenderMesh::BuildMesh(
-        const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal, AZ::EntityId entityId)
+    void AtomRenderMesh::BuildMesh(const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal)
     {
         const WhiteBoxFaces culledFaceList = BuildCulledWhiteBoxFaces(renderData.m_faces);
         const WhiteBoxMeshAtomData meshData(culledFaceList);
 
         if (DoesMeshRequireFullRebuild(meshData))
         {
-            if (!CreateMesh(meshData, entityId))
+            if (!CreateMesh(meshData))
             {
                 // TODO: LYN-808
                 return;
@@ -335,5 +303,10 @@ namespace WhiteBox
         // TODO: LYN-788
         // hide: m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
         // show: m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_modelAsset);
+    }
+
+    const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* AtomRenderMesh::GetMeshHandle() const
+    {
+        return &m_meshHandle;
     }
 } // namespace WhiteBox

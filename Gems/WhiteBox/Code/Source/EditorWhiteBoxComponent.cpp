@@ -433,12 +433,12 @@ namespace WhiteBox
                 if (IsWhiteBoxNullRenderMesh(m_renderMesh))
                 {
                     // create a concrete implementation of the render mesh
-                    WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface);
+                    WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface, GetEntityId());
                 }
 
                 // generate the mesh
                 // TODO: LYN-786
-                (*m_renderMesh)->BuildMesh(m_renderData, m_worldFromLocal, GetEntityId());
+                (*m_renderMesh)->BuildMesh(m_renderData, m_worldFromLocal);
             }
         }
 
