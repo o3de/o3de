@@ -58,12 +58,10 @@ namespace ${SanitizedCppName}
     void ${SanitizedCppName}EditorSystemComponent::Activate()
     {
         ${SanitizedCppName}RequestBus::Handler::BusConnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void ${SanitizedCppName}EditorSystemComponent::Deactivate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ${SanitizedCppName}RequestBus::Handler::BusDisconnect();
     }
 
