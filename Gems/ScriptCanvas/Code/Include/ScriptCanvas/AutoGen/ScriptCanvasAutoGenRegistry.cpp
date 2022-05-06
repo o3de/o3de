@@ -36,6 +36,18 @@ namespace ScriptCanvas
         // ...
     }
 
+    void AutoGenRegistry::ReflectFunction(AZ::ReflectContext* context, const char* functionName)
+    {
+        if (auto registry = GetInstance())
+        {
+            auto functionIter = registry->m_functions.find(functionName);
+            if (functionIter != registry->m_functions.end())
+            {
+                functionIter->second->Reflect(context);
+            }
+        }
+    }
+
     void AutoGenRegistry::ReflectFunctions(AZ::ReflectContext* context)
     {
         if (auto registry = GetInstance())

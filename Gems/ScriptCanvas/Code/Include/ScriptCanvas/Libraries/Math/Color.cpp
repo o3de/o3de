@@ -32,10 +32,10 @@ namespace ScriptCanvas
         ColorType FromValues(NumberType r, NumberType g, NumberType b, NumberType a)
         {
             return ColorType(
-                aznumeric_cast<float>(r / 255.0),
-                aznumeric_cast<float>(g / 255.0),
-                aznumeric_cast<float>(b / 255.0),
-                aznumeric_cast<float>(a / 255.0));
+                aznumeric_cast<float>(r),
+                aznumeric_cast<float>(g),
+                aznumeric_cast<float>(b),
+                aznumeric_cast<float>(a));
         }
 
         ColorType FromVector3(Vector3Type source)
