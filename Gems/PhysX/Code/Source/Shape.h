@@ -47,6 +47,8 @@ namespace PhysX
         void SetMaterial(const AZStd::shared_ptr<Physics::Material>& material) override;
         AZStd::shared_ptr<Physics::Material> GetMaterial() const override;
 
+        void SetMaterialSelection(const Physics::MaterialSelection& materialSelection);
+
         void SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials);
         const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& GetMaterials();
 

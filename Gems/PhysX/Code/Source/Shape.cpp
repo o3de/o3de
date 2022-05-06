@@ -129,6 +129,18 @@ namespace PhysX
         return nullptr;
     }
 
+    void Shape::SetMaterialSelection(const Physics::MaterialSelection& materialSelection)
+    {
+        if (m_pxShape)
+        {
+            AZStd::vector<physx::PxMaterial*> materials;
+            MaterialManagerRequestsBus::Broadcast(&MaterialManagerRequestsBus::Events::GetPxMaterials, materialSelection, materials);
+            m_pxShape->setMaterials(materials.begin(), aznumeric_cast<physx::PxU16>(materials.size()));
+
+            ExtractMaterialsFromPxShape();
+        }
+    }
+
     void Shape::SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials)
     {
         m_materials = materials;

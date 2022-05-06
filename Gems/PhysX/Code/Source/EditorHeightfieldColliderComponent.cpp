@@ -11,10 +11,12 @@
 #include <Editor/ColliderComponentMode.h>
 #include <EditorHeightfieldColliderComponent.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <Source/HeightfieldColliderComponent.h>
-#include <Source/Utils.h>
 #include <System/PhysXSystem.h>
+#include <Source/Shape.h>
+#include <Source/Utils.h>
 
 namespace PhysX
 {
@@ -224,6 +226,22 @@ namespace PhysX
             return;
         }
 
+        // If the change is only about heightfield materials mapping, we can simply update material selection in the heightfield shape
+        if (changeMask == HeightfieldChangeMask::SurfaceMapping)
+        {
+            Physics::MaterialSelection updatedMaterialSelection = m_colliderConfig.m_materialSelection;
+            Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), updatedMaterialSelection);
+
+            // Make sure the number of slots is the same.
+            // Otherwise the heightfield needs to be rebuilt to support updated indices.
+            if (updatedMaterialSelection.GetMaterialIdsAssignedToSlots().size()
+                == m_colliderConfig.m_materialSelection.GetMaterialIdsAssignedToSlots().size())
+            {
+                UpdateHeightfieldMaterialSelection(updatedMaterialSelection);
+                return;
+            }
+        }
+
         AZ::Aabb heightfieldAabb = GetColliderShapeAabb();
         AZ::Aabb requestRegion = dirtyRegion;
 
@@ -411,6 +429,30 @@ namespace PhysX
             }
         }
         return AZ::Aabb::CreateNull();
+    }
+
+    void EditorHeightfieldColliderComponent::UpdateHeightfieldMaterialSelection(const Physics::MaterialSelection& updatedMaterialSelection)
+    {
+        AzPhysics::SimulatedBody* simulatedBody = m_sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle);
+        if (!simulatedBody)
+        {
+            return;
+        }
+
+        AzPhysics::StaticRigidBody* rigidBody = azdynamic_cast<AzPhysics::StaticRigidBody*>(simulatedBody);
+
+        if (rigidBody->GetShapeCount() != 1)
+        {
+            AZ_Error("UpdateHeightfieldMaterialSelection",
+                rigidBody->GetShapeCount() == 1, "Heightfield collider should have only 1 shape. Count: %d", rigidBody->GetShapeCount());
+            return;
+        }
+
+        AZStd::shared_ptr<Physics::Shape> shape = rigidBody->GetShape(0);
+        PhysX::Shape* physxShape = azdynamic_cast<PhysX::Shape*>(shape.get());
+        physxShape->SetMaterialSelection(updatedMaterialSelection);
+
+        m_colliderConfig.m_materialSelection = updatedMaterialSelection;
     }
 
 } // namespace PhysX
