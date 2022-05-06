@@ -52,6 +52,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Type = AttributeDefinition<AZStd::string_view>("Type");
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
+        static constexpr auto ValueType = AttributeDefinition<const AZ::TypeId*>("ValueType");
     };
 
     template<typename T = Dom::Value>

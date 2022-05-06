@@ -79,6 +79,8 @@ namespace AzToolsFramework
         friend class ReflectedPropertyEditor;
         friend PropertyRowWidget;
         friend class Components::PropertyManagerComponent;
+        template<typename RpePropertyHandler, typename WrappedType>
+        friend class RpePropertyHandlerWrapper;
 
     public:
         PropertyHandlerBase();
