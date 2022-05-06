@@ -213,6 +213,7 @@ private:
     void OnStartPlayInEditor();
     void OnStopPlayInEditor();
     void OnStartPlayInEditorBegin();
+    void OnEntityStreamLoadSuccess();
 
     // IUndoManagerListener
     void BeginUndoTransaction() override;

@@ -44,6 +44,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
@@ -110,6 +111,10 @@ void StartFixedCursorMode(QObject* viewport);
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT 8.0f
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -142,6 +147,11 @@ namespace AZ::ViewportHelpers
         void OnStartPlayInEditorBegin() override
         {
             m_editorViewportWidget.OnStartPlayInEditorBegin();
+        }
+
+        void OnEntityStreamLoadSuccess() override
+        {
+            m_editorViewportWidget.OnEntityStreamLoadSuccess();
         }
 
     private:
@@ -1923,11 +1933,22 @@ void EditorViewportWidget::SetDefaultCamera()
         atomViewportRequests->PushView(contextName, m_defaultView);
     }
 
-    const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
-    // Set the default Editor Camera position and orientation
-    m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
-    m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
-        SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
+    AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<AzToolsFramework::ViewBookmarkLoaderInterface>::Get();
+    if (const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = bookmarkLoader->LoadLastKnownLocation();
+        lastKnownLocationBookmark.has_value())
+    {
+        m_defaultViewTM.SetTranslation(Vec3(lastKnownLocationBookmark->m_position));
+        m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(SandboxEditor::CameraRotation(
+            AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetX()), AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetY())))));
+    }
+    else
+    {
+        const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
+        // Set the default Editor Camera position and orientation
+        m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
+        m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
+            SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
+    }
 
     SetViewTM(m_defaultViewTM);
 
@@ -2116,6 +2137,11 @@ bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& camera
 void EditorViewportWidget::OnStartPlayInEditorBegin()
 {
     m_playInEditorState = PlayInEditorState::Starting;
+}
+
+void EditorViewportWidget::OnEntityStreamLoadSuccess()
+{
+    SetDefaultCamera();
 }
 
 void EditorViewportWidget::OnStartPlayInEditor()
@@ -2577,5 +2603,8 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 
     return AZStd::nullopt;
 }
+
+#pragma optimize("", on)
+#pragma inline_depth()
 
 #include <moc_EditorViewportWidget.cpp>

@@ -7,7 +7,11 @@
  */
 
 #pragma once
+
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzFramework/Entity/EntityOwnershipServiceBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <Viewport/LocalViewBookmarkComponent.h>
 #include <Viewport/ViewBookmarkLoaderInterface.h>
 
@@ -15,7 +19,10 @@ namespace AzToolsFramework
 {
     //! @class LocalViewBookmarkLoader.
     //! @brief class used to load/store local ViewBookmarks from project/user/Registry/ViewBookmarks.
-    class LocalViewBookmarkLoader final : public ViewBookmarkLoaderInterface
+    class LocalViewBookmarkLoader final
+        : public ViewBookmarkLoaderInterface
+        , private Prefab::PrefabTemplateNotificationBus::Handler
+        , private EditorEntityContextNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator, 0);
@@ -39,6 +46,12 @@ namespace AzToolsFramework
         AZStd::optional<ViewBookmark> LoadLastKnownLocation() override;
 
     private:
+        // PrefabTemplateNotificationBus overrides ...
+        void OnPrefabTemplateSaved() override;
+
+        // EditorEntityContextNotificationBus overrides ...
+        void OnEntityStreamLoadSuccess() override;
+
         bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);
 
         void SetupLocalViewBookmarkComponent();
