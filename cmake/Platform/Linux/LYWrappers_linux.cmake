@@ -62,16 +62,18 @@ endfunction()
 #! ly_apply_debug_strip_options: Apply debug stripping options to the target output for non-debug configurations.
 #
 #\arg:target Name of the target to perform a post-build stripping of any debug symbol)
-#\arg:target_type The target's output type. STATIC, SHARED, EXECUTABLE, and STATIC are supported types.
-function(ly_apply_debug_strip_options target target_type)
+function(ly_apply_debug_strip_options target)
 
     if (NOT GNU_STRIP_TOOL OR NOT GNU_OBJCOPY)
         return()
     endif()
 
-    if (NOT ${target_type} STREQUAL "STATIC" AND 
-        NOT ${target_type} STREQUAL "SHARED" AND 
-        NOT ${target_type} STREQUAL "MODULE" AND 
+    # Check the target type
+    get_target_property(target_type ${target} TYPE)
+
+    if (NOT ${target_type} STREQUAL "STATIC_LIBRARY" AND 
+        NOT ${target_type} STREQUAL "MODULE_LIBRARY" AND 
+        NOT ${target_type} STREQUAL "SHARED_LIBRARY" AND 
         NOT ${target_type} STREQUAL "EXECUTABLE" AND 
         NOT ${target_type} STREQUAL "APPLICATION")
         # Only executables, applications, modules, static libraries, and share libraries can have their debug symbols stripped
@@ -92,7 +94,7 @@ function(ly_apply_debug_strip_options target target_type)
     else()
 
         # Debug symbols cannot be detached and the debug link reattached to static libraries
-        if (NOT ${target_type} STREQUAL "STATIC")
+        if (NOT ${target_type} STREQUAL "STATIC_LIBRARY")
 
             add_custom_command(TARGET ${target} POST_BUILD
                 COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/DetachDebugSymbols.cmake"
