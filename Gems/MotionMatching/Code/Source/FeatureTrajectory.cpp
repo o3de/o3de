@@ -33,47 +33,7 @@ namespace EMotionFX::MotionMatching
         return result;
     }
 
-    size_t FeatureTrajectory::CalcNumSamplesPerFrame() const
-    {
-        return m_numPastSamples + 1 + m_numFutureSamples;
-    }
-
-    void FeatureTrajectory::SetFacingAxis(const Axis axis)
-    {
-        m_facingAxis = axis;
-        UpdateFacingAxis();
-    }
-
-    void FeatureTrajectory::UpdateFacingAxis()
-    {
-        switch (m_facingAxis)
-        {
-        case Axis::X:
-        {
-            m_facingAxisDir = AZ::Vector3::CreateAxisX();
-            break;
-        }
-        case Axis::Y:
-        {
-            m_facingAxisDir = AZ::Vector3::CreateAxisY();
-            break;
-        }
-        case Axis::X_NEGATIVE:
-        {
-            m_facingAxisDir = -AZ::Vector3::CreateAxisX();
-            break;
-        }
-        case Axis::Y_NEGATIVE:
-        {
-            m_facingAxisDir = -AZ::Vector3::CreateAxisY();
-            break;
-        }
-        default:
-        {
-            AZ_Assert(false, "Facing direction axis unknown.");
-        }
-        }
-    }
+    ///////////////////////////////////////////////////////////////////////////
 
     AZ::Vector2 FeatureTrajectory::CalculateFacingDirection(const Pose& pose, const Transform& invRootTransform) const
     {
@@ -122,7 +82,7 @@ namespace EMotionFX::MotionMatching
         for (size_t i = 0; i < m_numPastSamples; ++i)
         {
             // Increase the sample index by one as the zeroth past/future sample actually needs one time delta time difference to the current frame.
-            const float sampleTimeOffset = (i+1) * pastFrameTimeDelta * (-1.0f);
+            const float sampleTimeOffset = (i + 1) * pastFrameTimeDelta * (-1.0f);
             currentFrame.SamplePose(&nextSamplePose->GetPose(), sampleTimeOffset);
 
             const Sample sample = GetSampleFromPose(samplePose->GetPose(), invRootTransform);
@@ -138,7 +98,7 @@ namespace EMotionFX::MotionMatching
         for (size_t i = 0; i < m_numFutureSamples; ++i)
         {
             // Sample the value at the future sample point.
-            const float sampleTimeOffset = (i+1) * futureFrameTimeDelta;
+            const float sampleTimeOffset = (i + 1) * futureFrameTimeDelta;
             currentFrame.SamplePose(&nextSamplePose->GetPose(), sampleTimeOffset);
 
             const Sample sample = GetSampleFromPose(samplePose->GetPose(), invRootTransform);
@@ -150,6 +110,165 @@ namespace EMotionFX::MotionMatching
 
         context.m_posePool.FreePose(samplePose);
         context.m_posePool.FreePose(nextSamplePose);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    void FeatureTrajectory::FillQueryVector(QueryVector& queryVector, const QueryVectorContext& context)
+    {
+        const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+
+        auto FillControlPoints = [this, &queryVector, &invRootTransform](
+            const AZStd::vector<TrajectoryQuery::ControlPoint>& controlPoints,
+            const AZStd::function<size_t(size_t)>& CalcFrameIndex)
+        {
+            const size_t numControlPoints = controlPoints.size();
+            for (size_t i = 0; i < numControlPoints; ++i)
+            {
+                TrajectoryQuery::ControlPoint controlPoint = controlPoints[i];
+                controlPoint.m_position = invRootTransform.TransformPoint(controlPoint.m_position); // Convert so it is relative to where we are and pointing to.
+                controlPoint.m_facingDirection = invRootTransform.TransformVector(controlPoint.m_facingDirection);
+
+                const size_t sampleIndex = CalcFrameIndex(i);
+                const size_t sampleColumnStart = m_featureColumnOffset + sampleIndex * Sample::s_componentsPerSample;
+
+                queryVector.SetVector2(AZ::Vector2(controlPoint.m_position), sampleColumnStart + 0); // m_position
+                queryVector.SetVector2(AZ::Vector2(controlPoint.m_facingDirection), sampleColumnStart + 2); // m_facingDirection
+            }
+        };
+
+        AZ_Assert(context.m_trajectoryQuery.GetFutureControlPoints().size() == m_numFutureSamples,
+            "Number of future control points from the trajectory query does not match the one from the trajectory feature.");
+        AZ_Assert(context.m_trajectoryQuery.GetPastControlPoints().size() == m_numPastSamples,
+            "Number of past control points from the trajectory query does not match the one from the trajectory feature");
+
+        FillControlPoints(context.m_trajectoryQuery.GetPastControlPoints(), AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
+        FillControlPoints(context.m_trajectoryQuery.GetFutureControlPoints(), AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    float FeatureTrajectory::CalculateCost(const FeatureMatrix& featureMatrix,
+        size_t frameIndex,
+        size_t numControlPoints,
+        const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex,
+        const FrameCostContext& context) const
+    {
+        float cost = 0.0f;
+        AZ::Vector2 lastControlPoint, lastSamplePos;
+
+        for (size_t i = 0; i < numControlPoints; ++i)
+        {
+            const Sample sample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
+            const AZ::Vector2& samplePos = sample.m_position;
+
+            const size_t sampleColumnStart = m_featureColumnOffset + splineToFeatureMatrixIndex(i) * Sample::s_componentsPerSample;
+            const AZ::Vector2 controlPointPos = context.m_queryVector.GetVector2(sampleColumnStart + 0);
+            const AZ::Vector2 controlPointFacingDirRelativeSpace = context.m_queryVector.GetVector2(sampleColumnStart + 2);
+
+            if (i != 0)
+            {
+                const AZ::Vector2 controlPointDelta = controlPointPos - lastControlPoint;
+                const AZ::Vector2 sampleDelta = samplePos - lastSamplePos;
+
+                const float posDistance = (samplePos - controlPointPos).GetLength();
+                const float posDeltaDistance = (controlPointDelta - sampleDelta).GetLength();
+
+                // The facing direction from the control point (trajectory query) is in world space while the facing direction from the
+                // sample of this trajectory feature is in relative-to-frame-root-joint space.
+                const float facingDirectionCost = GetNormalizedDirectionDifference(sample.m_facingDirection,
+                    controlPointFacingDirRelativeSpace);
+
+                // As we got two different costs for the position, double the cost of the facing direction to equal out the influence.
+                cost += CalcResidual(posDistance) + CalcResidual(posDeltaDistance) + CalcResidual(facingDirectionCost) * 2.0f;
+            }
+
+            lastControlPoint = controlPointPos;
+            lastSamplePos = samplePos;
+        }
+
+        return cost;
+    }
+
+    float FeatureTrajectory::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
+    {
+        return CalculateCost(context.m_featureMatrix,
+            frameIndex,
+            m_numFutureSamples,
+            AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1),
+            context);
+    }
+
+    float FeatureTrajectory::CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const
+    {
+        return CalculateCost(context.m_featureMatrix,
+            frameIndex,
+            m_numPastSamples,
+            AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1),
+            context);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    size_t FeatureTrajectory::CalcNumSamplesPerFrame() const
+    {
+        return m_numPastSamples + 1 + m_numFutureSamples;
+    }
+
+    size_t FeatureTrajectory::CalcMidFrameIndex() const
+    {
+        return m_numPastSamples;
+    }
+
+    size_t FeatureTrajectory::CalcPastFrameIndex(size_t historyFrameIndex) const
+    {
+        AZ_Assert(historyFrameIndex < m_numPastSamples, "The history frame index is out of range");
+        return m_numPastSamples - historyFrameIndex - 1;
+    }
+
+    size_t FeatureTrajectory::CalcFutureFrameIndex(size_t futureFrameIndex) const
+    {
+        AZ_Assert(futureFrameIndex < m_numFutureSamples, "The future frame index is out of range");
+        return CalcMidFrameIndex() + 1 + futureFrameIndex;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    void FeatureTrajectory::SetFacingAxis(const Axis axis)
+    {
+        m_facingAxis = axis;
+        UpdateFacingAxis();
+    }
+
+    void FeatureTrajectory::UpdateFacingAxis()
+    {
+        switch (m_facingAxis)
+        {
+        case Axis::X:
+        {
+            m_facingAxisDir = AZ::Vector3::CreateAxisX();
+            break;
+        }
+        case Axis::Y:
+        {
+            m_facingAxisDir = AZ::Vector3::CreateAxisY();
+            break;
+        }
+        case Axis::X_NEGATIVE:
+        {
+            m_facingAxisDir = -AZ::Vector3::CreateAxisX();
+            break;
+        }
+        case Axis::Y_NEGATIVE:
+        {
+            m_facingAxisDir = -AZ::Vector3::CreateAxisY();
+            break;
+        }
+        default:
+        {
+            AZ_Assert(false, "Facing direction axis unknown.");
+        }
+        }
     }
 
     void FeatureTrajectory::SetPastTimeRange(float timeInSeconds)
@@ -252,78 +371,6 @@ namespace EMotionFX::MotionMatching
 
         DebugDrawTrajectory(debugDisplay, featureMatrix, frameIndex, transform,
             m_debugColor, m_numFutureSamples, AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1));
-    }
-
-    size_t FeatureTrajectory::CalcMidFrameIndex() const
-    {
-        return m_numPastSamples;
-    }
-
-    size_t FeatureTrajectory::CalcPastFrameIndex(size_t historyFrameIndex) const
-    {
-        AZ_Assert(historyFrameIndex < m_numPastSamples, "The history frame index is out of range");
-        return m_numPastSamples - historyFrameIndex - 1;
-    }
-
-    size_t FeatureTrajectory::CalcFutureFrameIndex(size_t futureFrameIndex) const
-    {
-        AZ_Assert(futureFrameIndex < m_numFutureSamples, "The future frame index is out of range");
-        return CalcMidFrameIndex() + 1 + futureFrameIndex;
-    }
-
-    float FeatureTrajectory::CalculateCost(const FeatureMatrix& featureMatrix,
-        size_t frameIndex,
-        const Transform& invRootTransform,
-        const AZStd::vector<TrajectoryQuery::ControlPoint>& controlPoints,
-        const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const
-    {
-        float cost = 0.0f;
-        AZ::Vector2 lastControlPoint, lastSamplePos;
-
-        for (size_t i = 0; i < controlPoints.size(); ++i)
-        {
-            const TrajectoryQuery::ControlPoint& controlPoint = controlPoints[i];
-            const Sample sample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
-            const AZ::Vector2& samplePos = sample.m_position;
-            const AZ::Vector2 controlPointPos = AZ::Vector2(invRootTransform.TransformPoint(controlPoint.m_position)); // Convert so it is relative to where we are and pointing to.
-
-            if (i != 0)
-            {
-                const AZ::Vector2 controlPointDelta = controlPointPos - lastControlPoint;
-                const AZ::Vector2 sampleDelta = samplePos - lastSamplePos;
-
-                const float posDistance = (samplePos - controlPointPos).GetLength();
-                const float posDeltaDistance = (controlPointDelta - sampleDelta).GetLength();
-
-                // The facing direction from the control point (trajectory query) is in world space while the facing direction from the
-                // sample of this trajectory feature is in relative-to-frame-root-joint space.
-                const AZ::Vector2 controlPointFacingDirRelativeSpace = AZ::Vector2(invRootTransform.TransformVector(controlPoint.m_facingDirection));
-                const float facingDirectionCost = GetNormalizedDirectionDifference(sample.m_facingDirection,
-                    controlPointFacingDirRelativeSpace);
-
-                // As we got two different costs for the position, double the cost of the facing direction to equal out the influence.
-                cost += CalcResidual(posDistance) + CalcResidual(posDeltaDistance) + CalcResidual(facingDirectionCost) * 2.0f;
-            }
-
-            lastControlPoint = controlPointPos;
-            lastSamplePos = samplePos;
-        }
-
-        return cost;
-    }
-
-    float FeatureTrajectory::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
-    {
-        AZ_Assert(context.m_trajectoryQuery->GetFutureControlPoints().size() == m_numFutureSamples, "Number of future control points from the trajectory query does not match the one from the trajectory feature.");
-        const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-        return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetFutureControlPoints(), AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1));
-    }
-
-    float FeatureTrajectory::CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const
-    {
-        AZ_Assert(context.m_trajectoryQuery->GetPastControlPoints().size() == m_numPastSamples, "Number of past control points from the trajectory query does not match the one from the trajectory feature");
-        const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-        return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetPastControlPoints(), AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
     }
 
     AZ::Crc32 FeatureTrajectory::GetCostFactorVisibility() const
