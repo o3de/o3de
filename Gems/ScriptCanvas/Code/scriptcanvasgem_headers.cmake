@@ -92,20 +92,25 @@ set(FILES
     Include/ScriptCanvas/Deprecated/VariableDatum.h
     Include/ScriptCanvas/Deprecated/VariableHelpers.h
     Include/ScriptCanvas/Execution/ErrorBus.h
+    Include/ScriptCanvas/Execution/Executor.h
     Include/ScriptCanvas/Execution/ExecutionBus.h
     Include/ScriptCanvas/Execution/ExecutionContext.h
     Include/ScriptCanvas/Execution/ExecutionObjectCloning.h
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.h
     Include/ScriptCanvas/Execution/ExecutionState.h
     Include/ScriptCanvas/Execution/ExecutionStateDeclarations.h
+    Include/ScriptCanvas/Execution/ExecutionStateHandler.h
+    Include/ScriptCanvas/Execution/ExecutionStateStorage.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedClassAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.h
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedComponentAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedDebugAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedEBusAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedOut.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPerActivation.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPure.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.h

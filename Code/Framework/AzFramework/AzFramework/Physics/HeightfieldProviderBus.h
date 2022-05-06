@@ -125,9 +125,10 @@ namespace Physics
             None = 0,
             Settings = (1 << 0),
             HeightData = (1 << 1),
-            MaterialData = (1 << 2),
-            SurfaceData = (1 << 3),
-            Unspecified = 0xff
+            SurfaceData = (1 << 2),
+            DestroyBegin = (1 << 3),
+            DestroyEnd = (1 << 4),
+            CreateEnd = (1 << 5)
         };
 
         //! Called whenever the heightfield data changes.

@@ -6,6 +6,7 @@
  *
  */
 
+#include <Editor/InspectorBus.h>
 #include <AzCore/Math/MathUtils.h>
 #include "TimeViewPlugin.h"
 #include "TrackDataHeaderWidget.h"
@@ -14,14 +15,15 @@
 #include "TimeInfoWidget.h"
 #include "TimeViewToolBar.h"
 
-#include "../MotionWindow/MotionWindowPlugin.h"
-#include "../MotionWindow/MotionListWindow.h"
-#include "../MotionSetsWindow/MotionSetsWindowPlugin.h"
-#include "../MotionEvents/MotionEventsPlugin.h"
-#include "../MotionEvents/MotionEventPresetsWidget.h"
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventsPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventPresetsWidget.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventWidget.h>
 
-#include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "../../../../EMStudioSDK/Source/MainWindow.h"
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 
 #include <QCheckBox>
 #include <QDir>
@@ -91,6 +93,12 @@ namespace EMStudio
 
     TimeViewPlugin::~TimeViewPlugin()
     {
+        if (m_motionEventWidget)
+        {
+            delete m_motionEventWidget;
+            m_motionEventWidget = nullptr;
+        }
+
         EMotionFX::AnimGraphEditorNotificationBus::Handler::BusDisconnect();
 
         for (MCore::Command::Callback* callback : m_commandCallbacks)
@@ -246,6 +254,35 @@ namespace EMStudio
         m_timeViewToolBar->UpdateInterface();
 
         EMotionFX::AnimGraphEditorNotificationBus::Handler::BusConnect();
+
+        // Create the motion event properties widget.
+        m_motionEventWidget = new MotionEventWidget();
+        m_motionEventWidget->hide();
+        connect(this, &TimeViewPlugin::SelectionChanged, this, [=]
+            {
+                if (!m_motionEventWidget)
+                {
+                    return;
+                }
+
+                UpdateSelection();
+                if (GetNumSelectedEvents() != 1)
+                {
+                    m_motionEventWidget->ReInit();
+                    m_motionEventWidget->hide();
+                    EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Clear); // This also gets called when just switching a motion
+                }
+                else
+                {
+                    EventSelectionItem selectionItem = GetSelectedEvent(0);
+                    m_motionEventWidget->ReInit(selectionItem.m_motion, selectionItem.GetMotionEvent());
+                    EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::UpdateWithHeader,
+                        "Motion Event",
+                        MotionEventWidget::s_headerIcon,
+                        m_motionEventWidget);
+                }
+            });
+
         return true;
     }
 

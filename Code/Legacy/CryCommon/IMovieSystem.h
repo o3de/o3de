@@ -12,6 +12,8 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <Range.h>
@@ -454,8 +456,20 @@ struct IAnimTrack
     // Applies a scale multiplier set in SetMultiplier(), if requested
     //////////////////////////////////////////////////////////////////////////
     virtual void GetValue(float time, float& value, bool applyMultiplier=false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent GetValue that accepts AZ::Vector3  
+     **/
     virtual void GetValue(float time, Vec3& value, bool applyMultiplier = false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent GetValue that accepts AZ::Vector4  
+     **/
     virtual void GetValue(float time, Vec4& value, bool applyMultiplier = false) = 0;
+        /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent GetValue that accepts AZ::Quaternion  
+     **/
     virtual void GetValue(float time, Quat& value) = 0;
     virtual void GetValue(float time, bool& value) = 0;
     virtual void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) = 0;
@@ -466,6 +480,12 @@ struct IAnimTrack
         Vec3 vec3;
         GetValue(time, vec3, applyMultiplier);
         value.Set(vec3.x, vec3.y, vec3.z);
+    }
+    void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false)
+    {
+        Vec4 vec4;
+        GetValue(time, vec4, applyMultiplier);
+        value.Set(vec4.x, vec4.y, vec4.z, vec4.w);
     }
     void GetValue(float time, AZ::Quaternion& value)
     {
@@ -479,22 +499,39 @@ struct IAnimTrack
     // Adds new keys if required.
     //////////////////////////////////////////////////////////////////////////
     virtual void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent SetValue that accepts AZ::Vector3  
+     **/
     virtual void SetValue(float time, const Vec3& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent SetValue that accepts AZ::Vector4  
+     **/
     virtual void SetValue(float time, const Vec4& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent SetValue that accepts AZ::Quaternion  
+     **/
     virtual void SetValue(float time, const Quat& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const bool& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) = 0;
 
     // support for AZ:: vector types - re-route to legacy types
+    void SetValue(float time, AZ::Vector4& value, bool bDefault = false, bool applyMultiplier = false)
+    {
+        Vec4 vec4(value.GetX(), value.GetY(), value.GetZ(), value.GetW());
+        SetValue(time, vec4, bDefault, applyMultiplier);
+    }
     void SetValue(float time, AZ::Vector3& value, bool bDefault = false, bool applyMultiplier = false)
     {
         Vec3 vec3(value.GetX(), value.GetY(), value.GetZ());
         SetValue(time, vec3, bDefault, applyMultiplier);
     }
-    void SetValue(float time, AZ::Quaternion& value, [[maybe_unused]] bool bDefault = false)
+    void SetValue(float time, AZ::Quaternion& value, bool bDefault = false)
     {
         Quat quat(value.GetW(), value.GetX(), value.GetY(), value.GetZ());
-        SetValue(time, quat);
+        SetValue(time, quat, bDefault);
     }
 
     // Only for position tracks, offset all track keys by this amount.

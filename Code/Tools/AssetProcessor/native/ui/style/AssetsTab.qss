@@ -83,7 +83,7 @@ AzQtComponents--FilteredSearchWidget #filteredLayout {
 
 /* TableView */
 
-AzQtComponents--TableView {
+AzQtComponents--TableView, #builderList {
     background-color: rgb(45,45,45);            /* Odd row */
     alternate-background-color: rgb(34,34,34);  /* Even row */
 

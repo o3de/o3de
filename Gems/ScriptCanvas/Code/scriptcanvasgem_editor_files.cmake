@@ -235,6 +235,9 @@ set(FILES
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.cpp
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.ui
     Editor/View/Windows/Tools/UpgradeTool/Controller.cpp
     Editor/View/Windows/Tools/UpgradeTool/Controller.h
     Editor/View/Windows/Tools/UpgradeTool/FileSaver.cpp
@@ -253,6 +256,10 @@ set(FILES
     Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.cpp
     Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.h
     Editor/View/Windows/Tools/UpgradeTool/View.ui
+    Editor/Framework/Configuration.cpp
+    Editor/Framework/Configuration.h
+    Editor/Framework/Interpreter.cpp
+    Editor/Framework/Interpreter.h
     Editor/Framework/ScriptCanvasGraphUtilities.inl
     Editor/Framework/ScriptCanvasGraphUtilities.h
     Editor/Framework/ScriptCanvasTraceUtilities.h

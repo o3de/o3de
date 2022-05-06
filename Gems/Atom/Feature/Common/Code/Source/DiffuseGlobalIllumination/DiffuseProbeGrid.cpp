@@ -523,8 +523,11 @@ namespace AZ
             constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceEncodingGamma"));
             m_prepareSrg->SetConstant(constantIndex, m_probeIrradianceEncodingGamma);
 
-            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeBackfaceThreshold"));
-            m_prepareSrg->SetConstant(constantIndex, m_probeBackfaceThreshold);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRandomRayBackfaceThreshold"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeRandomRayBackfaceThreshold);
+
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeFixedRayBackfaceThreshold"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeFixedRayBackfaceThreshold);
 
             constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMinFrontfaceDistance"));
             m_prepareSrg->SetConstant(constantIndex, m_probeMinFrontfaceDistance);

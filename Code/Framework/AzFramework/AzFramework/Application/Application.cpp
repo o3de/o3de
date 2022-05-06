@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
@@ -67,12 +68,11 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Visibility/BoundsBus.h>
-#include <AzCore/Console/Console.h>
 #include <AzFramework/Viewport/ViewportBus.h>
-#include <GridMate/Memory.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include "Application.h"
+#include <AzNetworking/AzNetworkingModule.h>
 #include <AzFramework/AzFrameworkModule.h>
 #include <cctype>
 #include <stdio.h>
@@ -391,6 +391,7 @@ namespace AzFramework
     {
         AZ::ComponentApplication::CreateStaticModules(outModules);
 
+        outModules.emplace_back(aznew AzNetworking::AzNetworkingModule());
         outModules.emplace_back(aznew AzFrameworkModule());
     }
 

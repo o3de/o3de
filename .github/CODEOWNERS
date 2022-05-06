@@ -17,7 +17,6 @@
 /Code/Framework/AzCore/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Code/Framework/AzFramework/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Code/Framework/AzGameFramework/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Code/Framework/AzToolsFramework/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Code/LauncherUnified/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /engine.json @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/CrashReporting/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
@@ -37,21 +36,90 @@
 /SerializeContextAnalysis.bat @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Tools/SerializeContextAnalyzer/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 
-# SIG-Core temporary areas of ownership. Will be moved to SIG-Simulation when that group is created
-/AutomatedTesting/Gem/PythonTests/Blast @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/AutomatedTesting/Gem/PythonTests/NvCloth @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/AutomatedTesting/Gem/PythonTests/Physics @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Gems/Blast/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Gems/NvCloth/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Gems/PhysX/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
-/Gems/PhysXDebug/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+# SIG-Content general ownership area
+/Code/Framework/AzToolsFramework/ @o3de/sig-content-maintainers
+/Code/Tools/ @o3de/sig-content-maintainers
 
 # SIG-Content Asset Pipeline ownership area
 /AutomatedTesting/Gem/PythonTests/assetpipeline/ap_fixtures/ @o3de/sig-content-maintainers
 /AutomatedTesting/Gem/PythonTests/assetpipeline/asset_processor_tests/ @o3de/sig-content-maintainers
 /AutomatedTesting/Gem/PythonTests/assetpipeline/fbx_tests/ @o3de/sig-content-maintainers
 /AutomatedTesting/Gem/PythonTests/PythonAssetBuilder/ @o3de/sig-content-maintainers
-/Code/Tools/AssetBundler/ @o3de/sig-content-maintainers
-/Code/Tools/AssetProcessor/ @o3de/sig-content-maintainers
-/Code/Tools/SceneAPI/ @o3de/sig-content-maintainers
 /Gems/SceneProcessing/ @o3de/sig-content-maintainers
+
+# SIG-Content Viewport ownership area
+/Code/Framework/AzFramework/AzFramework/Viewport/ @o3de/sig-content-maintainers
+/Code/Framework/AzFramework/AzFramework/Visibility/ @o3de/sig-content-maintainers
+/Code/Framework/AzManipulatorTestFramework/ @o3de/sig-content-maintainers
+
+# SIG-Content White Box ownership area
+/AutomatedTesting/Gem/PythonTests/WhiteBox/ @o3de/sig-content-maintainers
+/Gems/WhiteBox/ @o3de/sig-content-maintainers
+
+# SIG-Content Game Objects (Prefabs & Spawnables) ownership area
+/Gems/Prefab/ @o3de/sig-content-maintainers
+/Code/Framework/AzFramework/AzFramework/Spawnable/ @o3de/sig-content-maintainers
+/AutomatedTesting/Gem/PythonTests/Prefab/ @o3de/sig-content-maintainers
+
+# SIG-Content Editor ownership area
+/Code/Framework/AzFramework/AzFramework/DocumentPropertyEditor/ @o3de/sig-content-maintainers
+/Code/Framework/AzQtComponents/ @o3de/sig-content-maintainers
+/Code/Editor/ @o3de/sig-content-maintainers
+/Gems/EditorPythonBindings/ @o3de/sig-content-maintainers
+/Gems/GraphCanvas/ @o3de/sig-content-maintainers
+/Gems/GraphModel/ @o3de/sig-content-maintainers
+/Gems/LandscapeCanvas/ @o3de/sig-content-maintainers
+/Gems/QtForPython/ @o3de/sig-content-maintainers
+/AutomatedTesting/Gem/PythonTests/editor*/ @o3de/sig-content-maintainers
+/AutomatedTesting/Gem/PythonTests/Editor*/ @o3de/sig-content-maintainers
+
+# SIG-Content UI Editor ownership area
+/Gems/LyShine*/ @o3de/sig-content-maintainers
+
+# SIG Content Scripting ownership area
+/Gems/ScriptCanvas*/ @o3de/sig-content-maintainers
+/Gems/ScriptEvents/ @o3de/sig-content-maintainers
+
+# SIG-Simulation ownership area
+/Code/Framework/AzCore/AzCore/Math/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Code/Framework/AzFramework/AzFramework/Physics/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/Blast/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/MotionMatching/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/NvCloth/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/PhysX/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/PhysXDebug/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/Gems/EMotionFX/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/AutomatedTesting/Gem/PythonTests/Blast @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/AutomatedTesting/Gem/PythonTests/NvCloth @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+/AutomatedTesting/Gem/PythonTests/Physics @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
+
+# SIG-Build areas of ownership
+/cmake/Platform/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/cmake/Packaging/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/cmake/Packaging* @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/scripts/build/ @o3de/sig-build-reviewers @o3de/sig-build-maintainers
+/scripts/commit_validation/ @o3de/sig-build-maintainers
+/scripts/license_scanner/ @o3de/sig-build-maintainers
+/scripts/signer/ @o3de/sig-build-maintainers
+
+# SIG-Networking ownership areas
+/AutomatedTesting/Gem/PythonTests/AWS/ @o3de/sig-network-maintainers
+/AutomatedTesting/Gem/PythonTests/Multiplayer/ @o3de/sig-network-maintainers
+/AutomatedTesting/Levels/AWS/ @o3de/sig-network-maintainers
+/AutomatedTesting/Levels/Multiplayer/ @o3de/sig-network-maintainers
+/Code/Framework/AzFramework/AzFramework/Network/ @o3de/sig-network-maintainers
+/Code/Framework/AzNetworking/ @o3de/sig-network-maintainers
+/Code/Tools/AWSNativeSDKInit/ @o3de/sig-network-maintainers
+/Gems/AWSClientAuth/ @o3de/sig-network-maintainers
+/Gems/AWSCore/ @o3de/sig-network-maintainers
+/Gems/AWSGameLift/ @o3de/sig-network-maintainers
+/Gems/AWSMetrics/ @o3de/sig-network-maintainers
+/Gems/HttpRequestor/ @o3de/sig-network-maintainers
+/Gems/Metastream/ @o3de/sig-network-maintainers
+/Gems/Multiplayer/ @o3de/sig-network-maintainers
+/Gems/MultiplayerCompression/ @o3de/sig-network-maintainers
+/Gems/Twitch/ @o3de/sig-network-maintainers
+
+# SIG-Graphics-Audio ownership areas
+/Gems/Atom*/ @o3de/sig-graphics-audio-maintainers @o3de/sig-graphics-audio-reviewers
+/Gems/Terrain/ @o3de/sig-graphics-audio-maintainers @o3de/sig-graphics-audio-reviewers

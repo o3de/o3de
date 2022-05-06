@@ -48,8 +48,10 @@ namespace AZ::DocumentPropertyEditor
                         (*functor)({ ConsoleTypeHelpers::ValueToString(buffer) });
                         m_adapter->OnContentsChanged(path, value);
                     });
-                builder.Attribute(Nodes::SpinBox<T>::Min, AZStd::numeric_limits<T>::min());
-                builder.Attribute(Nodes::SpinBox<T>::Max, AZStd::numeric_limits<T>::max());
+
+                using ValueType = typename Nodes::NumericEditor<T>::StorageType;
+                builder.Attribute(Nodes::SpinBox<T>::Min, aznumeric_cast<ValueType>(AZStd::numeric_limits<T>::min()));
+                builder.Attribute(Nodes::SpinBox<T>::Max, aznumeric_cast<ValueType>(AZStd::numeric_limits<T>::max()));
                 builder.EndPropertyEditor();
                 return true;
             }

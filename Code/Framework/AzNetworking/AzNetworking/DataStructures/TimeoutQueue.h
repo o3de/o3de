@@ -56,7 +56,7 @@ namespace AzNetworking
         //! Returns the provided timeout item if it exists, also refreshes the timeout value.
         //! @param timeoutId the identifier of the item to fetch
         //! @return pointer to the timeout item if it exists
-        TimeoutItem *RetrieveItem(TimeoutId timeoutId);
+        TimeoutItem* RetrieveItem(TimeoutId timeoutId);
 
         //! Removes an item from the TimeoutQueue.
         //! @param timeoutId the identifier of the item to remove

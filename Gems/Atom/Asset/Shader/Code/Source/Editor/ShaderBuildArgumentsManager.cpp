@@ -50,7 +50,8 @@ namespace AZ
                         scopeName.c_str());
                     continue;
                 }
-                [[maybe_unused]]const auto addedDefinitionCount = shaderBuildOptions.m_addBuildArguments.AppendDefinitions(shaderBuildOptions.m_definitions);
+                [[maybe_unused]] const auto addedDefinitionCount =
+                    shaderBuildOptions.m_addBuildArguments.AppendDefinitions(shaderBuildOptions.m_definitions);
                 AZ_Assert(addedDefinitionCount >= 0, "Failed to add definitions");
 
                 removeBuildArgumentsMap.emplace(scopeName, AZStd::move(shaderBuildOptions.m_removeBuildArguments));

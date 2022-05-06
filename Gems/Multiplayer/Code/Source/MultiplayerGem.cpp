@@ -22,7 +22,6 @@ namespace Multiplayer
         m_descriptors.insert(
             m_descriptors.end(),
             {
-                AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
                 MultiplayerSystemComponent::CreateDescriptor(),
                 NetBindComponent::CreateDescriptor(),
                 NetworkSpawnableHolderComponent::CreateDescriptor(),
@@ -37,7 +36,6 @@ namespace Multiplayer
     AZ::ComponentTypeList MultiplayerModule::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{
-            azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
             azrtti_typeid<MultiplayerSystemComponent>(),
 #ifdef MULTIPLAYER_EDITOR
             azrtti_typeid<MultiplayerToolsSystemComponent>(),
