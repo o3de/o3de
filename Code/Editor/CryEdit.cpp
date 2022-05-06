@@ -20,6 +20,8 @@ AZ_POP_DISABLE_WARNING
 
 #include <array>
 #include <string>
+#include <iostream>
+#include <fstream>
 
 #include "CryEdit.h"
 
@@ -470,6 +472,7 @@ public:
     bool m_bRunPythonScript = false;
     bool m_bRunPythonTestScript = false;
     bool m_bShowVersionInfo = false;
+    bool m_bCommandLineFile = false;
     QString m_exportFile;
     QString m_strFileName;
     QString m_appRoot;
@@ -478,6 +481,7 @@ public:
     QString m_pythonTestCase;
     QString m_execFile;
     QString m_execLineCmd;
+    QString m_cmdLineFileName;
 
     bool m_bSkipWelcomeScreenDialog = false;
     bool m_bAutotestMode = false;
@@ -514,6 +518,7 @@ public:
             { "NSDocumentRevisionsDebugMode", nsDocumentRevisionsDebugMode},
             { "skipWelcomeScreenDialog", m_bSkipWelcomeScreenDialog},
             { "autotest_mode", m_bAutotestMode},
+            { "command-line-file", m_bCommandLineFile },
             { "regdumpall", dummy },
             { "attach-debugger", dummy }, // Attaches a debugger for the current application
             { "wait-for-debugger", dummy }, // Waits until a debugger is attached to the current application
@@ -951,6 +956,7 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
     m_bExportMode = cmdInfo.m_bExport;
     m_bRunPythonTestScript = cmdInfo.m_bRunPythonTestScript;
     m_bRunPythonScript = cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript;
+    m_bCommandLineFile = cmdInfo.m_bCommandLineFile;
     m_execFile = cmdInfo.m_execFile;
     m_execLineCmd = cmdInfo.m_execLineCmd;
     m_bAutotestMode = cmdInfo.m_bAutotestMode || cmdInfo.m_bConsoleMode;
@@ -1461,16 +1467,32 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
         // cmdInfo data is only available on startup, copy it
         QByteArray fileStr = cmdInfo.m_strFileName.toUtf8();
 
-        // We support specifying multiple files in the cmdline by separating them with ';'
         AZStd::vector<AZStd::string_view> fileList;
-        AZ::StringFunc::TokenizeVisitor(
-            fileStr.constData(),
-            [&fileList](AZStd::string_view elem)
-            {
-                fileList.push_back(elem);
-            }, ';', false /* keepEmptyStrings */
-        );
 
+        if (cmdInfo.m_bCommandLineFile)
+        {
+            AZStd::vector<AZStd::string_view> testcaseList;
+            std::ifstream argsFile (fileStr);
+            std::string nextLine;
+            if (argsFile.is_open()) {
+                while (argsFile) {
+                    std::getline(argsFile, nextLine);
+                    AZ_TracePrintf("Foo", nextLine);
+                }
+            }
+        }
+        else {
+
+            // We support specifying multiple files in the cmdline by separating them with ';'
+            AZ::StringFunc::TokenizeVisitor(
+                fileStr.constData(),
+                [&fileList](AZStd::string_view elem)
+                {
+                    fileList.push_back(elem);
+                }, ';', false /* keepEmptyStrings */
+            );
+        }
+        
         if (cmdInfo.m_pythonArgs.length() > 0 || cmdInfo.m_bRunPythonTestScript)
         {
             QByteArray pythonArgsStr = cmdInfo.m_pythonArgs.toUtf8();
