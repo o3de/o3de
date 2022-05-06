@@ -31,6 +31,6 @@ function(ly_handle_custom_output_directory target output_subdirectory)
 
 endfunction()
 
-function(ly_apply_debug_strip_options target)
+function(ly_apply_debug_strip_options target target_linking_option)
     #Noop
 endfunction()

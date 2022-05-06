@@ -7,13 +7,23 @@
 #
 
 set(LY_STRIP_DEBUG_SYMBOLS FALSE CACHE BOOL "Flag to strip debug symbols from the (non-debug) output binaries")
+set(LY_DEBUG_SYMBOLS_FILE_EXTENSION "dbg" CACHE STRING "Extension for generated debug symbol files")
 
-# Check if 'strip' is available before we can set the option to strip debug symbols from output binaries
+# Check if 'strip' is available so that debug symbols can be stripped from output libraries and executables.
 find_program(GNU_STRIP_TOOL strip)
-if (NOT GNU_STRIP_TOOL AND LY_STRIP_DEBUG_SYMBOLS)
-    message(WARNING "Unable to locate 'strip' tool needed to strip debug symbols from the output target(s). Debug symbol "
-                    "stripping (LY_STRIP_DEBUG_SYMBOLS) will not be supported. Make sure the 'strip' is installed.")
+if (NOT GNU_STRIP_TOOL)
+    message(WARNING "Unable to locate 'strip' tool needed to strip debug symbols from the output target(s). "
+                    "Debug symbols will not be removed from output libraries and executables.")
 endif()
+
+# Check if 'objcopy' is available so that debug symbols can be extracted from output libraries and executables.
+find_program(GNU_OBJCOPY objcopy)
+if (NOT GNU_OBJCOPY)
+    message(WARNING "Unable to locate 'objcopy' tool needed to extract debug symbols from the output target(s). "
+                    "Debug symbols will not be removed from output libraries and executables. Make sure that "
+                    "'objcopy' is installed.")
+endif()
+
 
 function(ly_apply_platform_properties target)
     # Noop
@@ -52,10 +62,19 @@ endfunction()
 #! ly_apply_debug_strip_options: Apply debug stripping options to the target output for non-debug configurations.
 #
 #\arg:target Name of the target to perform a post-build stripping of any debug symbol)
-function(ly_apply_debug_strip_options target)
+#\arg:target_type The target's output type. STATIC, SHARED, EXECUTABLE, and STATIC are supported types.
+function(ly_apply_debug_strip_options target target_type)
 
-    find_program(GNU_STRIP_TOOL strip)
-    if (NOT GNU_STRIP_TOOL)
+    if (NOT GNU_STRIP_TOOL OR NOT GNU_OBJCOPY)
+        return()
+    endif()
+
+    if (NOT ${target_type} STREQUAL "STATIC" AND 
+        NOT ${target_type} STREQUAL "SHARED" AND 
+        NOT ${target_type} STREQUAL "MODULE" AND 
+        NOT ${target_type} STREQUAL "EXECUTABLE" AND 
+        NOT ${target_type} STREQUAL "APPLICATION")
+        # Only executables, applications, modules, static libraries, and share libraries can have their debug symbols stripped
         return()
     endif()
 
@@ -63,6 +82,7 @@ function(ly_apply_debug_strip_options target)
 
         add_custom_command(TARGET ${target} POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/StripDebugSymbols.cmake"
+                    ${GNU_STRIP_TOOL}
                     "$<TARGET_FILE:${target}>"
                     "$<CONFIG>"
             COMMENT "Stripping debug symbols ..."
@@ -71,15 +91,19 @@ function(ly_apply_debug_strip_options target)
 
     else()
 
-        add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/DetachDebugSymbols.cmake"
-                    "$<TARGET_FILE:${target}>"
-                    "${CMAKE_STATIC_LIBRARY_SUFFIX}"
-                    "dbg"
-            COMMENT "Detaching debug symbols ..."
-            VERBATIM
-        )
+        # Debug symbols cannot be detached and the debug link reattached to static libraries
+        if (NOT ${target_type} STREQUAL "STATIC")
 
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/DetachDebugSymbols.cmake"
+                        ${GNU_STRIP_TOOL}
+                        ${GNU_OBJCOPY}
+                        "$<TARGET_FILE:${target}>"
+                        ${LY_DEBUG_SYMBOLS_FILE_EXTENSION}
+                COMMENT "Detaching debug symbols ..."
+                VERBATIM
+            )
+        endif()
     endif()
 
 endfunction()
