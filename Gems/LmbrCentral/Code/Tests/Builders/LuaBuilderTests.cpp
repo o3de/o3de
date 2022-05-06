@@ -68,10 +68,10 @@ namespace UnitTest
 
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
-        char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/dependencyRegexStress.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, "@gemroot:LmbrCentral@/Code/Tests/Lua/dependencyRegexStress.lua");
 
-        worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
+        worker.ParseDependencies(resolvedPath.c_str(), pathDependencies);
 
         ASSERT_THAT(pathDependencies,
             testing::UnorderedElementsAre(
@@ -121,10 +121,10 @@ namespace UnitTest
 
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
-        char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test1.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, "@gemroot:LmbrCentral@/Code/Tests/Lua/test1.lua");
 
-        worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
+        worker.ParseDependencies(resolvedPath.c_str(), pathDependencies);
 
         ASSERT_THAT(pathDependencies,
             testing::UnorderedElementsAre(
@@ -140,10 +140,10 @@ namespace UnitTest
 
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
-        char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test2.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, "@gemroot:LmbrCentral@/Code/Tests/Lua/test2.lua");
 
-        worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
+        worker.ParseDependencies(resolvedPath.c_str(), pathDependencies);
 
         ASSERT_THAT(pathDependencies,
             testing::UnorderedElementsAre(
@@ -157,10 +157,10 @@ namespace UnitTest
 
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
-        char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test3_general_dependencies.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, "@gemroot:LmbrCentral@/Code/Tests/Lua/test3_general_dependencies.lua");
 
-        worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
+        worker.ParseDependencies(resolvedPath.c_str(), pathDependencies);
 
         ASSERT_THAT(pathDependencies,
             testing::UnorderedElementsAre(
@@ -174,10 +174,10 @@ namespace UnitTest
 
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
-        char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test4_console_command.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, "@gemroot:LmbrCentral@/Code/Tests/Lua/test4_console_command.lua");
 
-        worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
+        worker.ParseDependencies(resolvedPath.c_str(), pathDependencies);
 
         ASSERT_THAT(pathDependencies,
             testing::UnorderedElementsAre(
@@ -192,12 +192,12 @@ namespace UnitTest
 
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
-        char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(testFileUnresolvedPath.c_str(), resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(testFileUnresolvedPath.c_str());
 
-        EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(resolvedPath));
+        EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(resolvedPath.c_str()));
 
-        worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
+        worker.ParseDependencies(resolvedPath.c_str(), pathDependencies);
 
         EXPECT_TRUE(pathDependencies.empty());
     }
@@ -223,10 +223,10 @@ namespace UnitTest
 
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
-        char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test8_negated_block_comment.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, "@gemroot:LmbrCentral@/Code/Tests/Lua/test8_negated_block_comment.lua");
 
-        worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
+        worker.ParseDependencies(resolvedPath.c_str(), pathDependencies);
 
         ASSERT_THAT(pathDependencies,
             testing::UnorderedElementsAre(
