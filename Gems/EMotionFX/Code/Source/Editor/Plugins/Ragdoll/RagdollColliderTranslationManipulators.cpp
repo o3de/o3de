@@ -6,26 +6,24 @@
  *
  */
 
-#include <Editor/Plugins/Ragdoll/RagdollColliderTranslationManipulators.h>
-#include <AzCore/Debug/Trace.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Physics/Character.h>
+#include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
-#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include <Editor/ObjectEditor.h>
 #include <Editor/ColliderContainerWidget.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
+#include <Editor/ObjectEditor.h>
+#include <Editor/Plugins/Ragdoll/RagdollColliderTranslationManipulators.h>
 
 namespace EMotionFX
 {
     RagdollColliderTranslationManipulators::RagdollColliderTranslationManipulators()
-        : m_translationManipulators(AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne())
+        : m_translationManipulators(
+              AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne())
     {
         m_adjustColliderCallback = new DataChangedCallback(this, false);
         EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback);
-
     }
 
     RagdollColliderTranslationManipulators::~RagdollColliderTranslationManipulators()
@@ -50,58 +48,58 @@ namespace EMotionFX
         AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(&m_translationManipulators);
 
         // mouse down callbacks
-        m_translationManipulators.InstallLinearManipulatorMouseDownCallback([this](
-            const AzToolsFramework::LinearManipulator::Action& action)
+        m_translationManipulators.InstallLinearManipulatorMouseDownCallback(
+            [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
                 BeginEditing(action.m_start.m_localPosition, action.m_current.m_localPositionOffset);
             });
 
-        m_translationManipulators.InstallPlanarManipulatorMouseDownCallback([this](
-            const AzToolsFramework::PlanarManipulator::Action& action)
+        m_translationManipulators.InstallPlanarManipulatorMouseDownCallback(
+            [this](const AzToolsFramework::PlanarManipulator::Action& action)
             {
                 BeginEditing(action.m_start.m_localPosition, action.m_current.m_localOffset);
             });
 
-        m_translationManipulators.InstallSurfaceManipulatorMouseDownCallback([this](
-            const AzToolsFramework::SurfaceManipulator::Action& action)
+        m_translationManipulators.InstallSurfaceManipulatorMouseDownCallback(
+            [this](const AzToolsFramework::SurfaceManipulator::Action& action)
             {
                 BeginEditing(action.m_start.m_localPosition, action.m_current.m_localOffset);
             });
 
         // mouse move callbacks
-        m_translationManipulators.InstallLinearManipulatorMouseMoveCallback([this](
-            const AzToolsFramework::LinearManipulator::Action& action)
+        m_translationManipulators.InstallLinearManipulatorMouseMoveCallback(
+            [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
                 OnManipulatorMoved(action.m_start.m_localPosition, action.m_current.m_localPositionOffset);
             });
 
-        m_translationManipulators.InstallPlanarManipulatorMouseMoveCallback([this](
-            const AzToolsFramework::PlanarManipulator::Action& action)
+        m_translationManipulators.InstallPlanarManipulatorMouseMoveCallback(
+            [this](const AzToolsFramework::PlanarManipulator::Action& action)
             {
                 OnManipulatorMoved(action.m_start.m_localPosition, action.m_current.m_localOffset);
             });
 
-        m_translationManipulators.InstallSurfaceManipulatorMouseMoveCallback([this](
-            const AzToolsFramework::SurfaceManipulator::Action& action)
+        m_translationManipulators.InstallSurfaceManipulatorMouseMoveCallback(
+            [this](const AzToolsFramework::SurfaceManipulator::Action& action)
             {
                 OnManipulatorMoved(action.m_start.m_localPosition, action.m_current.m_localOffset);
             });
 
         // mouse up callbacks
-        m_translationManipulators.InstallLinearManipulatorMouseUpCallback([this](
-            const AzToolsFramework::LinearManipulator::Action& action)
+        m_translationManipulators.InstallLinearManipulatorMouseUpCallback(
+            [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
                 FinishEditing(action.m_start.m_localPosition, action.m_current.m_localPositionOffset);
             });
 
-        m_translationManipulators.InstallPlanarManipulatorMouseUpCallback([this](
-            const AzToolsFramework::PlanarManipulator::Action& action)
+        m_translationManipulators.InstallPlanarManipulatorMouseUpCallback(
+            [this](const AzToolsFramework::PlanarManipulator::Action& action)
             {
                 FinishEditing(action.m_start.m_localPosition, action.m_current.m_localOffset);
             });
 
-        m_translationManipulators.InstallSurfaceManipulatorMouseUpCallback([this](
-            const AzToolsFramework::SurfaceManipulator::Action& action)
+        m_translationManipulators.InstallSurfaceManipulatorMouseUpCallback(
+            [this](const AzToolsFramework::SurfaceManipulator::Action& action)
             {
                 FinishEditing(action.m_start.m_localPosition, action.m_current.m_localOffset);
             });
@@ -123,9 +121,10 @@ namespace EMotionFX
         m_translationManipulators.Unregister();
     }
 
-    void RagdollColliderTranslationManipulators::ResetValues(RagdollManipulatorData& ragdollManipulatorData)
+    void RagdollColliderTranslationManipulators::ResetValues()
     {
-        (void)ragdollManipulatorData;
+        m_ragdollManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position = AZ::Vector3::CreateZero();
+        m_translationManipulators.SetLocalPosition(AZ::Vector3::CreateZero());
     }
 
     AZ::Vector3 RagdollColliderTranslationManipulators::GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
@@ -178,13 +177,15 @@ namespace EMotionFX
         m_commandGroup.Clear();
     }
 
-    bool RagdollColliderTranslationManipulators::DataChangedCallback::Execute([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    bool RagdollColliderTranslationManipulators::DataChangedCallback::Execute(
+        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         m_manipulators->Refresh();
         return true;
     }
 
-    bool RagdollColliderTranslationManipulators::DataChangedCallback::Undo([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    bool RagdollColliderTranslationManipulators::DataChangedCallback::Undo(
+        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         m_manipulators->Refresh();
         return true;

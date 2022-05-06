@@ -6,10 +6,10 @@
  *
  */
 
-#include <Editor/Plugins/Ragdoll/RagdollViewportUiCluster.h>
+#include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <Editor/Plugins/Ragdoll/RagdollColliderTranslationManipulators.h>
-#include <EMotionFX/Source/Transform.h>
+#include <Editor/Plugins/Ragdoll/RagdollViewportUiCluster.h>
 
 namespace EMotionFX
 {
@@ -18,10 +18,8 @@ namespace EMotionFX
         m_subModes[SubMode::ColliderTranslation] = AZStd::make_unique<RagdollColliderTranslationManipulators>();
     }
 
-    void RagdollViewportUiCluster::SetCurrentMode(SubMode mode, const RagdollManipulatorData& ragdollManipulatorData)
+    void RagdollViewportUiCluster::SetCurrentMode(SubMode mode)
     {
-        (void)ragdollManipulatorData;
-
         AZ_Assert(m_subModes.find(mode) != m_subModes.end(), "Submode not found:%d", mode);
         m_subModes[m_subMode]->Teardown();
         m_subMode = mode;
@@ -31,8 +29,7 @@ namespace EMotionFX
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_clusterId,
-            m_buttonIds[modeIndex]);
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_clusterId, m_buttonIds[modeIndex]);
     }
 
     static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
@@ -65,7 +62,7 @@ namespace EMotionFX
             {
                 if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::ColliderTranslation)])
                 {
-                    SetCurrentMode(SubMode::ColliderTranslation, m_ragdollManipulatorData);
+                    SetCurrentMode(SubMode::ColliderTranslation);
                 }
             };
 
@@ -74,9 +71,8 @@ namespace EMotionFX
                 AzToolsFramework::ViewportUi::DefaultViewportId,
                 &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_clusterId,
                 m_modeSelectionHandler);
-
         }
-        SetCurrentMode(m_subMode, m_ragdollManipulatorData);
+        SetCurrentMode(m_subMode);
     }
 
     void RagdollViewportUiCluster::DestroyClusterIfExists()

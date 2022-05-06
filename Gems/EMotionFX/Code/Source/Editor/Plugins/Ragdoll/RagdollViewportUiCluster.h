@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Math/Transform.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <Editor/Plugins/Ragdoll/RagdollManipulators.h>
-#include <AzCore/Math/Transform.h>
 
 namespace EMotionFX
 {
@@ -25,7 +25,6 @@ namespace EMotionFX
     class RagdollViewportUiCluster
     {
     public:
-
         RagdollViewportUiCluster();
         void CreateClusterIfNoneExists(RagdollManipulatorData ragdollManipulatorData);
         void DestroyClusterIfExists();
@@ -37,14 +36,13 @@ namespace EMotionFX
         };
 
     private:
-        void SetCurrentMode(SubMode mode, const RagdollManipulatorData& ragdollManipulatorData);
+        void SetCurrentMode(SubMode mode);
 
         AzToolsFramework::ViewportUi::ClusterId m_clusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
         AZStd::vector<AzToolsFramework::ViewportUi::ButtonId> m_buttonIds;
         AZStd::unordered_map<SubMode, AZStd::unique_ptr<RagdollManipulatorsBase>> m_subModes;
         SubMode m_subMode = SubMode::ColliderTranslation;
-        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
-            m_modeSelectionHandler; //!< Event handler for sub mode changes.
+        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_modeSelectionHandler; //!< Event handler for sub mode changes.
         RagdollManipulatorData m_ragdollManipulatorData;
     };
 } // namespace EMotionFX

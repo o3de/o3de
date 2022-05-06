@@ -49,6 +49,6 @@ namespace EMotionFX
 
         //! Called when reset hot key is pressed.
         //! Should reset values in the manipulator mode to sensible defaults.
-        virtual void ResetValues(RagdollManipulatorData& ragdollManipulatorData) = 0;
+        virtual void ResetValues() = 0;
     };
 } // namespace EMotionFX
