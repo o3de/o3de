@@ -39,6 +39,7 @@ def CreatePrefab_WithNestedEntitiesAndNestedPrefabs():
     # Asserts if creation didn't succeed
     nested_entities_root = prefab_test_utils.create_linear_nested_entities(
         NESTED_ENTITIES_NAME_PREFIX, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
+    nested_entities_root_parent = nested_entities_root.get_parent_id()
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
     nested_entities_root_name = nested_entities_root.get_name()
 
@@ -71,7 +72,7 @@ def CreatePrefab_WithNestedEntitiesAndNestedPrefabs():
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
 
     # Test undo/redo on prefab creation
-    prefab_test_utils.validate_undo_redo_on_prefab_creation(new_prefab)
+    prefab_test_utils.validate_undo_redo_on_prefab_creation(new_prefab, nested_entities_root_parent)
 
     parent_prefab_container_entity_on_instance = new_prefab_container_entity
     child_entity_on_inner_instance = nested_prefabs_root_container_entity_on_instance

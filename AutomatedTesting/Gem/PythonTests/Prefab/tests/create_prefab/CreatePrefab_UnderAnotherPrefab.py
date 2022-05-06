@@ -44,7 +44,7 @@ def CreatePrefab_UnderAnotherPrefab():
     inner_prefab, inner_instance = Prefab.create_prefab([entity], INNER_PREFAB_FILE_NAME)
 
     # Test undo/redo on prefab creation
-    prefab_test_utils.validate_undo_redo_on_prefab_creation(inner_instance)
+    prefab_test_utils.validate_undo_redo_on_prefab_creation(inner_instance, outer_instance.container_entity.id)
 
     # The test entity should now be inside the inner prefab instance
     entity = inner_instance.get_direct_child_entities()[0]

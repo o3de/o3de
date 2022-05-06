@@ -19,13 +19,14 @@ def CreatePrefab_WithSingleEntity():
 
     # Creates a new entity at the root level
     car_entity = EditorEntity.create_editor_entity()
+    car_entity_parent = car_entity.get_parent_id()
     car_prefab_entities = [car_entity]
 
     # Creates a prefab from the new entity
     _, car_instance = Prefab.create_prefab(car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
     # Test undo/redo on prefab creation
-    prefab_test_utils.validate_undo_redo_on_prefab_creation(car_instance)
+    prefab_test_utils.validate_undo_redo_on_prefab_creation(car_instance, car_entity_parent)
 
 
 if __name__ == "__main__":
