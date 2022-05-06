@@ -31,9 +31,11 @@ _MODULENAME = 'Tools.DCC.Blender.config'
 
 # configure basic logger
 FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
+
 _logging.basicConfig(level=_logging.DEBUG,
                      format=FRMT_LOG_LONG,
                     datefmt='%m-%d %H:%M')
+
 _LOGGER = _logging.getLogger(_MODULENAME)
 
 _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))

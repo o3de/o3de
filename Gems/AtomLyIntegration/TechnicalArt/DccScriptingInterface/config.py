@@ -834,23 +834,24 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='O3DE DCCsi Dynamic Config (dynaconf)',
         epilog="Attempts to determine O3DE project if -pp not set")
+    
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables global debug flag.')
     
-    parser.add_argument('-sd', '--set-debugger',
-                        type=str,
-                        required=False,
-                        default='WING',
-                        help='Default debugger: WING, (not implemented) others: PYCHARM and VSCODE.')
-    
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables dev mode for early auto attaching debugger.')
+    
+    parser.add_argument('-sd', '--set-debugger',
+                        type=str,
+                        required=False,
+                        default='WING',
+                        help='Default debugger: WING, (not implemented) others: PYCHARM and VSCODE.')
     
     parser.add_argument('-ep', '--engine-path',
                         type=pathlib.Path,
@@ -942,14 +943,14 @@ if __name__ == '__main__':
     if args.global_debug:
         _DCCSI_GDEBUG = True
         os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-
-    if args.set_debugger:
-        _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
-        # To Do: implement debugger plugin pattern
         
     if args.developer_mode:
         _DCCSI_DEV_MODE = True
         attach_debugger()  # attempts to start debugger
+
+    if args.set_debugger:
+        _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
+        # To Do: implement debugger plugin pattern
         
     # need to do a little plumbing
     if not args.engine_path:

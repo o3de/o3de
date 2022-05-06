@@ -258,7 +258,7 @@ def run_command() -> 'subprocess.CompletedProcess[str]':
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as main (external commandline for testing)"""
+    """Run this file as main (external commandline)"""
     
     #os.environ['PYTHONINSPECT'] = 'True'
     
