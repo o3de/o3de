@@ -102,3 +102,7 @@ function(ly_add_bundle_resources)
     endif()
 
 endfunction()
+
+function(ly_apply_debug_strip_options target)
+    #Noop
+endfunction()
