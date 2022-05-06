@@ -8,18 +8,34 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 namespace AzToolsFramework
 {
     ActionManager::ActionManager()
     {
         AZ::Interface<ActionManagerInterface>::Register(this);
+        ActionManagerRequestBus::Handler::BusConnect();
     }
 
     ActionManager::~ActionManager()
     {
+        ActionManagerRequestBus::Handler::BusDisconnect();
         AZ::Interface<ActionManagerInterface>::Unregister(this);
 
         ClearActionContextMap();
+    }
+
+    void ActionManager::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
+        {
+            behaviorContext->EBus<ActionManagerRequestBus>("ActionManagerRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Event("TriggerAction", &ActionManagerRequestBus::Handler::TriggerAction);
+        }
     }
 
     ActionManagerOperationResult ActionManager::RegisterActionContext(

@@ -10,6 +10,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/function/function_base.h>
 
 #include <QWidget>
@@ -52,5 +53,19 @@ namespace AzToolsFramework
         virtual QAction* GetAction(const AZStd::string& actionIdentifier) = 0;
         virtual const QAction* GetActionConst(const AZStd::string& actionIdentifier) = 0;
     };
+
+    /**
+     * The primary purpose of this bus is to allow using the action manager system from Python.
+     * If you would like to integrate action manager into your system, please use the interface
+     * directly for better performance.
+     */
+    class ActionManagerRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+    };
+
+    using ActionManagerRequestBus = AZ::EBus<ActionManagerInterface, ActionManagerRequests>;
 
 } // namespace AzToolsFramework
