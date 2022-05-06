@@ -14,14 +14,14 @@ REM other environmental requirements change.
 REM When the project switches to a new version of Python, this file will be updated.
 
 :: Set up window
-TITLE O3DE DCC Scripting Interface Cmd
+TITLE O3DE DCC Scripting Interface Python.cmd
 :: Use obvious color to prevent confusion (Grey with Yellow Text)
 COLOR 8E
 
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    O3DE DCCsi Python.CMD ...
+echo ~    O3DE DCCsi Python.cmd ...
 echo _____________________________________________________________________
 echo.
 
@@ -30,19 +30,15 @@ SET CMD_DIR=%~dp0
 SET CMD_DIR=%CMD_DIR:~0,-1%
 
 IF "%PATH_DCCSIG%"=="" (set "PATH_DCCSIG=%CMD_DIR%")
-echo     PATH_DCCSIG = %PATH_DCCSIG%
 
 IF "%PATH_O3DE_PROJECT%"=="" (set "PATH_O3DE_PROJECT=%PATH_DCCSIG%")
-echo     PATH_O3DE_PROJECT = %PATH_O3DE_PROJECT%
 
 :: This maps up to the o3de root folder
 IF "%O3DE_REL_PATH%"=="" (set "O3DE_REL_PATH=..\..\..\..")
-echo     O3DE_REL_PATH = %O3DE_REL_PATH%
 
 :: Change to root o3de folder
 CD /d %O3DE_REL_PATH%
 IF "%O3DE_DEV%"=="" (set "O3DE_DEV=%CD%")
-echo     O3DE_DEV = %O3DE_DEV%
 :: Restore original directory
 popd
 
@@ -59,12 +55,10 @@ ECHO Try running %O3DE_PYTHON%\get_python.bat first.
 exit /B 1
 
 :PYTHONHOME_EXISTS
-echo     O3DE_PYTHONHOME - is now the folder containing O3DE python executable
-echo     O3DE_PYTHONHOME = %O3DE_PYTHONHOME% 
 
 SET PYTHON=%O3DE_PYTHONHOME%\python.exe
 echo     PYTHON = %PYTHON%
-echo 
+echo.
 
 SET PYTHON_ARGS=%*
 
