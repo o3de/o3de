@@ -932,6 +932,27 @@ namespace ScriptCanvasEditor
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
 
+    SaveAsScriptEventAction::SaveAsScriptEventAction(QObject* parent)
+        : NodeContextMenuAction("Save As Script Event", parent)
+    {
+
+    }
+
+    void SaveAsScriptEventAction::RefreshAction
+        ( [[maybe_unused]] const GraphCanvas::GraphId& grpahId
+        , [[maybe_unused]] const AZ::EntityId& targetId)
+    {
+        // ask the model if is enabled, change name to reason why...?
+        setEnabled(true);
+    }
+
+    GraphCanvas::ContextMenuAction::SceneReaction SaveAsScriptEventAction::TriggerAction
+        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId, [[maybe_unused]] const AZ::Vector2&)
+    {
+        // tell the model, to save, model will pop-up window or something
+        // always return nothing
+        return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+    }
 
     #include "Editor/View/Windows/moc_ScriptCanvasContextMenus.cpp"
 }

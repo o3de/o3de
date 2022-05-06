@@ -266,4 +266,19 @@ namespace ScriptCanvasEditor
         NodeDescriptorComponent* m_descriptor;
     };
 
+    //! Allows users to save a FunctionDefition In node as a ScriptEvent file
+    class SaveAsScriptEventAction
+        : public GraphCanvas::NodeContextMenuAction
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(NodeContextMenuAction, AZ::SystemAllocator, 0);
+
+        SaveAsScriptEventAction(QObject* parent);
+
+        using GraphCanvas::NodeContextMenuAction::RefreshAction;
+        void RefreshAction(const GraphCanvas::GraphId& grpahId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::NodeContextMenuAction::TriggerAction;
+        GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2&) override;
+    };
 }

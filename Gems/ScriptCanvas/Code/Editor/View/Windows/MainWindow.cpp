@@ -117,6 +117,7 @@
 #include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorCentralWidget.h>
 #include <GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/EditorContextMenu.h>
+#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuActions.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/BookmarkContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CollapsedNodeGroupContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/ConnectionContextMenu.h>
@@ -3723,13 +3724,10 @@ namespace ScriptCanvasEditor
     GraphCanvas::ContextMenuAction::SceneReaction MainWindow::ShowNodeContextMenu(const AZ::EntityId& nodeId, const QPoint& screenPoint, const QPointF& scenePoint)
     {
         GraphCanvas::NodeContextMenu contextMenu(ScriptCanvasEditor::AssetEditorId);
-
         NodeDescriptorType descriptorType = NodeDescriptorType::Unknown;
-
         NodeDescriptorRequestBus::EventResult(descriptorType, nodeId, &NodeDescriptorRequests::GetType);
 
-        if (descriptorType == NodeDescriptorType::GetVariable
-            || descriptorType == NodeDescriptorType::SetVariable)
+        if (descriptorType == NodeDescriptorType::GetVariable || descriptorType == NodeDescriptorType::SetVariable)
         {
             contextMenu.AddMenuAction(aznew ConvertVariableNodeToReferenceAction(&contextMenu));
         }
@@ -3739,6 +3737,7 @@ namespace ScriptCanvasEditor
             NodeDescriptorComponent* descriptor = nullptr;
             NodeDescriptorRequestBus::EventResult(descriptor, nodeId, &NodeDescriptorRequests::GetDescriptorComponent);
             contextMenu.AddMenuAction(aznew RenameFunctionDefinitionNodeAction(descriptor, &contextMenu));
+            contextMenu.AddMenuAction(aznew SaveAsScriptEventAction(&contextMenu));
         }
 
         return HandleContextMenu(contextMenu, nodeId, screenPoint, scenePoint);
