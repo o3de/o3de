@@ -295,7 +295,7 @@ namespace WhiteBox
         }
         
         const AZ::Vector3 normal = Api::PolygonNormal(*whiteBox, m_polygonHandle);
-        TranslatePoints(triangles, -polygonMidpoint + normal * ed_whiteBoxPolygonViewOverlapOffset);
+        TranslatePoints(triangles, -polygonMidpoint);
 
         if (!m_polygonView)
         {
@@ -307,6 +307,7 @@ namespace WhiteBox
             m_polygonView->m_triangles = triangles;
         }
 
+        m_polygonView->m_polygonViewOverlapOffset = AZ::Transform::CreateTranslation(normal * ed_whiteBoxPolygonViewOverlapOffset);
         m_polygonView->m_fillColor = m_fillColor;
         m_polygonView->m_outlineColor = m_outlineColor;
 
