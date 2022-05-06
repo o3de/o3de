@@ -1125,7 +1125,8 @@ namespace AZ
 
                 // Transition state
                 // If we are Rendering, the state will transition [Rendering -> Queued] in Pass::FrameEnd
-                if (m_state != PassState::Rendering)
+                // TODO: the PassState::Reset check is a quick fix until the pass concurrency with multiple scenes issue is fixed
+                if (m_state != PassState::Rendering && m_state != PassState::Reset)
                 {
                     m_state = PassState::Queued;
                 }

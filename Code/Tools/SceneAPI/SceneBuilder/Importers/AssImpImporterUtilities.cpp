@@ -190,9 +190,9 @@ namespace AZ
                 return nullptr;
             }
 
-            bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap)
+            bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap, const AZStd::unordered_set<AZStd::string>& animatedNodesMap)
             {
-                const bool isBone = boneByNameMap.contains(node->mName.C_Str());
+                const bool isBone = boneByNameMap.contains(node->mName.C_Str()) || animatedNodesMap.contains(node->mName.C_Str());
                 if (isBone)
                 {
                     return true;
@@ -201,7 +201,7 @@ namespace AZ
                 for (unsigned int childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
                 {
                     const aiNode* childNode = node->mChildren[childIndex];
-                    if (RecursiveHasChildBone(childNode, boneByNameMap))
+                    if (RecursiveHasChildBone(childNode, boneByNameMap, animatedNodesMap))
                     {
                         return true;
                     }

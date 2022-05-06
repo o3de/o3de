@@ -37,6 +37,8 @@ namespace AZ
             void SetFilteringSampleCount(uint32_t count) override;
             void SetEsmExponent(float esmExponent) override;
             void SetNormalShadowBias(float bias) override;
+            void SetAffectsGI(bool affectsGI) override;
+            void SetAffectsGIFactor(float affectsGIFactor) override;
 
         private:
 
