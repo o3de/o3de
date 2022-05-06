@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/Math/Transform.h>
+#include <QWidget>
 
 namespace Physics
 {
@@ -18,11 +19,16 @@ namespace EMotionFX
 {
     class Actor;
     class Node;
+    class ObjectEditor;
+    class ColliderContainerWidget;
 
     struct RagdollManipulatorData
     {
         AZ::Transform m_nodeWorldTransform = AZ::Transform::CreateIdentity();
         Physics::CharacterColliderNodeConfiguration* m_colliderNodeConfiguration = nullptr;
+        Actor* m_actor = nullptr;
+        Node* m_node = nullptr;
+        ColliderContainerWidget* m_collidersWidget = nullptr;
         bool m_valid = false;
     };
 
@@ -36,7 +42,7 @@ namespace EMotionFX
         virtual void Setup(RagdollManipulatorData& ragdollManipulatorData) = 0;
 
         //! Called when the manipulator mode needs to refresh its values.
-        virtual void Refresh(RagdollManipulatorData& ragdollManipulatorData) = 0;
+        virtual void Refresh() = 0;
 
         //! Called when the manipulator mode exits to perform cleanup.
         virtual void Teardown() = 0;

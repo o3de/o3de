@@ -160,11 +160,14 @@ namespace EMotionFX
                 RagdollManipulatorData ragdollManipulatorData;
                 auto* actorInstance = GetActorInstance();
                 auto* selectedNode = GetNode();
-                if (actorInstance && selectedNode)
+                if (GetActor() && actorInstance && selectedNode)
                 {
                     const Transform& nodeWorldTransform = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(selectedNode->GetNodeIndex());
                     ragdollManipulatorData.m_nodeWorldTransform = AZ::Transform::CreateFromQuaternionAndTranslation(nodeWorldTransform.m_rotation, nodeWorldTransform.m_position);
                     ragdollManipulatorData.m_colliderNodeConfiguration = colliderNodeConfig;
+                    ragdollManipulatorData.m_actor = GetActor();
+                    ragdollManipulatorData.m_node = GetNode();
+                    ragdollManipulatorData.m_collidersWidget = m_collidersWidget;
                     ragdollManipulatorData.m_valid = true;
                 }
                 m_ragdollViewportUiCluster.CreateClusterIfNoneExists(ragdollManipulatorData);
