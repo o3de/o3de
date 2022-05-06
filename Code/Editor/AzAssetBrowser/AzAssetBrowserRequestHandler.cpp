@@ -42,6 +42,7 @@
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
@@ -371,6 +372,77 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             QString levelPath = Path::GetPath(GetIEditor()->GetDocument()->GetActivePathName());
             AzToolsFramework::Layers::EditorLayerComponent::CreateLayerAssetContextMenu(menu, fullFilePath, levelPath);
         }
+
+        // Create the callback to pass to the SourceControlAPI
+        AzToolsFramework::SourceControlResponseCallback callback =
+            [fullFilePath](bool success, const AzToolsFramework::SourceControlFileInfo& info)
+        {
+            if (success)
+            {
+                QMessageBox::information(AzToolsFramework::GetActiveWindow(), "Asset deleted", "Asset name %s", fullFilePath.c_str());
+            }
+            else
+            {
+                // Be more specific with errors so as to give the user the best chance at fixing them
+                if (!info.HasFlag(AzToolsFramework::SCF_OpenByUser))
+                {
+                    if (info.HasFlag(AzToolsFramework::SourceControlFlags::SCF_OutOfDate))
+                    {
+                        QMessageBox::information(
+                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
+                            QObject::tr("Source Control Issue - You do not have latest changes from source control for file\n%1")
+                                .arg(fullFilePath.c_str()));
+                    }
+                    else if (info.IsLockedByOther())
+                    {
+                        QMessageBox::information(
+                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
+                            QObject::tr("Source Control Issue - File exclusively opened by another user %1 ->\n%2")
+                                .arg(info.m_StatusUser.c_str(), fullFilePath.c_str()));
+                    }
+                    else if (
+                        info.m_status == AzToolsFramework::SourceControlStatus::SCS_ProviderIsDown ||
+                        info.m_status == AzToolsFramework::SourceControlStatus::SCS_CertificateInvalid ||
+                        info.m_status == AzToolsFramework::SourceControlStatus::SCS_ProviderError)
+                    {
+                        QMessageBox::information(
+                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
+                            QObject::tr("Source Control Issue - Failed to remove file from source control, check your connection to your "
+                                    "source control service.\n%1")
+                                .arg(fullFilePath.c_str()));
+                    }
+                    else
+                    {
+                        QMessageBox::information(
+                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
+                            QObject::tr("Unknown Issue with source control.\n%1").arg(fullFilePath.c_str()));
+                    }
+                }
+                else
+                {
+                    QMessageBox::information(
+                        AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
+                        QObject::tr("Source Control Issue - File marked as 'Open By User' but still failed.\n%1").arg(fullFilePath.c_str()));
+                }
+            }
+        };
+        // Add Delete option
+        menu->addAction("Delete asset", [fullFilePath, callback]()
+        {
+            QMessageBox box;
+            box.setIcon(QMessageBox::Warning);
+            box.setWindowTitle(QObject::tr("Delete selected asset?"));
+            box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            QAbstractButton* okButton = box.button(QMessageBox::Ok);
+            okButton->setText("Delete");
+            box.setText(QObject::tr("Are you sure you want to delete\n%1?\nYou cannot undo this action.").arg(fullFilePath.c_str()));
+            int ret = box.exec();
+            if (ret == QMessageBox::Ok)
+            {
+                using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
+                SCCommandBus::Broadcast(&SCCommandBus::Events::RequestDelete, fullFilePath.c_str(), callback);
+            }
+        });
 
         if (products.empty())
         {
