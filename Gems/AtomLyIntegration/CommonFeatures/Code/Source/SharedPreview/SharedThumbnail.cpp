@@ -74,6 +74,16 @@ namespace AZ
             }
         }
 
+        void SharedThumbnail::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& /*assetInfo*/)
+        {
+            if (m_assetInfo.m_assetId == assetId)
+            {
+                // Removing the thumbnail from the catalog asset doesn't remove it from the thumbnail cache.
+                // Therefore marking the state as unloaded ensures that a new pixmap will be rendered on the next access.
+                m_state = State::Unloaded;
+            }
+        }
+
         //////////////////////////////////////////////////////////////////////////
         // SharedThumbnailCache
         //////////////////////////////////////////////////////////////////////////

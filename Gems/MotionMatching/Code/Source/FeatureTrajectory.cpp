@@ -197,7 +197,7 @@ namespace EMotionFX::MotionMatching
     }
 
     void FeatureTrajectory::DebugDrawTrajectory(AzFramework::DebugDisplayRequests& debugDisplay,
-        MotionMatchingInstance* instance,
+        const FeatureMatrix& featureMatrix,
         size_t frameIndex,
         const Transform& worldSpaceTransform,
         const AZ::Color& color,
@@ -210,7 +210,6 @@ namespace EMotionFX::MotionMatching
         }
 
         constexpr float markerSize = 0.02f;
-        const FeatureMatrix& featureMatrix = instance->GetData()->GetFeatureMatrix();
 
         debugDisplay.DepthTestOff();
         debugDisplay.SetColor(color);
@@ -242,16 +241,16 @@ namespace EMotionFX::MotionMatching
     }
 
     void FeatureTrajectory::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-        MotionMatchingInstance* instance,
+        const Pose& currentPose,
+        const FeatureMatrix& featureMatrix,
         size_t frameIndex)
     {
-        const ActorInstance* actorInstance = instance->GetActorInstance();
-        const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_jointIndex);
+        const Transform transform = currentPose.GetWorldSpaceTransform(m_jointIndex);
 
-        DebugDrawTrajectory(debugDisplay, instance, frameIndex, transform,
+        DebugDrawTrajectory(debugDisplay, featureMatrix, frameIndex, transform,
             m_debugColor, m_numPastSamples, AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
 
-        DebugDrawTrajectory(debugDisplay, instance, frameIndex, transform,
+        DebugDrawTrajectory(debugDisplay, featureMatrix, frameIndex, transform,
             m_debugColor, m_numFutureSamples, AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1));
     }
 
