@@ -55,16 +55,31 @@ endfunction()
 function(ly_apply_debug_strip_options target)
 
     find_program(GNU_STRIP_TOOL strip)
-    if (NOT GNU_STRIP_TOOL OR NOT ${LY_STRIP_DEBUG_SYMBOLS})
+    if (NOT GNU_STRIP_TOOL)
         return()
     endif()
 
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/StripDebugSymbols.cmake"
-                "$<TARGET_FILE:${target}>"
-                "$<CONFIG>"
-        COMMENT "Stripping debug symbols ..."
-        VERBATIM
-    )
+    if (${LY_STRIP_DEBUG_SYMBOLS})
+
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/StripDebugSymbols.cmake"
+                    "$<TARGET_FILE:${target}>"
+                    "$<CONFIG>"
+            COMMENT "Stripping debug symbols ..."
+            VERBATIM
+        )
+
+    else()
+
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/DetachDebugSymbols.cmake"
+                    "$<TARGET_FILE:${target}>"
+                    "${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                    "dbg"
+            COMMENT "Detaching debug symbols ..."
+            VERBATIM
+        )
+
+    endif()
 
 endfunction()
