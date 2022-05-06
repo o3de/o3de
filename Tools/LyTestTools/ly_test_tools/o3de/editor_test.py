@@ -24,6 +24,8 @@ Usage example:
 """
 from __future__ import annotations
 
+import tempfile
+
 import pytest
 import _pytest.python
 import _pytest.outcomes
@@ -876,11 +878,26 @@ class EditorTestSuite:
         editor_utils.cycle_crash_report(run_id, workspace)
 
         results = {}
+        temp_batched_file = None
         test_filenames_str = ";".join(editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
         cmdline = [
             "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+
+        if len(test_spec_list) > 10:
+            temp_batched_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
+            # with open(temp_batched_file, 'w') as opened_batched_file:
+            for test_spec in test_spec_list:
+                temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec.test_module)+'\n')
+            temp_batched_file.flush()
+            cmdline = [
+                '--command-line-file', temp_batched_file,
+                "-logfile", f"@log@/{log_name}",
+                "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)
+            ] + test_cmdline_args
+            temp_batched_file.close()
+            os.unlink(temp_batched_file.name)
 
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
@@ -975,6 +992,9 @@ class EditorTestSuite:
                 results[test_spec_name] = Result.Timeout(timed_out_result.test_spec,
                                                          results[test_spec_name].output,
                                                          self.timeout_editor_shared_test, result.editor_log)
+        finally:
+            if temp_batched_file:
+                ly_test_tools.environment.file_system.delete([self.tmp_path], True, True)
         return results
     
     def _run_single_test(self, request: _pytest.fixtures.FixtureRequest,
