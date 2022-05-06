@@ -10,43 +10,43 @@
 
 namespace PhysX
 {
-    static CombineMode FromPxCombineMode(physx::PxCombineMode::Enum pxMode)
+    static Physics::CombineMode FromPxCombineMode(physx::PxCombineMode::Enum pxMode)
     {
         switch (pxMode)
         {
         case physx::PxCombineMode::eAVERAGE:
-            return CombineMode::Average;
+            return Physics::CombineMode::Average;
         case physx::PxCombineMode::eMULTIPLY:
-            return CombineMode::Multiply;
+            return Physics::CombineMode::Multiply;
         case physx::PxCombineMode::eMAX:
-            return CombineMode::Maximum;
+            return Physics::CombineMode::Maximum;
         case physx::PxCombineMode::eMIN:
-            return CombineMode::Minimum;
+            return Physics::CombineMode::Minimum;
         default:
-            return CombineMode::Average;
+            return Physics::CombineMode::Average;
         }
     }
 
-    static physx::PxCombineMode::Enum ToPxCombineMode(CombineMode mode)
+    static physx::PxCombineMode::Enum ToPxCombineMode(Physics::CombineMode mode)
     {
         switch (mode)
         {
-        case CombineMode::Average:
+        case Physics::CombineMode::Average:
             return physx::PxCombineMode::eAVERAGE;
-        case CombineMode::Multiply:
+        case Physics::CombineMode::Multiply:
             return physx::PxCombineMode::eMULTIPLY;
-        case CombineMode::Maximum:
+        case Physics::CombineMode::Maximum:
             return physx::PxCombineMode::eMAX;
-        case CombineMode::Minimum:
+        case Physics::CombineMode::Minimum:
             return physx::PxCombineMode::eMIN;
         default:
             return physx::PxCombineMode::eAVERAGE;
         }
     }
 
-    Material2::Material2(const MaterialConfiguration& materialConfiguration)
+    Material2::Material2(const Physics::MaterialConfiguration2& materialConfiguration)
     {
-        const MaterialConfiguration defaultMaterialConf;
+        const Physics::MaterialConfiguration2 defaultMaterialConf;
 
         m_pxMaterial = PxMaterialUniquePtr(
             PxGetPhysics().createMaterial(
@@ -107,22 +107,22 @@ namespace PhysX
         m_pxMaterial->setRestitution(AZ::GetClamp(restitution, 0.0f, 1.0f));
     }
 
-    CombineMode Material2::GetFrictionCombineMode() const
+    Physics::CombineMode Material2::GetFrictionCombineMode() const
     {
         return FromPxCombineMode(m_pxMaterial->getFrictionCombineMode());
     }
 
-    void Material2::SetFrictionCombineMode(CombineMode mode)
+    void Material2::SetFrictionCombineMode(Physics::CombineMode mode)
     {
         m_pxMaterial->setFrictionCombineMode(ToPxCombineMode(mode));
     }
 
-    CombineMode Material2::GetRestitutionCombineMode() const
+    Physics::CombineMode Material2::GetRestitutionCombineMode() const
     {
         return FromPxCombineMode(m_pxMaterial->getRestitutionCombineMode());
     }
 
-    void Material2::SetRestitutionCombineMode(CombineMode mode)
+    void Material2::SetRestitutionCombineMode(Physics::CombineMode mode)
     {
         m_pxMaterial->setRestitutionCombineMode(ToPxCombineMode(mode));
     }
@@ -135,11 +135,11 @@ namespace PhysX
     void Material2::SetDensity(float density)
     {
         AZ_Warning(
-            "PhysX Material", density >= MaterialConfiguration::MinDensityLimit && density <= MaterialConfiguration::MaxDensityLimit,
-            "Density value %f will be clamped into range [%f, %f].", density, MaterialConfiguration::MinDensityLimit,
-            MaterialConfiguration::MaxDensityLimit);
+            "PhysX Material", density >= Physics::MaterialConfiguration2::MinDensityLimit && density <= Physics::MaterialConfiguration2::MaxDensityLimit,
+            "Density value %f will be clamped into range [%f, %f].", density, Physics::MaterialConfiguration2::MinDensityLimit,
+            Physics::MaterialConfiguration2::MaxDensityLimit);
 
-        m_density = AZ::GetClamp(density, MaterialConfiguration::MinDensityLimit, MaterialConfiguration::MaxDensityLimit);
+        m_density = AZ::GetClamp(density, Physics::MaterialConfiguration2::MinDensityLimit, Physics::MaterialConfiguration2::MaxDensityLimit);
     }
 
     const AZ::Color& Material2::GetDebugColor() const

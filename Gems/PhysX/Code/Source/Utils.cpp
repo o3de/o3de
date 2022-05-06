@@ -40,7 +40,6 @@
 #include <Source/StaticRigidBodyComponent.h>
 #include <Source/RigidBodyStatic.h>
 #include <Source/Utils.h>
-#include <Source/Material/PhysXMaterialAsset.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/MathConversion.h>
@@ -1653,9 +1652,6 @@ namespace PhysX
             FixedJointConfiguration::Reflect(context);
             BallJointConfiguration::Reflect(context);
             HingeJointConfiguration::Reflect(context);
-
-            MaterialConfiguration::Reflect(context);
-            MaterialAsset::Reflect(context);
         }
 
         void ForceRegionBusBehaviorHandler::Reflect(AZ::ReflectContext* context)

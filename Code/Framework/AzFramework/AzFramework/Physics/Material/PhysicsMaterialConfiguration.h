@@ -12,7 +12,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Math/Color.h>
 
-namespace PhysX
+namespace Physics
 {
     //! Enumeration that determines how two materials properties are combined when
     //! processing collisions.
@@ -24,10 +24,11 @@ namespace PhysX
         Multiply
     };
 
-    //! Properties of a PhysX material.
-    struct MaterialConfiguration
+    //! Properties of a Physics material.
+    // TODO: MaterialConfiguration2 is temporary until old MaterialConfiguration class is removed.
+    struct MaterialConfiguration2
     {
-        AZ_TYPE_INFO(PhysX::MaterialConfiguration, "{675AF04D-CF51-479C-9D6A-4D7E264D1DBE}");
+        AZ_TYPE_INFO(Physics::MaterialConfiguration2, "{675AF04D-CF51-479C-9D6A-4D7E264D1DBE}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -44,4 +45,4 @@ namespace PhysX
 
         AZ::Color m_debugColor = AZ::Colors::White;
     };
-} // namespace PhysX
+} // namespace Physics

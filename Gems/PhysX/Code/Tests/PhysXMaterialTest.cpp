@@ -17,7 +17,7 @@ namespace UnitTest
 
     TEST(PhysXMaterial, Material_GetSet_DynamicFriction)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
+        Physics::MaterialConfiguration2 materialConfiguration;
         materialConfiguration.m_dynamicFriction = 68.6f;
 
         PhysX::Material2 material(materialConfiguration);
@@ -30,7 +30,7 @@ namespace UnitTest
 
     TEST(PhysXMaterial, Material_Clamps_DynamicFriction)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
+        Physics::MaterialConfiguration2 materialConfiguration;
         materialConfiguration.m_dynamicFriction = -7.0f;
 
         PhysX::Material2 material(materialConfiguration);
@@ -43,7 +43,7 @@ namespace UnitTest
 
     TEST(PhysXMaterial, Material_GetSet_StaticFriction)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
+        Physics::MaterialConfiguration2 materialConfiguration;
         materialConfiguration.m_staticFriction = 68.6f;
 
         PhysX::Material2 material(materialConfiguration);
@@ -56,7 +56,7 @@ namespace UnitTest
 
     TEST(PhysXMaterial, Material_Clamps_StaticFriction)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
+        Physics::MaterialConfiguration2 materialConfiguration;
         materialConfiguration.m_staticFriction = -7.0f;
 
         PhysX::Material2 material(materialConfiguration);
@@ -69,7 +69,7 @@ namespace UnitTest
 
     TEST(PhysXMaterial, Material_GetSet_Restitution)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
+        Physics::MaterialConfiguration2 materialConfiguration;
         materialConfiguration.m_restitution = 0.43f;
 
         PhysX::Material2 material(materialConfiguration);
@@ -82,7 +82,7 @@ namespace UnitTest
 
     TEST(PhysXMaterial, Material_Clamps_Restitution)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
+        Physics::MaterialConfiguration2 materialConfiguration;
         materialConfiguration.m_restitution = -13.0f;
 
         PhysX::Material2 material(materialConfiguration);
@@ -101,7 +101,7 @@ namespace UnitTest
 
     TEST(PhysXMaterial, Material_GetSet_Density)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
+        Physics::MaterialConfiguration2 materialConfiguration;
         materialConfiguration.m_density = 245.0f;
 
         PhysX::Material2 material(materialConfiguration);
@@ -114,55 +114,55 @@ namespace UnitTest
 
     TEST(PhysXMaterial, Material_Clamps_Density)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
+        Physics::MaterialConfiguration2 materialConfiguration;
         materialConfiguration.m_density = -13.0f;
 
         PhysX::Material2 material(materialConfiguration);
 
-        EXPECT_NEAR(material.GetDensity(), PhysX::MaterialConfiguration::MinDensityLimit, Tolerance);
+        EXPECT_NEAR(material.GetDensity(), Physics::MaterialConfiguration2::MinDensityLimit, Tolerance);
 
         material.SetDensity(0.0f);
-        EXPECT_NEAR(material.GetDensity(), PhysX::MaterialConfiguration::MinDensityLimit, Tolerance);
+        EXPECT_NEAR(material.GetDensity(), Physics::MaterialConfiguration2::MinDensityLimit, Tolerance);
 
-        material.SetDensity(PhysX::MaterialConfiguration::MinDensityLimit);
-        EXPECT_NEAR(material.GetDensity(), PhysX::MaterialConfiguration::MinDensityLimit, Tolerance);
+        material.SetDensity(Physics::MaterialConfiguration2::MinDensityLimit);
+        EXPECT_NEAR(material.GetDensity(), Physics::MaterialConfiguration2::MinDensityLimit, Tolerance);
 
-        material.SetDensity(PhysX::MaterialConfiguration::MaxDensityLimit);
-        EXPECT_NEAR(material.GetDensity(), PhysX::MaterialConfiguration::MaxDensityLimit, Tolerance);
+        material.SetDensity(Physics::MaterialConfiguration2::MaxDensityLimit);
+        EXPECT_NEAR(material.GetDensity(), Physics::MaterialConfiguration2::MaxDensityLimit, Tolerance);
 
         material.SetDensity(200000.0f);
-        EXPECT_NEAR(material.GetDensity(), PhysX::MaterialConfiguration::MaxDensityLimit, Tolerance);
+        EXPECT_NEAR(material.GetDensity(), Physics::MaterialConfiguration2::MaxDensityLimit, Tolerance);
     }
 
     TEST(PhysXMaterial, Material_GetSet_FrictionCombineMode)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
-        materialConfiguration.m_frictionCombine = PhysX::CombineMode::Maximum;
+        Physics::MaterialConfiguration2 materialConfiguration;
+        materialConfiguration.m_frictionCombine = Physics::CombineMode::Maximum;
 
         PhysX::Material2 material(materialConfiguration);
 
-        EXPECT_EQ(material.GetFrictionCombineMode(), PhysX::CombineMode::Maximum);
+        EXPECT_EQ(material.GetFrictionCombineMode(), Physics::CombineMode::Maximum);
 
-        material.SetFrictionCombineMode(PhysX::CombineMode::Minimum);
-        EXPECT_EQ(material.GetFrictionCombineMode(), PhysX::CombineMode::Minimum);
+        material.SetFrictionCombineMode(Physics::CombineMode::Minimum);
+        EXPECT_EQ(material.GetFrictionCombineMode(), Physics::CombineMode::Minimum);
     }
 
     TEST(PhysXMaterial, Material_GetSet_RestitutionCombineMode)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
-        materialConfiguration.m_restitutionCombine = PhysX::CombineMode::Maximum;
+        Physics::MaterialConfiguration2 materialConfiguration;
+        materialConfiguration.m_restitutionCombine = Physics::CombineMode::Maximum;
 
         PhysX::Material2 material(materialConfiguration);
 
-        EXPECT_EQ(material.GetRestitutionCombineMode(), PhysX::CombineMode::Maximum);
+        EXPECT_EQ(material.GetRestitutionCombineMode(), Physics::CombineMode::Maximum);
 
-        material.SetRestitutionCombineMode(PhysX::CombineMode::Minimum);
-        EXPECT_EQ(material.GetRestitutionCombineMode(), PhysX::CombineMode::Minimum);
+        material.SetRestitutionCombineMode(Physics::CombineMode::Minimum);
+        EXPECT_EQ(material.GetRestitutionCombineMode(), Physics::CombineMode::Minimum);
     }
 
     TEST(PhysXMaterial, Material_GetSet_DebugColor)
     {
-        PhysX::MaterialConfiguration materialConfiguration;
+        Physics::MaterialConfiguration2 materialConfiguration;
         materialConfiguration.m_debugColor = AZ::Colors::Lavender;
 
         PhysX::Material2 material(materialConfiguration);
@@ -175,7 +175,7 @@ namespace UnitTest
 
     TEST(PhysXMaterial, Material_ReturnsValid_NativePointer)
     {
-        PhysX::Material2 material(PhysX::MaterialConfiguration{});
+        PhysX::Material2 material(Physics::MaterialConfiguration2{});
 
         EXPECT_TRUE(material.GetNativePointer() != nullptr);
     }

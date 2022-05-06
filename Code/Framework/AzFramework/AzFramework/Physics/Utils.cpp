@@ -31,6 +31,8 @@
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
 
@@ -122,6 +124,9 @@ namespace Physics
             DefaultMaterialConfiguration::Reflect(context);
             MaterialLibraryAsset::Reflect(context);
             MaterialInfoReflectionWrapper::Reflect(context);
+            MaterialConfiguration2::Reflect(context);
+            MaterialAsset::Reflect(context);
+            MaterialSlots::Reflect(context);
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);
             AzPhysics::RigidBodyConfiguration::Reflect(context);
             AzPhysics::JointConfiguration::Reflect(context);

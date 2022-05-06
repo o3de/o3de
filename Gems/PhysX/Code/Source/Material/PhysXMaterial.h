@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <Material/PhysXMaterialConfiguration.h>
+#include <AzFramework/Physics/Material/PhysicsMaterial.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialConfiguration.h>
 
 #include <PxPhysicsAPI.h>
 
@@ -17,32 +18,27 @@ namespace PhysX
     //! Runtime PhysX material, created from a MaterialConfiguration.
     // TODO: Material2 is temporary until old Material class is removed.
     class Material2
+        : public Physics::Material2
     {
     public:
-        Material2(const MaterialConfiguration& configuration);
+        Material2(const Physics::MaterialConfiguration2& configuration);
 
-        float GetDynamicFriction() const;
-        void SetDynamicFriction(float dynamicFriction);
-
-        float GetStaticFriction() const;
-        void SetStaticFriction(float staticFriction);
-
-        float GetRestitution() const;
-        void SetRestitution(float restitution);
-
-        CombineMode GetFrictionCombineMode() const;
-        void SetFrictionCombineMode(CombineMode mode);
-
-        CombineMode GetRestitutionCombineMode() const;
-        void SetRestitutionCombineMode(CombineMode mode);
-
-        float GetDensity() const;
-        void SetDensity(float density);
-
-        const AZ::Color& GetDebugColor() const;
-        void SetDebugColor(const AZ::Color& debugColor);
-
-        const void* GetNativePointer() const;
+        // Physics::Material2 overrides ...
+        float GetDynamicFriction() const override;
+        void SetDynamicFriction(float dynamicFriction) override;
+        float GetStaticFriction() const override;
+        void SetStaticFriction(float staticFriction) override;
+        float GetRestitution() const override;
+        void SetRestitution(float restitution) override;
+        Physics::CombineMode GetFrictionCombineMode() const override;
+        void SetFrictionCombineMode(Physics::CombineMode mode) override;
+        Physics::CombineMode GetRestitutionCombineMode() const override;
+        void SetRestitutionCombineMode(Physics::CombineMode mode) override;
+        float GetDensity() const override;
+        void SetDensity(float density) override;
+        const AZ::Color& GetDebugColor() const override;
+        void SetDebugColor(const AZ::Color& debugColor) override;
+        const void* GetNativePointer() const override;
 
     private:
         using PxMaterialUniquePtr = AZStd::unique_ptr<physx::PxMaterial, AZStd::function<void(physx::PxMaterial*)>>;

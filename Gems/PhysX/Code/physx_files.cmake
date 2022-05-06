@@ -116,10 +116,6 @@ set(FILES
     Source/Joint/Configuration/PhysXJointConfiguration.cpp
     Source/Material/PhysXMaterial.h
     Source/Material/PhysXMaterial.cpp
-    Source/Material/PhysXMaterialAsset.h
-    Source/Material/PhysXMaterialAsset.cpp
-    Source/Material/PhysXMaterialConfiguration.h
-    Source/Material/PhysXMaterialConfiguration.cpp
     Source/Scene/PhysXScene.h
     Source/Scene/PhysXScene.cpp
     Source/Scene/PhysXSceneInterface.h

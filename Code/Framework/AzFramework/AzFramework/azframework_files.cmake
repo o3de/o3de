@@ -229,6 +229,13 @@ set(FILES
     Physics/Configuration/SystemConfiguration.cpp
     Physics/DebugDraw/CharacterPhysicsDebugDraw.h
     Physics/DebugDraw/CharacterPhysicsDebugDraw.cpp
+    Physics/Material/PhysicsMaterial.h
+    Physics/Material/PhysicsMaterialAsset.h
+    Physics/Material/PhysicsMaterialAsset.cpp
+    Physics/Material/PhysicsMaterialConfiguration.h
+    Physics/Material/PhysicsMaterialConfiguration.cpp
+    Physics/Material/PhysicsMaterialSlots.h
+    Physics/Material/PhysicsMaterialSlots.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h

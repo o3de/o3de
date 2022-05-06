@@ -9,15 +9,15 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <Material/PhysXMaterialAsset.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
-namespace PhysX
+namespace Physics
 {
     void MaterialAsset::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<PhysX::MaterialAsset, AZ::Data::AssetData>()
+            serializeContext->Class<Physics::MaterialAsset, AZ::Data::AssetData>()
                 ->Version(1)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("MaterialConfiguration", &MaterialAsset::m_materialConfiguration)
@@ -25,19 +25,19 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PhysX::MaterialAsset>("", "")
+                editContext->Class<Physics::MaterialAsset>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &MaterialAsset::m_materialConfiguration, "PhysX Material",
+                        AZ::Edit::UIHandlers::Default, &MaterialAsset::m_materialConfiguration, "Physics Material",
                         "PhysX material properties")
                         ->Attribute(AZ::Edit::Attributes::ForceAutoExpand, true);
             }
         }
     }
 
-    const MaterialConfiguration& MaterialAsset::GetMaterialConfiguration() const
+    const MaterialConfiguration2& MaterialAsset::GetMaterialConfiguration() const
     {
         return m_materialConfiguration;
     }
-} // namespace PhysX
+} // namespace Physics

@@ -20,7 +20,7 @@
 #include <Source/PhysXCharacters/API/CharacterUtils.h>
 #include <Source/PhysXCharacters/API/CharacterController.h>
 #include <Source/WindProvider.h>
-#include <Source/Material/PhysXMaterialAsset.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
 #include <PhysX/Debug/PhysXDebugInterface.h>
 #include <System/PhysXSystem.h>
@@ -195,12 +195,13 @@ namespace PhysX
         m_defaultWorldComponent.Activate();
 
         // Assets related work
-        auto* materialAsset = aznew AzFramework::GenericAssetHandler<Physics::MaterialLibraryAsset>("Physics Material", "PhysX Material", "physmaterial");
+        auto* materialAsset = aznew AzFramework::GenericAssetHandler<Physics::MaterialLibraryAsset>("Physics Material", "Physics Material", "physmaterial");
         materialAsset->Register();
         m_assetHandlers.emplace_back(materialAsset);
 
-        // TODO: "materialAsset2" is temporary until the "materialAsset" is removed.
-        auto* materialAsset2 = aznew AzFramework::GenericAssetHandler<MaterialAsset>("PhysX Material", "PhysX Material", "physxmaterial");
+        // TODO: "physmaterial2" is temporary until the "physmaterial2" is removed.
+        // TODO: This shouldn't be here in PhysX Gem, but in AzFramework.
+        auto* materialAsset2 = aznew AzFramework::GenericAssetHandler<Physics::MaterialAsset>("Physics Material 2", "Physics Material", "physmaterial2");
         materialAsset2->Register();
         m_assetHandlers.emplace_back(materialAsset2);
 
