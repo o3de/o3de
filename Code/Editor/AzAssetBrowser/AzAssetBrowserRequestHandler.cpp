@@ -431,11 +431,11 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         {
             QMessageBox box;
             box.setIcon(QMessageBox::Warning);
-            box.setWindowTitle("Delete selected asset?");
+            box.setWindowTitle(QObject::tr("Delete selected asset?"));
             box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
             QAbstractButton* okButton = box.button(QMessageBox::Ok);
             okButton->setText("Delete");
-            box.setText(QString("Are you sure you want to delete\n%1?\nYou cannot undo this action.").arg(fullFilePath.c_str()));
+            box.setText(QObject::tr("Are you sure you want to delete\n%1?\nYou cannot undo this action.").arg(fullFilePath.c_str()));
             int ret = box.exec();
             if (ret == QMessageBox::Ok)
             {
