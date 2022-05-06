@@ -78,24 +78,37 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)
+    ActionManagerOperationResult ActionManager::TriggerAction(const AZStd::string& actionIdentifier)
     {
-        if (m_actions.contains(actionIdentifier))
+        if (!m_actions.contains(actionIdentifier))
         {
-            return m_actions[actionIdentifier].GetAction();
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not trigger action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
         }
 
-        return nullptr;
+        m_actions[actionIdentifier].GetAction()->trigger();
+        return AZ::Success();
+    }
+
+    QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)
+    {
+        if (!m_actions.contains(actionIdentifier))
+        {
+            return nullptr;
+        }
+
+        return m_actions[actionIdentifier].GetAction();
     }
 
     const QAction* ActionManager::GetActionConst(const AZStd::string& actionIdentifier)
     {
-        if (m_actions.contains(actionIdentifier))
+        if (!m_actions.contains(actionIdentifier))
         {
-            return m_actions[actionIdentifier].GetAction();
+            return nullptr;
         }
 
-        return nullptr;
+        return m_actions[actionIdentifier].GetAction();
     }
 
     void ActionManager::ClearActionContextMap()
