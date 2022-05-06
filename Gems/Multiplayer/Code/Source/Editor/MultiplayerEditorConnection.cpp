@@ -97,69 +97,83 @@ namespace Multiplayer
         m_byteStream.Write(packet.GetAssetData().GetSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
 
         // In case if this is the last update, process the byteStream buffer. Otherwise more packets are expected
-        if (packet.GetLastUpdate())
+        if (!packet.GetLastUpdate())
         {
-            // This is the last expected packet
-            // Read all assets out of the buffer
-            // Create in-memory spawnables for the level, root.spawnable and root.network.spawnable (if level contains network entities)
-            if (m_inMemorySpawnableAssetContainer != nullptr)
-            {
-                m_inMemorySpawnableAssetContainer->ClearAllInMemorySpawnableAssets();
-            }
-            m_inMemorySpawnableAssetContainer = AZStd::make_unique<AzFramework::InMemorySpawnableAssetContainer>();
-            m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
-            AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> assetData;
-            while (m_byteStream.GetCurPos() < m_byteStream.GetLength())
-            {
-                AZ::Data::AssetId assetId;
-                uint32_t hintSize;
-                AZStd::string assetHint;
-                m_byteStream.Read(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-                m_byteStream.Read(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
-                assetHint.resize(hintSize);
-                m_byteStream.Read(hintSize, assetHint.data());
-                size_t assetSize = m_byteStream.GetCurPos();
-                
-                AzFramework::Spawnable* spawnable = AZ::Utils::LoadObjectFromStream<AzFramework::Spawnable>(m_byteStream);
-                if (!spawnable)
-                {
-                    AZLOG_ERROR("EditorServerLevelData packet contains no asset data. Asset: %s", assetHint.c_str())
-                    return false;
-                }
-                assetSize = m_byteStream.GetCurPos() - assetSize;
+            return true;
+        }
+        
+        // This is the last expected packet
+        // Read all assets out of the buffer
+        // Create in-memory spawnables for the level, root.spawnable and root.network.spawnable (if level contains network entities)
+        if (m_inMemorySpawnableAssetContainer != nullptr)
+        {
+            m_inMemorySpawnableAssetContainer->ClearAllInMemorySpawnableAssets();
+        }
+        m_inMemorySpawnableAssetContainer = AZStd::make_unique<AzFramework::InMemorySpawnableAssetContainer>();
+        AzFramework::InMemorySpawnableAssetContainer::AssetDataInfoContainer rootSpawnableAssetDataInfoContainer;
 
-                m_inMemorySpawnableAssetContainer->CreateInMemorySpawnableAsset(spawnable, assetId, assetSize, true, assetHint);
-            }
-
-            // Now that we've deserialized, clear the byte stream
-            m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
-            m_byteStream.Truncate();
-
-            // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
-            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
-
-            // Load the level via the root spawnable that was registered
-            const auto console = AZ::Interface<AZ::IConsole>::Get();
-            console->PerformCommand("LoadLevel Root.spawnable");
-
-            // Setup the normal multiplayer connection
-            AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-            INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
-
-            uint16_t sv_port = DefaultServerPort;
-            if (console->GetCvarValue("sv_port", sv_port) != AZ::GetValueResult::Success)
-            {
-                AZ_Assert(false,
-                    "MultiplayerEditorConnection::HandleRequest for EditorServerLevelData failed! Could not find the sv_port cvar; we won't be able to listen on the correct port for incoming network messages! Please update this code to use a valid cvar!")
-            }
+        m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> assetData;
+        while (m_byteStream.GetCurPos() < m_byteStream.GetLength())
+        {
+            AZ::Data::AssetId assetId;
+            uint32_t hintSize;
+            AZStd::string assetHint;
+            m_byteStream.Read(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
+            m_byteStream.Read(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+            assetHint.resize(hintSize);
+            m_byteStream.Read(hintSize, assetHint.data());
+            size_t assetSize = m_byteStream.GetCurPos();
             
-            networkInterface->Listen(sv_port);
+            AzFramework::Spawnable* spawnable = AZ::Utils::LoadObjectFromStream<AzFramework::Spawnable>(m_byteStream);
+            if (!spawnable)
+            {
+                AZLOG_ERROR("EditorServerLevelData packet contains no asset data. Asset: %s", assetHint.c_str())
+                return false;
+            }
 
-            AZLOG_INFO("Editor Server completed receiving the editor's level assets, responding to Editor...");
-            return connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady());
+            // We only care about Root.spawnable and Root.network.spawnable
+            // @todo update editor so it only sends Root spawnables in the first place
+            if (assetHint.starts_with("Root"))
+            {
+                AZ::Data::AssetInfo spawnableAssetInfo;
+                spawnableAssetInfo.m_sizeBytes = m_byteStream.GetCurPos() - assetSize;
+                spawnableAssetInfo.m_assetId = assetId;
+                spawnableAssetInfo.m_assetType = spawnable->GetType();
+                spawnableAssetInfo.m_relativePath = assetHint;
+
+                rootSpawnableAssetDataInfoContainer.emplace_back(spawnable, spawnableAssetInfo);
+            }
         }
 
-        return true;
+        // Now that we've deserialized, clear the byte stream
+        m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+        m_byteStream.Truncate();
+
+        m_inMemorySpawnableAssetContainer->CreateInMemorySpawnableAsset(rootSpawnableAssetDataInfoContainer, false, "Root");
+        
+        // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
+        AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
+
+        // Load the level via the root spawnable that was registered
+        const auto console = AZ::Interface<AZ::IConsole>::Get();
+        console->PerformCommand("LoadLevel Root.spawnable");
+
+        // Setup the normal multiplayer connection
+        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+        INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
+
+        uint16_t sv_port = DefaultServerPort;
+        if (console->GetCvarValue("sv_port", sv_port) != AZ::GetValueResult::Success)
+        {
+            AZ_Assert(false,
+                "MultiplayerEditorConnection::HandleRequest for EditorServerLevelData failed! Could not find the sv_port cvar; we won't be able to listen on the correct port for incoming network messages! Please update this code to use a valid cvar!")
+        }
+        
+        networkInterface->Listen(sv_port);
+
+        AZLOG_INFO("Editor Server completed receiving the editor's level assets, responding to Editor...");
+        return connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady());
     }
 
     bool MultiplayerEditorConnection::HandleRequest(
