@@ -76,7 +76,7 @@ namespace AZ
             RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
 
             //! Map of focused entity
-            AZStd::unordered_map<EntityId, FocuseMeshdEntity> m_focusedEntities;
+            AZStd::unordered_map<EntityId, FocusedMeshEntity> m_focusedEntities;
         };
     } // namespace Render
 } // namespace AZ

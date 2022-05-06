@@ -388,6 +388,8 @@ namespace AZ
                 AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
                     m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
                     m_entityComponentIdPair.GetEntityId());
+
+                MeshHandleStateNotificationBus::Event(entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
             }
         }
 
@@ -407,7 +409,6 @@ namespace AZ
                 meshDescriptor.m_requiresCloneCallback = RequiresCloning;
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
-                MeshHandleStateNotificationBus::Event(entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
                 const AZ::Transform& transform =
@@ -438,6 +439,9 @@ namespace AZ
                 MeshComponentNotificationBus::Event(
                     m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnModelPreDestroy);
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
+
+                MeshHandleStateNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
 
                 // Model has been released which invalidates the material slot configuration
                 MaterialReceiverNotificationBus::Event(

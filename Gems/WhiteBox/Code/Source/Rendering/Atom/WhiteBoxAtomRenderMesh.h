@@ -67,7 +67,7 @@ namespace WhiteBox
             att->UpdateData(data);
         }
 
-        // AtomMeshRequestBus overrides ...
+        // MeshHandleStateRequestBus overrides ...
         const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
 
         bool CreateMeshBuffers(const WhiteBoxMeshAtomData& meshData);
