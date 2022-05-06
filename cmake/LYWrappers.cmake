@@ -238,9 +238,6 @@ function(ly_add_target)
         else()
             ly_handle_custom_output_directory(${ly_add_target_NAME} "")
         endif()
-        #ly_apply_debug_strip_options(${ly_add_target_NAME})
-    elseif(ly_add_target_STATIC)
-        #ly_apply_debug_strip_options(${ly_add_target_NAME})
     endif()
 
 
