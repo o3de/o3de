@@ -143,9 +143,11 @@ namespace AzFramework
         assetDataInfoContainer.emplace_back(assetData, assetInfo);
 
         // Remove the .spawnable file extension before passing it to the other CreateInMemorySpawnableAsset method, which will add it back in
+        // Strip 2 extensions ".network.spawnable"
         AZStd::string spawablePathSansFileExtension = assetRelativePath;
         StringFunc::Path::StripExtension(spawablePathSansFileExtension);
-        
+        StringFunc::Path::StripExtension(spawablePathSansFileExtension);
+
         return CreateInMemorySpawnableAsset(assetDataInfoContainer, loadReferencedAssets, spawablePathSansFileExtension);
     }
 
@@ -249,8 +251,6 @@ namespace AzFramework
                     "Prefab", false, "Asset '%s' (%s) of type '%s' failed to preload while entering game mode", asset->GetHint().c_str(),
                     asset->GetId().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str(),
                     asset->GetType().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-
-                continue;
             }
         }
     }
