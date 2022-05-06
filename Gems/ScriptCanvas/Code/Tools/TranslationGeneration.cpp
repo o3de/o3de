@@ -33,6 +33,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <Editor/Translation/TranslationHelper.h>
 #include <Source/Translation/TranslationSerializer.h>
 #include "Data/DataRegistry.h"
 
@@ -82,7 +83,7 @@ namespace ScriptCanvasEditorTools
             entry.m_details.m_category = Helpers::GetStringAttribute(behaviorEBus, AZ::Script::Attributes::Category);;
             entry.m_details.m_tooltip = behaviorEBus->m_toolTip;
             entry.m_details.m_name = behaviorEBus->m_name;
-            entry.m_context = "EBusSender";
+            entry.m_context = ScriptCanvasEditor::TranslationHelper::AssetContext::EBusSenderContext;
 
             AZStd::string prettyName = Helpers::GetStringAttribute(behaviorEBus, AZ::ScriptCanvasAttributes::PrettyName);
             if (!prettyName.empty())
@@ -232,7 +233,7 @@ namespace ScriptCanvasEditorTools
         TranslationFormat translationRoot;
 
         Entry entry;
-        entry.m_context = "BehaviorClass";
+        entry.m_context = ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorClassContext;
         entry.m_key = behaviorClass->m_name;
 
         EntryDetails& details = entry.m_details;
@@ -282,62 +283,13 @@ namespace ScriptCanvasEditorTools
                 }
 
                 // Arguments (Input Slots)
-                if (behaviorMethod->GetNumArguments() > 0)
-                {
-                    size_t startIndex = behaviorMethod->HasResult() ? 1 : 0;
-                    for (size_t argIndex = startIndex; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
-                    {
-                        const AZ::BehaviorParameter* parameter = behaviorMethod->GetArgument(argIndex);
-
-                        Argument argument;
-
-                        AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
-                        AZStd::string argumentName;
-                        AZStd::string argumentDescription;
-
-                        Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
-
-                        const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
-                        if (argName && !(*argName).empty())
-                        {
-                            argumentName = *argName;
-                        }
-
-                        const AZStd::string* argDesc = behaviorMethod->GetArgumentToolTip(argIndex);
-                        if (argDesc && !(*argDesc).empty())
-                        {
-                            argumentDescription = *argDesc;
-                        }
-
-                        argument.m_typeId = argumentKey;
-                        argument.m_details.m_name = argumentName;
-                        argument.m_details.m_tooltip = argumentDescription;
-
-                        SplitCamelCase(argument.m_details.m_name);
-
-                        methodEntry.m_arguments.push_back(argument);
-                    }
-                }
+                TranslateMethodArguments(behaviorMethod, methodEntry);
 
                 // Results (Output Slots)
                 const AZ::BehaviorParameter* resultParameter = behaviorMethod->HasResult() ? behaviorMethod->GetResult() : nullptr;
                 if (resultParameter)
                 {
-                    Argument result;
-
-                    AZStd::string resultKey = resultParameter->m_typeId.ToString<AZStd::string>();
-                    AZStd::string resultName = resultParameter->m_name;
-                    AZStd::string resultDescription = "";
-
-                    Helpers::GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
-
-                    result.m_typeId = resultKey;
-                    result.m_details.m_name = resultParameter->m_name;
-                    result.m_details.m_tooltip = resultDescription;
-
-                    SplitCamelCase(result.m_details.m_name);
-
-                    methodEntry.m_results.push_back(result);
+                    TranslateMethodResults(resultParameter, methodEntry);
                 }
 
                 entry.m_methods.push_back(methodEntry);
@@ -352,7 +304,7 @@ namespace ScriptCanvasEditorTools
                 AZ::BehaviorProperty* behaviorProperty = propertyEntry.second;
                 if (behaviorProperty)
                 {
-                    TranslateBehaviorProperty(behaviorProperty, behaviorClass->m_name, "BehaviorClass", &entry);
+                    TranslateBehaviorProperty(behaviorProperty, behaviorClass->m_name, ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorClassContext, &entry);
                 }
             }
         }
@@ -386,7 +338,7 @@ namespace ScriptCanvasEditorTools
 
         Entry entry;
         entry.m_key = azEventEntry.m_eventName;
-        entry.m_context = "AZEventHandler";
+        entry.m_context = ScriptCanvasEditor::TranslationHelper::AssetContext::AZEventContext;
         entry.m_details.m_name = azEventEntry.m_eventName;
 
         SplitCamelCase(entry.m_details.m_name);
@@ -506,7 +458,7 @@ namespace ScriptCanvasEditorTools
         {
             Entry entry;
             entry.m_key = classData->m_typeId.ToString<AZStd::string>();
-            entry.m_context = "ScriptCanvas::Node";
+            entry.m_context = ScriptCanvasEditor::TranslationHelper::AssetContext::CustomNodeContext;
 
             EntryDetails& details = entry.m_details;
 
@@ -761,50 +713,12 @@ namespace ScriptCanvasEditorTools
                         methodEntry.m_exit.m_tooltip = AZStd::string::format("Signaled after %s is invoked", methodEntry.m_details.m_name.c_str());
 
                         // Arguments (Input Slots)
-                        if (behaviorMethod->GetNumArguments() > 0)
-                        {
-                            for (size_t argIndex = 0; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
-                            {
-                                const AZ::BehaviorParameter* parameter = behaviorMethod->GetArgument(argIndex);
-
-                                Argument argument;
-
-                                AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
-                                AZStd::string argumentName = parameter->m_name;
-                                AZStd::string argumentDescription = "";
-
-                                Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
-
-                                argument.m_typeId = argumentKey;
-                                argument.m_details.m_name = argumentName;
-                                argument.m_details.m_category = "";
-                                argument.m_details.m_tooltip = argumentDescription;
-
-                                SplitCamelCase(argument.m_details.m_name);
-
-                                methodEntry.m_arguments.push_back(argument);
-                            }
-                        }
+                        TranslateMethodArguments(behaviorMethod, methodEntry);
 
                         const AZ::BehaviorParameter* resultParameter = behaviorMethod->HasResult() ? behaviorMethod->GetResult() : nullptr;
                         if (resultParameter)
                         {
-                            Argument result;
-
-                            AZStd::string resultKey = resultParameter->m_typeId.ToString<AZStd::string>();
-
-                            AZStd::string resultName = resultParameter->m_name;
-                            AZStd::string resultDescription = "";
-
-                            Helpers::GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
-
-                            result.m_typeId = resultKey;
-                            result.m_details.m_name = resultName;
-                            result.m_details.m_tooltip = resultDescription;
-
-                            SplitCamelCase(result.m_details.m_name);
-
-                            methodEntry.m_results.push_back(result);
+                            TranslateMethodResults(resultParameter, methodEntry);
                         }
 
                         entry.m_methods.push_back(methodEntry);
@@ -826,6 +740,45 @@ namespace ScriptCanvasEditorTools
         }
     }
 
+    void TranslationGeneration::TranslateBehaviorGlobalMethod(const AZStd::string& methodName)
+    {
+        const auto behaviorMethodEntry = m_behaviorContext->m_methods.find(methodName);
+        if (behaviorMethodEntry == m_behaviorContext->m_methods.end())
+        {
+            return;
+        }
+
+        Entry entry;
+        entry.m_key = methodName;
+        entry.m_context = ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorGlobalMethodContext;
+        entry.m_details.m_name = methodName;
+        SplitCamelCase(entry.m_details.m_name);
+
+        AZ::BehaviorMethod* behaviorMethod = behaviorMethodEntry->second;
+        if (behaviorMethod)
+        {
+            AZStd::string cleanName = behaviorMethod->m_name;
+
+            Method method;
+            method.m_key = cleanName;
+            method.m_details.m_name = cleanName;
+            method.m_details.m_tooltip = behaviorMethod->m_debugDescription ? behaviorMethod->m_debugDescription : "";
+
+            SplitCamelCase(method.m_details.m_name);
+
+            TranslateMethod(behaviorMethod, method);
+
+            entry.m_methods.push_back(method);
+        }
+
+        TranslationFormat translationRoot;
+        translationRoot.m_entries.push_back(entry);
+
+        AZStd::string cleanName = GraphCanvas::TranslationKey::Sanitize(behaviorMethod->m_name);
+        AZStd::string fileName = AZStd::string::format("GlobalMethods/%s", cleanName.c_str());
+        SaveJSONData(fileName, translationRoot);
+    }
+
     void TranslationGeneration::TranslateBehaviorProperty(const AZStd::string& propertyName)
     {
         const auto behaviorPropertyEntry = m_behaviorContext->m_properties.find(propertyName);
@@ -838,7 +791,7 @@ namespace ScriptCanvasEditorTools
 
         Entry entry;
 
-        TranslateBehaviorProperty(behaviorProperty, propertyName, "Constant", &entry);
+        TranslateBehaviorProperty(behaviorProperty, propertyName, ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorGlobalPropertyContext, &entry);
 
         TranslationFormat translationRoot;
         translationRoot.m_entries.push_back(entry);
@@ -878,6 +831,18 @@ namespace ScriptCanvasEditorTools
     void TranslationGeneration::TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry)
     {
         // Arguments (Input Slots)
+        TranslateMethodArguments(behaviorMethod, methodEntry);
+
+        // Results (Output Slots)
+        const AZ::BehaviorParameter* resultParameter = behaviorMethod->HasResult() ? behaviorMethod->GetResult() : nullptr;
+        if (resultParameter)
+        {
+            TranslateMethodResults(resultParameter, methodEntry);
+        }
+    }
+
+    void TranslationGeneration::TranslateMethodArguments(const AZ::BehaviorMethod* behaviorMethod, Method& methodEntry)
+    {
         if (behaviorMethod->GetNumArguments() > 0)
         {
             for (size_t argIndex = 0; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
@@ -885,45 +850,49 @@ namespace ScriptCanvasEditorTools
                 const AZ::BehaviorParameter* parameter = behaviorMethod->GetArgument(argIndex);
 
                 Argument argument;
-
                 AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
                 AZStd::string argumentName = parameter->m_name;
                 AZStd::string argumentDescription;
 
                 Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
-                const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
                 argument.m_typeId = argumentKey;
+                const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
                 argument.m_details.m_name = (argName && !argName->empty()) ? *argName : argumentName;
-                argument.m_details.m_category = "";
-                argument.m_details.m_tooltip = argumentDescription;
+                const AZStd::string* argToolTip = behaviorMethod->GetArgumentToolTip(argIndex);
+                argument.m_details.m_tooltip = (argToolTip && !argToolTip->empty()) ? *argToolTip : argumentDescription;
 
                 SplitCamelCase(argument.m_details.m_name);
 
                 methodEntry.m_arguments.push_back(argument);
             }
         }
+    }
 
-        // Results (Output Slots)
-        const AZ::BehaviorParameter* resultParameter = behaviorMethod->HasResult() ? behaviorMethod->GetResult() : nullptr;
+    void TranslationGeneration::TranslateMethodResults(const AZ::BehaviorParameter* resultParameter, Method& methodEntry)
+    {
         if (resultParameter)
         {
-            Argument result;
+            AZStd::vector<AZ::TypeId> unpackedTypes = Helpers::GetUnpackedTypes(resultParameter->m_typeId);
+            size_t resultNum = unpackedTypes.size();
 
-            AZStd::string resultKey = resultParameter->m_typeId.ToString<AZStd::string>();
-            AZStd::string resultName = resultParameter->m_name;
-            AZStd::string resultDescription;
+            for (size_t resultIndex = 0; resultIndex < resultNum; ++resultIndex)
+            {
+                Argument result;
+                AZStd::string resultKey = unpackedTypes[resultIndex].ToString<AZStd::string>();
+                AZStd::string resultName;
+                AZStd::string resultDescription;
 
-            Helpers::GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
+                Helpers::GetTypeNameAndDescription(unpackedTypes[resultIndex], resultName, resultDescription);
 
-            const AZStd::string* resName = behaviorMethod->GetArgumentName(0);
-            result.m_typeId = resultKey;
-            result.m_details.m_name = (resName && !resName->empty()) ? *resName : resultName;
-            result.m_details.m_tooltip = resultDescription;
+                result.m_typeId = resultKey;
+                result.m_details.m_name = resultName;
+                result.m_details.m_tooltip = resultDescription;
 
-            SplitCamelCase(result.m_details.m_name);
+                SplitCamelCase(result.m_details.m_name);
 
-            methodEntry.m_results.push_back(result);
+                methodEntry.m_results.push_back(result);
+            }
         }
     }
 
@@ -1020,7 +989,7 @@ namespace ScriptCanvasEditorTools
 
             // Generate the translation file
             entry.m_key = behaviorEbus->m_name;
-            entry.m_context = "EBusHandler";
+            entry.m_context = ScriptCanvasEditor::TranslationHelper::AssetContext::EBusHandlerContext;
 
             entry.m_details.m_name = behaviorEbus->m_name;
             entry.m_details.m_tooltip = behaviorEbus->m_toolTip;
@@ -1533,6 +1502,24 @@ namespace ScriptCanvasEditorTools
             serializeContext.EnumerateDerived(EnumerateLibraryDefintionNodes, libraryDefTypeId, libraryDefTypeId);
 
             return category;
+        }
+
+        AZStd::vector<AZ::TypeId> GetUnpackedTypes(const AZ::TypeId& typeID)
+        {
+            using namespace AZ::ScriptCanvasAttributes;
+
+            if (const AZ::BehaviorClass* bcClass = AZ::BehaviorContextHelper::GetClass(typeID))
+            {
+                if (AZ::Attribute* attribute = AZ::FindAttribute(ReturnValueTypesFunction, bcClass->m_attributes))
+                {
+                    GetUnpackedReturnValueTypesHolder holder;
+                    AZ::AttributeReader attributeReader(nullptr, attribute);
+                    attributeReader.Read<GetUnpackedReturnValueTypesHolder>(holder);
+                    return AZStd::invoke(holder.m_function);
+                }
+            }
+
+            return { typeID };
         }
 
         void WriteString(rapidjson_ly::Value& owner, const AZStd::string& key, const AZStd::string& value, rapidjson_ly::Document& document)

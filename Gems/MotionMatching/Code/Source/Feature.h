@@ -119,7 +119,8 @@ namespace EMotionFX::MotionMatching
             [[maybe_unused]] const FrameCostContext& context) {}
 
         virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
-            [[maybe_unused]] MotionMatchingInstance* instance,
+            [[maybe_unused]] const Pose& currentPose,
+            [[maybe_unused]] const FeatureMatrix& featureMatrix,
             [[maybe_unused]] size_t frameIndex) {}
 
         void SetDebugDrawColor(const AZ::Color& color);

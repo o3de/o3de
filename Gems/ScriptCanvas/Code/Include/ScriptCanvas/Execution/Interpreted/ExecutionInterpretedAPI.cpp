@@ -559,11 +559,6 @@ namespace ScriptCanvas
             return AZ::StackRead(lua, index, context, param, allocator);
         }
 
-        void InterpretedUnloadData(RuntimeData& runtimeData)
-        {
-            AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::ClearAssetReferences, runtimeData.m_script.GetId());
-        }
-
         struct DependencyConstructionPack
         {
             ExecutionState* executionState;
