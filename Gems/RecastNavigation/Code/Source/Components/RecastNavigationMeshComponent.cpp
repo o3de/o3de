@@ -29,10 +29,6 @@ AZ_CVAR(
 
 namespace RecastNavigation
 {
-    RecastNavigationMeshComponent::RecastNavigationMeshComponent()
-    {
-    }
-
     void RecastNavigationMeshComponent::Reflect(AZ::ReflectContext* context)
     {
         RecastNavigationMeshConfig::Reflect(context);
@@ -42,7 +38,6 @@ namespace RecastNavigation
             serialize->Class<RecastNavigationMeshComponent, AZ::Component>()
                 ->Field("Config", &RecastNavigationMeshComponent::m_meshConfig)
                 ->Field("Show NavMesh in Game", &RecastNavigationMeshComponent::m_showNavigationMesh)
-                ->Field("Show NavMesh Portals", &RecastNavigationMeshComponent::m_showNavigationMeshPortals)
                 ->Version(1)
                 ;
 
@@ -54,10 +49,8 @@ namespace RecastNavigation
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(nullptr, &RecastNavigationMeshComponent::m_showNavigationMesh,
                         "Show NavMesh in Game", "if true, draws a helper overlay over the navigation mesh area")
-                    ->DataElement(nullptr, &RecastNavigationMeshComponent::m_showNavigationMeshPortals,
-                        "Show NavMesh Portals", "if true, draws a helper overlay over the navigation mesh portals that connect navigation tiles")
                     ->DataElement(nullptr, &RecastNavigationMeshComponent::m_meshConfig, "Config", "Navigation Mesh configuration")
-                ;
+                    ;
             }
         }
 
@@ -94,52 +87,6 @@ namespace RecastNavigation
         required.push_back(AZ_CRC_CE("RecastNavigationSurveyorService"));
     }
 
-    RecastVector3 RecastNavigationMeshComponent::GetPolyCenter(const dtNavMesh* navMesh, dtPolyRef ref)
-    {
-        RecastVector3 centerRecast;
-
-        float center[3];
-        center[0] = 0;
-        center[1] = 0;
-        center[2] = 0;
-
-        const dtMeshTile* tile = nullptr;
-        const dtPoly* poly = nullptr;
-        const dtStatus status = navMesh->getTileAndPolyByRef(ref, &tile, &poly);
-        if (dtStatusFailed(status))
-        {
-            return {};
-        }
-
-        if (poly->vertCount == 0)
-        {
-            return {};
-        }
-
-        for (int i = 0; i < aznumeric_cast<int>(poly->vertCount); ++i)
-        {
-            const float* v = &tile->verts[poly->verts[i] * 3];
-            center[0] += v[0];
-            center[1] += v[1];
-            center[2] += v[2];
-        }
-        const float s = 1.0f / aznumeric_cast<float>(poly->vertCount);
-        center[0] *= s;
-        center[1] *= s;
-        center[2] *= s;
-
-        centerRecast.m_x = center[0];
-        centerRecast.m_y = center[1];
-        centerRecast.m_z = center[2];
-
-        return centerRecast;
-    }
-
-    void RecastNavigationMeshComponent::OnNavigationMeshUpdated()
-    {
-        RecastNavigationMeshNotificationBus::Broadcast(&RecastNavigationMeshNotificationBus::Events::OnNavigationMeshUpdated, GetEntityId());
-    }
-
     void RecastNavigationMeshComponent::UpdateNavigationMesh()
     {
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
@@ -166,7 +113,7 @@ namespace RecastNavigation
             }
         }
 
-        OnNavigationMeshUpdated();
+        RecastNavigationMeshNotificationBus::Broadcast(&RecastNavigationMeshNotifications::OnNavigationMeshUpdated, GetEntityId());
     }
 
     NavigationTileData RecastNavigationMeshComponent::CreateNavigationTile(TileGeometry* geom,
@@ -280,7 +227,7 @@ namespace RecastNavigation
             rcFilterLedgeSpans(context, config.walkableHeight, config.walkableClimb, *solid);
         if (meshConfig.m_filterWalkableLowHeightSpans)
             rcFilterWalkableLowHeightSpans(context, config.walkableHeight, *solid);
-        
+
         //
         // Step 4. Partition walkable surface to simple regions.
         //
@@ -340,11 +287,11 @@ namespace RecastNavigation
         // Step 6. Build polygons mesh from contours.
         //
 
-        // Build polygon navmesh from the contours.
+        // Build polygon nav mesh from the contours.
         polyMesh.reset(rcAllocPolyMesh());
         if (!polyMesh)
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'pmesh'.");
+            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory while creating poly mesh.");
             return {};
         }
         if (!rcBuildPolyMesh(context, *contourSet, config.maxVertsPerPoly, *polyMesh))
@@ -377,8 +324,6 @@ namespace RecastNavigation
         // Step 8. Create Detour data from Recast poly mesh.
         //
 
-        // The GUI may allow more max points per polygon than Detour can handle.
-        // Only build the detour navmesh if we do not exceed the limit.
         if (config.maxVertsPerPoly <= DT_VERTS_PER_POLYGON)
         {
             NavigationTileData navigationTileData;
@@ -457,20 +402,20 @@ namespace RecastNavigation
             return false;
         }
 
+        AZ::Aabb worldVolume = AZ::Aabb::CreateNull();
+
         dtNavMeshParams params = {};
-        RecastNavigationSurveyorRequestBus::EventResult(m_worldVolume, GetEntityId(), &RecastNavigationSurveyorRequests::GetWorldBounds);
+        RecastNavigationSurveyorRequestBus::EventResult(worldVolume, GetEntityId(), &RecastNavigationSurveyorRequests::GetWorldBounds);
 
-        const RecastVector3 worldCenter(m_worldVolume.GetMin());
+        const RecastVector3 worldCenter(worldVolume.GetMin());
         rcVcopy(params.orig, &worldCenter.m_x);
-
-        // in world units
-        params.tileWidth = m_meshConfig.m_tileSize;
-        params.tileHeight = m_meshConfig.m_tileSize;
 
         RecastNavigationSurveyorRequestBus::EventResult(params.maxTiles, GetEntityId(), &RecastNavigationSurveyorRequests::GetNumberOfTiles,
             m_meshConfig.m_tileSize);
 
-        //params.maxPolys = 10'000;
+        // in world units
+        params.tileWidth = m_meshConfig.m_tileSize;
+        params.tileHeight = m_meshConfig.m_tileSize;
 
         dtStatus status = m_navMesh->init(&params);
         if (dtStatusFailed(status))
@@ -538,89 +483,60 @@ namespace RecastNavigation
 
     AZStd::vector<AZ::Vector3> RecastNavigationMeshComponent::FindPathToPosition(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& targetWorldPosition)
     {
-        AZStd::vector<AZ::Vector3> pathPoints;
-
+        if (!m_navMesh || !m_navQuery)
         {
-            RecastVector3 startRecast{ fromWorldPosition }, endRecast{ targetWorldPosition };
-            constexpr float halfExtents[3] = { 3.F, 3., 3 };
+            return {};
+        }
 
-            dtPolyRef startPoly = 0, endPoly = 0;
+        AZStd::vector<AZ::Vector3> pathPoints;
+        RecastVector3 startRecast{ fromWorldPosition }, endRecast{ targetWorldPosition };
+        constexpr float halfExtents[3] = { 3.F, 3., 3 };
 
-            RecastVector3 nearestStartPoint, nearestEndPoint;
+        dtPolyRef startPoly = 0, endPoly = 0;
 
-            const dtQueryFilter filter;
+        RecastVector3 nearestStartPoint, nearestEndPoint;
 
-            dtStatus result = m_navQuery->findNearestPoly(startRecast.data(), halfExtents, &filter, &startPoly, nearestStartPoint.data());
-            if (dtStatusFailed(result))
-            {
-                return {};
-            }
+        const dtQueryFilter filter;
 
-            result = m_navQuery->findNearestPoly(endRecast.data(), halfExtents, &filter, &endPoly, nearestEndPoint.data());
-            if (dtStatusFailed(result))
-            {
-                return {};
-            }
+        dtStatus result = m_navQuery->findNearestPoly(startRecast.GetData(), halfExtents, &filter, &startPoly, nearestStartPoint.GetData());
+        if (dtStatusFailed(result))
+        {
+            return {};
+        }
 
-            constexpr int maxPathLength = 100;
-            dtPolyRef path[maxPathLength] = {};
-            int pathLength = 0;
+        result = m_navQuery->findNearestPoly(endRecast.GetData(), halfExtents, &filter, &endPoly, nearestEndPoint.GetData());
+        if (dtStatusFailed(result))
+        {
+            return {};
+        }
 
-            // find an approximate path
-            result = m_navQuery->findPath(startPoly, endPoly, nearestStartPoint.data(), nearestEndPoint.data(), &filter, path, &pathLength, maxPathLength);
-            if (dtStatusFailed(result))
-            {
-                return {};
-            }
+        constexpr int maxPathLength = 100;
+        dtPolyRef path[maxPathLength] = {};
+        int pathLength = 0;
 
-            AZStd::vector<RecastVector3> approximatePath;
-            approximatePath.resize(pathLength);
+        // find an approximate path
+        result = m_navQuery->findPath(startPoly, endPoly, nearestStartPoint.GetData(), nearestEndPoint.GetData(), &filter, path, &pathLength, maxPathLength);
+        if (dtStatusFailed(result))
+        {
+            return {};
+        }
 
-            for (int pathIndex = 0; pathIndex < pathLength; ++pathIndex)
-            {
-                RecastVector3 center = GetPolyCenter(m_navMesh.get(), path[pathIndex]);
-                approximatePath.push_back(center);
-            }
+        constexpr int maxDetailedPathLength = 100;
+        RecastVector3 detailedPath[maxDetailedPathLength] = {};
+        AZ::u8 detailedPathFlags[maxDetailedPathLength] = {};
+        dtPolyRef detailedPolyPathRefs[maxDetailedPathLength] = {};
+        int detailedPathCount = 0;
 
-            constexpr int maxDetailedPathLength = 100;
-            RecastVector3 detailedPath[maxDetailedPathLength] = {};
-            AZ::u8 detailedPathFlags[maxDetailedPathLength] = {};
-            dtPolyRef detailedPolyPathRefs[maxDetailedPathLength] = {};
-            int detailedPathCount = 0;
+        result = m_navQuery->findStraightPath(startRecast.GetData(), endRecast.GetData(), path, pathLength, detailedPath[0].GetData(), detailedPathFlags, detailedPolyPathRefs,
+            &detailedPathCount, maxDetailedPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
+        if (dtStatusFailed(result))
+        {
+            return {};
+        }
 
-            result = m_navQuery->findStraightPath(startRecast.data(), endRecast.data(), path, pathLength, detailedPath[0].data(), detailedPathFlags, detailedPolyPathRefs,
-                &detailedPathCount, maxDetailedPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
-            if (dtStatusFailed(result))
-            {
-                return {};
-            }
-
-            if (cl_navmesh_debug)
-            {
-                constexpr AZ::Crc32 ViewportId = AzFramework::g_defaultSceneEntityDebugDisplayId;
-                AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
-                AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, ViewportId);
-                AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-                if (debugDisplay)
-                {
-                    for (size_t detailedIndex = 1; detailedIndex < approximatePath.size(); ++detailedIndex)
-                    {
-                        if (detailedPath[detailedIndex].AsVector3().IsZero())
-                            break;
-
-                        const AZ::Vector4 colorVector4 = AZ::Color(0.F, 1, 0, 1).GetAsVector4();
-
-                        debugDisplay->DrawLine(
-                            detailedPath[detailedIndex - 1].AsVector3(),
-                            detailedPath[detailedIndex].AsVector3(), colorVector4, colorVector4);
-                    }
-                }
-            }
-
-            for (int i = 0; i < detailedPathCount; ++i)
-            {
-                pathPoints.push_back(detailedPath[i].AsVector3());
-            }
+        for (int i = 0; i < detailedPathCount; ++i)
+        {
+            pathPoints.push_back(detailedPath[i].AsVector3());
         }
 
         return pathPoints;
@@ -635,6 +551,16 @@ namespace RecastNavigation
 
         RecastNavigationMeshRequestBus::Handler::BusConnect(GetEntityId());
         AZ::TickBus::Handler::BusConnect();
+
+        bool usingTiledSurveyor = false;
+        RecastNavigationSurveyorRequestBus::EventResult(usingTiledSurveyor, GetEntityId(), &RecastNavigationSurveyorRequests::IsTiled);
+        if (!usingTiledSurveyor)
+        {
+            // We are using a non-tiled surveyor. Force the tile to cover the entire area.
+            AZ::Aabb entireVolume = AZ::Aabb::CreateNull();
+            RecastNavigationSurveyorRequestBus::EventResult(entireVolume, GetEntityId(), &RecastNavigationSurveyorRequests::GetWorldBounds);
+            m_meshConfig.m_tileSize = AZStd::max(entireVolume.GetExtents().GetX(), entireVolume.GetExtents().GetY());
+        }
 
         CreateNavigationMesh();
     }
@@ -651,17 +577,14 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (cl_navmesh_debug || (m_showNavigationMesh || m_showNavigationMeshPortals))
+        if (!m_navMesh)
         {
-            if (m_showNavigationMesh)
-            {
-                duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);
-            }
+            return;
+        }
 
-            if (m_showNavigationMeshPortals)
-            {
-                duDebugDrawNavMeshPortals(&m_customDebugDraw, *m_navMesh);
-            }
+        if (cl_navmesh_debug || m_showNavigationMesh)
+        {
+            duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);
         }
     }
 } // namespace RecastNavigation

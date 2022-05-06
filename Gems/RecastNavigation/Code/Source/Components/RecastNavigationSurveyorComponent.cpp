@@ -16,6 +16,7 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 #pragma optimize("", off)
@@ -27,6 +28,7 @@ namespace RecastNavigation
         if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<RecastNavigationSurveyorComponent, AZ::Component>()
+                ->Field("Select by Tags", &RecastNavigationSurveyorComponent::m_tagSelectionList)
                 ->Version(1)
                 ;
 
@@ -37,6 +39,9 @@ namespace RecastNavigation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(nullptr, &RecastNavigationSurveyorComponent::m_tagSelectionList, "Select by Tags",
+                        "if specified, only entities with Tag component of provided tag values will be considered when building navigation mesh. "
+                        "If no tags are specified, any static PhysX object within the area will be included in navigation mesh calculations.")
                     ;
             }
         }
@@ -92,17 +97,12 @@ namespace RecastNavigation
                 AZ::TransformBus::EventResult(t, hitEntityId, &AZ::TransformBus::Events::GetWorldTM);
                 t.SetUniformScale(1.0f);
 
-                /*AZ_Printf("NavMesh", "world %s, local %s & %s = %s", AZ::ToString(t).c_str(),
-                    AZ::ToString(pose.first).c_str(), AZ::ToString(pose.second).c_str(), AZ::ToString(worldTransform).c_str());*/
-
                 overlapHit.m_shape->GetGeometry(vertices, indices, nullptr);
                 if (!vertices.empty() && !indices.empty())
                 {
                     for (const AZ::Vector3& vertex : vertices)
                     {
                         const AZ::Vector3 translated = t.TransformPoint(vertex);
-                        //AZ_Printf("NavMesh", "physx vertex %s -> %s", AZ::ToString(vertex).c_str(), AZ::ToString(translated).c_str());
-
                         geometry.m_vertices.push_back(RecastVector3(translated));
                     }
 
@@ -123,6 +123,11 @@ namespace RecastNavigation
 
     void RecastNavigationSurveyorComponent::Activate()
     {
+        for (const AZStd::string& tagName : m_tagSelectionList)
+        {
+            m_tags.push_back(AZ_CRC(tagName));
+        }
+
         AZ::Vector3 position = AZ::Vector3::CreateZero();
         AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
@@ -147,7 +152,23 @@ namespace RecastNavigation
         Physics::BoxShapeConfiguration shapeConfiguration;
         shapeConfiguration.m_dimensions = dimension;
 
-        AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
+        AzPhysics::SceneQuery::OverlapFilterCallback filterCallback = [this](const AzPhysics::SimulatedBody* body, const Physics::Shape*) -> bool
+        {
+            LmbrCentral::Tags tags;
+            LmbrCentral::TagComponentRequestBus::EventResult(tags, body->GetEntityId(), &LmbrCentral::TagComponentRequestBus::Events::GetTags);
+            for (const auto allowedTag : m_tags)
+            {
+                if (tags.find(allowedTag) != tags.end())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose,
+            m_tags.empty() ? nullptr : filterCallback);
         request.m_queryType = AzPhysics::SceneQuery::QueryType::Static;
         request.m_collisionGroup = AzPhysics::CollisionGroup::All;
 

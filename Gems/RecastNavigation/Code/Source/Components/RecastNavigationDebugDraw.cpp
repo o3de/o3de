@@ -12,10 +12,6 @@
 
 namespace RecastNavigation
 {
-    RecastNavigationDebugDraw::RecastNavigationDebugDraw(bool drawLines) : m_drawLines(drawLines)
-    {
-    }
-
     void RecastNavigationDebugDraw::begin(duDebugDrawPrimitives prim, [[maybe_unused]] float size)
     {
         m_currentPrim = prim;
@@ -27,7 +23,7 @@ namespace RecastNavigation
         AddVertex(pos[0], pos[1], pos[2], color);
     }
 
-    void RecastNavigationDebugDraw::vertex(const float x, const float y, const float z, unsigned color)
+    void RecastNavigationDebugDraw::vertex(float x, float y, float z, unsigned color)
     {
         AddVertex(x, y, z, color);
     }
@@ -37,7 +33,7 @@ namespace RecastNavigation
         AddVertex(pos[0], pos[1], pos[2], color);
     }
 
-    void RecastNavigationDebugDraw::vertex(const float x, const float y, const float z, unsigned color,
+    void RecastNavigationDebugDraw::vertex(float x, float y, float z, unsigned color,
         [[maybe_unused]] const float u, [[maybe_unused]] const float v)
     {
         AddVertex(x, y, z, color);
@@ -93,19 +89,16 @@ namespace RecastNavigation
             }
             break;
         case DU_DRAW_LINES:
-            if (m_drawLines)
+            for (size_t i = 1; m_drawLines && i < m_verticesToDraw.size(); i++)
             {
-                for (size_t i = 1; i < m_verticesToDraw.size(); i++)
-                {
-                    AZ::Color color0 = AZ::Color::CreateZero();
-                    color0.FromU32(m_verticesToDraw[i].second);
+                AZ::Color color0 = AZ::Color::CreateZero();
+                color0.FromU32(m_verticesToDraw[i].second);
 
-                    AZ::Color color1 = AZ::Color::CreateZero();
-                    color1.FromU32(m_verticesToDraw[i].second);
+                AZ::Color color1 = AZ::Color::CreateZero();
+                color1.FromU32(m_verticesToDraw[i].second);
 
-                    debugDisplay->DrawLine(m_verticesToDraw[i - 1].first, m_verticesToDraw[i].first,
-                        color0.GetAsVector4(), color1.GetAsVector4());
-                }
+                debugDisplay->DrawLine(m_verticesToDraw[i - 1].first, m_verticesToDraw[i].first,
+                    color0.GetAsVector4(), color1.GetAsVector4());
             }
             break;
         }
@@ -115,6 +108,6 @@ namespace RecastNavigation
     {
         const float temp[3] = { x, y, z };
         const RecastVector3 v(temp);
-        m_verticesToDraw.push_back(AZStd::make_pair(v.AsVector3(), color));
+        m_verticesToDraw.emplace_back(v.AsVector3(), color);
     }
 }

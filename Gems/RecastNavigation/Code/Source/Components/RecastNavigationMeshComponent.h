@@ -35,7 +35,6 @@ namespace RecastNavigation
     public:
         AZ_COMPONENT(RecastNavigationMeshComponent, "{a281f314-a525-4c05-876d-17eb632f14b4}");
 
-        RecastNavigationMeshComponent();
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -59,19 +58,10 @@ namespace RecastNavigation
     private:
         
         bool m_showNavigationMesh = true;
-        bool m_showNavigationMeshPortals = true;
-
-        static RecastVector3 GetPolyCenter(const dtNavMesh* navMesh, dtPolyRef ref);
-        
-        void OnNavigationMeshUpdated();
-        
-        static NavigationTileData CreateNavigationTile(TileGeometry* geom,
-            const RecastNavigationMeshConfig& meshConfig, rcContext* context);
         
         bool CreateNavigationMesh();
         bool AttachNavigationTileToMesh(NavigationTileData& navigationTileData);
-
-        AZ::Aabb m_worldVolume = AZ::Aabb::CreateNull();
+        NavigationTileData CreateNavigationTile(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig, rcContext* context);
         
         RecastNavigationMeshConfig m_meshConfig;
         RecastNavigationDebugDraw m_customDebugDraw;

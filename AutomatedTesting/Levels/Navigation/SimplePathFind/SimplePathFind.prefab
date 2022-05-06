@@ -805,6 +805,13 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 3100900185066405258
                 },
+                "Component_[5490928588343532791]": {
+                    "$type": "EditorTagComponent",
+                    "Id": 5490928588343532791,
+                    "Tags": [
+                        "Walkable"
+                    ]
+                },
                 "Component_[7883161033135576251]": {
                     "$type": "EditorColliderComponent",
                     "Id": 7883161033135576251,
@@ -858,6 +865,13 @@
                 "Component_[12633702391359586668]": {
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 12633702391359586668
+                },
+                "Component_[1306277477880827567]": {
+                    "$type": "EditorTagComponent",
+                    "Id": 1306277477880827567,
+                    "Tags": [
+                        "Walkable"
+                    ]
                 },
                 "Component_[15218674107800691520]": {
                     "$type": "AZ::Render::EditorMeshComponent",
@@ -961,6 +975,13 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 12633702391359586668
                 },
+                "Component_[12968642472684383587]": {
+                    "$type": "EditorTagComponent",
+                    "Id": 12968642472684383587,
+                    "Tags": [
+                        "Walkable"
+                    ]
+                },
                 "Component_[15218674107800691520]": {
                     "$type": "AZ::Render::EditorMeshComponent",
                     "Id": 15218674107800691520,
@@ -1046,9 +1067,9 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            6.990005970001221,
-                            -12.927029609680176,
-                            3.0367703437805176
+                            6.110052108764648,
+                            -14.665385246276855,
+                            3.383784294128418
                         ]
                     }
                 },
@@ -1495,13 +1516,6 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 13657964881596301273
                 },
-                "Component_[1539832337262944389]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 1539832337262944389,
-                    "m_template": {
-                        "$type": "RecastNavigationTiledSurveyorComponent"
-                    }
-                },
                 "Component_[16579119585935569508]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 16579119585935569508
@@ -1544,6 +1558,13 @@
                 "Component_[5255119055622219396]": {
                     "$type": "SelectionComponent",
                     "Id": 5255119055622219396
+                },
+                "Component_[536504306951242305]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 536504306951242305,
+                    "m_template": {
+                        "$type": "RecastNavigationSurveyorComponent"
+                    }
                 },
                 "Component_[5591558542987564576]": {
                     "$type": "EditorVisibilityComponent",
@@ -1910,6 +1931,13 @@
                 "Component_[3100900185066405258]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 3100900185066405258
+                },
+                "Component_[355537741798780284]": {
+                    "$type": "EditorTagComponent",
+                    "Id": 355537741798780284,
+                    "Tags": [
+                        "Walkable"
+                    ]
                 },
                 "Component_[7883161033135576251]": {
                     "$type": "EditorColliderComponent",

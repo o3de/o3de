@@ -110,17 +110,12 @@ namespace RecastNavigation
                 AZ::TransformBus::EventResult(t, hitEntityId, &AZ::TransformBus::Events::GetWorldTM);
                 t.SetUniformScale(1.0f);
 
-                /*AZ_Printf("NavMesh", "world %s, local %s & %s = %s", AZ::ToString(t).c_str(),
-                    AZ::ToString(pose.first).c_str(), AZ::ToString(pose.second).c_str(), AZ::ToString(worldTransform).c_str());*/
-
                 overlapHit.m_shape->GetGeometry(vertices, indices, nullptr);
                 if (!vertices.empty() && !indices.empty())
                 {
                     for (const AZ::Vector3& vertex : vertices)
                     {
                         const AZ::Vector3 translated = t.TransformPoint(vertex);
-                        //AZ_Printf("NavMesh", "physx vertex %s -> %s", AZ::ToString(vertex).c_str(), AZ::ToString(translated).c_str());
-
                         geometry.m_vertices.push_back(RecastVector3(translated));
                     }
 
@@ -167,8 +162,8 @@ namespace RecastNavigation
         int tilesAlongX = static_cast<int>(AZStd::ceilf(extents.GetX() / tileSize));
         int tilesAlongY = static_cast<int>(AZStd::ceilf(extents.GetY() / tileSize));
 
-        const AZ::Vector3 worldMin = worldVolume.GetMin();
-        const AZ::Vector3 worldMax = worldVolume.GetMax();
+        const AZ::Vector3& worldMin = worldVolume.GetMin();
+        const AZ::Vector3& worldMax = worldVolume.GetMax();
 
         const AZ::Vector3 border = AZ::Vector3::CreateOne() * 5.f;
 
@@ -176,15 +171,15 @@ namespace RecastNavigation
         {
             for (int x = 0; x < tilesAlongX; ++x)
             {
-                AZ::Vector3 tileMin{
-                    worldMin.GetX() + x * tileSize,
-                    worldMin.GetY() + y * tileSize,
+                const AZ::Vector3 tileMin{
+                    worldMin.GetX() + aznumeric_cast<float>(x) * tileSize,
+                    worldMin.GetY() + aznumeric_cast<float>(y) * tileSize,
                     worldMin.GetZ()
                 };
 
-                AZ::Vector3 tileMax{
-                    worldMin.GetX() + (x + 1) * tileSize,
-                    worldMin.GetY() + (y + 1) * tileSize,
+                const AZ::Vector3 tileMax{
+                    worldMin.GetX() + aznumeric_cast<float>(x + 1) * tileSize,
+                    worldMin.GetY() + aznumeric_cast<float>(y + 1) * tileSize,
                     worldMax.GetZ()
                 };
 
@@ -222,8 +217,8 @@ namespace RecastNavigation
         const AZ::Aabb worldVolume = GetWorldBounds();
 
         const AZ::Vector3 extents = worldVolume.GetExtents();
-        int tilesAlongX = static_cast<int>(AZStd::ceilf(extents.GetX() / tileSize));
-        int tilesAlongY = static_cast<int>(AZStd::ceilf(extents.GetY() / tileSize));
+        const int tilesAlongX = static_cast<int>(AZStd::ceilf(extents.GetX() / tileSize));
+        const int tilesAlongY = static_cast<int>(AZStd::ceilf(extents.GetY() / tileSize));
 
         return tilesAlongX * tilesAlongY;
     }

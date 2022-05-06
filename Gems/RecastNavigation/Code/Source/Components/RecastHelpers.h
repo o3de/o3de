@@ -38,7 +38,7 @@ namespace RecastNavigation
         }
         
         //! @return raw data without any conversion between coordinate systems.
-        float* data() { return &m_x; }
+        float* GetData() { return &m_x; }
         
         //! @return vector in O3DE coordinate space, with +Z being up
         [[nodiscard]] AZ::Vector3 AsVector3() const
@@ -73,16 +73,6 @@ namespace RecastNavigation
         bool IsEmpty() const
         {
             return m_vertices.empty();
-        }
-
-        //! Resets and clears stored geometry and the volume bounds.
-        void Clear()
-        {
-            m_worldBounds.SetNull();
-            m_tileX = 0;
-            m_tileY = 0;
-            m_vertices.clear();
-            m_indices.clear();
         }
     };
     

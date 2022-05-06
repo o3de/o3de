@@ -22,6 +22,8 @@ namespace RecastNavigation
         //! Returns the world bounds that this surveyor is responsible for.
         //! @return An axis aligned bounding box of the world bounds.
         virtual AZ::Aabb GetWorldBounds() const = 0;
+
+        virtual bool IsTiled() const = 0;
     };
 
     using RecastNavigationSurveyorRequestBus = AZ::EBus<RecastNavigationSurveyorRequests>;

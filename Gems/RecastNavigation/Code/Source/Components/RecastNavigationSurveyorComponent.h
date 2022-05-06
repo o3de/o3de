@@ -45,9 +45,13 @@ namespace RecastNavigation
         // RecastNavigationSurveyorRequestBus interface implementation
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize) override;
         AZ::Aabb GetWorldBounds() const override;
+        bool IsTiled() const override { return false; }
 
     private:
         // Append the geometry within a volume
         void AppendColliderGeometry(TileGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
+
+        AZStd::vector<AZStd::string> m_tagSelectionList;
+        AZStd::vector<AZ::u32> m_tags;
     };
 } // namespace RecastNavigation

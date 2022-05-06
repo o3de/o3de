@@ -47,6 +47,7 @@ namespace RecastNavigation
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize) override;
         AZ::Aabb GetWorldBounds() const override;
         int GetNumberOfTiles(float tileSize) const override;
+        bool IsTiled() const override { return true; }
 
     private:
 
