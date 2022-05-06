@@ -17,7 +17,6 @@
 #include <Editor/Plugins/Ragdoll/RagdollViewportUiCluster.h>
 #endif
 
-
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 namespace Physics

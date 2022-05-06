@@ -22,6 +22,7 @@
 #include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+#include <Integration/System/CVars.h>
 #include <QLabel>
 #include <QMessageBox>
 #include <QHBoxLayout>
@@ -170,7 +171,10 @@ namespace EMotionFX
                     ragdollManipulatorData.m_collidersWidget = m_collidersWidget;
                     ragdollManipulatorData.m_valid = true;
                 }
-                m_ragdollViewportUiCluster.CreateClusterIfNoneExists(ragdollManipulatorData);
+                if (Integration::CVars::emfx_ragdollManipulatorsEnabled)
+                {
+                    m_ragdollViewportUiCluster.CreateClusterIfNoneExists(ragdollManipulatorData);
+                }
             }
             else
             {
