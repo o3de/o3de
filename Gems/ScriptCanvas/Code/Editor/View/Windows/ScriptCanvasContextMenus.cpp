@@ -943,6 +943,7 @@ namespace ScriptCanvasEditor
         , [[maybe_unused]] const AZ::EntityId& targetId)
     {
         // ask the model if is enabled, change name to reason why...?
+        // display a window listing the reasons why the script canvas node can't be saved out as a script event
         setEnabled(true);
     }
 

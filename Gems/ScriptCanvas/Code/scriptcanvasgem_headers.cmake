@@ -120,6 +120,7 @@ set(FILES
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.h
     Include/ScriptCanvas/Grammar/ParsingMetaData.h
     Include/ScriptCanvas/Grammar/ParsingUtilities.h
+    Include/ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h
     Include/ScriptCanvas/Grammar/Primitives.h
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.h
     Include/ScriptCanvas/Grammar/PrimitivesExecution.h
