@@ -59,4 +59,11 @@ namespace UnitTest
         sphere2 = unitSphere;
         EXPECT_TRUE(sphere2 == unitSphere);
     }
+
+    TEST(MATH_Sphere, TestCopyConstructor)
+    {
+        AZ::Sphere unitSphere = AZ::Sphere::CreateUnitSphere();
+        AZ::Sphere sphere2(unitSphere);
+        EXPECT_TRUE(sphere2 == unitSphere);
+    }
 }
