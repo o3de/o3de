@@ -7,15 +7,27 @@
  */
 
 #include <AzCore/Math/Ray.h>
+#include <AzCore/Math/LineSegment.h>
 
-namespace O3DE
+namespace AZ
 {
     Ray::Ray(const AZ::Vector3& origin, const AZ::Vector3& direction)
         : m_origin(origin)
         , m_direction(direction)
     {
-        AZ_MATH_ASSERT(m_direction.IsNormalized(), "This normal is not normalized");
+        AZ_MATH_ASSERT(m_direction.IsNormalized(), "direction is not normalized");
     }
+
+    Ray::Ray(const Ray& rhs):
+        m_origin(rhs.m_origin),
+        m_direction(rhs.m_direction) {
+        AZ_MATH_ASSERT(m_direction.IsNormalized(), "direction is not normalized");
+    }
+
+    Ray Ray::CreateFromLineSegment(const LineSegment& segment) {
+        return Ray(segment.GetStart(), segment.GetDifference().GetNormalized());
+    }
+
 
     const AZ::Vector3& Ray::GetOrigin() const
     {
@@ -26,21 +38,4 @@ namespace O3DE
     {
         return m_direction;
     }
-
-    bool Ray::operator==(const Ray& rhs) const
-    {
-        return m_start == rhs.m_start && m_direction == rhs.m_direction;
-    }
-
-    bool Ray::operator!=(const Ray& rhs) const
-    {
-        return m_start != rhs.m_start && m_direction != rhs.m_direction;
-    }
-
-    Ray& Ray::operator=(const Ray& rhs) const
-    {
-        m_origin = rhs.m_origin;
-        m_direction = rhs.m_direction;
-        return *this;
-    }
-} // namespace O3DE
+} // namespace AZ

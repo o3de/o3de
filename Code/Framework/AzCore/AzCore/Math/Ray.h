@@ -11,28 +11,26 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 
-#include <AzCore/Math/Sphere.h>
-
-namespace O3DE
+namespace AZ
 {
+
+    class LineSegment;
+
     class Ray
     {
     public:
         AZ_TYPE_INFO(Ray, "{0301a872-5bea-4563-8070-85ed243cb57c}");
 
-        explicit Ray(const AZ::Vector3& origin, const AZ::Vector3& direction);
+        Ray() = default;
+        Ray(const AZ::Vector3& origin, const AZ::Vector3& direction);
+        Ray(const Ray& rhs);
 
-        bool Intersects(const AZ::Aabb aabb) const;
+        static Ray CreateFromLineSegment(const LineSegment& segment);
 
         const AZ::Vector3& GetOrigin() const;
         const AZ::Vector3& GetDirection() const;
-
-        Ray& operator=(const Ray& rhs);
-        bool operator==(const Ray& rhs) const;
-        bool operator!=(const Ray& rhs) const;
-
     private:
         AZ::Vector3 m_origin;
         AZ::Vector3 m_direction;
     };
-} // namespace O3DE
+} // namespace AZ

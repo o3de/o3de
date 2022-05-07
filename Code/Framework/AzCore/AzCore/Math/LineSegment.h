@@ -11,34 +11,26 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 
-namespace O3DE
+namespace AZ
 {
+    class Ray;
+
     class LineSegment
     {
     public:
         AZ_TYPE_INFO(LineSegment, "{7557da1e-cc20-11ec-9d64-0242ac120002}");
 
-        explicit LineSegment(const AZ::Vector3& start, const AZ::Vector3& end);
+        LineSegment() = default;
+        LineSegment(const AZ::Vector3& start, const AZ::Vector3& end);
+        LineSegment(const LineSegment& rhs);
+
+        static LineSegment CreateFromRayAndLength(const Ray& segment, float length);
 
         const AZ::Vector3& GetStart() const;
         const AZ::Vector3& GetEnd() const;
-        
-        LineSegment& operator=(const LineSegment& rhs);
-        bool operator==(const LineSegment& rhs) const;
-        bool operator!=(const LineSegment& rhs) const;
-
-        //TODO: implement
-        //!
-        float GetLength();
     
-        //!
-        AZ::Vector3 GetDirection();
-        
-        //!
-        AZ::Vector3 GetPoint(float t);
-        
-        //!
-        bool IsPointOnSegment(const AZ::Vector3& point);
+        AZ::Vector3 GetDifference() const;
+        AZ::Vector3 GetPoint(float t) const;
 
     private:
         AZ::Vector3 m_start;

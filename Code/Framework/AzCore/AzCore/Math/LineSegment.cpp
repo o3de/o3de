@@ -7,38 +7,43 @@
  */
 
 #include <AzCore/Math/LineSegment.h>
+#include <AzCore/Math/Ray.h>
 
-namespace O3DE
+namespace AZ
 {
-    LineSegment::LineSegment(const AZ::Vector3& start, const AZ::Vector3& end):
-        m_start(start),
-        m_end(end)
+    LineSegment::LineSegment(const AZ::Vector3& start, const AZ::Vector3& end)
+        : m_start(start)
+        , m_end(end)
     {
+    }
+
+    LineSegment::LineSegment(const LineSegment& rhs)
+        : m_start(rhs.m_start)
+        , m_end(rhs.m_end)
+    {
+    }
+
+    LineSegment LineSegment::CreateFromRayAndLength(const Ray& ray, float length) {
+        return LineSegment(ray.GetOrigin(), ray.GetOrigin() + (ray.GetDirection() * length));
     }
 
     const AZ::Vector3& LineSegment::GetStart() const
     {
         return m_start;
     }
+
     const AZ::Vector3& LineSegment::GetEnd() const
     {
         return m_end;
     }
 
-        
-    LineSegment& LineSegment::operator=(const LineSegment& rhs) {
-        m_start = rhs.m_start;
-        m_end = rhs.m_end;
-        return (*this);
+    AZ::Vector3 LineSegment::GetDifference() const {
+        return (m_end - m_start);
     }
 
-    bool LineSegment::operator==(const LineSegment& rhs) const
-    {
-        return m_start == rhs.m_start && m_end == rhs.m_end;
-    }
-    bool LineSegment::operator!=(const LineSegment& rhs) const
-    {
-        return m_start != rhs.m_start && m_end != rhs.m_end;
+    AZ::Vector3 LineSegment::GetPoint(float t) const {
+        return GetDifference().Lerp(AZ::Vector3(), t) + m_start;
     }
 
-} // namespace O3DE
+
+} // namespace AZ
