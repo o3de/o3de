@@ -44,13 +44,6 @@ namespace RecastNavigation
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<RecastNavigationSurveyorRequestBus>("RecastNavigationSurveyorRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Module, "navigation")
-                ->Attribute(AZ::Script::Attributes::Category, "Navigation")
-                ->Event("GetWorldBounds", &RecastNavigationSurveyorRequests::GetWorldBounds)
-                ;
-
             behaviorContext->Class<RecastNavigationTiledSurveyorComponent>()->RequestBus("RecastNavigationSurveyorRequestBus");
         }
     }

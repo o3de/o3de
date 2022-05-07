@@ -361,13 +361,6 @@
                     "$type": "EditorLockComponent",
                     "Id": 14022217168872949369
                 },
-                "Component_[15235843618159938843]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 15235843618159938843,
-                    "m_template": {
-                        "$type": "RecastNavigationMeshComponent"
-                    }
-                },
                 "Component_[16028345653679738201]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 16028345653679738201
@@ -391,6 +384,13 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 18403396604075414543
                 },
+                "Component_[3418979736543341677]": {
+                    "$type": "EditorRecastNavigationMeshComponent",
+                    "Id": 3418979736543341677,
+                    "Config": {
+                        "Tile Size": 30.0
+                    }
+                },
                 "Component_[3922689986033528821]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 3922689986033528821
@@ -398,16 +398,6 @@
                 "Component_[4642923864411975883]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 4642923864411975883
-                },
-                "Component_[5058375529061642695]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 5058375529061642695,
-                    "m_template": {
-                        "$type": "RecastNavigationSurveyorComponent",
-                        "Select by Tags": [
-                            "Walkable"
-                        ]
-                    }
                 },
                 "Component_[5086271213034432873]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -424,6 +414,10 @@
                             0.702064037322998
                         ]
                     }
+                },
+                "Component_[835637847634601162]": {
+                    "$type": "EditorRecastNavigationSurveyorComponent",
+                    "Id": 835637847634601162
                 },
                 "Component_[9754436532357323786]": {
                     "$type": "SelectionComponent",

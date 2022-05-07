@@ -1496,18 +1496,6 @@
             "Id": "Entity_[689399540125]",
             "Name": "Navigation Mesh",
             "Components": {
-                "Component_[10518198989519037715]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 10518198989519037715,
-                    "m_template": {
-                        "$type": "RecastNavigationMeshComponent",
-                        "Config": {
-                            "Cell Height": 0.30000001192092896,
-                            "Cell Size": 0.25,
-                            "Tile Size": 16.0
-                        }
-                    }
-                },
                 "Component_[11878103616676392438]": {
                     "$type": "EditorLockComponent",
                     "Id": 11878103616676392438
@@ -1519,6 +1507,13 @@
                 "Component_[16579119585935569508]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 16579119585935569508
+                },
+                "Component_[17759168224455574304]": {
+                    "$type": "EditorRecastNavigationMeshComponent",
+                    "Id": 17759168224455574304,
+                    "Config": {
+                        "Tile Size": 40.0
+                    }
                 },
                 "Component_[18213539476955925626]": {
                     "$type": "EditorAxisAlignedBoxShapeComponent",
@@ -1541,8 +1536,8 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            2.85727596282959,
-                            -1.953354835510254,
+                            6.098055362701416,
+                            0.30622386932373047,
                             2.764822006225586
                         ]
                     }
@@ -1551,6 +1546,10 @@
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 2341960808846952083
                 },
+                "Component_[3177764718426719812]": {
+                    "$type": "EditorRecastNavigationSurveyorComponent",
+                    "Id": 3177764718426719812
+                },
                 "Component_[489051039172207833]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 489051039172207833
@@ -1558,13 +1557,6 @@
                 "Component_[5255119055622219396]": {
                     "$type": "SelectionComponent",
                     "Id": 5255119055622219396
-                },
-                "Component_[536504306951242305]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 536504306951242305,
-                    "m_template": {
-                        "$type": "RecastNavigationSurveyorComponent"
-                    }
                 },
                 "Component_[5591558542987564576]": {
                     "$type": "EditorVisibilityComponent",

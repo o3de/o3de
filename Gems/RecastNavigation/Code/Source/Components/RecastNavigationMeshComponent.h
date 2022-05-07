@@ -8,19 +8,17 @@
 
 #pragma once
 
-#include "RecastNavigationDebugDraw.h"
-#include "RecastNavigationMeshConfig.h"
+#include <Components/RecastNavigationMeshConfig.h>
+#include <Components/RecastNavigationMeshCommon.h>
 
 #include <DetourNavMesh.h>
 #include <Recast.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
-#include <AzFramework/Input/Events/InputChannelEventListener.h>
-#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <Components/RecastHelpers.h>
 #include <RecastNavigation/RecastNavigationMeshBus.h>
 
 namespace RecastNavigation
@@ -29,17 +27,15 @@ namespace RecastNavigation
     //! Provides APIs to find a path between two entities or two world positions.
     class RecastNavigationMeshComponent final
         : public AZ::Component
-        , public AZ::TickBus::Handler
+        , public RecastNavigationMeshCommon
         , public RecastNavigationMeshRequestBus::Handler
     {
     public:
         AZ_COMPONENT(RecastNavigationMeshComponent, "{a281f314-a525-4c05-876d-17eb632f14b4}");
 
+        RecastNavigationMeshComponent() = default;
+        RecastNavigationMeshComponent(const RecastNavigationMeshConfig& config, bool showNavigationMesh);
         static void Reflect(AZ::ReflectContext* context);
-
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
         // RecastNavigationRequestBus interface implementation
         void UpdateNavigationMesh() override;
@@ -52,23 +48,12 @@ namespace RecastNavigation
         void Activate() override;
         void Deactivate() override;
 
-        // TickBus interface implementation
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
     private:
-        
-        bool m_showNavigationMesh = true;
-        
-        bool CreateNavigationMesh();
-        bool AttachNavigationTileToMesh(NavigationTileData& navigationTileData);
-        NavigationTileData CreateNavigationTile(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig, rcContext* context);
-        
+        AZ::ScheduledEvent m_tickEvent{ [this]() { OnTick(); }, AZ::Name("RecastNavigationDebugViewTick")};
+        void OnTick();
+
         RecastNavigationMeshConfig m_meshConfig;
-        RecastNavigationDebugDraw m_customDebugDraw;
-        
-        AZStd::unique_ptr<rcContext> m_context;
-        RecastPointer<dtNavMesh> m_navMesh;
-        RecastPointer<dtNavMeshQuery> m_navQuery;
+        bool m_showNavigationMesh = true;
     };
 
 } // namespace RecastNavigation

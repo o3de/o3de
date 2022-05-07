@@ -9,6 +9,8 @@
 set(FILES
     Source/RecastNavigationModuleInterface.h
 
+    Source/Components/RecastNavigationMeshCommon.cpp
+    Source/Components/RecastNavigationMeshCommon.h
     Source/Components/RecastNavigationMeshComponent.cpp
     Source/Components/RecastNavigationMeshComponent.h
     Source/Components/RecastNavigationSurveyorComponent.cpp

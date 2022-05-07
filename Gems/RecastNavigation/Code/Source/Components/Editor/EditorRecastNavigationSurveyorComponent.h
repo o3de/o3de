@@ -8,9 +8,6 @@
 
 #pragma once
 
-#include "RecastNavigationDebugDraw.h"
-#include "RecastNavigationMeshConfig.h"
-
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -25,20 +22,23 @@ namespace RecastNavigation
     //! @note You can provide your implementation of collecting geometry instead of this component.
     //!       If you do, in @GetProvidedServices specify AZ_CRC_CE("RecastNavigationSurveyorService"),
     //!       which is needed by @RecastNavigationMeshComponent.
-    class RecastNavigationSurveyorComponent final
-        : public AZ::Component
+    class EditorRecastNavigationSurveyorComponent final
+        : public AzToolsFramework::Components::EditorComponentBase
         , public RecastNavigationSurveyorRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(RecastNavigationSurveyorComponent, "{202de120-29f3-4b64-b95f-268323d86349}");
+        AZ_EDITOR_COMPONENT(EditorRecastNavigationSurveyorComponent, "{1D0A213E-1248-4414-89E9-096B27BF642E}", AzToolsFramework::Components::EditorComponentBase);
 
-        RecastNavigationSurveyorComponent() = default;
-        explicit RecastNavigationSurveyorComponent(const AZStd::vector<AZ::u32>& tags);
         static void Reflect(AZ::ReflectContext* context);
 
-        // AZ::Component interface implementation
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+
+        // EditorComponentBase interface implementation
         void Activate() override;
         void Deactivate() override;
+        void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         // RecastNavigationSurveyorRequestBus interface implementation
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize) override;
@@ -48,7 +48,8 @@ namespace RecastNavigation
     private:
         // Append the geometry within a volume
         void AppendColliderGeometry(TileGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
-        
+
+        AZStd::vector<AZStd::string> m_tagSelectionList;
         AZStd::vector<AZ::u32> m_tags;
     };
 } // namespace RecastNavigation

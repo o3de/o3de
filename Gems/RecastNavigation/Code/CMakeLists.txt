@@ -44,7 +44,7 @@ set_property(
 set_property(
     DIRECTORY
     APPEND
-    PROPERTY COMPILE_DEFINITIONS DT_POLYREF64 
+    PROPERTY COMPILE_DEFINITIONS DT_POLYREF64
 )
 FetchContent_MakeAvailable(RecastNavigation)
 # Restore compile options
@@ -117,8 +117,6 @@ ly_add_target(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME RecastNavigation.Clients NAMESPACE Gem TARGETS Gem::RecastNavigation)
 ly_create_alias(NAME RecastNavigation.Servers NAMESPACE Gem TARGETS Gem::RecastNavigation)
-ly_create_alias(NAME RecastNavigation.Tools    NAMESPACE Gem TARGETS Gem::RecastNavigation)
-ly_create_alias(NAME RecastNavigation.Builders NAMESPACE Gem TARGETS Gem::RecastNavigation)
 
 ################################################################################
 # Tests
@@ -149,4 +147,47 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME Gem::RecastNavigation.Tests
         )
     endif()
+endif()
+
+# If we are on a host platform, we want to add the host tools targets like the RecastNavigation.Editor target which
+# will also depend on RecastNavigation.Static
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_target(
+        NAME RecastNavigation.Editor.Static STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            recastnavigation_editor_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PUBLIC
+                AZ::AzToolsFramework
+                Gem::RecastNavigation.Static
+    )
+
+    ly_add_target(
+        NAME RecastNavigation.Editor GEM_MODULE
+        NAMESPACE Gem
+        AUTOMOC
+        FILES_CMAKE
+            recastnavigation_editor_shared_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::RecastNavigation.Editor.Static
+    )
+
+    # By default, we will specify that the above target RecastNavigation would be used by
+    # Tool and Builder type targets when this gem is enabled.  If you don't want it
+    # active in Tools or Builders by default, delete one of both of the following lines:
+    ly_create_alias(NAME RecastNavigation.Tools    NAMESPACE Gem TARGETS Gem::RecastNavigation.Editor)
+    ly_create_alias(NAME RecastNavigation.Builders NAMESPACE Gem TARGETS Gem::RecastNavigation.Editor)
+
 endif()
