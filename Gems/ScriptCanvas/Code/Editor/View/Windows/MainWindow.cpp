@@ -117,7 +117,6 @@
 #include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorCentralWidget.h>
 #include <GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/EditorContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuActions.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/BookmarkContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CollapsedNodeGroupContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/ConnectionContextMenu.h>
@@ -1849,45 +1848,11 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnFileOpen()
     {
-        AZStd::string assetRoot;
-        {
-            AZStd::array<char, AZ::IO::MaxPathLength> assetRootChar;
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", assetRootChar.data(), assetRootChar.size());
-            assetRoot = assetRootChar.data();
-        }
+        AZ::IO::FixedMaxPath resolvedProjectRoot;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
 
-        AZStd::string assetPath = AZStd::string::format("%s/scriptcanvas", assetRoot.c_str());
-        QString filter;
-
-        AZStd::set<AZStd::string> filterSet { ".scriptcanvas", ".scriptevent"};
-
-        QStringList nameFilters;
-
-        QString globalFilter;
-        for (auto fileFilter : filterSet)
-        {
-            nameFilters.push_back(fileFilter.c_str());
-
-            AZStd::size_t filterStart = fileFilter.find_last_of("(");
-            AZStd::size_t filterEnd = fileFilter.find_last_of(")");
-
-            if (filterStart != AZStd::string::npos
-                && filterEnd != AZStd::string::npos)
-            {
-                AZStd::string substring = fileFilter.substr(filterStart + 1, (filterEnd - filterStart) - 1);
-
-                if (!globalFilter.isEmpty())
-                {
-                    globalFilter.append(" ");
-                }
-
-                globalFilter.append(substring.c_str());
-            }
-        }
-
-        globalFilter = QString("All ScriptCanvas Files (%1)").arg(globalFilter);
-
-        nameFilters.push_front(globalFilter);
+        const AZStd::string assetPath = AZStd::string::format("%s/scriptcanvas", resolvedProjectRoot.c_str());
+        const QStringList nameFilters = { "All ScriptCanvas Files (*.scriptcanvas)" };
 
         QFileDialog dialog(nullptr, tr("Open..."), assetPath.c_str());
         dialog.setFileMode(QFileDialog::ExistingFiles);
@@ -3738,6 +3703,7 @@ namespace ScriptCanvasEditor
             NodeDescriptorRequestBus::EventResult(descriptor, nodeId, &NodeDescriptorRequests::GetDescriptorComponent);
             contextMenu.AddMenuAction(aznew RenameFunctionDefinitionNodeAction(descriptor, &contextMenu));
             contextMenu.AddMenuAction(aznew SaveAsScriptEventAction(&contextMenu));
+            contextMenu.AddMenuAction(aznew OpenScriptEventAction(&contextMenu));
         }
 
         return HandleContextMenu(contextMenu, nodeId, screenPoint, scenePoint);

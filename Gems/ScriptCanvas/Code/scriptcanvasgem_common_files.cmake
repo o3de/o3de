@@ -87,6 +87,7 @@ set(FILES
     Include/ScriptCanvas/Grammar/DebugMap.cpp
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.cpp
     Include/ScriptCanvas/Grammar/ParsingMetaData.cpp
+    Include/ScriptCanvas/Grammar/ParsingUtilities.cpp
     Include/ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.cpp
     Include/ScriptCanvas/Grammar/Primitives.cpp
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.cpp

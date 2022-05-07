@@ -276,7 +276,22 @@ namespace ScriptCanvasEditor
         SaveAsScriptEventAction(QObject* parent);
 
         using GraphCanvas::NodeContextMenuAction::RefreshAction;
-        void RefreshAction(const GraphCanvas::GraphId& grpahId, const AZ::EntityId& targetId) override;
+        void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::NodeContextMenuAction::TriggerAction;
+        GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2&) override;
+    };
+
+    class OpenScriptEventAction
+        : public GraphCanvas::NodeContextMenuAction
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(NodeContextMenuAction, AZ::SystemAllocator, 0);
+
+        OpenScriptEventAction(QObject* parent);
+
+        using GraphCanvas::NodeContextMenuAction::RefreshAction;
+        void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
 
         using GraphCanvas::NodeContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2&) override;

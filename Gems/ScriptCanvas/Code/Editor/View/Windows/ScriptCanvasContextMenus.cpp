@@ -6,11 +6,12 @@
  *
  */
 
-#include <QVBoxLayout>
 #include <QApplication>
 #include <QClipboard>
-#include <QMimeData>
+#include <QFileDialog>
 #include <QInputDialog>
+#include <QMimeData>
+#include <QVBoxLayout>
 
 #include <AzCore/UserSettings/UserSettings.h>
 
@@ -939,7 +940,7 @@ namespace ScriptCanvasEditor
     }
 
     void SaveAsScriptEventAction::RefreshAction
-        ( [[maybe_unused]] const GraphCanvas::GraphId& grpahId
+        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
         , [[maybe_unused]] const AZ::EntityId& targetId)
     {
         // ask the model if is enabled, change name to reason why...?
@@ -952,6 +953,39 @@ namespace ScriptCanvasEditor
     {
         // tell the model, to save, model will pop-up window or something
         // always return nothing
+        return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+    }
+
+
+    OpenScriptEventAction::OpenScriptEventAction(QObject* parent)
+        : NodeContextMenuAction("Open Script Event", parent)
+    {
+
+    }
+
+    void OpenScriptEventAction::RefreshAction
+        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
+        , [[maybe_unused]] const AZ::EntityId& targetId)
+    {
+        setEnabled(true);
+    }
+
+    GraphCanvas::ContextMenuAction::SceneReaction OpenScriptEventAction::TriggerAction
+        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId, [[maybe_unused]] const AZ::Vector2&)
+    {
+        AZ::IO::FixedMaxPath resolvedProjectRoot;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
+
+        const QStringList nameFilters = { "All ScriptEvent Files (*.scriptevents)" };
+        QFileDialog dialog(nullptr, tr("Open a single file..."), resolvedProjectRoot.c_str());
+        dialog.setFileMode(QFileDialog::ExistingFiles);
+        dialog.setNameFilters(nameFilters);
+
+        if (dialog.exec() == QDialog::Accepted && dialog.selectedFiles().count() == 1)
+        {
+            AZ_TracePrintf("ScriptCanvasEditor", "It would work");
+        }
+
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
 
