@@ -338,11 +338,6 @@ class MaterialEditorTestSuite:
     # Maximum time for a single MaterialEditor to stay open on a shared test
     timeout_material_editor_shared_test = 60
 
-    # Function to calculate number of material_editor instances to run in parallel, this can be overridden by the user
-    @staticmethod
-    def get_number_parallel_material_editors():
-        return 8
-
     _TIMEOUT_CRASH_LOG = 20  # Maximum time (seconds) for waiting for a crash file, in seconds
     _TEST_FAIL_RETCODE = 0xF  # Return code for test failure
 
@@ -385,7 +380,7 @@ class MaterialEditorTestSuite:
             self.run_pytestfunc = None
             self.result_pytestfuncs = []
 
-    class MaterialEditorTestClass(pytest.Class):
+    class MaterialEditorTestClass(BaseTestClass):
         """
         Custom pytest collector which programmatically adds test functions based on data in the TestSuite class
         """
@@ -423,8 +418,8 @@ class MaterialEditorTestSuite:
             parallel_batched_tests = cls.filter_shared_tests(shared_tests, is_parallelizable=True, is_batchable=True)
 
             # If user provides option to not parallelize/batch the tests, move them into single tests
-            no_parallelize = self.config.getoption("--no-editor-parallel", default=False)
-            no_batch = self.config.getoption("--no-editor-batch", default=False)
+            no_parallelize = self.config.getoption("--no-instance-parallel", default=False)
+            no_batch = self.config.getoption("--no-instance-batch", default=False)
             if no_parallelize:
                 single_tests += parallel_tests
                 parallel_tests = []
@@ -800,7 +795,7 @@ class MaterialEditorTestSuite:
                           test_spec: MaterialEditorTestBase,
                           cmdline_args: list[str] = None) -> dict[str, Result]:
         """
-        Starts the editor with the given test and retuns an result dict with a single element specifying the result
+        Starts the editor with the given test and returns an result dict with a single element specifying the result
         :request: The pytest request
         :workspace: The LyTestTools Workspace object
         :material_editor: The MaterialEditor launcher object
@@ -832,7 +827,7 @@ class MaterialEditorTestSuite:
         results = {}
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
-           "--runpythontest", test_filename, "--exitaftercommands",
+           "--runpythontest", test_filename,
            "-logfile", f"@log@/{log_name}",
            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         material_editor.args.extend(cmdline)
@@ -1118,7 +1113,7 @@ class MaterialEditorTestSuite:
             return
 
         self._setup_editor_test(material_editor, workspace, material_editor_test_data)
-        parallel_editors = self._get_number_parallel_material_editors(request)
+        parallel_editors = self._get_number_parallel_instances(request, "--material-editors-parallel")
         assert parallel_editors > 0, "Must have at least one editor"
 
         # If there are more tests than max parallel editors, we will split them into multiple consecutive runs
@@ -1190,7 +1185,7 @@ class MaterialEditorTestSuite:
             return
 
         self._setup_editor_test(material_editor, workspace, material_editor_test_data)
-        total_threads = self._get_number_parallel_material_editors(request)
+        total_threads = self._get_number_parallel_instances(request, "--material-editors-parallel")
         assert total_threads > 0, "Must have at least one editor"
         threads = []
         tests_per_editor = int(math.ceil(len(test_spec_list) / total_threads))
@@ -1237,15 +1232,3 @@ class MaterialEditorTestSuite:
         # If at least one test did not pass, save assets with errors and warnings
         if save_asset_logs:
             editor_utils.save_failed_asset_joblogs(workspace)
-
-    def _get_number_parallel_material_editors(self, request: _pytest.fixtures.FixtureRequest) -> int:
-        """
-        Retrieves the number of parallel preference cmdline overrides
-        :request: The Pytest Request
-        :return: The number of parallel material_editor instances to use
-        """
-        parallel_material_editors_value = request.config.getoption("--material-editors-parallel", None)
-        if parallel_material_editors_value:
-            return int(parallel_material_editors_value)
-
-        return self.get_number_parallel_material_editors()

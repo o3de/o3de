@@ -19,8 +19,8 @@ def pytest_addoption(parser: argparse.ArgumentParser) -> None:
     :param parser: The ArgumentParser object
     :return: None
     """
-    parser.addoption("--no-editor-batch", action="store_true", help="Don't batch multiple tests in single editor")
-    parser.addoption("--no-editor-parallel", action="store_true", help="Don't run multiple editors in parallel")
+    parser.addoption("--no-instance-batch", action="store_true", help="Don't batch multiple tests in single instance")
+    parser.addoption("--no-instance-parallel", action="store_true", help="Don't run multiple instances in parallel")
     parser.addoption("--editors-parallel", type=int, action="store", help="Override the number editors to run at the same time")
     parser.addoption("--material-editors-parallel", type=int, action="store",
                      help="Override the number of material_editor instances to run at the same time")
@@ -31,7 +31,7 @@ def pytest_pycollect_makeitem(collector: PyCollector, name: str, obj: object) ->
     automatically generating test functions with a custom collector.
     :param collector: The Pytest collector
     :param name: Name of the collector
-    :param obj: The custom collector, normally an EditorTestSuite.EditorTestClass object
+    :param obj: The custom collector, normally an TestSuite.BaseTestClass object
     :return: Returns the custom collector
     """
     if inspect.isclass(obj):

@@ -19,4 +19,6 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 class TestMaterialEditor(MaterialEditorTestSuite):
 
     class MaterialEditor_Atom_LaunchMaterialEditor(MaterialEditorBatchedTest):
+
+
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
