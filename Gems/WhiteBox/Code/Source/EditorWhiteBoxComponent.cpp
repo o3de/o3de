@@ -239,10 +239,11 @@ namespace WhiteBox
     {
         if (m_renderMesh.has_value())
         {
-            (*m_renderMesh)->UpdateMaterial(m_material);
+            WhiteBoxMaterial material = m_material;
+            material.m_visible = true;
+            (*m_renderMesh)->UpdateMaterial(material);
+            m_renderData.m_material = m_material;
         }
-
-        RebuildRenderMesh();
     }
 
     AZ::Crc32 EditorWhiteBoxComponent::AssetVisibility() const
@@ -318,6 +319,7 @@ namespace WhiteBox
         if (AzToolsFramework::IsEntityVisible(entityId))
         {
             ShowRenderMesh();
+            OnMaterialChange();
         }
     }
 
@@ -438,6 +440,7 @@ namespace WhiteBox
 
                 // generate the mesh
                 (*m_renderMesh)->BuildMesh(m_renderData, m_worldFromLocal);
+                OnMaterialChange();
             }
         }
 

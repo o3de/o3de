@@ -24,6 +24,5 @@ namespace WhiteBox
         void UpdateTransform(const AZ::Transform& worldFromLocal) override;
         void UpdateMaterial(const WhiteBoxMaterial& material) override;
         bool IsVisible() const override;
-        void SetVisiblity(bool visibility) override;
     };
 } // namespace WhiteBox

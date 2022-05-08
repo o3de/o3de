@@ -36,8 +36,4 @@ namespace WhiteBox
         return false;
     }
 
-    void WhiteBoxNullRenderMesh::SetVisiblity([[maybe_unused]] bool visibility)
-    {
-        // noop
-    }
 } // namespace WhiteBox

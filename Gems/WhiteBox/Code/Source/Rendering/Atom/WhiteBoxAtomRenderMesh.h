@@ -47,7 +47,6 @@ namespace WhiteBox
         void UpdateTransform(const AZ::Transform& worldFromLocal) override;
         void UpdateMaterial(const WhiteBoxMaterial& material) override;
         bool IsVisible() const override;
-        void SetVisiblity(bool visibility) override;
 
     private:
         //! Creates an attribute buffer in the slot dictated by AttributeTypeT.
@@ -83,11 +82,13 @@ namespace WhiteBox
         bool DoesMeshRequireFullRebuild(const WhiteBoxMeshAtomData& meshData) const;
 
         AZ::EntityId m_entityId;
+        bool m_visible = true;
         AZ::Data::Asset<AZ::RPI::ModelLodAsset> m_lodAsset;
         AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
         AZ::Data::Instance<AZ::RPI::Model> m_model;
         AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
         AZ::Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
+        AZ::Render::MaterialAssignmentMap m_materialMap;
         uint32_t m_vertexCount = 0;
         AZStd::unique_ptr<IndexBuffer> m_indexBuffer;
         AZStd::array<

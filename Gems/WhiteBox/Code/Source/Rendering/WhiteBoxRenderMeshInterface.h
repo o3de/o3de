@@ -41,8 +41,5 @@ namespace WhiteBox
 
         // Return if the White Box mesh is visible or not.
         virtual bool IsVisible() const = 0;
-
-        //! Set the White Box mesh visible (true) or invisible (false).
-        virtual void SetVisiblity(bool visibility) = 0;
     };
 } // namespace WhiteBox
