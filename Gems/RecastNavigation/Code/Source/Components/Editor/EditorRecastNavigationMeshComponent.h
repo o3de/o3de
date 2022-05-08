@@ -12,7 +12,6 @@
 #include "Components/RecastNavigationMeshConfig.h"
 
 #include <DetourNavMesh.h>
-#include <Recast.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/ScheduledEvent.h>
@@ -21,7 +20,6 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <Components/RecastHelpers.h>
 #include <Components/RecastNavigationMeshCommon.h>
 #include <ToolsComponents/EditorComponentBase.h>
 
@@ -56,12 +54,18 @@ namespace RecastNavigation
         RecastNavigationMeshConfig m_meshConfig;
         bool m_showNavigationMesh = true;
 
+        AZStd::mutex m_navigationMeshMutex;
+        bool m_updatingNavMeshInProgress = false;
+        AZ::TaskDescriptor m_taskDescriptor{ "UpdatingNavMesh", "RecastNavigation" };
+        AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
+        AZ::TaskExecutor m_navigationTaskExecutor{4};
+
         AZ::Crc32 UpdatedNavigationMeshInEditor();
 
         AZ::ScheduledEvent m_tickEvent{ [this]() { OnTick(); }, AZ::Name("EditorRecastNavigationDebugViewTick") };
-        AZ::ScheduledEvent m_updateNavMeshEvent{ [this]() { OnUpdateNavMeshEvent(); }, AZ::Name("EditorRecastNavigationUpdateNavMeshInEditor") };
         void OnTick();
+
+        AZ::ScheduledEvent m_updateNavMeshEvent{ [this]() { OnUpdateNavMeshEvent(); }, AZ::Name("EditorRecastNavigationUpdateNavMeshInEditor") };
         void OnUpdateNavMeshEvent();
     };
-
 } // namespace RecastNavigation

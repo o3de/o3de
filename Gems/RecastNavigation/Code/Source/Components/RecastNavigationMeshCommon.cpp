@@ -81,10 +81,6 @@ namespace RecastNavigation
         config.bmax[0] += aznumeric_cast<float>(config.borderSize) * config.cs;
         config.bmax[2] += aznumeric_cast<float>(config.borderSize) * config.cs;
 
-        context->log(RC_LOG_PROGRESS, "Building navigation:");
-        context->log(RC_LOG_PROGRESS, " - %d x %d cells", config.width, config.height);
-        context->log(RC_LOG_PROGRESS, " - %d vertices, %d triangles", vertexCount, triangleCount);
-
         //
         // Step 2. Rasterize input polygon soup.
         //
@@ -274,13 +270,6 @@ namespace RecastNavigation
             rcVcopy(params.bmin, polyMesh->bmin);
             rcVcopy(params.bmax, polyMesh->bmax);
 
-            AZ_Printf("TEST", "rcConfig              bmin %f,%f,%f; bmax %f,%f,%f;\n"
-                "dtNavMeshCreateParams bmin %f,%f,%f; bmax %f,%f,%f",
-                config.bmin[0], config.bmin[1], config.bmin[2],
-                config.bmax[0], config.bmax[1], config.bmax[2],
-                params.bmin[0], params.bmin[1], params.bmin[2],
-                params.bmax[0], params.bmax[1], params.bmax[2]);
-
             params.cs = config.cs;
             params.ch = config.ch;
             params.buildBvTree = false;
@@ -349,25 +338,13 @@ namespace RecastNavigation
     bool RecastNavigationMeshCommon::AttachNavigationTileToMesh(NavigationTileData& navigationTileData)
     {
         dtTileRef tileRef = 0;
-        dtStatus status = m_navMesh->addTile(
+        const dtStatus status = m_navMesh->addTile(
             navigationTileData.m_data, navigationTileData.m_size,
             DT_TILE_FREE_DATA, 0, &tileRef);
         if (dtStatusFailed(status))
         {
             navigationTileData.Free();
             AZ_Error("Navigation", false, "Could not add navigation tile to the navmesh");
-            return false;
-        }
-
-        //if (!m_navQuery) // query object is re-usable
-        {
-            m_navQuery.reset(dtAllocNavMeshQuery());
-        }
-
-        status = m_navQuery->init(m_navMesh.get(), 2048);
-        if (dtStatusFailed(status))
-        {
-            AZ_Error("Navigation", false, "Could not init Detour navmesh query");
             return false;
         }
 

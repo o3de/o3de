@@ -174,8 +174,6 @@ namespace RecastNavigation
             return {};
         }
 
-        AZ_Printf("EditorRecastNavigationSurveyorComponent", "found %llu physx meshes", results.m_hits.size());
-
         AppendColliderGeometry(*geometryData, results);
 
         return { geometryData };

@@ -70,11 +70,10 @@ namespace RecastNavigation
         required.push_back(AZ_CRC_CE("RecastNavigationSurveyorService"));
     }
 
-
     AZ::Crc32 EditorRecastNavigationMeshComponent::UpdatedNavigationMeshInEditor()
     {
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
-        
+
         RecastNavigationSurveyorRequestBus::EventResult(tiles, GetEntityId(),
             &RecastNavigationSurveyorRequests::CollectGeometry,
             m_meshConfig.m_tileSize);
@@ -99,7 +98,7 @@ namespace RecastNavigation
 
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
-    
+
     void EditorRecastNavigationMeshComponent::Activate()
     {
         EditorComponentBase::Activate();
@@ -108,7 +107,7 @@ namespace RecastNavigation
 
         AZ::Vector3 position = AZ::Vector3::CreateZero();
         AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
-        
+
         bool usingTiledSurveyor = false;
         RecastNavigationSurveyorRequestBus::EventResult(usingTiledSurveyor, GetEntityId(), &RecastNavigationSurveyorRequests::IsTiled);
         if (!usingTiledSurveyor)
@@ -127,6 +126,9 @@ namespace RecastNavigation
 
     void EditorRecastNavigationMeshComponent::Deactivate()
     {
+        m_taskGraphEvent->Wait();
+        m_taskGraphEvent = {};
+
         m_tickEvent.RemoveFromQueue();
         m_updateNavMeshEvent.RemoveFromQueue();
 
@@ -159,7 +161,64 @@ namespace RecastNavigation
 
         if (m_showNavigationMesh)
         {
-            UpdatedNavigationMeshInEditor();
+            bool updateNow = false;
+            {
+                AZStd::lock_guard lock(m_navigationMeshMutex);
+                if (!m_updatingNavMeshInProgress)
+                {
+                    m_updatingNavMeshInProgress = true;
+                    updateNow = true;
+                }
+            }
+
+            if (updateNow)
+            {
+                AZ::TaskGraph graph;
+
+                AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
+
+                RecastNavigationSurveyorRequestBus::EventResult(tiles, GetEntityId(),
+                    &RecastNavigationSurveyorRequests::CollectGeometry,
+                    m_meshConfig.m_tileSize);
+
+                AZ::TaskToken updateDoneTask = graph.AddTask(
+                    m_taskDescriptor,
+                    [this]
+                    {
+                        AZStd::lock_guard lock(m_navigationMeshMutex);
+                        m_updatingNavMeshInProgress = false;
+                    });
+
+                for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
+                {
+                    if (tile->IsEmpty())
+                    {
+                        continue;
+                    }
+
+                    AZ::TaskToken processAndAddTileTask = graph.AddTask(
+                        m_taskDescriptor,
+                        [this, tile]
+                        {
+                            NavigationTileData navigationTileData = CreateNavigationTile(
+                                tile.get(),
+                                m_meshConfig, m_context.get());
+
+                            AZStd::lock_guard lock(m_navigationMeshMutex);
+                            m_navMesh->removeTile(m_navMesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0), nullptr, nullptr);
+
+                            if (navigationTileData.IsValid())
+                            {
+                                AttachNavigationTileToMesh(navigationTileData);
+                            }
+                        });
+
+                    processAndAddTileTask.Precedes(updateDoneTask);
+                }
+
+                m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
+                graph.SubmitOnExecutor(m_navigationTaskExecutor, m_taskGraphEvent.get());
+            }
         }
     }
 
