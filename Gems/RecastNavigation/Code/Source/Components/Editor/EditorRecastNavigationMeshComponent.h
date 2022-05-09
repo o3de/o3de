@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "EditorRecastNavigationMeshConfig.h"
 #include "Components/RecastNavigationDebugDraw.h"
 #include "Components/RecastNavigationMeshConfig.h"
 
@@ -34,6 +35,7 @@ namespace RecastNavigation
     public:
         AZ_EDITOR_COMPONENT(EditorRecastNavigationMeshComponent, "{22D516D4-C98D-4783-85A4-1ABE23CAB4D4}", AzToolsFramework::Components::EditorComponentBase);
 
+        EditorRecastNavigationMeshComponent();
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -52,20 +54,23 @@ namespace RecastNavigation
         bool m_updateNavigationMeshComponentFlag = false;
 
         RecastNavigationMeshConfig m_meshConfig;
-        bool m_showNavigationMesh = true;
+
+        EditorRecastNavigationMeshConfig m_meshEditorConfig;
+        AZ::Event<int>::Handler m_updateFrequencyHandler;
+        void OnUpdatedPeriod(int newUpdatePeriodInSeconds);
 
         AZStd::mutex m_navigationMeshMutex;
         bool m_updatingNavMeshInProgress = false;
         AZ::TaskDescriptor m_taskDescriptor{ "UpdatingNavMesh", "RecastNavigation" };
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
-        AZ::TaskExecutor m_navigationTaskExecutor{4};
+        AZStd::unique_ptr<AZ::TaskExecutor> m_navigationTaskExecutor;
 
         AZ::Crc32 UpdatedNavigationMeshInEditor();
 
-        AZ::ScheduledEvent m_tickEvent{ [this]() { OnTick(); }, AZ::Name("EditorRecastNavigationDebugViewTick") };
+        AZ::ScheduledEvent m_tickEvent;
         void OnTick();
 
-        AZ::ScheduledEvent m_updateNavMeshEvent{ [this]() { OnUpdateNavMeshEvent(); }, AZ::Name("EditorRecastNavigationUpdateNavMeshInEditor") };
+        AZ::ScheduledEvent m_updateNavMeshEvent;
         void OnUpdateNavMeshEvent();
     };
 } // namespace RecastNavigation
