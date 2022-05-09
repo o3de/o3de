@@ -30,6 +30,9 @@
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 
+#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+
 namespace DPEDebugView
 {
     class DPEDebugWindow
@@ -93,6 +96,13 @@ int main(int argc, char** argv)
         theWindow->m_treeView->resizeColumnToContents(columnIndex);
     }
     theWindow->show();
+
+    // QPointer <AzToolsFramework::ReflectedPropertyEditor> rpeInstance = new AzToolsFramework::ReflectedPropertyEditor(nullptr);
+    // rpeInstance->show();
+
+    QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+    dpeInstance->SetAdapter(&cvarAdapter);
+    dpeInstance->show();
 
     return qtApp.exec();
 }
