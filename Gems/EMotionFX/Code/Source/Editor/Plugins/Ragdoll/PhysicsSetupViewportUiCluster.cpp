@@ -8,22 +8,22 @@
 
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
-#include <Editor/Plugins/Ragdoll/RagdollColliderTranslationManipulators.h>
-#include <Editor/Plugins/Ragdoll/RagdollViewportUiCluster.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 
 namespace EMotionFX
 {
-    RagdollViewportUiCluster::RagdollViewportUiCluster()
+    PhysicsSetupViewportUiCluster::PhysicsSetupViewportUiCluster()
     {
-        m_subModes[SubMode::ColliderTranslation] = AZStd::make_unique<RagdollColliderTranslationManipulators>();
+        m_subModes[SubMode::ColliderTranslation] = AZStd::make_unique<PhysicsSetupColliderTranslationManipulators>();
     }
 
-    void RagdollViewportUiCluster::SetCurrentMode(SubMode mode)
+    void PhysicsSetupViewportUiCluster::SetCurrentMode(SubMode mode)
     {
         AZ_Assert(m_subModes.find(mode) != m_subModes.end(), "Submode not found:%d", mode);
         m_subModes[m_subMode]->Teardown();
         m_subMode = mode;
-        m_subModes[m_subMode]->Setup(m_ragdollManipulatorData);
+        m_subModes[m_subMode]->Setup(m_physicsSetupManipulatorData);
 
         const auto modeIndex = static_cast<size_t>(mode);
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
@@ -43,9 +43,9 @@ namespace EMotionFX
         return buttonId;
     }
 
-    void RagdollViewportUiCluster::CreateClusterIfNoneExists(RagdollManipulatorData ragdollManipulatorData)
+    void PhysicsSetupViewportUiCluster::CreateClusterIfNoneExists(PhysicsSetupManipulatorData physicsSetupManipulatorData)
     {
-        m_ragdollManipulatorData = ragdollManipulatorData;
+        m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
         if (m_clusterId == AzToolsFramework::ViewportUi::InvalidClusterId)
         {
@@ -75,7 +75,7 @@ namespace EMotionFX
         SetCurrentMode(m_subMode);
     }
 
-    void RagdollViewportUiCluster::DestroyClusterIfExists()
+    void PhysicsSetupViewportUiCluster::DestroyClusterIfExists()
     {
         if (m_clusterId != AzToolsFramework::ViewportUi::InvalidClusterId)
         {

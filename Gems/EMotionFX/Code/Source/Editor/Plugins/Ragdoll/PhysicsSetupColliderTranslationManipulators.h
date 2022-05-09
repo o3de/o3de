@@ -9,18 +9,18 @@
 #pragma once
 
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
-#include <Editor/Plugins/Ragdoll/RagdollManipulators.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
 
 namespace EMotionFX
 {
-    class RagdollColliderTranslationManipulators : public RagdollManipulatorsBase
+    class PhysicsSetupColliderTranslationManipulators : public PhysicsSetupManipulatorsBase
     {
     public:
-        RagdollColliderTranslationManipulators();
-        ~RagdollColliderTranslationManipulators();
-        void Setup(RagdollManipulatorData& ragdollManipulatorData) override;
+        PhysicsSetupColliderTranslationManipulators();
+        ~PhysicsSetupColliderTranslationManipulators();
+        void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;
         void ResetValues() override;
@@ -32,7 +32,7 @@ namespace EMotionFX
         void FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
 
         MCore::CommandGroup m_commandGroup;
-        RagdollManipulatorData m_ragdollManipulatorData;
+        PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         AzToolsFramework::TranslationManipulators m_translationManipulators;
 
         class DEFINECOMMANDCALLBACK_API DataChangedCallback : public MCore::Command::Callback
@@ -41,7 +41,7 @@ namespace EMotionFX
 
         public:
             explicit DataChangedCallback(
-                RagdollColliderTranslationManipulators* manipulators, bool executePreUndo, bool executePreCommand = false)
+                PhysicsSetupColliderTranslationManipulators* manipulators, bool executePreUndo, bool executePreCommand = false)
                 : MCore::Command::Callback(executePreUndo, executePreCommand)
                 , m_manipulators(manipulators)
             {
@@ -50,7 +50,7 @@ namespace EMotionFX
             bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine) override;
 
         private:
-            RagdollColliderTranslationManipulators* m_manipulators{};
+            PhysicsSetupColliderTranslationManipulators* m_manipulators{};
         };
 
         AZStd::unique_ptr<DataChangedCallback> m_adjustColliderCallback;

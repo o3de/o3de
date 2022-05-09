@@ -160,20 +160,20 @@ namespace EMotionFX
 
                 if (Integration::CVars::emfx_ragdollManipulatorsEnabled)
                 {
-                    RagdollManipulatorData ragdollManipulatorData;
+                    PhysicsSetupManipulatorData physicsSetupManipulatorData;
                     ActorInstance* actorInstance = GetActorInstance();
                     Node* selectedNode = GetNode();
                     if (GetActor() && actorInstance && selectedNode)
                     {
                         const Transform& nodeWorldTransform = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(selectedNode->GetNodeIndex());
-                        ragdollManipulatorData.m_nodeWorldTransform = AZ::Transform::CreateFromQuaternionAndTranslation(nodeWorldTransform.m_rotation, nodeWorldTransform.m_position);
-                        ragdollManipulatorData.m_colliderNodeConfiguration = colliderNodeConfig;
-                        ragdollManipulatorData.m_actor = GetActor();
-                        ragdollManipulatorData.m_node = GetNode();
-                        ragdollManipulatorData.m_collidersWidget = m_collidersWidget;
-                        ragdollManipulatorData.m_valid = true;
+                        physicsSetupManipulatorData.m_nodeWorldTransform = AZ::Transform::CreateFromQuaternionAndTranslation(nodeWorldTransform.m_rotation, nodeWorldTransform.m_position);
+                        physicsSetupManipulatorData.m_colliderNodeConfiguration = colliderNodeConfig;
+                        physicsSetupManipulatorData.m_actor = GetActor();
+                        physicsSetupManipulatorData.m_node = GetNode();
+                        physicsSetupManipulatorData.m_collidersWidget = m_collidersWidget;
+                        physicsSetupManipulatorData.m_valid = true;
                     }
-                    m_ragdollViewportUiCluster.CreateClusterIfNoneExists(ragdollManipulatorData);
+                    m_physicsSetupViewportUiCluster.CreateClusterIfNoneExists(physicsSetupManipulatorData);
                 }
             }
             else
@@ -185,7 +185,7 @@ namespace EMotionFX
                 m_jointLimitWidget->Update(QModelIndex());
                 m_jointLimitWidget->hide();
                 m_collidersWidget->hide();
-                m_ragdollViewportUiCluster.DestroyClusterIfExists();
+                m_physicsSetupViewportUiCluster.DestroyClusterIfExists();
             }
         }
         else
@@ -193,7 +193,7 @@ namespace EMotionFX
             m_ragdollNodeEditor->ClearInstances(true);
             m_jointLimitWidget->Update(QModelIndex());
             m_collidersWidget->Reset();
-            m_ragdollViewportUiCluster.DestroyClusterIfExists();
+            m_physicsSetupViewportUiCluster.DestroyClusterIfExists();
         }
     }
 

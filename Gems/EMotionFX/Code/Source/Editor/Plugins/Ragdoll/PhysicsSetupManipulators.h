@@ -22,7 +22,7 @@ namespace EMotionFX
     class ObjectEditor;
     class ColliderContainerWidget;
 
-    struct RagdollManipulatorData
+    struct PhysicsSetupManipulatorData
     {
         AZ::Transform m_nodeWorldTransform = AZ::Transform::CreateIdentity();
         Physics::CharacterColliderNodeConfiguration* m_colliderNodeConfiguration = nullptr;
@@ -33,13 +33,13 @@ namespace EMotionFX
     };
 
     //! Base class for various manipulator modes, e.g. collider translation, collider orientation, etc.
-    class RagdollManipulatorsBase
+    class PhysicsSetupManipulatorsBase
     {
     public:
-        virtual ~RagdollManipulatorsBase() = default;
+        virtual ~PhysicsSetupManipulatorsBase() = default;
 
         //! Called when the manipulator mode is entered to initialize the mode.
-        virtual void Setup(RagdollManipulatorData& ragdollManipulatorData) = 0;
+        virtual void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) = 0;
 
         //! Called when the manipulator mode needs to refresh its values.
         virtual void Refresh() = 0;

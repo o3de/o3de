@@ -10,7 +10,7 @@
 
 #include <AzCore/Math/Transform.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
-#include <Editor/Plugins/Ragdoll/RagdollManipulators.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
 
 namespace EMotionFX
 {
@@ -18,12 +18,12 @@ namespace EMotionFX
     class Node;
     class Transform;
 
-    //! Provides UI in the viewport for manipulating ragdoll configurations such as collider and joint limit settings. 
-    class RagdollViewportUiCluster
+    //! Provides UI in the viewport for manipulating physics configurations such as collider and joint limit settings. 
+    class PhysicsSetupViewportUiCluster
     {
     public:
-        RagdollViewportUiCluster();
-        void CreateClusterIfNoneExists(RagdollManipulatorData ragdollManipulatorData);
+        PhysicsSetupViewportUiCluster();
+        void CreateClusterIfNoneExists(PhysicsSetupManipulatorData physicsSetupManipulatorData);
         void DestroyClusterIfExists();
 
         enum class SubMode : AZ::u32
@@ -37,9 +37,9 @@ namespace EMotionFX
 
         AzToolsFramework::ViewportUi::ClusterId m_clusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
         AZStd::vector<AzToolsFramework::ViewportUi::ButtonId> m_buttonIds;
-        AZStd::unordered_map<SubMode, AZStd::unique_ptr<RagdollManipulatorsBase>> m_subModes;
+        AZStd::unordered_map<SubMode, AZStd::unique_ptr<PhysicsSetupManipulatorsBase>> m_subModes;
         SubMode m_subMode = SubMode::ColliderTranslation;
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_modeSelectionHandler; //!< Event handler for sub mode changes.
-        RagdollManipulatorData m_ragdollManipulatorData;
+        PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
     };
 } // namespace EMotionFX
