@@ -453,6 +453,7 @@ set(FILES
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
+    RTTI/BehaviorContextEBusEventRawSignature.inl
     RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
     RTTI/BehaviorInterfaceProxy.h

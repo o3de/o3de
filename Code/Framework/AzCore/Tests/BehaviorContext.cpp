@@ -646,4 +646,68 @@ namespace UnitTest
 
         behaviorClass->Destroy(instance);
     }
-}
+
+    class BroadcastEBusWithLambda : public AZ::EBusTraits
+    {
+    public:
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        int AddValues(int a, int b)
+        {
+            return a + b;
+        }
+    };
+    using BroadcastEBusWithLambdaBus = AZ::EBus<BroadcastEBusWithLambda>;
+
+    TEST_F(BehaviorContextTestFixture, BehaviorContext_BindLambdaToBroadcastEBus_Compiles)
+    {
+        AZ::BehaviorContext bc;
+        bc.EBus<BroadcastEBusWithLambdaBus>("BroadcastEBusWithLambdaBus")
+            ->Event(
+                "TestBroadcast",
+                [](BroadcastEBusWithLambda* handler, int a, int b)
+                {
+                    handler->AddValues(a, b);
+                })
+            ->Event(
+                "TestBroadcastWithReturn",
+                [](BroadcastEBusWithLambda* handler, int a, int b) -> int
+                {
+                    return handler->AddValues(a, b);
+                })
+            ;
+    }
+
+    class EventEBusWithLambda : public AZ::EBusTraits
+    {
+    public:
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef int BusIdType;
+        int AddValues(int a, int b)
+        {
+            return a + b;
+        }
+    };
+    using EventEBusWithLambdaBus = AZ::EBus<EventEBusWithLambda>;
+
+    TEST_F(BehaviorContextTestFixture, BehaviorContext_BindLambdaToEventEBus_Compiles)
+    {
+        AZ::BehaviorContext bc;
+        bc.EBus<EventEBusWithLambdaBus>("EventEBusWithLambdaBus")
+            ->Event(
+                "TestEvent",
+                [](EventEBusWithLambda* handler, int a, int b)
+                {
+                    handler->AddValues(a, b);
+                })
+            ->Event(
+                "TestEventWithReturn",
+                [](EventEBusWithLambda* handler, int a, int b) -> int
+                {
+                    return handler->AddValues(a, b);
+                })
+            ;
+    }
+
+} // namespace UnitTest
