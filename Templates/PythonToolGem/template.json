@@ -27,7 +27,11 @@
             "isTemplated": true
         },
         {
-            "file": "Code/${NameLower}_editor_files.cmake",
+            "file": "Code/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_private_files.cmake",
             "isTemplated": true
         },
         {
@@ -47,11 +51,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_editor_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_editor_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_editor_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -59,11 +67,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
+            "file": "Code/Platform/Mac/${NameLower}_editor_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
+            "file": "Code/Platform/Mac/${NameLower}_editor_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_editor_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -71,11 +83,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
+            "file": "Code/Platform/Windows/${NameLower}_editor_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
+            "file": "Code/Platform/Windows/${NameLower}_editor_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_editor_shared_files.cmake",
             "isTemplated": true
         },
         {

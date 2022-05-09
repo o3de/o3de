@@ -454,6 +454,18 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateDestruction()
         {
+            if (!IsConstructCallRequired())
+            {
+                return;
+            }
+
+            m_dotLua.WriteLine("function %s.Destruct(self)", m_tableName.c_str());
+            OpenFunctionBlock(m_dotLua);
+            {
+                m_dotLua.WriteLineIndented("for k, _ in pairs(self) do self[k] = nil end");
+            }
+            CloseFunctionBlock(m_dotLua);
+            m_dotLua.WriteNewLine();
         }
 
         void GraphToLua::TranslateExecutionTreeChildPost(Grammar::ExecutionTreeConstPtr execution, const Grammar::ExecutionChild& /*child*/, size_t index, size_t /*rootIndex*/)
@@ -1798,7 +1810,6 @@ namespace ScriptCanvas
 
         void GraphToLua::WriteFunctionCallInput(Grammar::ExecutionTreeConstPtr execution, size_t inputCountOverride)
         {
-
             const size_t inputCount = execution->GetInputCount();
             const size_t inputMax = AZStd::min(inputCount, inputCountOverride != inputCount ? inputCountOverride : inputCount);
             const size_t startingIndex = WriteFunctionCallInputThisPointer(execution);
