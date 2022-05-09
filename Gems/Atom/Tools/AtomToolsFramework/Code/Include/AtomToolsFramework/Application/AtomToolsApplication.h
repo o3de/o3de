@@ -58,8 +58,9 @@ namespace AtomToolsFramework
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
-        void Tick() override;
         void Destroy() override;
+        void RunMainLoop() override;
+        void ExitMainLoop() override;
 
     protected:
         void OnIdle();
@@ -120,8 +121,8 @@ namespace AtomToolsFramework
         const AZ::Crc32 m_toolId = {};
 
         // Disable warning for dll export since this member won't be used outside this class
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING;
         AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING;
     };
 } // namespace AtomToolsFramework
