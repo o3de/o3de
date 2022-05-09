@@ -38,6 +38,7 @@
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Commands/SliceDetachEntityCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -180,12 +181,21 @@ void SandboxIntegrationManager::Setup()
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
 
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
-        SaveSlice(false);
-    });
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SELECTED_SLICE, [this]() {
-        SaveSlice(true);
-    });
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
+            ID_FILE_SAVE_SLICE_TO_ROOT,
+            [this]()
+            {
+                SaveSlice(false);
+            });
+        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
+            ID_FILE_SAVE_SELECTED_SLICE,
+            [this]()
+            {
+                SaveSlice(true);
+            });
+    }
 
     // Keep a reference to the interface EditorEntityUiInterface.
     // This is used to register layer entities to their UI handler when the layer component is activated.

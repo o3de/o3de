@@ -7,6 +7,15 @@
 #
 
 set(FILES
+    ActionManager/ActionManagerSystemComponent.cpp
+    ActionManager/ActionManagerSystemComponent.h
+    ActionManager/Action/ActionManager.cpp
+    ActionManager/Action/ActionManager.h
+    ActionManager/Action/ActionManagerInterface.h
+    ActionManager/Action/EditorAction.cpp
+    ActionManager/Action/EditorAction.h
+    ActionManager/Action/EditorActionContext.cpp
+    ActionManager/Action/EditorActionContext.h
     AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
@@ -115,6 +124,8 @@ set(FILES
     ContainerEntity/ContainerEntityNotificationBus.h
     ContainerEntity/ContainerEntitySystemComponent.cpp
     ContainerEntity/ContainerEntitySystemComponent.h
+    Editor/ActionManagerUtils.cpp
+    Editor/ActionManagerUtils.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
     Editor/RichTextHighlighter.h
@@ -328,6 +339,8 @@ set(FILES
     UI/Docking/DockWidgetUtils.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
+    UI/DPEDebugViewer/DPEDebugTextView.cpp
+    UI/DPEDebugViewer/DPEDebugTextView.h
     UI/Layer/AddToLayerMenu.cpp
     UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h
@@ -407,6 +420,8 @@ set(FILES
     UI/PropertyEditor/PropertyEntityIdCtrl.cpp
     UI/PropertyEditor/PropertyEnumComboBoxCtrl.hxx
     UI/PropertyEditor/PropertyEnumComboBoxCtrl.cpp
+    UI/PropertyEditor/PropertyFilePathCtrl.h
+    UI/PropertyEditor/PropertyFilePathCtrl.cpp
     UI/PropertyEditor/PropertyIntCtrlCommon.h
     UI/PropertyEditor/PropertyIntSliderCtrl.hxx
     UI/PropertyEditor/PropertyIntSliderCtrl.cpp

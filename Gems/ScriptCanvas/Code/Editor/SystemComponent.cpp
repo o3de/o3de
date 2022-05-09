@@ -44,6 +44,7 @@ namespace ScriptCanvasEditor
     SystemComponent::SystemComponent()
     {
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
         m_versionExplorer = AZStd::make_unique<VersionExplorer::Model>();
     }
 
@@ -53,6 +54,7 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
@@ -128,6 +130,7 @@ namespace ScriptCanvasEditor
         ScriptCanvasExecutionBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
 
         auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
         if (userSettings)
@@ -160,15 +163,10 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ScriptCanvasExecutionBus::Handler::BusDisconnect();
         SystemRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
 
         m_jobContext.reset();
         m_jobManager.reset();
-    }
-
-    void SystemComponent::AddAsyncJob(AZStd::function<void()>&& jobFunc)
-    {
-        auto* asyncFunction = AZ::CreateJobFunction(AZStd::move(jobFunc), true, m_jobContext.get());
-        asyncFunction->Start();
     }
 
     void SystemComponent::CreateEditorComponentsOnEntity(AZ::Entity* entity, [[maybe_unused]] const AZ::Data::AssetType& assetType)
@@ -183,6 +181,11 @@ namespace ScriptCanvasEditor
     void SystemComponent::GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes)
     {
         outCreatableTypes.insert(m_creatableTypes.begin(), m_creatableTypes.end());
+    }
+
+    void SystemComponent::RequestGarbageCollect()
+    {
+        m_isGarbageCollectRequested = true;
     }
 
     void SystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags)
@@ -350,6 +353,15 @@ namespace ScriptCanvasEditor
     void SystemComponent::OnStopPlayInEditor()
     {
         AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::GarbageCollect);
+    }
+
+    void SystemComponent::OnSystemTick()
+    {
+        if (m_isGarbageCollectRequested)
+        {
+            m_isGarbageCollectRequested = false;
+            AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::GarbageCollect);
+        }
     }
 
     void SystemComponent::OnUserSettingsActivated()

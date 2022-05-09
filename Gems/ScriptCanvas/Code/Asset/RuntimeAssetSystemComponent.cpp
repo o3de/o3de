@@ -13,6 +13,9 @@
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <Asset/RuntimeAssetSystemComponent.h>
 #include <Asset/SubgraphInterfaceAssetHandler.h>
+#include <Execution/ExecutionState.h>
+#include <ScriptCanvas/Execution/Executor.h>
+#include <ScriptCanvas/Execution/ExecutionContext.h>
 
 namespace ScriptCanvas
 {
@@ -25,6 +28,7 @@ namespace ScriptCanvas
         RuntimeData::Reflect(context);
         RuntimeDataOverrides::Reflect(context);
         SubgraphInterfaceData::Reflect(context);
+        Executor::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {

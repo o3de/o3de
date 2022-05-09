@@ -38,7 +38,8 @@ namespace EMotionFX::MotionMatching
 
         void ExtractFeatureValues(const ExtractFeatureContext& context) override;
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
+            const Pose& currentPose,
+            const FeatureMatrix& featureMatrix,
             size_t frameIndex) override;
 
         float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const override;

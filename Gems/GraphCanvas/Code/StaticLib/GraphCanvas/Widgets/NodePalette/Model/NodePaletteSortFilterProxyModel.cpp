@@ -195,6 +195,15 @@ namespace GraphCanvas
 
         if (m_filter.isEmpty())
         {
+            // When item has no children, put it at front; otherwise follow alphabetical order
+            if (model->hasChildren(source_left) && !model->hasChildren(source_right))
+            {
+                return false;
+            }
+            else if (!model->hasChildren(source_left) && model->hasChildren(source_right))
+            {
+                return true;
+            }
             return left < right;
         }
         else

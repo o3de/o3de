@@ -145,6 +145,9 @@ public:
 
     using AssetProcessorManager::m_stateData;
     using AssetProcessorManager::ComputeBuilderDirty;
+
+    using AssetProcessorManager::m_anyBuilderChange;
+    using AssetProcessorManager::m_buildersAddedOrRemoved;
 };
 
 class AssetProcessorManagerTest
@@ -227,7 +230,7 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
     AssetBuilderSDK::JobDependency MakeJobDependency(AZ::Uuid uuid);
 
     QString m_absPath;
-    QString m_watchFolderPath; 
+    QString m_watchFolderPath;
     QString m_dependsOnFile1_Source;
     QString m_dependsOnFile2_Source;
     QString m_dependsOnFile1_Job;

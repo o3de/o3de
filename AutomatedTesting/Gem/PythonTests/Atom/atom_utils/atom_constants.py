@@ -86,6 +86,45 @@ EXPOSURE_CONTROL_TYPE = {
     'eye_adaptation': 1
 }
 
+#Reflection Probe Baked Cubemap Quality
+BAKED_CUBEMAP_QUALITY = {
+    'Very Low': 0,
+    'Low': 1,
+    'Medium': 2,
+    'High': 3,
+    'Very High': 4
+}
+
+#Diffuse Probe Grid number of rays to cast per probe from enum DiffuseProbeGridNumRaysPerProbe
+NUM_RAYS_PER_PROBE = {
+    'NumRaysPerProbe_144': 0,
+    'NumRaysPerProbe_288': 1,
+    'NumRaysPerProbe_432': 2,
+    'NumRaysPerProbe_576': 3,
+    'NumRaysPerProbe_720': 4,
+    'NumRaysPerProbe_864': 5,
+    'NumRaysPerProbe_1008': 6,
+}
+
+# LUT Resolution options for the HDR Color Grading component.
+LUT_RESOLUTION = {
+    '16x16x16': 0,
+    '32x32x32': 1,
+    '64x64x64': 2,
+}
+
+# Shaper Type options for the HDR Color Grading component.
+SHAPER_TYPE = {
+    'None': 0,
+    'linear_custom': 1,
+    '48_nits': 2,
+    '1000_nits': 3,
+    '2000_nits': 4,
+    '4000_nits': 5,
+    'log2_custom': 6,
+    'pq': 7,
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -307,12 +346,28 @@ class AtomComponentProperties:
         """
         Diffuse Probe Grid component properties. Requires one of 'shapes'.
           - 'shapes' a list of supported shapes as component names.
+          - 'Scrolling' Toggle the translation of probes with the entity (bool)
+          - 'Show Inactive Probes' Toggle the visualization of inactive probes (bool)
+          - 'Show Visualization' Toggles the probe grid visualization (bool)
+          - 'Visualization Sphere Radius' Sets the radius of probe visualization spheres (float 0.1 to inf)
+          - 'Normal Bias' Adjusts normal bias (float 0.0 to 1.0)
+          - 'Ambient Multiplier' adjusts multiplier for irradiance intensity (float 0.0 to 10.0)
+          - 'View Bias'Adjusts view bias (float 0.0 to 1.0)
+          - 'Number of Rays Per Probe' Number of rays to cast per probe from atom_constants.py NUM_RAYS_PER_PROBE
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Diffuse Probe Grid',
-            'shapes': ['Axis Aligned Box Shape', 'Box Shape']
+            'shapes': ['Axis Aligned Box Shape', 'Box Shape'],
+            'Scrolling': 'Grid Settings|Scrolling',
+            'Show Inactive Probes': 'Visualization|Show Inactive Probes',
+            'Show Visualization': 'Visualization|Show Visualization',
+            'Visualization Sphere Radius': 'Visualization|Visualization Sphere Radius',
+            'Normal Bias': 'Grid Settings|Normal Bias',
+            'Ambient Multiplier': 'Grid Settings|Ambient Multiplier',
+            'View Bias': 'Grid Settings|View Bias',
+            'Number of Rays Per Probe': 'Grid Settings|Number of Rays Per Probe',
         }
         return properties[property]
 
@@ -475,7 +530,39 @@ class AtomComponentProperties:
         HDR Color Grading component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
-          - 'Enable HDR color grading' Toggle active state of the component True/False
+          - 'Enable HDR color grading' Toggle active state of the component. (bool)
+          - 'Color Adjustment Weight' Level of influence for Color Adjustment parameters. (0, 1)
+          - 'Exposure' Brightness/Darkness of the scene. (-INF, INF)
+          - 'Contrast' Lowers/Enhances the difference in color of the scene. (-100, 100)
+          - 'Pre Saturation' Controls base color saturation before further modification. (-100, 100)
+          - 'Filter Intensity' Brightness of the color filter. (-INF, INF)
+          - 'Filter Multiply'  Enables and controls strength of the color filter. (0, 1)
+          - 'Filter Swatch' Determines color of the color filter applied to the scene. (Vector3)
+          - 'White Balance Weight' Level of influence for White Balance parameters. (0, 1)
+          - 'Temperature' Color temperature in Kelvin. (1000, 40000)
+          - 'Tint' Changes the tint of the scene from Neutral (0) to Magenta (-100) or Green (100). (-100, 100)
+          - 'Luminance Preservation' Maintains the relative brightness of the scene
+            before applying Color Grading. (0, 1)
+          - 'Split Toning Weight' Level of influence for Split Toning parameters. (0, 1)
+          - 'Balance' Determines the level of light interpreted as Shadow  or Highlight. (-1, 1)
+          - 'Split Toning Shadows Color' Shadows are toned to this color. (Vector3)
+          - 'Split Toning Highlights Color' Highlights are toned to this color.
+          - 'SMH Weight'  Level of influence for Shadow Midtones Highlights parameters. (0, 1)
+          - 'Shadows Start' Minimum brightness to interpret as Shadow. (0, 16)
+          - 'Shadows End' Maximum brightness to interpret as Shadow. (0, 16)
+          - 'Highlights Start' Minimum brightness to interpret as Highlight. (0, 16)
+          - 'Highlights End' Maximum brightness to interpret as Shadow. (0, 16)
+          - 'SMH Shadows Color' Shadow interpreted areas set to this color. (Vector3)
+          - 'SMH Midtones Color' Midtone interpreted areas set to this color. (Vector3)
+          - 'SMH Highlights Color' Highlight interpreted areas set to this color. (Vector3)
+          - 'Channel Mixing Red' Color Channels interpreted as Red. (Vector3)
+          - 'Channel Mixing Green' Color Channels interpreted as Green. (Vector3)
+          - 'Channel Mixing Blue' Color channels interpreted as Blue. (Vector3)
+          - 'Final Adjustment Weight' Level of influence for Final Adjustment parameters parameters. (0, 1)
+          - 'Post Saturation' Controls color saturation after modification. (-100, 100)
+          - 'Hue Shift' Shifts all color by 1% of a rotation in the color wheel per 0.01. (0.0, 1.0)
+          - 'LUT Resolution' Resolution of generated LUT from atom_constants.py LUT_RESOLUTION.
+          - 'Shaper Type' Shaper type used for the generated LUT from atom_constants.py SHAPER_TYPE.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -483,6 +570,37 @@ class AtomComponentProperties:
             'name': 'HDR Color Grading',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable HDR color grading': 'Controller|Configuration|Enable HDR color grading',
+            'Color Adjustment Weight': 'Controller|Configuration|Color Adjustment|Weight',
+            'Exposure': 'Controller|Configuration|Color Adjustment|Exposure',
+            'Contrast': 'Controller|Configuration|Color Adjustment|Contrast',
+            'Pre Saturation': 'Controller|Configuration|Color Adjustment|Pre Saturation',
+            'Filter Intensity': 'Controller|Configuration|Color Adjustment|Filter Intensity',
+            'Filter Multiply': 'Controller|Configuration|Color Adjustment|Filter Multiply',
+            'Filter Swatch': 'Controller|Configuration|Color Adjustment|Filter Swatch',
+            'White Balance Weight': 'Controller|Configuration|White Balance|Weight',
+            'Temperature': 'Controller|Configuration|White Balance|Temperature',
+            'Tint': 'Controller|Configuration|White Balance|Tint',
+            'Luminance Preservation': 'Controller|Configuration|White Balance|Luminance Preservation',
+            'Split Toning Weight': 'Controller|Configuration|Split Toning|Weight',
+            'Balance': 'Controller|Configuration|Split Toning|Balance',
+            'Split Toning Shadows Color': 'Controller|Configuration|Split Toning|Shadows Color',
+            'Split Toning Highlights Color': 'Controller|Configuration|Split Toning|Highlights Color',
+            'SMH Weight': 'Controller|Configuration|Shadow Midtones Highlights|Weight',
+            'Shadows Start': 'Controller|Configuration|Shadow Midtones Highlights|Shadows Start',
+            'Shadows End': 'Controller|Configuration|Shadow Midtones Highlights|Shadows End',
+            'Highlights Start': 'Controller|Configuration|Shadow Midtones Highlights|Highlights Start',
+            'Highlights End': 'Controller|Configuration|Shadow Midtones Highlights|Highlights End',
+            'SMH Shadows Color': 'Controller|Configuration|Shadow Midtones Highlights|Shadows Color',
+            'SMH Midtones Color': 'Controller|Configuration|Shadow Midtones Highlights|Midtones Color',
+            'SMH Highlights Color': 'Controller|Configuration|Shadow Midtones Highlights|Highlights Color',
+            'Channel Mixing Red': 'Controller|Configuration|Channel Mixing|Channel Mixing Red',
+            'Channel Mixing Green': 'Controller|Configuration|Channel Mixing|Channel Mixing Green',
+            'Channel Mixing Blue': 'Controller|Configuration|Channel Mixing|Channel Mixing Blue',
+            'Final Adjustment Weight': 'Controller|Configuration|Final Adjustment|Weight',
+            'Post Saturation': 'Controller|Configuration|Final Adjustment|Post Saturation',
+            'Hue Shift': 'Controller|Configuration|Final Adjustment|Hue Shift',
+            'LUT Resolution': 'Controller|Configuration|LUT Generation|LUT Resolution',
+            'Shaper Type': 'Controller|Configuration|LUT Generation|Shaper Type',
         }
         return properties[property]
 
@@ -535,7 +653,7 @@ class AtomComponentProperties:
             'Attenuation radius Radius': 'Controller|Configuration|Attenuation radius|Radius',
             'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
             'Shadows Bias': 'Controller|Configuration|Shadows|Bias',
-            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias\n',
+            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias',
             'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
             'Shadow filter method': 'Controller|Configuration|Shadows|Shadow filter method',
             'Filtering sample count': 'Controller|Configuration|Shadows|Filtering sample count',
@@ -719,13 +837,31 @@ class AtomComponentProperties:
         """
         Reflection Probe component properties. Requires one of 'shapes' listed.
           - 'shapes' a list of supported shapes as component names.
-          - 'Baked Cubemap Path' Asset.id of the baked cubemap image generated by a call to 'BakeReflectionProbe' ebus.
+          - 'Bake Exposure' Used when baking the cubemap. (float -20.0 to 20.0)
+          - 'Parallax Correction' Toggles between preauthored cubemap and one that captures at the location. (bool)
+          - 'Show Visualization' Toggles the reflection probe visualization sphere. (bool)
+          - 'Settings Exposure' Used when rendering meshes with the cubemap. (float -20.0 to 20.0)
+          - 'Use Baked Cubemap' Toggles between preauthored cubemap and one that captures at the location. (bool)
+          - 'Baked Cubemap Quality' resolution of the baked cubemap from atom_constants.py BAKED_CUBEMAP_QUALITY.
+          - 'Height' Inner extents constrained by the shape dimensions attached to the entity.
+          - 'Length' Inner extents constrained by the shape dimensions attached to the entity.
+          - 'Width' Inner extents constrained by the shape dimensions attached to the entity.
+          - 'Baked Cubemap Path' Read-only Path of baked cubemap image generated by calling 'BakeReflectionProbe' ebus.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Reflection Probe',
             'shapes': ['Axis Aligned Box Shape', 'Box Shape'],
+            'Bake Exposure': 'Cubemap Bake|Bake Exposure',
+            'Parallax Correction': 'Controller|Configuration|Settings|Parallax Correction',
+            'Show Visualization': 'Controller|Configuration|Settings|Show Visualization',
+            'Settings Exposure': 'Controller|Configuration|Settings|Exposure',
+            'Use Baked Cubemap': 'Cubemap|Use Baked Cubemap',
+            'Baked Cubemap Quality': 'Cubemap|Baked Cubemap Quality',
+            'Height': 'Controller|Configuration|Inner Extents|Height',
+            'Length': 'Controller|Configuration|Inner Extents|Length',
+            'Width': 'Controller|Configuration|Inner Extents|Width',
             'Baked Cubemap Path': 'Cubemap|Baked Cubemap Path',
         }
         return properties[property]

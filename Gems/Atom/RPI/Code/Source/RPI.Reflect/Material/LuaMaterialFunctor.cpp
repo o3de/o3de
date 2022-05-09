@@ -74,7 +74,7 @@ namespace AZ
             }
             else if (m_scriptAsset.IsReady())
             {
-                return m_scriptAsset->GetScriptBuffer();
+                return m_scriptAsset->m_data.GetScriptBuffer();
             }
             else
             {
