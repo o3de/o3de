@@ -11,8 +11,6 @@ set(FILES
     Source/ActorCommands.h
     Source/ActorInstanceCommands.cpp
     Source/ActorInstanceCommands.h
-    Source/AttachmentCommands.cpp
-    Source/AttachmentCommands.h
     Source/AnimGraphCommands.cpp
     Source/AnimGraphCommands.h
     Source/AnimGraphConditionCommands.cpp

@@ -7,13 +7,13 @@
 #
 
 
-if(NOT ${CMAKE_ARGC} EQUAL 5)
+if(NOT ${CMAKE_ARGC} EQUAL 6)
     message(FATAL_ERROR "StripDebugSymbols script called with the wrong number of arguments: ${CMAKE_ARGC}")
 endif()
 
-string(TOLOWER ${CMAKE_ARGV4} CONFIG_LOWER)
-
-find_program(GNU_STRIP_TOOL strip)
+set(STRIP_TARGET ${CMAKE_ARGV4})
+set(GNU_STRIP_TOOL ${CMAKE_ARGV3})
+string(TOLOWER ${CMAKE_ARGV5} CONFIG_LOWER)
 
 if (${CONFIG_LOWER} STREQUAL "debug")
 
@@ -21,13 +21,9 @@ if (${CONFIG_LOWER} STREQUAL "debug")
 
 elseif (GNU_STRIP_TOOL)
 
-    message(STATUS "Stripping debug symbols from ${CMAKE_ARGV3}")
+    message(STATUS "Stripping debug symbols from ${STRIP_TARGET}")
     execute_process(COMMAND
-        ${GNU_STRIP_TOOL} --strip-debug ${CMAKE_ARGV3}
+        ${GNU_STRIP_TOOL} --strip-debug ${STRIP_TARGET}
     )
-
-else()
-
-    message(STATUS "Unable to strip debug symbols for ${CMAKE_ARGV3}: Unable to locate 'strip' command")
 
 endif()
