@@ -18,8 +18,7 @@ set(GNU_OBJCOPY ${CMAKE_ARGV4})             # GNU_OBJCOPY         : The location
 set(STRIP_TARGET ${CMAKE_ARGV5})            # STRIP_TARGET        : The built binary to process
 set(DEBUG_SYMBOL_EXT ${CMAKE_ARGV6})        # DEBUG_SYMBOL_EXT    : When extracting debug information, the extension to use for the debug database file
 set(TARGET_TYPE ${CMAKE_ARGV7})             # TARGET_TYPE         : The target type (STATIC_LIBRARY, MODULE_LIBRARY, SHARED_LIBRARY, EXECUTABLE, or APPLICATION)
-string(TOLOWER ${CMAKE_ARGV8} CONFIG_LOWER) # CONFIG_LOWER        : The build configuration (debug, profile, or release)
-set(DEBUG_SYMBOL_OPTION ${CMAKE_ARGV9})     # DEBUG_SYMBOL_OPTION : Either 
+set(DEBUG_SYMBOL_OPTION ${CMAKE_ARGV8})     # DEBUG_SYMBOL_OPTION : Either 
                                             #                          - 'DISCARD' : strip debug information except from debug builds
                                             #                          - 'DETACH'  : detach debug information
 
@@ -41,15 +40,9 @@ get_filename_component(filename_only ${STRIP_TARGET} NAME)
 
 if (${DEBUG_SYMBOL_OPTION} STREQUAL "DISCARD")
 
-    if (${CONFIG_LOWER} STREQUAL "debug")
-        # We will not discard debug information for debug builds, instead we follow the detach flow instead
-        set(DEBUG_SYMBOL_OPTION "DETACH")
-    else()
-        message(STATUS "Stripping debug symbols from ${STRIP_TARGET}")
-    endif()
-endif()
+    message(STATUS "Stripping debug symbols from ${STRIP_TARGET}")
 
-if (${DEBUG_SYMBOL_OPTION} STREQUAL "DETACH")
+elseif (${DEBUG_SYMBOL_OPTION} STREQUAL "DETACH")
 
     if (${TARGET_TYPE} STREQUAL "STATIC_LIBRARY")
         # We will not detach the debug information from static libraries since we are unable to attach them back
@@ -58,7 +51,7 @@ if (${DEBUG_SYMBOL_OPTION} STREQUAL "DETACH")
     endif()
 
     message(STATUS "Detaching debug symbols from ${STRIP_TARGET} into ${filename_only}.${DEBUG_SYMBOL_EXT}")
-    
+
 endif()
 
 

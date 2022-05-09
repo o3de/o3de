@@ -93,7 +93,6 @@ function(ly_apply_debug_strip_options target)
                 "$<TARGET_FILE:${target}>"
                 ${LY_DEBUG_SYMBOLS_FILE_EXTENSION}
                 ${target_type}
-                "$<CONFIG>"
                 ${DETACH_DEBUG_OPTION}
         COMMENT "Processing debug symbols ..."
         VERBATIM
