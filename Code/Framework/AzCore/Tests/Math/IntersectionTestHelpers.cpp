@@ -25,9 +25,16 @@ namespace UnitTest::IntersectTest
         AZ::Vector3 h = qp.Cross(ac);
         float d = ab.Dot(h);
 
-        if ((d < AZ::Constants::FloatEpsilon) && (oneSided || (d > -AZ::Constants::FloatEpsilon)))
+        if (d < AZ::Constants::FloatEpsilon)
         {
-            return false;
+            if constexpr(oneSided)
+            {
+                return false;
+            }
+            else if (d > -AZ::Constants::FloatEpsilon)
+            {
+                return false;
+            }
         }
 
         float f = 1.0f / d;
@@ -47,9 +54,12 @@ namespace UnitTest::IntersectTest
         if ((t > AZ::Constants::FloatEpsilon) && (t <= 1.0f))
         {
             normal = ab.Cross(ac).GetNormalized();
-            if (!oneSided && (d < 0.0f))
+            if constexpr(!oneSided)
             {
-                normal = -normal;
+                if (d < 0.0f)
+                {
+                    normal = -normal;
+                }
             }
             return true;
         }
