@@ -179,7 +179,7 @@ namespace PhysX
         }
         else
         {
-            AZ_Warning("PhysXSystem", !physx_reportTimestepWarnings || (FrameTimeWarning::NumSamplesOverLimit <= 0),
+            AZ_Warning("PhysXSystem", !physx_reportTimestepWarnings || FrameTimeWarning::NumSamplesOverLimit <= 0,
                 "[%d] of [%d] frames had a deltatime over the Max physics timestep[%.6f]. Physx timestep was clamped on those frames, losing [%.6f] seconds.",
                 FrameTimeWarning::NumSamplesOverLimit, FrameTimeWarning::NumSamples, m_systemConfig.m_maxTimestep, FrameTimeWarning::LostTime);
             FrameTimeWarning::NumSamples = 0;
