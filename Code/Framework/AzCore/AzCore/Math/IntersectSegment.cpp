@@ -81,7 +81,7 @@ namespace AZ
 
     template<bool oneSided>
     bool Intersect::SegmentTriangleHitTester::Intersect(
-            const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t)
+            const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t) const
     {
         // NOTE: The code in this method doesn't follow the o3de naming standards for variables.
         // This is an intentional departure so that the code aligns with the original algorithm in the paper and is easier to compare.
@@ -199,11 +199,11 @@ namespace AZ
 
     // Force instantiation in this library of the one-sided Intersect() method.
     template bool Intersect::SegmentTriangleHitTester::Intersect<true>(
-        const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t);
+        const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t) const;
 
     // Force instantiation in this library of the two-sided Intersect() method.
     template bool Intersect::SegmentTriangleHitTester::Intersect<false>(
-        const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t);
+        const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t) const;
 
     //=========================================================================
     // TestSegmentAABBOrigin

@@ -290,7 +290,7 @@ namespace UnitTest
 
         // Generate a ~20k triangle sphere of unit size centered at the origin.
         constexpr uint8_t SubdivisionDepth = 5;
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3dUtils::GenerateIcoSphere(SubdivisionDepth);
 
         // Create random number generators in the positive 2-50 range so that we're outside the sphere bounds.
         constexpr unsigned int Seed = 1;

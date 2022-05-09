@@ -12,7 +12,7 @@
 
 namespace AZ
 {
-    namespace Geometry3DUtils
+    namespace Geometry3dUtils
     {
 
         //! Generates a set of vertices for a regular unit-size triangulated icosphere.
@@ -28,5 +28,5 @@ namespace AZ
         //! Generally a depth of 3-6 will be sufficient for most purposes.
         AZStd::vector<AZ::Vector3> GenerateIcoSphere(const uint8_t subdivisionDepth);
 
-    } // namespace Geometry3DUtils
+    } // namespace Geometry3dUtils
 } // namespace AZ

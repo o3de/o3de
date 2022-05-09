@@ -273,7 +273,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_IntersectSegmentTriangleIcoSphere, AzIntersectSegmentTriangleCCW)(benchmark::State& state)
     {
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3dUtils::GenerateIcoSphere(SubdivisionDepth);
 
         for ([[maybe_unused]] auto _ : state)
         {
@@ -290,7 +290,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_IntersectSegmentTriangleIcoSphere, ArenbergIntersectSegmentTriangleCCW)(benchmark::State& state)
     {
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3dUtils::GenerateIcoSphere(SubdivisionDepth);
 
         for ([[maybe_unused]] auto _ : state)
         {
@@ -307,7 +307,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_IntersectSegmentTriangleIcoSphere, MollerTrumboreIntersectSegmentTriangleCCW)(benchmark::State& state)
     {
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3dUtils::GenerateIcoSphere(SubdivisionDepth);
 
         for ([[maybe_unused]] auto _ : state)
         {
@@ -324,7 +324,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_IntersectSegmentTriangleIcoSphere, AzIntersectSegmentTriangleCCWHitTester)(benchmark::State& state)
     {
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3dUtils::GenerateIcoSphere(SubdivisionDepth);
 
         for ([[maybe_unused]] auto _ : state)
         {
@@ -341,7 +341,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_IntersectSegmentTriangleIcoSphere, AzIntersectSegmentTriangle)(benchmark::State& state)
     {
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3dUtils::GenerateIcoSphere(SubdivisionDepth);
 
         for ([[maybe_unused]] auto _ : state)
         {
@@ -358,7 +358,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_IntersectSegmentTriangleIcoSphere, ArenbergIntersectSegmentTriangle)(benchmark::State& state)
     {
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3dUtils::GenerateIcoSphere(SubdivisionDepth);
 
         for ([[maybe_unused]] auto _ : state)
         {
@@ -375,7 +375,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_IntersectSegmentTriangleIcoSphere, MollerTrumboreIntersectSegmentTriangle)(benchmark::State& state)
     {
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3dUtils::GenerateIcoSphere(SubdivisionDepth);
 
         for ([[maybe_unused]] auto _ : state)
         {
@@ -392,7 +392,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_IntersectSegmentTriangleIcoSphere, AzIntersectSegmentTriangleHitTester)(benchmark::State& state)
     {
-        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3DUtils::GenerateIcoSphere(SubdivisionDepth);
+        AZStd::vector<AZ::Vector3> sphereGeometry = AZ::Geometry3dUtils::GenerateIcoSphere(SubdivisionDepth);
 
         for ([[maybe_unused]] auto _ : state)
         {

@@ -10,7 +10,7 @@
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/Casting/numeric_cast.h>
 
-namespace AZ::Geometry3DUtils
+namespace AZ::Geometry3dUtils
 {
     // Recursive method for subdividing each face of the polygon.
     namespace
@@ -56,7 +56,7 @@ namespace AZ::Geometry3DUtils
         constexpr int IcosahedronFaces = 20;
 
         // "phi" is also known as the "golden ratio", (1 + sqrt(5)) / 2
-        const float phi = (1.0f + sqrt(5.0f)) * 0.5f;
+        const float phi = (1.0f + AZStd::sqrt(5.0f)) * 0.5f;
 
         // The 12 vertices of an icosahedron centered at the origin with edge length 1 are
         // (+- 1, +- 1/phi, 0), (0, +- 1, +- 1/phi), (+- 1/phi, 0, +- 1)
@@ -87,7 +87,7 @@ namespace AZ::Geometry3DUtils
 
         // Preallocate enough space for all the vertices we're going to generate.
         AZStd::vector<AZ::Vector3> sphereVertices;
-        sphereVertices.reserve(IcosahedronFaces * 3 * aznumeric_cast<int>(pow(4, cappedDepth)));
+        sphereVertices.reserve(IcosahedronFaces * 3 * aznumeric_cast<int>(AZStd::pow(4, cappedDepth)));
 
         for (int face = 0; face < IcosahedronFaces; face++)
         {
@@ -102,4 +102,4 @@ namespace AZ::Geometry3DUtils
         return sphereVertices;
     }
 
-} // namespace AZ::Geometry3DUtils
+} // namespace AZ::Geometry3dUtils

@@ -58,7 +58,7 @@ namespace AZ
             //! @param t Time of intersection along the segment [0.0 (p), 1.0 (q)] if segment intersects triangle.
             //! @return true if the segment intersects the triangle otherwise false.
             bool IntersectSegmentTriangleCCW(
-                const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t)
+                const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t) const
             {
                 constexpr bool oneSided = true;
                 return Intersect<oneSided>(a, b, c, normal, t);
@@ -72,7 +72,7 @@ namespace AZ
             //! @param t Time of intersection along the segment [0.0 (p), 1.0 (q)] if segment intersects triangle.
             //! @return true if the segment intersects the triangle otherwise false.
             bool IntersectSegmentTriangle(
-                const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t)
+                const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t) const
             {
                 constexpr bool oneSided = false;
                 return Intersect<oneSided>(a, b, c, normal, t);
@@ -82,14 +82,14 @@ namespace AZ
             //! Gets the segment intersection point for a given Time of intersection 't'.
             //! @param t Time of intersection along the segment [0.0 (p), 1.0 (q)].
             //! @return The point on the segment where the intersection occurred.
-            AZ::Vector3 GetIntersectionPoint(float t)
+            AZ::Vector3 GetIntersectionPoint(float t) const
             {
                 return m_p + (m_pq * t);
             }
 
         private:
             template<bool oneSided>
-            bool Intersect(const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t);
+            bool Intersect(const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, AZ::Vector3& normal, float& t) const;
 
             AZ::Vector3 m_p;    //! Segment start point
             AZ::Vector3 m_pq;   //! Segment direction and length
