@@ -99,6 +99,11 @@ namespace SceneBuilder
 
         auto manifestObject = document.GetObject();
         auto valuesIterator = manifestObject.FindMember("values");
+        if (valuesIterator == manifestObject.MemberEnd())
+        {
+            // a blank or unexpected JSON formated .assetinfo file
+            return;
+        }
         auto valuesArray = valuesIterator->value.GetArray();
 
         AZStd::vector<AZStd::string> paths;

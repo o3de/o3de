@@ -62,7 +62,8 @@ namespace EMotionFX::MotionMatching
         bool Init(const InitSettings& settings) override;
         void ExtractFeatureValues(const ExtractFeatureContext& context) override;
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
+            const Pose& currentPose,
+            const FeatureMatrix& featureMatrix,
             size_t frameIndex) override;
 
         float CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const;
@@ -118,7 +119,7 @@ namespace EMotionFX::MotionMatching
         void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample);
 
         void DebugDrawTrajectory(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
+            const FeatureMatrix& featureMatrix,
             size_t frameIndex,
             const Transform& transform,
             const AZ::Color& color,
