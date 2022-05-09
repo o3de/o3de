@@ -169,7 +169,7 @@ void UiCanvasOnMeshComponent::OnCanvasLoadedIntoEntity(AZ::EntityId uiCanvasEnti
 {
     if (uiCanvasEntity.IsValid() && m_attachmentImageAssetOverride)
     {
-        UiCanvasBus::Event(GetEntityId(), &UiCanvasInterface::SetAttachmentImageAsset, m_attachmentImageAssetOverride);
+        UiCanvasBus::Event(uiCanvasEntity, &UiCanvasInterface::SetAttachmentImageAsset, m_attachmentImageAssetOverride);
     }
 }
 
@@ -229,6 +229,15 @@ void UiCanvasOnMeshComponent::Activate()
     UiCanvasOnMeshBus::Handler::BusConnect(GetEntityId());
     UiCanvasAssetRefNotificationBus::Handler::BusConnect(GetEntityId());
     UiCanvasManagerNotificationBus::Handler::BusConnect();
+
+    // Check if a UI canvas has already been loaded into the entity
+    AZ::EntityId canvasEntityId;
+    UiCanvasRefBus::EventResult(
+        canvasEntityId, GetEntityId(), &UiCanvasRefBus::Events::GetCanvas);
+    if (canvasEntityId.IsValid())
+    {
+        OnCanvasLoadedIntoEntity(canvasEntityId);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
