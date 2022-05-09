@@ -28,6 +28,15 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
+    void DisplayErrorMessage(QWidget* parent, const QString& title, const QString& text)
+    {
+        AZ_Error("AtomToolsDocumentSystem", false, text.toUtf8().constData());
+        if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs", true))
+        {
+            QMessageBox::critical(parent, title, text);
+        }
+    }
+
     void AtomToolsDocumentSystem::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -97,7 +106,10 @@ namespace AtomToolsFramework
         AZStd::unique_ptr<AtomToolsDocumentRequests> document(documentType.CreateDocument(m_toolId));
         if (!document)
         {
-            AZ_Error("AtomToolsDocument", false, "Failed to create new document.");
+            DisplayErrorMessage(
+                GetToolMainWindow(),
+                QObject::tr("Document could not be created"),
+                QObject::tr("Could not create document using type: %1").arg(documentType.m_documentTypeName.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
@@ -138,7 +150,7 @@ namespace AtomToolsFramework
         AZStd::string openPath = sourcePath;
         if (!ValidateDocumentPath(openPath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(openPath.c_str()));
@@ -148,7 +160,7 @@ namespace AtomToolsFramework
         AZStd::string savePath = targetPath;
         if (!savePath.empty() && !ValidateDocumentPath(savePath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
@@ -158,7 +170,7 @@ namespace AtomToolsFramework
         AZ::Uuid documentId = CreateDocumentFromFileType(openPath);
         if (documentId.IsNull())
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
                 QObject::tr("Failed to create: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -169,7 +181,7 @@ namespace AtomToolsFramework
         AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Open, openPath);
         if (!openResult)
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be opened"),
                 QObject::tr("Failed to open: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -210,7 +222,7 @@ namespace AtomToolsFramework
         AZStd::string openPath = sourcePath;
         if (!ValidateDocumentPath(openPath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be opened"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(openPath.c_str()));
@@ -266,7 +278,10 @@ namespace AtomToolsFramework
             {
                 if (!SaveDocument(documentId))
                 {
-                    AZ_Error("AtomToolsDocument", false, "Close document failed because document was not saved: %s", documentPath.c_str());
+                    DisplayErrorMessage(
+                        GetToolMainWindow(),
+                        QObject::tr("Document could not be closed"),
+                        QObject::tr("Close document failed because document was not saved: \n%1").arg(documentPath.c_str()));
                     return false;
                 }
             }
@@ -278,7 +293,7 @@ namespace AtomToolsFramework
         AtomToolsDocumentRequestBus::EventResult(closeResult, documentId, &AtomToolsDocumentRequestBus::Events::Close);
         if (!closeResult)
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be closed"),
                 QObject::tr("Failed to close: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -329,7 +344,7 @@ namespace AtomToolsFramework
 
         if (!ValidateDocumentPath(savePath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
@@ -339,7 +354,7 @@ namespace AtomToolsFramework
         const QFileInfo saveInfo(savePath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document could not be overwritten:\n%1").arg(savePath.c_str()));
@@ -352,7 +367,7 @@ namespace AtomToolsFramework
         AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Save);
         if (!result)
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Failed to save: \n%1\n\n%2").arg(savePath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -367,7 +382,7 @@ namespace AtomToolsFramework
         AZStd::string savePath = targetPath;
         if (!ValidateDocumentPath(savePath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
@@ -377,7 +392,7 @@ namespace AtomToolsFramework
         const QFileInfo saveInfo(savePath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document could not be overwritten:\n%1").arg(savePath.c_str()));
@@ -390,7 +405,7 @@ namespace AtomToolsFramework
         AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::SaveAsCopy, savePath);
         if (!result)
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Failed to save: \n%1\n\n%2").arg(savePath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -405,7 +420,7 @@ namespace AtomToolsFramework
         AZStd::string savePath = targetPath;
         if (!ValidateDocumentPath(savePath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
@@ -415,7 +430,7 @@ namespace AtomToolsFramework
         const QFileInfo saveInfo(savePath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document could not be overwritten:\n%1").arg(savePath.c_str()));
@@ -428,7 +443,7 @@ namespace AtomToolsFramework
         AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::SaveAsChild, savePath);
         if (!result)
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Failed to save: \n%1\n\n%2").arg(savePath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -523,7 +538,7 @@ namespace AtomToolsFramework
             AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Open, documentPath);
             if (!openResult)
             {
-                QMessageBox::critical(
+                DisplayErrorMessage(
                     GetToolMainWindow(),
                     QObject::tr("Document could not be opened"),
                     QObject::tr("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -551,7 +566,7 @@ namespace AtomToolsFramework
             AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Reopen);
             if (!openResult)
             {
-                QMessageBox::critical(
+                DisplayErrorMessage(
                     GetToolMainWindow(),
                     QObject::tr("Document could not be opened"),
                     QObject::tr("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
