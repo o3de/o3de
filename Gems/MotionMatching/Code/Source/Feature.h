@@ -74,7 +74,7 @@ namespace EMotionFX::MotionMatching
             FeatureMatrix& m_featureMatrix;
 
             size_t m_frameIndex = InvalidIndex;
-            const Pose* m_framePose = nullptr; //! Pre-sampled pose for the given frame.
+            const Pose* m_framePose = nullptr; //!< Pre-sampled pose for the given frame.
             AnimGraphPosePool& m_posePool;
 
             ActorInstance* m_actorInstance = nullptr;
@@ -87,11 +87,11 @@ namespace EMotionFX::MotionMatching
         {
             QueryVectorContext(const Pose& currentPose, const TrajectoryQuery& trajectoryQuery);
 
-            const Pose& m_currentPose; //! Current actor instance pose.
+            const Pose& m_currentPose; //!< Current actor instance pose.
             const TrajectoryQuery& m_trajectoryQuery;
         };
         virtual void FillQueryVector([[maybe_unused]] QueryVector& queryVector,
-            [[maybe_unused]] const QueryVectorContext& context) {}
+            [[maybe_unused]] const QueryVectorContext& context) = 0;
 
         ////////////////////////////////////////////////////////////////////////
         // Feature cost
@@ -99,7 +99,7 @@ namespace EMotionFX::MotionMatching
         {
             FrameCostContext(const QueryVector& queryVector, const FeatureMatrix& featureMatrix);
 
-            const QueryVector& m_queryVector; //! Input query feature values.
+            const QueryVector& m_queryVector; //!< Input query feature values.
             const FeatureMatrix& m_featureMatrix;
         };
         virtual float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;

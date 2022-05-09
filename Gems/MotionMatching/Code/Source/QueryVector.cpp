@@ -15,24 +15,24 @@ namespace EMotionFX::MotionMatching
 
     void QueryVector::SetVector2(const AZ::Vector2& value, size_t offset)
     {
-        operator[](offset + 0) = value.GetX();
-        operator[](offset + 1) = value.GetY();
+        m_data[offset + 0] = value.GetX();
+        m_data[offset + 1] = value.GetY();
     }
 
     void QueryVector::SetVector3(const AZ::Vector3& value, size_t offset)
     {
-        operator[](offset + 0) = value.GetX();
-        operator[](offset + 1) = value.GetY();
-        operator[](offset + 2) = value.GetZ();
+        m_data[offset + 0] = value.GetX();
+        m_data[offset + 1] = value.GetY();
+        m_data[offset + 2] = value.GetZ();
     }
 
     AZ::Vector2 QueryVector::GetVector2(size_t offset) const
     {
-        return AZ::Vector2(operator[](offset + 0), operator[](offset + 1));
+        return AZ::Vector2(m_data[offset + 0], m_data[offset + 1]);
     }
 
     AZ::Vector3 QueryVector::GetVector3(size_t offset) const
     {
-        return AZ::Vector3(operator[](offset + 0), operator[](offset + 1), operator[](offset + 2));
+        return AZ::Vector3(m_data[offset + 0], m_data[offset + 1], m_data[offset + 2]);
     }
 } // namespace EMotionFX::MotionMatching

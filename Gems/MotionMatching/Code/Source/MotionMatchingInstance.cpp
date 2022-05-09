@@ -109,8 +109,8 @@ namespace EMotionFX::MotionMatching
 
         // Make sure we have enough space inside the frame floats array, which is used to search the kdTree.
         const size_t numValuesInKdTree = m_data->GetKdTree().GetNumDimensions();
-        m_kdTreeQueryVector.resize(numValuesInKdTree);
-        m_queryVector.resize(m_data->GetFeatureMatrix().cols());
+        m_kdTreeQueryVector.Resize(numValuesInKdTree);
+        m_queryVector.Resize(m_data->GetFeatureMatrix().cols());
 
         // Initialize the trajectory history.
         if (m_cachedTrajectoryFeature)
@@ -493,7 +493,7 @@ namespace EMotionFX::MotionMatching
             AZ_PROFILE_SCOPE(Animation, "MM::BuildQueryVector");
 
             // Build the input query features that will be compared to every entry in the feature database in the motion matching search.
-            AZ_Assert(m_queryVector.size() == aznumeric_cast<size_t>(m_data->GetFeatureMatrix().cols()),
+            AZ_Assert(m_queryVector.GetSize() == aznumeric_cast<size_t>(m_data->GetFeatureMatrix().cols()),
                 "The query vector should have the same number of elements as the feature matrix has columns.");
             for (Feature* feature : featureSchema.GetFeatures())
             {
@@ -506,17 +506,20 @@ namespace EMotionFX::MotionMatching
         {
             AZ_PROFILE_SCOPE(Animation, "MM::BroadPhaseKDTree");
 
+            AZStd::vector<float>& kdTreeQueryVector = m_kdTreeQueryVector.GetData();
+            const AZStd::vector<float>& queryVectorData = m_queryVector.GetData();
+
             // For the kd-tree
             size_t startOffset = 0;
             for (Feature* feature : m_data->GetFeaturesInKdTree())
             {
-                memcpy(&m_kdTreeQueryVector[startOffset], &m_queryVector[feature->GetColumnOffset()], feature->GetNumDimensions() * sizeof(float));
+                memcpy(&kdTreeQueryVector[startOffset], & queryVectorData[feature->GetColumnOffset()], feature->GetNumDimensions() * sizeof(float));
                 startOffset += feature->GetNumDimensions();
             }
-            AZ_Assert(startOffset == m_kdTreeQueryVector.size(), "Frame float vector is not the expected size.");
+            AZ_Assert(startOffset == kdTreeQueryVector.size(), "Frame float vector is not the expected size.");
 
             // Find our nearest frames.
-            m_data->GetKdTree().FindNearestNeighbors(m_kdTreeQueryVector, m_nearestFrames);
+            m_data->GetKdTree().FindNearestNeighbors(kdTreeQueryVector, m_nearestFrames);
         }
 
         // 2. Narrow-phase, brute force find the actual best matching frame (frame with the minimal cost).

@@ -100,11 +100,11 @@ namespace EMotionFX::MotionMatching
         MotionInstance* m_prevMotionInstance = nullptr;
         Transform m_motionExtractionDelta = Transform::CreateIdentity();
 
-        QueryVector m_queryVector; //< The input query features to be compared to every entry/row in the feature matrix with the motion matching search.
+        QueryVector m_queryVector; //!< The input query features to be compared to every entry/row in the feature matrix with the motion matching search.
 
         /// Buffers used for the broad-phase KD-tree search.
-        QueryVector m_kdTreeQueryVector; //< The input query for only the features that are present in the KD-tree.
-        AZStd::vector<size_t> m_nearestFrames; //< Stores the nearest matching frames / search result from the KD-tree.
+        QueryVector m_kdTreeQueryVector; //!< The input query for only the features that are present in the KD-tree.
+        AZStd::vector<size_t> m_nearestFrames; //!< Stores the nearest matching frames / search result from the KD-tree.
 
         FeatureTrajectory* m_cachedTrajectoryFeature = nullptr; //< Cached pointer to the trajectory feature in the feature schema.
         TrajectoryQuery m_trajectoryQuery;
