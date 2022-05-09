@@ -124,8 +124,10 @@ namespace Multiplayer
             assetHint.resize(hintSize);
             m_byteStream.Read(hintSize, assetHint.data());
             size_t assetSize = m_byteStream.GetCurPos();
-            
-            AzFramework::Spawnable* spawnable = AZ::Utils::LoadObjectFromStream<AzFramework::Spawnable>(m_byteStream);
+
+            // Load spawnable from stream without loading any asset references
+            AzFramework::Spawnable* spawnable = AZ::Utils::LoadObjectFromStream<AzFramework::Spawnable>(
+                m_byteStream, nullptr, AZ::ObjectStream::FilterDescriptor(AZ::Data::AssetFilterNoAssetLoading));
             if (!spawnable)
             {
                 AZLOG_ERROR("EditorServerLevelData packet contains no asset data. Asset: %s", assetHint.c_str())
@@ -150,8 +152,15 @@ namespace Multiplayer
         m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
         m_byteStream.Truncate();
 
-        m_inMemorySpawnableAssetContainer->CreateInMemorySpawnableAsset(rootSpawnableAssetDataInfoContainer, false, "Root");
-        
+        // Create in-memory spawnables without loading dependent assets. They will be loaded on level load
+        constexpr bool loadDependentAssets = false;
+        AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult createSpawnableResult =
+            m_inMemorySpawnableAssetContainer->CreateInMemorySpawnableAsset(rootSpawnableAssetDataInfoContainer, loadDependentAssets, "Root");
+        if (!createSpawnableResult.IsSuccess())
+        {
+            AZ_Assert(false, createSpawnableResult.GetError().c_str())
+        }
+
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
