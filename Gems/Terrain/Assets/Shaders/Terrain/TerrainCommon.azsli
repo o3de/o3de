@@ -71,6 +71,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 }
 
 option bool o_useTerrainSmoothing = false;
+option bool o_useClipmap = false;
 
 struct VertexInput
 {

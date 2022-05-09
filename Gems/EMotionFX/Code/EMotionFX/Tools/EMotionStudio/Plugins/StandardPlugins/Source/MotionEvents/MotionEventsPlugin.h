@@ -14,7 +14,6 @@
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include <MysticQt/Source/DialogStack.h>
 #include "MotionEventPresetsWidget.h"
-#include "MotionEventWidget.h"
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
@@ -41,18 +40,15 @@ namespace EMStudio
         void Reflect(AZ::ReflectContext* context) override;
 
         // overloaded
-        const char* GetCompileDate() const override     { return MCORE_DATE; }
         const char* GetName() const override            { return "Motion Events"; }
         uint32 GetClassID() const override              { return MotionEventsPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override     { return "O3DE"; }
-        float GetVersion() const override               { return 1.0f;  }
         bool GetIsClosable() const override             { return true;  }
         bool GetIsFloatable() const override            { return true;  }
         bool GetIsVertical() const override             { return false; }
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new MotionEventsPlugin(); }
 
         void OnBeforeRemovePlugin(uint32 classID) override;
 
@@ -68,7 +64,6 @@ namespace EMStudio
     public slots:
         void ReInit();
         void MotionSelectionChanged();
-        void UpdateMotionEventWidget();
         void WindowReInit(bool visible);
         void OnEventPresetDropped(QPoint position);
         bool CheckIfIsPresetReadyToDrop();
@@ -85,7 +80,6 @@ namespace EMStudio
 
         MysticQt::DialogStack*          m_dialogStack;
         MotionEventPresetsWidget*       m_motionEventPresetsWidget;
-        MotionEventWidget*              m_motionEventWidget;
 
         TimeViewPlugin*                 m_timeViewPlugin;
         TrackHeaderWidget*              m_trackHeaderWidget;

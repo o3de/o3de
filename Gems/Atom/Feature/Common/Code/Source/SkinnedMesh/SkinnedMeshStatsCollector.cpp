@@ -30,9 +30,12 @@ namespace AZ
 
             for (const SkinnedMeshRenderProxy& renderProxy : m_featureProcessor->m_renderProxies)
             {
-                for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& dispatchItem : renderProxy.GetDispatchItems())
+                for (uint32_t lodIndex = 0; lodIndex < renderProxy.GetLodCount(); ++lodIndex)
                 {
-                    AddDispatchItemToSceneStats(dispatchItem);
+                    for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& dispatchItem : renderProxy.GetDispatchItems(lodIndex))
+                    {
+                        AddDispatchItemToSceneStats(dispatchItem);
+                    }
                 }
             }
 
@@ -48,17 +51,13 @@ namespace AZ
         {
             m_sceneStats = SkinnedMeshSceneStats();
             m_sceneBoneTransforms.clear();
-            m_sceneReadOnlyBufferViews.clear();
-            m_sceneWritableBufferViews.clear();
         }
 
         void SkinnedMeshStatsCollector::AddDispatchItemToSceneStats(const AZStd::unique_ptr<SkinnedMeshDispatchItem>& dispatchItem)
         {
             m_sceneStats.dispatchItemCount++;
             AddBonesToSceneStats(dispatchItem->GetBoneTransforms());
-            AddReadOnlyBufferViewsToSceneStats(dispatchItem->GetSourceUnskinnedBufferViews());
-            AddWritableBufferViewsToSceneStats(dispatchItem->GetTargetSkinnedBufferViews());
-            AddVerticesToSceneStats(dispatchItem->GetVertexCount());
+            AddVerticesToSceneStats(aznumeric_cast<size_t>(dispatchItem->GetVertexCount()));
         }
 
         void SkinnedMeshStatsCollector::AddBonesToSceneStats(const Data::Instance<RPI::Buffer>& boneTransformBuffer)
@@ -71,50 +70,14 @@ namespace AZ
                 if (boneTransformBuffer && boneTransformBuffer->GetBufferView())
                 {
                     m_sceneStats.boneCount += aznumeric_cast<size_t>(boneTransformBuffer->GetBufferView()->GetDescriptor().m_elementCount);
-
-                    // Each bone transform buffer also has a read-only view associated with it
-                    m_sceneStats.readOnlyBufferViewCount++;
-                }
-            }
-        }
-
-        void SkinnedMeshStatsCollector::AddReadOnlyBufferViewsToSceneStats(const AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>>& sourceUnskinnedBufferViews)
-        {
-            for (const AZ::RHI::Ptr<RHI::BufferView>& bufferView : sourceUnskinnedBufferViews)
-            {
-                const auto& iter = m_sceneReadOnlyBufferViews.find(bufferView.get());
-                if (iter == m_sceneReadOnlyBufferViews.end())
-                {
-                    m_sceneReadOnlyBufferViews.insert(bufferView.get());
-                    if (bufferView)
-                    {
-                        m_sceneStats.readOnlyBufferViewCount++;
-                    }
-                }
-            }
-        }
-
-        void SkinnedMeshStatsCollector::AddWritableBufferViewsToSceneStats(const AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>>& targetSkinnedBufferViews)
-        {
-            for (const AZ::RHI::Ptr<RHI::BufferView>& bufferView : targetSkinnedBufferViews)
-            {
-                const auto& iter = m_sceneWritableBufferViews.find(bufferView.get());
-                if (iter == m_sceneWritableBufferViews.end())
-                {
-                    m_sceneWritableBufferViews.insert(bufferView.get());
-                    if (bufferView)
-                    {
-                        m_sceneStats.writableBufferViewCount++;
-                    }
                 }
             }
         }
 
         void SkinnedMeshStatsCollector::AddVerticesToSceneStats(size_t vertexCount)
         {
-            // For now, every target skinned actor has a corresponding source actor
-            // so there are 2 total vertices (one source, one target) for each skinned vertex
-            m_sceneStats.vertexCount += vertexCount * 2;
+            // This counts the number of skinned vertices
+            m_sceneStats.vertexCount += vertexCount;
         }
 
     } // namespace Render

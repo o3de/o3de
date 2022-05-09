@@ -20,7 +20,7 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS gla
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-android           TARGETS expat           PACKAGE_HASH ddeb8e6e0e81714e9addc58d370b3b4360a7ac2935e51f05b00ed2df447d1c21)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev4-android         TARGETS TIFF            PACKAGE_HASH 2c62cdf34a8ee6c7eb091d05d98f60b4da7634c74054d4dbb8736886182f4589)
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-android       TARGETS Freetype        PACKAGE_HASH 31cd0411425f3d69064849190c3cafb09fc3cdd64507f40bf49342630d76f861)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev1-android   TARGETS AWSNativeSDK    PACKAGE_HASH 33771499f9080cbaab613459927e52911e68f94fa356397885e85005efbd1490)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev2-android   TARGETS AWSNativeSDK    PACKAGE_HASH 3b924576bb5c2ca2e77a5cc605fbc64e085bc9766b4523d0e646b067c2bc58ef)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-android             TARGETS Lua             PACKAGE_HASH 2adda1831577336454090f249baf09519f41bb73160cd1d5b5b33564729af4a2)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-android  TARGETS PhysX           PACKAGE_HASH b346e8f9bc55f367a97d781d94c8a5c3bff8059478b8a7007e5fd17708dc1d07)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)

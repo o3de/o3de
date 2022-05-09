@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
-    # Remove -autotest_mode from global_extra_cmdline_args since we need rendering for these tests.
+    # Remove -BatchMode from global_extra_cmdline_args since we need rendering for these tests.
     global_extra_cmdline_args = ["-autotest_mode"]  # Default is ["-BatchMode", "-autotest_mode"]
     use_null_renderer = False  # Default is True
 

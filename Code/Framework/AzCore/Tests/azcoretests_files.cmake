@@ -17,6 +17,7 @@ set(FILES
     Asset/MockLoadAssetCatalogAndHandler.h
     Asset/TestAssetTypes.h
     AssetJsonSerializerTests.cpp
+    EBus/EBusSharedDispatchMutexTests.cpp
     EBus/ScheduledEventTests.cpp
     AssetManager.cpp
     TestCatalog.h
@@ -142,6 +143,9 @@ set(FILES
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp
     Math/FrustumPerformanceTests.cpp
+    Math/IntersectionPerformanceTests.cpp
+    Math/IntersectionTestHelpers.cpp
+    Math/IntersectionTestHelpers.h
     Math/IntersectionTests.cpp
     Math/MathIntrinsicsTests.cpp
     Math/MathStringsTests.cpp

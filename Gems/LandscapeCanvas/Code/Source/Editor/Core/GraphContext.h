@@ -8,18 +8,15 @@
 
 #pragma once
 
-// AZ
-#include <AzCore/std/smart_ptr/enable_shared_from_this.h>
-
 // GraphModel
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 
 // Landscape Canvas
 #include <Editor/Core/DataTypes.h>
 
 namespace LandscapeCanvas
 {
-    class GraphContext : public GraphModel::IGraphContext, public AZStd::enable_shared_from_this<GraphContext>
+    class GraphContext : public GraphModel::GraphContext
     {
     public:
         static void SetInstance(AZStd::shared_ptr<GraphContext> graphContext);
@@ -28,25 +25,10 @@ namespace LandscapeCanvas
         GraphContext();
         virtual ~GraphContext() = default;
 
-        const char* GetSystemName() const override;
-        const char* GetModuleFileExtension() const override;
-        const DataTypeList& GetAllDataTypes() const override;
-        GraphModel::DataTypePtr GetDataType(AZ::Uuid typeId) const override;
+        //! Overridden for custom handling of invalid entity IDs
         GraphModel::DataTypePtr GetDataTypeForValue(const AZStd::any& value) const override;
-        GraphModel::DataTypePtr GetDataType(GraphModel::DataType::Enum typeEnum) const override;
-
-        template<typename T>
-        GraphModel::DataTypePtr GetDataType() const { return IGraphContext::GetDataType<T>(); }
-
-        GraphModel::ModuleGraphManagerPtr GetModuleGraphManager() const override;
 
     private:
-        //! Performs initialization that can't be done in the constructor
-        void Init();
-
         static AZStd::shared_ptr<GraphContext> s_instance;
-
-        DataTypeList m_dataTypes;
-        GraphModel::ModuleGraphManagerPtr m_moduleGraphManager;
     };
 } // namespace LandscapeCanvas

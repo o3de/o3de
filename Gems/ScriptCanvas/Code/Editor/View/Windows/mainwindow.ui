@@ -126,6 +126,7 @@
     <addaction name="action_ViewMiniMap"/>
     <addaction name="action_ViewVariableManager"/>
     <addaction name="action_GraphValidation"/>
+    <addaction name="action_Interpreter"/>
     <addaction name="action_Debugging"/>
     <addaction name="separator"/>
     <addaction name="action_UpgradeTool"/>
@@ -134,12 +135,6 @@
     <addaction name="action_PresetsEditor"/>
     <addaction name="separator"/>
    </widget>
-   <!-- Disabled until tool is stabilized <widget class="QMenu" name="menuUtilities">
-    <property name="title">
-     <string>&amp;Utilities</string>
-    </property>
-    <addaction name="action_UpgradeTool"/>
-   </widget> -->
    <widget class="QMenu" name="menuSettings_2">
     <property name="title">
      <string>&amp;Preferences</string>
@@ -171,8 +166,6 @@
    <addaction name="menuEdit"/>
    <addaction name="menuView_2"/>
    <addaction name="menuTools_2"/>
-    <!-- Disabled until tool is stabilized <widget class="QMenu" name="menuUtilities">
-   <addaction name="menuUtilities"/> -->
    <addaction name="menuSettings_2"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -526,13 +519,13 @@
    <property name="checked">
     <bool>false</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Test Manager</string>
    </property>
-    <property name="enabled">
-      <bool>false</bool>
-    </property>
-    <property name="shortcut">
+   <property name="shortcut">
     <string>Ctrl+Shift+T</string>
    </property>
    <property name="autoRepeat">
@@ -778,6 +771,11 @@
   <action name="actionEditor_Graph">
    <property name="text">
     <string>Editor Graph</string>
+   </property>
+  </action>
+  <action name="action_Interpreter">
+   <property name="text">
+    <string>Interpreter</string>
    </property>
   </action>
   <addaction name="action_ViewNodePalette"/>

@@ -139,6 +139,11 @@ namespace AtomToolsFramework
             AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
             AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
 
+            if (m_config.m_customHandler)
+            {
+                AddEditDataAttribute(AZ::Edit::Attributes::Handler, m_config.m_customHandler);
+            }
+
             switch (m_config.m_dataType)
             {
             case DynamicPropertyType::Int:

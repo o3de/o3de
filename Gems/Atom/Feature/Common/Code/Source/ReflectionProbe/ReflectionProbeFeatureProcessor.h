@@ -28,29 +28,45 @@ namespace AZ
             virtual ~ReflectionProbeFeatureProcessor() = default;
 
             // ReflectionProbeFeatureProcessorInterface overrides
-            ReflectionProbeHandle AddProbe(const AZ::Transform& transform, bool useParallaxCorrection) override;
-            void RemoveProbe(ReflectionProbeHandle& probe) override;
-            void SetProbeOuterExtents(const ReflectionProbeHandle& probe, const AZ::Vector3& outerExtents) override;
-            void SetProbeInnerExtents(const ReflectionProbeHandle& probe, const AZ::Vector3& innerExtents) override;
-            void SetProbeCubeMap(const ReflectionProbeHandle& probe, Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath) override;
-            void SetProbeTransform(const ReflectionProbeHandle& probe, const AZ::Transform& transform) override;
-            void BakeProbe(const ReflectionProbeHandle& probe, BuildCubeMapCallback callback, const AZStd::string& relativePath) override;
+            ReflectionProbeHandle AddReflectionProbe(const AZ::Transform& transform, bool useParallaxCorrection) override;
+            void RemoveReflectionProbe(ReflectionProbeHandle& handle) override;
+            bool IsValidHandle(const ReflectionProbeHandle& handle) const override { return (m_reflectionProbeMap.find(handle) != m_reflectionProbeMap.end()); }
+
+            void SetOuterExtents(const ReflectionProbeHandle& handle, const AZ::Vector3& outerExtents) override;
+            AZ::Vector3 GetOuterExtents(const ReflectionProbeHandle& handle) const override;
+
+            void SetInnerExtents(const ReflectionProbeHandle& handle, const AZ::Vector3& innerExtents) override;
+            AZ::Vector3 GetInnerExtents(const ReflectionProbeHandle& handle) const override;
+
+            AZ::Obb GetOuterObbWs(const ReflectionProbeHandle& handle) const override;
+            AZ::Obb GetInnerObbWs(const ReflectionProbeHandle& handle) const override;
+
+            void SetTransform(const ReflectionProbeHandle& handle, const AZ::Transform& transform) override;
+            AZ::Transform GetTransform(const ReflectionProbeHandle& handle) const override;
+
+            void SetCubeMap(const ReflectionProbeHandle& handle, Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath) override;
+            Data::Instance<RPI::Image> GetCubeMap(const ReflectionProbeHandle& handle) const override;
+
+            void SetRenderExposure(const ReflectionProbeHandle& handle, float renderExposure) override;
+            float GetRenderExposure(const ReflectionProbeHandle& handle) const override;
+
+            void SetBakeExposure(const ReflectionProbeHandle& handle, float bakeExposure) override;
+            float GetBakeExposure(const ReflectionProbeHandle& handle) const override;
+
+            bool GetUseParallaxCorrection(const ReflectionProbeHandle& handle) const override;
+
+            void Bake(const ReflectionProbeHandle& handle, BuildCubeMapCallback callback, const AZStd::string& relativePath) override;
             bool CheckCubeMapAssetNotification(const AZStd::string& relativePath, Data::Asset<RPI::StreamingImageAsset>& outCubeMapAsset, CubeMapAssetNotificationType& outNotificationType) override;
             bool IsCubeMapReferenced(const AZStd::string& relativePath) override;
-            bool IsValidProbeHandle(const ReflectionProbeHandle& probe) const override { return (probe.get() != nullptr); }
-            void ShowProbeVisualization(const ReflectionProbeHandle& probe, bool showVisualization) override;
-            void SetRenderExposure(const ReflectionProbeHandle& probe, float renderExposure) override;
-            void SetBakeExposure(const ReflectionProbeHandle& probe, float bakeExposure) override;
+            void ShowVisualization(const ReflectionProbeHandle& handle, bool showVisualization) override;
+            void FindReflectionProbes(const AZ::Vector3& position, ReflectionProbeHandleVector& reflectionProbeHandles) override;
+            void FindReflectionProbes(const AZ::Aabb& aabb, ReflectionProbeHandleVector& reflectionProbeHandles) override;
 
             // FeatureProcessor overrides
             void Activate() override;
             void Deactivate() override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
             void OnRenderEnd() override;
-
-            // find the reflection probe volumes that contain the position
-            using ReflectionProbeVector = AZStd::vector<AZStd::shared_ptr<ReflectionProbe>>;
-            void FindReflectionProbes(const AZ::Vector3& position, ReflectionProbeVector& reflectionProbes);
 
         private:
 
@@ -78,7 +94,19 @@ namespace AZ
             // notifies and removes the notification entry
             void HandleAssetNotification(Data::Asset<Data::AssetData> asset, CubeMapAssetNotificationType notificationType);
 
-            // list of reflection probes
+            // internal helper for FindReflectionProbes
+            void FindReflectionProbesInternal(const AZ::Aabb& aabb, ReflectionProbeHandleVector& reflectionProbes, AZStd::function<bool(const ReflectionProbe*)> filter = {});
+
+            // checks that the ReflectionProbeHandle exists in the ReflectionProbeMap
+            bool ValidateHandle(const ReflectionProbeHandle& handle) const;
+
+            // hash table of reflection probe handles for constant-time lookup
+            using ReflectionProbePtr = AZStd::shared_ptr<ReflectionProbe>;
+            using ReflectionProbeMap = AZStd::unordered_map <ReflectionProbeHandle, ReflectionProbePtr>;
+            ReflectionProbeMap m_reflectionProbeMap;
+
+            // list of reflection probes, sorted by size for rendering
+            using ReflectionProbeVector = AZStd::vector<ReflectionProbePtr>;
             const size_t InitialProbeAllocationSize = 64;
             ReflectionProbeVector m_reflectionProbes;
 

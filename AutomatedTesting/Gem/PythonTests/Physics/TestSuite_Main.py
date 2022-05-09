@@ -73,6 +73,7 @@ class TestAutomation(EditorTestSuite):
         ]
         base_dir = "AutomatedTesting/Registry"
 
+    @pytest.mark.skip(reason="GHI #9422: Test Periodically Fails")
     class Collider_DiffCollisionGroupDiffCollidingLayersNotCollide(EditorSingleTest_WithFileOverrides):
         from .tests.collider import Collider_DiffCollisionGroupDiffCollidingLayersNotCollide as test_module
         files_to_override = [
@@ -177,6 +178,7 @@ class TestAutomation(EditorTestSuite):
     class RigidBody_KinematicModeWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_KinematicModeWorks as test_module
 
+    @pytest.mark.skip(reason="GHI #9364: Test Periodically Fails")
     class ForceRegion_LinearDampingForceOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_LinearDampingForceOnRigidBodies as test_module
 
@@ -292,6 +294,7 @@ class TestAutomation(EditorTestSuite):
     class Material_EmptyLibraryUsesDefault(EditorSharedTest):
         from .tests.material import Material_EmptyLibraryUsesDefault as test_module
 
+    @pytest.mark.skip(reason="GHI #9365: Test periodically fails")
     class ForceRegion_NoQuiverOnHighLinearDampingForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_NoQuiverOnHighLinearDampingForce as test_module
 
@@ -315,9 +318,6 @@ class TestAutomation(EditorTestSuite):
     class Joints_HingeSoftLimitsConstrained(EditorSharedTest):
         from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
 
-    class Joints_BallSoftLimitsConstrained(EditorSharedTest):
-        from .tests.joints import Joints_BallSoftLimitsConstrained as test_module
-
     class Joints_BallLeadFollowerCollide(EditorSharedTest):
         from .tests.joints import Joints_BallLeadFollowerCollide as test_module
         
@@ -336,6 +336,7 @@ class TestAutomation(EditorTestSuite):
     class RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
 
+    @pytest.mark.xfail(reason="GHI #9368: Test Sporadically Fails")
     class Collider_ColliderRotationOffset(EditorSharedTest):
         from .tests.collider import Collider_ColliderRotationOffset as test_module
 

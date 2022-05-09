@@ -168,6 +168,9 @@ namespace AZ
             AZStd::unordered_map<Data::Instance<RPI::StreamingImage>, uint32_t> m_userTextures;
             Data::Instance<RPI::Buffer> m_instanceBuffer;
             RHI::StreamBufferView m_instanceBufferView;
+
+            // cache the font text id
+            void* m_imguiFontTexId = nullptr;
         };
     }   // namespace RPI
 }   // namespace AZ

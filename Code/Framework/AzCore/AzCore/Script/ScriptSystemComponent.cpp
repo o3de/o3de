@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/ProfilerReflection.h>
@@ -29,6 +30,7 @@
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/conversions.h>
 
 namespace AZ
@@ -356,7 +358,6 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
     {
         // Lock access to the loaded scripts map
         AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);
-
         // Check if already loaded
         auto scriptIt = container->m_loadedScripts.find(asset.GetId().m_guid);
         if (scriptIt != container->m_loadedScripts.end())
@@ -371,14 +372,20 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
             }
             else
             {
+                SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+                    , "ScriptSystemComponent::LoadAndGetNativeContext returning pre-loaded script: %s-%s"
+                    , asset.GetHint().c_str()
+                    , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+
+
                 return { ScriptLoadResult::Status::OnStack, lua };
             }
         }
     }
 
     // Load lua script into the VM
-    IO::MemoryStream stream = asset.Get()->CreateMemoryStream();
-    if (!context->LoadFromStream(&stream, asset.Get()->GetDebugName(), mode, lua))
+    IO::MemoryStream stream = asset.Get()->m_data.CreateScriptReadStream();
+    if (!context->LoadFromStream(&stream, asset.Get()->m_data.GetDebugName(), mode, lua))
     {
         context->Error(ScriptContext::ErrorType::Error, "%s", lua_tostring(lua, -1));
         lua_pop(lua, 1);
@@ -397,17 +404,26 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
 
     // No need to keep the script asset around, the owner will keep a reference to it (or this, if it's require()'d)
     LoadedScriptInfo info;
-    const char* debugName = asset.Get()->GetDebugName();
+    const char* debugName = asset.Get()->m_data.GetDebugName();
     if (debugName)
     {
         info.m_scriptNames.emplace(debugName);
     }
+
+    info.m_scriptAsset = asset;
     info.m_tableReference = ref;
+
+    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+        , "ScriptSystemComponent::LoadAndGetNativeContext loaded from asset script: %s-%s"
+        , asset.GetHint().c_str()
+        , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
 
     {
         // Lock access to the loaded scripts map
         AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);
+        container->m_trackedScripts.emplace(asset.GetId().m_guid, info.m_scriptAsset);
         container->m_loadedScripts.emplace(asset.GetId().m_guid, AZStd::move(info));
+        Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
     }
 
     return { ScriptLoadResult::Status::Initial, lua };
@@ -473,6 +489,10 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
     // Lock access to the loaded scripts map
     AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);
 
+    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+        , "DefaultRequireHook called for %s"
+        , module);
+
     // If script already loaded in this context, just use its resulting table
     auto scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
     if (scriptIt != container->m_loadedScripts.end())
@@ -483,19 +503,23 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
         lua_rawgeti(lua, LUA_REGISTRYINDEX, scriptIt->second.m_tableReference);
         lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
 
-        // If asset reference already populated, just return now. Otherwise, capture reference
-        if (scriptIt->second.m_scriptAsset.GetId().IsValid())
-        {
-            return 1;
-        }
-    }
+        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+            , "adding new name %s, for loaded module %s"
+            , module
+            , scriptIt->second.m_scriptAsset.GetHint().c_str());
 
+        return 1;
+    }
+    
     // Grab a reference to the script asset being loaded
     Data::Asset<ScriptAsset> script = Data::AssetManager::Instance().FindAsset<ScriptAsset>(scriptId, AZ::Data::AssetLoadBehavior::Default);
 
     // If it's not loaded, load it in a blocking manner
     if (!script.IsReady())
     {
+        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+            , "had to force load a required asset, which should have been discovered and pre-loaded: %s"
+            , module);
         script = Data::AssetManager::Instance().GetAsset<ScriptAsset>(scriptId, AZ::Data::AssetLoadBehavior::Default);
         script.BlockUntilLoadComplete();
 
@@ -504,13 +528,6 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
             lua_pushfstring(lua, "Module \"%s\" failed to load.", filePath.c_str());
             return 1;
         }
-    }
-
-    // Now that we have a valid asset reference, stash it and return if the script already loaded and tracked
-    if (scriptIt != container->m_loadedScripts.end())
-    {
-        scriptIt->second.m_scriptAsset = script;
-        return 1;
     }
 
     // If not, load the script, getting the resulting table
@@ -522,15 +539,8 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
 
     // Push function returning the result
     lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
-
-    // Set asset reference on the loaded script
     scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
     scriptIt->second.m_scriptNames.emplace(module);
-    scriptIt->second.m_scriptAsset = script;
-
-    // Connect to the asset bus so that we may know when this script reloads.
-    Data::AssetBus::MultiHandler::BusConnect(script.GetId());
-
     return 1;
 }
 
@@ -559,10 +569,19 @@ int ScriptSystemComponent::InMemoryRequireHook(lua_State* lua, ScriptContext* co
     // Lock access to the loaded scripts map
     AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);
 
+    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+        , "InMemoryRequireHook called for %s"
+        , module);
+
     // If script already loaded in this context, just use its resulting table
     auto scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
     if (scriptIt != container->m_loadedScripts.end())
     {
+        SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+            , "adding new name %s, for loaded module %s"
+            , module
+            , scriptIt->second.m_scriptAsset.GetHint().c_str());
+
         // Add the name used for require as an alias
         scriptIt->second.m_scriptNames.emplace(module);
         // Push the value to a closure that will just return it
@@ -594,15 +613,9 @@ int ScriptSystemComponent::InMemoryRequireHook(lua_State* lua, ScriptContext* co
 
     // Push function returning the result
     lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
-
     // Set asset reference on the loaded script
     scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
     scriptIt->second.m_scriptNames.emplace(module);
-    scriptIt->second.m_scriptAsset = script;
-
-    // Connect to the asset bus so that we may know when this script reloads.
-    Data::AssetBus::MultiHandler::BusConnect(script.GetId());
-
     return 1;
 }
 
@@ -620,11 +633,20 @@ void ScriptSystemComponent::ClearAssetReferences(Data::AssetId assetBaseId)
             // Spin off thread for clearing the loaded table
             LuaNativeThread thread(l);
 
+            SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+                , "ScriptSystemComponent::ClearAssetReferences actually called! %s-%s"
+                , scriptIt->second.m_scriptAsset.GetHint().c_str()
+                , assetBaseId.m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+
             lua_getfield(thread, LUA_REGISTRYINDEX, "_LOADED");
             for (const auto& modName : scriptIt->second.m_scriptNames)
             {
                 lua_pushnil(thread);
                 lua_setfield(thread, -2, modName.c_str());
+                SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+                    , "ScriptSystemComponent::ClearAssetReferences Removing table %s from _LOADED for %s"
+                    , modName.c_str()
+                    , assetBaseId.m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
             }
 
             // Unref the script table so it may be collected
@@ -632,6 +654,12 @@ void ScriptSystemComponent::ClearAssetReferences(Data::AssetId assetBaseId)
 
             // Now that it has been removed, don't track it until it's required again (replacing it in this list).
             container.m_loadedScripts.erase(scriptIt);
+        }
+        else
+        {
+            SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+                , "ScriptSystemComponent::ClearAssetReferences did not find id in loaded scripts! %s"
+                , assetBaseId.m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
         }
     }
 }
@@ -650,73 +678,30 @@ Data::AssetPtr ScriptSystemComponent::CreateAsset(const Data::AssetId& id, const
 //
 // Loads the script data from disk into SciptAsset memory. This does NOT load the asset into any lua_State.
 //=========================================================================
-Data::AssetHandler::LoadResult ScriptSystemComponent::LoadAssetData(
-    const Data::Asset<Data::AssetData>& asset,
-    AZStd::shared_ptr<Data::AssetDataStream> stream,
-    [[maybe_unused]] const Data::AssetFilterCB& assetLoadFilterCB)
+
+Data::AssetHandler::LoadResult ScriptSystemComponent::LoadAssetData
+    ( const Data::Asset<Data::AssetData>& asset
+    , AZStd::shared_ptr<Data::AssetDataStream> stream
+    , [[maybe_unused]] const Data::AssetFilterCB& assetLoadFilterCB)
 {
-    if (stream)
+    ScriptAsset* assetData = asset.GetAs<ScriptAsset>();
+    AZ_Assert(assetData, "Asset is of the wrong type.");
+    AZ::SerializeContext* serializeContext = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+    AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
+
+    if (AZ::Utils::LoadObjectFromStreamInPlace<LuaScriptData>
+        ( *stream
+        , assetData->m_data
+        , serializeContext
+        , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB)))
     {
-        ScriptAsset* script = asset.GetAs<ScriptAsset>();
-
-        // If it's a compiled asset, pull data from header
-        if (asset.GetId().m_subId == ScriptAsset::CompiledAssetSubId)
-        {
-            // Read asset version
-            ScriptAsset::LuaScriptInfo assetVersion = ScriptAsset::Invalid;
-            stream->Read(sizeof(assetVersion), &assetVersion);
-            if (assetVersion != ScriptAsset::AssetVersion)
-            {
-                AZ_Error("Script", false, "Script is binary version %u, expected %u.", assetVersion, ScriptAsset::AssetVersion);
-                return Data::AssetHandler::LoadResult::Error;
-            }
-
-            // Read asset type
-            ScriptAsset::LuaScriptInfo assetType = ScriptAsset::Invalid;
-            stream->Read(sizeof(assetType), &assetType);
-
-            if (assetType == ScriptAsset::AssetTypeCompiled || assetType == ScriptAsset::AssetTypeText)
-            {
-                // Read length of debug name
-                u32 debugNameLength = 0;
-                stream->Read(sizeof(debugNameLength), &debugNameLength);
-
-                // Make string the length of the name + 1 (name in script doesn't include \0)
-                script->m_debugName.resize(debugNameLength + 1);
-                // Read debug name
-                stream->Read(debugNameLength, script->m_debugName.data());
-            }
-            else
-            {
-                AZ_Error("Script", false, "Unsupported asset type %u!", assetType);
-                return Data::AssetHandler::LoadResult::Error;
-            }
-        }
-        // Otherwise, use defaults
-        else
-        {
-            Data::AssetInfo scriptInfo;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(scriptInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, asset.GetId());
-            script->m_debugName = "@" + scriptInfo.m_relativePath;
-            AZStd::to_lower(script->m_debugName.begin(), script->m_debugName.end());
-        }
-
-        // Read contents into buffer
-        size_t scriptDataLength = stream->GetLength() - stream->GetCurPos(); // Remove already read characters from length
-
-        AZ_Error("Script", scriptDataLength > 0, "Script contents are empty! Please check AssetProcessor output.");
-
-        script->m_scriptBuffer.resize(scriptDataLength);
-        stream->Read(scriptDataLength, script->m_scriptBuffer.data());
-
-        // Clear cached references in the event of a successful load. This function has to be queued on
-        // AssetBus where NotifyAssetReloaded is also queued, to ensure its execution before NotifyAssetReloaded
-        Data::AssetBus::QueueFunction(&ScriptSystemComponent::ClearAssetReferences, this, asset.GetId());
-
         return Data::AssetHandler::LoadResult::LoadComplete;
     }
-
-    return Data::AssetHandler::LoadResult::Error;
+    else
+    {
+        return Data::AssetHandler::LoadResult::Error;
+    }
 }
 
 //=========================================================================
@@ -728,6 +713,7 @@ Data::AssetHandler::LoadResult ScriptSystemComponent::LoadAssetData(
 //=========================================================================
 void ScriptSystemComponent::DestroyAsset(Data::AssetPtr ptr)
 {
+    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent", "ScriptSystemComponent::DestroyAsset: %s", ptr->GetId().ToString<AZStd::string>().c_str());
     delete ptr;
 }
 
@@ -772,78 +758,35 @@ void ScriptSystemComponent::GetAssetTypeExtensions(AZStd::vector<AZStd::string>&
 }
 
 //=========================================================================
-// OnAssetPreReload
-// #TEMP: Remove when asset dependencies are in place
-// Before an asset is reloaded, this event is called to remove the previously cached version.
-// This removes all aliases from the _LOADED table. This will prevent require() calls from surfacing antiquated data.
-//=========================================================================
-void ScriptSystemComponent::OnAssetPreReload(Data::Asset<Data::AssetData> asset)
-{
-    ClearAssetReferences(asset.GetId());
-}
-
-//=========================================================================
 // OnAssetReloaded
-// #TEMP: Remove when asset dependencies are in place
-// This function will only be called for the asset that triggered the reload.
-//
-// Track all reload requests and remove them from the map one by one as they are handled. 
-// Once all queued reloads are handled, another full reload can be triggered.
 //=========================================================================
 void ScriptSystemComponent::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
 {
-    Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+    SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+        , "ScriptSystemComponent::OnAssetReloaded: calling Clear and LoadReadyAsset: %s-%s"
+        , asset.GetHint().c_str()
+        , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+    ClearAssetReferences(asset.GetId());
+    LoadReadyAsset(asset);
+}
 
-    auto it = m_queuedReloads.find(asset.GetId());
-    if (it == m_queuedReloads.end())
+void ScriptSystemComponent::LoadReadyAsset(Data::Asset<Data::AssetData> asset)
+{
+    for (auto& context : m_contexts)
     {
-        // This is not a reload queued by us as a "dependency" reload, probably an external change.
-        if (!m_isReloadQueued)
+        if (context.m_isOwner)
         {
-            // There is no reload-all queued, schedule one.
-            m_isReloadQueued = true;
-            auto triggeredByAssetId = asset.GetId();
-            AZStd::function<void()> reloadFn = [this, triggeredByAssetId]() ///< Capture just reloaded asset ID so that it can be excluded from reloading
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(context.m_loadedScriptsMutex);
+            if (context.m_trackedScripts.contains(asset.GetId().m_guid))
             {
-                // Collects all script assets for reloading
-                Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb = [this, triggeredByAssetId](const Data::AssetId id, const Data::AssetInfo& info)
-                {
-                    // Check asset type
-                    if (info.m_assetType == azrtti_typeid<ScriptAsset>())
-                    {
-                        // Ensure that the asset isn't scheduled for a reload already
-                        if (id != triggeredByAssetId && m_queuedReloads.find(id) == m_queuedReloads.end()) ///< Don't reload just reloaded asset or assets already queued for reload
-                        {
-                            auto otherAsset = Data::AssetManager::Instance().FindAsset<ScriptAsset>(id, AZ::Data::AssetLoadBehavior::Default);
-                            if (otherAsset && otherAsset.IsReady())
-                            {
-                                // Reload the asset from it's current data
-                                otherAsset.Reload();
+                SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptSystemComponent"
+                    , "ScriptSystemComponent::LoadReadyAsset Loading into context: %s-%s"
+                    , asset.GetHint().c_str()
+                    , asset.GetId().m_guid.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
 
-                                // Store the ID of the asset that we started reloading. We will use it to detect the moment 
-                                // when all current reload requests are handled, and reloadFn can be called again.
-                                m_queuedReloads.insert(id);
-                                // the 'this->' in the following line is intentional.
-                                // the C++ standard requires the use of this-> on baseclass calls that are templated classes
-                                // most of the time you can get away with it, but in some cases MSVC will not correctly adjust the offset of this
-                                // during the call
-                                this->Data::AssetBus::MultiHandler::BusConnect(id); 
-                            }
-                        }
-                    }
-                };
-                Data::AssetCatalogRequestBus::Broadcast(&Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, nullptr);
-
-                m_isReloadQueued = false;
-            };
-            TickBus::QueueFunction(reloadFn);
+                Load(asset, AZ::k_scriptLoadBinary, context.m_context->GetId());
+            }
         }
-    }
-    else
-    {
-        // This is one of the reloads triggered by us via reloadFn, no need to trigger another reload-all call.
-        // Remove it from the queue, so that reloadFn can be triggered again once all dependencies finished reloading.
-        m_queuedReloads.erase(it);
     }
 }
 
@@ -875,10 +818,9 @@ AZ::Uuid AZ::ScriptSystemComponent::GetComponentTypeId() const
     return AZ::Uuid("{b5fc8679-fa2a-4c7c-ac42-dcc279ea613a}");
 }
 
-bool AZ::ScriptSystemComponent::CanCreateComponent(const AZ::Data::AssetId& assetId) const
+bool AZ::ScriptSystemComponent::CanCreateComponent([[maybe_unused]] const AZ::Data::AssetId& assetId) const
 {
-    //LUA source files output a compiled as well as an uncompiled asset, both with the same typeID.  We only want to create components with the compiled asset
-    return assetId.m_subId == ScriptAsset::CompiledAssetSubId;
+    return true;
 }
 
 /**
@@ -914,6 +856,7 @@ struct DummyTickOrder
 void ScriptSystemComponent::Reflect(ReflectContext* reflection)
 {
     ScriptTimePoint::Reflect(reflection);
+    LuaScriptData::Reflect(reflection);
 
     if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(reflection))
     {

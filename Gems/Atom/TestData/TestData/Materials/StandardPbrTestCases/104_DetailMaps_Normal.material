@@ -1,6 +1,6 @@
 {
     "materialType": "Materials/Types/EnhancedPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 6,
     "parentMaterial": "TestData/Materials/StandardPbrTestCases/101_DetailMaps_BaseNoDetailMaps.material",
     "propertyValues": {
         "detailLayerGroup.enableDetailLayer": true,
@@ -8,6 +8,6 @@
         "detailLayerGroup.normalDetailFlipY": true,
         "detailLayerGroup.normalDetailMap": "TestData/Textures/test_dome_normal.tiff",
         "detailLayerGroup.normalDetailStrength": 0.30000001192092896,
-        "detailUV.scale": 40.0
+        "detailLayerGroup.detailUV.scale": 40.0
     }
 }

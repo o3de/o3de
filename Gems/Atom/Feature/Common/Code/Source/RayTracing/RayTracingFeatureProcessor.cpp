@@ -87,23 +87,42 @@ namespace AZ
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             uint32_t objectIndex = objectId.GetIndex();
 
+            // check to see if we already have this mesh
+            MeshMap::iterator itMesh = m_meshes.find(objectIndex);
+            if (itMesh != m_meshes.end())
+            {
+                AZ_Assert(false, "SetMesh called on an existing Mesh objectId, call RemoveMesh first");
+                return;
+            }
+
             // lock the mutex to protect the mesh and BLAS lists
             AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
-            MeshMap::iterator itMesh = m_meshes.find(objectIndex);
-            if (itMesh == m_meshes.end())
+            // add the mesh
+            m_meshes.insert(AZStd::make_pair(objectIndex, Mesh{ assetId }));
+            Mesh& mesh = m_meshes[objectIndex];
+
+            // add the subMeshes to the end of the global subMesh vector
+            // Note 1: the MeshInfo and MaterialInfo vectors are parallel with the subMesh vector
+            // Note 2: the list of indices for the subMeshes in the global vector are stored in the parent Mesh
+            IndexVector subMeshIndices;
+            uint32_t subMeshGlobalIndex = aznumeric_cast<uint32_t>(m_subMeshes.size());
+            for (uint32_t subMeshIndex = 0; subMeshIndex < subMeshes.size(); ++subMeshIndex, ++subMeshGlobalIndex)
             {
-                m_meshes.insert(AZStd::make_pair(objectIndex, Mesh{ assetId, subMeshes }));
-            }
-            else
-            {
-                // updating an existing entry
-                // decrement the mesh count by the number of meshes in the existing entry in case the number of meshes changed
-                m_subMeshCount -= aznumeric_cast<uint32_t>(itMesh->second.m_subMeshes.size());
-                m_meshes[objectIndex].m_subMeshes = subMeshes;
+                SubMesh& subMesh = m_subMeshes.emplace_back(subMeshes[subMeshIndex]);
+                subMesh.m_mesh = &mesh;
+                subMesh.m_subMeshIndex = subMeshIndex;
+                subMesh.m_globalIndex = subMeshGlobalIndex;
+
+                // add to the list of global subMeshIndices, which will be stored in the Mesh
+                subMeshIndices.push_back(subMeshGlobalIndex);
+
+                // add MeshInfo and MaterialInfo entries
+                m_meshInfos.emplace_back();
+                m_materialInfos.emplace_back();
             }
 
-            Mesh& mesh = m_meshes[objectIndex];
+            mesh.m_subMeshIndices = subMeshIndices;
 
             // search for an existing BLAS instance entry for this mesh using the assetId
             BlasInstanceMap::iterator itMeshBlasInstance = m_blasInstanceMap.find(assetId);
@@ -112,7 +131,7 @@ namespace AZ
                 // make a new BLAS map entry for this mesh
                 MeshBlasInstance meshBlasInstance;
                 meshBlasInstance.m_count = 1;
-                meshBlasInstance.m_subMeshes.reserve(mesh.m_subMeshes.size());
+                meshBlasInstance.m_subMeshes.reserve(mesh.m_subMeshIndices.size());
                 itMeshBlasInstance = m_blasInstanceMap.insert({ assetId, meshBlasInstance }).first;
             }
             else
@@ -124,9 +143,9 @@ namespace AZ
             // Note: all sub-meshes must either create new BLAS objects or re-use existing ones, otherwise it's an error (it's the same model in both cases)
             // Note: the buffer is just reserved here, the BLAS is built in the RayTracingAccelerationStructurePass
             [[maybe_unused]] bool blasInstanceFound = false;
-            for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshes.size(); ++subMeshIndex)
+            for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshIndices.size(); ++subMeshIndex)
             {
-                SubMesh& subMesh = mesh.m_subMeshes[subMeshIndex];
+                SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
 
                 RHI::RayTracingBlasDescriptor blasDescriptor;
                 blasDescriptor.Build()
@@ -165,11 +184,62 @@ namespace AZ
             mesh.m_transform = m_transformServiceFeatureProcessor->GetTransformForId(objectId);
             mesh.m_nonUniformScale = m_transformServiceFeatureProcessor->GetNonUniformScaleForId(objectId);
 
+            AZ::Transform noScaleTransform = mesh.m_transform;
+            noScaleTransform.ExtractUniformScale();
+            AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
+            rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
+            Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+
+            // store the mesh buffers and material textures in the resource lists
+            for (uint32_t subMeshIndex : mesh.m_subMeshIndices)
+            {
+                SubMesh& subMesh = m_subMeshes[subMeshIndex];
+                MeshInfo& meshInfo = m_meshInfos[subMesh.m_globalIndex];
+                MaterialInfo& materialInfo = m_materialInfos[subMesh.m_globalIndex];
+
+                subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
+                worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
+                meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
+
+                // add mesh buffers
+                meshInfo.m_bufferStartIndex = m_meshBufferIndices.AddEntry(
+                {
+                    m_meshBuffers.AddResource(subMesh.m_indexShaderBufferView.get()),
+                    m_meshBuffers.AddResource(subMesh.m_positionShaderBufferView.get()),
+                    m_meshBuffers.AddResource(subMesh.m_normalShaderBufferView.get()),
+                    m_meshBuffers.AddResource(subMesh.m_tangentShaderBufferView.get()),
+                    m_meshBuffers.AddResource(subMesh.m_bitangentShaderBufferView.get()),
+                    m_meshBuffers.AddResource(subMesh.m_uvShaderBufferView.get())
+                });
+                
+                meshInfo.m_indexByteOffset = subMesh.m_indexBufferView.GetByteOffset();
+                meshInfo.m_positionByteOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
+                meshInfo.m_normalByteOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
+                meshInfo.m_tangentByteOffset = subMesh.m_tangentShaderBufferView ? subMesh.m_tangentVertexBufferView.GetByteOffset() : 0;
+                meshInfo.m_tangentByteOffset = subMesh.m_bitangentShaderBufferView ? subMesh.m_bitangentVertexBufferView.GetByteOffset() : 0;
+                meshInfo.m_tangentByteOffset = subMesh.m_uvShaderBufferView ? subMesh.m_uvVertexBufferView.GetByteOffset() : 0;
+
+                // add material textures
+                subMesh.m_baseColor.StoreToFloat4(materialInfo.m_baseColor.data());
+                materialInfo.m_metallicFactor = subMesh.m_metallicFactor;
+                materialInfo.m_roughnessFactor = subMesh.m_roughnessFactor;
+                materialInfo.m_textureFlags = subMesh.m_textureFlags;
+
+                materialInfo.m_textureStartIndex = m_materialTextureIndices.AddEntry(
+                {
+                    m_materialTextures.AddResource(subMesh.m_baseColorImageView.get()),
+                    m_materialTextures.AddResource(subMesh.m_normalImageView.get()),
+                    m_materialTextures.AddResource(subMesh.m_metallicImageView.get()),
+                    m_materialTextures.AddResource(subMesh.m_roughnessImageView.get())
+                });
+            }
+
             m_revision++;
             m_subMeshCount += aznumeric_cast<uint32_t>(subMeshes.size());
 
             m_meshInfoBufferNeedsUpdate = true;
             m_materialInfoBufferNeedsUpdate = true;
+            m_indexListNeedsUpdate = true;
         }
 
         void RayTracingFeatureProcessor::RemoveMesh(const ObjectId objectId)
@@ -185,12 +255,10 @@ namespace AZ
             MeshMap::iterator itMesh = m_meshes.find(objectId.GetIndex());
             if (itMesh != m_meshes.end())
             {
-                m_subMeshCount -= aznumeric_cast<uint32_t>(itMesh->second.m_subMeshes.size());
-                m_meshes.erase(itMesh);
-                m_revision++;
+                Mesh& mesh = itMesh->second;
 
                 // decrement the count from the BLAS instances, and check to see if we can remove them
-                BlasInstanceMap::iterator itBlas = m_blasInstanceMap.find(itMesh->second.m_assetId);
+                BlasInstanceMap::iterator itBlas = m_blasInstanceMap.find(mesh.m_assetId);
                 if (itBlas != m_blasInstanceMap.end())
                 {
                     itBlas->second.m_count--;
@@ -199,10 +267,76 @@ namespace AZ
                         m_blasInstanceMap.erase(itBlas);
                     }
                 }
+
+                // remove the SubMeshes
+                for (auto& subMeshIndex : mesh.m_subMeshIndices)
+                {
+                    SubMesh& subMesh = m_subMeshes[subMeshIndex];
+                    uint32_t globalIndex = subMesh.m_globalIndex;
+
+                    MeshInfo& meshInfo = m_meshInfos[globalIndex];
+                    MaterialInfo& materialInfo = m_materialInfos[globalIndex];
+
+                    m_meshBufferIndices.RemoveEntry(meshInfo.m_bufferStartIndex);
+                    m_materialTextureIndices.RemoveEntry(materialInfo.m_textureStartIndex);
+
+                    m_meshBuffers.RemoveResource(subMesh.m_indexShaderBufferView.get());
+                    m_meshBuffers.RemoveResource(subMesh.m_positionShaderBufferView.get());
+                    m_meshBuffers.RemoveResource(subMesh.m_normalShaderBufferView.get());
+                    m_meshBuffers.RemoveResource(subMesh.m_tangentShaderBufferView.get());
+                    m_meshBuffers.RemoveResource(subMesh.m_bitangentShaderBufferView.get());
+                    m_meshBuffers.RemoveResource(subMesh.m_uvShaderBufferView.get());
+
+                    m_materialTextures.RemoveResource(subMesh.m_baseColorImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_normalImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_metallicImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_roughnessImageView.get());
+                    
+                    if (globalIndex < m_subMeshes.size() - 1)
+                    {
+                        // the subMesh we're removing is in the middle of the global lists, remove by swapping the last element to its position in the list
+                        m_subMeshes[globalIndex] = m_subMeshes.back();
+                        m_meshInfos[globalIndex] = m_meshInfos.back();
+                        m_materialInfos[globalIndex] = m_materialInfos.back();
+
+                        // update the global index for the swapped subMesh
+                        m_subMeshes[globalIndex].m_globalIndex = globalIndex;
+
+                        // update the global index in the parent Mesh' subMesh list
+                        Mesh* swappedSubMeshParent = m_subMeshes[globalIndex].m_mesh;
+                        uint32_t swappedSubMeshIndex = m_subMeshes[globalIndex].m_subMeshIndex;
+                        swappedSubMeshParent->m_subMeshIndices[swappedSubMeshIndex] = globalIndex;
+                    }
+
+                    m_subMeshes.pop_back();
+                    m_meshInfos.pop_back();
+                    m_materialInfos.pop_back();
+                }
+
+                // remove from the Mesh list
+                m_subMeshCount -= aznumeric_cast<uint32_t>(mesh.m_subMeshIndices.size());
+                m_meshes.erase(itMesh);
+                m_revision++;
+
+                // reset all data structures if all meshes were removed (i.e., empty scene)
+                if (m_subMeshCount == 0)
+                {
+                    m_meshes.clear();
+                    m_subMeshes.clear();
+                    m_meshInfos.clear();
+                    m_materialInfos.clear();
+
+                    m_meshBufferIndices.Reset();
+                    m_materialTextureIndices.Reset();
+
+                    m_meshBuffers.Reset();
+                    m_materialTextures.Reset();
+                }
             }
 
             m_meshInfoBufferNeedsUpdate = true;
             m_materialInfoBufferNeedsUpdate = true;
+            m_indexListNeedsUpdate = true;
         }
 
         void RayTracingFeatureProcessor::SetMeshTransform(const ObjectId objectId, const AZ::Transform transform, const AZ::Vector3 nonUniformScale)
@@ -215,9 +349,24 @@ namespace AZ
             MeshMap::iterator itMesh = m_meshes.find(objectId.GetIndex());
             if (itMesh != m_meshes.end())
             {
-                itMesh->second.m_transform = transform;
-                itMesh->second.m_nonUniformScale = nonUniformScale;
+                Mesh& mesh = itMesh->second;
+                mesh.m_transform = transform;
+                mesh.m_nonUniformScale = nonUniformScale;
                 m_revision++;
+
+                // create a world inverse transpose 3x4 matrix
+                AZ::Transform noScaleTransform = mesh.m_transform;
+                noScaleTransform.ExtractUniformScale();
+                AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
+                rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
+                Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+
+                // update all MeshInfos for this Mesh with the new transform
+                for (const auto& subMeshIndex : mesh.m_subMeshIndices)
+                {
+                    MeshInfo& meshInfo = m_meshInfos[subMeshIndex];
+                    worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
+                }
             }
 
             m_meshInfoBufferNeedsUpdate = true;
@@ -225,6 +374,8 @@ namespace AZ
 
         void RayTracingFeatureProcessor::UpdateRayTracingSrgs()
         {
+            AZ_PROFILE_SCOPE(AzRender, "RayTracingFeatureProcessor::UpdateRayTracingSrgs");
+
             if (!m_tlas->GetTlasBuffer())
             {
                 return;
@@ -236,31 +387,32 @@ namespace AZ
                 return;
             }
 
-            // update the mesh info buffer with the latest ray tracing enabled meshes
-            UpdateMeshInfoBuffer();
+            // lock the mutex to protect the mesh and BLAS lists
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
-            // update the material info buffer with the latest ray tracing enabled meshes
-            UpdateMaterialInfoBuffer();
+            if (m_subMeshCount > 0)
+            {
+                UpdateMeshInfoBuffer();
+                UpdateMaterialInfoBuffer();
+                UpdateIndexLists();
+            }
 
-            // update the RayTracingSceneSrg
             UpdateRayTracingSceneSrg();
-
-            // update the RayTracingMaterialSrg
             UpdateRayTracingMaterialSrg();
         }
 
         void RayTracingFeatureProcessor::UpdateMeshInfoBuffer()
         {
-            if (m_meshInfoBufferNeedsUpdate && (m_subMeshCount > 0))
+            if (m_meshInfoBufferNeedsUpdate)
             {
-                TransformServiceFeatureProcessor* transformFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
+                // advance to the next buffer in the frame list
+                m_currentMeshInfoFrameIndex = (m_currentMeshInfoFrameIndex + 1) % BufferFrameCount;
 
-                AZStd::vector<MeshInfo> meshInfos;
-                meshInfos.reserve(m_subMeshCount);
-
+                // update mesh info buffer
+                Data::Instance<RPI::Buffer>& currentMeshInfoGpuBuffer = m_meshInfoGpuBuffer[m_currentMeshInfoFrameIndex];
                 uint32_t newMeshByteCount = m_subMeshCount * sizeof(MeshInfo);
 
-                if (m_meshInfoBuffer == nullptr)
+                if (currentMeshInfoGpuBuffer == nullptr)
                 {
                     // allocate the MeshInfo structured buffer
                     RPI::CommonBufferDescriptor desc;
@@ -268,119 +420,139 @@ namespace AZ
                     desc.m_bufferName = "RayTracingMeshInfo";
                     desc.m_byteCount = newMeshByteCount;
                     desc.m_elementSize = sizeof(MeshInfo);
-                    m_meshInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                    currentMeshInfoGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
                 }
-                else if (m_meshInfoBuffer->GetBufferSize() < newMeshByteCount)
+                else if (currentMeshInfoGpuBuffer->GetBufferSize() < newMeshByteCount)
                 {
                     // resize for the new sub-mesh count
-                    m_meshInfoBuffer->Resize(newMeshByteCount);
+                    currentMeshInfoGpuBuffer->Resize(newMeshByteCount);
                 }
 
-                // keep track of the start index of the buffers for each mesh, this is put into the MeshInfo
-                // entry for each mesh so it knows where to find the start of its buffers in the unbounded array
-                uint32_t bufferStartIndex = 0;
+                currentMeshInfoGpuBuffer->UpdateData(m_meshInfos.data(), newMeshByteCount);
 
-                for (const auto& mesh : m_meshes)
-                {
-                    AZ::Transform meshTransform = transformFeatureProcessor->GetTransformForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
-                    AZ::Transform noScaleTransform = meshTransform;
-                    noScaleTransform.ExtractUniformScale();
-                    AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
-                    rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
-
-                    const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;
-                    for (const auto& subMesh : subMeshes)
-                    {
-                        MeshInfo meshInfo;
-                        meshInfo.m_indexOffset = subMesh.m_indexBufferView.GetByteOffset();
-                        meshInfo.m_positionOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
-                        meshInfo.m_normalOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
-
-                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Tangent))
-                        {
-                            meshInfo.m_tangentOffset = subMesh.m_tangentVertexBufferView.GetByteOffset();
-                        }
-
-                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Bitangent))
-                        {
-                            meshInfo.m_bitangentOffset = subMesh.m_bitangentVertexBufferView.GetByteOffset();
-                        }
-
-                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::UV))
-                        {
-                            meshInfo.m_uvOffset = subMesh.m_uvVertexBufferView.GetByteOffset();
-                        }
-
-                        subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
-                        Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
-                        worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
-                        meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
-                        meshInfo.m_bufferStartIndex = bufferStartIndex;
-
-                        // add the count of buffers present in this subMesh to the start index for the next subMesh
-                        // note that the Index, Position, and Normal buffers are always counted since they are guaranteed
-                        static const uint32_t RayTracingSubMeshFixedStreamCount = 3;
-                        bufferStartIndex += (RayTracingSubMeshFixedStreamCount + RHI::CountBitsSet(aznumeric_cast<uint32_t>(meshInfo.m_bufferFlags)));
-
-                        meshInfos.emplace_back(meshInfo);
-                    }
-                }
-
-                m_meshInfoBuffer->UpdateData(meshInfos.data(), newMeshByteCount);
                 m_meshInfoBufferNeedsUpdate = false;
             }
         }
 
         void RayTracingFeatureProcessor::UpdateMaterialInfoBuffer()
         {
-            if (m_materialInfoBufferNeedsUpdate && (m_subMeshCount > 0))
+            if (m_materialInfoBufferNeedsUpdate)
             {
-                AZStd::vector<MaterialInfo> materialInfos;
-                materialInfos.reserve(m_subMeshCount);
+                // advance to the next buffer in the frame list
+                m_currentMaterialInfoFrameIndex = (m_currentMaterialInfoFrameIndex + 1) % BufferFrameCount;
 
-                uint32_t newMaterialByteCount = m_subMeshCount * sizeof(MaterialInfo);
-
-                if (m_materialInfoBuffer == nullptr)
+                // update MaterialInfo buffer
+                Data::Instance<RPI::Buffer>& currentMaterialInfoGpuBuffer = m_materialInfoGpuBuffer[m_currentMaterialInfoFrameIndex];
+                uint32_t newMaterialInfoByteCount = m_subMeshCount * sizeof(MaterialInfo);
+        
+                if (currentMaterialInfoGpuBuffer == nullptr)
                 {
                     // allocate the MaterialInfo structured buffer
                     RPI::CommonBufferDescriptor desc;
                     desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
                     desc.m_bufferName = "RayTracingMaterialInfo";
-                    desc.m_byteCount = newMaterialByteCount;
+                    desc.m_byteCount = newMaterialInfoByteCount;
                     desc.m_elementSize = sizeof(MaterialInfo);
-                    m_materialInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                    currentMaterialInfoGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
                 }
-                else if (m_materialInfoBuffer->GetBufferSize() < newMaterialByteCount)
+                else if (currentMaterialInfoGpuBuffer->GetBufferSize() < newMaterialInfoByteCount)
                 {
                     // resize for the new sub-mesh count
-                    m_materialInfoBuffer->Resize(newMaterialByteCount);
+                    currentMaterialInfoGpuBuffer->Resize(newMaterialInfoByteCount);
+                }
+               
+                currentMaterialInfoGpuBuffer->UpdateData(m_materialInfos.data(), newMaterialInfoByteCount);
+
+                m_materialInfoBufferNeedsUpdate = false;
+            }
+        }
+
+        void RayTracingFeatureProcessor::UpdateIndexLists()
+        {
+            if (m_indexListNeedsUpdate)
+            {
+                // advance to the next buffer in the frame list
+                m_currentIndexListFrameIndex = (m_currentIndexListFrameIndex + 1) % BufferFrameCount;
+
+                // update mesh buffer indices buffer
+                Data::Instance<RPI::Buffer>& currentMeshBufferIndicesGpuBuffer = m_meshBufferIndicesGpuBuffer[m_currentIndexListFrameIndex];
+                uint32_t newMeshBufferIndicesByteCount = aznumeric_cast<uint32_t>(m_meshBufferIndices.GetIndexList().size()) * sizeof(uint32_t);
+
+                if (currentMeshBufferIndicesGpuBuffer == nullptr)
+                {
+                    // allocate the MeshBufferIndices buffer
+                    RPI::CommonBufferDescriptor desc;
+                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+                    desc.m_bufferName = "RayTracingMeshBufferIndices";
+                    desc.m_byteCount = newMeshBufferIndicesByteCount;
+                    desc.m_elementSize = sizeof(IndexVector::value_type);
+                    desc.m_elementFormat = RHI::Format::R32_UINT;
+                    currentMeshBufferIndicesGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                }
+                else if (currentMeshBufferIndicesGpuBuffer->GetBufferSize() < newMeshBufferIndicesByteCount)
+                {
+                    // resize for the new index count
+                    currentMeshBufferIndicesGpuBuffer->Resize(newMeshBufferIndicesByteCount);
                 }
 
-                // keep track of the start index of the textures for each mesh, this is put into the MaterialInfo
-                // entry for each mesh so it knows where to find the start of its textures in the unbounded array
-                uint32_t textureStartIndex = 0;
-
-                for (const auto& mesh : m_meshes)
+                // resolve to the true indices using the indirection list
+                // Note: this is done on the CPU to avoid double-indirection in the shader
+                IndexVector resolvedMeshBufferIndices(m_meshBufferIndices.GetIndexList().size());
+                uint32_t resolvedMeshBufferIndex = 0;
+                for (auto& meshBufferIndex : m_meshBufferIndices.GetIndexList())
                 {
-                    const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;
-                    for (const auto& subMesh : subMeshes)
+                    if (!m_meshBufferIndices.IsValidIndex(meshBufferIndex))
                     {
-                        MaterialInfo materialInfo;
-                        subMesh.m_baseColor.StoreToFloat4(materialInfo.m_baseColor.data());
-                        materialInfo.m_metallicFactor = subMesh.m_metallicFactor;
-                        materialInfo.m_roughnessFactor = subMesh.m_roughnessFactor;
-                        materialInfo.m_textureFlags = subMesh.m_textureFlags;
-                        materialInfo.m_textureStartIndex = textureStartIndex;
-
-                        // add the count of textures present in this subMesh to the start index for the next subMesh
-                        textureStartIndex += RHI::CountBitsSet(aznumeric_cast<uint32_t>(materialInfo.m_textureFlags));
-
-                        materialInfos.emplace_back(materialInfo);
+                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = InvalidIndex;
+                    }
+                    else
+                    {
+                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_meshBuffers.GetIndirectionList()[meshBufferIndex];
                     }
                 }
 
-                m_materialInfoBuffer->UpdateData(materialInfos.data(), newMaterialByteCount);
-                m_materialInfoBufferNeedsUpdate = false;
+                currentMeshBufferIndicesGpuBuffer->UpdateData(resolvedMeshBufferIndices.data(), newMeshBufferIndicesByteCount);
+
+                // update material texture indices buffer
+                Data::Instance<RPI::Buffer>& currentMaterialTextureIndicesGpuBuffer = m_materialTextureIndicesGpuBuffer[m_currentIndexListFrameIndex];
+                uint32_t newMaterialTextureIndicesByteCount = aznumeric_cast<uint32_t>(m_materialTextureIndices.GetIndexList().size()) * sizeof(uint32_t);
+
+                if (currentMaterialTextureIndicesGpuBuffer == nullptr)
+                {
+                    // allocate the MaterialInfo structured buffer
+                    RPI::CommonBufferDescriptor desc;
+                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+                    desc.m_bufferName = "RayTracingMaterialTextureIndices";
+                    desc.m_byteCount = newMaterialTextureIndicesByteCount;
+                    desc.m_elementSize = sizeof(IndexVector::value_type);
+                    desc.m_elementFormat = RHI::Format::R32_UINT;
+                    currentMaterialTextureIndicesGpuBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                }
+                else if (currentMaterialTextureIndicesGpuBuffer->GetBufferSize() < newMaterialTextureIndicesByteCount)
+                {
+                    // resize for the new index count
+                    currentMaterialTextureIndicesGpuBuffer->Resize(newMaterialTextureIndicesByteCount);
+                }
+
+                // resolve to the true indices using the indirection list
+                // Note: this is done on the CPU to avoid double-indirection in the shader
+                IndexVector resolvedMaterialTextureIndices(m_materialTextureIndices.GetIndexList().size());
+                uint32_t resolvedMaterialTextureIndex = 0;
+                for (auto& materialTextureIndex : m_materialTextureIndices.GetIndexList())
+                {
+                    if (!m_materialTextureIndices.IsValidIndex(materialTextureIndex))
+                    {
+                        resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = InvalidIndex;
+                    }
+                    else
+                    {
+                        resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = m_materialTextures.GetIndirectionList()[materialTextureIndex];
+                    }
+                }
+
+                currentMaterialTextureIndicesGpuBuffer->UpdateData(resolvedMaterialTextureIndices.data(), newMaterialTextureIndicesByteCount);
+
+                m_indexListNeedsUpdate = false;
             }
         }
 
@@ -469,49 +641,13 @@ namespace AZ
             }
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshInfo"));
-            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshInfoBuffer->GetBufferView());
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshInfoGpuBuffer[m_currentMeshInfoFrameIndex]->GetBufferView());
 
-            if (m_subMeshCount)
-            {
-                AZStd::vector<const RHI::BufferView*> meshBuffers;
-                for (const auto& mesh : m_meshes)
-                {
-                    const SubMeshVector& subMeshes = mesh.second.m_subMeshes;
-                    for (const auto& subMesh : subMeshes)
-                    {
-                        // add the stream buffers for this sub-mesh to the mesh buffer list,
-                        // this is sent to the shader as an unbounded array in the Srg
-                        meshBuffers.push_back(subMesh.m_indexShaderBufferView.get());
-                        meshBuffers.push_back(subMesh.m_positionShaderBufferView.get());
-                        meshBuffers.push_back(subMesh.m_normalShaderBufferView.get());
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshBufferIndices"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshBufferIndicesGpuBuffer[m_currentIndexListFrameIndex]->GetBufferView());
 
-                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Tangent))
-                        {
-                            meshBuffers.push_back(subMesh.m_tangentShaderBufferView.get());
-                        }
-
-                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Bitangent))
-                        {
-                            meshBuffers.push_back(subMesh.m_bitangentShaderBufferView.get());
-                        }
-
-                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::UV))
-                        {
-                            meshBuffers.push_back(subMesh.m_uvShaderBufferView.get());
-                        }
-                    }
-                }
-
-                // Check if buffer view data changed from previous frame.
-                // Look into making 'm_meshBuffers != meshBuffers' faster by possibly building a crc and doing a crc check.
-                if (m_meshBuffers.size() != meshBuffers.size() || m_meshBuffers != meshBuffers)
-                {
-                    m_meshBuffers = meshBuffers;
-                    RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
-                    m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, m_meshBuffers);
-                }
-            }
-
+            RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
+            m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, m_meshBuffers.GetResourceList());
             m_rayTracingSceneSrg->Compile();
         }
 
@@ -521,49 +657,13 @@ namespace AZ
             RHI::ShaderInputBufferIndex bufferIndex;
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialInfo"));
-            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialInfoBuffer->GetBufferView());
+            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialInfoGpuBuffer[m_currentMaterialInfoFrameIndex]->GetBufferView());
 
-            if (m_subMeshCount)
-            {
-                AZStd::vector<const RHI::ImageView*> materialTextures;
-                for (const auto& mesh : m_meshes)
-                {
-                    const SubMeshVector& subMeshes = mesh.second.m_subMeshes;
-                    for (const auto& subMesh : subMeshes)
-                    {
-                        // add the baseColor, normal, metallic, and roughness images for this sub-mesh to the material texture list,
-                        // this is sent to the shader as an unbounded array in the Srg
-                        if (RHI::CheckBitsAll(subMesh.m_textureFlags, RayTracingSubMeshTextureFlags::BaseColor))
-                        {
-                            materialTextures.push_back(subMesh.m_baseColorImageView.get());
-                        }
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialTextureIndices"));
+            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialTextureIndicesGpuBuffer[m_currentIndexListFrameIndex]->GetBufferView());
 
-                        if (RHI::CheckBitsAll(subMesh.m_textureFlags, RayTracingSubMeshTextureFlags::Normal))
-                        {
-                            materialTextures.push_back(subMesh.m_normalImageView.get());
-                        }
-
-                        if (RHI::CheckBitsAll(subMesh.m_textureFlags, RayTracingSubMeshTextureFlags::Metallic))
-                        {
-                            materialTextures.push_back(subMesh.m_metallicImageView.get());
-                        }
-
-                        if (RHI::CheckBitsAll(subMesh.m_textureFlags, RayTracingSubMeshTextureFlags::Roughness))
-                        {
-                            materialTextures.push_back(subMesh.m_roughnessImageView.get());
-                        }
-                    }
-                }
-
-                // Check if image view data changed from previous frame. 
-                if (m_materialTextures.size() != materialTextures.size() || m_materialTextures != materialTextures)
-                {
-                    m_materialTextures = materialTextures;
-                    RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
-                    m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, materialTextures);
-                }
-            }
-
+            RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
+            m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, m_materialTextures.GetResourceList());
             m_rayTracingMaterialSrg->Compile();
         }
     }        

@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace AzFramework
@@ -283,7 +285,10 @@ namespace AzFramework
         : m_payload(rhs.m_payload)
         , m_interface(rhs.m_interface)
     {
-        rhs.m_interface->IncrementTicketReference(rhs.m_payload);
+        if (rhs.IsValid())
+        {
+            rhs.m_interface->IncrementTicketReference(rhs.m_payload);
+        }
     }
 
     EntitySpawnTicket::EntitySpawnTicket(EntitySpawnTicket&& rhs)
@@ -349,6 +354,39 @@ namespace AzFramework
             rhs.m_payload = nullptr;
         }
         return *this;
+    }
+
+    void EntitySpawnTicket::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext
+                ->Class<EntitySpawnTicket>();
+
+            serializeContext->RegisterGenericType<AZStd::vector<EntitySpawnTicket>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, EntitySpawnTicket>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<double, EntitySpawnTicket>>(); // required to support Map<Number, EntitySpawnTicket> in Script Canvas
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<EntitySpawnTicket>(
+                    "EntitySpawnTicket",
+                    "EntitySpawnTicket is an object used to spawn, identify, and track the spawned entities associated with the ticket.");
+            }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<EntitySpawnTicket>("EntitySpawnTicket")
+                ->Constructor()
+                ->Constructor<AZ::Data::Asset<Spawnable>>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
+                ->Attribute(AZ::Script::Attributes::Module, "prefabs")
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
+                ->Method("GetId", &EntitySpawnTicket::GetId);
+            ;
+        }
     }
 
     auto EntitySpawnTicket::GetId() const -> Id

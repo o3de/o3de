@@ -21,7 +21,7 @@
 #include <GraphModel/Model/Slot.h>
 #include <GraphModel/Model/Node.h>
 #include <GraphModel/Model/Graph.h>
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 
 namespace GraphModel
 {
@@ -106,18 +106,7 @@ namespace GraphModel
 
     SlotDefinitionPtr SlotDefinition::CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
     {
-        AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
-        slotDefinition->m_slotDirection = SlotDirection::Input;
-        slotDefinition->m_slotType = SlotType::Data;
-        slotDefinition->m_name = name;
-        slotDefinition->m_displayName = displayName;
-        slotDefinition->m_supportedDataTypes = { dataType };
-        slotDefinition->m_defaultValue = defaultValue;
-        slotDefinition->m_description = description;
-
-        HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
-
-        return slotDefinition;
+        return CreateInputData(name, displayName, DataTypeList{ dataType }, defaultValue, description, extendableSlotConfiguration);
     }
 
     SlotDefinitionPtr SlotDefinition::CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypeList supportedDataTypes, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
@@ -316,12 +305,19 @@ namespace GraphModel
         {
             AZStd::any slotValue;
             if (LoadAny<bool>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<int>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<int16_t>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<uint16_t>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<int32_t>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<uint32_t>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<int64_t>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<uint64_t>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<float>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<double>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<AZStd::string>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<AZ::Vector2>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<AZ::Vector3>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<AZ::Vector4>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<AZ::Color>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<AZ::EntityId>(slotValue, serializedSlotValue->value, context, result))
             {
                 slot->m_value = slotValue;
@@ -367,12 +363,19 @@ namespace GraphModel
             {
                 rapidjson::Value outputPropertyValue;
                 if (StoreAny<bool>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<int>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<int16_t>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<uint16_t>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<int32_t>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<uint32_t>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<int64_t>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<uint64_t>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<float>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<double>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<AZStd::string>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<AZ::Vector2>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<AZ::Vector3>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<AZ::Vector4>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<AZ::Color>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<AZ::EntityId>(slot->m_value, outputPropertyValue, context, result))
                 {
                     outputValue.AddMember("m_value", outputPropertyValue, context.GetJsonAllocator());
