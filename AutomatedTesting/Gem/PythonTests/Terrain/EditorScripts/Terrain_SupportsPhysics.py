@@ -118,6 +118,7 @@ def Terrain_SupportsPhysics():
 
         # 9) Disable and Enable the Terrain Gradient List so that it is recognised
         editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
+        general.idle_wait_frames(1)
 
         general.enter_game_mode()
 

@@ -77,6 +77,7 @@ def MeshBlocker_InstancesBlockedByMesh():
         bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "_primitives", "_box_1x1.azmodel"), math.Uuid(),
         False)
     blocker_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", cubeId)
+    general.idle_wait_frames(1)
     components.TransformBus(bus.Event, "SetLocalUniformScale", blocker_entity.id, 2.0)
 
     # Verify spawned instance counts are accurate after addition of Blocker Entity

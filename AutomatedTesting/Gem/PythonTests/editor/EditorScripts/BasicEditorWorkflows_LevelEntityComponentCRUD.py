@@ -139,9 +139,7 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
         # Update the component
         dimensions_to_set = math.Vector3(16.0, 16.0, 16.0)
         child_entity.get_set_test(0, "Box Shape|Box Configuration|Dimensions", dimensions_to_set)
-        box_shape_dimensions = hydra.get_component_property_value(child_entity.components[0],
-                                                                  "Box Shape|Box Configuration|Dimensions")
-        Report.result(Tests.component_updated, box_shape_dimensions == dimensions_to_set)
+
 
         # Remove the component
         child_entity.remove_component("Box Shape")

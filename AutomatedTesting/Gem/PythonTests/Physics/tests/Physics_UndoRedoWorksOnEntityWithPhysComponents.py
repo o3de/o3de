@@ -66,6 +66,7 @@ def Physics_UndoRedoWorksOnEntityWithPhysComponents():
         # 3) Delete entity
         general.select_objects([entity_name])
         general.delete_selected()
+        general.idle_wait_frames(1)
         entity_id = general.find_editor_entity(entity_name)
         Report.result(Tests.entity_deleted, not entity_id.IsValid())
 
