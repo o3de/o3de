@@ -89,6 +89,7 @@ def create_mesh_surface_entity_with_slopes(name, center_point, uniform_scale):
     if surface_entity.id.IsValid():
         print(f"'{surface_entity.name}' created")
     hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Mesh Asset", mesh_asset)
+    azlmbr.legacy.general.idle_wait_frames(1)
     components.TransformBus(bus.Event, "SetLocalUniformScale", surface_entity.id, uniform_scale)
     return surface_entity
 

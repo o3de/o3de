@@ -117,6 +117,7 @@ def Terrain_World_ConfigurationWorks():
         height_provider_entity.get_set_test(2, "Configuration|Frequency", frequency)
         frequencyVal = hydra.get_component_property_value(height_provider_entity.components[2], "Configuration|Frequency")
         Report.result(Tests.frequency_changed, math.isclose(frequency, frequencyVal, abs_tol = 0.00001))
+        general.idle_wait_frames(1)
 
         # 9) Set the Gradient List to height_provider_entity
         propertyTree = hydra.get_property_tree(terrain_spawner_entity.components[2])
