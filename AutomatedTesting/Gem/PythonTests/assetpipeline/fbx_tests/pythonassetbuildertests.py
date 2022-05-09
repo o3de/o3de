@@ -9,19 +9,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import pytest
 import logging
 import os
-import stat
-
-# Import LyTestTools
-from ly_test_tools.o3de.asset_processor import AssetProcessor
-from ly_test_tools.o3de import asset_processor as asset_processor_utils
-import ly_test_tools.environment.file_system as fs
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 from ..ap_fixtures.ap_setup_fixture import ap_setup_fixture as ap_setup_fixture
 
 # Import LyShared
-from ly_test_tools.o3de.ap_log_parser import APLogParser, APOutputParser
 import ly_test_tools.o3de.pipeline_utils as utils
 
 # Use the following logging pattern to hook all test logging together:
@@ -29,33 +22,20 @@ logger = logging.getLogger(__name__)
 # Configuring the logging is done in ly_test_tools at the following location:
 # ~/dev/Tools/LyTestTools/ly_test_tools/log/py_logging_util.py
 
-# Helper: variables we will use for parameter values in the test:
-targetProjects = ["AutomatedTesting"]
-
 @pytest.fixture
 def local_resources(request, workspace, ap_setup_fixture):
     ap_setup_fixture["tests_dir"] = os.path.dirname(os.path.realpath(__file__))
 
-
 @pytest.mark.usefixtures("asset_processor")
 @pytest.mark.usefixtures("ap_setup_fixture")
 @pytest.mark.usefixtures("local_resources")
-@pytest.mark.parametrize("project", targetProjects)
-@pytest.mark.assetpipeline
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.SUITE_main
 class TestsPythonAssetProcessing_APBatch(object):   
 
-    @pytest.mark.BAT
-    @pytest.mark.assetpipeline
-    def test_ProcessAssetWithoutScriptAfterAssetWithScript_ScriptOnlyRunsOnExpectedAsset(self, workspace, ap_setup_fixture, asset_processor):
-        # This is a regression test. The situation it's testing is, the Python script to run
-        # defined in scene manifest files was persisting in a single builder. So if
-        # that builder processed file a.fbx, then b.fbx, and a.fbx has a Python script to run,
-        # it was also running that Python script on b.fbx.
-
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "TwoSceneFiles_OneWithPythonOneWithout_PythonOnlyRunsOnFirstScene")
-
-        asset_processor_extra_params = [
+    @property
+    def asset_processor_extra_params(self):
+        return [
         # Disabling Atom assets disables most products, using the debugOutput flag ensures one product is output.
         "--debugOutput",
         # By default, if job priorities are equal, jobs run in an arbitrary order. This makes sure
@@ -69,7 +49,15 @@ class TestsPythonAssetProcessing_APBatch(object):
         # This flag ensures that only one builder is launched, so that situation can be replicated.
         "--regset=\"/Amazon/AssetProcessor/Settings/Jobs/maxJobs=1\""]
 
-        result, _ = asset_processor.batch_process(extra_params=asset_processor_extra_params)
+    def test_ProcessAssetWithoutScriptAfterAssetWithScript_ScriptOnlyRunsOnExpectedAsset(self, workspace, ap_setup_fixture, asset_processor):
+        # This is a regression test. The situation it's testing is, the Python script to run
+        # defined in scene manifest files was persisting in a single builder. So if
+        # that builder processed file a.fbx, then b.fbx, and a.fbx has a Python script to run,
+        # it was also running that Python script on b.fbx.
+
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "TwoSceneFiles_OneWithPythonOneWithout_PythonOnlyRunsOnFirstScene")
+
+        result, _ = asset_processor.batch_process(extra_params=self.asset_processor_extra_params)
         assert result, "AP Batch failed"
 
         expected_product_list = [
@@ -92,3 +80,39 @@ class TestsPythonAssetProcessing_APBatch(object):
         # on the second FBX file, when it should not be.
         assert not os.path.exists(unexpected_path), f"Found unexpected output test asset {unexpected_path}"
 
+    def test_ProcessSceneWithMetadata_SupportedBlenderDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
+        # This test loads a FBX file that was saved by Blender that has a few user defined properties
+        # 'prop_string' with a value of 'a string'
+        # 'prop_float' with a value of 0.123000
+        # 'prop_int' with a value of 99
+
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "UserDefinedProperties")
+
+        result, _ = asset_processor.batch_process(extra_params=self.asset_processor_extra_params)
+        assert result, "AP Batch failed"
+
+        # compute the cache path
+        platform = workspace.asset_processor_platform
+        cache_folder = asset_processor.temp_asset_root()
+        if platform == 'windows':
+            platform = 'pc'
+        cache_folder = os.path.join(cache_folder, 'cache', platform)
+
+        # compute the file name to the .dbgsg file
+        dbgsg_filename = 'userdefinedproperties/cube_props_blender.dbgsg'
+        asset_dbgsg = os.path.join(cache_folder, dbgsg_filename).lower()
+        if os.path.isfile(asset_dbgsg) == False:
+            raise Exception(f"Missing file {asset_dbgsg}")
+
+        # find the user defined property
+        def find_user_defined_property(filename, text):
+            with open(filename) as f:
+                content = f.readlines()
+                for line in content:
+                    if line.rstrip().endswith(text):
+                        return True
+            return False
+
+        assert find_user_defined_property(asset_dbgsg, 'prop_string: a string'), "Malformed string value"
+        assert find_user_defined_property(asset_dbgsg, 'prop_float: 0.123000'), "Malformed float value"
+        assert find_user_defined_property(asset_dbgsg, 'prop_int: 99'), "Malformed int value"
