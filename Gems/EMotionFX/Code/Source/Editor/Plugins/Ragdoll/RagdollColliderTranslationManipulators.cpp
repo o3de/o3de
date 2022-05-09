@@ -22,14 +22,13 @@ namespace EMotionFX
         : m_translationManipulators(
               AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne())
     {
-        m_adjustColliderCallback = new DataChangedCallback(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback);
+        m_adjustColliderCallback = AZStd::make_unique<DataChangedCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
     RagdollColliderTranslationManipulators::~RagdollColliderTranslationManipulators()
     {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback, false);
-        delete m_adjustColliderCallback;
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
     }
 
     void RagdollColliderTranslationManipulators::Setup(RagdollManipulatorData& ragdollManipulatorData)
@@ -123,11 +122,16 @@ namespace EMotionFX
 
     void RagdollColliderTranslationManipulators::ResetValues()
     {
+        if (!m_ragdollManipulatorData.m_valid || !m_ragdollManipulatorData.m_colliderNodeConfiguration ||
+            m_ragdollManipulatorData.m_colliderNodeConfiguration->m_shapes.empty())
+        {
+            return;
+        }
         m_ragdollManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position = AZ::Vector3::CreateZero();
         m_translationManipulators.SetLocalPosition(AZ::Vector3::CreateZero());
     }
 
-    AZ::Vector3 RagdollColliderTranslationManipulators::GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
+    AZ::Vector3 RagdollColliderTranslationManipulators::GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset) const
     {
         const float scale = AZ::GetMax(AZ::MinTransformScale, m_ragdollManipulatorData.m_nodeWorldTransform.GetUniformScale());
         return startPosition + offset / scale;
@@ -136,14 +140,13 @@ namespace EMotionFX
     void RagdollColliderTranslationManipulators::OnManipulatorMoved(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
     {
         AZ::Vector3 newPosition = GetPosition(startPosition, offset);
-        m_ragdollManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position = newPosition;
-        m_translationManipulators.SetLocalPosition(newPosition);
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        if (serializeContext)
+        if (m_ragdollManipulatorData.m_valid && m_ragdollManipulatorData.m_colliderNodeConfiguration &&
+            !m_ragdollManipulatorData.m_colliderNodeConfiguration->m_shapes.empty())
         {
-            m_ragdollManipulatorData.m_collidersWidget->Update();
+            m_ragdollManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position = newPosition;
         }
+        m_translationManipulators.SetLocalPosition(newPosition);
+        m_ragdollManipulatorData.m_collidersWidget->Update();
     }
 
     void RagdollColliderTranslationManipulators::BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
@@ -170,8 +173,10 @@ namespace EMotionFX
             return;
         }
 
-        CommandAdjustCollider* command = static_cast<CommandAdjustCollider*>(m_commandGroup.GetCommand(0));
-        command->SetPosition(GetPosition(startPosition, offset));
+        if (CommandAdjustCollider* command = azdynamic_cast<CommandAdjustCollider*>(m_commandGroup.GetCommand(0)))
+        {
+            command->SetPosition(GetPosition(startPosition, offset));
+        }
         AZStd::string result;
         CommandSystem::GetCommandManager()->ExecuteCommandGroup(m_commandGroup, result);
         m_commandGroup.Clear();

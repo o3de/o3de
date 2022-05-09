@@ -18,10 +18,7 @@ namespace EMotionFX
     class Node;
     class Transform;
 
-    struct RagdollViewportUiClusterData
-    {
-    };
-
+    //! Provides UI in the viewport for manipulating ragdoll configurations such as collider and joint limit settings. 
     class RagdollViewportUiCluster
     {
     public:

@@ -26,7 +26,7 @@ namespace EMotionFX
         void ResetValues() override;
 
     private:
-        AZ::Vector3 GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
+        AZ::Vector3 GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset) const;
         void OnManipulatorMoved(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
         void BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
         void FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
@@ -53,7 +53,7 @@ namespace EMotionFX
             RagdollColliderTranslationManipulators* m_manipulators{};
         };
 
-        DataChangedCallback* m_adjustColliderCallback;
+        AZStd::unique_ptr<DataChangedCallback> m_adjustColliderCallback;
 
         friend class DataChangedCallback;
     };

@@ -165,7 +165,7 @@ namespace EMotionFX
         return actor;
     }
 
-    ActorInstance* SkeletonModelJointWidget::GetActorInstance() const
+    ActorInstance* SkeletonModelJointWidget::GetActorInstance()
     {
         ActorInstance* selectedActorInstance = nullptr;
         SkeletonModel* skeletonModel = nullptr;
