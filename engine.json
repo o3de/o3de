@@ -92,6 +92,7 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/PrebuiltGem",
         "Templates/GemRepo",
         "Templates/AssetGem",
         "Templates/DefaultComponent",

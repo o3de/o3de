@@ -17,49 +17,51 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
+#include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/Script/ScriptComponent.h>
 
 namespace ScriptAutomation
 {
     namespace
     {
-        AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const char* productPath)
+        AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const char* productPath, AZ::ScriptContext& context)
         {
             AZ::IO::FixedMaxPath resolvedPath;
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, productPath);
 
-            AZ::Data::AssetId assetId;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                assetId,
-                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                resolvedPath.c_str(),
-                AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid(),
-                true
-            );
-
-            if (assetId.IsValid())
+            AZ::IO::FileIOStream inputStream;
+            if (inputStream.Open(resolvedPath.c_str(), AZ::IO::OpenMode::ModeRead))
             {
-                AZ::Data::Asset<AZ::ScriptAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(
-                    assetId, AZ::Data::AssetLoadBehavior::PreLoad
-                );
-                asset.BlockUntilLoadComplete();
+                AzFramework::ScriptCompileRequest compileRequest;
+                compileRequest.m_sourceFile = resolvedPath.c_str();
+                compileRequest.m_input = &inputStream;
 
-                if (!asset.IsReady())
+                auto outcome = AzFramework::CompileScript(compileRequest, context);
+                inputStream.Close();
+                if (outcome.IsSuccess())
                 {
-                    AZ_Assert(false, "Could not load '%s'", resolvedPath.c_str());
+                    AZ::Uuid id = AZ::Uuid::CreateName(productPath);
+                    AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::ScriptAsset>(AZ::Data::AssetId(id)
+                        , AZ::Data::AssetLoadBehavior::Default);
+                    scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
+
+                    return scriptAsset;
+                }
+                else
+                {
+                    AZ_Assert(false, "Failed to compile script asset '%s'. Reason: '%s'", resolvedPath.c_str(), outcome.GetError().c_str());
                     return {};
                 }
-
-                return asset;
             }
             else
             {
-                AZ_Assert(false, "Unable to find product asset '%s'. Has the source asset finished building?", productPath);
+                AZ_Assert(false, "Unable to find product asset '%s'. Has the source asset finished building?", resolvedPath.c_str());
                 return {};
             }
         }
@@ -248,7 +250,7 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath)
     {
-        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath);
+        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath, *m_scriptContext.get());
         if (!scriptAsset)
         {
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
@@ -267,7 +269,7 @@ namespace ScriptAutomation
             }
         );
 
-        if (!m_scriptContext->Execute(scriptAsset->GetScriptBuffer().data(), scriptFilePath, scriptAsset->GetScriptBuffer().size()))
+        if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), scriptFilePath, scriptAsset->m_data.GetScriptBuffer().size()))
         {
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
