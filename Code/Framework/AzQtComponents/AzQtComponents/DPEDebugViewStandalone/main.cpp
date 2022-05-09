@@ -241,7 +241,9 @@ int main(int argc, char** argv)
     wrapperTestLayout->addWidget(handler.GetWidget());
     AZ::Dom::Value node = AZ::Dom::Value::CreateNode("PropertyEditor");
     node["Type"] = AZ::Dom::Value("Slider", true);
-    node["Value"] = 0.5;
+    node["Min"] = 5.0;
+    node["Max"] = 20.0;
+    node["Value"] = 10.0;
     node["ValueType"] = AZ::Dom::Utils::ValueFromType(azrtti_typeid<double>());
     handler.SetValueFromDom(node);
     wrapperTest->resize(500, 500);

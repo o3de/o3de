@@ -22,4 +22,14 @@ namespace AzToolsFramework
             m_handler(newValue, changeType);
         }
     }
+
+    QWidget* PropertyHandlerWidgetInterface::GetFirstInTabOrder()
+    {
+        return GetWidget();
+    }
+
+    QWidget* PropertyHandlerWidgetInterface::GetLastInTabOrder()
+    {
+        return GetWidget();
+    }
 } // namespace AzToolsFramework

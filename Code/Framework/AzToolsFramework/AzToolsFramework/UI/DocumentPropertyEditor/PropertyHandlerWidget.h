@@ -28,7 +28,7 @@ namespace AzToolsFramework
         virtual QWidget* GetWidget() = 0;
         virtual void SetValueFromDom(const AZ::Dom::Value& node) = 0;
 
-        static bool CanHandleNode([[maybe_unused]] const AZ::Dom::Value& node)
+        static bool ShouldHandleNode([[maybe_unused]] const AZ::Dom::Value& node)
         {
             return true;
         }
@@ -45,6 +45,9 @@ namespace AzToolsFramework
         };
         using ValueChangedHandler = AZStd::function<void(const AZ::Dom::Value&, ValueChangeType)>;
         void SetValueChangedHandler(ValueChangedHandler handler);
+
+        virtual QWidget* GetFirstInTabOrder();
+        virtual QWidget* GetLastInTabOrder();
 
     protected:
         void ValueChangedByUser(const AZ::Dom::Value& newValue, ValueChangeType changeType = ValueChangeType::FinishedEdit);
@@ -79,6 +82,7 @@ namespace AzToolsFramework
         RpePropertyHandlerWrapper()
         {
             m_proxyNode.m_classData = &m_proxyClassData;
+            m_proxyNode.m_classElement = &m_proxyClassElement;
             m_proxyClassData.m_typeId = azrtti_typeid<WrappedType>();
             m_proxyNode.m_instances.push_back(&m_proxyValue);
 
@@ -114,14 +118,53 @@ namespace AzToolsFramework
 
         void SetValueFromDom(const AZ::Dom::Value& node)
         {
-            // TODO: read attributes into m_proxyNode
+            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
+
+            auto propertyEditorSystem = AZ::Interface<AZ::DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
+            AZ_Assert(
+                propertyEditorSystem != nullptr,
+                "RpePropertyHandlerWrapper::SetValueFromDom called with an uninitialized PropertyEditorSystemInterface");
+            if (propertyEditorSystem == nullptr)
+            {
+                return;
+            }
+
+            m_proxyClassElement.m_attributes.clear();
+            for (auto attributeIt = node.MemberBegin(); attributeIt != node.MemberEnd(); ++attributeIt)
+            {
+                const AZ::Name& name = attributeIt->first;
+                if (name == PropertyEditor::Type.GetName() || name == PropertyEditor::Value.GetName() ||
+                    name == PropertyEditor::ValueType.GetName())
+                {
+                    continue;
+                }
+                AZ::Crc32 attributeId = AZ::Crc32(name.GetStringView());
+
+                const AZ::DocumentPropertyEditor::AttributeDefinitionInterface* attribute =
+                    propertyEditorSystem->FindNodeAttribute(name, propertyEditorSystem->FindNode(AZ_NAME_LITERAL(GetHandlerName())));
+                AZStd::shared_ptr<AZ::Attribute> marshalledAttribute;
+                if (attribute != nullptr)
+                {
+                    marshalledAttribute = attribute->DomValueToLegacyAttribute(attributeIt->second);
+                }
+                else
+                {
+                    marshalledAttribute = AZ::Reflection::WriteDomValueToGenericAttribute(attributeIt->second);
+                }
+
+                if (marshalledAttribute)
+                {
+                    m_proxyClassElement.m_attributes.emplace_back(attributeId, AZStd::move(marshalledAttribute));
+                }
+            }
 
             AZ::Dom::Value value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node).value();
             m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value).value();
             GetRpeHandler().ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
+            GetRpeHandler().ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
         }
 
-        static bool CanHandleNode(const AZ::Dom::Value& node)
+        static bool ShouldHandleNode(const AZ::Dom::Value& node)
         {
             using namespace AZ::DocumentPropertyEditor::Nodes;
             auto typeId = PropertyEditor::ValueType.ExtractFromDomNode(node);
@@ -158,8 +201,7 @@ namespace AzToolsFramework
         {
         }
 
-        void AddElementsToParentContainer(
-            QWidget*, size_t, const InstanceDataNode::FillDataClassCallback&)
+        void AddElementsToParentContainer(QWidget*, size_t, const InstanceDataNode::FillDataClassCallback&)
         {
         }
 
@@ -175,10 +217,21 @@ namespace AzToolsFramework
             }
         }
 
+        QWidget* GetFirstInTabOrder() override
+        {
+            return GetRpeHandler().GetFirstInTabOrder_Internal(GetWidget());
+        }
+
+        QWidget* GetLastInTabOrder() override
+        {
+            return GetRpeHandler().GetLastInTabOrder_Internal(GetWidget());
+        }
+
     private:
         QPointer<QWidget> m_widget;
         InstanceDataNode m_proxyNode;
         AZ::SerializeContext::ClassData m_proxyClassData;
+        AZ::SerializeContext::ClassElement m_proxyClassElement;
         WrappedType m_proxyValue;
     };
 } // namespace AzToolsFramework

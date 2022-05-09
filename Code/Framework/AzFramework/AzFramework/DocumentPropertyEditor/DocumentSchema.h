@@ -12,7 +12,10 @@
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -97,22 +100,33 @@ namespace AZ::DocumentPropertyEditor
     using PropertyEditorMetadata = NodeMetadata;
     using PropertyEditorDefinition = NodeDefinition;
 
+    class AttributeDefinitionInterface
+    {
+    public:
+        //! Retrieves the name of this attribute, as used as a key in the DOM.
+        virtual Name GetName() const = 0;
+        //! Gets this attribute's type ID.
+        virtual const AZ::TypeId& GetTypeId() const = 0;
+        virtual AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const = 0;
+        virtual AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const = 0;
+    };
+
     //! Defines an attribute applicable to a Node.
     //! Attributes may be defined inline inside of a NodeDefinition.
     //! AttributeDefinitions may be used to marshal types to and from a DOM representation.
     //! This representation is not guaranteed to be serializable - for functions and complex types
     //! they may be stored as non-serializeable opaque types in the DOM.
     template<typename AttributeType>
-    class AttributeDefinition
+    class AttributeDefinition : public AttributeDefinitionInterface
     {
     public:
         constexpr AttributeDefinition(AZStd::string_view name)
-            : m_name(name)
+            : AttributeDefinitionInterface()
+            , m_name(name)
         {
         }
 
-        //! Retrieves the name of this attribute, as used as a key in the DOM.
-        Name GetName() const
+        Name GetName() const override
         {
             return AZ::Name(m_name);
         }
@@ -146,32 +160,51 @@ namespace AZ::DocumentPropertyEditor
             return DomToValue(memberIt->second);
         }
 
-        //! Gets this attribute's type ID
-        const AZ::TypeId& GetTypeId() const
+        const AZ::TypeId& GetTypeId() const override
         {
             return azrtti_typeid<AttributeType>();
         }
 
-    protected:
-        AZStd::fixed_string<128> m_name;
-    };
-
-    //! Runtime data describing an AttributeDefinition tied to a NodeDefinition.
-    //! This is used to look up an attribution from a given name and parent node in the PropertyEditorSystem.
-    struct AttributeMetadata
-    {
-        //! Helper method, creates a definition from an AttributeDefinition instance for a given node.
-        template<typename AttributeDefinition>
-        static AttributeMetadata FromDefinition(const AttributeDefinition& definition, const NodeMetadata* node)
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override
         {
-            AttributeMetadata metadata;
-            metadata.m_name = definition.GetName();
-            metadata.m_node = node;
-            return metadata;
+            if constexpr (AZStd::is_same_v<AttributeType, AZ::Dom::Value>)
+            {
+                return AZ::Reflection::WriteDomValueToGenericAttribute(value);
+            }
+            else
+            {
+                AZStd::optional<AttributeType> attributeValue = AZ::Dom::Utils::ValueToType<AttributeType>(value);
+                return attributeValue.has_value()
+                    ? AZStd::make_shared<AZ::AttributeData<AttributeType>>(AZStd::move(attributeValue.value()))
+                    : nullptr;
+            }
         }
 
-        AZ::Name m_name;
-        const NodeMetadata* m_node;
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        {
+            if (attribute == nullptr)
+            {
+                return AZ::Dom::Value();
+            }
+
+            if constexpr (AZStd::is_same_v<AttributeType, AZ::Dom::Value>)
+            {
+                return AZ::Reflection::ReadGenericAttributeToDomValue(instance, attribute).value_or(AZ::Dom::Value());
+            }
+            else
+            {
+                AZ::AttributeReader reader(instance, attribute);
+                AttributeType value;
+                if (!reader.Read<AttributeType>(value))
+                {
+                    return {};
+                }
+                return AZ::Dom::Utils::ValueFromType(value);
+            }
+        }
+
+    protected:
+        AZStd::fixed_string<128> m_name;
     };
 
     //! Defines a callback applicable to a Node.
