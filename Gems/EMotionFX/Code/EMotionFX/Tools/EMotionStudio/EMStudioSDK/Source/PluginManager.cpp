@@ -35,7 +35,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MorphTargetsWindow/MorphTargetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/Attachments/AttachmentsPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/SceneManagerPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventsPlugin.h>
@@ -229,7 +228,6 @@ namespace EMStudio
         RegisterPlugin(new MotionWindowPlugin());
         RegisterPlugin(new MorphTargetsWindowPlugin());
         RegisterPlugin(new TimeViewPlugin());
-        RegisterPlugin(new AttachmentsPlugin());
         RegisterPlugin(new SceneManagerPlugin());
         RegisterPlugin(new NodeWindowPlugin());
         RegisterPlugin(new MotionEventsPlugin());

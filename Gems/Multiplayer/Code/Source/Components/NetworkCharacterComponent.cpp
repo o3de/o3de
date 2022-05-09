@@ -102,11 +102,6 @@ namespace Multiplayer
         required.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
     }
 
-    void NetworkCharacterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-        incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
-    }
-
     NetworkCharacterComponent::NetworkCharacterComponent()
         : m_translationEventHandler([this](const AZ::Vector3& translation) { OnTranslationChangedEvent(translation); })
     {
