@@ -193,6 +193,7 @@ namespace AzToolsFramework
         {
             if (editorGUI == m_widget)
             {
+                GetRpeHandler().WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
                 ValueChangedByUser(AZ::Dom::Utils::ValueFromType(m_proxyValue), ValueChangeType::InProgressEdit);
             }
         }
@@ -213,6 +214,7 @@ namespace AzToolsFramework
         {
             if (editorGUI == m_widget)
             {
+                GetRpeHandler().WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
                 ValueChangedByUser(AZ::Dom::Utils::ValueFromType(m_proxyValue), ValueChangeType::FinishedEdit);
             }
         }
