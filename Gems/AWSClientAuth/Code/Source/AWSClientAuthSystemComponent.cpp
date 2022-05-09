@@ -16,7 +16,6 @@
 #include <ResourceMapping/AWSResourceMappingBus.h>
 #include <Framework/AWSApiJobConfig.h>
 #include <ResourceMapping/AWSResourceMappingBus.h>
-
 #include <aws/cognito-identity/CognitoIdentityClient.h>
 #include <aws/cognito-idp/CognitoIdentityProviderClient.h>
 
@@ -172,8 +171,8 @@ namespace AWSClientAuth
 
         m_authenticationProviderManager = AZStd::make_unique<AuthenticationProviderManager>();
 
-        // Sanity check if code should setup cognito credential providers.
-        // Only set up if cognito settings appear to be provided in resource mapping file.
+        // Sanity check if code should setup Cognito user and autorization controllers.
+        // Only set up if Cognito settings appear to be provided in resource mapping file.
         AZStd::string userPoolId;
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
             userPoolId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoUserPoolIdResourceMappingKey);
@@ -185,7 +184,7 @@ namespace AWSClientAuth
         if (userPoolId.empty() && cognitoIdentityPoolId.empty())
         {
             AZ_Warning("AWSClientAuthSystemComponent",  false,
-                "Missing Cognito settings in resource mappings. Skipping settup of Cognito controllers.");
+                "Missing Cognito settings in resource mappings. Skipping set up of Cognito controllers.");
         }
         else
         {
@@ -240,6 +239,11 @@ namespace AWSClientAuth
     std::shared_ptr<Aws::CognitoIdentity::CognitoIdentityClient> AWSClientAuthSystemComponent::GetCognitoIdentityClient()
     {
         return m_cognitoIdentityClient;
+    }
+
+    bool AWSClientAuthSystemComponent::HasCognitoControllers() const
+    {
+        return (m_awsCognitoUserManagementController != nullptr) || (m_awsCognitoAuthorizationController != nullptr);
     }
 
 } // namespace AWSClientAuth
