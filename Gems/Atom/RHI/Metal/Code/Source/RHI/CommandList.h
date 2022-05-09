@@ -144,6 +144,7 @@ namespace AZ
 #endif
             
             const uint32_t bindingSlot = shaderResourceGroup->GetBindingSlot();
+            AZ_Assert(bindingSlot<RHI::Limits::Pipeline::ShaderResourceGroupCountMax, "Binding slot higher than allowed.");
             GetShaderResourceBindingsByPipelineType(pipelineType).m_srgsBySlot[bindingSlot] = shaderResourceGroup;
         }
     }

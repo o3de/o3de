@@ -121,7 +121,7 @@ namespace AZ
             m_fence->Init(*device, RHI::FenceState::Reset);
 
             // Load shader and srg
-            const char* ShaderPath = "shader/decomposemsimage.azshader";
+            const char* ShaderPath = "shaders/decomposemsimage.azshader";
             m_decomposeShader = LoadCriticalShader(ShaderPath);
 
             if (m_decomposeShader == nullptr)
@@ -251,7 +251,7 @@ namespace AZ
         void AttachmentReadback::DecomposePrepare(RHI::FrameGraphInterface frameGraph)
         {
             RHI::ImageScopeAttachmentDescriptor inputDesc{ m_attachmentId };
-            inputDesc.m_imageViewDescriptor.m_aspectFlags = RHI::CheckBitsAll(RHI::GetImageAspectFlags(m_imageDescriptor.m_format), RHI::ImageAspectFlags::Depth)?
+            inputDesc.m_imageViewDescriptor.m_aspectFlags = RHI::CheckBitsAny(RHI::GetImageAspectFlags(m_imageDescriptor.m_format), RHI::ImageAspectFlags::Depth)?
                 RHI::ImageAspectFlags::Depth:RHI::ImageAspectFlags::Color;
             frameGraph.UseAttachment(inputDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
             RHI::ImageScopeAttachmentDescriptor outputDesc{ m_copyAttachmentId };

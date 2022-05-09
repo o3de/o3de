@@ -180,16 +180,20 @@ class AndroidDeployment(object):
             call_arguments.extend(['-s', device_id])
 
         call_arguments.extend(arg_list)
+        logging.debug(f"adb command: {subprocess.list2cmdline(call_arguments)}")
 
         try:
             output = subprocess.check_output(call_arguments,
                                              shell=True,
                                              stderr=subprocess.PIPE).decode(common.DEFAULT_TEXT_READ_ENCODING,
                                                                                common.ENCODING_ERROR_HANDLINGS)
+            logging.debug(f"adb output:\n{output}")
             return output
         except subprocess.CalledProcessError as err:
-            raise common.LmbrCmdError(err.stderr.decode(common.DEFAULT_TEXT_READ_ENCODING,
-                                                        common.ENCODING_ERROR_HANDLINGS))
+            std_out = err.stdout.decode(common.DEFAULT_TEXT_READ_ENCODING, common.ENCODING_ERROR_HANDLINGS)
+            std_err = err.stderr.decode(common.DEFAULT_TEXT_READ_ENCODING, common.ENCODING_ERROR_HANDLINGS)
+            logging.debug(f"adb returned non-zero.\noutput:\n{std_out}\nerror:\n{std_err}\n")
+            raise common.LmbrCmdError(std_err)
 
     def adb_shell(self, command, device_id):
         """
@@ -224,19 +228,15 @@ class AndroidDeployment(object):
 
         shell_command.append(path)
 
-        logging.debug(f"Testing {device_id}: ls {' '.join(shell_command)}")
         raw_output = self.adb_shell(command=' '.join(shell_command),
                                     device_id=device_id)
 
         if not raw_output:
-            logging.debug('adb_ls: No output given')
             return False, None
 
         if raw_output is None or any([error for error in error_messages if error in raw_output]):
-            logging.debug('adb_ls: Error message found')
             status = False
         else:
-            logging.debug('adb_ls: Command was successful')
             status = True
 
         return status, raw_output
@@ -347,7 +347,7 @@ class AndroidDeployment(object):
         try:
             timestamp_string = self.adb_shell(command=f'cat {remote_file_path}',
                                               device_id=device_id).strip()
-        except (subprocess.CalledProcessError, AttributeError):
+        except (common.LmbrCmdError, AttributeError):
             return None
 
         if not timestamp_string:
@@ -415,7 +415,7 @@ class AndroidDeployment(object):
             android_package_name = android_support.TEST_RUNNER_PACKAGE_NAME
         else:
             android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                     default_value='com.lumberyard.sdk')
+                                                                     default_value='org.o3de.sdk')
 
         if self.clean_deploy and self.check_package_installed(android_package_name, target_device):
             logging.info(f"Device '{target_device}': Uninstalling pre-existing APK for {self.game_name} ...")
@@ -436,7 +436,7 @@ class AndroidDeployment(object):
         assert not self.is_test_project
 
         android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                 default_value='com.lumberyard.sdk')
+                                                                 default_value='org.o3de.sdk')
         relative_assets_path = f'Android/data/{android_package_name}/files'
         output_target = f'{detected_storage}/{relative_assets_path}'
         device_timestamp_file = f'{output_target}/{ANDROID_TARGET_TIMESTAMP_FILENAME}'
@@ -463,7 +463,7 @@ class AndroidDeployment(object):
                 try:
                     self.adb_call(arg_list=['push', str(path_to_deploy), target_path],
                                   device_id=target_device)
-                except subprocess.CalledProcessError as err:
+                except common.LmbrCmdError as err:
                     # Something went wrong, clean up before leaving
                     self.adb_shell(command=f'rm -rf {output_target}',
                                    device_id=target_device)
@@ -539,7 +539,7 @@ class AndroidDeployment(object):
                         if self.deployment_type == AndroidDeployment.DEPLOY_ASSETS_ONLY:
                             # If we are deploying assets only without an APK, make sure the APK is even installed first
                             android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                                     default_value='com.lumberyard.sdk')
+                                                                                     default_value='org.o3de.sdk')
                             if not self.check_package_installed(package_name=android_package_name,
                                                                 target_device=target_device):
                                 raise common.LmbrCmdError(f"Unable to locate APK for {self.game_name} on device '{target_device}'. Make sure it is installed "

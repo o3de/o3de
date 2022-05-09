@@ -12,7 +12,6 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/parallel/atomic.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
@@ -25,7 +24,6 @@ namespace AzFramework
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public AZ::SystemTickBus::Handler
-        , public AssetCatalogEventBus::Handler
         , public RootSpawnableInterface::Registrar
         , public RootSpawnableNotificationBus::Handler
     {
@@ -64,12 +62,6 @@ namespace AzFramework
         void OnSystemTick() override;
 
         //
-        // AssetCatalogEventBus
-        //
-
-        void OnCatalogLoaded(const char* catalogFile) override;
-
-        //
         // RootSpawnableInterface
         //
 
@@ -82,6 +74,7 @@ namespace AzFramework
         //
 
         void OnRootSpawnableAssigned(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
+        void OnRootSpawnableReady(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
         
     protected:
@@ -96,6 +89,6 @@ namespace AzFramework
         AZ::SettingsRegistryInterface::NotifyEventHandler m_registryChangeHandler;
 
         AZ::Data::AssetId m_rootSpawnableId;
-        bool m_catalogAvailable{ false };
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
     };
 } // namespace AzFramework

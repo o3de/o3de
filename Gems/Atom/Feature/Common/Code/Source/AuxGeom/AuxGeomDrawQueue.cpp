@@ -11,7 +11,6 @@
 
 #include <Atom/RPI.Public/Scene.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/std/functional.h>
@@ -671,8 +670,6 @@ namespace AZ
             AZ::u8 width,
             int32_t viewProjOverrideIndex)
         {
-            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
-
             // grab a mutex lock for the rest of this function so that a commit cannot happen during it and
             // other threads can't add geometry during it
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_buffersWriteLock);
@@ -683,16 +680,15 @@ namespace AZ
 
             AuxGeomIndex vertexOffset = aznumeric_cast<AuxGeomIndex>(primBuffer.m_vertexBuffer.size());
             AuxGeomIndex indexOffset = aznumeric_cast<AuxGeomIndex>(primBuffer.m_indexBuffer.size());
+            const size_t vertexCountTotal = aznumeric_cast<size_t>(vertexOffset) + vertexCount;
 
-            if (aznumeric_cast<size_t>(vertexOffset) + vertexCount > MaxDynamicVertexCount)
+            if (vertexCountTotal > MaxDynamicVertexCount)
             {
                 AZ_WarningOnce("AuxGeom", false, "Draw function ignored, would exceed maximum allowed index of %d", MaxDynamicVertexCount);
                 return;
             }
 
             AZ::Vector3 center(0.0f, 0.0f, 0.0f);
-            primBuffer.m_vertexBuffer.reserve(vertexCount);
-            primBuffer.m_indexBuffer.reserve(vertexCount);
             for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
                 AZ::u32 packedColor = packedColorFunction(vertexIndex);
@@ -742,8 +738,6 @@ namespace AZ
             AZ::u8 width,
             int32_t viewProjOverrideIndex)
         {
-            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
-
             AZ_Assert(indexCount >= verticesPerPrimitiveType && (indexCount % verticesPerPrimitiveType == 0),
                 "Index count must be at least %d and must be a multiple of %d",
                 verticesPerPrimitiveType, verticesPerPrimitiveType);
@@ -758,15 +752,15 @@ namespace AZ
 
             AuxGeomIndex vertexOffset = aznumeric_cast<AuxGeomIndex>(primBuffer.m_vertexBuffer.size());
             AuxGeomIndex indexOffset = aznumeric_cast<AuxGeomIndex>(primBuffer.m_indexBuffer.size());
+            const size_t vertexCountTotal = aznumeric_cast<size_t>(vertexOffset) + vertexCount;
 
-            if (aznumeric_cast<size_t>(vertexOffset) + vertexCount > MaxDynamicVertexCount)
+            if (vertexCountTotal > MaxDynamicVertexCount)
             {
                 AZ_WarningOnce("AuxGeom", false, "Draw function ignored, would exceed maximum allowed index of %d", MaxDynamicVertexCount);
                 return;
             }
 
             AZ::Vector3 center(0.0f, 0.0f, 0.0f);
-            primBuffer.m_vertexBuffer.reserve(vertexCount);
             for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
                 AZ::u32 packedColor = packedColorFunction(vertexIndex);
@@ -777,7 +771,6 @@ namespace AZ
             }
             center /= aznumeric_cast<float>(vertexCount);
 
-            primBuffer.m_indexBuffer.reserve(indexCount);
             for (uint32_t index = 0; index < indexCount; ++index)
             {
                 primBuffer.m_indexBuffer.push_back(vertexOffset + indexFunction(index));

@@ -716,7 +716,6 @@ namespace ScriptCanvasEditor
     void GraphVariablesModel::SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
         ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusDisconnect();
-        m_assetType = azrtti_typeid<ScriptCanvasAsset>();
         m_scriptCanvasId = scriptCanvasId;
 
         if (m_scriptCanvasId.IsValid())
@@ -917,11 +916,6 @@ namespace ScriptCanvasEditor
         }
 
         return -1;
-    }
-
-    bool GraphVariablesModel::IsFunction()const
-    {
-        return m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
     }
 
     ////////////////////////////////////////////

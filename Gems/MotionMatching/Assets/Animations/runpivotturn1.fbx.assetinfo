@@ -1,0 +1,50 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "runpivotturn1",
+            "selectedRootBone": "RootNode.root",
+            "id": "{DEF0D469-00AB-57D0-AF05-6AF1D6563D4A}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "EMotionFX::Pipeline::Rule::MotionMetaDataRule",
+                        "data": {
+                            "motionEventTable": {
+                                "tracks": [
+                                    {
+                                        "name": "Sync",
+                                        "deletable": false,
+                                        "events": [
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 25.080034255981445,
+                                                "endTime": 28.964109420776367
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 29.574464797973633,
+                                                "endTime": 36.288368225097656
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$type": "MotionSamplingRule"
+                    }
+                ]
+            }
+        }
+    ]
+}

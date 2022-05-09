@@ -43,10 +43,8 @@ class CLayoutViewPane;
 class CViewManager;
 class CBaseObjectsCache;
 struct HitContext;
-struct IRenderListener;
 class CImageEx;
 class QMenu;
-struct IDataBaseItem;
 
 /** Type of viewport.
 */
@@ -87,9 +85,6 @@ enum EStdCursor
     STD_CURSOR_LAST,
 };
 
-//! The default distance an entity is placed from the camera if there is no intersection
-SANDBOX_API float GetDefaultEntityPlacementDistance();
-
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class SANDBOX_API CViewport
     : public IDisplayViewport
@@ -107,10 +102,6 @@ public:
 
     //! Access to view manager.
     CViewManager* GetViewManager() const { return m_viewManager; };
-
-    virtual void RegisterRenderListener(IRenderListener*    piListener) = 0;
-    virtual bool UnregisterRenderListener(IRenderListener*  piListener) = 0;
-    virtual bool IsRenderListenerRegistered(IRenderListener*    piListener) = 0;
 
     virtual void AddPostRenderer(IPostRenderer* pPostRenderer) = 0;
     virtual bool RemovePostRenderer(IPostRenderer* pPostRenderer) = 0;
@@ -233,8 +224,6 @@ public:
     // Drag and drop support on viewports.
     // To be overrided in derived classes.
     //////////////////////////////////////////////////////////////////////////
-    virtual bool CanDrop([[maybe_unused]] const QPoint& point, [[maybe_unused]] IDataBaseItem* pItem) { return false; };
-    virtual void Drop([[maybe_unused]] const QPoint& point, [[maybe_unused]] IDataBaseItem* pItem) {};
     virtual void SetGlobalDropCallback(DropCallback dropCallback, void* dropCallbackCustom)
     {
         m_dropCallback = dropCallback;
@@ -397,7 +386,6 @@ public:
 
     //! Snap any given 3D world position to grid lines if snap is enabled.
     Vec3 SnapToGrid(const Vec3& vec) override;
-    float GetGridStep() const override;
 
     //! Returns the screen scale factor for a point given in world coordinates.
     //! This factor gives the width in world-space units at the point's distance of the viewport.
@@ -434,19 +422,12 @@ public:
     //! Performs hit testing of 2d point in view to find which object hit.
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
 
-    //! Do 2D hit testing of line in world space.
-    // pToCameraDistance is an optional output parameter in which distance from the camera to the line is returned.
-    bool HitTestLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& hitpoint, int pixelRadius, float* pToCameraDistance = 0) const override;
-
     float GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& point) const override;
 
     // Access to the member m_bAdvancedSelectMode so interested modules can know its value.
     bool GetAdvancedSelectModeFlag() override;
 
     void GetPerpendicularAxis(EAxis* pAxis, bool* pIs2D) const override;
-    const ::Plane* GetConstructionPlane() const override { return &m_constructionPlane; }
-
-    //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
     //! Set construction plane from given position construction matrix refrence coord system and axis settings.
@@ -491,10 +472,6 @@ public:
     void ResetCursor() override;
     void SetSupplementaryCursorStr(const QString& str) override;
 
-    void RegisterRenderListener(IRenderListener*    piListener) override;
-    bool UnregisterRenderListener(IRenderListener*  piListener) override;
-    bool IsRenderListenerRegistered(IRenderListener*    piListener) override;
-
     void AddPostRenderer(IPostRenderer* pPostRenderer) override;
     bool RemovePostRenderer(IPostRenderer* pPostRenderer) override;
 
@@ -502,7 +479,7 @@ public:
     void ReleaseMouse() override { m_mouseCaptured = false;  QWidget::releaseMouse(); }
 
     void setRay(QPoint& vp, Vec3& raySrc, Vec3& rayDir) override;
-    void setHitcontext(QPoint& vp, Vec3& raySrc, Vec3& rayDir) override;
+
     QPoint m_vp;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Vec3 m_raySrc;
@@ -521,8 +498,6 @@ protected:
     HWND renderOverlayHWND() const;
     void setRenderOverlayVisible(bool);
     bool isRenderOverlayVisible() const;
-
-    void ProcessRenderLisneters(DisplayContext& rstDisplayContext);
 
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
@@ -610,8 +585,6 @@ protected:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     // Same construction matrix is shared by all viewports.
     Matrix34 m_constructionMatrix[LAST_COORD_SYSTEM];
-
-    std::vector<IRenderListener*>           m_cRenderListeners;
 
     typedef std::vector<_smart_ptr<IPostRenderer> > PostRenderers;
     PostRenderers   m_postRenderers;

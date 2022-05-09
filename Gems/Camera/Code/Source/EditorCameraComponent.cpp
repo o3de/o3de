@@ -18,6 +18,7 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 namespace Camera
 {
@@ -39,6 +40,16 @@ namespace Camera
                 AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
                     isInGameMode, &AzToolsFramework::EditorEntityContextRequestBus::Events::IsEditorRunningGame);
                 return isInGameMode;
+            });
+
+        // Only allow our camera to move when the transform is not locked.
+        m_controller.SetIsLockedFunction([this]()
+            {
+                bool locked = false;
+                AzToolsFramework::Components::TransformComponentMessages::Bus::EventResult(
+                    locked, GetEntityId(), &AzToolsFramework::Components::TransformComponentMessages::IsTransformLocked);
+
+                return locked;
             });
 
         // Call base class activate, which in turn calls Activate on our controller.
@@ -145,13 +156,12 @@ namespace Camera
 
         {
             const AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
-            cameraState.m_viewportSize =
-                AZ::Vector2{aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height)};
+            cameraState.m_viewportSize = AzFramework::ScreenSize(viewportSize.m_width, viewportSize.m_height);
         }
 
         if (config.m_orthographic)
         {
-            cameraState.m_fovOrZoom = cameraState.m_viewportSize.GetX() / (config.m_orthographicHalfWidth * 2.0f);
+            cameraState.m_fovOrZoom = aznumeric_cast<float>(cameraState.m_viewportSize.m_width) / (config.m_orthographicHalfWidth * 2.0f);
             cameraState.m_orthographic = true;
         }
         else

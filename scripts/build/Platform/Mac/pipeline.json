@@ -10,9 +10,6 @@
         "daily-pipeline-metrics": {
             "CLEAN_WORKSPACE": true
         },
-        "packaging": {
-            "CLEAN_WORKSPACE": true
-        },
         "nightly-clean": {
             "CLEAN_WORKSPACE": true
         }

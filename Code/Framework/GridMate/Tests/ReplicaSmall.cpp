@@ -453,7 +453,6 @@ public:
 //        replicaHeader += 16;
 //#endif
 //        const int marshalDataSize = 48; //Data plus length
-        //Only for Driller
         ReplicaManager rm;
         ReplicaPeer peer(&rm);
 

@@ -7,7 +7,6 @@
  */
 
 #include "ScriptCanvasUndoHelper.h"
-#include "ScriptCanvasMemoryAsset.h"
 #include <Undo/ScriptCanvasGraphCommand.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 
@@ -18,7 +17,7 @@ namespace ScriptCanvasEditor
     {
     }
 
-    UndoHelper::UndoHelper(Graph* graph)
+    UndoHelper::UndoHelper(EditorGraph* graph)
         : m_undoState(this)
     {
         SetSource(graph);
@@ -29,7 +28,7 @@ namespace ScriptCanvasEditor
         UndoRequestBus::Handler::BusDisconnect();
     }
 
-    void UndoHelper::SetSource(Graph* graph)
+    void UndoHelper::SetSource(EditorGraph* graph)
     {
         m_graph = graph;
         UndoRequestBus::Handler::BusConnect(graph->GetScriptCanvasId());

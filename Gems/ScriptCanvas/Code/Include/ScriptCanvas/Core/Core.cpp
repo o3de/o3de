@@ -13,7 +13,6 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
 
 #include "Attributes.h"
 #include "Core.h"
@@ -21,6 +20,12 @@
 
 namespace ScriptCanvas
 {
+    AZ_CVAR(bool, g_saveRuntimeAssetsAsPlainTextForDebug, false, {}, AZ::ConsoleFunctorFlags::Null
+        , "Save runtime assets as plain text rather than binary for debug purposes.");
+
+    AZ_CVAR(bool, g_saveEditorAssetsAsPlainTextForDebug, false, {}, AZ::ConsoleFunctorFlags::Null
+        , "Save editor assets as plain text rather than binary for debug purposes.");
+
     ScopedAuxiliaryEntityHandler::ScopedAuxiliaryEntityHandler(AZ::Entity* buildEntity)
         : m_buildEntity(buildEntity)
         , m_wasAdded(false)
@@ -168,23 +173,6 @@ namespace ScriptCanvas
         runtimeVersion = RuntimeVersion::Current;
         fileVersion = FileVersion::Current;
     }
-
-    void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper)
-    {
-        AZ::SerializeContext* serializeContext{};
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        AZ::SerializeContext::ClassData classData;
-        classData.m_name = name.data();
-        classData.m_typeId = typeId;
-        classData.m_azRtti = rttiHelper;
-
-        auto EventPlaceholderAnyCreator = [](AZ::SerializeContext*) -> AZStd::any
-        {
-            return AZStd::make_any<AZStd::monostate>();
-        };
-
-        serializeContext->RegisterType(typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
-    }
 }
 
 namespace ScriptCanvasEditor
@@ -198,7 +186,7 @@ namespace ScriptCanvasEditor
         , m_id(id)
         , m_path(path)
     {
-        m_path.MakePreferred();
+        SanitizePaths();
         m_id = id;
     }
 
@@ -207,7 +195,7 @@ namespace ScriptCanvasEditor
         , m_id(id)
         , m_path(path)
     {
-        m_path.MakePreferred();
+        SanitizePaths();
         m_id = id;
     }
 
@@ -216,7 +204,7 @@ namespace ScriptCanvasEditor
         , m_id(AZ::Uuid::CreateNull())
         , m_path(path)
     {
-        m_path.MakePreferred();
+        SanitizePaths();
     }
 
     SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path)
@@ -224,7 +212,7 @@ namespace ScriptCanvasEditor
         , m_id(AZ::Uuid::CreateNull())
         , m_path(path)
     {
-        m_path.MakePreferred();
+        SanitizePaths();
     }
 
     bool SourceHandle::AnyEquals(const SourceHandle& other) const
@@ -239,6 +227,7 @@ namespace ScriptCanvasEditor
         m_data = nullptr;
         m_id = AZ::Uuid::CreateNull();
         m_path.clear();
+        m_relativePath.clear();
     }
 
     // return a SourceHandle with only the Id and Path, but without a pointer to the data
@@ -289,6 +278,17 @@ namespace ScriptCanvasEditor
         return m_path;
     }
 
+    void SourceHandle::SanitizePaths()
+    {
+        m_path.MakePreferred();
+        m_relativePath = m_path.RelativePath();
+    }
+
+    const AZ::IO::Path& SourceHandle::RelativePath() const
+    {
+        return m_relativePath;
+    }
+
     bool SourceHandle::PathEquals(const SourceHandle& other) const
     {
         return m_path == other.m_path;
@@ -299,9 +299,9 @@ namespace ScriptCanvasEditor
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<SourceHandle>()
-                ->Version(0)
+                ->Version(1)
                 ->Field("id", &SourceHandle::m_id)
-                ->Field("path", &SourceHandle::m_path)
+                ->Field("path", &SourceHandle::m_relativePath)
                 ;
         }
     }
@@ -309,10 +309,10 @@ namespace ScriptCanvasEditor
     AZStd::string SourceHandle::ToString() const
     {
         return AZStd::string::format
-            ( "%s, %s, %s"
-            , IsGraphValid() ? "O" : "X"
-            , m_path.empty() ? m_path.c_str() : "<no name>"
-            , m_id.IsNull() ? "<null id>" : m_id.ToString<AZStd::string>().c_str());
+            ( "ID: %s, Name: %s"
+            , m_id.IsNull() ? "<null id>" : m_id.ToString<AZStd::string>().c_str()
+            , !m_relativePath.empty() ? m_relativePath.c_str() : "<no name>"
+            );
     }
 }
 
@@ -323,9 +323,9 @@ namespace ScriptCanvas
         return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
     }
 
-    const ScriptCanvasEditor::Graph* ScriptCanvasData::GetEditorGraph() const
+    const ScriptCanvasEditor::EditorGraph* ScriptCanvasData::GetEditorGraph() const
     {
-        return reinterpret_cast<const ScriptCanvasEditor::Graph*>(GetGraph());
+        return reinterpret_cast<const ScriptCanvasEditor::EditorGraph*>(GetGraph());
     }
 
     Graph* ScriptCanvasData::ModGraph()
@@ -333,8 +333,8 @@ namespace ScriptCanvas
         return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
     }
 
-    ScriptCanvasEditor::Graph* ScriptCanvasData::ModEditorGraph()
+    ScriptCanvasEditor::EditorGraph* ScriptCanvasData::ModEditorGraph()
     {
-        return reinterpret_cast<ScriptCanvasEditor::Graph*>(ModGraph());
+        return reinterpret_cast<ScriptCanvasEditor::EditorGraph*>(ModGraph());
     }
 }

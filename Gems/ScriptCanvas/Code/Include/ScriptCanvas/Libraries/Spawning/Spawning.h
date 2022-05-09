@@ -10,4 +10,8 @@
 
 // This header is only meant to include the nodes and should not contain
 // shared code
+#include <ScriptCanvas/Libraries/Spawning/SpawnableAsset.h>
+#include <ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h>
+#include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
 #include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
+#include <ScriptCanvas/Libraries/Spawning/DespawnNodeable.h>

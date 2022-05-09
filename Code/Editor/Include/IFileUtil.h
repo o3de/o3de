@@ -116,9 +116,6 @@ struct IFileUtil
     virtual bool ExtractFile(QString& file, bool bMsgBoxAskForExtraction = true, const char* pDestinationFilename = nullptr) = 0;
     virtual void EditTextureFile(const char* txtureFile, bool bUseGameFolder) = 0;
 
-    //! dcc filename calculation and extraction sub-routines
-    virtual bool CalculateDccFilename(const QString& assetFilename, QString& dccFilename) = 0;
-
     //! Reformat filter string for (MFC) CFileDialog style file filtering
     virtual void FormatFilterString(QString& filter) = 0;
 

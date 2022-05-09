@@ -7,10 +7,8 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
-from __future__ import unicode_literals
-
 # -------------------------------------------------------------------------
+from __future__ import unicode_literals
 import os
 import site
 import logging as _logging
@@ -19,27 +17,42 @@ import logging as _logging
 # See example:
 #"dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\SDK\Lumberyard\Scripts\set_menu.py"
 from pathlib import Path
+# -------------------------------------------------------------------------
+
 
 # -------------------------------------------------------------------------
+# global scope
+_MODULENAME = 'azpy.test.entry_test'
 _BOOT_CHECK = False  # set true to test breakpoint in this module directly
 
-import azpy.env_bool as env_bool
+from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import ENVAR_DCCSI_LOGLEVEL
+from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
 
-_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 
-_MODULENAME = __name__
-if _MODULENAME is '__main__':
-    _MODULENAME = 'azpy.test.entry_test'
-
+# default loglevel to info unless set
+_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
+if _DCCSI_GDEBUG:
+    # override loglevel if runnign debug
+    _DCCSI_LOGLEVEL = _logging.DEBUG
+    
 # set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
+#for handler in _logging.root.handlers[:]:
+    #_logging.root.removeHandler(handler)
+    
+# configure basic logger
+# note: not using a common logger to reduce cyclical imports
+_logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                    format=FRMT_LOG_LONG,
+                    datefmt='%m-%d %H:%M')
+
 _LOGGER = _logging.getLogger(_MODULENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 

@@ -164,22 +164,26 @@ namespace AZ
             //!                   it will defer to the platform for parallel dispatch support.
             void Execute(JobPolicy jobPolicy);
 
-            /// Returns the timing statistics for the previous frame.
+            //! Returns the timing statistics for the previous frame.
             const TransientAttachmentStatistics* GetTransientAttachmentStatistics() const;
 
-            /// Returns current CPU frame to frame time in milliseconds.
+            //! Returns current CPU frame to frame time in milliseconds.
             double GetCpuFrameTime() const;
 
-            /// Returns memory statistics for the previous frame.
+            //! Returns memory statistics for the previous frame.
             const MemoryStatistics* GetMemoryStatistics() const;
 
-            /// Returns the implicit root scope id.
+            //! Returns the implicit root scope id.
             ScopeId GetRootScopeId() const;
 
+            //! Returns the descriptor which has information on the properties of a TransientAttachmentPool.
             const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
 
             //! Adds a RayTracingShaderTable to be built this frame
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable);
+
+            //! Returns PhysicalDeviceDescriptor which can be used to extract vendor/driver information
+            const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
 
         private:
             const ScopeId m_rootScopeId{"Root"};

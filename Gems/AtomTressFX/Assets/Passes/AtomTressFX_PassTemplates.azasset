@@ -62,6 +62,10 @@
             {
                 "Name": "HairShortCutResolveColorPassTemplate",
                 "Path": "Passes/HairShortCutResolveColor.pass"
+            },
+            {
+                "Name": "HairDepthToLinearTemplate",
+                "Path": "Passes/HairDepthToLinear.pass"
             }
         ]
     }

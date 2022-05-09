@@ -9,9 +9,7 @@
 #include <ProjectBuilderController.h>
 #include <ProjectBuilderWorker.h>
 #include <ProjectButtonWidget.h>
-#include <ProjectManagerSettings.h>
-
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <SettingsInterface.h>
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -23,20 +21,13 @@ namespace O3DE::ProjectManager
         : QObject()
         , m_projectInfo(projectInfo)
         , m_projectButton(projectButton)
-        , m_lastProgress(0)
         , m_parent(parent)
     {
         m_worker = new ProjectBuilderWorker(m_projectInfo);
         m_worker->moveToThread(&m_workerThread);
 
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        if (settingsRegistry)
-        {
-            // Remove key here in case Project Manager crashing while building that causes HandleResults to not be called
-            QString settingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
-            settingsRegistry->Remove(settingsKey.toStdString().c_str());
-            SaveProjectManagerSettings();
-        }
+        // Remove key here in case Project Manager crashed while building because that causes HandleResults to not be called
+        SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
 
         connect(&m_workerThread, &QThread::finished, m_worker, &ProjectBuilderWorker::deleteLater);
         connect(&m_workerThread, &QThread::started, m_worker, &ProjectBuilderWorker::BuildProject);
@@ -63,12 +54,13 @@ namespace O3DE::ProjectManager
 
         if (projectButton)
         {
-            projectButton->SetProjectBuilding();
-            projectButton->SetProjectButtonAction(tr("Cancel Build"), [this] { HandleCancel(); });
+            projectButton->SetProjectButtonAction(tr("Cancel"), [this] { HandleCancel(); });
+            projectButton->SetBuildLogsLink(m_worker->GetLogFilePath());
+            projectButton->SetState(ProjectButtonState::Building);
 
-            if (m_lastProgress != 0)
+            if (!m_lastLine.isEmpty())
             {
-                UpdateUIProgress(m_lastProgress);
+                UpdateUIProgress(m_lastLine);
             }
         }
     }
@@ -78,21 +70,18 @@ namespace O3DE::ProjectManager
         return m_projectInfo;
     }
 
-    void ProjectBuilderController::UpdateUIProgress(int progress)
+    void ProjectBuilderController::UpdateUIProgress(const QString& lastLine)
     {
-        m_lastProgress = progress;
+        m_lastLine = lastLine.left(s_maxDisplayedBuiltOutputChars);
+
         if (m_projectButton)
         {
-            m_projectButton->SetButtonOverlayText(QString("%1 (%2%)<br>%3<br>").arg(tr("Building Project..."), QString::number(progress), tr("Click to <a href=\"logs\">view logs</a>.")));
-            m_projectButton->SetProgressBarValue(progress);
-            m_projectButton->SetBuildLogsLink(m_worker->GetLogFilePath());
+            m_projectButton->SetContextualText(m_lastLine);
         }
     }
 
     void ProjectBuilderController::HandleResults(const QString& result)
     {
-        QString settingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
-
         if (!result.isEmpty())
         {
             if (result.contains(tr("log")))
@@ -122,12 +111,7 @@ namespace O3DE::ProjectManager
                 emit NotifyBuildProject(m_projectInfo);
             }
 
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry)
-            {
-                settingsRegistry->Remove(settingsKey.toStdString().c_str());
-                SaveProjectManagerSettings();
-            }
+            SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
 
             emit Done(false);
             return;
@@ -136,12 +120,7 @@ namespace O3DE::ProjectManager
         {
             m_projectInfo.m_buildFailed = false;
 
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry)
-            {
-                settingsRegistry->Set(settingsKey.toStdString().c_str(), true);
-                SaveProjectManagerSettings();
-            }
+            SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, true);
         }
 
         emit Done(true);

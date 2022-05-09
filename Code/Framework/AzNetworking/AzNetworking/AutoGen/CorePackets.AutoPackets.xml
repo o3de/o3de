@@ -13,7 +13,9 @@
         <Member Type="AzNetworking::DisconnectReason" Name="disconnectReason" Init="AzNetworking::DisconnectReason::None" />
     </Packet>
 
-    <Packet Name="HeartbeatPacket" Desc="This packet is used to keep an established connection alive" />
+    <Packet Name="HeartbeatPacket" Desc="This packet is used to keep an established connection alive">
+        <Member Type="bool" Name="requestResponse" Init="false" />
+    </Packet>
 
     <Packet Name="FragmentedPacket" Desc="This packet is used to segment a packet that exceeds a connections MTU">
         <Member Type="AzNetworking::SequenceId" Name="unfragmentedSequence" Init="AzNetworking::InvalidSequenceId" />

@@ -16,6 +16,7 @@
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Components/CameraBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -110,6 +111,43 @@ namespace ScriptCanvasPhysics
             "Returns the first entity hit by a ray cast in world space from the start position in the specified direction.",
             "Start",
             "Direction",
+            "Distance",
+            "Collision group",
+            "Ignore",
+            "Object hit",
+            "Position",
+            "Normal",
+            "Distance",
+            "EntityId",
+            "Surface");
+
+        AZ_INLINE Result RayCastFromScreenWithGroup(
+            const AZ::Vector2& screenPosition,
+            float distance,
+            const AZStd::string& collisionGroup,
+            AZ::EntityId ignore)
+        {
+            AZ::EntityId camera;
+            Camera::CameraSystemRequestBus::BroadcastResult(camera, &Camera::CameraSystemRequestBus::Events::GetActiveCamera);
+            if (camera.IsValid())
+            {
+                AZ::Vector3 origin = AZ::Vector3::CreateZero();
+                Camera::CameraRequestBus::EventResult(origin, camera, &Camera::CameraRequestBus::Events::ScreenToWorld, screenPosition, 0.f);
+                AZ::Vector3 offset = AZ::Vector3::CreateZero();
+                Camera::CameraRequestBus::EventResult(offset, camera, &Camera::CameraRequestBus::Events::ScreenToWorld, screenPosition, 1.f);
+                const AZ::Vector3 direction = (offset - origin).GetNormalized();
+                return RayCastWorldSpaceWithGroup(origin, direction, distance, collisionGroup, ignore);
+            }
+
+            // fallback in the rare case there is no active camera
+            return AZStd::make_tuple(false, AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero(), 0.0f, AZ::EntityId(), AZ::Crc32());
+        }
+
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastFromScreenWithGroup,
+            k_categoryName,
+            "{8F98A766-A93F-4DA7-B281-482C3DB20649}",
+            "Returns the first entity hit by a ray cast from the provided absolute 2D screen position.",
+            "Screen Position",
             "Distance",
             "Collision group",
             "Ignore",
@@ -389,6 +427,7 @@ namespace ScriptCanvasPhysics
             <RayCastWorldSpaceWithGroupNode,
             RayCastLocalSpaceWithGroupNode,
             RayCastMultipleLocalSpaceWithGroupNode,
+            RayCastFromScreenWithGroupNode,
             OverlapSphereWithGroupNode,
             OverlapBoxWithGroupNode,
             OverlapCapsuleWithGroupNode,

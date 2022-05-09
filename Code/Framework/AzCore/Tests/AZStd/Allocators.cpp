@@ -16,12 +16,11 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     /**
      * Test for AZSTD provided default allocators.
      */

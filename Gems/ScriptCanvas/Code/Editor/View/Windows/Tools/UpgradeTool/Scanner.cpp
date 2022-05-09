@@ -6,13 +6,13 @@
  *
  */
 
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Scanner.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace ScannerCpp
@@ -105,7 +105,7 @@ namespace ScriptCanvasEditor
             auto fileOutcome = LoadFromFile(ModCurrentAsset().Path().c_str());
             if (fileOutcome.IsSuccess())
             {
-                return fileOutcome.GetValue();
+                return fileOutcome.GetValue().handle;
             }
             else
             {

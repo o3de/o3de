@@ -185,7 +185,7 @@ namespace AZ
                                 if (lodCount > 0)
                                 {
                                     rule->AddLod();
-                                    selection.CopyTo(rule->GetNodeSelectionList(index));
+                                    selection.CopyTo(rule->GetNodeSelectionList(lodLevel));
                                 }
                                 else
                                 {

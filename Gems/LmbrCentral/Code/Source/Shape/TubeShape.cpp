@@ -259,10 +259,7 @@ namespace LmbrCentral
 
     bool TubeShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
-        AZ::Transform transformUniformScale = m_currentTransform;
-        transformUniformScale.SetUniformScale(transformUniformScale.GetUniformScale());
-
-        const auto splineQueryResult = IntersectSpline(transformUniformScale, src, dir, *m_spline);
+        const auto splineQueryResult = IntersectSpline(m_currentTransform, src, dir, *m_spline);
         const float variableRadius = m_variableRadius.GetElementInterpolated(
             splineQueryResult.m_splineAddress, Lerpf);
 
@@ -328,18 +325,19 @@ namespace LmbrCentral
                 sides, capSegments, vertices);
         }
     }
-
-    /// Generates vertices and indices for a tube shape
-    /// Split into two stages:
-    /// - Generate vertex positions
-    /// - Generate indices (faces)
-    /// Heres a rough diagram of how it is built:
-    ///   ____________
-    ///  /_|__|__|__|_\
-    ///  \_|__|__|__|_/
-    ///  - A single vertex at each end of the tube
-    ///  - Angled end cap segments
-    ///  - Middle segments
+    /*
+        Generates vertices and indices for a tube shape
+        Split into two stages:
+        - Generate vertex positions
+        - Generate indices (faces)
+          Heres a rough diagram of how it is built:
+           ____________
+          /_|__|__|__|_\
+          \_|__|__|__|_/
+         - A single vertex at each end of the tube
+         - Angled end cap segments
+         - Middle segments
+    */
     void GenerateSolidTubeMesh(
         const AZ::SplinePtr& spline, const SplineAttribute<float>& variableRadius,
         const float radius, const AZ::u32 capSegments, const AZ::u32 sides,

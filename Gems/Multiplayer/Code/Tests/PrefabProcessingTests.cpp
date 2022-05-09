@@ -13,6 +13,7 @@
 #include <Prefab/PrefabDomTypes.h>
 #include <Prefab/Spawnable/PrefabProcessorContext.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/MultiplayerConstants.h>
 #include <Source/Pipeline/NetworkPrefabProcessor.h>
 
 namespace UnitTest
@@ -57,6 +58,7 @@ namespace UnitTest
     TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabTwoEntities_NetEntityGoesToNetSpawnable)
     {
         using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext;
+        using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument;
 
         AZStd::vector<AZ::Entity*> entities;
 
@@ -74,7 +76,9 @@ namespace UnitTest
         // Add the prefab into the Prefab Processor Context
         const AZStd::string prefabName = "testPrefab";
         PrefabProcessorContext prefabProcessorContext{AZ::Uuid::CreateRandom()};
-        prefabProcessorContext.AddPrefab(prefabName, AZStd::move(prefabDom));
+        PrefabDocument document(prefabName);
+        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(prefabDom)));
+        prefabProcessorContext.AddPrefab(AZStd::move(document));
 
         // Request NetworkPrefabProcessor to process the prefab
         Multiplayer::NetworkPrefabProcessor processor;
@@ -89,7 +93,7 @@ namespace UnitTest
 
         // Verify the name and the type of the spawnable asset 
         const AZ::Data::AssetData& spawnableAsset = processedObjects[0].GetAsset();
-        EXPECT_EQ(prefabName + ".network.spawnable", processedObjects[0].GetId());
+        EXPECT_EQ(prefabName + Multiplayer::NetworkSpawnableFileExtension.data(), processedObjects[0].GetId());
         EXPECT_EQ(spawnableAsset.GetType(), azrtti_typeid<AzFramework::Spawnable>());
 
         // Verify we have only the networked entity in the network spawnable and not the static one

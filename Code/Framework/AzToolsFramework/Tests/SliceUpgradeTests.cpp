@@ -16,6 +16,7 @@ AZ_PUSH_DISABLE_WARNING(,"-Wdelete-non-virtual-dtor")
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>

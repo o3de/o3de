@@ -31,12 +31,12 @@ namespace Blast
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("BlastEditorService", 0x0a61cda5));
+            provided.push_back(AZ_CRC("BlastEditorService", 0xeddfed0d));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("BlastService", 0x75beae2d));
+            required.push_back(AZ_CRC("BlastService", 0x46927a9f));
         }
 
         AZStd::unique_ptr<EditorBlastChunksAssetHandler> m_editorBlastChunksAssetHandler;

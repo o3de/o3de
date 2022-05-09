@@ -160,7 +160,6 @@ namespace AZ
             AZStd::swap(m_materialsWithDirtyProperties, materialsWithDirtyProperties);
 
             // Iterate through all MaterialAssignmentId's that have property overrides and attempt to apply them
-            // if material instance is already compiling, delay application of property overrides until next frame
             for (const auto& materialAssignmentId : materialsWithDirtyProperties)
             {
                 const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
@@ -168,7 +167,7 @@ namespace AZ
                 {
                     if (!materialIt->second.ApplyProperties())
                     {
-                        // If a material cannot currently be compiled then it must be queued again
+                        // If the material had properties to apply and it could not be compiled then queue it again
                         m_materialsWithDirtyProperties.emplace(materialAssignmentId);
                     }
                 }
@@ -618,7 +617,6 @@ namespace AZ
             const MaterialAssignmentId& materialAssignmentId, const AZ::RPI::MaterialModelUvOverrideMap& modelUvOverrides)
         {
             auto& materialAssignment = m_configuration.m_materials[materialAssignmentId];
-            const bool wasEmpty = materialAssignment.m_matModUvOverrides.empty();
             materialAssignment.m_matModUvOverrides = modelUvOverrides;
 
             if (materialAssignment.RequiresLoading())
@@ -627,13 +625,10 @@ namespace AZ
                 return;
             }
 
-            if (wasEmpty != materialAssignment.m_matModUvOverrides.empty())
-            {
-                materialAssignment.RebuildInstance();
-                QueueMaterialUpdateNotification();
-            }
-
-            QueuePropertyChanges(materialAssignmentId);
+            // Unlike material properties which are applied to the material itself, UV overrides are applied outside the material
+            // by the MeshFeatureProcessor. So all we have to do is notify the mesh component that the materials were updated and it
+            // will pass the updated data to the MeshFeatureProcessor.
+            QueueMaterialUpdateNotification();
         }
 
         AZ::RPI::MaterialModelUvOverrideMap MaterialComponentController::GetModelUvOverrides(

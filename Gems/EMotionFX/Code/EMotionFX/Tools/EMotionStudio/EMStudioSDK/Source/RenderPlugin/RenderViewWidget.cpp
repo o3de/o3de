@@ -8,16 +8,16 @@
 
 #include "RenderViewWidget.h"
 #include "RenderPlugin.h"
-#include "../EMStudioCore.h"
 #include "../PreferencesWindow.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>
 #include <EMotionFX/CommandSystem/Source/ActorInstanceCommands.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <MysticQt/Source/KeyboardShortcutManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
 #include <QToolBar>
-
+#include <QToolButton>
 
 namespace EMStudio
 {
@@ -49,8 +49,6 @@ namespace EMStudio
         QWidget* renderWidget = nullptr;
         m_plugin->CreateRenderWidget(this, &m_renderWidget, &renderWidget);
         verticalLayout->addWidget(renderWidget);
-
-        new QActionGroup(this);
 
         QActionGroup* group = new QActionGroup(this);
         group->setExclusive(true);

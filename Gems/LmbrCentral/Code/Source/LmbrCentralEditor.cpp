@@ -34,6 +34,7 @@
 #include "Shape/EditorSplineComponent.h"
 #include "Shape/EditorTubeShapeComponent.h"
 #include "Shape/EditorPolygonPrismShapeComponent.h"
+#include "Shape/EditorReferenceShapeComponent.h"
 #include "Editor/EditorCommentComponent.h"
 
 #include "Shape/EditorCompoundShapeComponent.h"
@@ -73,6 +74,7 @@ namespace LmbrCentral
             EditorCylinderShapeComponent::CreateDescriptor(),
             EditorCapsuleShapeComponent::CreateDescriptor(),
             EditorCompoundShapeComponent::CreateDescriptor(),
+            EditorReferenceShapeComponent::CreateDescriptor(),
             EditorSplineComponent::CreateDescriptor(),
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),

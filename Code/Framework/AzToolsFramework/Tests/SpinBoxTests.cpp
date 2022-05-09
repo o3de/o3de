@@ -275,7 +275,7 @@ namespace UnitTest
         QString testString = "0" + QString(testLocale.decimalPoint()) + "9999999";
         QString value = setupTruncationTest(testString);
 
-        testString = "0" + QString(testLocale.decimalPoint()) + "999";
+        testString = "1" + QString(testLocale.decimalPoint()) + "0";
         EXPECT_TRUE(value == testString);
     }
 
@@ -295,19 +295,19 @@ namespace UnitTest
         QString testString = "0" + QString(testLocale.decimalPoint()) + "12395";
         QString value = setupTruncationTest(testString);
 
-        testString = "0" + QString(testLocale.decimalPoint()) + "123";
+        testString = "0" + QString(testLocale.decimalPoint()) + "124";
         EXPECT_TRUE(value == testString);
 
         testString = "0" + QString(testLocale.decimalPoint()) + "94496";
         value = setupTruncationTest(testString);
 
-        testString = "0" + QString(testLocale.decimalPoint()) + "944";
+        testString = "0" + QString(testLocale.decimalPoint()) + "945";
         EXPECT_TRUE(value == testString);
 
         testString = "0" + QString(testLocale.decimalPoint()) + "0009999";
         value = setupTruncationTest(testString);
 
-        testString = "0" + QString(testLocale.decimalPoint()) + "0";
+        testString = "0" + QString(testLocale.decimalPoint()) + "001";
         EXPECT_TRUE(value == testString);
     }
 

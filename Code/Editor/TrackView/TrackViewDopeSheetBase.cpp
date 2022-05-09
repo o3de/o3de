@@ -2233,7 +2233,6 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
 
     if (pTrack && inRange)
     {
-        bool keyCreated = false;
         if (bTryAddKeysInGroup && pNode->GetParentNode())       // Add keys in group
         {
             CTrackViewTrackBundle tracksInGroup = pNode->GetTracksByParam(pTrack->GetParameterType());
@@ -2248,8 +2247,6 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
                         AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
                         pCurrTrack->CreateKey(keyTime);
                         undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-
-                        keyCreated = true;
                     }
                 }
                 else                                                                            // A compound track
@@ -2262,8 +2259,6 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
                             AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
                             pSubTrack->CreateKey(keyTime);
                             undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-
-                            keyCreated = true;
                         }
                     }
                 }
@@ -2276,15 +2271,13 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
                 AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
                 pTrack->CreateKey(keyTime);
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-
-                keyCreated = true;
             }
         }
         else                                                                                // A compound track
         {
             if (pTrack->GetValueType() == AnimValueType::RGB)
             {
-                keyCreated = CreateColorKey(pTrack, keyTime);
+                CreateColorKey(pTrack, keyTime);
             }
             else
             {
@@ -2295,7 +2288,6 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
                     if (IsOkToAddKeyHere(pSubTrack, keyTime))
                     {
                         pSubTrack->CreateKey(keyTime);
-                        keyCreated = true;
                     }
                 }
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
@@ -2617,7 +2609,6 @@ void CTrackViewDopeSheetBase::DrawSelectTrack(const Range& timeRange, QPainter* 
 void CTrackViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* painter, CTrackViewTrack* pTrack, const QRect& rc)
 {
     int x0 = TimeToClient(timeRange.start);
-    float t0 = timeRange.start;
 
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_visibilityBrush);
@@ -2648,7 +2639,6 @@ void CTrackViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* pa
             painter->fillRect(QRect(QPoint(x0, rc.top() + 4), QPoint(x, rc.bottom() - 4)), gradient);
         }
 
-        t0 = time;
         x0 = x;
     }
     int x = TimeToClient(timeRange.end);

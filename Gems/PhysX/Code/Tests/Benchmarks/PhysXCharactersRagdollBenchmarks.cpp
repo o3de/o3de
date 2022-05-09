@@ -13,6 +13,8 @@
 #include <AzTest/Utils.h>
 
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
@@ -139,8 +141,18 @@ namespace PhysX::Benchmarks
 
     PhysX::Ragdoll* CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        AZ::SettingsRegistryImpl localRegistry;
+        localRegistry.Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
+
+        // Look up the path to the PhysX Gem root
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(localRegistry);
+        AZ::IO::Path physXGemFolder;
+        localRegistry.Get(physXGemFolder.Native(), FixedValueString::format("%s/PhysX/Path",
+            AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey));
+
         Physics::RagdollConfiguration* configuration =
-            AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetEngineRootPath() + "/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
+            AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>((physXGemFolder / "Code/Tests/RagdollConfiguration.xml").Native());
 
         configuration->m_initialState = GetTPose();
         configuration->m_parentIndices.reserve(configuration->m_nodes.size());
@@ -198,7 +210,7 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(RagdollConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
@@ -264,7 +276,7 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(RagdollConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {

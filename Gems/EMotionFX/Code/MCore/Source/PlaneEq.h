@@ -148,43 +148,6 @@ namespace MCore
         MCORE_INLINE float GetDist() const                                                                              { return m_dist; }
 
         /**
-         * Checks if a given axis aligned bounding box (AABB) is partially above (aka in front) this plane or not.
-         * The Frustum class uses this method to check if a box is partially inside a the frustum or not.
-         * @param box The axis aligned bounding box to perform the test with.
-         * @result Returns true when 'box' is partially (or completely) above the plane or not.
-         */
-        MCORE_INLINE bool PartiallyAbove(const AABB& box) const;
-
-        /**
-         * Check if a given axis aligned bounding box (AABB) is completely above (aka in front) this plane or not.
-         * The Frustum class uses this method to check if a box is completely inside a the frustum or not.
-         * @param box The axis aligned bounding box to perform the test with.
-         * @result Returns true when 'box' is completely above the plane or not.
-         */
-        MCORE_INLINE bool CompletelyAbove(const AABB& box) const;
-
-        /**
-         * Clips a set of 3D points to this plane.
-         * Actually these are not just points, but edges. The edges go from point 0 to 1, from 1 to 2, etc.
-         * Beware that the clipped number of points can be higher as the ones you input to this method.
-         * This method can be used to pretty easily clip polygon data against the plane.
-         * @param pointsIn The array of points (and edges) to be clipped to the planes.
-         * @param pointsOut The array of clipped points (and edges). Note that (pointsOut.GetLength() > pointsIn.GetLength()) can be true.
-         * @result Returns true when the points have been clipped. False is returned when the clipping resulted in 0 output points.
-         */
-        bool Clip(const AZStd::vector<AZ::Vector3>& pointsIn, AZStd::vector<AZ::Vector3>& pointsOut) const;
-
-        /**
-         * Clip a set of 3D points to this plane.
-         * Actually these are not just points, but edges. The edges go from point 0 to 1, from 1 to 2, etc.
-         * Beware that the clipped number of points can be higher as the ones you input to this method.
-         * This method can be used to pretty easily clip polygon data against the plane.
-         * @param points The set of points (or edges) to clip. When done, points contains the clipped points.
-         * @result Returns true when the points have been clipped. False is returned when the clipping resulted in 0 points. In that last case 'points' won't be effected and contains just the original input points.
-         */
-        bool Clip(AZStd::vector<AZ::Vector3>& points) const;
-
-        /**
          * Project a vector onto the plane.
          * @param vectorToProject The vector you wish to project onto the plane.
          * @result The projected vector.
@@ -197,6 +160,4 @@ namespace MCore
         float   m_dist;      /**< The D in the plane equation (Ax + By + Cz + D = 0). */
     };
 
-    // include the inline code
-#include "PlaneEq.inl"
 }   // namespace MCore

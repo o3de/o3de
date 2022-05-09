@@ -10,10 +10,10 @@
 
 #include <QRect>
 
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/PresetSettings.h>
 #include <BuilderSettings/TextureSettings.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Compressors/Compressor.h>
 
 #include <AzCore/Jobs/Job.h>

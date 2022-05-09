@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/StableDynamicArray.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
 namespace AZ
 {
@@ -42,6 +43,9 @@ namespace AZ
 
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
+
+            //! Returns the object id for a mesh handle.
+            virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
 
             //! Acquires a model with an optional collection of material assignments.
             //! @param requiresCloneCallback The callback indicates whether cloning is required for a given model asset.
@@ -105,6 +109,8 @@ namespace AZ
             virtual void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) = 0;
             //! Sets the option to exclude this mesh from raytracing
             virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) = 0;
+            //! Gets whether this mesh is excluded from raytracing
+            virtual bool GetRayTracingEnabled(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.
             virtual void SetVisible(const MeshHandle& meshHandle, bool visible) = 0;
             //! Sets the mesh to render IBL specular in the forward pass.

@@ -8,7 +8,6 @@
 
 #include <GridMate/Replica/SystemReplicas.h>
 #include <GridMate/Replica/Tasks/ReplicaMarshalTasks.h>
-#include <GridMate/Replica/ReplicaDrillerEvents.h>
 #include <GridMate/Replica/ReplicaMgr.h>
 #include <GridMate/Replica/ReplicaStatus.h>
 #include <GridMate/Replica/ReplicaUtils.h>
@@ -72,12 +71,10 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaMarshalTaskBase::OnSendReplicaBegin()
     {
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnSendReplicaBegin, m_replica.get());
     }
     //-----------------------------------------------------------------------------
-    void ReplicaMarshalTaskBase::OnSendReplicaEnd(ReplicaPeer* to, const void* data, size_t len)
+    void ReplicaMarshalTaskBase::OnSendReplicaEnd(ReplicaPeer* to, const void*, size_t len)
     {
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnSendReplicaEnd, m_replica.get(), data, len);
         to->m_sentBytes += static_cast<int>(len);
     }
     //-----------------------------------------------------------------------------

@@ -49,14 +49,24 @@ namespace AZ
         static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f);
     }
 
+    enum class ObjectStreamWriteOverrideResponse
+    {
+        CompletedWrite,
+        FallbackToDefaultWrite,
+        AbortWrite
+    };
+    AZ_TYPE_INFO_SPECIALIZE(ObjectStreamWriteOverrideResponse, "{BDF960A8-0F18-4E9D-96DA-F800A122C42D}");
+
     ///< Callback that the object stream invokes to override saving an instance of the registered class
     ///< @param callContext EnumerateInstanceCallContext which contains the WriteElement BeingElemCB and the CloseElement EndElemCB
     ///< the callContext parameter can be passed to the SerializeContext::EnumerateInstance to continue object stream writing
     ///< @param classPtr class type which is of pointer to the type represented by the m_typeId value
     ///< @param classData reference to this instance Class Data that will be supplied to the callback
     ///< @param classElement class element pointer which contains information about the element being serialized.
-    ///< root elements do not not have a valid class element pointer
-    using ObjectStreamWriteOverrideCB = AZStd::function<void(SerializeContext::EnumerateInstanceCallContext& callContext,
+    ///<        root elements have a nullptr classElement
+    ///< @return enum to indicate that the override has saved the registered class and that the default writing should be skipped.
+    ///<         Returning false will have the WriteElement code fallback to using the default logic
+    using ObjectStreamWriteOverrideCB = AZStd::function<ObjectStreamWriteOverrideResponse(SerializeContext::EnumerateInstanceCallContext& callContext,
         const void* classPtr, const SerializeContext::ClassData& classData, const SerializeContext::ClassElement* classElement)>;
 
     AZ_TYPE_INFO_SPECIALIZE(ObjectStreamWriteOverrideCB, "{87B1A36B-8C8A-42B6-A0B5-E770D9FDBAD4}");

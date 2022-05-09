@@ -15,6 +15,7 @@
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Viewport/VertexContainerDisplay.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include "MathConversion.h"
@@ -92,7 +93,6 @@ namespace LmbrCentral
 
         m_cachedUniformScaleTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(m_cachedUniformScaleTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
-        m_cachedUniformScaleTransform = AzToolsFramework::TransformUniformScale(m_cachedUniformScaleTransform);
 
         // placeholder - create initial spline if empty
         AZ::VertexContainer<AZ::Vector3>& vertexContainer = m_splineCommon.m_spline->m_vertexContainer;
@@ -357,9 +357,23 @@ namespace LmbrCentral
         return (static_cast<float>(rayIntersectData.m_distanceSq) < powf(s_lineWidth * screenToWorldScale, 2.0f));
     }
 
+    bool EditorSplineComponent::SupportsEditorRayIntersect()
+    {
+        return AzToolsFramework::HelpersVisible();
+    }
+
+    bool EditorSplineComponent::SupportsEditorRayIntersectViewport(const AzFramework::ViewportInfo& viewportInfo)
+    {
+        bool helpersVisible = false;
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            helpersVisible, viewportInfo.m_viewportId,
+            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::HelpersVisible);
+        return helpersVisible;
+    }
+
     void EditorSplineComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        m_cachedUniformScaleTransform = AzToolsFramework::TransformUniformScale(world);
+        m_cachedUniformScaleTransform = world;
     }
 
     void EditorSplineComponent::OnChangeSplineType()

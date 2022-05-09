@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    Include/Private/AWSClientAuthModule.h
     Source/AWSClientAuthModule.cpp
+    Source/AWSClientAuthModule.h
 )

@@ -5,8 +5,9 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+
 #fmt: off
-class Tests():
+class Tests:
     create_terrain_spawner_entity               = ("Terrain_spawner_entity created successfully", "Failed to create terrain_spawner_entity")
     create_height_provider_entity               = ("Height_provider_entity created successfully", "Failed to create height_provider_entity")
     create_test_ball                            = ("Ball created successfully",    "Failed to create Ball")
@@ -18,6 +19,7 @@ class Tests():
     test_collision                              = ("Ball collided with terrain", "Ball failed to collide with terrain")
     no_errors_and_warnings_found                = ("No errors and warnings found", "Found errors and warnings")
 #fmt: on
+
 
 def Terrain_SupportsPhysics():
     """
@@ -46,8 +48,7 @@ def Terrain_SupportsPhysics():
     :return: None
     """
 
-    from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import TestHelper as helper, Report
+    from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report, Tracer
     import editor_python_test_tools.hydra_editor_utils as hydra
     import azlmbr.math as azmath
@@ -59,12 +60,9 @@ def Terrain_SupportsPhysics():
     SET_BOX_X_SIZE = 1024.0
     SET_BOX_Y_SIZE = 1024.0
     SET_BOX_Z_SIZE = 100.0
-    
-    helper.init_idle()
-    
+
     # 1) Load the level
-    helper.open_level("", "Base")
-    helper.wait_for_condition(lambda: general.get_current_level_name() == "Base", 2.0)
+    hydra.open_base_level()
 
     #1a) Load the level components
     hydra.add_level_component("Terrain World")
@@ -72,7 +70,7 @@ def Terrain_SupportsPhysics():
 
     # 2) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
     entity1_components_to_add = ["Axis Aligned Box Shape", "Terrain Layer Spawner", "Terrain Height Gradient List", "Terrain Physics Heightfield Collider", "PhysX Heightfield Collider"]
-    entity2_components_to_add = ["Vegetation Reference Shape", "Gradient Transform Modifier", "FastNoise Gradient"]
+    entity2_components_to_add = ["Shape Reference", "Gradient Transform Modifier", "FastNoise Gradient"]
     ball_components_to_add = ["Sphere Shape", "PhysX Collider", "PhysX Rigid Body"]
     terrain_spawner_entity = hydra.Entity("TestEntity1")
     terrain_spawner_entity.create_entity(azmath.Vector3(512.0, 512.0, 50.0), entity1_components_to_add)

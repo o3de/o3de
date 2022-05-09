@@ -5,6 +5,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+# It needs a new test level in prefab format to make it testable again.
+
 # Tests a portion of the Component CRUD Python API while the Editor is running
 
 import azlmbr.bus as bus
@@ -18,7 +20,7 @@ def CompareComponentEntityIdPairs(component1, component2):
     return component1.Equal(component2)
 
 # Open a level (any level should work)
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'WaterSample')
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'Base')
 
 # Get Component Types for Mesh and Comment
 typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', ["Mesh", "Comment", "Mesh Collider"], entity.EntityType().Game)

@@ -9,24 +9,35 @@
 #pragma once
 
 #include <AzCore/Component/ComponentExport.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzFramework/Spawnable/Spawnable.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <AzToolsFramework/Prefab/Spawnable/EntityAliasTypes.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
 #include <AzToolsFramework/Prefab/Spawnable/ProcesedObjectStore.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
+    struct AssetDependencyInfo
+    {
+        AZ::Data::AssetId m_assetId;
+        AZ::Data::AssetLoadBehavior m_loadBehavior;
+    };
+
     class PrefabProcessorContext
     {
     public:
         using ProcessedObjectStoreContainer = AZStd::vector<ProcessedObjectStore>;
-        using ProductAssetDependencyContainer =
-            AZStd::unordered_map<AZ::Data::AssetId, AZStd::unordered_set<AZ::Data::AssetId>>;
+        using ProductAssetDependencyContainer = AZStd::unordered_multimap<AZ::Data::AssetId, AssetDependencyInfo>;
 
         AZ_CLASS_ALLOCATOR(PrefabProcessorContext, AZ::SystemAllocator, 0);
         AZ_RTTI(PrefabProcessorContext, "{C7D77E3A-C544-486B-B774-7C82C38FE22F}");
@@ -34,16 +45,25 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         explicit PrefabProcessorContext(const AZ::Uuid& sourceUuid);
         virtual ~PrefabProcessorContext() = default;
 
-        virtual bool AddPrefab(AZStd::string prefabName, PrefabDom prefab);
-        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDom&)>& callback);
-        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDom&)>& callback) const;
+        virtual bool AddPrefab(PrefabDocument&& document);
+        virtual void ListPrefabs(const AZStd::function<void(PrefabDocument&)>& callback);
+        virtual void ListPrefabs(const AZStd::function<void(const PrefabDocument&)>& callback) const;
         virtual bool HasPrefabs() const;
 
-        virtual bool RegisterSpawnableProductAssetDependency(AZStd::string prefabName, AZStd::string dependentPrefabName);
-        virtual bool RegisterSpawnableProductAssetDependency(AZStd::string prefabName, const AZ::Data::AssetId& dependentAssetId);
-        virtual bool RegisterSpawnableProductAssetDependency(uint32_t spawnableAssetSubId, uint32_t dependentSpawnableAssetSubId);
+        virtual bool RegisterSpawnableProductAssetDependency(
+            AZStd::string prefabName, AZStd::string dependentPrefabName, EntityAliasSpawnableLoadBehavior loadBehavior);
+        virtual bool RegisterSpawnableProductAssetDependency(
+            AZStd::string prefabName, const AZ::Data::AssetId& dependentAssetId, EntityAliasSpawnableLoadBehavior loadBehavior);
+        virtual bool RegisterSpawnableProductAssetDependency(
+            uint32_t spawnableAssetSubId, uint32_t dependentSpawnableAssetSubId, EntityAliasSpawnableLoadBehavior loadBehavior);
         virtual bool RegisterProductAssetDependency(const AZ::Data::AssetId& assetId, const AZ::Data::AssetId& dependentAssetId);
+        virtual bool RegisterProductAssetDependency(
+            const AZ::Data::AssetId& assetId, const AZ::Data::AssetId& dependentAssetId, AZ::Data::AssetLoadBehavior loadBehavior);
 
+        virtual void RegisterSpawnableEntityAlias(EntityAliasStore link);
+        virtual void ResolveSpawnableEntityAliases(
+            AZStd::string_view prefabName, AzFramework::Spawnable& spawnable, const AzToolsFramework::Prefab::Instance& instance);
+        
         virtual ProcessedObjectStoreContainer& GetProcessedObjects();
         virtual const ProcessedObjectStoreContainer& GetProcessedObjects() const;
 
@@ -54,13 +74,22 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         virtual const AZ::PlatformTagSet& GetPlatformTags() const;
         virtual const AZ::Uuid& GetSourceUuid() const;
 
+        virtual void ResolveLinks();
+
         virtual bool HasCompletedSuccessfully() const;
         virtual void ErrorEncountered();
 
     protected:
-        using NamedPrefabContainer = AZStd::unordered_map<AZStd::string, PrefabDom>;
+        using PrefabNames = AZStd::unordered_set<AZStd::string>;
+        using PrefabContainer = AZStd::vector<PrefabDocument>;
+        using SpawnableEntityAliasStore = AZStd::vector<EntityAliasStore>;
 
-        NamedPrefabContainer m_prefabs;
+        AZ::Data::AssetLoadBehavior ToAssetLoadBehavior(EntityAliasSpawnableLoadBehavior loadBehavior) const;
+
+        PrefabContainer m_prefabs;
+        PrefabContainer m_pendingPrefabAdditions;
+        PrefabNames m_prefabNames;
+        SpawnableEntityAliasStore m_entityAliases;
         ProcessedObjectStoreContainer m_products;
         ProductAssetDependencyContainer m_registeredProductAssetDependencies;
 

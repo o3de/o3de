@@ -13,7 +13,6 @@
 
 #include "IEditor.h"
 #include "Include/IEditorClassFactory.h"
-#include "Include/IViewPane.h"
 #include "Include/ObjectEvent.h"
 #include "Objects/ClassDesc.h"
 
@@ -105,45 +104,6 @@ public:
     {
         return m_toolClassName ? m_toolClassName : CObjectClassDesc::GetToolClassName();
     }
-};
-
-template<class TWidget>
-class CQtViewClass
-    : public IViewPaneClass
-{
-public:
-    const char* m_name;
-    const char* m_category;
-    ESystemClassID m_classId;
-
-    CQtViewClass(const char* name, const char* category, ESystemClassID classId = ESYSTEM_CLASS_VIEWPANE)
-        : m_name(name)
-        , m_category(category)
-        , m_classId(classId)
-    {
-    }
-
-    ESystemClassID SystemClassID() override { return m_classId; };
-    static const GUID& GetClassID()
-    {
-        return TWidget::GetClassID();
-    }
-
-    const GUID& ClassID() override
-    {
-        return GetClassID();
-    }
-    QString ClassName() override { return m_name; };
-    QString Category() override { return m_category; };
-
-    QObject* CreateQObject() const override { return new TWidget(); };
-    QString GetPaneTitle() override { return m_name; };
-    unsigned int GetPaneTitleID() const override { return 0; };
-    EDockingDirection GetDockingDirection() override { return DOCK_FLOAT; };
-    QRect GetPaneRect() override { return {}; /* KDAB_TODO: ;m_sizeOptions.m_paneRect; */};
-    bool SinglePane() override { return false; };
-    bool WantIdleUpdate() override { return true; };
-    QSize GetMinSize() override { return {}; /*return m_sizeOptions.m_minSize;*/ }
 };
 
 #endif // CRYINCLUDE_EDITORCOMMON_QTVIEWPANE_H

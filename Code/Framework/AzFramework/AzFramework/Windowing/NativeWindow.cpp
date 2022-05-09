@@ -143,6 +143,13 @@ namespace AzFramework
         return vsync_interval;
     }
 
+    bool NativeWindow::SetSyncInterval(uint32_t newSyncInterval)
+    {
+        vsync_interval = newSyncInterval;
+        return true;
+    }
+
+
     /*static*/ bool NativeWindow::GetFullScreenStateOfDefaultWindow()
     {
         NativeWindowHandle defaultWindowHandle = nullptr;

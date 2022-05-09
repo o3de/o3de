@@ -12,30 +12,16 @@
 #include "XMLBinaryNode.h"
 
 //////////////////////////////////////////////////////////////////////////
-CBinaryXmlData::CBinaryXmlData()
-    : pNodes(0)
-    , pAttributes(0)
-    , pChildIndices(0)
-    , pStringData(0)
-    , pFileContents(0)
-    , nFileSize(0)
-    , bOwnsFileContentsMemory(true)
-    , pBinaryNodes(0)
-    , nRefCount(0)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
 CBinaryXmlData::~CBinaryXmlData()
 {
     if (bOwnsFileContentsMemory)
     {
         delete [] pFileContents;
     }
-    pFileContents = 0;
+    pFileContents = nullptr;
 
     delete [] pBinaryNodes;
-    pBinaryNodes = 0;
+    pBinaryNodes = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,7 +42,7 @@ XmlNodeRef CBinaryXmlNode::getParent() const
 XmlNodeRef CBinaryXmlNode::createNode([[maybe_unused]] const char* tag)
 {
     assert(0);
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -93,7 +79,7 @@ bool CBinaryXmlNode::getAttr(const char* key, const char** value) const
 
 bool CBinaryXmlNode::haveAttr(const char* key) const
 {
-    return (GetValue(key) != 0);
+    return (GetValue(key) != nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,7 +99,7 @@ bool CBinaryXmlNode::getAttr(const char* key, unsigned int& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        value = strtoul(svalue, NULL, 10);
+        value = strtoul(svalue, nullptr, 10);
         return true;
     }
     return false;
@@ -290,7 +276,7 @@ XmlNodeRef CBinaryXmlNode::findChild(const char* tag) const
             return m_pData->pBinaryNodes + m_pData->pChildIndices[i];
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //! Get XML Node child nodes.

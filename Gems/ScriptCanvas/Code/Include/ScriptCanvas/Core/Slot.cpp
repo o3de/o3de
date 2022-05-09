@@ -460,14 +460,14 @@ namespace ScriptCanvas
             && GetDataType() != Data::Type::BehaviorContextObject(GraphScopedVariableId::TYPEINFO_Uuid());
     }
 
-    bool Slot::CanConvertToReference() const
-    {        
-        return !m_isUserAdded && CanConvertTypes() && !m_isVariableReference && !m_node->HasConnectedNodes((*this));
+    bool Slot::CanConvertToReference(bool isNewSlot) const
+    {
+        return (!m_isUserAdded || isNewSlot) && CanConvertTypes() && !m_isVariableReference && !m_node->HasConnectedNodes((*this));
     }
 
-    bool Slot::ConvertToReference()
+    bool Slot::ConvertToReference(bool isNewSlot)
     {
-        if (CanConvertToReference())
+        if (CanConvertToReference(isNewSlot))
         {
             m_isVariableReference = true;
 

@@ -134,15 +134,13 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         uint     m_normalOffset;
         uint     m_tangentOffset;
         uint     m_bitangentOffset;
-        uint     m_uvOffset;        
-        float    m_padding0[2];
-
-        float4   m_irradianceColor;
-        float3x3 m_worldInvTranspose;
-        float    m_padding1;
-
+        uint     m_uvOffset;
+        
         uint     m_bufferFlags;
         uint     m_bufferStartIndex;
+
+        float4   m_irradianceColor;
+        float3x4 m_worldInvTranspose;
     };
 
     // hit shaders can retrieve the MeshInfo for a mesh hit using: RayTracingSceneSrg::m_meshInfo[InstanceIndex()]    

@@ -54,7 +54,7 @@ namespace AZ
 
             BindPassSrg(context, m_shaderResourceGroup);
 
-            AZ::Vector4 renderTargetMetrics = CalculateRenderTargetMetrics(GetOutputBinding(0).m_attachment.get());
+            AZ::Vector4 renderTargetMetrics = CalculateRenderTargetMetrics(GetOutputBinding(0).GetAttachment().get());
             if (renderTargetMetrics.GetX() != m_renderTargetMetrics.GetX() ||
                 renderTargetMetrics.GetY() != m_renderTargetMetrics.GetY())
             {
@@ -108,8 +108,8 @@ namespace AZ
 
             const RPI::PassAttachmentBinding* sizeSource = attachment->m_sizeSource;
             AZ_Assert(sizeSource != nullptr, "Binding sizeSource of attachment is null.");
-            AZ_Assert(sizeSource->m_attachment != nullptr, "Attachment of sizeSource is null.");
-            AZ::RHI::Size size = sizeSource->m_attachment->m_descriptor.m_image.m_size;
+            AZ_Assert(sizeSource->GetAttachment() != nullptr, "Attachment of sizeSource is null.");
+            AZ::RHI::Size size = sizeSource->GetAttachment()->m_descriptor.m_image.m_size;
 
             return AZ::Vector4(
                 1.0f / static_cast<float>(size.m_width),

@@ -30,8 +30,6 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
     m_ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    connect(m_ui->m_transparentAgreement, &QLabel::linkActivated, this, &CAboutDialog::OnCustomerAgreement);
-
     m_ui->m_transparentTrademarks->setText(versionText);
 
     m_ui->m_transparentAllRightReserved->setObjectName("copyrightNotice");
@@ -45,7 +43,7 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
 
     // Prepare background image
     QPixmap image = AzQtComponents::ScalePixmapForScreenDpi(
-        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_2021_11.jpg")),
+        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background.png")),
         screen(), QSize(m_imageWidth, m_imageHeight),
         Qt::IgnoreAspectRatio,
         Qt::SmoothTransformation
@@ -82,11 +80,6 @@ void CAboutDialog::mouseReleaseEvent(QMouseEvent* event)
     }
 
     QDialog::mouseReleaseEvent(event);
-}
-
-void CAboutDialog::OnCustomerAgreement()
-{
-    QDesktopServices::openUrl(QUrl(QStringLiteral("https://www.o3debinaries.org/license")));
 }
 
 #include <moc_AboutDialog.cpp>

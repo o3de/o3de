@@ -286,5 +286,3 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.inl>

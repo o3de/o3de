@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceMaskGradientComponent.h"
+#include <GradientSignal/Components/SurfaceMaskGradientComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -161,26 +161,56 @@ namespace GradientSignal
 
     float SurfaceMaskGradientComponent::GetValue(const GradientSampleParams& params) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         float result = 0.0f;
+        GetValues(AZStd::span<const AZ::Vector3>(&params.m_position, 1), AZStd::span<float>(&result, 1));
+        return result;
+    }
+
+    void SurfaceMaskGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        if (GradientRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with surface tag references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
+            return;
+        }
+
+        // Initialize all our output values to 0.
+        AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
 
         if (!m_configuration.m_surfaceTagList.empty())
         {
             SurfaceData::SurfacePointList points;
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-                params.m_position, m_configuration.m_surfaceTagList, points);
+            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagList,
+                points);
 
-            for (const auto& point : points)
-            {
-                for (const auto& maskPair : point.m_masks)
+            // For each position, get the max surface weight that matches our filter and that appears at that position.
+            points.EnumeratePoints(
+                [this, &outValues](
+                    size_t inPositionIndex, [[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
+                    const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
-                    result = AZ::GetMax(AZ::GetClamp(maskPair.second, 0.0f, 1.0f), result);
-                }
-            }
+                    masks.EnumerateWeights(
+                        [this, inPositionIndex, &outValues]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
+                        {
+                            if (AZStd::find(
+                                    m_configuration.m_surfaceTagList.begin(), m_configuration.m_surfaceTagList.end(), surfaceType) !=
+                                m_configuration.m_surfaceTagList.end())
+                            {
+                                outValues[inPositionIndex] = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), outValues[inPositionIndex]);
+                            }
+                            return true;
+                        });
+                    return true;
+                });
         }
-
-        return result;
     }
 
     size_t SurfaceMaskGradientComponent::GetNumTags() const

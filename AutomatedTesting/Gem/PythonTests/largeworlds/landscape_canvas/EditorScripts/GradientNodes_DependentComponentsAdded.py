@@ -60,7 +60,6 @@ def GradientNodes_DependentComponentsAdded():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 
@@ -69,8 +68,7 @@ def GradientNodes_DependentComponentsAdded():
         newEntityId = parameters[0]
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')
@@ -104,7 +102,7 @@ def GradientNodes_DependentComponentsAdded():
     # we will be checking for
     commonComponents = [
         'Gradient Transform Modifier',
-        'Vegetation Reference Shape'
+        'Shape Reference'
     ]
     componentNames = []
     for name in gradients:
@@ -114,7 +112,7 @@ def GradientNodes_DependentComponentsAdded():
 
     # Create nodes for the gradients that have additional required dependencies and check if
     # the Entity created by adding the node has the appropriate Component and required
-    # Gradient Transform Modifier and Vegetation Reference Shape components added automatically to it
+    # Gradient Transform Modifier and Shape Reference components added automatically to it
     newGraph = graph.GraphManagerRequestBus(bus.Broadcast, 'GetGraph', newGraphId)
     x = 10.0
     y = 10.0

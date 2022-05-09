@@ -123,6 +123,8 @@ namespace AZ
 
         // Prepare to create a cancellable job.
         AZ::JobManagerDesc desc;
+        desc.m_jobManagerName = "AssetCollectionAsyncLoader";
+
         AZ::JobManagerThreadDesc threadDesc;
         desc.m_workerThreads.push_back(threadDesc);
         m_jobManager = AZStd::make_unique<AZ::JobManager>(desc);
@@ -168,6 +170,7 @@ namespace AZ
         m_assetsToNotify.clear();
         m_assetIdStrToAssetPath.clear();
         m_readyAssets.clear();
+        m_notReadyAssets.clear();
     }
 
     void AssetCollectionAsyncLoader::PostNotifyReadyAssetsCB(Data::Asset<Data::AssetData> asset, bool success)
@@ -185,6 +188,7 @@ namespace AZ
 
             AZ_Assert(m_assetsToLoad.count(assetPath), "Asset with path %s, hint %s was not scheduled to load\n", assetPath.c_str(), asset.GetHint().c_str());
 
+            m_notReadyAssets.erase(assetPath);
             m_assetsToLoad.erase(assetPath);
             m_readyAssets[assetPath] = asset;
             m_assetsToNotify[assetPath] = success;
@@ -211,17 +215,18 @@ namespace AZ
 
     void AssetCollectionAsyncLoader::OnAssetIsValid(AZStd::string_view assetPath, const Data::AssetId& assetId, const Data::AssetType& assetType)
     {
+        // Kick off asset loading.
+        auto asset = Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::QueueLoad);
+
         const auto assetIdStr = assetId.ToString<AZStd::string>();
 
         {
             AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
             m_assetIdStrToAssetPath[assetIdStr] = assetPath;
+            m_notReadyAssets[assetPath] = asset;
         }
 
         Data::AssetBus::MultiHandler::BusConnect(assetId);
-        // Kick off asset loading.
-        auto asset = Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::PreLoad);
-        asset.BlockUntilLoadComplete();
     }
 
     ///////////////////////////////////////////////////////////////////////

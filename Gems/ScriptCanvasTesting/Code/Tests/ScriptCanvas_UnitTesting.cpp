@@ -75,7 +75,7 @@ namespace ScriptCanvas_UnitTestingCPP
 {
     const double k_tolerance = 0.01;
     const char* k_defaultExtension = "scriptcanvas";
-    const char* k_unitTestDirPathRelative = "@engroot@/Gems/ScriptCanvasTesting/Assets/ScriptCanvas/UnitTests";
+    const char* k_unitTestDirPathRelative = "@gemroot:ScriptCanvasTesting@/Assets/ScriptCanvas/UnitTests";
 }
 
 using namespace ScriptCanvasTests;

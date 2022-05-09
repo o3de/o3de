@@ -37,6 +37,9 @@ namespace AZ
             RPI::MaterialPropertyIndex m_power;
             RPI::MaterialPropertyIndex m_distortion;
             RPI::MaterialPropertyIndex m_attenuation;
+            RPI::MaterialPropertyIndex m_shrinkFactor;
+            RPI::MaterialPropertyIndex m_transmissionNdLBias;
+            RPI::MaterialPropertyIndex m_distanceAttenuation;
             RPI::MaterialPropertyIndex m_tintColor;
             RPI::MaterialPropertyIndex m_thickness;
             RPI::MaterialPropertyIndex m_enabled;

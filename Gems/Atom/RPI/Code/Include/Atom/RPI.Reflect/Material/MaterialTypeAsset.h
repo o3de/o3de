@@ -11,7 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/any.h>
 #include <AzCore/EBus/Event.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
@@ -54,7 +54,6 @@ namespace AZ
         {
             friend class MaterialTypeAssetCreator;
             friend class MaterialTypeAssetHandler;
-            friend class MaterialAssetCreatorCommon;
 
         public:
             AZ_RTTI(MaterialTypeAsset, "{CD7803AB-9C4C-4A33-9A14-7412F1665464}", AZ::Data::AssetData);
@@ -119,7 +118,7 @@ namespace AZ
             //! The entries in this list align with the entries in the MaterialPropertiesLayout. Each AZStd::any is guaranteed 
             //! to have a value of type that matches the corresponding MaterialPropertyDescriptor.
             //! For images, the value will be of type ImageBinding.
-            AZStd::array_view<MaterialPropertyValue> GetDefaultPropertyValues() const;
+            AZStd::span<const MaterialPropertyValue> GetDefaultPropertyValues() const;
 
             //! Returns a map from the UV shader inputs to a custom name.
             MaterialUvNameMap GetUvNameMap() const;

@@ -6,10 +6,8 @@
  *
  */
 
-#ifndef __MYSTICQT_DIALOGSTACK_H
-#define __MYSTICQT_DIALOGSTACK_H
+#pragma once
 
-//
 #if !defined(Q_MOC_RUN)
 #include "MysticQtConfig.h"
 #include <QtWidgets/QWidget>
@@ -30,14 +28,10 @@ namespace MysticQt
 {
     class DialogStackSplitter;
 
-    /**
-     *
-     *
-     */
     class MYSTICQT_API DialogStack
         : public QScrollArea
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
 
     public:
         DialogStack(QWidget* parent = nullptr);
@@ -89,5 +83,3 @@ namespace MysticQt
         int32                   m_prevMouseY;
     };
 }   // namespace MysticQt
-
-#endif

@@ -22,6 +22,7 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Image/DefaultStreamingImageController.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -214,7 +215,7 @@ namespace UnitTest
             return image;
         }
 
-        void ValidateImageData(AZStd::array_view<uint8_t> data, const AZ::RHI::ImageSubresourceLayout& layout)
+        void ValidateImageData(AZStd::span<const uint8_t> data, const AZ::RHI::ImageSubresourceLayout& layout)
         {
             const uint32_t pixelSize = layout.m_size.m_width / layout.m_bytesPerRow;
 
@@ -259,7 +260,7 @@ namespace UnitTest
 
                 for (uint16_t arrayIndex = 0; arrayIndex < mipChain->GetArraySize(); ++arrayIndex)
                 {
-                    AZStd::array_view<uint8_t> imageData = mipChain->GetSubImageData(mipLevel, arrayIndex);
+                    AZStd::span<const uint8_t> imageData = mipChain->GetSubImageData(mipLevel, arrayIndex);
                     ValidateImageData(imageData, layout);
                 }
             }
@@ -433,12 +434,12 @@ namespace UnitTest
             return poolAsset;
         }
 
-        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> BuildTestImage()
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> BuildTestImage(AZ::RHI::Format format = AZ::RHI::Format::R8G8B8A8_UNORM)
         {
             using namespace AZ;
 
             const uint32_t arraySize = 2;
-            const uint32_t pixelSize = 4;
+            const uint32_t pixelSize = RHI::GetFormatSize(format);
             const uint32_t mipCountHead = 1;
             const uint32_t mipCountMiddle = 2;
             const uint32_t mipCountTail = 3;
@@ -453,7 +454,7 @@ namespace UnitTest
             RPI::StreamingImageAssetCreator assetCreator;
             assetCreator.Begin(Data::AssetId(Uuid::CreateRandom()));
 
-            RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(RHI::ImageBindFlags::ShaderRead, imageWidth, imageHeight, arraySize, RHI::Format::R8G8B8A8_UNORM);
+            RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(RHI::ImageBindFlags::ShaderRead, imageWidth, imageHeight, arraySize, format);
             imageDesc.m_mipLevels = static_cast<uint16_t>(mipCountTotal);
 
             assetCreator.SetImageDescriptor(imageDesc);
@@ -573,7 +574,7 @@ namespace UnitTest
             EXPECT_EQ(mipChain->GetArraySize(), arraySize);
             EXPECT_EQ(mipChain->GetSubImageCount(), mipLevels * arraySize);
 
-            AZStd::array_view<uint8_t> dataView = mipChain->GetSubImageData(0);
+            AZStd::span<const uint8_t> dataView = mipChain->GetSubImageData(0);
             EXPECT_EQ(dataView[0], data[0]);
             EXPECT_EQ(dataView[1], data[1]);
             EXPECT_EQ(dataView[2], data[2]);
@@ -725,5 +726,41 @@ namespace UnitTest
         }
 
         RPI::ImageSystemInterface::Get()->Update();
+    }
+
+    TEST_F(StreamingImageTests, GetSubImagePixelValues)
+    {
+        using namespace AZ;
+
+        Data::Asset<RPI::StreamingImageAsset> imageAsset = BuildTestImage(AZ::RHI::Format::R8_UNORM);
+
+        auto streamingImageAsset = imageAsset.Get();
+        EXPECT_NE(streamingImageAsset, nullptr);
+
+        // Validate retrieving one pixel at a time
+        auto size = streamingImageAsset->GetImageDescriptor().m_size;
+        for (uint32_t y = 0; y < size.m_height; ++y)
+        {
+            for (uint32_t x = 0; x < size.m_width; ++x)
+            {
+                auto pixelDataValue = RPI::GetSubImagePixelValue<float>(imageAsset, x, y);
+                auto pixelExpectedValue = static_cast<uint8_t>(y * size.m_width + x) / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+
+                EXPECT_NEAR(pixelDataValue, pixelExpectedValue, Constants::Tolerance);
+            }
+        }
+
+        // Validate retrieving a region of pixels
+        AZStd::vector<float> pixelValues(size.m_width * size.m_height);
+        auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
+        auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(size.m_width, size.m_height);
+        RPI::GetSubImagePixelValues(imageAsset, topLeft, bottomRight, pixelValues);
+        for (uint32_t index = 0; index < pixelValues.size(); ++index)
+        {
+            auto pixelDataValue = pixelValues[index];
+            auto pixelExpectedValue = static_cast<uint8_t>(index) / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+
+            EXPECT_NEAR(pixelDataValue, pixelExpectedValue, Constants::Tolerance);
+        }
     }
 }

@@ -491,7 +491,7 @@ namespace GraphModel
             // multiple supported types, Slot::GetDataType() will call GetParentNode()
             // to try and resolve its type, which will be a nullptr at this point
             // because the parent won't be valid yet
-            bool valueTypeSupported = false;
+            [[maybe_unused]] bool valueTypeSupported = false;
             DataTypePtr valueDataType = GetGraphContext()->GetDataTypeForValue(m_value);
             for (DataTypePtr dataType : GetSupportedDataTypes())
             {

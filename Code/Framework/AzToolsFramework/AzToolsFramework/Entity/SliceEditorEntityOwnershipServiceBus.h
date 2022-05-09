@@ -8,10 +8,11 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzFramework/Slice/SliceInstantiationTicket.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 
 namespace AZ
 {
@@ -20,9 +21,6 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    using EntityIdList = AZStd::vector<AZ::EntityId>;
-    using EntityList = AZStd::vector<AZ::Entity*>;
-
     /**
      * Indicates how an entity was removed from its slice instance, so the said entity can be restored properly.
      */

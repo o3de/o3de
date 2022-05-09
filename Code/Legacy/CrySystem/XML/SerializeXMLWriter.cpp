@@ -10,6 +10,8 @@
 #include "CrySystem_precompiled.h"
 #include "SerializeXMLWriter.h"
 
+#include <AzCore/Time/ITime.h>
+
 static const size_t MAX_NODE_STACK_DEPTH = 40;
 
 #define TAG_SCRIPT_VALUE "v"
@@ -18,7 +20,9 @@ static const size_t MAX_NODE_STACK_DEPTH = 40;
 
 CSerializeXMLWriterImpl::CSerializeXMLWriterImpl(const XmlNodeRef& nodeRef)
 {
-    m_curTime = gEnv->pTimer->GetFrameStartTime();
+    const AZ::TimeMs elaspsedTimeMs = AZ::GetRealElapsedTimeMs();
+    const double elaspedTimeSec = AZ::TimeMsToSecondsDouble(elaspsedTimeMs);
+    m_curTime = CTimeValue(elaspedTimeSec);
     assert(!!nodeRef);
     m_nodeStack.push_back(nodeRef);
 

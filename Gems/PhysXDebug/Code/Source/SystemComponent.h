@@ -16,7 +16,6 @@
 #include <PhysXDebug/PhysXDebugBus.h>
 #include <PxPhysicsAPI.h>
 
-#include <Cry_Camera.h>
 #include <IRenderAuxGeom.h>
 #include <CryCommon/CrySystemBus.h>
 

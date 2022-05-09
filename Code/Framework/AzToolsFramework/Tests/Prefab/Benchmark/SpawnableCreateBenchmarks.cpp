@@ -27,7 +27,7 @@ namespace Benchmark
 
 
         auto& prefabDom = m_prefabSystemComponent->FindTemplateDom(instance->GetTemplateId());
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Create a vector to store spawnables so that they don't get destroyed immediately after construction.
             AZStd::vector<AZStd::unique_ptr<AzFramework::Spawnable>> spawnables;

@@ -21,17 +21,13 @@ namespace AZ
         namespace SharedPreviewUtils
         {
             //! Get the set of all asset types supported by the shared preview
-            AZStd::unordered_set<AZ::Uuid> GetSupportedAssetTypes();
+            AZStd::vector<AZ::Uuid> GetSupportedAssetTypes();
 
             //! Determine if a thumbnail key has an asset supported by the shared preview
             bool IsSupportedAssetType(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
 
             //! Get assetInfo of source or product thumbnail key if asset type is supported by the shared preview
             AZ::Data::AssetInfo GetSupportedAssetInfo(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
-
-            //! Get assetId of source or product thumbnail key if asset type is supported by the shared preview
-            AZ::Data::AssetId GetSupportedAssetId(
-                AzToolsFramework::Thumbnailer::SharedThumbnailKey key, const AZ::Data::AssetId& defaultAssetId = {});
 
             //! Wraps AZ::RPI::AssetUtils::GetAssetIdForProductPath to handle empty productPath
             AZ::Data::AssetId GetAssetIdForProductPath(const AZStd::string_view productPath);

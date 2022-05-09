@@ -11,16 +11,21 @@
 #include <Components/TerrainPhysicsColliderComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
+#include <EditorSurfaceTagListProvider.h>
 
 namespace Terrain
 {
     class EditorTerrainPhysicsColliderComponent
         : public LmbrCentral::EditorWrappedComponentBase<TerrainPhysicsColliderComponent, TerrainPhysicsColliderConfig>
+        , public EditorSurfaceTagListProvider
     {
     public:
         using BaseClassType = LmbrCentral::EditorWrappedComponentBase<TerrainPhysicsColliderComponent, TerrainPhysicsColliderConfig>;
         AZ_EDITOR_COMPONENT(EditorTerrainPhysicsColliderComponent, "{C43FAB8F-3968-46A6-920E-E84AEDED3DF5}", BaseClassType);
         static void Reflect(AZ::ReflectContext* context);
+
+        // AZ::Component interface implementation
+        void Activate() override;
 
         static constexpr auto s_categoryName = "Terrain";
         static constexpr auto s_componentName = "Terrain Physics Heightfield Collider";
@@ -28,5 +33,12 @@ namespace Terrain
         static constexpr auto s_icon = "Editor/Icons/Components/TerrainPhysicsCollider.svg";
         static constexpr auto s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainPhysicsCollider.svg";
         static constexpr auto s_helpUrl = "";
+
+    private:
+        // EditorSurfaceTagListProvider interface implementation
+        AZStd::unordered_set<SurfaceData::SurfaceTag> GetSurfaceTagsInUse() const override;
+
+        AZ::u32 ConfigurationChanged() override;
+        void UpdateConfigurationTagProvider();
     };
 }

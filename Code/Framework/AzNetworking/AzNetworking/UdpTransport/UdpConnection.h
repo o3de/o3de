@@ -136,12 +136,12 @@ namespace AzNetworking
         AZ_DISABLE_COPY_MOVE(UdpConnection);
 
         UdpNetworkInterface& m_networkInterface;
-        UdpPacketTracker  m_packetTracker;
-        UdpReliableQueue  m_reliableQueue;
-        UdpFragmentQueue  m_fragmentQueue;
-        ConnectionState   m_state = ConnectionState::Disconnected;
-        ConnectionRole    m_connectionRole = ConnectionRole::Connector;
-        DtlsEndpoint      m_dtlsEndpoint;
+        UdpPacketTracker m_packetTracker;
+        UdpReliableQueue m_reliableQueue;
+        UdpFragmentQueue m_fragmentQueue;
+        ConnectionState  m_state = ConnectionState::Disconnected;
+        ConnectionRole   m_connectionRole = ConnectionRole::Connector;
+        DtlsEndpoint     m_dtlsEndpoint;
 
         AZ::TimeMs m_lastSentPacketMs;
         uint32_t   m_unackedPacketCount = 0;

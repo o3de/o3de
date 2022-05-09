@@ -9,7 +9,6 @@
 set(FILES
     Include/PythonAssetBuilder/PythonAssetBuilderBus.h
     Include/PythonAssetBuilder/PythonBuilderNotificationBus.h
-    Include/PythonAssetBuilder/PythonBuilderRequestBus.h
     Source/PythonAssetBuilderSystemComponent.cpp
     Source/PythonAssetBuilderSystemComponent.h
     Source/PythonBuilderMessageSink.cpp

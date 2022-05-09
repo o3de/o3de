@@ -59,15 +59,16 @@ def Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx():
     from editor_python_test_tools.utils import Tracer
     from editor_python_test_tools.asset_utils import Asset
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
+
     # Open 3D Engine Imports
     import azlmbr.asset as azasset
 
     # Asset paths
     STATIC_MESH = os.path.join("assets", "Physics", "Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx", "test_asset.azmodel")
 
-    helper.init_idle()
     # 1) Load the empty level
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create an entity
     test_entity = Entity.create_editor_entity("test_entity")

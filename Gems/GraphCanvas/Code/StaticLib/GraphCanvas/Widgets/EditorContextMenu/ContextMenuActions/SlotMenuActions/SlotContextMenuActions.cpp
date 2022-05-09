@@ -258,7 +258,7 @@ namespace GraphCanvas
                 if (DataSlotUtils::IsValueDataSlotType(dataSlotType))
                 {
                     setText("Convert to Reference");
-                    DataSlotRequestBus::EventResult(canToggleState, targetId, &DataSlotRequests::CanConvertToReference);
+                    DataSlotRequestBus::EventResult(canToggleState, targetId, &DataSlotRequests::CanConvertToReference, false);
                 }
                 else
                 {
@@ -291,7 +291,7 @@ namespace GraphCanvas
 
         if (DataSlotUtils::IsValueDataSlotType(dataSlotType))
         {
-            DataSlotRequestBus::EventResult(toggledState, targetId, &DataSlotRequests::ConvertToReference);
+            DataSlotRequestBus::EventResult(toggledState, targetId, &DataSlotRequests::ConvertToReference, false);
         }
         else
         {
@@ -345,14 +345,14 @@ namespace GraphCanvas
 
                     if (DataSlotUtils::IsValueDataSlotType(dataSlotType))
                     {
-                        DataSlotRequestBus::EventResult(enableAction, targetId, &DataSlotRequests::CanConvertToReference);
+                        DataSlotRequestBus::EventResult(enableAction, targetId, &DataSlotRequests::CanConvertToReference, false);
 
                         if (enableAction)
                         {
                             Endpoint endpoint;
                             SlotRequestBus::EventResult(endpoint, targetId, &SlotRequests::GetEndpoint);
 
-                            GraphModelRequestBus::EventResult(enableAction, graphId, &GraphModelRequests::CanPromoteToVariable, endpoint);
+                            GraphModelRequestBus::EventResult(enableAction, graphId, &GraphModelRequests::CanPromoteToVariable, endpoint, false);
                         }
                     }
                 }
@@ -371,7 +371,7 @@ namespace GraphCanvas
         SlotRequestBus::EventResult(endpoint, targetId, &SlotRequests::GetEndpoint);
 
         bool promotedElement = false;
-        GraphModelRequestBus::EventResult(promotedElement, graphId, &GraphModelRequests::PromoteToVariableAction, endpoint);
+        GraphModelRequestBus::EventResult(promotedElement, graphId, &GraphModelRequests::PromoteToVariableAction, endpoint, false);
 
         if (promotedElement)
         {

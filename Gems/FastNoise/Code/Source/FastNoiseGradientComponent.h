@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
+#include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <FastNoise/Ebuses/FastNoiseGradientRequestBus.h>
 
 #include <External/FastNoise/FastNoise.h>
@@ -46,6 +47,8 @@ namespace FastNoiseGem
         AZ::u32 GetFrequencyParameterVisbility() const;
         AZ::u32 GetInterpParameterVisibility() const;
 
+        bool operator==(const FastNoiseGradientConfig& rhs) const;
+
         int m_seed = 1;
         float m_frequency = 1.f;
         FastNoise::Interp m_interp = FastNoise::Interp::Quintic;
@@ -67,6 +70,7 @@ namespace FastNoiseGem
         : public AZ::Component
         , private GradientSignal::GradientRequestBus::Handler
         , private FastNoiseGradientRequestBus::Handler
+        , private GradientSignal::GradientTransformNotificationBus::Handler
     {
     public:
         friend class EditorFastNoiseGradientComponent;
@@ -80,23 +84,26 @@ namespace FastNoiseGem
         FastNoiseGradientComponent(const FastNoiseGradientConfig& configuration);
         FastNoiseGradientComponent() = default;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // GradientRequestBus
+        // GradientRequestBus overrides...
         float GetValue(const GradientSignal::GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         FastNoiseGradientConfig m_configuration;
         FastNoise m_generator;
+        GradientSignal::GradientTransform m_gradientTransform;
+        mutable AZStd::shared_mutex m_transformMutex;
 
-        /////////////////////////////////////////////////////////////////////////
-        // FastNoiseGradientRequest overrides
+        // GradientTransformNotificationBus overrides...
+        void OnGradientTransformChanged(const GradientSignal::GradientTransform& newTransform) override;
+
+        // FastNoiseGradientRequest overrides...
         int GetRandomSeed() const override;
         void SetRandomSeed(int seed) override;
 

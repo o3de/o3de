@@ -18,7 +18,7 @@
 #include <LyShine/Bus/UiTransform2dBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
 
-#include <ITimer.h>
+#include <AzCore/Time/ITime.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiScrollerNotificationBus Behavior context handler class
@@ -436,7 +436,8 @@ bool UiScrollBarComponent::HandlePressed(AZ::Vector2 point, bool& shouldStayActi
             else
             {
                 // Move handle
-                m_lastMoveTime = gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI);
+                const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+                m_lastMoveTime = AZ::TimeMsToSeconds(realTimeMs);
                 m_moveDelayTime = 0.45f;
 
                 MoveHandle(pointLoc);
@@ -617,7 +618,8 @@ void UiScrollBarComponent::InputPositionUpdate(AZ::Vector2 point)
                     LocRelativeToHandle pointLoc = GetLocationRelativeToHandle(point);
                     if (pointLoc != LocRelativeToHandle::OnHandle)
                     {
-                        const float currentTime = gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI);
+                        const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+                        const float currentTime = AZ::TimeMsToSeconds(realTimeMs);
                         if (currentTime - m_lastMoveTime > m_moveDelayTime)
                         {
                             m_lastMoveTime = currentTime;

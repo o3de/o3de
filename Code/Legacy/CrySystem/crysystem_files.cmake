@@ -20,7 +20,6 @@ set(FILES
     SystemEventDispatcher.cpp
     SystemInit.cpp
     SystemWin32.cpp
-    Timer.cpp
     XConsole.cpp
     XConsoleVariable.cpp
     AZCrySystemInitLogSink.h
@@ -36,7 +35,6 @@ set(FILES
     CrySystem_precompiled.h
     System.h
     SystemEventDispatcher.h
-    Timer.h
     XConsole.h
     XConsoleVariable.h
     XML/SerializeXMLReader.cpp
@@ -59,11 +57,5 @@ set(FILES
     LevelSystem/LevelSystem.h
     LevelSystem/SpawnableLevelSystem.cpp
     LevelSystem/SpawnableLevelSystem.h
-    ViewSystem/DebugCamera.cpp
-    ViewSystem/DebugCamera.h
-    ViewSystem/View.cpp
-    ViewSystem/View.h
-    ViewSystem/ViewSystem.cpp
-    ViewSystem/ViewSystem.h
     WindowsErrorReporting.cpp
 )

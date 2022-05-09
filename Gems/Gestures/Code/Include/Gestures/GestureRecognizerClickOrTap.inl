@@ -8,9 +8,8 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Time/ITime.h>
 #include <CryCommon/ISystem.h>
-#include <CryCommon/TimeValue.h>
-#include <CryCommon/ITimer.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline void Gestures::RecognizerClickOrTap::Config::Reflect(AZ::ReflectContext* context)
@@ -57,7 +56,7 @@ inline void Gestures::RecognizerClickOrTap::Config::Reflect(AZ::ReflectContext* 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline Gestures::RecognizerClickOrTap::RecognizerClickOrTap(const Config& config)
     : m_config(config)
-    , m_timeOfLastEvent(0)
+    , m_timeOfLastEvent(AZ::Time::ZeroTimeMs)
     , m_positionOfFirstEvent()
     , m_positionOfLastEvent()
     , m_currentCount(0)
@@ -77,13 +76,12 @@ inline bool Gestures::RecognizerClickOrTap::OnPressedEvent(const AZ::Vector2& sc
     {
         return false;
     }
-
-    const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
+    const AZ::TimeMs currentTime = AZ::GetRealElapsedTimeMs();
     switch (m_currentState)
     {
     case State::Idle:
     {
-        m_timeOfLastEvent = currentTime.GetValue();
+        m_timeOfLastEvent = currentTime;
         m_positionOfFirstEvent = screenPosition;
         m_positionOfLastEvent = screenPosition;
         m_currentCount = 0;
@@ -92,7 +90,7 @@ inline bool Gestures::RecognizerClickOrTap::OnPressedEvent(const AZ::Vector2& sc
     break;
     case State::Released:
     {
-        if ((currentTime.GetDifferenceInSeconds(m_timeOfLastEvent) > m_config.maxSecondsBetweenClicksOrTaps) ||
+        if ((AZ::TimeMsToSeconds(currentTime - m_timeOfLastEvent) > m_config.maxSecondsBetweenClicksOrTaps) ||
             (screenPosition.GetDistance(m_positionOfFirstEvent) > m_config.maxPixelsBetweenClicksOrTaps))
         {
             // Treat this as the start of a new tap sequence.
@@ -100,7 +98,7 @@ inline bool Gestures::RecognizerClickOrTap::OnPressedEvent(const AZ::Vector2& sc
             m_positionOfFirstEvent = screenPosition;
         }
 
-        m_timeOfLastEvent = currentTime.GetValue();
+        m_timeOfLastEvent = currentTime;
         m_positionOfLastEvent = screenPosition;
         m_currentState = State::Pressed;
     }
@@ -129,8 +127,8 @@ inline bool Gestures::RecognizerClickOrTap::OnDownEvent(const AZ::Vector2& scree
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
-        if ((currentTime.GetDifferenceInSeconds(m_timeOfLastEvent) > m_config.maxSecondsHeld) ||
+        const AZ::TimeMs currentTime = AZ::GetRealElapsedTimeMs();
+        if ((AZ::TimeMsToSeconds(currentTime - m_timeOfLastEvent) > m_config.maxSecondsHeld) ||
             (screenPosition.GetDistance(m_positionOfLastEvent) > m_config.maxPixelsMoved))
         {
             // Tap recognition failed.
@@ -168,8 +166,8 @@ inline bool Gestures::RecognizerClickOrTap::OnReleasedEvent(const AZ::Vector2& s
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
-        if ((currentTime.GetDifferenceInSeconds(m_timeOfLastEvent) > m_config.maxSecondsHeld) ||
+        const AZ::TimeMs currentTime = AZ::GetRealElapsedTimeMs();
+        if ((AZ::TimeMsToSeconds(currentTime - m_timeOfLastEvent) > m_config.maxSecondsHeld) ||
             (screenPosition.GetDistance(m_positionOfLastEvent) > m_config.maxPixelsMoved))
         {
             // Tap recognition failed.
@@ -179,7 +177,7 @@ inline bool Gestures::RecognizerClickOrTap::OnReleasedEvent(const AZ::Vector2& s
         else if (++m_currentCount >= m_config.minClicksOrTaps)
         {
             // Tap recognition succeeded.
-            m_timeOfLastEvent = currentTime.GetValue();
+            m_timeOfLastEvent = currentTime;
             m_positionOfLastEvent = screenPosition;
             OnDiscreteGestureRecognized();
 
@@ -190,7 +188,7 @@ inline bool Gestures::RecognizerClickOrTap::OnReleasedEvent(const AZ::Vector2& s
         else
         {
             // More taps are needed.
-            m_timeOfLastEvent = currentTime.GetValue();
+            m_timeOfLastEvent = currentTime;
             m_positionOfLastEvent = screenPosition;
             m_currentState = State::Released;
         }

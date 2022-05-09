@@ -36,8 +36,10 @@ namespace Multiplayer
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
         EntityCorrectionEvent::Handler m_entityCorrectionEventHandler;
         AZ::Event<NetEntityId>::Handler m_parentChangedEventHandler;
+        AZ::Event<uint8_t>::Handler m_resetCountChangedEventHandler;
 
         Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId(0);
+        bool m_syncTransformImmediate = false;
     };
 
     class NetworkTransformComponentController

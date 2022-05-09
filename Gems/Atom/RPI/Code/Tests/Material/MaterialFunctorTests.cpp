@@ -15,6 +15,8 @@
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAssetCreator.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Material/MaterialAssetTestUtils.h>
@@ -127,9 +129,7 @@ namespace UnitTest
     {
         using namespace AZ::RPI;
 
-        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues;
-        boolOptionValues.push_back({Name("False"),  RPI::ShaderOptionValue(0)});
-        boolOptionValues.push_back({Name("True"), RPI::ShaderOptionValue(1)});
+        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
 
         AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> shaderOptions = RPI::ShaderOptionGroupLayout::Create();
         shaderOptions->AddShaderOption(ShaderOptionDescriptor{Name{"o_optionA"}, ShaderOptionType::Boolean, 0, 0, boolOptionValues, Name{"False"}});
@@ -138,7 +138,6 @@ namespace UnitTest
         shaderOptions->Finalize();
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
-        //Data::Asset<MaterialAsset> materialAsset;
 
         // Note we don't actually need any properties or functors in the material type. We just need to set up some sample data
         // structures that we can pass to the functors below, especially the shader with shader options.
@@ -259,12 +258,15 @@ namespace UnitTest
         functorSourceData.m_registedPropertyName = registedPropertyName.GetStringView();
         functorSourceData.m_unregistedPropertyName = unregistedPropertyName.GetStringView();
 
+        MaterialNameContext nameContext;
+
         MaterialFunctorSourceData::FunctorResult result = functorSourceData.CreateFunctor(
             MaterialFunctorSourceData::RuntimeContext(
                 "Dummy.materialtype",
                 materialTypeCreator.GetMaterialPropertiesLayout(),
                 materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                materialTypeCreator.GetShaderCollection()
+                materialTypeCreator.GetShaderCollection(),
+                &nameContext
             )
         );
 
@@ -275,7 +277,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
         materialCreator.SetPropertyValue(registedPropertyName, 42);
         materialCreator.SetPropertyValue(unregistedPropertyName, 42);
         materialCreator.SetPropertyValue(unrelatedPropertyName, 42);
@@ -313,4 +315,169 @@ namespace UnitTest
         m_testMaterialTypeAsset = {};
         m_testMaterialAsset = {};
     }
+    
+    TEST_F(MaterialFunctorTests, UseNameContextInFunctorSourceData_PropertyLookup)
+    {
+        class FindPropertyIndexTestFunctor : public MaterialFunctor
+        {
+        public:
+            MaterialPropertyIndex m_foundIndex;
+        };
+
+        class FindPropertyIndexTestFunctorSourceData : public MaterialFunctorSourceData
+        {
+        public:
+            Name m_materialPropertyName;
+
+            using MaterialFunctorSourceData::CreateFunctor;
+            FunctorResult CreateFunctor(const RuntimeContext& runtimeContext) const override
+            {
+                RPI::Ptr<FindPropertyIndexTestFunctor> functor = aznew FindPropertyIndexTestFunctor;
+                functor->m_foundIndex = runtimeContext.FindMaterialPropertyIndex(m_materialPropertyName);
+                return Success(RPI::Ptr<MaterialFunctor>(functor));
+            }
+        };
+        
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.BeginMaterialProperty(Name{"layer1.baseColor.factor"}, MaterialPropertyDataType::Float);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.End(materialTypeAsset);
+
+        FindPropertyIndexTestFunctorSourceData sourceData;
+        sourceData.m_materialPropertyName = "factor";
+
+        MaterialNameContext nameContext;
+        nameContext.ExtendPropertyIdContext("layer1");
+        nameContext.ExtendPropertyIdContext("baseColor");
+
+        MaterialFunctorSourceData::RuntimeContext createFunctorContext(
+            "",
+            materialTypeAsset->GetMaterialPropertiesLayout(),
+            nullptr,
+            nullptr,
+            &nameContext);
+
+        RPI::Ptr<MaterialFunctor> functor = sourceData.CreateFunctor(createFunctorContext).TakeValue();
+
+        EXPECT_TRUE(reinterpret_cast<FindPropertyIndexTestFunctor*>(functor.get())->m_foundIndex.IsValid());
+    }
+    
+    TEST_F(MaterialFunctorTests, UseNameContextInFunctorSourceData_ShaderOptionLookup)
+    {
+        class FindShaderOptionIndexTestFunctor : public MaterialFunctor
+        {
+        public:
+            ShaderOptionIndex m_foundIndex;
+        };
+
+        class FindShaderOptionIndexTestFunctorSourceData : public MaterialFunctorSourceData
+        {
+        public:
+            Name m_shaderOptionName;
+            
+            using MaterialFunctorSourceData::CreateFunctor;
+            FunctorResult CreateFunctor(const RuntimeContext& runtimeContext) const override
+            {
+                RPI::Ptr<FindShaderOptionIndexTestFunctor> functor = aznew FindShaderOptionIndexTestFunctor;
+                functor->m_foundIndex = runtimeContext.FindShaderOptionIndex(0, m_shaderOptionName);
+                return Success(RPI::Ptr<MaterialFunctor>(functor));
+            }
+        };
+        
+        RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionLayout = RPI::ShaderOptionGroupLayout::Create();
+        shaderOptionLayout->AddShaderOption(
+            RPI::ShaderOptionDescriptor{Name("o_layer1_baseColor_useTexture"), RPI::ShaderOptionType::Boolean, 0, 0, CreateBoolShaderOptionValues()});
+        shaderOptionLayout->Finalize();
+
+        Data::Asset<ShaderAsset> shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), nullptr, shaderOptionLayout);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(shaderAsset);
+        materialTypeCreator.End(materialTypeAsset);
+
+        FindShaderOptionIndexTestFunctorSourceData sourceData;
+        sourceData.m_shaderOptionName = "useTexture";
+
+        MaterialNameContext nameContext;
+        nameContext.ExtendShaderOptionContext("o_layer1_baseColor_");
+
+        MaterialFunctorSourceData::RuntimeContext createFunctorContext(
+            "",
+            nullptr,
+            nullptr,
+            &materialTypeAsset->GetShaderCollection(),
+            &nameContext);
+
+        RPI::Ptr<MaterialFunctor> functor = sourceData.CreateFunctor(createFunctorContext).TakeValue();
+
+        EXPECT_TRUE(reinterpret_cast<FindShaderOptionIndexTestFunctor*>(functor.get())->m_foundIndex.IsValid());
+    }
+    
+    TEST_F(MaterialFunctorTests, UseNameContextInFunctorSourceData_ShaderConstantLookup)
+    {
+        class FindShaderInputIndexTestFunctor : public MaterialFunctor
+        {
+        public:
+            RHI::ShaderInputConstantIndex m_foundConstantIndex;
+            RHI::ShaderInputImageIndex m_foundImageIndex;
+        };
+
+        class FindShaderInputIndexTestFunctorSourceData : public MaterialFunctorSourceData
+        {
+        public:
+            Name m_shaderConstantName;
+            Name m_shaderImageName;
+            
+            using MaterialFunctorSourceData::CreateFunctor;
+            FunctorResult CreateFunctor(const RuntimeContext& runtimeContext) const override
+            {
+                RPI::Ptr<FindShaderInputIndexTestFunctor> functor = aznew FindShaderInputIndexTestFunctor;
+                functor->m_foundConstantIndex = runtimeContext.FindShaderInputConstantIndex(m_shaderConstantName);
+                functor->m_foundImageIndex = runtimeContext.FindShaderInputImageIndex(m_shaderImageName);
+                return Success(RPI::Ptr<MaterialFunctor>(functor));
+            }
+        };
+
+        AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
+        srgLayout->SetName(Name("MaterialSrg"));
+        srgLayout->SetUniqueId(Uuid::CreateRandom().ToString<AZStd::string>()); // Any random string will suffice.
+        srgLayout->SetBindingSlot(SrgBindingSlot::Material);
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_layer1_baseColor_factor" }, 0, 4, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_layer1_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1});
+        srgLayout->Finalize();
+
+        Data::Asset<ShaderAsset> shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(shaderAsset);
+        materialTypeCreator.End(materialTypeAsset);
+
+        FindShaderInputIndexTestFunctorSourceData sourceData;
+        sourceData.m_shaderConstantName = "factor";
+        sourceData.m_shaderImageName = "texture";
+
+        MaterialNameContext nameContext;
+        nameContext.ExtendSrgInputContext("m_layer1_baseColor_");
+
+        MaterialFunctorSourceData::RuntimeContext createFunctorContext(
+            "",
+            nullptr,
+            srgLayout.get(),
+            nullptr,
+            &nameContext);
+
+        RPI::Ptr<MaterialFunctor> functor = sourceData.CreateFunctor(createFunctorContext).TakeValue();
+        
+        EXPECT_TRUE(reinterpret_cast<FindShaderInputIndexTestFunctor*>(functor.get())->m_foundConstantIndex.IsValid());
+        EXPECT_TRUE(reinterpret_cast<FindShaderInputIndexTestFunctor*>(functor.get())->m_foundImageIndex.IsValid());
+    }
+
+
+
 }

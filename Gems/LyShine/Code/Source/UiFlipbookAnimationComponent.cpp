@@ -19,7 +19,6 @@
 #include <LyShine/Bus/UiImageBus.h>
 #include <LyShine/Bus/UiIndexableImageBus.h>
 #include <LyShine/UiSerializeHelpers.h>
-#include <ITimer.h>
 
 namespace
 {

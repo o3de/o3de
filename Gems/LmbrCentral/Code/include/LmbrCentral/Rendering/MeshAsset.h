@@ -9,22 +9,14 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-#include <smartptr.h>
-#include <IStatObj.h>
-
 namespace LmbrCentral
 {
     class MeshAsset
         : public AZ::Data::AssetData
     {
     public:
-        using MeshPtr = IStatObj*;
-
         AZ_RTTI(MeshAsset, "{C2869E3B-DDA0-4E01-8FE3-6770D788866B}", AZ::Data::AssetData);
         AZ_CLASS_ALLOCATOR(MeshAsset, AZ::SystemAllocator, 0);
-
-        /// The assigned static mesh instance.
-        MeshPtr m_statObj = nullptr;
     };
 
     // for "character definition files"

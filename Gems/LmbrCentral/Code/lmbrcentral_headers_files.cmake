@@ -27,17 +27,8 @@ set(FILES
     include/LmbrCentral/Dependency/DependencyMonitor.h
     include/LmbrCentral/Dependency/DependencyMonitor.inl
     include/LmbrCentral/Dependency/DependencyNotificationBus.h
-    include/LmbrCentral/Physics/WindVolumeRequestBus.h
-    include/LmbrCentral/Physics/ForceVolumeRequestBus.h
-    include/LmbrCentral/Physics/WaterNotificationBus.h
-    include/LmbrCentral/Rendering/DecalComponentBus.h
-    include/LmbrCentral/Rendering/LightComponentBus.h
     include/LmbrCentral/Rendering/MaterialAsset.h
-    include/LmbrCentral/Rendering/MaterialHandle.h
     include/LmbrCentral/Rendering/MeshAsset.h
-    include/LmbrCentral/Rendering/MeshModificationBus.h
-    include/LmbrCentral/Rendering/RenderNodeBus.h
-    include/LmbrCentral/Rendering/GiRegistrationBus.h
     include/LmbrCentral/Rendering/RenderBoundsBus.h
     include/LmbrCentral/Scripting/EditorTagComponentBus.h
     include/LmbrCentral/Scripting/GameplayNotificationBus.h
@@ -57,7 +48,7 @@ set(FILES
     include/LmbrCentral/Shape/SplineComponentBus.h
     include/LmbrCentral/Shape/PolygonPrismShapeComponentBus.h
     include/LmbrCentral/Shape/TubeShapeComponentBus.h
+    include/LmbrCentral/Shape/ReferenceShapeComponentBus.h
     include/LmbrCentral/Shape/SplineAttribute.h
     include/LmbrCentral/Shape/SplineAttribute.inl
-    include/LmbrCentral/Terrain/TerrainSystemRequestBus.h
 )

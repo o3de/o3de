@@ -1,0 +1,53 @@
+{
+    "description": "",
+    "parentMaterial": "Materials/Presets/PBR/metal_brass.material",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "factor": 1.0,
+            "textureBlendMode": "Lerp",
+            "textureMap": "Hermanubis_Stone_BaseColor.png",
+            "textureMapUv": "Unwrapped"
+        },
+        "clearCoat": {
+            "roughness": 0.10000000149011612
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                0.7304646372795105,
+                0.6938735246658325,
+                0.6866865158081055,
+                1.0
+            ]
+        },
+        "metallic": {
+            "factor": 0.0
+        },
+        "normal": {
+            "flipY": true,
+            "textureMap": "Hermanubis_Normal.png",
+            "textureMapUv": "Unwrapped"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "Hermanubis_ao.tif",
+            "diffuseTextureMapUv": "Unwrapped"
+        },
+        "roughness": {
+            "factor": 1.0,
+            "lowerBound": 0.15000000596046448,
+            "textureMap": "Hermanubis_bronze_Roughness.png",
+            "textureMapUv": "Unwrapped",
+            "upperBound": 0.7300000190734863
+        }
+    }
+}

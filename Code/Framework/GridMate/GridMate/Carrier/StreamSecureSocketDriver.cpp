@@ -47,7 +47,10 @@ namespace GridMate
     {
         if (s_initializeOpenSSLCount.fetch_sub(1) == 1)
         {
+            AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations", "-Wdeprecated-declarations")
             ERR_remove_state(0);
+            AZ_POP_DISABLE_WARNING
+
             ERR_free_strings();
             EVP_cleanup();
             sk_SSL_COMP_free(SSL_COMP_get_compression_methods());
@@ -85,7 +88,9 @@ namespace GridMate
             {
                 return Driver::EC_SECURE_CREATE;
             }
+            AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations", "-Wdeprecated-declarations")
             m_ctx = SSL_CTX_new(TLSv1_2_method());
+            AZ_POP_DISABLE_WARNING
             if (m_ctx == nullptr)
             {
                 return Driver::EC_SECURE_CREATE;

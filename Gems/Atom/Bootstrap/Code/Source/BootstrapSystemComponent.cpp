@@ -155,7 +155,7 @@ namespace AZ
                         {
                             Initialize();
                         },
-                        "LegacySystemInterfaceCreated");
+                        "CriticalAssetsCompiled");
                 }
             }
 
@@ -318,10 +318,8 @@ namespace AZ
                 RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
                 renderPipelineDescriptor.m_name = AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
-                // Make sure non-msaa super variant is used for non-msaa pipeline
-                bool isNonMsaaPipeline = (renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_samples == 1);
-                const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
-                AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
+                // The default pipeline determines the initial MSAA state for the application
+                AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(renderPipelineDescriptor.m_renderSettings.m_multisampleState);
 
                 if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                 {
@@ -340,7 +338,7 @@ namespace AZ
                 // Save a reference to the generated BRDF texture so it doesn't get deleted if all the passes refering to it get deleted and it's ref count goes to zero
                 if (!m_brdfTexture)
                 {
-                    const AZStd::shared_ptr<RPI::PassTemplate> brdfTextureTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("BRDFTextureTemplate"));
+                    const AZStd::shared_ptr<const RPI::PassTemplate> brdfTextureTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("BRDFTextureTemplate"));
                     Data::Asset<RPI::AttachmentImageAsset> brdfImageAsset = RPI::AssetUtils::LoadAssetById<RPI::AttachmentImageAsset>(
                         brdfTextureTemplate->m_imageAttachments[0].m_assetRef.m_assetId, RPI::AssetUtils::TraceLevel::Error);
                     if (brdfImageAsset.IsReady())

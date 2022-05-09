@@ -10,11 +10,26 @@
 #include <AzCore/Component/Component.h>
 
 #include <AutomatedTesting/AutomatedTestingBus.h>
+#include <Multiplayer/IMultiplayerSpawner.h>
+#include <Source/Spawners/IPlayerSpawner.h>
+
+namespace AzFramework
+{
+    struct PlayerConnectionConfig;
+}
+
+namespace Multiplayer
+{
+    struct EntityReplicationData;
+    using ReplicationSet = AZStd::map<ConstNetworkEntityHandle, EntityReplicationData>;
+    struct MultiplayerAgentDatum;
+}
 
 namespace AutomatedTesting
 {
     class AutomatedTestingSystemComponent
         : public AZ::Component
+        , public Multiplayer::IMultiplayerSpawner
         , protected AutomatedTestingRequestBus::Handler
     {
     public:
@@ -39,5 +54,14 @@ namespace AutomatedTesting
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // Multiplayer::IMultiplayerSpawner interface implementation
+        Multiplayer::NetworkEntityHandle OnPlayerJoin(uint64_t userId, const Multiplayer::MultiplayerAgentDatum& agentDatum) override;
+        void OnPlayerLeave(Multiplayer::ConstNetworkEntityHandle entityHandle, const Multiplayer::ReplicationSet& replicationSet, AzNetworking::DisconnectReason reason) override;
+        ////////////////////////////////////////////////////////////////////////
+        
+        AZStd::unique_ptr<AutomatedTesting::IPlayerSpawner> m_playerSpawner;
+
     };
 }

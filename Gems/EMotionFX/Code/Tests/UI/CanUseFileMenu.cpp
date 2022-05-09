@@ -330,6 +330,10 @@ namespace EMotionFX
             const QString animGraphFilename = GenerateTempAnimGraphFilename();
             SaveCurrentAnimGraph(animGraphFilename);
 
+            // Pretend editing the anim graph
+            EMotionFX::AnimGraph* animGraph = m_animGraphPlugin->GetActiveAnimGraph();
+            animGraph->SetDirtyFlag(true);
+
             // Prepare a watcher to press the ok button when the SaveDirtySettingsWindow appears.
             ModalPopupHandler saveDirtyPopupHandler;
 
@@ -555,7 +559,7 @@ namespace EMotionFX
 
         QString GetTestMotionFileName() const
         {
-            AZStd::string resolvedAssetPath = this->ResolvePath("@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
+            AZStd::string resolvedAssetPath = this->ResolvePath("@gemroot:EMotionFX@/Code/Tests/TestAssets/Rin/rin_idle.motion");
             return QString::fromUtf8(resolvedAssetPath.data(), aznumeric_cast<int>(resolvedAssetPath.size()));
         }
 

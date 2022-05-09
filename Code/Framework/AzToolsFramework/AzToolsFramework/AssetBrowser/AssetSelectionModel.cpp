@@ -228,7 +228,7 @@ namespace AzToolsFramework
             return selection;
         }
 
-        AssetSelectionModel AssetSelectionModel::SourceAssetTypeSelection(const QString& pattern, bool multiselect)
+        AssetSelectionModel AssetSelectionModel::SourceAssetTypeSelection(const QRegExp& pattern, bool multiselect)
         {
             AssetSelectionModel selection;
 

@@ -13,23 +13,18 @@
 
 #include <AzCore/std/parallel/spin_mutex.h>
 
-namespace AZ
+namespace AZ::Internal
 {
-    namespace Internal
+    struct RingData
     {
-        struct RingData
-        {
-            AZ::u32 m_readOffset;
-            AZ::u32 m_writeOffset;
-            AZ::u32 m_startOffset;
-            AZ::u32 m_endOffset;
-            AZ::u32 m_dataToRead;
-            AZ::u8 m_pad[32 - sizeof(AZStd::spin_mutex)];
-        };
-    } // namespace Internal
-} // namespace AZ
-
-
+        AZ::u32 m_readOffset;
+        AZ::u32 m_writeOffset;
+        AZ::u32 m_startOffset;
+        AZ::u32 m_endOffset;
+        AZ::u32 m_dataToRead;
+        AZ::u8 m_pad[32 - sizeof(AZStd::spin_mutex)];
+    };
+} // namespace AZ::Internal
 
 using namespace AZ;
 

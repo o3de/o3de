@@ -10,7 +10,6 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
-#include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/Contracts/MethodOverloadContract.h>
 #include <ScriptCanvas/Core/SlotConfigurations.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
@@ -410,6 +409,7 @@ namespace ScriptCanvas
             void MethodOverloaded::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(GetMutex());
+                Node::OnDeserialize();
 
                 // look for a standard, class overload
                 AZStd::tuple<const AZ::BehaviorMethod*, MethodType, EventType, const AZ::BehaviorClass*> methodLookup = LookupMethod();
@@ -459,7 +459,6 @@ namespace ScriptCanvas
                 }
 
                 SetWarnOnMissingFunction(true);
-                Node::OnDeserialize();
             }
 
             void MethodOverloaded::SetupMethodData(const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorClass* behaviorClass)

@@ -37,6 +37,7 @@ set(FILES
     Tests/Material/MaterialSourceDataTests.cpp
     Tests/Material/MaterialFunctorTests.cpp
     Tests/Material/MaterialFunctorSourceDataSerializerTests.cpp
+    Tests/Material/MaterialPropertyIdTests.cpp
     Tests/Material/MaterialPropertyValueSourceDataTests.cpp
     Tests/Material/MaterialTests.cpp
     Tests/Model/ModelTests.cpp
@@ -51,4 +52,5 @@ set(FILES
     Tests/System/RenderPipelineTests.cpp
     Tests/System/SceneTests.cpp
     Tests/System/ViewTests.cpp
+    Tests/Utils/AssetUtilsTests.cpp
 )

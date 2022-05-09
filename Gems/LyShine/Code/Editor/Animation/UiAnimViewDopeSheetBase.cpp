@@ -1866,24 +1866,22 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
 
     if (pTrack && inRange)
     {
-        bool keyCreated = false;
-        if (bTryAddKeysInGroup && pNode->GetParentNode())       // Add keys in group
+        if (bTryAddKeysInGroup && pNode->GetParentNode()) // Add keys in group
         {
             CUiAnimViewTrackBundle tracksInGroup = pNode->GetTracksByParam(pTrack->GetParameterType());
             for (int i = 0; i < (int)tracksInGroup.GetCount(); ++i)
             {
                 CUiAnimViewTrack* pCurrTrack = tracksInGroup.GetTrack(i);
 
-                if (pCurrTrack->GetChildCount() == 0)   // A simple track
+                if (pCurrTrack->GetChildCount() == 0) // A simple track
                 {
                     if (IsOkToAddKeyHere(pCurrTrack, keyTime))
                     {
                         RecordTrackUndo(pCurrTrack);
                         pCurrTrack->CreateKey(keyTime);
-                        keyCreated = true;
                     }
                 }
-                else                                                                            // A compound track
+                else // A compound track
                 {
                     for (unsigned int k = 0; k < pCurrTrack->GetChildCount(); ++k)
                     {
@@ -1892,26 +1890,24 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
                         {
                             RecordTrackUndo(pSubTrack);
                             pSubTrack->CreateKey(keyTime);
-                            keyCreated = true;
                         }
                     }
                 }
             }
         }
-        else if (pTrack->GetChildCount() == 0)          // A simple track
+        else if (pTrack->GetChildCount() == 0) // A simple track
         {
             if (IsOkToAddKeyHere(pTrack, keyTime))
             {
                 RecordTrackUndo(pTrack);
                 pTrack->CreateKey(keyTime);
-                keyCreated = true;
             }
         }
-        else                                                                                // A compound track
+        else // A compound track
         {
             if (pTrack->GetValueType() == eUiAnimValue_RGB)
             {
-                keyCreated = CreateColorKey(pTrack, keyTime);
+                CreateColorKey(pTrack, keyTime);
             }
             else
             {
@@ -1922,7 +1918,6 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
                     if (IsOkToAddKeyHere(pSubTrack, keyTime))
                     {
                         pSubTrack->CreateKey(keyTime);
-                        keyCreated = true;
                     }
                 }
             }
@@ -2236,7 +2231,6 @@ void CUiAnimViewDopeSheetBase::DrawSelectTrack(const Range& timeRange, QPainter*
 void CUiAnimViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* painter, CUiAnimViewTrack* pTrack, const QRect& rc)
 {
     int x0 = TimeToClient(timeRange.start);
-    float t0 = timeRange.start;
 
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_visibilityBrush);
@@ -2267,7 +2261,6 @@ void CUiAnimViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* p
             painter->fillRect(QRect(QPoint(x0, rc.top() + 4), QPoint(x, rc.bottom() - 4)), gradient);
         }
 
-        t0 = time;
         x0 = x;
     }
     int x = TimeToClient(timeRange.end);

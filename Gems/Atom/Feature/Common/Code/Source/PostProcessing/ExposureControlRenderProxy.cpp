@@ -15,7 +15,6 @@
 
 #include <Atom/RHI/FrameScheduler.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Component/TickBus.h>
 

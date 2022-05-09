@@ -8,7 +8,6 @@
 
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/allocator_stateless.h>
 #include "AnimPostFXNode.h"
 #include "AnimSplineTrack.h"
 #include "CompoundSplineTrack.h"
@@ -39,7 +38,7 @@ public:
         virtual void GetDefault(bool& val) const = 0;
         virtual void GetDefault(Vec4& val) const = 0;
 
-        AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator> m_name;
+        AZStd::string m_name;
 
     protected:
         virtual ~CControlParamBase(){}

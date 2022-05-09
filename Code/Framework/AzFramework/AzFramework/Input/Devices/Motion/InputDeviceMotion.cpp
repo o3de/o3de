@@ -15,9 +15,6 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputDeviceId InputDeviceMotion::Id("motion");
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceMotion::IsMotionDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());
@@ -60,8 +57,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMotion::InputDeviceMotion()
-        : InputDevice(Id)
+    InputDeviceMotion::InputDeviceMotion(const InputDeviceId& inputDeviceId,
+                                         ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_accelerationChannelsById()
         , m_rotationRateChannelsById()
@@ -107,8 +105,8 @@ namespace AzFramework
             m_orientationChannelsById[channelId] = channel;
         }
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
 
         // Connect to the motion sensor request bus
         InputMotionSensorRequestBus::Handler::BusConnect(GetInputDeviceId());

@@ -122,10 +122,4 @@ namespace AzNetworking
             m_timeoutItemMap.erase(itemTimeoutId);
         }
     }
-
-    void TimeoutQueue::UpdateTimeouts(ITimeoutHandler& timeoutHandler, int32_t maxTimeouts)
-    {
-        TimeoutHandler handler([&timeoutHandler](TimeoutQueue::TimeoutItem& item) { return timeoutHandler.HandleTimeout(item); });
-        UpdateTimeouts(handler, maxTimeouts);
-    }
 }

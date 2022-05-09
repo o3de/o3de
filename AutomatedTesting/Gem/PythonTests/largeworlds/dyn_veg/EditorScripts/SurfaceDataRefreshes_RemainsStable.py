@@ -34,13 +34,12 @@ def SurfaceDataRefreshes_RemainsStable():
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     world_center = math.Vector3(512.0, 512.0, 32.0)
 

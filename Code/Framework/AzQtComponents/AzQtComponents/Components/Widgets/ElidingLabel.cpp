@@ -12,6 +12,8 @@
 #include <QLabel>
 #include <QPainter>
 #include <QStyle>
+#include <QTextCursor>
+#include <QTextDocument>
 
 namespace AzQtComponents
 {
@@ -35,6 +37,7 @@ namespace AzQtComponents
 
         m_text = text;
         m_metricsLabel->setText(m_text);
+        
         m_elidedText.clear();
         elide();
         updateGeometry();
@@ -65,7 +68,62 @@ namespace AzQtComponents
     void ElidingLabel::elide()
     {
         ensurePolished();
-        m_elidedText = fontMetrics().elidedText(m_text, m_elideMode, TextRect().width());
+
+        if (Qt::mightBeRichText(m_text))
+        {
+            // If RichText tags are elided using fontMetrics.elidedText(), they will break.
+            // A TextDocument is used to produce elided text that takes this into account.
+            const QString ellipsis("...");
+            const int maxLineWidth = TextRect().width();
+
+            QTextDocument doc;
+            doc.setHtml(m_text);
+            doc.setDefaultFont(font());
+            doc.setDocumentMargin(0.0);
+
+            // Turn off wrapping so the document uses a single line.
+            QTextOption option = doc.defaultTextOption();
+            option.setWrapMode(QTextOption::WrapMode::NoWrap);
+            doc.setDefaultTextOption(option);
+            doc.adjustSize();
+
+            if (doc.size().width() <= maxLineWidth)
+            {
+                m_elidedText = m_text;
+            }
+            else
+            {
+                QTextCursor textCursor(&doc);
+                textCursor.movePosition(QTextCursor::End);
+
+                int ellipsisWidth = 0;
+
+                // At the moment only ElideRight and ElideNone are ever used. This will need expanding if other elision modes are used.
+                if (m_elideMode == Qt::ElideRight)
+                {
+                    ellipsisWidth = fontMetrics().horizontalAdvance(ellipsis);
+                }
+
+                // Move the cursor back until the text fits or the start of the text is reached.
+                while (doc.size().width() + ellipsisWidth > maxLineWidth && !textCursor.atStart())
+                {
+                    textCursor.deletePreviousChar();
+                    doc.adjustSize();
+                }
+
+                if (m_elideMode == Qt::ElideRight)
+                {
+                    textCursor.insertText(ellipsis);
+                }
+
+                m_elidedText = doc.toHtml();
+            }
+        }
+        else
+        {
+            m_elidedText = fontMetrics().elidedText(m_text, m_elideMode, TextRect().width());
+        }
+
         QLabel::setText(m_elidedText);
 
         if (m_elidedText != m_text)

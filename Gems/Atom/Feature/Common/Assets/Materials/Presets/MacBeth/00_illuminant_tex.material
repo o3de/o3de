@@ -1,11 +1,12 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "Materials\\Presets\\MacBeth\\00_illuminant.material",
-    "propertyLayoutVersion": 3,
+    "parentMaterial": "00_illuminant.material",
+    "materialType": "../../Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
-            "textureMap": "Materials/Presets/MacBeth/00_illuminant_sRGB.tif"
+            "textureBlendMode": "Lerp",
+            "textureMap": "00_illuminant_sRGB.tif"
         }
     }
 }

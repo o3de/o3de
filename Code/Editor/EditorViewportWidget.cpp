@@ -46,6 +46,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
@@ -53,7 +54,6 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 
 // CryCommon
-#include <CryCommon/HMDBus.h>
 #include <CryCommon/IRenderAuxGeom.h>
 
 // AzFramework
@@ -89,6 +89,7 @@
 #include <LmbrCentral/Rendering/EditorCameraCorrectionBus.h>
 
 // Atom
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
@@ -97,9 +98,6 @@
 #include <AzCore/Math/MatrixUtils.h>
 
 #include <QtGui/private/qhighdpiscaling_p.h>
-
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
@@ -457,9 +455,6 @@ void EditorViewportWidget::Update()
 
     // Render
     {
-        // TODO: Move out this logic to a controller and refactor to work with Atom
-        ProcessRenderLisneters(m_displayContext);
-
         m_displayContext.Flush2D();
 
         // Post Render Callback
@@ -476,7 +471,7 @@ void EditorViewportWidget::Update()
     {
         auto start = std::chrono::steady_clock::now();
 
-        m_entityVisibilityQuery.UpdateVisibility(GetCameraState());
+        m_entityVisibilityQuery.UpdateVisibility(m_renderViewport->GetCameraState());
 
         if (ed_visibility_logTiming)
         {
@@ -552,22 +547,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             // this should only occur for the main viewport and no others.
             ShowCursor();
 
-            // If the user has selected game mode, enable outputting to any attached HMD and properly size the context
-            // to the resolution specified by the VR device.
-            if (gSettings.bEnableGameModeVR)
-            {
-                const AZ::VR::HMDDeviceInfo* deviceInfo = nullptr;
-                EBUS_EVENT_RESULT(deviceInfo, AZ::VR::HMDDeviceRequestBus, GetDeviceInfo);
-                AZ_Warning("Render Viewport", deviceInfo, "No VR device detected");
-
-                if (deviceInfo)
-                {
-                    // Note: This may also need to adjust the viewport size
-                    SetActiveWindow();
-                    SetFocus();
-                    SetSelected(true);
-                }
-            }
             SetCurrentCursor(STD_CURSOR_GAME);
 
             if (ShouldPreviewFullscreen())
@@ -604,11 +583,12 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
     case eNotify_OnCloseScene:
         m_renderViewport->SetScene(nullptr);
-        SetDefaultCamera();
         break;
 
-    case eNotify_OnEndSceneOpen:
+    case eNotify_OnEndLoad:
+    case eNotify_OnEndCreate:
         UpdateScene();
+        SetDefaultCamera();
         break;
 
     case eNotify_OnBeginNewScene:
@@ -685,13 +665,7 @@ void EditorViewportWidget::OnBeginPrepareRender()
     RenderAll();
 
     // Draw 2D helpers.
-#ifdef LYSHINE_ATOM_TODO
-    TransformationMatrices backupSceneMatrices;
-#endif
     m_debugDisplay->DepthTestOff();
-#ifdef LYSHINE_ATOM_TODO
-    m_renderer->Set2DMode(m_rcClient.right(), m_rcClient.bottom(), backupSceneMatrices);
-#endif
     auto prevState = m_debugDisplay->GetState();
     m_debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
 
@@ -734,7 +708,7 @@ void EditorViewportWidget::RenderAll()
 
         m_debugDisplay->DepthTestOff();
         m_manipulatorManager->DrawManipulators(
-            *m_debugDisplay, GetCameraState(),
+            *m_debugDisplay, m_renderViewport->GetCameraState(),
             BuildMouseInteractionInternal(
                 AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), keyboardModifiers,
                 BuildMousePick(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
@@ -898,29 +872,9 @@ void EditorViewportWidget::OnMenuSelectCurrentCamera()
     }
 }
 
-AzFramework::CameraState EditorViewportWidget::GetCameraState()
-{
-    return m_renderViewport->GetCameraState();
-}
-
-AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& point)
-{
-    return LYVec3ToAZVec3(ViewToWorld(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), nullptr, true));
-}
-
-float EditorViewportWidget::TerrainHeight(const AZ::Vector2& position)
-{
-    return GetIEditor()->GetTerrainElevation(position.GetX(), position.GetY());
-}
-
 void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
 {
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
-}
-
-AzFramework::ScreenPoint EditorViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
-{
-    return m_renderViewport->ViewportWorldToScreen(worldPosition);
 }
 
 QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
@@ -1075,8 +1029,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Safe Frame"), &gSettings.viewports.bShowSafeFrame);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Construction Plane"), &gSettings.snap.constructPlaneDisplay);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Trigger Bounds"), &gSettings.viewports.bShowTriggerBounds);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Icons"), &gSettings.viewports.bShowIcons, &gSettings.viewports.bShowSizeBasedIcons);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Size-based Icons"), &gSettings.viewports.bShowSizeBasedIcons, &gSettings.viewports.bShowIcons);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Helpers of Frozen Objects"), &gSettings.viewports.nShowFrozenHelpers);
 
     if (!m_predefinedAspectRatios.IsEmpty())
@@ -1667,14 +1619,14 @@ Vec3 EditorViewportWidget::ViewToWorld(
     auto ray = m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp));
 
     const float maxDistance = 10000.f;
-    Vec3 v = AZVec3ToLYVec3(ray.direction) * maxDistance;
+    Vec3 v = AZVec3ToLYVec3(ray.m_direction) * maxDistance;
 
     if (!_finite(v.x) || !_finite(v.y) || !_finite(v.z))
     {
         return Vec3(0, 0, 0);
     }
 
-    Vec3 colp = AZVec3ToLYVec3(ray.origin) + 0.002f * v;
+    Vec3 colp = AZVec3ToLYVec3(ray.m_origin) + 0.002f * v;
 
     return colp;
 }
@@ -1759,13 +1711,6 @@ float EditorViewportWidget::GetScreenScaleFactor([[maybe_unused]] const Vec3& wo
     AZ_Error("CryLegacy", false, "EditorViewportWidget::GetScreenScaleFactor not implemented");
     return 1.f;
 }
-//////////////////////////////////////////////////////////////////////////
-float EditorViewportWidget::GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position)
-{
-    Vec3 camPos = camera.GetPosition();
-    float dist = camPos.GetDistance(object_position);
-    return dist;
-}
 
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::CheckRespondToInput() const
@@ -1786,7 +1731,6 @@ bool EditorViewportWidget::CheckRespondToInput() const
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)
 {
-    hitInfo.camera = nullptr;
     hitInfo.pExcludedObject = GetCameraObject();
     return QtViewport::HitTest(point, hitInfo);
 }
@@ -2160,7 +2104,7 @@ bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& camera
 {
     if (m_pPrimaryViewport == this)
     {
-        cameraState = GetCameraState();
+        cameraState = m_renderViewport->GetCameraState();
         return true;
     }
 
@@ -2382,7 +2326,26 @@ void EditorViewportWidget::UpdateScene()
         {
             AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
             m_renderViewport->SetScene(mainScene);
-            AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+            auto viewportContext = m_renderViewport->GetViewportContext();
+            AZ::RPI::SceneNotificationBus::Handler::BusConnect(viewportContext->GetRenderScene()->GetId());
+
+            // Don't enable the render pipeline until a level has been loaded
+            // Also show/hide the RenderViewportWidget accordingly so that we get the
+            // expected gradient background when no level is loaded
+            auto renderPipeline = viewportContext->GetCurrentPipeline();
+            if (renderPipeline)
+            {
+                if (GetIEditor()->IsLevelLoaded())
+                {
+                    m_renderViewport->show();
+                    renderPipeline->AddToRenderTick();
+                }
+                else
+                {
+                    m_renderViewport->hide();
+                    renderPipeline->RemoveFromRenderTick();
+                }
+            }
         }
     }
 }
@@ -2474,6 +2437,16 @@ AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
     return SandboxEditor::CameraDefaultEditorPosition();
 }
 
+bool EditorViewportSettings::IconsVisible() const
+{
+    return AzToolsFramework::IconsVisible();
+}
+
+bool EditorViewportSettings::HelpersVisible() const
+{
+    return AzToolsFramework::HelpersVisible();
+}
+
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 bool EditorViewportWidget::ShouldPreviewFullscreen() const
@@ -2487,12 +2460,6 @@ bool EditorViewportWidget::ShouldPreviewFullscreen() const
 
     // Doesn't work with split layout
     if (layout->GetLayout() != EViewLayout::ET_Layout0)
-    {
-        return false;
-    }
-
-    // Not supported in VR
-    if (gSettings.bEnableGameModeVR)
     {
         return false;
     }

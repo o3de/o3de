@@ -49,7 +49,7 @@ PropertiesWidget::PropertiesWidget(EditorWindow* editorWindow,
         m_refreshTimer.setSingleShot(true);
     }
 
-    setMinimumWidth(250);
+    setMinimumWidth(330);
 
     ToolsApplicationEvents::Bus::Handler::BusConnect();
 }

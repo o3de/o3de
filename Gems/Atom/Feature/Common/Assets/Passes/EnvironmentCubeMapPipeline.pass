@@ -9,8 +9,7 @@
             "Slots": [
                 {
                     "Name": "Output",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "SlotType": "InputOutput"
                 }
             ],
             "PassRequests": [
@@ -395,7 +394,8 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionComposite.shader"
                         },
-                        "StencilRef": 1 // See RenderCommon.h and ReflectionComposite.shader
+                        "StencilRef": 1, // See RenderCommon.h and ReflectionComposite.shader
+                        "PipelineViewTag": "MainCamera"
                     }
                 },
                 {
@@ -477,13 +477,6 @@
                     "Name": "Ssao",
                     "TemplateName": "SsaoParentTemplate",
                     "Connections": [
-                        {
-                            "LocalSlot": "LinearDepth",
-                            "AttachmentRef": {
-                                "Pass": "DepthPrePass",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
                         {
                             "LocalSlot": "Modulate",
                             "AttachmentRef": {

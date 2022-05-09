@@ -106,8 +106,6 @@ namespace ScriptCanvasEditor
 
         void PopulateSceneVariables();
 
-        AZ::Data::AssetType m_assetType;
-
         AZStd::vector<ScriptCanvas::GraphScopedVariableId> m_variableIds;
         ScriptCanvas::ScriptCanvasId m_scriptCanvasId;
     };

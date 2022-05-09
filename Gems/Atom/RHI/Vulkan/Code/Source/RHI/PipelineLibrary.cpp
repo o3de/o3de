@@ -23,7 +23,7 @@ namespace AZ
             return m_nativePipelineCache;
         }
 
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::PipelineLibraryData* serializedData)
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::PipelineLibraryDescriptor& descriptor)
         {
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
@@ -31,14 +31,14 @@ namespace AZ
             VkPipelineCacheCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
             createInfo.pNext = nullptr;
-            createInfo.flags = 0; 
+            createInfo.flags = 0;
             createInfo.initialDataSize = 0;
             createInfo.pInitialData = nullptr;
 
-            if (serializedData)
+            if (descriptor.m_serializedData)
             {
-                createInfo.initialDataSize = static_cast<size_t>(serializedData->GetData().size());
-                createInfo.pInitialData = serializedData->GetData().data();
+                createInfo.initialDataSize = static_cast<size_t>(descriptor.m_serializedData->GetData().size());
+                createInfo.pInitialData = descriptor.m_serializedData->GetData().data();
             }
 
             const VkResult result = vkCreatePipelineCache(device.GetNativeDevice(), &createInfo, nullptr, &m_nativePipelineCache);
@@ -59,7 +59,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::array_view<const RHI::PipelineLibrary *> libraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary * const> libraries)
         {
             auto& device = static_cast<Device&>(GetDevice());
             if (libraries.empty())
@@ -107,6 +107,14 @@ namespace AZ
             {
                 Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_nativePipelineCache), name.data(), VK_OBJECT_TYPE_PIPELINE_CACHE, static_cast<Device&>(GetDevice()));
             }
+        }
+
+        bool PipelineLibrary::SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const
+        {
+            //Vulkan drivers cannot save serialized data
+            [[maybe_unused]] Device& device = static_cast<Device&>(GetDevice());
+            AZ_Assert(!device.GetFeatures().m_isPsoCacheFileOperationsNeeded, "Explicit PSO cache operations should not be disabled for Vulkan");
+            return false;
         }
     }
 }

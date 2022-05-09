@@ -13,6 +13,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -343,17 +344,6 @@ namespace Audio
     {
         if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::FileCacheInfo))
         {
-            EATLDataScope dataScope = eADS_ALL;
-
-            if (CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Global))
-            {
-                dataScope = eADS_GLOBAL;
-            }
-            else if (CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::LevelSpecific))
-            {
-                dataScope = eADS_LEVEL_SPECIFIC;
-            }
-
             const auto frameTime = AZStd::chrono::system_clock::now();
 
             const float entryDrawSize = 1.5f;
@@ -446,7 +436,7 @@ namespace Audio
                     }
 
                     // Format: "relative/path/filename.ext (230 KiB) [2]"
-                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false, 
+                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false,
                         "%s (%zu %s) [%zu]",
                         audioFileEntry->m_filePath.c_str(),
                         fileSize,
@@ -637,7 +627,7 @@ namespace Audio
             }
         }
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     bool CFileCacheManager::AllocateMemoryBlockInternal(CATLAudioFileEntry* const audioFileEntry)
     {
@@ -830,6 +820,11 @@ namespace Audio
                 }
                 else
                 {
+                    if (!audioFileEntry->m_asyncStreamRequest)
+                    {
+                        audioFileEntry->m_asyncStreamRequest = streamer->CreateRequest();
+                    }
+
                     streamer->Read(
                         audioFileEntry->m_asyncStreamRequest,
                         audioFileEntry->m_filePath.c_str(),

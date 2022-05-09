@@ -62,29 +62,31 @@ set(FILES
     ../Common/UnixLike/AzCore/std/time_UnixLike.cpp
     AzCore/Utils/Utils_Android.cpp
     ../Common/Unimplemented/AzCore/Utils/Utils_Unimplemented.cpp
-    ../../AzCore/Android/AndroidEnv.cpp
-    ../../AzCore/Android/AndroidEnv.h
-    ../../AzCore/Android/APKFileHandler.cpp
-    ../../AzCore/Android/APKFileHandler.h
-    ../../AzCore/Android/ApiLevel.h
-    ../../AzCore/Android/Utils.cpp
-    ../../AzCore/Android/Utils.h
-    ../../AzCore/Android/JNI/JNI.cpp
-    ../../AzCore/Android/JNI/JNI.h
-    ../../AzCore/Android/JNI/Object.h
-    ../../AzCore/Android/JNI/Object_fwd.h
-    ../../AzCore/Android/JNI/scoped_ref.h
-    ../../AzCore/Android/JNI/shared_ref.h
-    ../../AzCore/Android/JNI/Signature.h
-    ../../AzCore/Android/JNI/Internal/ClassName.h
-    ../../AzCore/Android/JNI/Internal/JStringUtils.h
-    ../../AzCore/Android/JNI/Internal/JStringUtils_impl.h
-    ../../AzCore/Android/JNI/Internal/Object_impl.h
-    ../../AzCore/Android/JNI/Internal/Signature_impl.h
+    AzCore/Android/AndroidEnv.cpp
+    AzCore/Android/AndroidEnv.h
+    AzCore/Android/APKFileHandler.cpp
+    AzCore/Android/APKFileHandler.h
+    AzCore/Android/ApiLevel.h
+    AzCore/Android/Utils.cpp
+    AzCore/Android/Utils.h
+    AzCore/Android/JNI/JNI.cpp
+    AzCore/Android/JNI/JNI.h
+    AzCore/Android/JNI/Object.h
+    AzCore/Android/JNI/Object_fwd.h
+    AzCore/Android/JNI/scoped_ref.h
+    AzCore/Android/JNI/shared_ref.h
+    AzCore/Android/JNI/Signature.h
+    AzCore/Android/JNI/Internal/ClassName.h
+    AzCore/Android/JNI/Internal/JStringUtils.h
+    AzCore/Android/JNI/Internal/JStringUtils_impl.h
+    AzCore/Android/JNI/Internal/Object_impl.h
+    AzCore/Android/JNI/Internal/Signature_impl.h
+    AzCore/Debug/Profiler_Platform.inl
+    AzCore/Debug/Profiler_Android.inl
 )
 if (LY_TEST_PROJECT)
     ly_add_source_properties(
-        SOURCES AzCore/Android/Utils.cpp
+        SOURCES ${CMAKE_CURRENT_LIST_DIR}/AzCore/Android/Utils.cpp
         PROPERTY COMPILE_DEFINITIONS
         VALUES LY_NO_ASSETS
     )

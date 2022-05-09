@@ -69,30 +69,6 @@ namespace ScriptCanvas
             OutInterpretedResult() = default;
             OutInterpretedResult(const OutInterpretedResult & source);
         };
-
-        struct OutInterpretedUserSubgraph
-        {
-            AZ_TYPE_INFO(OutInterpretedUserSubgraph, "{1221F79E-0951-48F7-A0F1-1306A379D6BA}");
-            AZ_CLASS_ALLOCATOR(OutInterpretedUserSubgraph, AZ::SystemAllocator, 0);
-
-            int m_lambdaRegistryIndex;
-            lua_State* m_lua;
-
-            // assumes a lambda is at the top of the stack and will pop it
-            OutInterpretedUserSubgraph(lua_State* lua);
-
-            OutInterpretedUserSubgraph(OutInterpretedUserSubgraph&& source) noexcept;
-
-            ~OutInterpretedUserSubgraph();
-
-            OutInterpretedUserSubgraph& operator=(OutInterpretedUserSubgraph&& source) noexcept;
-
-            void operator()(AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments);
-
-            // \note Do not use, these are here for compiler compatibility only
-            OutInterpretedUserSubgraph() = default;
-            OutInterpretedUserSubgraph(const OutInterpretedUserSubgraph& source);
-        };
     } 
 
 } 

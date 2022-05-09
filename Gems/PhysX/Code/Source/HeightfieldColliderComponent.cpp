@@ -86,9 +86,10 @@ namespace PhysX
         ClearHeightfield();
     }
 
-    void HeightfieldColliderComponent::OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion)
+    void HeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
-        RefreshHeightfield();
+        RefreshHeightfield(dirtyRegion, changeMask);
     }
 
     void HeightfieldColliderComponent::ClearHeightfield()
@@ -140,13 +141,24 @@ namespace PhysX
         Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig.second);
 
         configuration = Utils::CreateHeightfieldShapeConfiguration(GetEntityId());
+
+        // Update material selection from the mapping
+        Physics::ColliderConfiguration* colliderConfig = m_shapeConfig.first.get();
+        Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), colliderConfig->m_materialSelection);
     }
 
-    void HeightfieldColliderComponent::RefreshHeightfield()
+    void HeightfieldColliderComponent::RefreshHeightfield([[maybe_unused]] const AZ::Aabb& dirtyRegion, 
+        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
         ClearHeightfield();
         InitHeightfieldShapeConfiguration();
-        InitStaticRigidBody();
+
+        Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig.second);
+        if (!configuration.GetSamples().empty())
+        {
+            InitStaticRigidBody();
+        }
+
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 

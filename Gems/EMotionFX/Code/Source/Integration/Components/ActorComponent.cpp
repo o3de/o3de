@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
 
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
@@ -131,7 +132,10 @@ namespace EMotionFX
             return AZ::Edit::PropertyVisibility::Show;
         }
 
+
         //////////////////////////////////////////////////////////////////////////
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(ActorRenderFlags);
+
         void ActorComponent::Configuration::Reflect(AZ::ReflectContext* context)
         {
             BoundingBoxConfiguration::Reflect(context);
@@ -139,19 +143,19 @@ namespace EMotionFX
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
+                ActorRenderFlagsReflect(*serializeContext);
+
                 serializeContext->Class<Configuration>()
-                    ->Version(4)
+                    ->Version(5)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
-                    ->Field("RenderSkeleton", &Configuration::m_renderSkeleton)
-                    ->Field("RenderCharacter", &Configuration::m_renderCharacter)
-                    ->Field("RenderBounds", &Configuration::m_renderBounds)
                     ->Field("AttachmentType", &Configuration::m_attachmentType)
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
                     ->Field("SkinningMethod", &Configuration::m_skinningMethod)
                     ->Field("LODLevel", &Configuration::m_lodLevel)
                     ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
+                    ->Field("RenderFlags", &Configuration::m_renderFlags)
                 ;
             }
         }
@@ -209,7 +213,6 @@ namespace EMotionFX
                     ->Event("GetJointTransform", &ActorComponentRequestBus::Events::GetJointTransform)
                     ->Event("AttachToEntity", &ActorComponentRequestBus::Events::AttachToEntity)
                     ->Event("DetachFromEntity", &ActorComponentRequestBus::Events::DetachFromEntity)
-                    ->Event("DebugDrawRoot", &ActorComponentRequestBus::Events::DebugDrawRoot)
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
                     ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
@@ -238,8 +241,7 @@ namespace EMotionFX
 
         //////////////////////////////////////////////////////////////////////////
         ActorComponent::ActorComponent(const Configuration* configuration)
-            : m_debugDrawRoot(false)
-            , m_sceneFinishSimHandler([this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+            : m_sceneFinishSimHandler([this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
                 float fixedDeltatime)
                 {
                     if (m_actorInstance)
@@ -342,28 +344,26 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void ActorComponent::DebugDrawRoot(bool enable)
-        {
-            m_debugDrawRoot = enable;
-        }
-
-        //////////////////////////////////////////////////////////////////////////
         bool ActorComponent::GetRenderCharacter() const
         {
-            return m_configuration.m_renderCharacter;
+            return AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
         }
 
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::SetRenderCharacter(bool enable)
         {
-            if (m_configuration.m_renderCharacter != enable)
+            if (enable)
             {
-                m_configuration.m_renderCharacter = enable;
+                m_configuration.m_renderFlags |= ActorRenderFlags::Solid;
+            }
+            else
+            {
+                m_configuration.m_renderFlags &= ~ActorRenderFlags::Solid;
+            }
 
-                if (m_renderActorInstance)
-                {
-                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
-                }
+            if (m_renderActorInstance)
+            {
+                m_renderActorInstance->SetIsVisible(enable);
             }
         }
 
@@ -398,6 +398,11 @@ namespace EMotionFX
         bool ActorComponent::IsPhysicsSceneSimulationFinishEventConnected() const
         {
             return m_sceneFinishSimHandler.IsConnected();
+        }
+
+        void ActorComponent::SetRenderFlag(ActorRenderFlags renderFlags)
+        {
+            m_configuration.m_renderFlags = renderFlags;
         }
 
         void ActorComponent::CheckActorCreation()
@@ -457,7 +462,7 @@ namespace EMotionFX
 
                 if (m_renderActorInstance)
                 {
-                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
+                    m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
                 }
             }
 
@@ -565,21 +570,20 @@ namespace EMotionFX
                 m_renderActorInstance->UpdateBounds();
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
+                const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
+                const bool renderActorSolid = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
+                m_renderActorInstance->SetIsVisible(isInCameraFrustum && renderActorSolid);
+
                 // Optimization: Set the actor instance invisible when character is out of camera view. This will stop the joint transforms update, except the root joint.
                 // Calling it after the bounds on the render actor updated.
                 if (!m_configuration.m_forceUpdateJointsOOV)
                 {
-                    const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
-                    m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderCharacter);
+                    // Update the skeleton in case solid mesh rendering or any of the debug visualizations are enabled and the character is in the camera frustum.
+                    const bool updateTransforms = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, s_requireUpdateTransforms);
+                    m_actorInstance->SetIsVisible(isInCameraFrustum && updateTransforms);
                 }
 
-                RenderActorInstance::DebugOptions debugOptions;
-                debugOptions.m_drawAABB = m_configuration.m_renderBounds;
-                debugOptions.m_drawSkeleton = m_configuration.m_renderSkeleton;
-                debugOptions.m_drawRootTransform = m_debugDrawRoot;
-                debugOptions.m_rootWorldTransform = GetEntity()->GetTransform()->GetWorldTM();
-                debugOptions.m_emfxDebugDraw = true;
-                m_renderActorInstance->DebugDraw(debugOptions);
+                m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
             }
         }
 

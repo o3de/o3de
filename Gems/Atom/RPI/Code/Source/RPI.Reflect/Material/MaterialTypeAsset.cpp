@@ -154,7 +154,7 @@ namespace AZ
             return m_materialPropertiesLayout.get();
         }
 
-        AZStd::array_view<MaterialPropertyValue> MaterialTypeAsset::GetDefaultPropertyValues() const
+        AZStd::span<const MaterialPropertyValue> MaterialTypeAsset::GetDefaultPropertyValues() const
         {
             return m_propertyValues;
         }

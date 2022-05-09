@@ -529,7 +529,10 @@
    <property name="text">
     <string>Test Manager</string>
    </property>
-   <property name="shortcut">
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
+    <property name="shortcut">
     <string>Ctrl+Shift+T</string>
    </property>
    <property name="autoRepeat">

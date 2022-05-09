@@ -1,52 +1,43 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/thorn_basecolor.png"
+            "textureMap": "../Textures/thorn_basecolor.png"
         },
         "clearCoat": {
-            "enable": true,
             "factor": 0.05000000074505806,
-            "normalMap": "Textures/thorn_normal.jpg",
+            "normalMap": "../Textures/thorn_normal.jpg",
             "roughness": 0.10000000149011612
         },
         "general": {
-            "applySpecularAA": true
+            "applySpecularAA": true,
+            "doubleSided": true
         },
         "irradiance": {
             "color": [
-                0.46506446599960329,
+                0.46506446599960327,
                 1.0,
                 0.3944609761238098,
                 1.0
             ]
         },
-        "metallic": {
-            "textureMap": "Textures/thorn_metallic.png"
-        },
         "normal": {
-            "textureMap": "Textures/thorn_normal.jpg"
+            "textureMap": "../Textures/thorn_normal.jpg"
         },
         "opacity": {
-            "doubleSided": true,
-            "factor": 0.20000000298023225,
-            "mode": "Cutout"
+            "alphaSource": "Split",
+            "factor": 0.20000000298023224,
+            "mode": "Cutout",
+            "textureMap": "../Textures/thorn_alpha.png"
         },
         "parallax": {
-            "textureMap": "Textures/thorn_height.png",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/thorn_roughness.png"
+            "textureMap": "../Textures/thorn_roughness.png"
         }
     }
 }

@@ -51,7 +51,45 @@ namespace UnitTest
             m_model.reset();
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }
-        
+
+        // Creates an entity with a given name as one undoable operation
+        // Parents to parentId, or the root prefab container entity if parentId is invalid
+        AZ::EntityId CreateNamedEntity(AZStd::string name, AZ::EntityId parentId = AZ::EntityId())
+        {
+            auto createResult = m_prefabPublicInterface->CreateEntity(parentId, AZ::Vector3());
+            AZ_Assert(createResult.IsSuccess(), "Failed to create entity: %s", createResult.GetError().c_str());
+            AZ::EntityId entityId = createResult.GetValue();
+
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+
+            entity->Deactivate();
+
+            entity->SetName(name);
+
+            // Normally, in invalid parent ID should automatically parent us to the root prefab, but currently in the unit test
+            // environment entities aren't created with a default transform component, so CreateEntity won't correctly parent.
+            // We get the actual target parent ID here, then create our missing transform component.
+            if (!parentId.IsValid())
+            {
+                auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+                parentId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
+            }
+
+            auto transform = aznew AzToolsFramework::Components::TransformComponent;
+            entity->AddComponent(transform);
+            transform->SetParent(parentId);
+
+            entity->Activate();
+
+            // Update our undo cache entry to include the rename / reparent as one atomic operation.
+            m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
+
+            ProcessDeferredUpdates();
+
+            return entityId;
+        }
+
         // Helper to visualize debug state
         void PrintModel()
         {
@@ -84,7 +122,8 @@ namespace UnitTest
         // Kicks off any updates scheduled for the next tick
         void ProcessDeferredUpdates() override
         {
-            PrefabTestFixture::ProcessDeferredUpdates();
+            // Force a prefab propagation for updates that are deferred to the next tick.
+            PropagateAllTemplateChanges();
 
             // Ensure the model process its entity update queue
             m_model->ProcessEntityUpdates();
@@ -100,7 +139,7 @@ namespace UnitTest
 
         for (size_t i = 0; i < entityCount; ++i)
         {
-            CreateEntityUnderRootPrefab(AZStd::string::format("Entity%zu", i));
+            CreateNamedEntity(AZStd::string::format("Entity%zu", i));
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
         }
 
@@ -136,7 +175,7 @@ namespace UnitTest
         AZ::EntityId parentId;
         for (int i = 0; i < depth; i++)
         {
-            parentId = CreateEntityUnderRootPrefab(AZStd::string::format("EntityDepth%i", i), parentId);
+            parentId = CreateNamedEntity(AZStd::string::format("EntityDepth%i", i), parentId);
             EXPECT_EQ(modelDepth(), i + 1);
         }
 

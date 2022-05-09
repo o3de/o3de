@@ -14,7 +14,7 @@
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
-#include <ProjectManagerSettings.h>
+#include <SettingsInterface.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
@@ -283,24 +283,21 @@ namespace O3DE::ProjectManager
                     if (projectButtonIter != m_projectButtons.end())
                     {
                         currentButton = projectButtonIter.value();
-                        currentButton->RestoreDefaultState();
-                        m_projectsFlowLayout->addWidget(currentButton);
+                        currentButton->SetState(ProjectButtonState::ReadyToLaunch);
                     }
                 }
 
                 // Check whether project manager has successfully built the project
                 if (currentButton)
                 {
-                    auto settingsRegistry = AZ::SettingsRegistry::Get();
+                    m_projectsFlowLayout->addWidget(currentButton);
+
                     bool projectBuiltSuccessfully = false;
-                    if (settingsRegistry)
-                    {
-                        QString settingsKey = GetProjectBuiltSuccessfullyKey(project.m_projectName);
-                        settingsRegistry->Get(projectBuiltSuccessfully, settingsKey.toStdString().c_str());
-                    }
+                    SettingsInterface::Get()->GetProjectBuiltSuccessfully(projectBuiltSuccessfully, project);
+
                     if (!projectBuiltSuccessfully)
                     {
-                        currentButton->ShowBuildRequired();
+                        currentButton->SetState(ProjectButtonState::NeedsToBuild);
                     }
                 }
             }
@@ -318,7 +315,7 @@ namespace O3DE::ProjectManager
                 if (projectIter != m_projectButtons.end())
                 {
                     projectIter.value()->SetProjectButtonAction(
-                        tr("Cancel Queued Build"),
+                        tr("Cancel queued build"),
                         [this, project]
                         {
                             UnqueueBuildProject(project);
@@ -332,19 +329,25 @@ namespace O3DE::ProjectManager
                 auto projectIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
                 if (projectIter != m_projectButtons.end())
                 {
-                    if (project.m_buildFailed)
+                    // If project is not currently or about to build
+                    if (!m_currentBuilder || m_currentBuilder->GetProjectInfo() != project)
                     {
-                        projectIter.value()->ShowBuildFailed(true, project.m_logUrl);
-                    }
-                    else
-                    {
-                        projectIter.value()->ShowBuildRequired();
+                        if (project.m_buildFailed)
+                        {
+                            projectIter.value()->SetBuildLogsLink(project.m_logUrl);
+                            projectIter.value()->SetState(ProjectButtonState::BuildFailed);
+                        }
+                        else
+                        {
+                            projectIter.value()->SetState(ProjectButtonState::NeedsToBuild);
+                        }
                     }
                 }
             }
         }
 
         m_stack->setCurrentWidget(m_projectsContent);
+        m_projectsFlowLayout->update();
     }
 
     ProjectManagerScreen ProjectsScreen::GetScreenEnum()
@@ -403,7 +406,6 @@ namespace O3DE::ProjectManager
     {
         if (ProjectUtils::AddProjectDialog(this))
         {
-            ResetProjectsContent();
             emit ChangeScreenRequest(ProjectManagerScreen::Projects);
         }
     }
@@ -424,12 +426,12 @@ namespace O3DE::ProjectManager
                     return;
                 }
 
-                auto cmdPath = AZ::IO::FixedMaxPathString::format(
-                    "%s --regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(),
-                    fixedProjectPath.c_str());
-
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-                processLaunchInfo.m_commandlineParameters = cmdPath;
+                processLaunchInfo.m_commandlineParameters = AZStd::vector<AZStd::string>{
+                    editorExecutablePath.String(),
+                    AZStd::string::format(R"(--regset="/Amazon/AzCore/Bootstrap/project_path=%s")", fixedProjectPath.c_str())
+                };
+                ;
                 bool launchSucceeded = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
                 if (!launchSucceeded)
                 {
@@ -444,8 +446,7 @@ namespace O3DE::ProjectManager
                     ProjectButton* button = qobject_cast<ProjectButton*>(sender());
                     if (button)
                     {
-                        button->SetLaunchButtonEnabled(false);
-                        button->SetButtonOverlayText(tr("Opening Editor..."));
+                        button->SetState(ProjectButtonState::Launching);
                     }
 
                     // enable the button after 3 seconds
@@ -456,7 +457,7 @@ namespace O3DE::ProjectManager
                         {
                             if (button)
                             {
-                                button->SetLaunchButtonEnabled(true);
+                                button->SetState(ProjectButtonState::ReadyToLaunch);
                             }
                         });
                 }
@@ -494,7 +495,6 @@ namespace O3DE::ProjectManager
             // Open file dialog and choose location for copied project then register copy with O3DE
             if (ProjectUtils::CopyProjectDialog(projectInfo.m_path, newProjectInfo, this))
             {
-                ResetProjectsContent();
                 emit NotifyBuildProject(newProjectInfo);
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
@@ -507,7 +507,6 @@ namespace O3DE::ProjectManager
             // Unregister Project from O3DE and reload projects
             if (ProjectUtils::UnregisterProject(projectPath))
             {
-                ResetProjectsContent();
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
         }

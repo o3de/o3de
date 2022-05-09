@@ -15,6 +15,9 @@ namespace ScriptCanvas
     {
         void Spawning::Reflect(AZ::ReflectContext* reflection)
         {
+            Nodeables::Spawning::SpawnableAsset::Reflect(reflection);
+            Nodeables::Spawning::SpawnTicketInstance::Reflect(reflection);
+
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
             {
                 serializeContext->Class<Spawning, LibraryDefinition>()
@@ -33,13 +36,17 @@ namespace ScriptCanvas
 
         void Spawning::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
+            AddNodeToRegistry<Spawning, ScriptCanvas::Nodes::CreateSpawnTicketNodeableNode>(nodeRegistry);
             AddNodeToRegistry<Spawning, ScriptCanvas::Nodes::SpawnNodeableNode>(nodeRegistry);
+            AddNodeToRegistry<Spawning, ScriptCanvas::Nodes::DespawnNodeableNode>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> Spawning::GetComponentDescriptors()
         {
             return AZStd::vector<AZ::ComponentDescriptor*>({
+                ScriptCanvas::Nodes::CreateSpawnTicketNodeableNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::SpawnNodeableNode::CreateDescriptor(),
+                ScriptCanvas::Nodes::DespawnNodeableNode::CreateDescriptor(),
                 });
         }
     }

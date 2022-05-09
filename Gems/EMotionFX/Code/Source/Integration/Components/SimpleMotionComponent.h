@@ -54,8 +54,12 @@ namespace EMotionFX
                 float                                m_blendOutTime;            ///< Determines the blend out time in seconds.
                 bool                                 m_playOnActivation;        ///< Determines if the motion should be played immediately
                 bool                                 m_inPlace;                 ///< Determines if the motion should be played in-place.
+                bool                                 m_freezeAtLastFrame = true;///< Determines if the motion will go to bind pose after finishing or freeze at the last frame.
 
                 static void Reflect(AZ::ReflectContext* context);
+
+                AZ::Crc32 GetBlendOutTimeVisibility() const;
+                AZ::Crc32 GetFreezeAtLastFrameVisibility() const;
             };
 
             SimpleMotionComponent(const Configuration* config = nullptr);

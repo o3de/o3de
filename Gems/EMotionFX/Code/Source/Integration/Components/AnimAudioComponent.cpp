@@ -405,6 +405,7 @@ namespace EMotionFX
 
             ActorNotificationBus::Handler::BusConnect(GetEntityId());
             AnimAudioComponentNotificationBus::Handler::BusConnect(GetEntityId());
+            AnimAudioComponentRequestBus::Handler::BusConnect(GetEntityId());
         }
 
         void AnimAudioComponent::Deactivate()
@@ -421,6 +422,7 @@ namespace EMotionFX
 
             ActorNotificationBus::Handler::BusDisconnect(GetEntityId());
             AnimAudioComponentNotificationBus::Handler::BusDisconnect(GetEntityId());
+            AnimAudioComponentRequestBus::Handler::BusDisconnect(GetEntityId());
         }
 
         void AnimAudioComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)

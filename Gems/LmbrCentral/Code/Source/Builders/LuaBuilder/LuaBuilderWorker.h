@@ -34,6 +34,8 @@ namespace LuaBuilder
         void ShutDown() override;
         //////////////////////////////////////////////////////////////////////////
 
+        static AZStd::string GetAnalysisFingerprint();
+
         void ParseDependencies(const AZStd::string& file, AssetBuilderSDK::ProductPathDependencySet& outDependencies);
 
     private:

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __MCOMMON_ORBITCAMERA_H
-#define __MCOMMON_ORBITCAMERA_H
+#pragma once
 
 // include required headers
 #include "LookAtCamera.h"
@@ -125,6 +124,3 @@ namespace MCommon
         float           m_flightTargetBeta;
     };
 } // namespace MCommon
-
-
-#endif

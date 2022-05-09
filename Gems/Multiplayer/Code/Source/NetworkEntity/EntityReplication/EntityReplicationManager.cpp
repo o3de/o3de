@@ -26,7 +26,10 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
+
+AZ_DECLARE_BUDGET(MULTIPLAYER);
 
 namespace Multiplayer
 {
@@ -54,10 +57,10 @@ namespace Multiplayer
         m_maxPayloadSize = connection.GetConnectionMtu() - UdpPacketHeaderSerializeSize - ReplicationManagerPacketOverhead;
 
         // Schedule ClearRemovedReplicators()
-        m_clearRemovedReplicators.Enqueue(AZ::TimeMs{ 0 }, true);
+        m_clearRemovedReplicators.Enqueue(AZ::Time::ZeroTimeMs, true);
 
         // Start window update events
-        m_updateWindow.Enqueue(AZ::TimeMs{ 0 }, true);
+        m_updateWindow.Enqueue(AZ::Time::ZeroTimeMs, true);
 
         INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
         if (networkEntityManager != nullptr)
@@ -78,6 +81,8 @@ namespace Multiplayer
 
     void EntityReplicationManager::ActivatePendingEntities()
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: ActivatePendingEntities");
+
         AZStd::vector<NetEntityId> notReadyEntities;
 
         const AZ::TimeMs endTimeMs = AZ::GetElapsedTimeMs() + m_entityActivationTimeSliceMs;
@@ -97,7 +102,7 @@ namespace Multiplayer
                     notReadyEntities.push_back(entityId);
                 }
             }
-            if (m_entityActivationTimeSliceMs > AZ::TimeMs{ 0 } && AZ::GetElapsedTimeMs() > endTimeMs)
+            if (m_entityActivationTimeSliceMs > AZ::Time::ZeroTimeMs && AZ::GetElapsedTimeMs() > endTimeMs)
             {
                 // If we go over our timeslice, break out the loop
                 break;
@@ -126,17 +131,23 @@ namespace Multiplayer
                 GetRemoteHostId().GetString().c_str()
             );
 
-            // Prep a replication record for send, at this point, everything needs to be sent
-            for (EntityReplicator* replicator : toSendList)
             {
-                replicator->GetPropertyPublisher()->PrepareSerialization();
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - PrepareSerialization");
+                // Prep a replication record for send, at this point, everything needs to be sent
+                for (EntityReplicator* replicator : toSendList)
+                {
+                    replicator->GetPropertyPublisher()->PrepareSerialization();
+                }
             }
 
-            // While our to send list is not empty, build up another packet to send
-            do
             {
-                SendEntityUpdateMessages(toSendList);
-            } while (!toSendList.empty());
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - SendEntityUpdateMessages");
+                // While our to send list is not empty, build up another packet to send
+                do
+                {
+                    SendEntityUpdateMessages(toSendList);
+                } while (!toSendList.empty());
+            }
         }
 
         SendEntityRpcs(m_deferredRpcMessagesReliable, true);
@@ -163,6 +174,8 @@ namespace Multiplayer
         {
             return EntityReplicatorList();
         }
+
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: GenerateEntityUpdateList");
 
         // Generate a list of all our entities that need updates
         EntityReplicatorList toSendList;
@@ -912,24 +925,22 @@ namespace Multiplayer
         ;
     }
 
-    AzNetworking::TimeoutResult EntityReplicationManager::OrphanedEntityRpcs::HandleTimeout(AzNetworking::TimeoutQueue::TimeoutItem& item)
-    {
-        NetEntityId timedOutEntityId = aznumeric_cast<NetEntityId>(item.m_userData);
-        auto entityRpcsIter = m_entityRpcMap.find(timedOutEntityId);
-        if (entityRpcsIter != m_entityRpcMap.end())
-        {
-            for (NetworkEntityRpcMessage& rpcMessage : entityRpcsIter->second.m_rpcMessages)
-            {
-                m_replicationManager.DispatchOrphanedRpc(rpcMessage, nullptr);
-            }
-            m_entityRpcMap.erase(entityRpcsIter);
-        }
-        return AzNetworking::TimeoutResult::Delete;
-    }
-
     void EntityReplicationManager::OrphanedEntityRpcs::Update()
     {
-        m_timeoutQueue.UpdateTimeouts(*this);
+        m_timeoutQueue.UpdateTimeouts([this](AzNetworking::TimeoutQueue::TimeoutItem& item)
+        {
+            NetEntityId timedOutEntityId = aznumeric_cast<NetEntityId>(item.m_userData);
+            auto entityRpcsIter = m_entityRpcMap.find(timedOutEntityId);
+            if (entityRpcsIter != m_entityRpcMap.end())
+            {
+                for (NetworkEntityRpcMessage& rpcMessage : entityRpcsIter->second.m_rpcMessages)
+                {
+                    m_replicationManager.DispatchOrphanedRpc(rpcMessage, nullptr);
+                }
+                m_entityRpcMap.erase(entityRpcsIter);
+            }
+            return AzNetworking::TimeoutResult::Delete;
+        });
     }
 
     bool EntityReplicationManager::OrphanedEntityRpcs::DispatchOrphanedRpcs(EntityReplicator& entityReplicator)
@@ -1128,7 +1139,7 @@ namespace Multiplayer
                 netBindComponent->NotifyServerMigration(GetRemoteHostId());
             }
 
-            bool didSucceed = true;
+            [[maybe_unused]] bool didSucceed = true;
             EntityMigrationMessage message;
             message.m_netEntityId = replicator->GetEntityHandle().GetNetEntityId();
             message.m_prefabEntityId = netBindComponent->GetPrefabEntityId();

@@ -23,7 +23,8 @@
                 "GemsUnloaded": {},
                 "FileIOAvailable": {},
                 "FileIOUnavailable": {},
-                "LegacySystemInterfaceCreated": {}
+                "LegacySystemInterfaceCreated": {},
+                "CriticalAssetsCompiled": {}
             }
         }
     }

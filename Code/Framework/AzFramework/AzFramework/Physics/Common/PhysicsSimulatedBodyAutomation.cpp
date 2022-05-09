@@ -8,6 +8,7 @@
 
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyAutomation.h>
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

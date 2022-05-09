@@ -137,7 +137,6 @@ namespace UnitTest
         void CreateEditorRepresentation(AZ::Entity* entity) override;
         void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override { AZ_UNUSED(selection); }
         int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override { AZ_UNUSED(entityIconPath);  return 0; }
-        bool DisplayHelpersVisible() override { return false; }
 
         /*
         * AssetSystemRequestBus

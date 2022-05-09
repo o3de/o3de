@@ -19,7 +19,7 @@ namespace AZ
     {
         /**
          * This class is a container of thread local storage. It allows for multiple instances
-         * of thread local storage to exist simultaneously (a property not possible with the 
+         * of thread local storage to exist simultaneously (a property not possible with the
          * thread_local modifier, which is really a thread global). The context tracks AZ thread
          * lifetime through a bus in order to clean up storage for exiting threads. The context
          * allows thread-safe iteration of all thread contexts, which is also a property not possible
@@ -36,7 +36,11 @@ namespace AZ
         public:
             using InitFunction = AZStd::function<void(Storage&)>;
 
-            ThreadLocalContext(InitFunction initFunction = [] (Storage&) {});
+            static void DefaultFunction(Storage&)
+            {
+            }
+
+            ThreadLocalContext(InitFunction initFunction = &DefaultFunction);
             ~ThreadLocalContext();
 
             // No copying or moving allowed.

@@ -83,7 +83,7 @@ namespace Blast
         static AZ::Vector3 TransformToLocal(BlastActor& actor, const AZ::Vector3& globalPosition);
 
         BlastMaterial m_blastMaterial;
-        ActorTracker& m_actorTracker;
+        [[maybe_unused]] ActorTracker& m_actorTracker;
     };
 
     template<class T, class... Args>

@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials\\StandardPBR\\StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "general": {
             "texcoord": 0

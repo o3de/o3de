@@ -21,6 +21,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <Prefab/ProceduralPrefabSystemComponentInterface.h>
 
 namespace AzToolsFramework
 {
@@ -185,6 +186,20 @@ namespace AzToolsFramework
             TemplateReference newTemplateReference = m_prefabSystemComponentInterface->FindTemplate(newTemplateId);
             Template& newTemplate = newTemplateReference->get();
 
+            if(newTemplate.IsProcedural())
+            {
+                auto proceduralPrefabSystemComponentInterface = AZ::Interface<ProceduralPrefabSystemComponentInterface>::Get();
+
+                if (!proceduralPrefabSystemComponentInterface)
+                {
+                    AZ_Error("Prefab", false, "Failed to find ProceduralPrefabSystemComponentInterface.  Procedural Prefab will not be tracked for hotloading.");
+                }
+                else
+                {
+                    proceduralPrefabSystemComponentInterface->RegisterProceduralPrefab(relativePath.Native(), newTemplateId);
+                }
+            }
+
             // Mark the file as being in progress.
             progressedFilePathsSet.emplace(relativePath);
 
@@ -316,7 +331,7 @@ namespace AzToolsFramework
             }
 
             PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom, PrefabDomUtils::StoreFlags::StoreLinkIds))
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
             {
                 return false;
             }
@@ -344,7 +359,7 @@ namespace AzToolsFramework
 
             PrefabDom storedPrefabDom(&savingTemplateDom->get().GetAllocator());
             if (!PrefabDomUtils::StoreInstanceInPrefabDom(savingPrefabInstance, storedPrefabDom,
-                PrefabDomUtils::StoreFlags::StripDefaultValues))
+                PrefabDomUtils::StoreFlags::StripDefaultValues | PrefabDomUtils::StoreFlags::StripLinkIds))
             {
                 return false;
             }

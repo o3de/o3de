@@ -46,14 +46,14 @@ class XmlParser
 {
 public:
     explicit XmlParser(bool bReuseStrings);
-    ~XmlParser();
+    ~XmlParser() override;
 
-    void AddRef()
+    void AddRef() override
     {
         ++m_nRefCount;
     }
 
-    void Release()
+    void Release() override
     {
         if (--m_nRefCount <= 0)
         {
@@ -61,9 +61,9 @@ public:
         }
     }
 
-    virtual XmlNodeRef ParseFile(const char* filename, bool bCleanPools);
+    XmlNodeRef ParseFile(const char* filename, bool bCleanPools) override;
 
-    virtual XmlNodeRef ParseBuffer(const char* buffer, int nBufLen, bool bCleanPools, bool bSuppressWarnings = false);
+    XmlNodeRef ParseBuffer(const char* buffer, int nBufLen, bool bCleanPools, bool bSuppressWarnings = false) override;
 
     const char* getErrorString() const { return m_errorString; }
 
@@ -112,7 +112,7 @@ public:
     CXmlNode();
     CXmlNode(const char* tag, bool bReuseStrings, bool bIsProcessingInstruction = false);
     //! Destructor.
-    ~CXmlNode();
+    ~CXmlNode() override;
 
     //////////////////////////////////////////////////////////////////////////
     // Custom new/delete with pool allocator.
@@ -120,125 +120,118 @@ public:
     //void* operator new( size_t nSize );
     //void operator delete( void *ptr );
 
-    virtual void DeleteThis();
+    void DeleteThis() override;
 
     //! Create new XML node.
-    XmlNodeRef createNode(const char* tag);
+    XmlNodeRef createNode(const char* tag) override;
 
     //! Get XML node tag.
-    const char* getTag() const { return m_tag; };
-    void    setTag(const char* tag);
+    const char* getTag() const override
+    { return m_tag; };
+    void    setTag(const char* tag) override;
 
     //! Return true if given tag equal to node tag.
-    bool isTag(const char* tag) const;
+    bool isTag(const char* tag) const override;
 
     //! Get XML Node attributes.
-    virtual int getNumAttributes() const { return m_pAttributes ? (int)m_pAttributes->size() : 0; };
+    int getNumAttributes() const override
+    { return m_pAttributes ? (int)m_pAttributes->size() : 0; };
     //! Return attribute key and value by attribute index.
-    virtual bool getAttributeByIndex(int index, const char** key, const char** value);
+    bool getAttributeByIndex(int index, const char** key, const char** value) override;
 
     //! Return attribute key and value by attribute index, string version.
     virtual bool getAttributeByIndex(int index, XmlString& key, XmlString& value);
 
-
-    virtual void copyAttributes(XmlNodeRef fromNode);
-    virtual void shareChildren(const XmlNodeRef& fromNode);
+    void copyAttributes(XmlNodeRef fromNode) override;
 
     //! Get XML Node attribute for specified key.
-    const char* getAttr(const char* key) const;
+    const char* getAttr(const char* key) const override;
 
     //! Get XML Node attribute for specified key.
     // Returns true if the attribute existes, alse otherwise.
-    bool                getAttr(const char* key, const char** value) const;
+    bool                getAttr(const char* key, const char** value) const override;
 
     //! Check if attributes with specified key exist.
-    bool haveAttr(const char* key) const;
+    bool haveAttr(const char* key) const override;
 
     //! Creates new xml node and add it to childs list.
-    XmlNodeRef newChild(const char* tagName);
+    XmlNodeRef newChild(const char* tagName) override;
 
     //! Adds new child node.
-    void addChild(const XmlNodeRef& node);
+    void addChild(const XmlNodeRef& node) override;
     //! Remove child node.
-    void removeChild(const XmlNodeRef& node);
-
-    void insertChild(int nIndex, const XmlNodeRef& node);
-    void replaceChild(int nIndex, const XmlNodeRef& node);
+    void removeChild(const XmlNodeRef& node) override;
 
     //! Remove all child nodes.
-    void removeAllChilds();
+    void removeAllChilds() override;
 
     //! Get number of child XML nodes.
-    int getChildCount() const { return m_pChilds ? (int)m_pChilds->size() : 0; };
+    int getChildCount() const override { return m_pChilds ? (int)m_pChilds->size() : 0; }
 
     //! Get XML Node child nodes.
-    XmlNodeRef getChild(int i) const;
+    XmlNodeRef getChild(int i) const override;
 
     //! Find node with specified tag.
-    XmlNodeRef findChild(const char* tag) const;
+    XmlNodeRef findChild(const char* tag) const override;
     void deleteChild(const char* tag);
-    void deleteChildAt(int nIndex);
 
     //! Get parent XML node.
-    XmlNodeRef  getParent() const { return m_parent; }
-    void                setParent(const XmlNodeRef& inRef);
+    XmlNodeRef  getParent() const override { return m_parent; }
+    void setParent(const XmlNodeRef& inRef) override;
 
 
     //! Returns content of this node.
-    const char* getContent() const { return m_content; };
-    void setContent(const char* str);
+    const char* getContent() const override
+    { return m_content; };
+    void setContent(const char* str) override;
 
-    XmlNodeRef  clone();
-
-    //! Returns line number for XML tag.
-    int getLine() const { return m_line; };
     //! Set line number in xml.
-    void setLine(int line) { m_line = line; };
+    void setLine(int line) override { m_line = line; }
 
     //! Returns XML of this node and sub nodes.
-    virtual IXmlStringData* getXMLData(int nReserveMem = 0) const;
-    XmlString getXML(int level = 0) const;
-    XmlString getXMLUnsafe(int level, char* tmpBuffer, uint32 sizeOfTmpBuffer) const;
-    bool saveToFile(const char* fileName);   // saves in one huge chunk
-    bool saveToFile(const char* fileName, size_t chunkSizeBytes, AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle); // save in small memory chunks
+    IXmlStringData* getXMLData(int nReserveMem = 0) const override;
+    XmlString getXML(int level = 0) const override;
+    bool saveToFile(const char* fileName) override;   // saves in one huge chunk
+    bool saveToFile(const char* fileName, size_t chunkSizeBytes, AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle) override; // save in small memory chunks
 
     //! Set new XML Node attribute (or override attribute with same key).
     using IXmlNode::setAttr;
-    void setAttr(const char* key, const char* value);
-    void setAttr(const char* key, int value);
-    void setAttr(const char* key, unsigned int value);
-    void setAttr(const char* key, int64 value);
-    void setAttr(const char* key, uint64 value, bool useHexFormat = true);
-    void setAttr(const char* key, float value);
-    void setAttr(const char* key, double value);
-    void setAttr(const char* key, const Vec2& value);
-    void setAttr(const char* key, const Ang3& value);
-    void setAttr(const char* key, const Vec3& value);
-    void setAttr(const char* key, const Vec4& value);
-    void setAttr(const char* key, const Quat& value);
+    void setAttr(const char* key, const char* value) override;
+    void setAttr(const char* key, int value) override;
+    void setAttr(const char* key, unsigned int value) override;
+    void setAttr(const char* key, int64 value) override;
+    void setAttr(const char* key, uint64 value, bool useHexFormat = true) override;
+    void setAttr(const char* key, float value) override;
+    void setAttr(const char* key, double value) override;
+    void setAttr(const char* key, const Vec2& value) override;
+    void setAttr(const char* key, const Ang3& value) override;
+    void setAttr(const char* key, const Vec3& value) override;
+    void setAttr(const char* key, const Vec4& value) override;
+    void setAttr(const char* key, const Quat& value) override;
 
     //! Delete attrbute.
-    void delAttr(const char* key);
+    void delAttr(const char* key) override;
     //! Remove all node attributes.
-    void removeAllAttributes();
+    void removeAllAttributes() override;
 
     //! Get attribute value of node.
-    bool getAttr(const char* key, int& value) const;
-    bool getAttr(const char* key, unsigned int& value) const;
-    bool getAttr(const char* key, int64& value) const;
-    bool getAttr(const char* key, uint64& value, bool useHexFormat = true  /*ignored*/) const;
-    bool getAttr(const char* key, float& value) const;
-    bool getAttr(const char* key, double& value) const;
-    bool getAttr(const char* key, bool& value) const;
+    bool getAttr(const char* key, int& value) const override;
+    bool getAttr(const char* key, unsigned int& value) const override;
+    bool getAttr(const char* key, int64& value) const override;
+    bool getAttr(const char* key, uint64& value, bool useHexFormat = true  /*ignored*/) const override;
+    bool getAttr(const char* key, float& value) const override;
+    bool getAttr(const char* key, double& value) const override;
+    bool getAttr(const char* key, bool& value) const override;
 
-    bool getAttr(const char* key, XmlString& value) const  {const char*    v(NULL); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
+    bool getAttr(const char* key, XmlString& value) const override
+    {const char*    v(NULL); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
 
-    bool getAttr(const char* key, Vec2& value) const;
-    bool getAttr(const char* key, Ang3& value) const;
-    bool getAttr(const char* key, Vec3& value) const;
-    bool getAttr(const char* key, Vec4& value) const;
-    bool getAttr(const char* key, Quat& value) const;
-    bool getAttr(const char* key, ColorB& value) const;
+    bool getAttr(const char* key, Vec2& value) const override;
+    bool getAttr(const char* key, Ang3& value) const override;
+    bool getAttr(const char* key, Vec3& value) const override;
+    bool getAttr(const char* key, Vec4& value) const override;
+    bool getAttr(const char* key, Quat& value) const override;
+    bool getAttr(const char* key, ColorB& value) const override;
 
 protected:
 
@@ -356,7 +349,7 @@ class CXmlNodeReuse
 {
 public:
     CXmlNodeReuse(const char* tag, CXmlNodePool* pPool);
-    virtual void Release();
+    void Release() override;
 
 protected:
     CXmlNodePool* m_pPool;

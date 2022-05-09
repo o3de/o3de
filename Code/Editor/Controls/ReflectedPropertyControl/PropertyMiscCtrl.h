@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_EDITOR_UTILS_PROPERTYMISCCTRL_H
-#define CRYINCLUDE_EDITOR_UTILS_PROPERTYMISCCTRL_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -53,6 +51,7 @@ private:
 
 class UserPopupWidgetHandler : public QObject, public AzToolsFramework::PropertyHandler < CReflectedVarUser, UserPropertyEditor>
 {
+    Q_OBJECT
 public:
     AZ_CLASS_ALLOCATOR(UserPopupWidgetHandler, AZ::SystemAllocator, 0);
     bool IsDefaultHandler() const override { return false; }
@@ -67,6 +66,7 @@ public:
 
 class FloatCurveHandler : public QObject, public AzToolsFramework::PropertyHandler < CReflectedVarSpline, CSplineCtrl>
 {
+    Q_OBJECT
 public:
     AZ_CLASS_ALLOCATOR(FloatCurveHandler, AZ::SystemAllocator, 0);
     bool IsDefaultHandler() const override { return false; }
@@ -80,5 +80,3 @@ public:
 
     void OnSplineChange(CSplineCtrl*);
 };
-
-#endif // CRYINCLUDE_EDITOR_UTILS_PROPERTYMISCCTRL_H

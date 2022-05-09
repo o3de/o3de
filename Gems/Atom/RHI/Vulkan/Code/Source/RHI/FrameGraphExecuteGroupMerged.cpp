@@ -113,14 +113,14 @@ namespace AZ
             scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Epilogue);
         }
 
-        AZStd::array_view<const Scope*> FrameGraphExecuteGroupMerged::GetScopes() const
+        AZStd::span<const Scope* const> FrameGraphExecuteGroupMerged::GetScopes() const
         {
             return m_scopes;
         }
 
-        AZStd::array_view<RHI::Ptr<CommandList>> FrameGraphExecuteGroupMerged::GetCommandLists() const
+        AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroupMerged::GetCommandLists() const
         {
-            return AZStd::array_view<RHI::Ptr<CommandList>>(&m_commandList, 1);
+            return AZStd::span<const RHI::Ptr<CommandList>>(&m_commandList, 1);
         }
 
         void FrameGraphExecuteGroupMerged::SetPrimaryCommandList(CommandList& commandList)
@@ -128,7 +128,7 @@ namespace AZ
             m_commandList = &commandList;
         }
 
-        void FrameGraphExecuteGroupMerged::SetRenderPasscontexts(AZStd::array_view<RenderPassContext> renderPassContexts)
+        void FrameGraphExecuteGroupMerged::SetRenderPasscontexts(AZStd::span<const RenderPassContext> renderPassContexts)
         {
             m_renderPassContexts = renderPassContexts;
         }

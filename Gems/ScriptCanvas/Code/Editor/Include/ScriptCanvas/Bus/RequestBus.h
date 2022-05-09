@@ -37,11 +37,6 @@ namespace GraphCanvas
     class NodePaletteDockWidget;
 }
 
-namespace ScriptCanvas
-{
-    class ScriptCanvasAssetBase;
-}
-
 namespace ScriptCanvasEditor
 {
     struct CategoryInformation;

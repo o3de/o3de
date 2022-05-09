@@ -28,6 +28,4 @@ set(FILES
     AzFramework/Input/User/LocalUserId_Platform.h
     ../Common/Default/AzFramework/Input/User/LocalUserId_Default.h
     ../Common/Unimplemented/AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Unimplemented.cpp
-    AzFramework/Archive/ArchiveVars_Platform.h
-    AzFramework/Archive/ArchiveVars_Linux.h
 )

@@ -11,7 +11,6 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -58,7 +57,7 @@ namespace AZ
             return m_lods.size();
         }
 
-        AZStd::array_view<Data::Instance<ModelLod>> Model::GetLods() const
+        AZStd::span<const Data::Instance<ModelLod>> Model::GetLods() const
         {
             return m_lods;
         }

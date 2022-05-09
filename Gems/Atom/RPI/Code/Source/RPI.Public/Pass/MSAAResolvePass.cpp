@@ -57,9 +57,9 @@ namespace AZ
             frameGraph.UseColorAttachment(copySource.m_unifiedScopeDesc.GetAsImage());
 
             RHI::ResolveScopeAttachmentDescriptor descriptor;
-            descriptor.m_attachmentId = copyDest.m_attachment->GetAttachmentId();
+            descriptor.m_attachmentId = copyDest.GetAttachment()->GetAttachmentId();
             descriptor.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::DontCare;
-            descriptor.m_resolveAttachmentId = copySource.m_attachment->GetAttachmentId();
+            descriptor.m_resolveAttachmentId = copySource.GetAttachment()->GetAttachmentId();
             frameGraph.UseResolveAttachment(descriptor);
 
             RenderPass::AddScopeQueryToFrameGraph(frameGraph);

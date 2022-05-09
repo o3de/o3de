@@ -6,13 +6,8 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XML_XMLBINARYNODE_H
-#define CRYINCLUDE_CRYSYSTEM_XML_XMLBINARYNODE_H
 #pragma once
 
-
-#include <algorithm>
 #include "IXml.h"
 #include "XMLBinaryHeaders.h"
 
@@ -26,20 +21,20 @@ class CBinaryXmlNode;
 class CBinaryXmlData
 {
 public:
-    const XMLBinary::Node*       pNodes;
-    const XMLBinary::Attribute*  pAttributes;
-    const XMLBinary::NodeIndex*  pChildIndices;
-    const char*                  pStringData;
+    const XMLBinary::Node* pNodes = nullptr;
+    const XMLBinary::Attribute* pAttributes = nullptr;
+    const XMLBinary::NodeIndex* pChildIndices = nullptr;
+    const char* pStringData = nullptr;
 
-    const char*                  pFileContents;
-    size_t                       nFileSize;
-    bool                         bOwnsFileContentsMemory;
+    const char* pFileContents = nullptr;
+    size_t nFileSize = 0;
+    bool bOwnsFileContentsMemory = true;
 
-    CBinaryXmlNode*              pBinaryNodes;
+    CBinaryXmlNode* pBinaryNodes = nullptr;
 
-    int                          nRefCount;
+    int nRefCount = 0;
 
-    CBinaryXmlData();
+    CBinaryXmlData() = default;
     ~CBinaryXmlData();
 };
 
@@ -96,7 +91,6 @@ public:
     virtual bool getAttributeByIndex(int index, XmlString& key, XmlString& value);
 
 
-    void shareChildren([[maybe_unused]] const XmlNodeRef& fromNode) override { assert(0); };
     void copyAttributes(XmlNodeRef fromNode) override { assert(0); };
 
     //! Get XML Node attribute for specified key.
@@ -110,8 +104,6 @@ public:
     bool haveAttr(const char* key) const override;
 
     XmlNodeRef newChild([[maybe_unused]] const char* tagName) override { assert(0); return 0; };
-    void replaceChild([[maybe_unused]] int inChild, [[maybe_unused]] const XmlNodeRef& node) override { assert(0); };
-    void insertChild([[maybe_unused]] int inChild, [[maybe_unused]] const XmlNodeRef& node) override { assert(0); };
     void addChild([[maybe_unused]] const XmlNodeRef& node) override { assert(0); };
     void removeChild([[maybe_unused]] const XmlNodeRef& node) override { assert(0); };
 
@@ -127,7 +119,6 @@ public:
     //! Find node with specified tag.
     XmlNodeRef findChild(const char* tag) const override;
     void deleteChild([[maybe_unused]] const char* tag) { assert(0); };
-    void deleteChildAt([[maybe_unused]] int nIndex) override { assert(0); };
 
     //! Get parent XML node.
     XmlNodeRef  getParent() const override;
@@ -136,10 +127,6 @@ public:
     const char* getContent() const override { return _string(_node()->nContentStringOffset); };
     void setContent([[maybe_unused]] const char* str) override { assert(0); };
 
-    XmlNodeRef  clone() override  { assert(0); return 0; };
-
-    //! Returns line number for XML tag.
-    int getLine() const override { return 0; };
     //! Set line number in xml.
     void setLine([[maybe_unused]] int line) override { assert(0); };
 
@@ -225,5 +212,3 @@ private:
 
     friend class XMLBinary::XMLBinaryReader;
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_XML_XMLBINARYNODE_H

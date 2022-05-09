@@ -8,8 +8,6 @@
 
 #include <CoreLights/DiskLightFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
@@ -255,6 +253,13 @@ namespace AZ
             m_diskLightData.GetData(handle.GetIndex()) = data;
             m_deviceBufferNeedsUpdate = true;
             UpdateShadow(handle);
+        }
+
+        const DiskLightData&  DiskLightFeatureProcessor::GetDiskData(LightHandle handle) const
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::GetDiskData().");
+
+            return m_diskLightData.GetData(handle.GetIndex());
         }
 
         const Data::Instance<RPI::Buffer> DiskLightFeatureProcessor::GetLightBuffer()const

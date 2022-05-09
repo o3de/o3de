@@ -23,8 +23,8 @@ import urllib.request
 
 from o3de import get_registration, manifest, repo, utils, validation
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.register')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def register_shipped_engine_o3de_objects(force: bool = False) -> int:
@@ -225,7 +225,7 @@ def remove_engine_name_to_path(json_data: dict,
 
     returns 0 to indicate no issues has occurred with removal
     """
-    if engine_path.is_dir() and validation.valid_o3de_engine_json(engine_path):
+    if engine_path.is_dir() and validation.valid_o3de_engine_json(pathlib.Path(engine_path).resolve() / 'engine.json'):
         engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
         if 'engine_name' in engine_json_data and 'engines_path' in json_data:
             engine_name = engine_json_data['engine_name']
@@ -234,6 +234,9 @@ def remove_engine_name_to_path(json_data: dict,
             except KeyError:
                 # Attempting to remove a non-existent engine_name is fine
                 pass
+    else:
+        logger.warning(f'Unable to find engine.json file or file is invalid at path {engine_path.as_posix()}')
+
     return 0
 
 
@@ -306,9 +309,9 @@ def register_o3de_object_path(json_data: dict,
         try:
             paths_to_remove.append(o3de_object_path.relative_to(save_path.parent))
         except ValueError:
-            pass # It is not an error if a relative path cannot be formed
+            pass  # It is not an error if a relative path cannot be formed
     manifest_data[o3de_object_key] = list(filter(lambda p: pathlib.Path(p) not in paths_to_remove,
-                                                           manifest_data.setdefault(o3de_object_key, [])))
+                                                 manifest_data.setdefault(o3de_object_key, [])))
 
     if remove:
         if save_path:
@@ -354,8 +357,8 @@ def register_engine_path(json_data: dict,
 
     if remove:
         return remove_engine_name_to_path(json_data, engine_path)
-
-    return add_engine_name_to_path(json_data, engine_path, force)
+    else:
+        return add_engine_name_to_path(json_data, engine_path, force)
 
 
 def register_external_subdirectory(json_data: dict,
@@ -411,7 +414,7 @@ def register_project_path(json_data: dict,
 
     if not remove:
         # registering a project has the additional step of setting the project.json 'engine' field
-        this_engine_json = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
+        this_engine_json = manifest.get_engine_json_data(engine_path=engine_path if engine_path else manifest.get_this_engine_path())
         if not this_engine_json:
             return 1
         project_json_data = manifest.get_project_json_data(project_path=project_path)
@@ -570,7 +573,7 @@ def remove_invalid_o3de_projects(manifest_path: pathlib.Path = None) -> int:
     result = 0
 
     for project in json_data.get('projects', []):
-        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json'):
+        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json', generate_uuid=True):
             logger.warning(f"Project path {project} is invalid.")
             # Attempt to unregister all invalid projects even if previous projects failed to unregister
             # but combine the result codes of each command.
@@ -732,14 +735,14 @@ def register(engine_path: pathlib.Path = None,
             logger.error(f'Gem path cannot be empty.')
             return 1
         result = result or register_gem_path(json_data, gem_path, remove,
-                                   external_subdir_engine_path, external_subdir_project_path)
+                                             external_subdir_engine_path, external_subdir_project_path)
 
     if isinstance(external_subdir_path, pathlib.PurePath):
         if not external_subdir_path:
             logger.error(f'External Subdirectory path is None.')
             return 1
         result = result or register_external_subdirectory(json_data, external_subdir_path, remove,
-                                                external_subdir_engine_path, external_subdir_project_path)
+                                                          external_subdir_engine_path, external_subdir_project_path)
 
     if isinstance(template_path, pathlib.PurePath):
         if not template_path:
@@ -793,14 +796,11 @@ def register(engine_path: pathlib.Path = None,
 
 
 def _run_register(args: argparse) -> int:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
-
     if args.update:
         remove_invalid_o3de_objects()
         return repo.refresh_repos()
     elif args.this_engine:
-        ret_val = register(engine_path=manifest.get_this_engine_path(), force=args.force)
+        ret_val = register(engine_path=manifest.get_this_engine_path(), force=args.force, remove=args.remove)
         return ret_val
     elif args.all_engines_path:
         return register_all_engines_in_folder(args.all_engines_path, args.remove, args.force)
@@ -841,6 +841,10 @@ def add_parser_args(parser):
     Ex. Directly run from this file alone with: python register.py --engine-path "C:/o3de"
     :param parser: the caller passes an argparse parser like instance to this method
     """
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(parser)
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--this-engine', action='store_true', required=False,
                        default=False,
@@ -887,19 +891,17 @@ def add_parser_args(parser):
                        default=False,
                        help='Refresh the repo cache.')
 
-    parser.add_argument('-ohf', '--override-home-folder', type=pathlib.Path, required=False,
-                                    help='By default the home folder is the user folder, override it to this folder.')
     parser.add_argument('-r', '--remove', action='store_true', required=False,
-                                    default=False,
-                                    help='Remove entry.')
+                        default=False,
+                        help='Remove entry.')
     parser.add_argument('-f', '--force', action='store_true', default=False,
-                                    help='For the update of the registration field being modified.')
+                        help='For the update of the registration field being modified.')
 
-    external_subdir_group =  parser.add_argument_group(title='external-subdirectory',
-                                                       description='path arguments to use with the --external-subdirectory option')
+    external_subdir_group = parser.add_argument_group(title='external-subdirectory',
+                                                      description='path arguments to use with the --external-subdirectory option')
     external_subdir_path_group = external_subdir_group.add_mutually_exclusive_group()
     external_subdir_path_group.add_argument('-esep', '--external-subdirectory-engine-path', type=pathlib.Path,
-                                       help='If supplied, registers the external subdirectory with the engine.json at' \
+                                            help='If supplied, registers the external subdirectory with the engine.json at' \
                                             ' the engine-path location')
     external_subdir_path_group.add_argument('-espp', '--external-subdirectory-project-path', type=pathlib.Path)
     parser.set_defaults(func=_run_register)
@@ -924,8 +926,6 @@ def main():
     # parse the command line args
     the_parser = argparse.ArgumentParser()
 
-    # add subparsers
-
     # add args to the parser
     add_parser_args(the_parser)
 
@@ -934,6 +934,7 @@ def main():
 
     # run
     ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+    logger.info('Success!' if ret == 0 else 'Completed with issues: result {}'.format(ret))
 
     # return
     sys.exit(ret)

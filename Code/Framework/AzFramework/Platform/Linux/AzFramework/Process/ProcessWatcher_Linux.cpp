@@ -10,12 +10,11 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
-
 #include <AzCore/base.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <iostream>
 #include <errno.h>
@@ -121,7 +120,7 @@ namespace AzFramework
                 int res = chdir(processLaunchInfo.m_workingDirectory.c_str());
                 if (res != 0)
                 {
-                    write(errorPipe[1], &errno, sizeof(int));
+                    [[maybe_unused]] auto writeResult = write(errorPipe[1], &errno, sizeof(int));
                     // We *have* to _exit as we are the child process and simply
                     // returning at this point would mean we would start running
                     // the code from our parent process and that will just wreck
@@ -133,15 +132,19 @@ namespace AzFramework
             switch (processLaunchInfo.m_processPriority)
             {
                 case PROCESSPRIORITY_BELOWNORMAL:
-                    nice(1);
+                {
+                    [[maybe_unused]] auto niceResult = nice(1);
                     // also reduce disk impact:
                     // setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_UTILITY);
                     break;
+                }
                 case PROCESSPRIORITY_IDLE:
-                    nice(20);
+                {
+                    [[maybe_unused]] auto niceResult = nice(20);
                     // also reduce disk impact:
                     // setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_THROTTLE);
                     break;
+                }
             }
 
             startupInfo.SetupHandlesForChildProcess();
@@ -154,7 +157,7 @@ namespace AzFramework
             // to stop it from continuing to run as a clone of the parent.
             // Communicate the error code back to the parent via a pipe for the
             // parent to read.
-            write(errorPipe[1], &errval, sizeof(errval));
+            [[maybe_unused]] auto writeResult = write(errorPipe[1], &errval, sizeof(errval));
 
             _exit(0);
         }
@@ -220,36 +223,52 @@ namespace AzFramework
         // this is so that the callers (which could be numerous) do not have to worry about this and sprinkle ifdefs
         // all over their code.
         // We'll convert this to UNIX style command line parameters by counting and eliminating quotes:
-        
-        AZStd::vector<AZStd::string> commandTokens;
-        
-        AZStd::string outputString;
-        bool inQuotes = false;
-        for (const char currentChar : processLaunchInfo.m_commandlineParameters)
-        {
-            if (currentChar == '"')
-            {
-                inQuotes = !inQuotes;
-            }
-            else if ((currentChar == ' ') && (!inQuotes))
-            {
-                // its a space outside of quotes, so it ends the current parameter
-                commandTokens.push_back(outputString);
-                outputString.clear();
-            }
-            else
-            {
-                // Its a normal character, or its a space inside quotes
-                outputString.push_back(currentChar);
-            }
-        }
 
-        if (!outputString.empty())
+        // Struct uses overloaded operator() to quote command line arguments based
+        // on whether a string or a vector<string> was supplied
+        struct EscapeCommandArguments
         {
-            commandTokens.push_back(outputString);
-            outputString.clear();
-        }
-        
+            void operator()(const AZStd::string& commandParameterString)
+            {
+                AZStd::string outputString;
+                bool inQuotes = false;
+                for (size_t pos = 0; pos < commandParameterString.size(); ++pos)
+                {
+                    char currentChar = commandParameterString[pos];
+                    if (currentChar == '"')
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                    else if ((currentChar == ' ') && (!inQuotes))
+                    {
+                        // its a space outside of quotes, so it ends the current parameter
+                        commandArray.push_back(outputString);
+                        outputString.clear();
+                    }
+                    else
+                    {
+                        // Its a normal character, or its a space inside quotes
+                        outputString.push_back(currentChar);
+                    }
+                }
+
+                if (!outputString.empty())
+                {
+                    commandArray.push_back(outputString);
+                    outputString.clear();
+                }
+            }
+
+            void operator()(const AZStd::vector<AZStd::string>& commandParameterArray)
+            {
+                commandArray = commandParameterArray;
+            }
+            AZStd::vector<AZStd::string>& commandArray;
+        };
+
+        AZStd::vector<AZStd::string> commandTokens;
+        AZStd::visit(EscapeCommandArguments{ commandTokens }, processLaunchInfo.m_commandlineParameters);
+
         if (!processLaunchInfo.m_processExecutableString.empty())
         {
             commandTokens.insert(commandTokens.begin(), processLaunchInfo.m_processExecutableString);
@@ -302,7 +321,7 @@ namespace AzFramework
 
         // Set up a pipe to communicate the error code from the subprocess's execvpe call
         AZStd::array<int, 2> childErrorPipeFds{};
-        pipe(childErrorPipeFds.data());
+        [[maybe_unused]] auto pipeResult = pipe(childErrorPipeFds.data());
 
         // This configures the write end of the pipe to close on calls to `exec`
         fcntl(childErrorPipeFds[1], F_SETFD, fcntl(childErrorPipeFds[1], F_GETFD) | FD_CLOEXEC);
@@ -452,4 +471,23 @@ namespace AzFramework
 
         kill(m_pWatcherData->m_childProcessId, SIGKILL);
     }
+
+    AZStd::string ProcessLauncher::ProcessLaunchInfo::GetCommandLineParametersAsString() const
+    {
+        struct CommandLineParametersVisitor
+        {
+            AZStd::string operator()(const AZStd::string& commandLine) const
+            {
+                return commandLine;
+            }
+
+            AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
+            {
+                AZStd::string commandLineResult;
+                AZ::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
+                return commandLineResult;
+            }
+        };
+        return AZStd::visit(CommandLineParametersVisitor{}, m_commandlineParameters);
+    }    
 } //namespace AzFramework

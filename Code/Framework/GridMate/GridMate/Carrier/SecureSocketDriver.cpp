@@ -1455,7 +1455,9 @@ namespace GridMate
         ERR_load_SSL_strings();
         SSL_load_error_strings();
 
+        AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations", "-Wdeprecated-declarations")
         m_sslContext = SSL_CTX_new(DTLSv1_2_method());
+        AZ_POP_DISABLE_WARNING
         if (m_sslContext == nullptr)
         {
             return EC_SECURE_CREATE;

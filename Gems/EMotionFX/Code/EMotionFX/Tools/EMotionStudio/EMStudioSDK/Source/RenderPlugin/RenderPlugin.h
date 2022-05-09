@@ -85,7 +85,6 @@ namespace EMStudio
         RenderPlugin();
         virtual ~RenderPlugin();
 
-        void Reflect(AZ::ReflectContext* context) override;
         bool Init() override;
         void OnAfterLoadProject() override;
         void OnAfterLoadActors() override;

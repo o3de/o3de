@@ -9,6 +9,7 @@
 set(FILES
     ../Common/UnixLike/AzTest/ColorizedOutput_UnixLike.cpp
     ../Common/UnixLike/AzTest/ScopedAutoTempDirectory_UnixLike.cpp
+    ../Common/UnixLike/AzTest/Utils_UnixLike.cpp
     Platform_Linux.cpp
     AzTest_Traits_Platform.h
     AzTest_Traits_Linux.h

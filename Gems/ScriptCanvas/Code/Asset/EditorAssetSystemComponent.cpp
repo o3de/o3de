@@ -22,8 +22,7 @@
  // Undo this
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 AZ_POP_DISABLE_WARNING
@@ -85,10 +84,7 @@ namespace ScriptCanvasEditor
     static bool HandlesSource(const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry)
     {
         AZStd::string_view targetExtension = entry->GetExtension();
-
-        ScriptCanvasAsset::Description description;
-        AZStd::string_view scriptCanvasFileFilter = description.GetFileFilterImpl();
-
+        AZStd::string_view scriptCanvasFileFilter = SourceDescription::GetFileFilter();
         if (AZStd::wildcard_match(scriptCanvasFileFilter.data(), targetExtension.data()))
         {
             return true;
@@ -132,7 +128,7 @@ namespace ScriptCanvasEditor
         // and then a lambda which will be activated if the user chooses to open it with your opener:
 
         openers.push_back({ "ScriptCanvas_Editor_Asset_Edit", "Script Canvas Editor..."
-            , QIcon(ScriptCanvasAssetDescription().GetIconPathImpl()),
+            , QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath()),
             [](const char*, const AZ::Uuid& scSourceUuid)
             {
                 AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);

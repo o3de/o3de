@@ -38,5 +38,6 @@
       ]
     },
 
-    "DrawList" : "forward"
+    "DrawList" : "forward",
+    "DisabledRHIBackends": ["metal"]
 }

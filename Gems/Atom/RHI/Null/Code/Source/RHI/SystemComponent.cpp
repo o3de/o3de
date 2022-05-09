@@ -12,7 +12,6 @@
 #include <Atom/RHI/PhysicalDevice.h>
 #include <Atom/RHI/QueryPool.h>
 #include <Atom/RHI.Reflect/Null/Base.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>

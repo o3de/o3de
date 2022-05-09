@@ -76,24 +76,15 @@ namespace AZ
                 callbackFunction = [this](const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
                 {
                     m_distanceReadbackResult = readbackResult;
-                    m_readbackState = DiffuseProbeGridReadbackState::Relocation;
+                    m_readbackState = DiffuseProbeGridReadbackState::ProbeData;
                 };
                 break;
-            case DiffuseProbeGridReadbackState::Relocation:
-                descriptor = m_diffuseProbeGrid->GetRelocationImage()->GetDescriptor();
-                attachmentId = m_diffuseProbeGrid->GetRelocationImageAttachmentId();
+            case DiffuseProbeGridReadbackState::ProbeData:
+                descriptor = m_diffuseProbeGrid->GetProbeDataImage()->GetDescriptor();
+                attachmentId = m_diffuseProbeGrid->GetProbeDataImageAttachmentId();
                 callbackFunction = [this](const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
                 {
-                    m_relocationReadbackResult = readbackResult;
-                    m_readbackState = DiffuseProbeGridReadbackState::Classification;
-                };
-                break;
-            case DiffuseProbeGridReadbackState::Classification:
-                descriptor = m_diffuseProbeGrid->GetClassificationImage()->GetDescriptor();
-                attachmentId = m_diffuseProbeGrid->GetClassificationImageAttachmentId();
-                callbackFunction = [this](const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
-                {
-                    m_classificationReadbackResult = readbackResult;
+                    m_probeDataReadbackResult = readbackResult;
                     m_readbackState = DiffuseProbeGridReadbackState::Complete;
                 };
                 break;
@@ -131,8 +122,7 @@ namespace AZ
                 m_callback(
                     { m_irradianceReadbackResult.m_dataBuffer, m_irradianceReadbackResult.m_imageDescriptor.m_format, m_irradianceReadbackResult.m_imageDescriptor.m_size },
                     { m_distanceReadbackResult.m_dataBuffer, m_distanceReadbackResult.m_imageDescriptor.m_format, m_distanceReadbackResult.m_imageDescriptor.m_size },
-                    { m_relocationReadbackResult.m_dataBuffer, m_relocationReadbackResult.m_imageDescriptor.m_format, m_relocationReadbackResult.m_imageDescriptor.m_size },
-                    { m_classificationReadbackResult.m_dataBuffer, m_classificationReadbackResult.m_imageDescriptor.m_format, m_classificationReadbackResult.m_imageDescriptor.m_size });
+                    { m_probeDataReadbackResult.m_dataBuffer, m_probeDataReadbackResult.m_imageDescriptor.m_format, m_probeDataReadbackResult.m_imageDescriptor.m_size });
 
                 m_readbackState = DiffuseProbeGridReadbackState::Idle;
                 m_attachmentReadback.reset();
