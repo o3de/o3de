@@ -87,7 +87,7 @@ function(ly_apply_debug_strip_options target)
     endif()
 
     add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/DetachDebugSymbols.cmake"
+        COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/ProcessDebugSymbols.cmake"
                 ${GNU_STRIP_TOOL}
                 ${GNU_OBJCOPY}
                 "$<TARGET_FILE:${target}>"
