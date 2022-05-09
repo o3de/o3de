@@ -34,11 +34,6 @@ namespace Terrain
         [[maybe_unused]] static const char* TerrainMeshManagerName = "TerrainMeshManager";
     }
 
-    namespace ShaderInputs
-    {
-        static const char* const PatchData("m_patchData");
-    }
-
     TerrainMeshManager::TerrainMeshManager()
     {   
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
@@ -51,12 +46,6 @@ namespace Terrain
 
     void TerrainMeshManager::Initialize()
     {
-        if (!InitializePatchModel())
-        {
-            AZ_Error(TerrainMeshManagerName, false, "Failed to create Terrain render buffers!");
-            return;
-        }
-
         if (!InitializeSectorModel())
         {
             AZ_Error(TerrainMeshManagerName, false, "Failed to create Terrain render buffers!");
@@ -64,7 +53,6 @@ namespace Terrain
         }
 
         OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
-
         m_isInitialized = true;
     }
 
@@ -85,319 +73,197 @@ namespace Terrain
 
     void TerrainMeshManager::Reset()
     {
-        m_patchModel = {};
-        m_sectorData.clear();
+        m_sectorModel = {};
+        m_sectorStack.clear();
         m_rebuildSectors = true;
         m_isInitialized = false;
     }
 
-    void TerrainMeshManager::CheckStackForUpdate(AZ::Vector3 newPosition)
+    void TerrainMeshManager::Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
+        MaterialInstance materialInstance, AZ::RPI::Scene& parentScene, bool forceRebuildDrawPackets)
+    {
+        if (m_rebuildSectors)
+        {
+            RebuildSectors(materialInstance, parentScene);
+            m_rebuildSectors = false;
+        }
+        else if (forceRebuildDrawPackets)
+        {
+            // The draw packets may need to be forcibly rebuilt in cases like a shader reload.
+            RebuildDrawPackets(parentScene);
+        }
+
+        ShaderMeshData meshData;
+        mainView->GetCameraTransform().GetTranslation().StoreToFloat3(meshData.m_mainCameraPosition.data());
+        meshData.m_firstLodDistance = m_config.m_firstLodDistance;
+        terrainSrg->SetConstant(m_srgMeshDataIndex, meshData);
+    }
+
+    void TerrainMeshManager::CheckStacksForUpdate(AZ::Vector3 newPosition)
     {
         for (uint32_t i = 0; i < m_sectorStack.size(); ++i)
         {
-            const float gridMeters = (GridSize * m_sampleSpacing) * (2 << i);
-            int32_t startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetX() - m_config.m_firstLodDistance) / gridMeters)) * 2;
-            int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetY() - m_config.m_firstLodDistance) / gridMeters)) * 2;
+            float maxDistance = m_config.m_firstLodDistance * aznumeric_cast<float>(1 << i);
+            const float gridMeters = (GridSize * m_sampleSpacing) * (1 << i);
+            int32_t startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetX() - maxDistance) / gridMeters));
+            int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetY() - maxDistance) / gridMeters));
 
-            StackData& stackData = m_sectorStack.back();
+            StackData& stackData = m_sectorStack.at(i);
             if (stackData.m_startCoordX != startCoordX || stackData.m_startCoordY != startCoordY)
             {
-                // Sectors need updating
-                uint32_t oldFirstIndexX = (stackData.m_1dSectorCount + (stackData.m_startCoordX % stackData.m_1dSectorCount)) % stackData.m_1dSectorCount;
-                uint32_t oldFirstIndexY = (stackData.m_1dSectorCount + (stackData.m_startCoordY % stackData.m_1dSectorCount)) % stackData.m_1dSectorCount;
+                stackData.m_startCoordX = startCoordX;
+                stackData.m_startCoordY = startCoordY;
 
-                uint32_t newFirstIndexX = (stackData.m_1dSectorCount + (startCoordX % stackData.m_1dSectorCount)) % stackData.m_1dSectorCount;
-                uint32_t newFirstIndexY = (stackData.m_1dSectorCount + (startCoordY % stackData.m_1dSectorCount)) % stackData.m_1dSectorCount;
+                uint32_t firstSectorIndexX = (m_1dSectorCount + (startCoordX % m_1dSectorCount)) % m_1dSectorCount;
+                uint32_t firstSectorIndexY = (m_1dSectorCount + (startCoordY % m_1dSectorCount)) % m_1dSectorCount;
 
-                int32_t count = 0;
+                int32_t debugCount = 0;
 
-                for (uint32_t j = 0; j < stackData.m_sectors.size(); ++j)
+                for (uint32_t xOffset = 0; xOffset < m_1dSectorCount; ++xOffset)
                 {
-                    // Local coordinates of sector from 0 to stackData.m_1dSectorCount
-                    uint32_t localX = j % stackData.m_1dSectorCount;
-                    uint32_t localY = j / stackData.m_1dSectorCount;
-
-                    uint32_t stackX = (localX + newFirstIndexX) % stackData.m_1dSectorCount;
-                    uint32_t stackY = (localY + newFirstIndexY) % stackData.m_1dSectorCount;
-                    
-                    // World sector coordinates
-                    uint32_t oldLocalX = ((stackX - oldFirstIndexX + stackData.m_1dSectorCount) % stackData.m_1dSectorCount);
-                    uint32_t oldLocalY = ((stackY - oldFirstIndexY + stackData.m_1dSectorCount) % stackData.m_1dSectorCount);
-
-                    int32_t oldWorldCoordX = stackData.m_startCoordX + oldLocalX;
-                    int32_t oldWorldCoordY = stackData.m_startCoordY + oldLocalY;
-
-                    int32_t newWorldCoordX = startCoordX + localX;
-                    int32_t newWorldCoordY = startCoordY + localY;
-
-                    if (oldWorldCoordX == newWorldCoordX && oldWorldCoordY == newWorldCoordY)
+                    for (uint32_t yOffset = 0; yOffset < m_1dSectorCount; ++yOffset)
                     {
-                        continue; // This sector hasn't changed
+                        uint32_t sectorIndexX = (firstSectorIndexX + xOffset) % m_1dSectorCount;
+                        uint32_t sectorIndexY = (firstSectorIndexY + yOffset) % m_1dSectorCount;
+                        uint32_t sectorIndex = sectorIndexY * m_1dSectorCount + sectorIndexX;
+
+                        int32_t worldX = startCoordX + xOffset;
+                        int32_t worldY = startCoordY + yOffset;
+
+                        StackSectorData& sector = stackData.m_sectors.at(sectorIndex);
+
+                        if (sector.m_worldX != worldX || sector.m_worldY != worldY)
+                        {
+                            sector.m_worldX = worldX;
+                            sector.m_worldY = worldY;
+
+                            AZ::Vector3 min = AZ::Vector3(worldX * gridMeters, worldY * gridMeters, m_worldBounds.GetMin().GetZ());
+                            AZ::Vector3 max = min + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetZExtent());
+                            sector.m_aabb = AZ::Aabb::CreateFromMinMax(min, max);
+
+                            ShaderObjectData objectSrgData;
+                            objectSrgData.m_xyTranslation = { min.GetX(), min.GetY() };
+                            objectSrgData.m_xyScale = gridMeters;
+                            objectSrgData.m_lodLevel = i;
+
+                            sector.m_srg->SetConstant(m_patchDataIndex, objectSrgData);
+                            sector.m_srg->Compile();
+
+                            //sector.m_drawPacket.Update(parentScene, true);
+
+                            ++debugCount;
+                        }
                     }
-
-                    StackSectorData& sector = stackData.m_sectors.at(j);
-
-                    AZ::Vector3 min = AZ::Vector3(newWorldCoordX * gridMeters, newWorldCoordY * gridMeters, m_worldBounds.GetMin().GetZ());
-                    AZ::Vector3 max = min + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetMax().GetZ());
-                    sector.m_aabb = AZ::Aabb::CreateFromMinMax(min, max);
-
-                    ShaderTerrainData objectSrgData;
-                    objectSrgData.m_xyTranslation = { min.GetX(), min.GetY() };
-                    objectSrgData.m_xyScale = gridMeters;
-
-                    sector.m_srg->SetConstant(m_patchDataIndex, objectSrgData);
-                    sector.m_srg->Compile();
-
-                    //sector.m_drawPacket.Update(parentScene, true);
-
-                    ++count;
                 }
-                if (count > 0)
+
+                if (debugCount > 0)
                 {
-                    AZ_Warning("Terrain Mesh", false, "Found %i sectors to rebuild", count);
+                    AZ_Warning("Terrain Mesh", false, "Found %i sectors to rebuild", debugCount);
                 }
                 else
                 {
                     AZ_Warning("Terrain Mesh", false, "DID NOT FIND SECTORS TO REBUILD...");
                 }
-
-                stackData.m_startCoordX = startCoordX;
-                stackData.m_startCoordY = startCoordY;
             }
         }
 
     }
 
-    bool TerrainMeshManager::CheckRebuildSurfaces(const AZ::Vector3& position, MaterialInstance materialInstance, AZ::RPI::Scene& parentScene)
+    void TerrainMeshManager::RebuildSectors(MaterialInstance materialInstance, AZ::RPI::Scene& parentScene)
     {
         const float gridMeters = GridSize * m_sampleSpacing;
 
-        if (m_rebuildSectors)
+        const auto& materialAsset = materialInstance->GetAsset();
+        const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+
+        // Calculate the largest potential number of sectors needed per dimension at any stack level.
+        m_1dSectorCount = aznumeric_cast<uint32_t>(AZStd::ceilf((m_config.m_firstLodDistance + gridMeters) / gridMeters));
+        m_1dSectorCount += 1; // Add one sector of wiggle room.
+        m_1dSectorCount *= 2; // Lod Distance is radius, but we need diameter.
+
+        m_sectorStack.clear();
+
+        uint32_t stackCount = aznumeric_cast<uint32_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
+        m_sectorStack.reserve(stackCount);
+
+        for (uint32_t j = 0; j < stackCount; ++j)
         {
-            m_rebuildSectors = false;
+            m_sectorStack.push_back({});
+            StackData& stackData = m_sectorStack.back();
 
-            // Tile sectors
+            stackData.m_sectors.resize(m_1dSectorCount * m_1dSectorCount);
 
-            m_sectorData.clear();
-
-            const auto layout = materialInstance->GetAsset()->GetObjectSrgLayout();
-
-            m_patchDataIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::PatchData));
-            AZ_Error(TerrainMeshManagerName, m_patchDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::PatchData);
-
-            const float xFirstPatchStart = AZStd::floorf(m_worldBounds.GetMin().GetX() / gridMeters) * gridMeters;
-            const float xLastPatchStart = AZStd::floorf(m_worldBounds.GetMax().GetX() / gridMeters) * gridMeters;
-            const float yFirstPatchStart = AZStd::floorf(m_worldBounds.GetMin().GetY() / gridMeters) * gridMeters;
-            const float yLastPatchStart = AZStd::floorf(m_worldBounds.GetMax().GetY() / gridMeters) * gridMeters;
-
-            const auto& materialAsset = materialInstance->GetAsset();
-            const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
-
-            for (float yPatch = yFirstPatchStart; yPatch <= yLastPatchStart; yPatch += gridMeters)
+            for (uint32_t i = 0; i < stackData.m_sectors.size(); ++i)
             {
-                for (float xPatch = xFirstPatchStart; xPatch <= xLastPatchStart; xPatch += gridMeters)
+                StackSectorData& sector = stackData.m_sectors.at(i);
+                sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
+                AZ::RPI::ModelLod& modelLod = *m_sectorModel->GetLods().begin()->get();
+                sector.m_drawPacket = AZ::RPI::MeshDrawPacket(modelLod, 0, materialInstance, sector.m_srg);
+
+                // set the shader option to select forward pass IBL specular if necessary
+                if (!sector.m_drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
                 {
-                    ShaderTerrainData objectSrgData;
-                    objectSrgData.m_xyTranslation = { xPatch, yPatch };
-
-                    m_sectorData.push_back();
-                    SectorData& sectorData = m_sectorData.back();
-
-                    for (auto& lod : m_patchModel->GetLods())
-                    {
-                        objectSrgData.m_xyScale = gridMeters;
-
-                        auto objectSrg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
-                        if (!objectSrg)
-                        {
-                            AZ_WarningOnce(TerrainMeshManagerName, false, "Failed to create a new shader resource group, skipping.");
-                            continue;
-                        }
-                        objectSrg->SetConstant(m_patchDataIndex, objectSrgData);
-                        objectSrg->Compile();
-
-                        AZ::RPI::ModelLod& modelLod = *lod.get();
-                        sectorData.m_drawPackets.emplace_back(modelLod, 0, materialInstance, objectSrg);
-                        AZ::RPI::MeshDrawPacket& drawPacket = sectorData.m_drawPackets.back();
-
-                        sectorData.m_srgs.emplace_back(objectSrg);
-
-                        // set the shader option to select forward pass IBL specular if necessary
-                        if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
-                        {
-                            AZ_Warning(TerrainMeshManagerName, false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
-                        }
-                        const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
-                        drawPacket.SetStencilRef(stencilRef);
-                        drawPacket.Update(parentScene, true);
-                    }
-
-                    sectorData.m_aabb =
-                        AZ::Aabb::CreateFromMinMax(
-                            AZ::Vector3(xPatch, yPatch, m_worldBounds.GetMin().GetZ()),
-                            AZ::Vector3(xPatch + gridMeters, yPatch + gridMeters, m_worldBounds.GetMax().GetZ())
-                        );
+                    AZ_Warning(TerrainMeshManagerName, false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
+                const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
+                sector.m_drawPacket.SetStencilRef(stencilRef);
+                sector.m_drawPacket.Update(parentScene, true);
             }
-
-            // Stack sectors:
-            {
-                m_previousCameraPosition = position;
-                m_sectorStack.push_back({});
-                StackData& stackData = m_sectorStack.back();
-
-                // Calculate the largest potential number of sectors needed per dimension at any stack level.
-                stackData.m_1dSectorCount = 2 * aznumeric_cast<uint32_t>(AZStd::ceilf((m_config.m_firstLodDistance + gridMeters) / gridMeters));
-                stackData.m_sectors.resize(stackData.m_1dSectorCount * stackData.m_1dSectorCount);
-
-                float gridMeters2 = gridMeters * 2.0f;
-                stackData.m_startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((position.GetX() - m_config.m_firstLodDistance) / gridMeters2)) * 2;
-                stackData.m_startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((position.GetY() - m_config.m_firstLodDistance) / gridMeters2)) * 2;
-
-                uint32_t firstIndexX = (stackData.m_1dSectorCount + (stackData.m_startCoordX % stackData.m_1dSectorCount)) % stackData.m_1dSectorCount;
-                uint32_t firstIndexY = (stackData.m_1dSectorCount + (stackData.m_startCoordY % stackData.m_1dSectorCount)) % stackData.m_1dSectorCount;
-
-                for (uint32_t i = 0; i < stackData.m_sectors.size(); ++i)
-                {
-                    // Local coordinates of 0 to stackData.m_1dSectorCount
-                    uint32_t localX = i % stackData.m_1dSectorCount;
-                    uint32_t localY = i / stackData.m_1dSectorCount;
-
-                    // Actual coordinates inside m_sectors based on the offset first index in x and y
-                    uint32_t stackX = (localX + firstIndexX) % stackData.m_1dSectorCount;
-                    uint32_t stackY = (localY + firstIndexY) % stackData.m_1dSectorCount;
-
-                    // World sector coordinates
-                    int32_t worldCoordX = stackData.m_startCoordX + localX;
-                    int32_t worldCoordY = stackData.m_startCoordY + localY;
-
-                    uint32_t index = stackY * stackData.m_1dSectorCount + stackX;
-                    StackSectorData& sector = stackData.m_sectors.at(index);
-
-                    // Aabb
-                    AZ::Vector3 min = AZ::Vector3(worldCoordX * gridMeters, worldCoordY * gridMeters, m_worldBounds.GetMin().GetZ());
-                    AZ::Vector3 max = min + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetMax().GetZ());
-                    sector.m_aabb = AZ::Aabb::CreateFromMinMax(min, max);
-
-                    // Srg
-                    ShaderTerrainData objectSrgData;
-                    objectSrgData.m_xyTranslation = { min.GetX(), min.GetY() };
-                    objectSrgData.m_xyScale = gridMeters;
-
-                    sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
-                    if (!sector.m_srg)
-                    {
-                        AZ_WarningOnce(TerrainMeshManagerName, false, "Failed to create a new shader resource group, skipping.");
-                        continue;
-                    }
-                    sector.m_srg->SetConstant(m_patchDataIndex, objectSrgData);
-                    sector.m_srg->Compile();
-
-                    // Draw packet
-                    AZ::RPI::ModelLod& modelLod = *m_sectorModel->GetLods().begin()->get();
-                    sector.m_drawPacket = AZ::RPI::MeshDrawPacket(modelLod, 0, materialInstance, sector.m_srg);
-
-                    // set the shader option to select forward pass IBL specular if necessary
-                    if (!sector.m_drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
-                    {
-                        AZ_Warning(TerrainMeshManagerName, false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
-                    }
-                    const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
-                    sector.m_drawPacket.SetStencilRef(stencilRef);
-                    sector.m_drawPacket.Update(parentScene, true);
-                }
-            }
-
         }
-
-
-
-
-        return true;
     }
 
-    void TerrainMeshManager::DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process)
+    void TerrainMeshManager::DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView)
     {
-        
-        /*
-        const float gridMeters = GridSize * m_sampleSpacing;
-        for (auto& sectorData : m_sectorData)
-        {
-            uint8_t lodChoice = AZ::RPI::ModelLodAsset::LodCountMax;
-
-            // Go through all cameras and choose an LOD based on the closest camera.
-            for (auto& view : process.m_views)
-            {
-                if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
-                {
-                    const AZ::Vector3 cameraPosition = view->GetCameraTransform().GetTranslation();
-                    const AZ::Vector2 cameraPositionXY = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
-                    const AZ::Vector2 sectorCenterXY = AZ::Vector2(sectorData.m_aabb.GetCenter().GetX(), sectorData.m_aabb.GetCenter().GetY());
-
-                    const float sectorDistance = sectorCenterXY.GetDistance(cameraPositionXY);
-
-                    // This will be configurable later
-                    const float minDistanceForLod0 = (gridMeters * 4.0f);
-
-                    // For every distance doubling beyond a minDistanceForLod0, we only need half the mesh density. Each LOD
-                    // is exactly half the resolution of the last.
-                    const float lodForCamera = AZStd::floorf(AZ::GetMax(0.0f, log2f(sectorDistance / minDistanceForLod0)));
-
-                    // All cameras should render the same LOD so effects like shadows are consistent.
-                    lodChoice = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(lodForCamera));
-                }
-            }
-
-            // Add the correct LOD draw packet for visible sectors.
-            for (auto& view : process.m_views)
-            {
-                AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
-                if (viewFrustum.IntersectAabb(sectorData.m_aabb) != AZ::IntersectResult::Exterior)
-                {
-                    const uint8_t lodToRender = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(sectorData.m_drawPackets.size() - 1));
-                    view->AddDrawPacket(sectorData.m_drawPackets.at(lodToRender).GetRHIDrawPacket());
-                }
-            }
-        }
-        */
-
-        AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
+        AZ::Vector3 mainCameraPosition = mainView->GetCameraTransform().GetTranslation();
+        CheckStacksForUpdate(mainCameraPosition);
 
         for (auto& view : process.m_views)
         {
-            if ((view->GetUsageFlags() & AZ::RPI::View::UsageCamera) > 0)
-            {
-                cameraPosition = view->GetCameraTransform().GetTranslation();
-                CheckStackForUpdate(cameraPosition);
-                break;
-            }
-        }
+            float minDistanceSq = 0.0f;
+            float maxDistanceSq = m_config.m_firstLodDistance * m_config.m_firstLodDistance;
 
-        for (auto& view : process.m_views)
-        {
+            AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
+            AZ::Vector3 viewVector = viewFrustum.GetPlane(AZ::Frustum::PlaneId::Near).GetNormal();
+            AZ::Vector3 veiwPosition = view->GetCameraTransform().GetTranslation();
+
             for (auto& sectorStack : m_sectorStack)
             {
+                float radius = 0.0f;
+                [[maybe_unused]] AZ::Vector3 center;
+                sectorStack.m_sectors.at(0).m_aabb.GetAsSphere(center, radius);
+
                 for (auto& sector : sectorStack.m_sectors)
                 {
-                    AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
-                    if (sector.m_aabb.GetDistanceSq(cameraPosition) < m_config.m_firstLodDistance * m_config.m_firstLodDistance &&
-                        sector.m_drawPacket.GetRHIDrawPacket() &&
-                        viewFrustum.IntersectAabb(sector.m_aabb) != AZ::IntersectResult::Exterior)
+                    if (viewVector.Dot(veiwPosition - sector.m_aabb.GetCenter()) < -radius || // Cheap check to eliminate sectors behind camera
+                        viewFrustum.IntersectAabb(sector.m_aabb) == AZ::IntersectResult::Exterior || // Check against frustum
+                        !sector.m_aabb.Overlaps(m_worldBounds)) // Check against world bounds
+                    {
+                        continue;
+                    }
+
+                    // Sector is in view, but only draw if it's in the correct LOD range.
+                    float aabbMinDistanceSq = sector.m_aabb.GetDistanceSq(mainCameraPosition);
+                    float aabbMaxDistanceSq = sector.m_aabb.GetMaxDistanceSq(mainCameraPosition);
+                    if (aabbMaxDistanceSq > minDistanceSq && aabbMinDistanceSq <= maxDistanceSq)
                     {
                         view->AddDrawPacket(sector.m_drawPacket.GetRHIDrawPacket());
                     }
                 }
+                minDistanceSq = maxDistanceSq;
+                maxDistanceSq = maxDistanceSq * 4.0f; // Double the distance with squared distances is * 2^2.
             }
         }
+
+        m_previousCameraPosition = mainCameraPosition;
     }
 
     void TerrainMeshManager::RebuildDrawPackets(AZ::RPI::Scene& scene)
     {
-        for (auto& sectorData : m_sectorData)
+        for (auto& stackData : m_sectorStack)
         {
-            for (auto& drawPacket : sectorData.m_drawPackets)
+            for (auto& sector : stackData.m_sectors)
             {
-                drawPacket.Update(scene, true);
+                sector.m_drawPacket.Update(scene, true);
             }
         }
     }
@@ -534,36 +400,6 @@ namespace Terrain
         return true;
     }
 
-    bool TerrainMeshManager::InitializePatchModel()
-    {
-        AZ::RPI::ModelAssetCreator modelAssetCreator;
-        modelAssetCreator.Begin(AZ::Uuid::CreateRandom());
-
-        uint16_t gridSize = GridSize;
-
-        for (uint32_t i = 0; i < AZ::RPI::ModelLodAsset::LodCountMax && gridSize > 0; ++i)
-        {
-            PatchData patchData;
-            InitializeTerrainPatch(gridSize, patchData);
-
-            if (!CreateLod(modelAssetCreator, patchData))
-            {
-                return false;
-            }
-            gridSize = gridSize / 2;
-        }
-
-        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
-        if (!modelAssetCreator.End(modelAsset))
-        {
-            return false;
-        }
-
-        m_patchModel = AZ::RPI::Model::FindOrCreate(modelAsset);
-
-        return m_patchModel != nullptr;
-    }
-
     bool TerrainMeshManager::InitializeSectorModel()
     {
         AZ::RPI::ModelAssetCreator modelAssetCreator;
@@ -587,16 +423,17 @@ namespace Terrain
         return m_sectorModel != nullptr;
     }
 
-
-
     template<typename Callback>
     void TerrainMeshManager::ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback)
     {
-        for (SectorData& sectorData : m_sectorData)
+        for (StackData& stackData : m_sectorStack)
         {
-            if (sectorData.m_aabb.Overlaps(bounds))
+            for (StackSectorData& sectorData : stackData.m_sectors)
             {
-                callback(sectorData);
+                if (sectorData.m_aabb.Overlaps(bounds))
+                {
+                    callback(stackData);
+                }
             }
         }
     }

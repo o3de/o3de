@@ -95,7 +95,7 @@ namespace Terrain
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
-        void CacheForwardPass();
+        void CachePasses();
 
         TerrainMeshManager m_meshManager;
         TerrainMacroMaterialManager m_macroMaterialManager;
@@ -124,6 +124,6 @@ namespace Terrain
 
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
 
-        AZ::RPI::RenderPass* m_forwardPass;
+        AZStd::vector<AZ::RPI::RenderPass*> m_passes;
     };
 }

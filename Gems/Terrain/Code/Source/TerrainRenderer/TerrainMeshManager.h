@@ -46,8 +46,8 @@ namespace Terrain
         MeshConfiguration() = default;
         virtual ~MeshConfiguration() = default;
 
-        float m_renderDistance = 16384.0f;
-        float m_firstLodDistance = 512.0f;
+        float m_renderDistance = 4096.0f;
+        float m_firstLodDistance = 128.0f;
 
         bool operator==(const MeshConfiguration& other) const
         {
@@ -82,9 +82,10 @@ namespace Terrain
         bool IsInitialized() const;
         void Reset();
 
-        bool CheckRebuildSurfaces(const AZ::Vector3& position, MaterialInstance materialInstance, AZ::RPI::Scene& parentScene);
-        void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process);
-        void RebuildDrawPackets(AZ::RPI::Scene& scene);
+        void Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
+            MaterialInstance materialInstance, AZ::RPI::Scene& parentScene, bool forceRebuildDrawPackets);
+
+        void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView);
 
         static constexpr int32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
 
@@ -114,23 +115,30 @@ namespace Terrain
             AZ::RPI::MeshDrawPacket m_drawPacket;
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
             AZ::Aabb m_aabb;
+            int32_t m_worldX = AZStd::numeric_limits<int32_t>::max();
+            int32_t m_worldY = AZStd::numeric_limits<int32_t>::max();
         };
 
         struct StackData
         {
             AZStd::vector<StackSectorData> m_sectors;
 
-            uint32_t m_1dSectorCount = 0;
-
             // The world space sector coord of the top most left item
             int32_t m_startCoordX = 0;
             int32_t m_startCoordY = 0;
         };
 
-        struct ShaderTerrainData // Must align with struct in Object Srg
+        struct ShaderObjectData // Must align with struct in Object Srg
         {
             AZStd::array<float, 2> m_xyTranslation{ 0.0f, 0.0f };
             float m_xyScale{ 1.0f };
+            uint32_t m_lodLevel{ 0 };
+        };
+
+        struct ShaderMeshData
+        {
+            AZStd::array<float, 3> m_mainCameraPosition{ 0.0f, 0.0f, 0.0f };
+            float m_firstLodDistance;
         };
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
@@ -138,29 +146,30 @@ namespace Terrain
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
+        void RebuildSectors(MaterialInstance materialInstance, AZ::RPI::Scene& parentScene);
+        void RebuildDrawPackets(AZ::RPI::Scene& scene);
+
         AZ::Outcome<AZ::Data::Asset<AZ::RPI::BufferAsset>> CreateBufferAsset(
             const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
 
         void InitializeTerrainPatch(uint16_t gridSize, PatchData& patchdata);
         bool CreateLod(AZ::RPI::ModelAssetCreator& modelAssetCreator, const PatchData& patchData);
-        bool InitializePatchModel();
         bool InitializeSectorModel();
 
-        void CheckStackForUpdate(AZ::Vector3 newPosition);
+        void CheckStacksForUpdate(AZ::Vector3 newPosition);
 
         template<typename Callback>
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
 
         MeshConfiguration m_config;
-
-        AZStd::vector<SectorData> m_sectorData;
-        AZ::Data::Instance<AZ::RPI::Model> m_patchModel;
+        AZ::RHI::ShaderInputNameIndex m_srgMeshDataIndex = "m_meshData";
+        AZ::RHI::ShaderInputNameIndex m_patchDataIndex = "m_patchData";
 
         AZ::Data::Instance<AZ::RPI::Model> m_sectorModel;
         AZStd::vector<StackData> m_sectorStack;
-        AZ::Vector3 m_previousCameraPosition = AZ::Vector3::CreateZero();
+        uint32_t m_1dSectorCount = 0;
 
-        AZ::RHI::ShaderInputConstantIndex m_patchDataIndex;
+        AZ::Vector3 m_previousCameraPosition = AZ::Vector3::CreateZero();
 
         AZ::Aabb m_worldBounds{ AZ::Aabb::CreateNull() };
         float m_sampleSpacing = 1.0f;
