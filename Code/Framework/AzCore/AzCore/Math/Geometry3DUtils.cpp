@@ -12,6 +12,41 @@
 
 namespace AZ::Geometry3DUtils
 {
+    // Recursive method for subdividing each face of the polygon.
+    namespace
+    {
+        void SubdivideTriangle(
+            AZStd::vector<AZ::Vector3>& vertices, const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, const uint8_t depth)
+        {
+            // If we've reached the end, push the triangle face onto the vertices list and stop recursing.
+            if (depth == 0)
+            {
+                vertices.push_back(a);
+                vertices.push_back(b);
+                vertices.push_back(c);
+                return;
+            }
+
+            // For each triangle that's passed in, split it into 4 triangles and recursively subdivide those.
+            //           a
+            //           /\
+            //          /  \
+            //     ab  /----\  ca
+            //        / \  / \
+            //       /   \/   \
+            //    b ------------ c
+            //           bc
+            const AZ::Vector3 ab = (a + b).GetNormalized();
+            const AZ::Vector3 bc = (b + c).GetNormalized();
+            const AZ::Vector3 ca = (c + a).GetNormalized();
+
+            SubdivideTriangle(vertices, a, ab, ca, depth - 1);
+            SubdivideTriangle(vertices, b, bc, ab, depth - 1);
+            SubdivideTriangle(vertices, ab, bc, ca, depth - 1);
+            SubdivideTriangle(vertices, c, ca, bc, depth - 1);
+        }
+    }
+
     AZStd::vector<AZ::Vector3> GenerateIcoSphere(const uint8_t subdivisionDepth)
     {
         // The algorithm for generating an icosphere is to start with a regular icosahedron (20-sided polygon with triangluar faces),
@@ -54,41 +89,10 @@ namespace AZ::Geometry3DUtils
         AZStd::vector<AZ::Vector3> sphereVertices;
         sphereVertices.reserve(IcosahedronFaces * 3 * aznumeric_cast<int>(pow(4, cappedDepth)));
 
-        // Recursive lambda method for subdividing each face of the polygon.
-        AZStd::function<void(const AZ::Vector3&, const AZ::Vector3&, const AZ::Vector3&, const uint8_t)> SubdivideTriangle =
-            [&](const AZ::Vector3& a, const AZ::Vector3& b, const AZ::Vector3& c, const uint8_t depth)
-        {
-            // If we've reached the end, push the triangle face onto the sphereVertices list and stop recursing.
-            if (depth == 0)
-            {
-                sphereVertices.push_back(a);
-                sphereVertices.push_back(b);
-                sphereVertices.push_back(c);
-                return;
-            }
-
-            // For each triangle that's passed in, split it into 4 triangles and recursively subdivide those.
-            //           a
-            //           /\
-            //          /  \
-            //     ab  /----\  ca
-            //        / \  / \
-            //       /   \/   \
-            //    b ------------ c
-            //           bc
-            const AZ::Vector3 ab = (a + b).GetNormalized();
-            const AZ::Vector3 bc = (b + c).GetNormalized();
-            const AZ::Vector3 ca = (c + a).GetNormalized();
-
-            SubdivideTriangle(a, ab, ca, depth - 1);
-            SubdivideTriangle(b, bc, ab, depth - 1);
-            SubdivideTriangle(ab, bc, ca, depth - 1);
-            SubdivideTriangle(c, ca, bc, depth - 1);
-        };
-
         for (int face = 0; face < IcosahedronFaces; face++)
         {
             SubdivideTriangle(
+                sphereVertices,
                 icosahedronVertices[faceIndices[face][0]],
                 icosahedronVertices[faceIndices[face][1]],
                 icosahedronVertices[faceIndices[face][2]],
