@@ -9,7 +9,7 @@
 # Deploy the CDK applications for AWS gems (Linux only)
 
 SOURCE_DIRECTORY=$PWD
-PATH=$SOURCE_DIRECTORY/python:$PATH
+PATH=$SOURCE_DIRECTORY/python/runtime/$PYTHON_RUNTIME/python/bin:$PATH
 GEM_DIRECTORY=$SOURCE_DIRECTORY/Gems
 
 DeployCDKApplication()
@@ -54,15 +54,15 @@ export NVM_DIR="$HOME/.nvm"
 echo [cdk_installation] Install the current version of nodejs
 nvm install node
 
-echo [cdk_installation] Install the latest version of CDK
+echo [cdk_installation] Install aws-cdk@$CDK_VERSION
 if ! npm uninstall -g aws-cdk;
 then
     echo [cdk_bootstrap] Failed to uninstall the current version of CDK
     exit 1
 fi
-if ! npm install -g aws-cdk@latest;
+if ! npm install -g aws-cdk@$CDK_VERSION;
 then
-    echo [cdk_bootstrap] Failed to install the latest version of CDK
+    echo [cdk_bootstrap] Failed to install aws-cdk@$CDK_VERSION
     exit 1
 fi
 
@@ -75,6 +75,7 @@ export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
 export O3DE_AWS_DEPLOY_ACCOUNT=$(echo "$ASSUME_ROLE_ARN" | cut -d':' -f5)
 if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
    export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+   export O3DE_AWS_PROJECT_NAME=${O3DE_AWS_PROJECT_NAME///} # remove occurances of "/" b/c not allowed in AWS CFN stack names
 fi
 
 # Bootstrap and deploy the CDK applications

@@ -51,10 +51,16 @@ namespace ScriptCanvasBuilder
         AZStd::vector<ScriptCanvas::GraphVariable> m_overrides;
         AZStd::vector<ScriptCanvas::GraphVariable> m_overridesUnused;
         AZStd::vector<BuildVariableOverrides> m_dependencies;
+
+        // #scriptcanvas_component_extension
+        bool m_isComponentScript = false;
     };
 
     // copy the variables overridden during editor / prefab build time back to runtime data
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& overrides);
+    /// Replace the provided overrides asset hierarchy with the provided loaded one.
+    /// Returns false if there is a size mismatch in dependencies or if any of the asset has not yet loaded
+    bool ReplaceAsset(ScriptCanvas::RuntimeDataOverrides& overrides, ScriptCanvas::RuntimeAssetPtr asset);
 
     AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree);
 }

@@ -29,7 +29,7 @@ namespace ScriptCanvas
         , m_executionState(executionState)
     {}   
 
-#if !defined(RELEASE) 
+#if defined(SC_RUNTIME_CHECKS_ENABLED) 
     void Nodeable::CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const
     {
         GetExecutionOutChecked(index)(resultBVP, argsBVPs, numArguments);
@@ -39,21 +39,67 @@ namespace ScriptCanvas
     {
         GetExecutionOut(index)(resultBVP, argsBVPs, numArguments);
     }
-#endif // !defined(RELEASE) 
+#endif // defined(SC_RUNTIME_CHECKS_ENABLED) 
 
     void Nodeable::Deactivate()
     {
+        m_outs.clear();
         OnDeactivate();
     }
 
-    AZ::Data::AssetId Nodeable::GetAssetId() const
+    ExecutionStateWeakConstPtr Nodeable::GetExecutionState() const
     {
-        return m_executionState->GetAssetId();
+        return m_executionState;
     }
 
-    AZ::EntityId Nodeable::GetEntityId() const
+    const FunctorOut& Nodeable::GetExecutionOut(size_t index) const
     {
-        return m_executionState->GetEntityId();
+        AZ_Assert(index < m_outs.size(), "index out of range in Nodeable::m_outs");
+        auto& iter = m_outs[index];
+        AZ_Assert(iter, "null execution methods are not allowed, index: %zu", index);
+        return iter;
+    }
+
+    const FunctorOut& Nodeable::GetExecutionOutChecked(size_t index) const
+    {
+        if (index >= m_outs.size() || !m_outs[index])
+        {
+            return m_noOpFunctor;
+        }
+        
+        return m_outs[index];
+    }
+
+    void Nodeable::InitializeExecutionOuts(size_t count)
+    {
+        m_outs.resize(count, m_noOpFunctor);
+    }
+
+    void Nodeable::InitializeExecutionOutByRequiredCount()
+    {
+        InitializeExecutionOuts(GetRequiredOutCount());
+    }
+
+    void Nodeable::InitializeExecutionState(ExecutionState* executionState)
+    {
+#if defined(SC_RUNTIME_CHECKS_ENABLED)
+        if (executionState == nullptr)
+        {
+            AZ_Error("ScriptCanvas", false, "execution state for nodeable must not be nullptr");
+            return;
+        }
+
+        if (m_executionState != nullptr)
+        {
+            AZ_Error("ScriptCanvas", false, "execution state already initialized");
+            return;
+        }
+#else
+        AZ_Assert(executionState != nullptr, "execution state for nodeable must not be nullptr");
+        AZ_Assert(m_executionState == nullptr, "execution state already initialized");
+#endif
+        m_executionState = executionState->WeakFromThis();
+        OnInitializeExecutionState();
     }
 
     void Nodeable::Reflect(AZ::ReflectContext* reflectContext)
@@ -88,47 +134,6 @@ namespace ScriptCanvas
                 ->Method("IsActive", &Nodeable::IsActive)
                 ;
         }
-    }
-
-    const FunctorOut& Nodeable::GetExecutionOut(size_t index) const
-    {
-        AZ_Assert(index < m_outs.size(), "index out of range in Nodeable::m_outs");
-        auto& iter = m_outs[index];
-        AZ_Assert(iter, "null execution methods are not allowed, index: %zu", index);
-        return iter;
-    }
-
-    const FunctorOut& Nodeable::GetExecutionOutChecked(size_t index) const
-    {
-        if (index >= m_outs.size() || !m_outs[index])
-        {
-            return m_noOpFunctor;
-        }
-        
-        return m_outs[index];
-    }
-
-    AZ::EntityId Nodeable::GetScriptCanvasId() const
-    {
-        return m_executionState->GetScriptCanvasId();
-    }
-
-    void Nodeable::InitializeExecutionOuts(size_t count)
-    {
-        m_outs.resize(count, m_noOpFunctor);
-    }
-
-    void Nodeable::InitializeExecutionOutByRequiredCount()
-    {
-        InitializeExecutionOuts(GetRequiredOutCount());
-    }
-
-    void Nodeable::InitializeExecutionState(ExecutionState* executionState)
-    {
-        AZ_Assert(executionState != nullptr, "execution state for nodeable must not be nullptr");
-        AZ_Assert(m_executionState == nullptr, "execution state already initialized");
-        m_executionState = executionState->WeakFromThis();
-        OnInitializeExecutionState();
     }
 
     void Nodeable::SetExecutionOut(size_t index, FunctorOut&& out)

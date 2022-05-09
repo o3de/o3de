@@ -273,6 +273,16 @@ TEST_F(SourceDependencyTests, SourceDependencyTest)
     ASSERT_STREQ(dependencies[1].m_sourceFileDependencyPath.c_str(), "value.png");
 }
 
+TEST_F(SourceDependencyTests, PopulateSourceDependencies_WithEmptyManifest_ShouldFailWithNoException)
+{
+    ImportHandler handler;
+    AZStd::vector<AssetBuilderSDK::SourceFileDependency> dependencies;
+
+    SceneBuilderWorker::PopulateSourceDependencies("{}", dependencies);
+
+    ASSERT_EQ(dependencies.size(), 0);
+}
+
 struct SourceDependencyMockedIOTests : UnitTest::ScopedAllocatorSetupFixture
     , UnitTest::SetRestoreFileIOBaseRAII
 {

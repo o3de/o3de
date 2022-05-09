@@ -10,8 +10,9 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-static const uint MacroClipmapStackSize = 3u;
-static const uint DetailClipmapStackSize = 5u;
+static const uint MacroClipmapStackSizeMax = 16u;
+static const uint DetailClipmapStackSizeMax = 16u;
+static const uint StackSizeMax = 16u; // = max(MacroClipmapStackSizeMax, DetailClipmapStackSizeMax)
 
 ShaderResourceGroupSemantic SRG_Terrain
 {
@@ -88,23 +89,38 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float2 m_worldBoundsMin;
         float2 m_worldBoundsMax;
 
-        // The max range that the clipmap is covering.
-        float2 m_maxRenderSize;
+        //! The max range that the clipmap is covering.
+        float m_macroClipmapMaxRenderRadius;
+        float m_detailClipmapMaxRenderRadius;
 
-        // The size of a single clipmap.
-        float2 m_clipmapSize;
+        //! The scale base between two adjacent clipmap layers.
+        //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times
+        //! to what is covered by the nth clipmap.
+        float m_macroClipmapScaleBase;
+        float m_detailClipmapScaleBase;
+
+        //! Size of the clipmap stack.
+        uint m_macroClipmapStackSize;
+        uint m_detailClipmapStackSize;
+
+        //! The size of the clipmap image in each layer.
+        float m_clipmapSize;
+        
+        uint m_padding;
 
         // Clipmap centers in normalized UV coordinates [0, 1].
         // xy represent previous clipmap centers, zw represent current clipmap centers.
         // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
         // They are used for toroidal addressing and may move each frame based on the view point movement.
         // The move distance is scaled differently in each layer.
-        float4 m_clipmapCenters[DetailClipmapStackSize];
+        float4 m_macroClipmapCenters[MacroClipmapStackSizeMax];
+        float4 m_detailClipmapCenters[DetailClipmapStackSizeMax];
 
         // A list of reciprocal the clipmap scale [s],
         // where 1 pixel in the current layer of clipmap represents s meters. 
         // Fast lookup list to avoid redundant calculation in shaders.
-        float4 m_clipmapScaleInv[DetailClipmapStackSize];
+        // x: macro; y: detail
+        float4 m_clipmapScaleInv[StackSizeMax];
     };
 
     // Clipmap SRG
@@ -115,9 +131,10 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     Texture2DArray<float4> m_detailColorClipmaps;
     Texture2DArray<float2> m_detailNormalClipmaps;
     Texture2DArray<float> m_detailHeightClipmaps;
-    // Miscellany clipmap combining:
-    // roughness, specularF0, metalness, occlusion
-    Texture2DArray<float4> m_detailMiscClipmaps;
+    Texture2DArray<float> m_detailRoughnessClipmaps;
+    Texture2DArray<float> m_detailSpecularF0Clipmaps;
+    Texture2DArray<float> m_detailMetalnessClipmaps;
+    Texture2DArray<float> m_detailOcclusionClipmaps;
 
     Texture2D<uint4> m_detailMaterialIdImage;
     StructuredBuffer<DetailMaterialData> m_detailMaterialData;

@@ -235,5 +235,147 @@ namespace AZ
 
             return result;
         }
+
+        //! Attempts to convert a numeric MaterialPropertyValue to another numeric type @T.
+        //! If the original MaterialPropertyValue is not a numeric type, the original value is returned.
+        template<typename T>
+        static MaterialPropertyValue CastNumericMaterialPropertyValue(const MaterialPropertyValue& value)
+        {
+            TypeId typeId = value.GetTypeId();
+
+            if (typeId == azrtti_typeid<bool>())
+            {
+                return aznumeric_cast<T>(value.GetValue<bool>());
+            }
+            else if (typeId == azrtti_typeid<int32_t>())
+            {
+                return aznumeric_cast<T>(value.GetValue<int32_t>());
+            }
+            else if (typeId == azrtti_typeid<uint32_t>())
+            {
+                return aznumeric_cast<T>(value.GetValue<uint32_t>());
+            }
+            else if (typeId == azrtti_typeid<float>())
+            {
+                return aznumeric_cast<T>(value.GetValue<float>());
+            }
+            else
+            {
+                return value;
+            }
+        }
+
+        //! Attempts to convert an AZ::Vector[2-4] MaterialPropertyValue to another AZ::Vector[2-4] type @T.
+        //! Any extra elements will be dropped or set to 0.0 as needed.
+        //! If the original MaterialPropertyValue is not a Vector type, the original value is returned.
+        template<typename VectorT>
+        static MaterialPropertyValue CastVectorMaterialPropertyValue(const MaterialPropertyValue& value)
+        {
+            float values[4] = {};
+
+            TypeId typeId = value.GetTypeId();
+            if (typeId == azrtti_typeid<Vector2>())
+            {
+                value.GetValue<Vector2>().StoreToFloat2(values);
+            }
+            else if (typeId == azrtti_typeid<Vector3>())
+            {
+                value.GetValue<Vector3>().StoreToFloat3(values);
+            }
+            else if (typeId == azrtti_typeid<Vector4>())
+            {
+                value.GetValue<Vector4>().StoreToFloat4(values);
+            }
+            else
+            {
+                return value;
+            }
+
+            typeId = azrtti_typeid<VectorT>();
+            if (typeId == azrtti_typeid<Vector2>())
+            {
+                return Vector2::CreateFromFloat2(values);
+            }
+            else if (typeId == azrtti_typeid<Vector3>())
+            {
+                return Vector3::CreateFromFloat3(values);
+            }
+            else if (typeId == azrtti_typeid<Vector4>())
+            {
+                return Vector4::CreateFromFloat4(values);
+            }
+            else
+            {
+                return value;
+            }
+        }
+
+        MaterialPropertyValue MaterialPropertyValue::CastToType(TypeId requestedType) const
+        {
+            if (requestedType == azrtti_typeid<bool>())
+            {
+                return CastNumericMaterialPropertyValue<bool>(*this);
+            }
+            else if (requestedType == azrtti_typeid<int32_t>())
+            {
+                return CastNumericMaterialPropertyValue<int32_t>(*this);
+            }
+            else if (requestedType == azrtti_typeid<uint32_t>())
+            {
+                return CastNumericMaterialPropertyValue<uint32_t>(*this);
+            }
+            else if (requestedType == azrtti_typeid<float>())
+            {
+                return CastNumericMaterialPropertyValue<float>(*this);
+            }
+            else if (requestedType == azrtti_typeid<Vector2>())
+            {
+                return CastVectorMaterialPropertyValue<Vector2>(*this);
+            }
+            else if (requestedType == azrtti_typeid<Vector3>())
+            {
+                if (GetTypeId() == azrtti_typeid<Color>())
+                {
+                    return GetValue<Color>().GetAsVector3();
+                }
+                else
+                {
+                    return CastVectorMaterialPropertyValue<Vector3>(*this);
+                }
+            }
+            else if (requestedType == azrtti_typeid<Vector4>())
+            {
+                if (GetTypeId() == azrtti_typeid<Color>())
+                {
+                    return GetValue<Color>().GetAsVector4();
+                }
+                else
+                {
+                    return CastVectorMaterialPropertyValue<Vector4>(*this);
+                }
+            }
+            else if (requestedType == azrtti_typeid<Color>())
+            {
+                if (GetTypeId() == azrtti_typeid<Vector3>())
+                {
+                    return Color::CreateFromVector3(GetValue<Vector3>());
+                }
+                else if (GetTypeId() == azrtti_typeid<Vector4>())
+                {
+                    Vector4 vector4 = GetValue<Vector4>();
+                    return Color::CreateFromVector3AndFloat(vector4.GetAsVector3(), vector4.GetW());
+                }
+                else
+                {
+                    // Don't attempt conversion from e.g. Vector2 as that makes little sense.
+                    return *this;
+                }
+            }
+            else
+            {
+                // remaining types are non-numerical and cannot be cast to other types: return as-is
+                return *this;
+            }
+        }
     } // namespace RPI
 } // namespace AZ

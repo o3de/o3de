@@ -33,7 +33,7 @@ namespace Blast
         void Damage(const NvBlastDamageProgram& program, NvBlastExtProgramParams* programParams) override;
 
         const BlastFamily& GetFamily() const override;
-        Nv::Blast::TkActor& GetTkActor() const override;
+        const Nv::Blast::TkActor& GetTkActor() const override;
         AZ::Transform GetTransform() const override;
 
         const AZ::Entity* GetEntity() const override;
