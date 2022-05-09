@@ -129,16 +129,18 @@ namespace PhysX
         return nullptr;
     }
 
-    void Shape::SetMaterialSelection(const Physics::MaterialSelection& materialSelection)
+    void Shape::SetMaterials(const AZStd::vector<AZStd::shared_ptr<Physics::Material>>& materials)
     {
-        if (m_pxShape)
-        {
-            AZStd::vector<physx::PxMaterial*> materials;
-            MaterialManagerRequestsBus::Broadcast(&MaterialManagerRequestsBus::Events::GetPxMaterials, materialSelection, materials);
-            m_pxShape->setMaterials(materials.begin(), aznumeric_cast<physx::PxU16>(materials.size()));
+        m_materials.clear();
 
-            ExtractMaterialsFromPxShape();
+        for (const AZStd::shared_ptr<Physics::Material>& material : materials)
+        {
+            auto materialWrapper = AZStd::rtti_pointer_cast<PhysX::Material>(material);
+            AZ_Assert(materialWrapper, "Passed material must be a PhysX::Material one");
+            m_materials.emplace_back(materialWrapper);
         }
+
+        BindMaterialsWithPxShape();
     }
 
     void Shape::SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials)
@@ -147,7 +149,6 @@ namespace PhysX
 
         BindMaterialsWithPxShape();
     }
-
 
     void Shape::BindMaterialsWithPxShape()
     {
@@ -163,7 +164,11 @@ namespace PhysX
 
             AZ_Warning("PhysX Shape", m_materials.size() < std::numeric_limits<AZ::u16>::max(), "Trying to assign too many materials, cutting down");
             size_t materialsCount = AZStd::GetMin(m_materials.size(), static_cast<size_t>(std::numeric_limits<AZ::u16>::max()));
-            m_pxShape->setMaterials(&pxMaterials[0], static_cast<physx::PxU16>(materialsCount));
+
+            {
+                PHYSX_SCENE_WRITE_LOCK(GetScene());
+                m_pxShape->setMaterials(pxMaterials.data(), static_cast<physx::PxU16>(materialsCount));
+            }
         }
     }
 

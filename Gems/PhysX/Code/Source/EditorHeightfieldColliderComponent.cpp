@@ -11,6 +11,7 @@
 #include <Editor/ColliderComponentMode.h>
 #include <EditorHeightfieldColliderComponent.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <Source/HeightfieldColliderComponent.h>
@@ -229,7 +230,7 @@ namespace PhysX
         // If the change is only about heightfield materials mapping, we can simply update material selection in the heightfield shape
         if (changeMask == HeightfieldChangeMask::SurfaceMapping)
         {
-            Physics::MaterialSelection updatedMaterialSelection = m_colliderConfig.m_materialSelection;
+            Physics::MaterialSelection updatedMaterialSelection;
             Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), updatedMaterialSelection);
 
             // Make sure the number of slots is the same.
@@ -450,7 +451,15 @@ namespace PhysX
 
         AZStd::shared_ptr<Physics::Shape> shape = rigidBody->GetShape(0);
         PhysX::Shape* physxShape = azdynamic_cast<PhysX::Shape*>(shape.get());
-        physxShape->SetMaterialSelection(updatedMaterialSelection);
+
+        AZStd::vector<AZStd::shared_ptr<Physics::Material>> materials;
+
+        Physics::PhysicsMaterialRequestBus::Broadcast(
+            &Physics::PhysicsMaterialRequestBus::Events::GetMaterials,
+            updatedMaterialSelection,
+            materials);
+
+        physxShape->SetMaterials(materials);
 
         m_colliderConfig.m_materialSelection = updatedMaterialSelection;
     }

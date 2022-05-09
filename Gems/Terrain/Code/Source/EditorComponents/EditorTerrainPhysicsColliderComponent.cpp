@@ -18,7 +18,7 @@ namespace Terrain
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<EditorTerrainPhysicsColliderComponent, AzToolsFramework::Components::EditorComponentBase>()
-                ->Version(0)
+                ->Version(1)
                 ->Field("Configuration", &EditorTerrainPhysicsColliderComponent::m_configuration)
                 ;
 
@@ -130,7 +130,7 @@ namespace Terrain
     {
         m_component.UpdateConfiguration(m_configuration);
         UpdateConfigurationTagProvider();
-        return 0;
+        return AZ::Edit::PropertyRefreshLevels::None;
     }
 
     void EditorTerrainPhysicsColliderComponent::UpdateConfigurationTagProvider()

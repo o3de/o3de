@@ -32,7 +32,7 @@ namespace Terrain
         void Activate() override;
         void Deactivate() override;
 
-        // EditorComponentBase
+        // EditorComponentBase overrides...
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         static constexpr auto s_categoryName = "Terrain";
