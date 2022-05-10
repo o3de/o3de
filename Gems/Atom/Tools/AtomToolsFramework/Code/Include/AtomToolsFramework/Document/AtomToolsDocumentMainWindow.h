@@ -104,7 +104,8 @@ namespace AtomToolsFramework
         void closeEvent(QCloseEvent* closeEvent) override;
 
         template<typename Functor>
-        QAction* CreateAction(const QString& text, Functor functor, const QKeySequence& shortcut = 0);
+        QAction* CreateActionAtPosition(
+            QMenu* parent, QAction* position, const QString& text, Functor functor, const QKeySequence& shortcut = 0);
 
         QMenu* m_menuOpenRecent = {};
 
