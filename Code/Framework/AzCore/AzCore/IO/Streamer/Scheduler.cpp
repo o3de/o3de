@@ -16,8 +16,8 @@
 
 namespace AZ::IO
 {
-#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
     static constexpr const char* SchedulerName = "Scheduler";
+#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
     static constexpr const char* ImmediateReadsName = "Immediate reads";
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 

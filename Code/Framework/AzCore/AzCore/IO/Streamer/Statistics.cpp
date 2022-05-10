@@ -12,7 +12,7 @@
 namespace AZ::IO
 {
     template<typename T>
-    static Statistic Statistic::Create(
+    Statistic Statistic::Create(
         AZStd::string_view owner, AZStd::string_view name, T&& value, AZStd::string_view description, GraphType graphType)
     {
         Statistic result;
