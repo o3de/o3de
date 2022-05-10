@@ -732,12 +732,12 @@ namespace WhiteBox
         const AZ::Vector3 localRayEnd = localRayOrigin + localRayDirection * rayLength;
 
         bool intersection = false;
+        AZ::Intersect::SegmentTriangleHitTester hitTester(localRayOrigin, localRayEnd);
         for (const auto& face : m_faces.value())
         {
             float t;
             AZ::Vector3 normal;
-            if (AZ::Intersect::IntersectSegmentTriangle(
-                    localRayOrigin, localRayEnd, face[0], face[1], face[2], normal, t))
+            if (hitTester.IntersectSegmentTriangle(face[0], face[1], face[2], normal, t))
             {
                 intersection = true;
 

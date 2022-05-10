@@ -16,7 +16,6 @@
 #include <EMotionFX/CommandSystem/Source/AnimGraphNodeGroupCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphParameterCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphTriggerActionCommands.h>
-#include <EMotionFX/CommandSystem/Source/AttachmentCommands.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
@@ -52,10 +51,6 @@ namespace CommandSystem
         RegisterCommand(new CommandAdjustMorphTarget());
         RegisterCommand(new CommandAdjustActorInstance());
         RegisterCommand(new CommandResetToBindPose());
-        RegisterCommand(new CommandAddAttachment());
-        RegisterCommand(new CommandRemoveAttachment());
-        RegisterCommand(new CommandClearAttachments());
-        RegisterCommand(new CommandAddDeformableAttachment());
         RegisterCommand(new CommandAdjustActor());
         RegisterCommand(new CommandActorSetCollisionMeshes());
         RegisterCommand(new CommandReInitRenderActors());

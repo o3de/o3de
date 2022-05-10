@@ -38,3 +38,5 @@ The main goal of this list, is to enable future developers to find old code that
 | 2021-12-03 | #6086 | DrillerBus, DrillerManager, DrillerEvents, EventTraceDrillerBus, Driller, DrillerDefaultStringPool - Driller no longer functional (Profiler was deleted months ago)|
 | 2021-12-03 | #6086 | FileIOEvents - Prone to false-positives (errors from other threads), not really useful|
 | 2021-12-03 | #6086 | FileIOBus - Unused and not the best way to implement a filesystem replacement|
+| 2022-04-20 | #9026 | GridMate - Unused and unmaintained networking solution. Replaced by AzNetworking and MultiplayerGem|
+| 2022-04-20 | #9026 | GridHub - Unused and unmaintained discovery service. Usages in TargetManagement replaced by AzNetworking. Other usages have been long since removed|

@@ -91,7 +91,6 @@ blackbox_fbx_tests = [
     pytest.param(
         BlackboxAssetTest(
             # Verifies that the soft naming convention feature with level of detail meshes works.
-            # https://docs.aws.amazon.com/lumberyard/latest/userguide/char-fbx-importer-soft-naming.html
             test_name="SoftNamingLOD_RunAP_SuccessWithMatchingProducts",
             asset_folder="SoftNamingLOD",
             scene_debug_file="lodtest.dbgsg",
@@ -128,7 +127,6 @@ blackbox_fbx_tests = [
     pytest.param(
         BlackboxAssetTest(
             # Verifies that the soft naming convention feature with physics proxies works.
-            # https://docs.aws.amazon.com/lumberyard/latest/userguide/char-fbx-importer-soft-naming.html
             test_name="SoftNamingPhysics_RunAP_SuccessWithMatchingProducts",
             asset_folder="SoftNamingPhysics",
             scene_debug_file="physicstest.dbgsg",

@@ -6,20 +6,12 @@
  *
  */
 
-#ifdef SHADOWS
-#include <Atom/Features/Shadow/Shadow.azsli>
-#endif
-
 #ifndef MULTILAYER
 #define MULTILAYER 0
 #endif
 
 #ifndef ENABLE_ALPHA_CLIP
 #define ENABLE_ALPHA_CLIP 0
-#endif
-
-#ifndef SHADOWS
-#define SHADOWS 0
 #endif
 
 struct VSInput
@@ -100,6 +92,8 @@ struct PSDepthOutput
 
 PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
+    const float3 vertexNormal = normalize(IN.m_normal);
+
     PSDepthOutput OUT;
 
     OUT.m_depth = IN.m_position.z;
@@ -112,7 +106,7 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
         for (int i = 0; i != UvSetCount; ++i)
         {
             EvaluateTangentFrame(
-                IN.m_normal,
+                vertexNormal,
                 IN.m_worldPosition, 
                 isFrontFace,
                 IN.m_uv[i],
@@ -124,13 +118,9 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
         }
 
 #if MULTILAYER
-        MultilayerSetPixelDepth(IN.m_blendMask, IN.m_worldPosition, IN.m_normal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
+        MultilayerSetPixelDepth(IN.m_blendMask, IN.m_worldPosition, vertexNormal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
 #else
-        SetPixelDepth(IN.m_worldPosition, IN.m_normal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
-#endif
-
-#if SHADOWS
-        OUT.m_depth += PdoShadowMapBias;
+        SetPixelDepth(IN.m_worldPosition, vertexNormal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
 #endif
     }
     

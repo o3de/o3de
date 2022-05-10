@@ -10,8 +10,17 @@
 
 #include <AzFramework/DocumentPropertyEditor/DocumentSchema.h>
 
+namespace AZ::DocumentPropertyEditor
+{
+    class PropertyEditorSystemInterface;
+}
+
 namespace AZ::DocumentPropertyEditor::Nodes
 {
+    //! Reflection method, registers all nodes in this header to the runtime context.
+    //! Be sure to update this if you change this file.
+    void Reflect(PropertyEditorSystemInterface* system);
+
     //! Adapter: The top-level tag for a DocumentAdapter that may contain any number of Rows.
     struct Adapter : NodeDefinition
     {
@@ -32,6 +41,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct Label : NodeDefinition
     {
         static constexpr AZStd::string_view Name = "Label";
+        static constexpr auto Value = AttributeDefinition<AZStd::string_view>("Value");
     };
 
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
@@ -41,21 +51,33 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr AZStd::string_view Name = "PropertyEditor";
         static constexpr auto Type = AttributeDefinition<AZStd::string_view>("Type");
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&)>("OnChanged");
+        static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
     };
 
-    template<typename T>
-    struct NumericEditor
+    template<typename T = Dom::Value>
+    struct NumericEditor : PropertyEditorDefinition
     {
-        static_assert(AZStd::is_floating_point_v<T> || AZStd::is_integral_v<T>, "Numeric editors must have a numeric type");
-        static constexpr auto Min = AttributeDefinition<T>("Min");
-        static constexpr auto Max = AttributeDefinition<T>("Max");
-        static constexpr auto Step = AttributeDefinition<T>("Step");
+        static_assert(
+            AZStd::is_same_v<T, Dom::Value> || AZStd::is_floating_point_v<T> || AZStd::is_integral_v<T>,
+            "Numeric editors must have a numeric type");
+        using StorageType = AZStd::conditional_t<
+            AZStd::is_same_v<T, Dom::Value>,
+            Dom::Value,
+            AZStd::conditional_t<AZStd::is_floating_point_v<T>, double, AZStd::conditional_t<AZStd::is_signed_v<T>, int64_t, uint64_t>>>;
+
+        static constexpr AZStd::string_view Name = "NumericEditor";
+        static constexpr auto Min = AttributeDefinition<StorageType>("Min");
+        static constexpr auto Max = AttributeDefinition<StorageType>("Max");
+        static constexpr auto Step = AttributeDefinition<StorageType>("Step");
         static constexpr auto Suffix = AttributeDefinition<AZStd::string_view>("Suffix");
-        static constexpr auto SoftMin = AttributeDefinition<T>("SoftMin");
-        static constexpr auto SoftMax = AttributeDefinition<T>("SoftMax");
+        static constexpr auto SoftMin = AttributeDefinition<StorageType>("SoftMin");
+        static constexpr auto SoftMax = AttributeDefinition<StorageType>("SoftMax");
         static constexpr auto Decimals = AttributeDefinition<int>("Decimals");
         static constexpr auto DisplayDecimals = AttributeDefinition<int>("DisplayDecimals");
     };
+    using IntNumericEditor = NumericEditor<int64_t>;
+    using UintNumericEditor = NumericEditor<uint64_t>;
+    using DoubleNumericEditor = NumericEditor<double>;
 
     struct Button : PropertyEditorDefinition
     {
@@ -107,17 +129,23 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr AZStd::string_view Name = "Quaternion";
     };
 
-    template<typename T>
+    template<typename T = Dom::Value>
     struct Slider : NumericEditor<T>
     {
         static constexpr AZStd::string_view Name = "Slider";
     };
+    using IntSlider = Slider<int64_t>;
+    using UintSlider = Slider<uint64_t>;
+    using DoubleSlider = Slider<double>;
 
-    template<typename T>
+    template<typename T = Dom::Value>
     struct SpinBox : NumericEditor<T>
     {
         static constexpr AZStd::string_view Name = "SpinBox";
     };
+    using IntSpinBox = SpinBox<int64_t>;
+    using UintSpinBox = SpinBox<uint64_t>;
+    using DoubleSpinBox = SpinBox<double>;
 
     struct Crc : PropertyEditorDefinition
     {

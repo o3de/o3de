@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzFramework/AutoGen/AzFramework.AutoPackets.h>
+#include <AzFramework/AutoGen/AzFramework.AutoPacketDispatcher.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/TargetManagement/NeighborhoodAPI.h>
 #include <AzCore/Math/Crc.h>
@@ -17,16 +19,23 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/Debug/Profiler.h>
-#include <GridMate/Session/LANSession.h>
-#include <GridMate/Serialize/Buffer.h>
-#include <GridMate/Replica/ReplicaFunctions.h>
+#include <AzNetworking/Framework/INetworkInterface.h>
+#include <AzNetworking/Framework/INetworking.h>
 #include <time.h>
 
 namespace AzFramework
 {
+    // Only localhost is supported presently
+    static constexpr const char* TargetServerAddress = "127.0.0.1";
+    // Sleep time for outbox processing thread to prevent constant spin
+    static constexpr uint8_t OutboxThreadTick = 50;
+
+    AZ_CVAR(bool, target_autoconnect, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable autoconnecting to target host.");
+    AZ_CVAR(uint16_t, target_autoconnect_interval, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The interval to attempt automatic connecitons.");
+    AZ_CVAR(uint16_t, target_port, DefaultTargetPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that target management will bind to for traffic.");
+
     namespace Platform
     {
         AZStd::string GetPersistentName();
@@ -53,7 +62,7 @@ namespace AzFramework
         return m_persistentId;
     }
 
-    int TargetInfo::GetNetworkId() const
+    AZ::u32 TargetInfo::GetNetworkId() const
     {
         return m_networkId;
     }
@@ -68,149 +77,37 @@ namespace AzFramework
         return m_persistentId == other.m_persistentId;
     }
 
-    struct TargetManagementSettings
-        : public AZ::UserSettings
-    {
-        AZ_CLASS_ALLOCATOR(TargetManagementSettings, AZ::OSAllocator, 0);
-        AZ_RTTI(TargetManagementSettings, "{AB1B14BB-C0E3-484A-B498-98F44A58C161}", AZ::UserSettings);
-
-        TargetManagementSettings()
-            : m_reconnectionIntervalMS(1000)
-            , m_targetPort(5172)
-            , m_sourcePort(0)
-        {
-        }
-
-        ~TargetManagementSettings() override
-        {
-        }
-
-        AZStd::string   m_neighborhoodName;         // this is the neighborhood session (hub) we want to connect to
-        AZStd::string   m_persistentName;           // this string is used as the persistent name for this target
-        int         m_reconnectionIntervalMS;   // time between connection attempts in ms
-        TargetInfo  m_lastTarget;               // this is the target we will automatically connect to
-        int         m_targetPort;               // port we will send search broadcasts on
-        int         m_sourcePort;               // port we will listen for search replies on
-    };
-
     class TargetManagementNetworkImpl
-        : public GridMate::SessionEventBus::Handler
-        , public Neighborhood::NeighborhoodBus::Handler
+        : public Neighborhood::NeighborhoodBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(TargetManagementNetworkImpl, AZ::SystemAllocator, 0);
 
         TargetManagementNetworkImpl(TargetManagementComponent* component)
             : m_component(component)
-            , m_gridMate(nullptr)
-            , m_session(nullptr)
-            , m_gridSearch(nullptr)
         {
-            // start gridmate
-            m_gridMate = GridMate::GridMateCreate(GridMate::GridMateDesc());
-            AZ_Assert(m_gridMate, "Failed to create gridmate!");
-
-            // start the multiplayer service (session mgr, extra allocator, etc.)
-            GridMate::StartGridMateService<GridMate::LANSessionService>(m_gridMate, GridMate::SessionServiceDesc());
-            AZ_Assert(GridMate::HasGridMateService<GridMate::LANSessionService>(m_gridMate), "Failed to start MP service!");
-
-            GridMate::SessionEventBus::Handler::BusConnect(m_gridMate);
             Neighborhood::NeighborhoodBus::Handler::BusConnect();
         }
 
         ~TargetManagementNetworkImpl() override
         {
             Neighborhood::NeighborhoodBus::Handler::BusDisconnect();
-            GridMate::SessionEventBus::Handler::BusDisconnect();
-
-            if (m_gridSearch)
-            {
-                m_gridSearch->Release();
-            }
-
-            GridMate::GridMateDestroy(m_gridMate);
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // gridmate session bus
-        void OnGridSearchComplete(GridMate::GridSearch* gridSearch) override
-        {
-            if (gridSearch == m_gridSearch)
-            {
-                if (gridSearch->GetNumResults() > 0)
-                {
-                    GridMate::CarrierDesc carrierDesc;
-                    carrierDesc.m_driverIsCrossPlatform = false;
-                    carrierDesc.m_driverIsFullPackets = true;
-                    //carrierDesc.m_threadInstantResponse = true;
-                    carrierDesc.m_driverReceiveBufferSize = 1 * 1024 * 1024;
-
-                    // Until an authentication connection can be established between peers only supporting
-                    // local connections (i.e. binding to localhost).
-                    carrierDesc.m_address = "127.0.0.1";
-
-                    GridMate::JoinParams joinParams;
-                    joinParams.m_desiredPeerMode = GridMate::Mode_Peer;
-                    m_session = nullptr;
-
-                    const GridMate::LANSearchInfo& lanSearchInfo = static_cast<const GridMate::LANSearchInfo&>(*gridSearch->GetResult(0));
-                    EBUS_EVENT_ID_RESULT(m_session,m_gridMate,GridMate::LANSessionServiceBus,JoinSessionBySearchInfo,lanSearchInfo,joinParams,carrierDesc);
-                }
-                else
-                {
-                    m_component->m_reconnectionTime = AZStd::chrono::system_clock::now() + AZStd::chrono::milliseconds(m_component->m_settings->m_reconnectionIntervalMS);
-                }
-                gridSearch->Release();
-                m_gridSearch = nullptr;
-            }
-        }
-
-        void OnSessionJoined(GridMate::GridSession* session) override
-        {
-            if (session == m_session)
-            {
-                GridMate::ReplicaPtr replica = GridMate::Replica::CreateReplica(m_component->m_settings->m_persistentName.c_str());
-                Neighborhood::NeighborReplicaPtr replicaChunk = GridMate::CreateReplicaChunk<Neighborhood::NeighborReplica>(session->GetMyMember()->GetId().Compact(), m_component->m_settings->m_persistentName.c_str(), Neighborhood::NEIGHBOR_CAP_LUA_VM | Neighborhood::NEIGHBOR_CAP_LUA_DEBUGGER);
-                replicaChunk->SetDisplayName(m_component->m_settings->m_persistentName.c_str());
-                replica->AttachReplicaChunk(replicaChunk);
-                session->GetReplicaMgr()->AddPrimary(replica);
-            }
-        }
-
-        void OnSessionDelete(GridMate::GridSession* session) override
-        {
-            if (session == m_session)
-            {
-                m_session = nullptr;
-            }
-        }
-
-        void OnMemberLeaving(GridMate::GridSession* session, GridMate::GridMember* member) override
-        {
-            (void)member;
-            if (session == m_session)
-            {
-                AZ_TracePrintf("TargetManager", "Member %p(%s) leaving TM session %p.\n", member, member->IsHost() ? "Host" : "Peer", session);
-            }
-        }
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
         // neighborhood bus
-        void OnNodeJoined(const Neighborhood::NeighborReplica& node) override
+        void OnNodeJoined(const AzFrameworkPackets::TargetConnect& node, const AZ::u32 networkId) override
         {
-            Neighborhood::NeighborCaps capabilities = node.GetCapabilities();
-            GridMate::MemberIDCompact memberId = node.GetTargetMemberId();
-            const AZ::u32 persistentId = AZ::Crc32(node.GetPersistentName());
-            AZ_TracePrintf("Neighborhood", "Discovered node with 0x%x from member %d.\n", capabilities, static_cast<int>(memberId));
+            const AZ::u32 capabilities = node.GetCapabilities();
+            const AZ::u32 persistentId = node.GetPersistentId();
+            AZ_TracePrintf("Neighborhood", "Discovered node with 0x%x from member %d.\n", capabilities, static_cast<int>(persistentId));
 
-            TargetContainer::pair_iter_bool ret = m_component->m_availableTargets.insert_key(static_cast<AZ::u32>(memberId));
+            TargetContainer::pair_iter_bool ret = m_component->m_availableTargets.insert_key(static_cast<AZ::u32>(persistentId));
             TargetInfo& ti = ret.first->second;
 
             ti.m_lastSeen = time(nullptr);
             ti.m_displayName = node.GetDisplayName();
             ti.m_persistentId = persistentId;
-            ti.m_networkId = memberId;
+            ti.m_networkId = networkId;
             ti.m_flags |= TF_ONLINE;
             if (capabilities & Neighborhood::NEIGHBOR_CAP_LUA_VM)
             {
@@ -223,27 +120,27 @@ namespace AzFramework
             EBUS_QUEUE_EVENT(TargetManagerClient::Bus, TargetJoinedNetwork, ti);
 
             // If our desired target has just come online, flag it and notify listeners
-            if (persistentId == m_component->m_settings->m_lastTarget.m_persistentId && (m_component->m_settings->m_lastTarget.m_flags & TF_ONLINE) == 0)
+            if (persistentId == m_component->m_settings.m_lastTarget.m_persistentId &&
+                (m_component->m_settings.m_lastTarget.m_flags & TF_ONLINE) == 0)
             {
-                m_component->m_settings->m_lastTarget.m_flags |= TF_ONLINE;
-                m_component->m_settings->m_lastTarget.m_networkId = memberId;
-                m_component->m_settings->m_lastTarget.m_lastSeen = ti.m_lastSeen;
+                m_component->m_settings.m_lastTarget.m_flags |= TF_ONLINE;
+                m_component->m_settings.m_lastTarget.m_networkId = networkId;
+                m_component->m_settings.m_lastTarget.m_lastSeen = ti.m_lastSeen;
                 EBUS_QUEUE_EVENT(TargetManagerClient::Bus, DesiredTargetConnected, true);
             }
         }
 
-        void OnNodeLeft(const Neighborhood::NeighborReplica& node) override
+        void OnNodeLeft(const AZ::u32 networkId) override
         {
-            AZ_TracePrintf("Neighborhood", "Lost contact with node from member %d.\n", static_cast<int>(node.GetTargetMemberId()));
-
             // If our desired target has left the network, flag it and notify listeners
-            if (node.GetTargetMemberId() == m_component->m_settings->m_lastTarget.m_networkId)
+            if (networkId == m_component->m_settings.m_lastTarget.m_networkId)
             {
-                m_component->m_settings->m_lastTarget.m_flags &= ~TF_ONLINE;
+                m_component->m_settings.m_lastTarget.m_flags &= ~TF_ONLINE;
                 EBUS_QUEUE_EVENT(TargetManagerClient::Bus, DesiredTargetConnected, false);
             }
 
-            TargetContainer::iterator it = m_component->m_availableTargets.find(static_cast<AZ::u32>(node.GetTargetMemberId()));
+            TargetContainer::iterator it =
+                m_component->m_availableTargets.find(m_component->m_settings.m_lastTarget.m_persistentId);
             if (it != m_component->m_availableTargets.end())
             {
                 TargetInfo ti = it->second;
@@ -255,18 +152,14 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
 
         TargetManagementComponent*              m_component;
-        GridMate::IGridMate*                    m_gridMate;
-        GridMate::GridSession*                  m_session;
-        GridMate::GridSearch*                   m_gridSearch;
-        Neighborhood::NeighborReplicaPtr        m_neighborReplica;
     };
-
-    const AZ::u32 k_nullNetworkId = static_cast<AZ::u32>(-1);
 
     TargetManagementComponent::TargetManagementComponent()
         : m_serializeContext(nullptr)
         , m_networkImpl(nullptr)
+        , m_networkInterfaceName("TargetManagement")
     {
+        ;
     }
 
     TargetManagementComponent::~TargetManagementComponent()
@@ -280,30 +173,30 @@ namespace AzFramework
         {
             AZStd::string persistentName = Platform::GetPersistentName();
 
-            AZStd::string targetManagementSettingsKey = AZStd::string::format("TargetManagementSettings::%s", persistentName.c_str());
-            m_settings = AZ::UserSettings::CreateFind<TargetManagementSettings>(AZ::Crc32(targetManagementSettingsKey.c_str()), AZ::UserSettings::CT_GLOBAL);
-
-            if (m_settings->m_persistentName.empty())
+            if (m_settings.m_persistentName.empty())
             {
-                m_settings->m_persistentName = persistentName;
+                m_settings.m_persistentName = persistentName;
             }
         }
 
-        if (m_settings->m_neighborhoodName.empty())
+        m_tmpInboundBufferPos = 0;
+
+        if (m_settings.m_neighborhoodName.empty())
         {
-            m_settings->m_neighborhoodName = Platform::GetNeighborhoodName();
+            m_settings.m_neighborhoodName = Platform::GetNeighborhoodName();
         }
 
         // Always set our desired target to be initially offline
-        m_settings->m_lastTarget.m_flags &= ~TF_ONLINE;
+        m_settings.m_lastTarget.m_flags &= ~TF_ONLINE;
 
-        // Add a target for the local application.
-        TargetContainer::pair_iter_bool ret = m_availableTargets.insert_key(k_selfNetworkId);
+         // Add a target for the local application.
+        const AZ::u32 persistentId = AZ::Crc32(m_settings.m_persistentName.c_str());
+        TargetContainer::pair_iter_bool ret = m_availableTargets.insert_key(persistentId);
 
         TargetInfo& ti = ret.first->second;
         ti.m_lastSeen = time(nullptr);
-        ti.m_displayName = m_settings->m_persistentName;
-        ti.m_persistentId = AZ::Crc32(m_settings->m_persistentName.c_str());
+        ti.m_displayName = m_settings.m_persistentName;
+        ti.m_persistentId = persistentId;
         ti.m_networkId = k_selfNetworkId;
         ti.m_flags |= TF_ONLINE | TF_DEBUGGABLE | TF_RUNNABLE | TF_SELF;
         EBUS_QUEUE_EVENT(TargetManagerClient::Bus, TargetJoinedNetwork, ti);
@@ -311,28 +204,29 @@ namespace AzFramework
         TargetManager::Bus::Handler::BusConnect();
         AZ::SystemTickBus::Handler::BusConnect();
 
-        AZ::AllocatorInstance<GridMate::GridMateAllocator>::Create();
-        AZ::AllocatorInstance<GridMate::GridMateAllocatorMP>::Create();
-
         m_networkImpl = aznew TargetManagementNetworkImpl(this);
         m_stopRequested = false;
         AZStd::thread_desc td;
         td.m_name = "TargetManager Thread";
         td.m_cpuId = AFFINITY_MASK_USERTHREADS;
         m_threadHandle = AZStd::thread(td, AZStd::bind(&TargetManagementComponent::TickThread, this));
+
+        m_networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
+            m_networkInterfaceName, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
+        m_networkInterface->SetTimeoutMs(AZ::TimeMs(0));
+        m_targetJoinThread = AZStd::make_unique<TargetJoinThread>(target_autoconnect_interval);
     }
 
     void TargetManagementComponent::Deactivate()
     {
-        // stop gridmate
+        m_targetJoinThread = nullptr;
+        AZ::Interface<AzNetworking::INetworking>::Get()->DestroyNetworkInterface(m_networkInterfaceName);
+
         m_stopRequested = true;
         m_threadHandle.join();
 
         delete m_networkImpl;
         m_networkImpl = nullptr;
-
-        AZ::AllocatorInstance<GridMate::GridMateAllocatorMP>::Destroy();
-        AZ::AllocatorInstance<GridMate::GridMateAllocator>::Destroy();
 
         AZ::SystemTickBus::Handler::BusDisconnect();
         TargetManager::Bus::Handler::BusDisconnect();
@@ -342,10 +236,8 @@ namespace AzFramework
         m_inbox.clear();
         m_outbox.clear();
 
-        m_tmpInboundBuffer.reserve(0);
-
-        // Release the user settings
-        m_settings = nullptr;
+        m_tmpInboundBuffer.clear();
+        m_tmpInboundBufferPos = 0;
     }
 
     void TargetManagementComponent::Reflect(AZ::ReflectContext* context)
@@ -357,15 +249,6 @@ namespace AzFramework
                 ->Field("m_displayName", &TargetInfo::m_displayName)
                 ->Field("m_persistentId", &TargetInfo::m_persistentId)
                 ->Field("m_flags", &TargetInfo::m_flags)
-                ;
-
-            serializeContext->Class<TargetManagementSettings>()
-                ->Field("Hub", &TargetManagementSettings::m_neighborhoodName)
-                ->Field("HubPort", &TargetManagementSettings::m_targetPort)
-                ->Field("Name", &TargetManagementSettings::m_persistentName)
-                ->Field("LocalPort", &TargetManagementSettings::m_sourcePort)
-                ->Field("ReconnectIntervalMS", &TargetManagementSettings::m_reconnectionIntervalMS)
-                ->Field("LastConnectedTarget", &TargetManagementSettings::m_lastTarget)
                 ;
 
             serializeContext->Class<TmMsg>()
@@ -380,26 +263,12 @@ namespace AzFramework
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<TargetManagementComponent>(
-                    "Target Manager", "Provides target discovery and connectivity services within a GridHub network")
+                    "Target Manager", "Provides socket based connectivity services to a target application")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Profiling")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
-                    /*
-                    ->DataElement(AZ_CRC("String", 0x9ebeb2a9), &TargetManagementSettings::m_neighborhoodName, "Hub Name", "Name of GridHub that you want to connect to.")
-                    ->DataElement(AZ_CRC("Int", 0x1451dab1), &TargetManagementSettings::m_targetPort, "Hub Port", "Port GridHub listens on for new connections.")
-                    ->DataElement(AZ_CRC("String", 0x9ebeb2a9), &TargetManagementSettings::m_persistentName, "Persistent Name", "Name that you want to use to refer to this target in the network.")
-                    ->DataElement(AZ_CRC("Int", 0x1451dab1), &TargetManagementSettings::m_sourcePort, "Local Port", "Port to use for initial connection to the hub.")
-                    ->DataElement(AZ_CRC("Int", 0x1451dab1), &TargetManagementSettings::m_reconnectionIntervalMS, "Reconnection Interval", "Delay in milliseconds before attempting reconnections to GridHub.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 1000)
-                        ->Attribute(AZ::Edit::Attributes::Max, 10000);
-                    */
                     ;
             }
-        }
-
-        if (!GridMate::ReplicaChunkDescriptorTable::Get().FindReplicaChunkDescriptor(GridMate::ReplicaChunkClassId(Neighborhood::NeighborReplica::GetChunkName())))
-        {
-            GridMate::ReplicaChunkDescriptorTable::Get().RegisterChunkType<Neighborhood::NeighborReplica, Neighborhood::NeighborReplica::Desc>();
         }
     }
 
@@ -410,7 +279,7 @@ namespace AzFramework
 
     void TargetManagementComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UserSettingsService", 0xa0eadff5));
+        required.push_back(AZ_CRC_CE("NetworkingService"));
     }
 
     void TargetManagementComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -418,8 +287,22 @@ namespace AzFramework
         incompatible.push_back(AZ_CRC("TargetManagerService", 0x6d5708bc));
     }
 
+    void TargetManagementComponent::SetTargetAsHost(bool isHost)
+    {
+        m_isTargetHost = isHost;
+    }
+
     void TargetManagementComponent::OnSystemTick()
     {
+#if !defined(AZ_RELEASE_BUILD)
+        // If we're not the host and not connected to one, attempt to connect on a fixed interval
+        if (target_autoconnect && !m_isTargetHost && !m_targetJoinThread->IsRunning() &&
+            m_networkInterface->GetConnectionSet().GetActiveConnectionCount() == 0)
+        {
+            m_targetJoinThread->Start();
+        }
+#endif
+
         size_t maxMsgsToProcess = m_inbox.size();
         for (size_t i = 0; i < maxMsgsToProcess; ++i)
         {
@@ -444,31 +327,144 @@ namespace AzFramework
         TargetManagerClient::Bus::ExecuteQueuedEvents();
     }
 
-    void TargetManagementComponent::JoinNeighborhood()
+    bool TargetManagementComponent::HandleRequest(
+        AzNetworking::IConnection* connection,
+        [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
+        const AzFrameworkPackets::TargetConnect& packet)
     {
-        // if we don't have a specified neighborhood name, don't try to connect.
-        if (m_settings->m_neighborhoodName.empty())
+        EBUS_EVENT(Neighborhood::NeighborhoodBus, OnNodeJoined, packet, static_cast<uint32_t>(connection->GetConnectionId()));
+        return true;
+    }
+
+    bool TargetManagementComponent::HandleRequest(
+        AzNetworking::IConnection* connection,
+        [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
+        [[maybe_unused]] const AzFrameworkPackets::TargetMessage& packet)
+    {
+        // Receive
+        if (connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor &&
+            static_cast<uint32_t>(connection->GetConnectionId()) != m_settings.m_lastTarget.m_networkId)
         {
-            return;
+            // Listener should route traffic based on selected target
+            return true;
         }
 
-        GridMate::LANSearchParams searchParams;
-        searchParams.m_serverPort = m_settings->m_targetPort;
-        searchParams.m_listenPort = m_settings->m_sourcePort;
-        searchParams.m_numParams = 1;
-        searchParams.m_params[0].m_id = "HubName";
-        searchParams.m_params[0].SetValue(m_settings->m_neighborhoodName);
-        searchParams.m_params[0].m_op = GridMate::GridSessionSearchOperators::SSO_OPERATOR_EQUAL;
-
-        // Until an authentication connection can be established between peers only supporting
-        // local connections (i.e. binding to localhost).
-        searchParams.m_listenAddress = "127.0.0.1";
-        searchParams.m_serverAddress = "127.0.0.1";
-
-        EBUS_EVENT_ID_RESULT(m_networkImpl->m_gridSearch,m_networkImpl->m_gridMate,GridMate::LANSessionServiceBus,StartGridSearch,searchParams);
-        if (m_networkImpl->m_gridSearch)
+        // If we're a client, set the host to our desired target
+        if (connection->GetConnectionRole() == AzNetworking::ConnectionRole::Connector)
         {
-            m_reconnectionTime = AZStd::chrono::system_clock::now() + AZStd::chrono::milliseconds(m_settings->m_reconnectionIntervalMS);
+            if (GetTargetInfo(packet.GetPersistentId()).GetPersistentId() == 0)
+            {
+                TargetContainer::pair_iter_bool ret = m_availableTargets.insert_key(packet.GetPersistentId());
+
+                TargetInfo& ti = ret.first->second;
+                ti.m_lastSeen = time(nullptr);
+                ti.m_displayName = "Host";
+                ti.m_persistentId = packet.GetPersistentId();
+                ti.m_networkId = static_cast<uint32_t>(connection->GetConnectionId());
+                ti.m_flags |= TF_ONLINE | TF_DEBUGGABLE | TF_RUNNABLE;
+
+                // last target can be loaded in with a persistent id but no network, correct here
+                if (GetDesiredTarget().GetPersistentId() == packet.GetPersistentId())
+                {
+                    m_settings.m_lastTarget.m_networkId = ti.m_networkId;
+                }
+
+                EBUS_QUEUE_EVENT(TargetManagerClient::Bus, TargetJoinedNetwork, ti);
+            }
+
+            if (GetDesiredTarget().GetPersistentId() != packet.GetPersistentId())
+            {
+                SetDesiredTarget(packet.GetPersistentId());
+            }
+        }
+
+        const uint32_t totalBufferSize = packet.GetSize();
+
+        // Messages can be larger than the size of a packet so reserve a buffer for the total message size
+        if (m_tmpInboundBufferPos == 0)
+        {
+            m_tmpInboundBuffer.reserve(totalBufferSize);
+        }
+
+        // Read as much data as the packet can include and append it to the buffer
+        const uint32_t readSize = AZStd::min(totalBufferSize - m_tmpInboundBufferPos, Neighborhood::NeighborBufferSize);
+        memcpy(m_tmpInboundBuffer.begin() + m_tmpInboundBufferPos, packet.GetMessageBuffer().GetBuffer(), readSize);
+        m_tmpInboundBufferPos += readSize;
+        if (m_tmpInboundBufferPos == totalBufferSize)
+        {
+            // Deserialize the complete buffer
+            AZ::IO::MemoryStream msgBuffer(m_tmpInboundBuffer.data(), totalBufferSize, totalBufferSize);
+            TmMsg* msg = nullptr;
+            AZ::ObjectStream::ClassReadyCB readyCB(AZStd::bind(&TargetManagementComponent::OnMsgParsed, this, &msg, AZStd::placeholders::_1,
+                AZStd::placeholders::_2, AZStd::placeholders::_3));
+            AZ::ObjectStream::LoadBlocking(&msgBuffer, *m_serializeContext, readyCB,
+                AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+
+            // Append to the inbox for handling
+            if (msg)
+            {
+                if (msg->GetCustomBlobSize() > 0)
+                {
+                    void* blob = azmalloc(msg->GetCustomBlobSize(), 1, AZ::OSAllocator, "TmMsgBlob");
+                    msgBuffer.Read(msg->GetCustomBlobSize(), blob);
+                    msg->AddCustomBlob(blob, msg->GetCustomBlobSize(), true);
+                }
+                msg->m_senderTargetId = packet.GetPersistentId();
+
+                m_inboxMutex.lock();
+                m_inbox.push_back(msg);
+                m_inboxMutex.unlock();
+                m_tmpInboundBuffer.clear();
+                m_tmpInboundBufferPos = 0;
+            }
+        }
+
+        return true;
+    }
+
+    AzNetworking::ConnectResult TargetManagementComponent::ValidateConnect(
+        [[maybe_unused]] const AzNetworking::IpAddress& remoteAddress,
+        [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
+        [[maybe_unused]] AzNetworking::ISerializer& serializer)
+    {
+        return AzNetworking::ConnectResult::Accepted;
+    }
+
+    void TargetManagementComponent::OnConnect([[maybe_unused]] AzNetworking::IConnection* connection)
+    {
+        // Invoked when a target connection is established, handshake logic is handled via TargetConnect message
+        ;
+    }
+
+    AzNetworking::PacketDispatchResult TargetManagementComponent::OnPacketReceived(
+        AzNetworking::IConnection* connection,
+        [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
+        [[maybe_unused]] AzNetworking::ISerializer& serializer)
+    {
+        if (connection->GetRemoteAddress().GetIpString() != TargetServerAddress)
+        {
+            // Only localhost is valid
+            return AzNetworking::PacketDispatchResult::Skipped;
+        }
+
+        return AzFrameworkPackets::DispatchPacket(connection, packetHeader, serializer, *this);
+    }
+
+    void TargetManagementComponent::OnPacketLost(
+        [[maybe_unused]] AzNetworking::IConnection* connection, [[maybe_unused]] AzNetworking::PacketId packetId)
+    {
+        ;
+    }
+
+    void TargetManagementComponent::OnDisconnect(
+        [[maybe_unused]] AzNetworking::IConnection* connection,
+        [[maybe_unused]] AzNetworking::DisconnectReason reason,
+        [[maybe_unused]] AzNetworking::TerminationEndpoint endpoint)
+    {
+        // If our desired target has left the network, flag it and notify listeners
+        if (reason != AzNetworking::DisconnectReason::ConnectionRejected)
+        {
+            EBUS_EVENT(Neighborhood::NeighborhoodBus, OnNodeLeft, static_cast<uint32_t>(connection->GetConnectionId()));
         }
     }
 
@@ -486,11 +482,13 @@ namespace AzFramework
     {
         AZ_TracePrintf("TargetManagementComponent", "Set Target - %u", desiredTargetID);
 
-        if (desiredTargetID != static_cast<AZ::u32>(m_settings->m_lastTarget.m_networkId))
+        if (desiredTargetID != m_settings.m_lastTarget.m_persistentId)
         {
             TargetInfo ti = GetTargetInfo(desiredTargetID);
-            AZ::u32 oldTargetID = m_settings->m_lastTarget.m_networkId;
-            m_settings->m_lastTarget = ti;
+            AZ::u32 oldTargetID = m_settings.m_lastTarget.m_persistentId;
+            m_settings.m_lastTarget = ti;
+            m_tmpInboundBuffer.clear();
+            m_tmpInboundBufferPos = 0;
 
             if ((ti.IsValid()) && ((ti.m_flags & (TF_ONLINE | TF_SELF)) != 0))
             {
@@ -521,13 +519,13 @@ namespace AzFramework
 
     void TargetManagementComponent::SetDesiredTargetInfo(const TargetInfo& targetInfo)
     {
-        SetDesiredTarget(targetInfo.GetNetworkId());
+        SetDesiredTarget(targetInfo.GetPersistentId());
     }
 
     // retrieve what it was set to.
     TargetInfo TargetManagementComponent::GetDesiredTarget()
     {
-        return m_settings->m_lastTarget;
+        return m_settings.m_lastTarget;
     }
 
     // given id, get info.
@@ -557,23 +555,22 @@ namespace AzFramework
     bool TargetManagementComponent::IsDesiredTargetOnline()
     {
         TargetInfo desiredTarget = GetDesiredTarget();
-        return IsTargetOnline(desiredTarget.GetNetworkId());
+        return IsTargetOnline(desiredTarget.GetPersistentId());
     }
 
     void TargetManagementComponent::SetMyPersistentName(const char* name)
     {
-        AZ_Assert(m_networkImpl->m_session == nullptr, "We cannot change our neighborhood while connected!");
-        m_settings->m_persistentName = name;
+        m_settings.m_persistentName = name;
     }
 
     const char* TargetManagementComponent::GetMyPersistentName()
     {
-        return m_settings->m_persistentName.c_str();
+        return m_settings.m_persistentName.c_str();
     }
 
     TargetInfo TargetManagementComponent::GetMyTargetInfo() const
     {
-        auto mapIter = m_availableTargets.find(k_nullNetworkId);
+        auto mapIter = m_availableTargets.find(AZ::Crc32(m_settings.m_persistentName.c_str()));
 
         if (mapIter != m_availableTargets.end())
         {
@@ -585,13 +582,12 @@ namespace AzFramework
 
     void TargetManagementComponent::SetNeighborhood(const char* name)
     {
-        AZ_Assert(m_networkImpl->m_session == nullptr, "We cannot change our neighborhood while connected!");
-        m_settings->m_neighborhoodName = name;
+        m_settings.m_neighborhoodName = name;
     }
 
     const char* TargetManagementComponent::GetNeighborhood()
     {
-        return m_settings->m_neighborhoodName.c_str();
+        return m_settings.m_neighborhoodName.c_str();
     }
 
     void TargetManagementComponent::SendTmMessage(const TargetInfo& target, const TmMsg& msg)
@@ -601,7 +597,7 @@ namespace AzFramework
         {
             TmMsg* inboxMessage = static_cast<TmMsg*>(m_serializeContext->CloneObject(static_cast<const void*>(&msg), msg.RTTI_GetType()));
             AZ_Assert(inboxMessage, "Failed to clone local loopback message.");
-            inboxMessage->m_senderTargetId = target.GetNetworkId();
+            inboxMessage->m_senderTargetId = target.GetPersistentId();
 
             if (msg.GetCustomBlobSize() > 0)
             {
@@ -644,7 +640,7 @@ namespace AzFramework
 
         m_outboxMutex.lock();
         m_outbox.push_back();
-        m_outbox.back().first = target.m_networkId;
+        m_outbox.back().first = target.m_persistentId;
         m_outbox.back().second.swap(msgBuffer);
         m_outboxMutex.unlock();
     }
@@ -680,107 +676,95 @@ namespace AzFramework
 
     void TargetManagementComponent::TickThread()
     {
+        // Executed in a side thread due to mutex lock and potentially large message sizes (MB scale)
         while (!m_stopRequested)
         {
-            if (m_networkImpl->m_gridMate)
+            AZ_PROFILE_SCOPE(AzFramework, "TargetManager::Tick");
+
+            // Send outbound data
+            size_t maxMsgsToSend = m_outbox.size();
+            if (maxMsgsToSend > 0)
             {
-                AZ_PROFILE_SCOPE(AzFramework, "TargetManager::Tick");
-                if (!m_networkImpl->m_session && !m_networkImpl->m_gridSearch)
+                const TargetInfo ti = GetMyTargetInfo();
+                for (size_t iSend = 0; iSend < maxMsgsToSend; ++iSend)
                 {
-                    if (AZStd::chrono::system_clock::now() > m_reconnectionTime)
+                    // Lock outbox to prevent a read/write race
+                    m_outboxMutex.lock();
+
+                    auto& outBoxElem = m_outbox.front().second;
+                    uint8_t* outBuffer = reinterpret_cast<uint8_t*>(outBoxElem.data());
+                    const size_t totalSize = outBoxElem.size();
+                    size_t outSize = outBoxElem.size();
+                    while (outSize > 0)
                     {
-                        JoinNeighborhood();
-                    }
-                }
+                        // Fragment the message into NeighborMessageBuffer packet sized chunks and send
+                        size_t bufferSize = AZStd::min(outSize, aznumeric_cast<size_t>(Neighborhood::NeighborBufferSize));
+                        AzFrameworkPackets::TargetMessage tmPacket;
+                        tmPacket.SetPersistentId(ti.GetPersistentId());
+                        tmPacket.SetSize(aznumeric_cast<uint32_t>(totalSize));
+                        Neighborhood::NeighborMessageBuffer encodingBuffer;
+                        encodingBuffer.CopyValues(outBuffer + (totalSize - outSize), bufferSize);
+                        tmPacket.SetMessageBuffer(encodingBuffer);
+                        outSize -= bufferSize;
 
-                {
-                    AZ_PROFILE_SCOPE(AzFramework, "TargetManager::Tick Gridmate");
-                    m_networkImpl->m_gridMate->Update();
-                    if (m_networkImpl->m_session && m_networkImpl->m_session->GetReplicaMgr())
-                    {
-                        m_networkImpl->m_session->GetReplicaMgr()->Unmarshal();
-                        m_networkImpl->m_session->GetReplicaMgr()->UpdateFromReplicas();
-                        m_networkImpl->m_session->GetReplicaMgr()->UpdateReplicas();
-                        m_networkImpl->m_session->GetReplicaMgr()->Marshal();
-                    }
-                }
-
-                if (m_networkImpl->m_session)
-                {
-                    AZ_PROFILE_SCOPE(AzFramework, "TargetManager::Tick Send/Receive TmMsgs");
-
-                    // Receive
-                    for (unsigned int i = 0; i < m_networkImpl->m_session->GetNumberOfMembers(); ++i)
-                    {
-                        GridMate::GridMember* member = m_networkImpl->m_session->GetMemberByIndex(i);
-                        GridMate::MemberIDCompact memberId = member->GetId().Compact();
-                        const TargetInfo* target = nullptr;
-                        AZ::u32 targetId = 0;
-                        for (TargetContainer::const_iterator targetIt = m_availableTargets.begin(); targetIt != m_availableTargets.end(); ++targetIt)
-                        {
-                            if (targetIt->second.m_networkId == memberId)
-                            {
-                                target = &targetIt->second;
-                                targetId = targetIt->first;
-                            }
-                        }
-
-                        if (!member->IsLocal())
-                        {
-                            GridMate::Carrier::ReceiveResult result = member->ReceiveBinary(m_tmpInboundBuffer.data(), static_cast<unsigned int>(m_tmpInboundBuffer.capacity()));
-                            while (result.m_state != result.NO_MESSAGE_TO_RECEIVE)
-                            {
-                                if (result.m_state == result.UNSUFFICIENT_BUFFER_SIZE)
-                                {
-                                    m_tmpInboundBuffer.reserve(result.m_numBytes);
-                                    result = member->ReceiveBinary(m_tmpInboundBuffer.data(), static_cast<unsigned int>(m_tmpInboundBuffer.capacity()));
-                                }
-                                AZ_Assert(result.m_state == result.RECEIVED, "Failed to retrieve TmMsg from the network.");
-
-                                if (target)
-                                {
-                                    AZ::IO::MemoryStream msgBuffer(m_tmpInboundBuffer.data(), result.m_numBytes, result.m_numBytes);
-                                    TmMsg* msg = nullptr;
-                                    AZ::ObjectStream::ClassReadyCB readyCB(AZStd::bind(&TargetManagementComponent::OnMsgParsed, this, &msg, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3));
-                                    AZ::ObjectStream::LoadBlocking(&msgBuffer, *m_serializeContext, readyCB, AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
-                                    if (msg)
-                                    {
-                                        if (msg->GetCustomBlobSize() > 0)
-                                        {
-                                            void* blob = azmalloc(msg->GetCustomBlobSize(), 1, AZ::OSAllocator, "TmMsgBlob");
-                                            msgBuffer.Read(msg->GetCustomBlobSize(), blob);
-                                            msg->AddCustomBlob(blob, msg->GetCustomBlobSize(), true);
-                                        }
-                                        msg->m_senderTargetId = targetId;
-
-                                        m_inboxMutex.lock();
-                                        m_inbox.push_back(msg);
-                                        m_inboxMutex.unlock();
-                                    }
-                                }
-                                result = member->ReceiveBinary(m_tmpInboundBuffer.data(), static_cast<unsigned int>(m_tmpInboundBuffer.capacity()));
-                            }
-                        }
+                        m_networkInterface->SendReliablePacket(
+                            static_cast<AzNetworking::ConnectionId>(m_settings.m_lastTarget.GetNetworkId()), tmPacket);
                     }
 
-                    // Send
-                    size_t maxMsgsToSend = m_outbox.size();
-                    for (size_t iSend = 0; iSend < maxMsgsToSend; ++iSend)
-                    {
-                        GridMate::GridMember* peer = m_networkImpl->m_session->GetMemberById(m_outbox.front().first);
-                        if (peer)
-                        {
-                            peer->SendBinary(m_outbox.front().second.data(), static_cast<unsigned int>(m_outbox.front().second.size()), GridMate::Carrier::SEND_RELIABLE, GridMate::Carrier::PRIORITY_LOW);
-                        }
-
-                        m_outboxMutex.lock();
-                        m_outbox.pop_front();
-                        m_outboxMutex.unlock();
-                    }
+                    m_outbox.pop_front();
+                    m_outboxMutex.unlock();
                 }
             }
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(OutboxThreadTick));
+        }
+    }
 
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(50));
+    void connect_target([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        for (auto& networkInterface : AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces())
+        {
+            if (networkInterface.first == AZ::Name("TargetManagement"))
+            {
+                const uint16_t serverPort = target_port;
+
+                AzNetworking::ConnectionId connId = networkInterface.second->Connect(
+                    AzNetworking::IpAddress(TargetServerAddress, serverPort, AzNetworking::ProtocolType::Tcp));
+                if (connId != AzNetworking::InvalidConnectionId)
+                {
+                    AzFrameworkPackets::TargetConnect initPacket;
+                    initPacket.SetPersistentId(AZ::Crc32(Platform::GetPersistentName()));
+                    initPacket.SetCapabilities(Neighborhood::NEIGHBOR_CAP_LUA_VM | Neighborhood::NEIGHBOR_CAP_LUA_DEBUGGER);
+                    initPacket.SetDisplayName(Platform::GetPersistentName());
+                    networkInterface.second->SendReliablePacket(connId, initPacket);
+                }
+            }
+        }
+    }
+    AZ_CONSOLEFREEFUNC(connect_target, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a target management connection to a host");
+
+    TargetJoinThread::TargetJoinThread(int updateRate)
+        : TimedThread("AzFramework::TargetJoinThread", AZ::TimeMs(updateRate))
+    {
+        ;
+    }
+
+     TargetJoinThread::~TargetJoinThread()
+     {
+         Stop();
+         Join();
+     }
+
+    void TargetJoinThread::OnUpdate([[maybe_unused]] AZ::TimeMs updateRateMs)
+    {
+        connect_target(AZ::ConsoleCommandContainer());
+        for (auto& networkInterface : AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces())
+        {
+            if (networkInterface.first == AZ::Name("TargetManagement") &&
+                networkInterface.second->GetConnectionSet().GetActiveConnectionCount() > 0)
+            {
+                Stop();
+                Join();
+            }
         }
     }
 }   // namespace AzFramework

@@ -57,15 +57,15 @@ export NVM_DIR="$HOME/.nvm"
 echo [cdk_installation] Install the current version of nodejs
 nvm install node
 
-echo [cdk_installation] Install the latest version of CDK
+echo [cdk_installation] Install aws-cdk@$CDK_VERSION
 if ! npm uninstall -g aws-cdk;
 then
     echo [cdk_bootstrap] Failed to uninstall the current version of CDK
     exit 1
 fi
-if ! npm install -g aws-cdk@latest;
+if ! npm install -g aws-cdk@$CDK_VERSION;
 then
-    echo [cdk_bootstrap] Failed to install the latest version of CDK
+    echo [cdk_bootstrap] Failed to install aws-cdk@$CDK_VERSION
     exit 1
 fi
 
@@ -77,6 +77,7 @@ export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
 
 if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
    export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+   export O3DE_AWS_PROJECT_NAME=${O3DE_AWS_PROJECT_NAME///} # remove occurances of "/" b/c not allowed in AWS CFN stack names
 fi
 
 ERROR_EXISTS=0

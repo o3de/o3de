@@ -6,7 +6,7 @@
 #
 #
 
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
     NAME Atom_AtomBridge.Static STATIC
@@ -119,6 +119,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::MaterialCanvas.Builders
             Gem::MaterialEditor.Builders
             Gem::ShaderManagementConsole.Builders
+            Gem::EditorModeFeedback.Editor
     )
 
 
