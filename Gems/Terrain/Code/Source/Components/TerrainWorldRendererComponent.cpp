@@ -43,7 +43,7 @@ namespace Terrain
             serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
                 ->Version(2)
                 ->Field("DetailMaterialConfiguration", &TerrainWorldRendererConfig::m_detailMaterialConfig)
-                ->Field("DetailMaterialConfiguration", &TerrainWorldRendererConfig::m_meshConfig)
+                ->Field("MeshConfiguration", &TerrainWorldRendererConfig::m_meshConfig)
                 ;
 
             AZ::EditContext* editContext = serialize->GetEditContext();

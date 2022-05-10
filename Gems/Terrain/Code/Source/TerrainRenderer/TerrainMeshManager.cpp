@@ -212,7 +212,7 @@ namespace Terrain
 
             const AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
             const AZ::Vector3 viewVector = viewFrustum.GetPlane(AZ::Frustum::PlaneId::Near).GetNormal();
-            const AZ::Vector3 veiwPosition = view->GetCameraTransform().GetTranslation();
+            const AZ::Vector3 viewPosition = view->GetCameraTransform().GetTranslation();
 
             for (auto& sectorStack : m_sectorStack)
             {
@@ -222,7 +222,7 @@ namespace Terrain
 
                 for (auto& sector : sectorStack.m_sectors)
                 {
-                    if (viewVector.Dot(veiwPosition - sector.m_aabb.GetCenter()) < -radius || // Cheap check to eliminate sectors behind camera
+                    if (viewVector.Dot(viewPosition - sector.m_aabb.GetCenter()) < -radius || // Cheap check to eliminate sectors behind camera
                         viewFrustum.IntersectAabb(sector.m_aabb) == AZ::IntersectResult::Exterior || // Check against frustum
                         !sector.m_aabb.Overlaps(m_worldBounds)) // Check against world bounds
                     {

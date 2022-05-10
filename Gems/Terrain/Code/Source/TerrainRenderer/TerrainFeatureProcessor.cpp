@@ -506,11 +506,11 @@ namespace Terrain
                     {
                         m_passes.push_back(rasterPass);
                     }
-                    if (rasterPass->GetDrawListTag() == depthTag)
+                    else if (rasterPass->GetDrawListTag() == depthTag)
                     {
                         m_passes.push_back(rasterPass);
                     }
-                    if (rasterPass->GetDrawListTag() == shadowTag)
+                    else if (rasterPass->GetDrawListTag() == shadowTag)
                     {
                         m_passes.push_back(rasterPass);
                     }
