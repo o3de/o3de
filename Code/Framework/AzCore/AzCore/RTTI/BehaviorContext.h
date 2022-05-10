@@ -735,10 +735,7 @@ namespace AZ
             BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context);
 
             template<bool IsBusId>
-            inline AZStd::enable_if_t<IsBusId> SetBusIdType();
-
-            template<bool IsBusId>
-            inline AZStd::enable_if_t<!IsBusId> SetBusIdType();
+            inline void SetBusIdType();
 
             bool Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const override;
             bool HasResult() const override;

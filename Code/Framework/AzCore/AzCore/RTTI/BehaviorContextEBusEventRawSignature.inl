@@ -25,16 +25,12 @@ namespace AZ::Internal
     //////////////////////////////////////////////////////////////////////////
     template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
     template<bool IsBusId>
-    inline AZStd::enable_if_t<IsBusId> BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::SetBusIdType()
+    void BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::SetBusIdType()
     {
-        SetParameters<typename EBus::BusIdType>(&m_parameters[s_startArgumentIndex]);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    template<bool IsBusId>
-    inline AZStd::enable_if_t<!IsBusId> BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::SetBusIdType()
-    {
+        if constexpr (IsBusId)
+        {
+            SetParameters<typename EBus::BusIdType>(&m_parameters[s_startArgumentIndex]);
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
