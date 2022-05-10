@@ -1362,36 +1362,42 @@ bool ApplicationManagerBase::GetAssetDatabaseLocation(AZStd::string& location)
 
 bool ApplicationManagerBase::CheckReprocessFileList()
 {
-    if (m_reprocessFileList.isEmpty())
+    if (m_reprocessFileList.isEmpty() && m_filesToReprocess.isEmpty())
     {
         return false;
     }
-    QStringList toReprocess;
 
-    QFile reprocessFile(m_reprocessFileList);
-    m_reprocessFileList.clear();
-    if(!reprocessFile.open(QIODevice::ReadOnly))
+    if (!m_reprocessFileList.isEmpty())
     {
-        AZ_Error(
-            "AssetProcessor", false, "Unable to open reprocess file list with path %s.", reprocessFile.fileName().toUtf8().data());
-        return false;
+        QFile reprocessFile(m_reprocessFileList);
+        m_reprocessFileList.clear();
+        if (!reprocessFile.open(QIODevice::ReadOnly))
+        {
+            AZ_Error("AssetProcessor", false, "Unable to open reprocess file list with path %s.", reprocessFile.fileName().toUtf8().data());
+            return false;
+        }
+
+        while (!reprocessFile.atEnd())
+        {
+            m_filesToReprocess.append(reprocessFile.readLine());
+        }
+
+        reprocessFile.close();
+
+        if (m_filesToReprocess.empty())
+        {
+            AZ_Error(
+                "AssetProcessor", false, "No files listed to reprocess in the file at path %s.", reprocessFile.fileName().toUtf8().data());
+            return false;
+        }
+
     }
 
-    while (!reprocessFile.atEnd())
-    {
-        toReprocess.append(reprocessFile.readLine());
-    }
-
-    reprocessFile.close();
-
-    if (toReprocess.empty())
-    {
-        AZ_Error(
-            "AssetProcessor", false, "No files listed to reprocess in the file at path %s.", reprocessFile.fileName().toUtf8().data());
-        return false;
-    }
-
-    m_assetProcessorManager->RequestReprocess(toReprocess);
+    // Queue one at a time, and wait for idle.
+    // This makes sure the files in the list are processed in the same order.
+    // Otherwise, the order can shuffle based on Asset Processor state.
+    m_assetProcessorManager->RequestReprocess(m_filesToReprocess.front());
+    m_filesToReprocess.pop_front();
 
     return true;
 }

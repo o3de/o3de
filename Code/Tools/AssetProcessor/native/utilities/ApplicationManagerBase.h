@@ -246,6 +246,7 @@ protected:
     QString m_dependencyScanPattern;
     QString m_fileDependencyScanPattern;
     QString m_reprocessFileList;
+    QStringList m_filesToReprocess;
     AZStd::vector<AZStd::string> m_dependencyAddtionalScanFolders;
     int m_dependencyScanMaxIteration = AssetProcessor::MissingDependencyScanner::DefaultMaxScanIteration; // The maximum number of times to recurse when scanning a file for missing dependencies.
 };
