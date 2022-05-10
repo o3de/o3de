@@ -161,7 +161,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     float2 CalculateCullDistance(uint lodLevel, float3 worldPosition)
     {
         float minRange = 0;
-        float maxRange = TerrainSrg::m_meshData.m_firstLodDistance;
+        float maxRange = m_meshData.m_firstLodDistance;
         if (lodLevel > 0)
         {
             maxRange = maxRange * float(1u << lodLevel);

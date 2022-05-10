@@ -30,7 +30,11 @@ struct VSOutput
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
-    float2 m_cullDistance : SV_CullDistance;
+
+    // Using two culling planes - cull triangles too close to or too far from the camera for thier LOD
+    // This allows some overlap in polygons along seams which helps reduce the chance of a hole. When 
+    // support for continuous lod is added, we should be able to get away with just one culling plane.
+    float2 m_cullDistance : SV_CullDistance; 
 };
 
 VSOutput TerrainPBR_MainPassVS(VertexInput IN)
