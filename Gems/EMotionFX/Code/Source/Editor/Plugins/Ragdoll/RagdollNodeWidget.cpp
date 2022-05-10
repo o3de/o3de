@@ -11,7 +11,7 @@
 #include <AzFramework/Physics/Ragdoll.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
-#include <EmotionFX/Source/TransformData.h>
+#include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <Editor/ColliderContainerWidget.h>
