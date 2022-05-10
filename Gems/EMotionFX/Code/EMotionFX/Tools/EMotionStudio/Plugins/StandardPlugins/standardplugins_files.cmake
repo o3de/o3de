@@ -12,14 +12,6 @@ set(FILES
     Source/ActionHistory/ActionHistoryCallback.h
     Source/ActionHistory/ActionHistoryPlugin.cpp
     Source/ActionHistory/ActionHistoryPlugin.h
-    Source/Attachments/AttachmentNodesWindow.cpp
-    Source/Attachments/AttachmentNodesWindow.h
-    Source/Attachments/AttachmentsHierarchyWindow.cpp
-    Source/Attachments/AttachmentsHierarchyWindow.h
-    Source/Attachments/AttachmentsPlugin.cpp
-    Source/Attachments/AttachmentsPlugin.h
-    Source/Attachments/AttachmentsWindow.cpp
-    Source/Attachments/AttachmentsWindow.h
     Source/AnimGraph/AnimGraphActionManager.cpp
     Source/AnimGraph/AnimGraphActionManager.h
     Source/AnimGraph/AnimGraphEditor.cpp

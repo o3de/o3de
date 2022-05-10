@@ -20,6 +20,11 @@ namespace AZ::DocumentPropertyEditor
         handler.Connect(m_changedEvent);
     }
 
+    void DocumentAdapter::SetRouter(RoutingAdapter* /*router*/, const Dom::Path& /*route*/)
+    {
+        // By default, setting a router is a no-op, this only matters for nested routing adapters
+    }
+
     void DocumentAdapter::NotifyResetDocument()
     {
         m_resetEvent.Signal();

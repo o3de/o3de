@@ -25,11 +25,9 @@ namespace AZStd
             // Unimplemented on Android
         }
 
-        void SetThreadPriority(int priority, pthread_attr_t&)
+        void SetThreadPriority([[maybe_unused]] int priority, pthread_attr_t&)
         {
             // (not supported at v r10d)
-            AZ_Warning("System", priority <= 0, "Thread priorities %d not supported on Android!\n", priority);
-            (void)priority;
         }
 
         void PostCreateThread(pthread_t tId, const char* name, int)
