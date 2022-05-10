@@ -25,8 +25,6 @@
 
 #include <Atom/Feature/RenderCommon.h>
 
-#include <TerrainRenderer/Aabb2i.h>
-
 namespace Terrain
 {
     namespace
@@ -103,32 +101,33 @@ namespace Terrain
     {
         for (uint32_t i = 0; i < m_sectorStack.size(); ++i)
         {
-            float maxDistance = m_config.m_firstLodDistance * aznumeric_cast<float>(1 << i);
+            const float maxDistance = m_config.m_firstLodDistance * aznumeric_cast<float>(1 << i);
             const float gridMeters = (GridSize * m_sampleSpacing) * (1 << i);
-            int32_t startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetX() - maxDistance) / gridMeters));
-            int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetY() - maxDistance) / gridMeters));
+            const int32_t startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetX() - maxDistance) / gridMeters));
+            const int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetY() - maxDistance) / gridMeters));
 
+            // If the start coord for the stack is different, then some of the sectors will need to be updated.
             StackData& stackData = m_sectorStack.at(i);
             if (stackData.m_startCoordX != startCoordX || stackData.m_startCoordY != startCoordY)
             {
                 stackData.m_startCoordX = startCoordX;
                 stackData.m_startCoordY = startCoordY;
 
-                uint32_t firstSectorIndexX = (m_1dSectorCount + (startCoordX % m_1dSectorCount)) % m_1dSectorCount;
-                uint32_t firstSectorIndexY = (m_1dSectorCount + (startCoordY % m_1dSectorCount)) % m_1dSectorCount;
-
-                int32_t debugCount = 0;
+                const uint32_t firstSectorIndexX = (m_1dSectorCount + (startCoordX % m_1dSectorCount)) % m_1dSectorCount;
+                const uint32_t firstSectorIndexY = (m_1dSectorCount + (startCoordY % m_1dSectorCount)) % m_1dSectorCount;
 
                 for (uint32_t xOffset = 0; xOffset < m_1dSectorCount; ++xOffset)
                 {
                     for (uint32_t yOffset = 0; yOffset < m_1dSectorCount; ++yOffset)
                     {
-                        uint32_t sectorIndexX = (firstSectorIndexX + xOffset) % m_1dSectorCount;
-                        uint32_t sectorIndexY = (firstSectorIndexY + yOffset) % m_1dSectorCount;
-                        uint32_t sectorIndex = sectorIndexY * m_1dSectorCount + sectorIndexX;
+                        // Sectors use toroidal addressing to avoid needing to update any more than necessary.
 
-                        int32_t worldX = startCoordX + xOffset;
-                        int32_t worldY = startCoordY + yOffset;
+                        const uint32_t sectorIndexX = (firstSectorIndexX + xOffset) % m_1dSectorCount;
+                        const uint32_t sectorIndexY = (firstSectorIndexY + yOffset) % m_1dSectorCount;
+                        const uint32_t sectorIndex = sectorIndexY * m_1dSectorCount + sectorIndexX;
+
+                        const int32_t worldX = startCoordX + xOffset;
+                        const int32_t worldY = startCoordY + yOffset;
 
                         StackSectorData& sector = stackData.m_sectors.at(sectorIndex);
 
@@ -137,8 +136,8 @@ namespace Terrain
                             sector.m_worldX = worldX;
                             sector.m_worldY = worldY;
 
-                            AZ::Vector3 min = AZ::Vector3(worldX * gridMeters, worldY * gridMeters, m_worldBounds.GetMin().GetZ());
-                            AZ::Vector3 max = min + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetZExtent());
+                            const AZ::Vector3 min = AZ::Vector3(worldX * gridMeters, worldY * gridMeters, m_worldBounds.GetMin().GetZ());
+                            const AZ::Vector3 max = min + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetZExtent());
                             sector.m_aabb = AZ::Aabb::CreateFromMinMax(min, max);
 
                             ShaderObjectData objectSrgData;
@@ -148,21 +147,8 @@ namespace Terrain
 
                             sector.m_srg->SetConstant(m_patchDataIndex, objectSrgData);
                             sector.m_srg->Compile();
-
-                            //sector.m_drawPacket.Update(parentScene, true);
-
-                            ++debugCount;
                         }
                     }
-                }
-
-                if (debugCount > 0)
-                {
-                    AZ_Warning("Terrain Mesh", false, "Found %i sectors to rebuild", debugCount);
-                }
-                else
-                {
-                    AZ_Warning("Terrain Mesh", false, "DID NOT FIND SECTORS TO REBUILD...");
                 }
             }
         }
@@ -183,8 +169,10 @@ namespace Terrain
 
         m_sectorStack.clear();
 
-        uint32_t stackCount = aznumeric_cast<uint32_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
+        const uint32_t stackCount = aznumeric_cast<uint32_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
         m_sectorStack.reserve(stackCount);
+
+        // Create all the sectors with uninitialized SRGs. The SRGs will be updated later by CheckStacksForUpdate().
 
         for (uint32_t j = 0; j < stackCount; ++j)
         {
@@ -222,9 +210,9 @@ namespace Terrain
             float minDistanceSq = 0.0f;
             float maxDistanceSq = m_config.m_firstLodDistance * m_config.m_firstLodDistance;
 
-            AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
-            AZ::Vector3 viewVector = viewFrustum.GetPlane(AZ::Frustum::PlaneId::Near).GetNormal();
-            AZ::Vector3 veiwPosition = view->GetCameraTransform().GetTranslation();
+            const AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
+            const AZ::Vector3 viewVector = viewFrustum.GetPlane(AZ::Frustum::PlaneId::Near).GetNormal();
+            const AZ::Vector3 veiwPosition = view->GetCameraTransform().GetTranslation();
 
             for (auto& sectorStack : m_sectorStack)
             {
@@ -242,8 +230,8 @@ namespace Terrain
                     }
 
                     // Sector is in view, but only draw if it's in the correct LOD range.
-                    float aabbMinDistanceSq = sector.m_aabb.GetDistanceSq(mainCameraPosition);
-                    float aabbMaxDistanceSq = sector.m_aabb.GetMaxDistanceSq(mainCameraPosition);
+                    const float aabbMinDistanceSq = sector.m_aabb.GetDistanceSq(mainCameraPosition);
+                    const float aabbMaxDistanceSq = sector.m_aabb.GetMaxDistanceSq(mainCameraPosition);
                     if (aabbMaxDistanceSq > minDistanceSq && aabbMinDistanceSq <= maxDistanceSq)
                     {
                         view->AddDrawPacket(sector.m_drawPacket.GetRHIDrawPacket());
