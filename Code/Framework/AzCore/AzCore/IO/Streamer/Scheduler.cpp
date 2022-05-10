@@ -137,7 +137,7 @@ namespace AZ::IO
         statistics.push_back(Statistic::CreateBoolean(
             SchedulerName, "Is idle", m_stackStatus.m_isIdle,
             "Whether or not Streamer is scheduling requests. If this is not true most of the time, it indicates scheduling is too expensive, "
-            "that there are nodes that take too long and/or there are callbacks that take  too long. Note that some nodes are not "
+            "that there are nodes that take too long and/or there are callbacks that take too long. Note that some nodes are not "
             "fully asynchronous, such as the default storage drive, which will cause this value to be false more often."));
         statistics.push_back(Statistic::CreateInteger(
             SchedulerName, "Available slots", m_stackStatus.m_numAvailableSlots,

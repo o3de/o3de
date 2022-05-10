@@ -122,7 +122,7 @@ namespace AZ::IO
         return Create(owner, name, BytesPerSecond{ value }, description, graphType);
     }
 
-    Statistic Statistic::CreatePermanentString(
+    Statistic Statistic::CreatePersistentString(
         AZStd::string_view owner, AZStd::string_view name, AZStd::string value, AZStd::string_view description)
     {
         return Create(owner, name, AZStd::move(value), description, GraphType::None);

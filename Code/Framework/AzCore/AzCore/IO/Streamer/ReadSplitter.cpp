@@ -128,7 +128,7 @@ namespace AZ::IO
             StreamStackEntry::QueueRequest(request);
             return;
         }
-        
+
         m_averageNumSubReadsStat.PushSample(aznumeric_cast<double>((data->m_size / m_maxReadSize) + 1));
         Statistic::PlotImmediate(m_name, AvgNumSubReadsName, m_averageNumSubReadsStat.GetMostRecentSample());
 
@@ -377,9 +377,10 @@ namespace AZ::IO
             "better as it means more requests that require fewer overhead."));
         statistics.push_back(Statistic::CreateInteger(
             m_name, NumAvailableBufferSlotsName, aznumeric_caster(m_availableBufferSlots.size()),
-            "The total number or available slots to buffer unaligned reads to. If this is frequently low, more requests that meet "
-            "alignment requirements help lower it. Alternatively the allocated memory can be increased as that will provide additional "
-            "slots."));
+            "The total number or available slots to buffer unaligned reads to. If this is frequently low it means there are too many "
+            "requests that need to be aligned at the same time. Making sure more requests are aligned correctly will help improve "
+            "performance as intermediate storage is avoided. If aligning isn't possible the allocated memory for this node can be "
+            "increased so more slots are available."));
         statistics.push_back(Statistic::CreateInteger(
             m_name, NumPendingReadsName, aznumeric_caster(m_pendingReads.size()),
             "The number of read requests that are waiting for an opportunity to read. Having a small number is good as it means more "

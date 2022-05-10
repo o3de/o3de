@@ -318,7 +318,7 @@ namespace AZ::IO
             //It only makes sense to add decompression statistics when reading from PAK files.
             statistics.push_back(Statistic::CreateInteger(
                 m_name, "Available decompression slots", m_maxNumJobs - m_numRunningJobs,
-                "The number of available slots to decompression files with. Increasing the number of slots will require more hardware "
+                "The number of available slots to decompress files with. Increasing the number of slots will require more hardware "
                 "resources and may negatively impact other cpu utilization but improves performance of Streamer."));
             statistics.push_back(Statistic::CreateInteger(
                 m_name, "Available read slots", m_maxNumReads - m_numInFlightReads,

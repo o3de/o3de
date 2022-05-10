@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/typetraits/is_arithmetic.h>
@@ -190,7 +191,7 @@ namespace AZ::IO
             AZStd::string_view description = "",
             GraphType graphType = GraphType::Histogram);
 
-        static Statistic CreatePermanentString(
+        static Statistic CreatePersistentString(
             AZStd::string_view owner, AZStd::string_view name, AZStd::string value, AZStd::string_view description = "");
         static Statistic CreateReferenceString(
             AZStd::string_view owner, AZStd::string_view name, AZStd::string_view value, AZStd::string_view description = "");
@@ -223,9 +224,12 @@ namespace AZ::IO
     template<typename StorageType, typename AverageType, size_t WindowSize>
     class AverageWindow
     {
-        static_assert(AZStd::is_arithmetic<StorageType>::value || AZStd::chrono::Internal::is_duration<StorageType>::value,
-            "AverageWindow only support numbers and AZStd::chrono::durations."); 
-        static_assert((WindowSize & (WindowSize - 1)) == 0, "The WindowSize of AverageWindow needs to be a power of 2.");
+        static_assert(AZStd::is_arithmetic_v<StorageType> || AZStd::chrono::Internal::is_duration<StorageType>::value,
+            "AverageWindow only support numbers and AZStd::chrono::durations.");
+        static_assert(
+            AZStd::is_convertible_v<StorageType, AverageType>,
+            "The storage type for the AverageWindow needs to be convertible to the average type.");
+        static_assert(IsPowerOfTwo(WindowSize), "The WindowSize of AverageWindow needs to be a power of 2.");
     public:
         static const size_t s_windowSize = WindowSize;
 

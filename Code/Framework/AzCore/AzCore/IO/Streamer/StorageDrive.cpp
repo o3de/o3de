@@ -485,7 +485,7 @@ namespace AZ::IO
                 if (m_fileHandles[i] != nullptr)
                 {
                     data.m_output.push_back(
-                        Statistic::CreatePermanentString(m_name, "File lock", m_filePaths[i].GetRelativePath().Native()));
+                        Statistic::CreatePersistentString(m_name, "File lock", m_filePaths[i].GetRelativePath().Native()));
                 }
             }
             break;

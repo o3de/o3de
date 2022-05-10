@@ -174,9 +174,9 @@ namespace AZ::IO
         //! Call to collect statistics from all the components that make up Streamer.
         void CollectStatistics(AZStd::vector<Statistic>& statistics) override;
 
-        //! Tells AZ::IO::Streamer the report the information for the report to the output.
+        //! Tells AZ::IO::Streamer the collect information the selected report type and store it in the provided output.
         FileRequestPtr Report(AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType) override;
-        //! Tells AZ::IO::Streamer the report the information for the report to the output.
+        //! Tells AZ::IO::Streamer the collect information the selected report type and store it in the provided output.
         FileRequestPtr& Report(FileRequestPtr& request, AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType) override;
 
         //! Returns configuration recommendations as reported by the scheduler.

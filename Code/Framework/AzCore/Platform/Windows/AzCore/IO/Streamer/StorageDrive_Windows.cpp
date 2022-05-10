@@ -1192,12 +1192,8 @@ namespace AZ::IO
         case IStreamerTypes::ReportType::Config:
             {
                 AZStd::string drivePaths;
-                for (const AZStd::string& path : m_drivePaths)
-                {
-                    drivePaths += path;
-                    drivePaths += ' ';
-                }
-                data.m_output.push_back(Statistic::CreatePermanentString(
+                AZ::StringFunc::Join(drivePaths, m_drivePaths, ' ');
+                data.m_output.push_back(Statistic::CreatePersistentString(
                     m_name, "Drive paths", AZStd::move(drivePaths), "The drive paths this node monitors."));
                 data.m_output.push_back(Statistic::CreateInteger(
                     m_name, "Max file handles", m_maxFileHandles,
@@ -1257,7 +1253,7 @@ namespace AZ::IO
                     if (m_fileCache_handles[i] != INVALID_HANDLE_VALUE)
                     {
                         data.m_output.push_back(
-                            Statistic::CreatePermanentString(m_name, "File lock", m_fileCache_paths[i].GetRelativePath().Native()));
+                            Statistic::CreatePersistentString(m_name, "File lock", m_fileCache_paths[i].GetRelativePath().Native()));
                     }
                 }
             }

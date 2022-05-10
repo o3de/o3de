@@ -25,8 +25,8 @@ namespace AZ::IO::IStreamerTypes
     using Deadline = AZStd::chrono::microseconds;
 
     // Default value for commonly used priorities.
-    inline constexpr static Deadline s_deadlineNow = AZStd::chrono::microseconds::zero();
-    inline constexpr static Deadline s_noDeadline = AZStd::chrono::microseconds::max();
+    inline constexpr static Deadline s_deadlineNow = Deadline::zero();
+    inline constexpr static Deadline s_noDeadline = Deadline::max();
 
     // Default values for commonly used priorities
     using Priority = u8;

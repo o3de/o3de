@@ -235,7 +235,7 @@ namespace AZ::IO
         //! @param output The storage for the information that's being reported. The container needs to remain alive for the duration of
         //!     the call. Register a callback with SetRequestCompleteCallback to determine when the container is no longer needed.
         //! @param reportType The type of information to report.
-        //! @return A smart pointer to the newly created request with the command to flush all caches.
+        //! @return A smart pointer to the newly created request with the command to report statistics.
         virtual FileRequestPtr Report(AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType) = 0;
 
         //! Retrieves statistics for the requested type. This is meant for statistics that can't be retrieved in a lockless manner. For
