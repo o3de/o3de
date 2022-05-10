@@ -475,7 +475,9 @@ namespace AtomToolsFramework
         {
             pythonTestCases.push_back(commandLine.GetSwitchValue(pythonTestCaseSwitchName, pythonTestCaseIndex));
         }
-        pythonTestCases.resize(pythonScripts.size());
+
+        // The number of test case strings must be identical to the number of test scripts even if they are empty
+        pythonTestCases.resize(pythonTestScripts.size());
 
         if (!pythonTestScripts.empty())
         {
