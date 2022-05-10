@@ -472,7 +472,6 @@ public:
     bool m_bRunPythonScript = false;
     bool m_bRunPythonTestScript = false;
     bool m_bShowVersionInfo = false;
-    bool m_bCommandLineFile = false;
     QString m_exportFile;
     QString m_strFileName;
     QString m_appRoot;
@@ -481,7 +480,6 @@ public:
     QString m_pythonTestCase;
     QString m_execFile;
     QString m_execLineCmd;
-    QString m_cmdLineFileName;
 
     bool m_bSkipWelcomeScreenDialog = false;
     bool m_bAutotestMode = false;
@@ -1488,8 +1486,7 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
             [&fileList](AZStd::string_view elem)
             {
                 fileList.push_back(elem);
-            },
-            ';', false /* keepEmptyStrings */
+            }, ';', false /* keepEmptyStrings */
         );
         
         if (cmdInfo.m_pythonArgs.length() > 0 || cmdInfo.m_bRunPythonTestScript)
