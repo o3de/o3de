@@ -6,7 +6,6 @@
  *
  */
 
-// include required headers
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
@@ -14,15 +13,14 @@
 #include <EMotionFX/CommandSystem/Source/AnimGraphParameterCommands.h>
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>
 #include <EMotionFX/Source/ActorInstance.h>
-#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendTreeVisualNode.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/GameControllerWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/GraphNode.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraph.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
@@ -34,6 +32,7 @@
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <QAction>
+#include <QComboBox>
 #include <QContextMenuEvent>
 #include <QHeaderView>
 #include <QLabel>
@@ -260,84 +259,16 @@ namespace EMStudio
         *outIsActuallyControlled = false;
         *outIsEnabled = false;
 
-        // get the game controller settings and its active preset
-        EMotionFX::AnimGraphGameControllerSettings& gameControllerSettings = animGraph->GetGameControllerSettings();
-        EMotionFX::AnimGraphGameControllerSettings::Preset* preset = gameControllerSettings.GetActivePreset();
-
-        // get access to the game controller and check if it is valid
-        bool isGameControllerValid = false;
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow* gameControllerWindow = m_plugin->GetGameControllerWindow();
-        if (gameControllerWindow)
-        {
-            isGameControllerValid = gameControllerWindow->GetIsGameControllerValid();
-        }
-#endif
-
-        // only update in case a preset is selected and the game controller is valid
-        if (preset && isGameControllerValid)
-        {
-            // check if the given parameter is controlled by a joystick
-            EMotionFX::AnimGraphGameControllerSettings::ParameterInfo* controllerParameterInfo = preset->FindParameterInfo(parameter->GetName().c_str());
-            if (controllerParameterInfo)
-            {
-                // set the gamepad controlled enable flag
-                if (controllerParameterInfo->m_enabled)
-                {
-                    *outIsEnabled = true;
-                }
-
-                // when the axis is not set to "None"
-                if (controllerParameterInfo->m_axis != MCORE_INVALIDINDEX8)
-                {
-                    *outIsActuallyControlled = true;
-                }
-            }
-
-            // check if the given parameter is controlled by a gamepad button
-            if (preset->CheckIfIsParameterButtonControlled(parameter->GetName().c_str()))
-            {
-                *outIsActuallyControlled = true;
-            }
-            if (preset->CheckIfIsButtonEnabled(parameter->GetName().c_str()))
-            {
-                *outIsEnabled = true;
-            }
-        }
+        AZ_UNUSED(animGraph);
+        AZ_UNUSED(parameter);
     }
-
 
     // helper function to update all parameter and button infos
     void ParameterWindow::SetGamepadState(EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, bool isEnabled)
     {
-        // get the game controller settings and its active preset
-        EMotionFX::AnimGraphGameControllerSettings& gameControllerSettings = animGraph->GetGameControllerSettings();
-        EMotionFX::AnimGraphGameControllerSettings::Preset* preset = gameControllerSettings.GetActivePreset();
-
-        // get access to the game controller and check if it is valid
-        bool isGameControllerValid = false;
-
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow* gameControllerWindow = m_plugin->GetGameControllerWindow();
-        if (gameControllerWindow)
-        {
-            isGameControllerValid = gameControllerWindow->GetIsGameControllerValid();
-        }
-#endif
-
-        // only update in case a preset is selected and the game controller is valid
-        if (preset && isGameControllerValid)
-        {
-            // check if the given parameter is controlled by a joystick and set its enabled state
-            EMotionFX::AnimGraphGameControllerSettings::ParameterInfo* controllerParameterInfo = preset->FindParameterInfo(parameter->GetName().c_str());
-            if (controllerParameterInfo)
-            {
-                controllerParameterInfo->m_enabled = isEnabled;
-            }
-
-            // do the same for the button infos
-            preset->SetButtonEnabled(parameter->GetName().c_str(), isEnabled);
-        }
+        AZ_UNUSED(animGraph);
+        AZ_UNUSED(parameter);
+        AZ_UNUSED(isEnabled);
     }
 
     void ParameterWindow::AddParameterToInterface(EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, QTreeWidgetItem* parentWidgetItem)
