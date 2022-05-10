@@ -25,6 +25,20 @@ def DetachPrefab_UnderAnotherPrefab():
         from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
         import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
+        def validate_entity_hierarchy(condition_checked):
+            search_filter = entity.SearchFilter()
+            search_filter.names = [WHEEL_PREFAB_FILE_NAME]
+            wheel_prefab_root = EditorEntity(entity.SearchBus(bus.Broadcast, "SearchEntities", search_filter)[0])
+            search_filter.names = ["Wheel"]
+            wheel_entity = EditorEntity(entity.SearchBus(bus.Broadcast, "SearchEntities", search_filter)[0])
+            car_prefab_children = car.get_direct_child_entities()
+            car_prefab_children_ids = [child.id for child in car_prefab_children]
+            wheel_prefab_root_children = wheel_prefab_root.get_children()
+            wheel_prefab_root_children_ids = [child.id for child in wheel_prefab_root_children]
+            assert wheel_entity.id in wheel_prefab_root_children_ids and \
+                   wheel_prefab_root.id in car_prefab_children_ids, \
+                   f"Entity hierarchy does not match expectations after {condition_checked}"
+
         prefab_test_utils.open_base_tests_level()
 
         # Creates a new car entity at the root level
@@ -57,18 +71,7 @@ def DetachPrefab_UnderAnotherPrefab():
         assert is_prefab, "Undo operation failed. Entity is not recognized as a prefab."
 
         # Verify entity hierarchy is the same after undoing prefab detach
-        search_filter = entity.SearchFilter()
-        search_filter.names = [WHEEL_PREFAB_FILE_NAME]
-        wheel_prefab_root = EditorEntity(entity.SearchBus(bus.Broadcast, "SearchEntities", search_filter)[0])
-        search_filter.names = ["wheel"]
-        wheel_entity = EditorEntity(entity.SearchBus(bus.Broadcast, "SearchEntities", search_filter)[0])
-        car_prefab_children = car.get_direct_child_entities()
-        car_prefab_children_ids = [child.id for child in car_prefab_children]
-        wheel_prefab_root_children = wheel_prefab_root.get_children()
-        wheel_prefab_root_children_ids = [child.id for child in wheel_prefab_root_children]
-        assert wheel_entity.id in wheel_prefab_root_children_ids and \
-               wheel_prefab_root.id in car_prefab_children_ids, \
-               "Entity hierarchy does not match expectations after Undo"
+        validate_entity_hierarchy("Undo")
 
         general.redo()
         wait_for_propagation()
@@ -77,17 +80,7 @@ def DetachPrefab_UnderAnotherPrefab():
         assert not is_prefab, "Redo operation failed. Entity is still recognized as a prefab."
 
         # Verify entity hierarchy is unchanged after redoing the prefab detach
-        search_filter.names = [WHEEL_PREFAB_FILE_NAME]
-        wheel_prefab_root = EditorEntity(entity.SearchBus(bus.Broadcast, "SearchEntities", search_filter)[0])
-        search_filter.names = ["Wheel"]
-        wheel_entity = EditorEntity(entity.SearchBus(bus.Broadcast, "SearchEntities", search_filter)[0])
-        car_prefab_children = car.get_direct_child_entities()
-        car_prefab_children_ids = [child.id for child in car_prefab_children]
-        wheel_prefab_root_children = wheel_prefab_root.get_children()
-        wheel_prefab_root_children_ids = [child.id for child in wheel_prefab_root_children]
-        assert wheel_entity.id in wheel_prefab_root_children_ids and \
-               wheel_prefab_root.id in car_prefab_children_ids, \
-               "Entity hierarchy does not match expectations after Redo"
+        validate_entity_hierarchy("Redo")
 
     run_test()
 

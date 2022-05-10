@@ -28,7 +28,7 @@ def InstantiatePrefab_ContainingASingleEntity():
 
     # Get parent entity and container id for verifying successful Undo/Redo operations
     instance_parent_id = EditorEntity(test_instance.container_entity.get_parent_id())
-    instance_id = test_instance.container_entity.id
+    instance = test_instance.container_entity
 
     prefab_test_utils.check_entity_children_count(
         test_instance.container_entity.id, 
@@ -38,13 +38,16 @@ def InstantiatePrefab_ContainingASingleEntity():
     general.undo()
     wait_for_propagation()
     child_ids = instance_parent_id.get_children_ids()
-    assert instance_id not in child_ids, "Undo Failed: Instance was still found after undo."
+    assert instance.id not in child_ids, "Undo Failed: Instance was still found after undo."
 
     # Redo the instantiation
     general.redo()
     wait_for_propagation()
     child_ids = instance_parent_id.get_children_ids()
-    assert instance_id in child_ids, "Redo Failed: Instance was not found after redo"
+    instance_children = instance.get_children()
+    assert instance.id in child_ids, "Redo Failed: Instance was not found after redo"
+    assert len(instance_children) == EXPECTED_TEST_PREFAB_CHILDREN_COUNT, \
+        "Redo Failed: Did not find expected child entities in the prefab instance"
 
 
 if __name__ == "__main__":
