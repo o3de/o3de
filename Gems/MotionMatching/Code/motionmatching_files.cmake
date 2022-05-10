@@ -34,6 +34,8 @@ set(FILES
     Source/FeatureVelocity.h
     Source/PoseDataJointVelocities.cpp
     Source/PoseDataJointVelocities.h
+    Source/QueryVector.cpp
+    Source/QueryVector.h
     Source/TrajectoryHistory.cpp
     Source/TrajectoryHistory.h
     Source/TrajectoryQuery.cpp
