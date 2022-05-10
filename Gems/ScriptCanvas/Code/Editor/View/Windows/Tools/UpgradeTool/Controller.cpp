@@ -29,10 +29,9 @@
 #include <Editor/Settings.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
-
-#include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
 
 namespace ScriptCanvasEditor
 {
@@ -152,10 +151,14 @@ namespace ScriptCanvasEditor
 
                 if (asset.Get())
                 {
+                    UpgradeGraphConfig config;
+                    config.isVerbose = m_view->verbose->isChecked();
+                    config.saveParseErrors = m_view->saveParserFailures->isChecked();
+
                     asset.Mod()->UpgradeGraph
                         ( asset
                         , m_view->forceUpgrade->isChecked() ? EditorGraph::UpgradeRequest::Forced : EditorGraph::UpgradeRequest::IfOutOfDate
-                        , m_view->verbose->isChecked());
+                        , config);
                 }
             };
 

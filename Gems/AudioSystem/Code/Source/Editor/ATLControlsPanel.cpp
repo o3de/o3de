@@ -38,6 +38,7 @@
 namespace AudioControls
 {
     //-------------------------------------------------------------------------------------------//
+    const QString s_addMenuStyleSheetAdjustments("QMenu::icon { left: 0px; right: 6px; }");
 
     QFilterButton::QFilterButton(const QIcon& icon, [[maybe_unused]] const QString& text, QWidget* parent)
         : QWidget(parent)
@@ -64,9 +65,9 @@ namespace AudioControls
         m_checkIcon.setSizePolicy(sp);
         layout->addWidget(&m_checkIcon);
         m_filterIcon.setPixmap(icon.pixmap(16, 16));
-        layout->addWidget(&m_filterIcon);
         layout->addWidget(&m_actionText);
         layout->addStretch();
+        layout->addWidget(&m_filterIcon);
         layout->setContentsMargins(margin);
         m_background->setLayout(layout);
         mainLayout->addWidget(m_background);
@@ -109,6 +110,7 @@ namespace AudioControls
         m_pATLControlsTree->viewport()->installEventFilter(this);
 
         // ************ Context Menu ************
+        m_addItemMenu.setStyleSheet(s_addMenuStyleSheetAdjustments);
         m_addItemMenu.addAction(GetControlTypeIcon(eACET_TRIGGER), tr("Trigger"), this, SLOT(CreateTriggerControl()));
         m_addItemMenu.addAction(GetControlTypeIcon(eACET_RTPC), tr("RTPC"), this, SLOT(CreateRTPCControl()));
         m_addItemMenu.addAction(GetControlTypeIcon(eACET_SWITCH), tr("Switch"), this, SLOT(CreateSwitchControl()));
@@ -582,6 +584,7 @@ namespace AudioControls
             }
         }
 
+        addMenu.setStyleSheet(s_addMenuStyleSheetAdjustments);
         addMenu.addAction(GetControlTypeIcon(eACET_TRIGGER), tr("Trigger"), this, SLOT(CreateTriggerControl()));
         addMenu.addAction(GetControlTypeIcon(eACET_RTPC), tr("RTPC"), this, SLOT(CreateRTPCControl()));
         addMenu.addAction(GetControlTypeIcon(eACET_SWITCH), tr("Switch"), this, SLOT(CreateSwitchControl()));

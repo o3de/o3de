@@ -1149,7 +1149,7 @@ namespace UnitTest
 
     TEST_P(
         EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam,
-        StickyAndUnstickyDittoManipulatorToOtherEntityChangesManipulatorAndClickOffResetsManipulator)
+        StickyAndUnstickyDittoManipulatorToOtherEntityChangesManipulatorAndClickOffHasNoEffect)
     {
         PositionEntities();
         PositionCamera(m_cameraState);
@@ -1200,8 +1200,8 @@ namespace UnitTest
             manipulatorTransform, AzToolsFramework::GetEntityContextId(),
             &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
 
-        // manipulator transform is reset
-        EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(Entity1WorldTranslation));
+        // manipulator transform remains where it was (when using Ctrl+Alt to update the position of the manipulator)
+        EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(Entity2WorldTranslation));
     }
 
     INSTANTIATE_TEST_CASE_P(All, EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam, testing::Values(true, false));
@@ -1755,6 +1755,91 @@ namespace UnitTest
                 AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation),
                 AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation) }));
 
+    struct ManipulatorPick
+    {
+        AZStd::array<AzToolsFramework::ViewportInteraction::KeyboardModifier, 3> m_keyboardModifiers{};
+        AZ::Vector3 m_pickPosition;
+        AZ::Vector3 m_expectedManipulatorPosition;
+    };
+
+    class EditorTransformComponentSelectionTranslationManipulatorPickingEntityTestFixtureParam
+        : public EditorTransformComponentSelectionManipulatorInteractionTestFixture
+        , public ::testing::WithParamInterface<ManipulatorPick>
+    {
+    };
+
+    static constexpr float ManipulatorPickBoxHalfSize = 0.5f;
+    static constexpr float ManipulatorPickOffsetTolerance = 0.1f;
+
+    TEST_P(
+        EditorTransformComponentSelectionTranslationManipulatorPickingEntityTestFixtureParam,
+        DittoManipulatorOnEntityChangesManipulatorToEntityTransformOrPickIntersectionBasedOnModifiers)
+    {
+        using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
+
+        PositionEntities();
+
+        // camera (go to position format) - 10.00, 15.00, 12.00, 0.00, 90.00
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(10.0f, 15.0f, 12.0f)));
+
+        SetTransformMode(EditorTransformComponentSelectionRequestBus::Events::Mode::Translation);
+
+        // at position 5.0, 16.0, 10.0 (right most entity)
+        AzToolsFramework::SelectEntities({ m_entityId3 });
+
+        const auto clickPositionWorld = GetParam().m_pickPosition;
+        const auto clickPositionScreen = AzFramework::WorldToScreen(clickPositionWorld, m_cameraState);
+
+        for (auto modifier : GetParam().m_keyboardModifiers)
+        {
+            m_actionDispatcher->KeyboardModifierDown(modifier);
+        }
+
+        // click the corner of the box
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(clickPositionScreen)->MouseLButtonDown()->MouseLButtonUp();
+
+        const auto manipulatorPosition = GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity()).GetTranslation();
+        EXPECT_THAT(manipulatorPosition, IsCloseTolerance(GetParam().m_expectedManipulatorPosition, 0.01f));
+    }
+
+    static const AZ::Vector3 ManipulatorPickBoxCorner = EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation +
+        AZ::Vector3(ManipulatorPickBoxHalfSize,
+                    -ManipulatorPickBoxHalfSize + ManipulatorPickOffsetTolerance,
+                    -ManipulatorPickBoxHalfSize + ManipulatorPickOffsetTolerance);
+
+    INSTANTIATE_TEST_CASE_P(
+        All,
+        EditorTransformComponentSelectionTranslationManipulatorPickingEntityTestFixtureParam,
+        testing::Values(
+            // manipulator should move to exact pick position when ctrl and shift are held
+            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Control,
+                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift },
+                             ManipulatorPickBoxCorner,
+                             ManipulatorPickBoxCorner },
+            // manipulator should move to picked entity position when ctrl and alt is held
+            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Control,
+                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
+                             ManipulatorPickBoxCorner,
+                             EditorTransformComponentSelectionViewportPickingFixture::Entity2WorldTranslation },
+            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Control,
+                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift },
+                             // click position above boxes/entities
+                             AZ::Vector3(5.0f, 15.0f, 12.0f),
+                             // position in front of camera when there was no pick intersection (uses GetDefaultEntityPlacementDistance,
+                             // which has a default value of 10) note: the camera is positioned 10 units along the x-axis looking down it
+                             // (negative) and the near clip plane is set to 0.1, so the absolute position is -0.1 on the x-axis
+                             AZ::Vector3(-0.1f, 15.0f, 12.0f) },
+            ManipulatorPick{ { AzToolsFramework::ViewportInteraction::KeyboardModifier::Control,
+                               AzToolsFramework::ViewportInteraction::KeyboardModifier::Alt },
+                             // click position above boxes/entities
+                             AZ::Vector3(5.0f, 15.0f, 12.0f),
+                             // position remains unchanged (manipulator won't move as an entity wasn't picked)
+                             EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation }));
+
     using EditorTransformComponentSelectionScaleManipulatorInteractionTestFixture =
         EditorTransformComponentSelectionManipulatorInteractionTestFixture;
 
@@ -2040,8 +2125,8 @@ namespace UnitTest
 
     TEST_P(EditorTransformComponentSelectionSingleEntityPivotFixture, PivotOrientationMatchesReferenceFrameSingleEntity)
     {
-        using AzToolsFramework::ETCS::CalculatePivotOrientation;
-        using AzToolsFramework::ETCS::PivotOrientationResult;
+        using AzToolsFramework::Etcs::CalculatePivotOrientation;
+        using AzToolsFramework::Etcs::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -2080,8 +2165,8 @@ namespace UnitTest
 
     TEST_P(EditorTransformComponentSelectionSingleEntityWithParentPivotFixture, PivotOrientationMatchesReferenceFrameEntityWithParent)
     {
-        using AzToolsFramework::ETCS::CalculatePivotOrientation;
-        using AzToolsFramework::ETCS::PivotOrientationResult;
+        using AzToolsFramework::Etcs::CalculatePivotOrientation;
+        using AzToolsFramework::Etcs::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -2129,8 +2214,8 @@ namespace UnitTest
 
     TEST_P(EditorTransformComponentSelectionMultipleEntitiesPivotFixture, PivotOrientationMatchesReferenceFrameMultipleEntities)
     {
-        using AzToolsFramework::ETCS::CalculatePivotOrientationForEntityIds;
-        using AzToolsFramework::ETCS::PivotOrientationResult;
+        using AzToolsFramework::Etcs::CalculatePivotOrientationForEntityIds;
+        using AzToolsFramework::Etcs::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -2188,8 +2273,8 @@ namespace UnitTest
         EditorTransformComponentSelectionMultipleEntitiesWithSameParentPivotFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesSameParent)
     {
-        using AzToolsFramework::ETCS::CalculatePivotOrientationForEntityIds;
-        using AzToolsFramework::ETCS::PivotOrientationResult;
+        using AzToolsFramework::Etcs::CalculatePivotOrientationForEntityIds;
+        using AzToolsFramework::Etcs::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -2251,8 +2336,8 @@ namespace UnitTest
         EditorTransformComponentSelectionMultipleEntitiesWithDifferentParentPivotFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesDifferentParent)
     {
-        using AzToolsFramework::ETCS::CalculatePivotOrientationForEntityIds;
-        using AzToolsFramework::ETCS::PivotOrientationResult;
+        using AzToolsFramework::Etcs::CalculatePivotOrientationForEntityIds;
+        using AzToolsFramework::Etcs::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -2314,8 +2399,8 @@ namespace UnitTest
         EditorTransformComponentSelectionSingleEntityPivotAndOverrideFixture,
         PivotOrientationMatchesReferenceFrameSingleEntityOptionalOverride)
     {
-        using AzToolsFramework::ETCS::CalculateSelectionPivotOrientation;
-        using AzToolsFramework::ETCS::PivotOrientationResult;
+        using AzToolsFramework::Etcs::CalculateSelectionPivotOrientation;
+        using AzToolsFramework::Etcs::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -2364,8 +2449,8 @@ namespace UnitTest
         EditorTransformComponentSelectionMultipleEntitiesPivotAndOverrideFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesOptionalOverride)
     {
-        using AzToolsFramework::ETCS::CalculateSelectionPivotOrientation;
-        using AzToolsFramework::ETCS::PivotOrientationResult;
+        using AzToolsFramework::Etcs::CalculateSelectionPivotOrientation;
+        using AzToolsFramework::Etcs::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -2424,8 +2509,8 @@ namespace UnitTest
         EditorTransformComponentSelectionMultipleEntitiesPivotAndNoOverrideFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesNoOptionalOverride)
     {
-        using AzToolsFramework::ETCS::CalculateSelectionPivotOrientation;
-        using AzToolsFramework::ETCS::PivotOrientationResult;
+        using AzToolsFramework::Etcs::CalculateSelectionPivotOrientation;
+        using AzToolsFramework::Etcs::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
@@ -2482,8 +2567,8 @@ namespace UnitTest
         EditorTransformComponentSelectionMultipleEntitiesSameParentPivotAndNoOverrideFixture,
         PivotOrientationMatchesReferenceFrameMultipleEntitiesSameParentNoOptionalOverride)
     {
-        using AzToolsFramework::ETCS::CalculateSelectionPivotOrientation;
-        using AzToolsFramework::ETCS::PivotOrientationResult;
+        using AzToolsFramework::Etcs::CalculateSelectionPivotOrientation;
+        using AzToolsFramework::Etcs::PivotOrientationResult;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given

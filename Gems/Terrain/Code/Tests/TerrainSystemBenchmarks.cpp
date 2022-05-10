@@ -1117,6 +1117,62 @@ namespace UnitTest
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR), 4 })
         ->Unit(::benchmark::kMillisecond);
 
+    // Get timings for how long it takes to run N of the same query at the same time.
+    BENCHMARK_DEFINE_F(TerrainSurfaceGradientBenchmarkFixture, BM_ParallelProcessSurfacePointsList_SurfaceGradients)
+    (benchmark::State& state)
+    {
+        // Run the benchmark
+        RunTerrainApiSurfaceBenchmark(
+            state,
+            [this, state](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                AZStd::vector<AZ::Vector3> inPositions;
+                GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
+
+                constexpr uint32_t MaxParallelQueries = 16;
+                AZStd::thread threads[MaxParallelQueries];
+                AZStd::semaphore syncThreads;
+
+                uint32_t numParallelQueries = AZStd::min(aznumeric_cast<uint32_t>(state.range(3)), MaxParallelQueries);
+
+                // Create N threads, each one running a "ProcessSurfacePointsFromList" synchronous terrain query.
+                for (uint32_t thread = 0; thread < numParallelQueries; thread++)
+                {
+                    threads[thread] = AZStd::thread(
+                        [&inPositions, &syncThreads, sampler]()
+                        {
+                            auto perPositionCallback =
+                                [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                            {
+                                benchmark::DoNotOptimize(surfacePoint);
+                            };
+
+                            syncThreads.acquire();
+
+                            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                                &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromList, inPositions, perPositionCallback,
+                                sampler);
+                        });
+                }
+
+                // Now that all threads are created, signal everything to start running in parallel.
+                syncThreads.release(numParallelQueries);
+
+                // Wait for the threads to finish.
+                for (uint32_t thread = 0; thread < numParallelQueries; thread++)
+                {
+                    threads[thread].join();
+                }
+            });
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSurfaceGradientBenchmarkFixture, BM_ParallelProcessSurfacePointsList_SurfaceGradients)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR), 1 })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR), 2 })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR), 3 })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR), 4 })
+        ->Unit(::benchmark::kMillisecond);
+
 #endif
 
 }

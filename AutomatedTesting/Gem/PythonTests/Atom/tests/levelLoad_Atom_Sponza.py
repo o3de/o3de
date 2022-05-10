@@ -20,7 +20,6 @@ class Tests:
         "P0: Empty level fails to load, editor is either hung or crashed")
 
 
-
 def Atom_Editor_LevelLoad_Sponza():
     """
     Summary:
@@ -77,3 +76,4 @@ def Atom_Editor_LevelLoad_Sponza():
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
     Report.start_test(Atom_Editor_LevelLoad_Sponza)
+    

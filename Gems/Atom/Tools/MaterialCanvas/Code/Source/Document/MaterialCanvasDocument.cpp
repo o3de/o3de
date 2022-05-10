@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Document/MaterialCanvasDocument.h>
+#include <Document/MaterialCanvasGraphDataTypes.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
@@ -40,19 +41,27 @@ namespace MaterialCanvas
         }
     }
 
-    MaterialCanvasDocument::MaterialCanvasDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+    MaterialCanvasDocument::MaterialCanvasDocument(
+        const AZ::Crc32& toolId,
+        const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo,
+        AZStd::shared_ptr<GraphModel::GraphContext> graphContext)
         : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
+        , m_graphContext(graphContext)
     {
         // Creating the scene entity and graph for this document. This may end up moving to the view if we can have the document only store
         // minimal material graph specific data that can be transformed into a graph canvas graph in the view and back. That abstraction
         // would help maintain a separation between the serialized data and the UI for rendering and interacting with the graph. This would
         // also help establish a mediator pattern for other node based tools that want to visualize their data or documents as a graph. My
         // understanding is that graph model will help with this.
-        m_sceneEntity = {};
-        GraphCanvas::GraphCanvasRequestBus::BroadcastResult(m_sceneEntity, &GraphCanvas::GraphCanvasRequests::CreateSceneAndActivate);
+        m_graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
+
+        GraphModelIntegration::GraphManagerRequestBus::BroadcastResult(
+            m_sceneEntity, &GraphModelIntegration::GraphManagerRequests::CreateScene, m_graph, m_toolId);
 
         m_graphId = m_sceneEntity->GetId();
-        GraphCanvas::SceneRequestBus::Event(m_graphId, &GraphCanvas::SceneRequests::SetEditorId, toolId);
+
+        // Listen for GraphController notifications on the new graph.
+        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusConnect(m_graphId);
 
         MaterialCanvasDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -60,6 +69,16 @@ namespace MaterialCanvas
     MaterialCanvasDocument::~MaterialCanvasDocument()
     {
         MaterialCanvasDocumentRequestBus::Handler::BusDisconnect();
+
+        // Stop listening for GraphController notifications for this graph.
+        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
+
+        // Remove the controller for this graph.
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
+
+        m_graph.reset();
+
         delete m_sceneEntity;
     }
 
@@ -69,7 +88,12 @@ namespace MaterialCanvas
         AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Material Canvas";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
-            return aznew MaterialCanvasDocument(toolId, documentTypeInfo); };
+            // Creating a graph context per document by default but this can and probably should be overridden in the application to provide
+            // a shared context.
+            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas", CreateAllDataTypes());
+            graphContext->CreateModuleGraphManager();
+            return aznew MaterialCanvasDocument(toolId, documentTypeInfo, graphContext);
+        };
 
         // Need to revisit the distinction between file types for creation versus file types for opening. Creation types are meant to be
         // used as templates or documents from which another is derived, like material types or parents. Currently a combination of the
@@ -113,13 +137,23 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
         auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(m_absolutePath);
-        if (!loadResult || !loadResult.GetValue().is<AZStd::string>())
+        if (!loadResult || !loadResult.GetValue().is<GraphModel::Graph>())
         {
             return OpenFailed();
         }
 
+        // Cloning loaded data using the serialize context because the graph does not have a copy or move constructor
+        AZ::SerializeContext* serializeContext = {};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
+
+        m_graph.reset(serializeContext->CloneObject(AZStd::any_cast<const GraphModel::Graph>(&loadResult.GetValue())));
+        m_graph->PostLoadSetup(m_graphContext);
+
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusConnect(m_graphId);
         return OpenSucceeded();
     }
 
@@ -132,9 +166,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
-        AZStd::string placeholderData;
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -151,9 +183,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
-        AZStd::string placeholderData;
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -170,9 +200,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
-        AZStd::string placeholderData;
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -182,7 +210,7 @@ namespace MaterialCanvas
 
     bool MaterialCanvasDocument::IsOpen() const
     {
-        return AtomToolsDocument::IsOpen();
+        return AtomToolsDocument::IsOpen() && m_graph && m_graphId.IsValid();
     }
 
     bool MaterialCanvasDocument::IsModified() const
@@ -211,6 +239,12 @@ namespace MaterialCanvas
 
     void MaterialCanvasDocument::Clear()
     {
+        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
+
+        m_graph.reset();
+
         AtomToolsFramework::AtomToolsDocument::Clear();
     }
 

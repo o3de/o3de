@@ -118,6 +118,10 @@ namespace PhysXEditorTests
             m_gameMockShapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockPhysXHeightfieldProvider>>(m_gameEntity->GetId());
             SetupMockMethods(*m_gameMockShapeRequests.get());
             m_gameEntity->Activate();
+
+            Physics::HeightfieldProviderNotificationBus::Broadcast(
+                &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
+                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
         }
 
         void TearDown() override

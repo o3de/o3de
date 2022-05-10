@@ -14,6 +14,7 @@ namespace GradientSignal
 {
     // Gradients
     static const AZ::TypeId EditorConstantGradientComponentTypeId = "{A878736F-39B0-482B-89B8-FD0F083E4D88}";
+    static const AZ::TypeId EditorGradientBakerComponentTypeId = "{69B2CD98-A503-4CA8-ADA2-05CE53D396CB}";
     static const AZ::TypeId EditorImageGradientComponentTypeId = "{4E20A1C2-CEFF-4E9F-BEFF-C18257DFEC38}";
     static const AZ::TypeId EditorPerlinGradientComponentTypeId = "{99C0B5DF-9BB4-44EE-9BDF-1141ECE26D19}";
     static const AZ::TypeId EditorRandomGradientComponentTypeId = "{B590FB2E-33ED-4F7F-AA12-1FE76278D880}";

@@ -33,6 +33,7 @@ set(FILES
     Source/Editor/ColliderHelpers.cpp
     Source/Editor/InputDialogValidatable.h
     Source/Editor/InputDialogValidatable.cpp
+    Source/Editor/InspectorBus.h
     Source/Editor/JointSelectionWidget.h
     Source/Editor/JointSelectionWidget.cpp
     Source/Editor/JointSelectionDialog.h
@@ -43,6 +44,10 @@ set(FILES
     Source/Editor/NotificationWidget.cpp
     Source/Editor/ObjectEditor.h
     Source/Editor/ObjectEditor.cpp
+    Source/Editor/ObjectEditorCard.h
+    Source/Editor/ObjectEditorCard.cpp
+    Source/Editor/ObjectEditorCardPool.h
+    Source/Editor/ObjectEditorCardPool.cpp
     Source/Editor/QtMetaTypes.h
     Source/Editor/ReselectingTreeView.cpp
     Source/Editor/ReselectingTreeView.h
@@ -81,6 +86,11 @@ set(FILES
     Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.cpp
     Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.h
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h

@@ -394,7 +394,8 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionComposite.shader"
                         },
-                        "StencilRef": 1 // See RenderCommon.h and ReflectionComposite.shader
+                        "StencilRef": 1, // See RenderCommon.h and ReflectionComposite.shader
+                        "PipelineViewTag": "MainCamera"
                     }
                 },
                 {

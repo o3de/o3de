@@ -20,7 +20,6 @@ class Tests:
         "P0: Empty level fails to load, editor is either hung or crashed")
 
 
-
 def Atom_Editor_LevelLoad_hermanubis_high():
     """
     Summary:

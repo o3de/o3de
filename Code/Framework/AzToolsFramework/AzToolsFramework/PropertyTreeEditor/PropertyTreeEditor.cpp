@@ -362,20 +362,33 @@ namespace AzToolsFramework
         //A temporary conversion buffer in case the src and dst data types are different.
         AZStd::any convertedValue;
 
+        
         // Check if types match, or convert the value if its type supports it.
         const void* valuePtr = HandleTypeConversion(value.type(), pteNode.m_nodePtr->GetClassMetadata()->m_typeId, AZStd::any_cast<void>(&value), convertedValue);
-        if (!valuePtr)
+        if (valuePtr)
         {
-            // If types are different and cannot be converted, bail
-            AZ_Warning("PropertyTreeEditor", false, "SetProperty - value type cannot be converted to the property's type.");
-            return {PropertyAccessOutcome::ErrorType("SetProperty - value type cannot be converted to the property's type.")};
+            pteNode.m_nodePtr->WriteRaw(valuePtr, pteNode.m_nodePtr->GetClassMetadata()->m_typeId);
+            PropertyNotify(&pteNode);
+            return {PropertyAccessOutcome::ValueType(value)};
         }
         
-        pteNode.m_nodePtr->WriteRaw(valuePtr, pteNode.m_nodePtr->GetClassMetadata()->m_typeId);
+        // If it could not be converted, verify the underlying type.
+        const AZ::TypeId& underlyingTypeId = AZ::Internal::GetUnderlyingTypeId(*pteNode.m_nodePtr->GetClassMetadata()->m_azRtti);
 
-        PropertyNotify(&pteNode);
+        if (!underlyingTypeId.IsNull() && underlyingTypeId != pteNode.m_nodePtr->GetClassMetadata()->m_typeId)
+        {
+            const void* underlyingValuePtr = HandleTypeConversion(value.type(), underlyingTypeId, AZStd::any_cast<void>(&value), convertedValue);
+            if (underlyingValuePtr)
+            {
+                pteNode.m_nodePtr->WriteRaw(underlyingValuePtr, pteNode.m_nodePtr->GetClassMetadata()->m_typeId);
+                PropertyNotify(&pteNode);
+                return {PropertyAccessOutcome::ValueType(value)};
+            }
+        }
 
-        return {PropertyAccessOutcome::ValueType(value)};
+        AZ_Warning("PropertyTreeEditor", false, "SetProperty - value type cannot be converted to the property's type.");
+        return { PropertyAccessOutcome::ErrorType("SetProperty - value type cannot be converted to the property's type.") };
+        
     }
 
     bool PropertyTreeEditor::CompareProperty(const AZStd::string_view propertyPath, const AZStd::any& value)

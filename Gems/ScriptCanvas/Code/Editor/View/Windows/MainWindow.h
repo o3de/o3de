@@ -89,7 +89,7 @@ class QProgressDialog;
 namespace ScriptCanvasEditor
 {
     class MainWindow;
-
+    class InterpreterWidget;
 
     class ScriptCanvasAssetBrowserModel
         : public AzToolsFramework::AssetBrowser::AssetBrowserFilterModel
@@ -204,7 +204,7 @@ namespace ScriptCanvasEditor
     class GraphValidationDockWidget;
     class MainWindowStatusWidget;
     class StatisticsDialog;
-    class SlotTypeSelectorWidget;
+    class VariableConfigurationWidget;
 
     // Custom Context Menus
     class SceneContextMenu;
@@ -272,7 +272,8 @@ namespace ScriptCanvasEditor
         // VariablePaletteRequestBus
         void RegisterVariableType(const ScriptCanvas::Data::Type& variableType) override;
         bool IsValidVariableType(const ScriptCanvas::Data::Type& dataType) const override;
-        bool ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, VariablePaletteRequests::SlotSetup&) override;
+        VariablePaletteRequests::VariableConfigurationOutput ShowVariableConfigurationWidget(
+            const VariablePaletteRequests::VariableConfigurationInput& input, const QPoint& scenePosition) override;
         ////
 
         // GraphCanvas::AssetEditorRequestBus
@@ -552,6 +553,7 @@ namespace ScriptCanvasEditor
         void SignalActiveSceneChanged(const ScriptCanvasEditor::SourceHandle assetId);
 
         void RunUpgradeTool();
+        void ShowInterpreter();
 
         void OnShowValidationErrors();
         void OnShowValidationWarnings();
@@ -665,8 +667,9 @@ namespace ScriptCanvasEditor
         GraphCanvas::BookmarkDockWidget*    m_bookmarkDockWidget = nullptr;
         GraphCanvas::MiniMapDockWidget*     m_minimap = nullptr;
         LoggingWindow*                      m_loggingWindow = nullptr;
-        SlotTypeSelectorWidget*             m_slotTypeSelector = nullptr;
+        VariableConfigurationWidget*             m_slotTypeSelector = nullptr;
 
+        AZStd::unique_ptr<InterpreterWidget> m_interpreterWidget;
 
         AzQtComponents::WindowDecorationWrapper*    m_presetWrapper = nullptr;
         GraphCanvas::ConstructPresetDialog*         m_presetEditor = nullptr;

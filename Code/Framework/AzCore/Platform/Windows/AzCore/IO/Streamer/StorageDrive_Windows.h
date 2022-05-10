@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -129,7 +130,7 @@ namespace AZ::IO
         size_t FindAvailableReadSlot();
         size_t FindInMetaDataCache(const RequestPath& filePath) const;
         size_t GetNextMetaDataCacheSlot();
-        bool IsServicedByThisDrive(const char* filePath) const;
+        bool IsServicedByThisDrive(AZ::IO::PathView filePath) const;
 
         void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
             const RequestPath*& activeFile, u64& activeOffset) const;

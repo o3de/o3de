@@ -13,8 +13,8 @@
          Description="Creates a spawn ticket using provided prefab">
 
     <Input Name="Create Ticket" OutputName="Ticket Created">
-        <Parameter Name="Prefab" Type="const ScriptCanvas::Nodeables::Spawning::SpawnableAsset&amp;" Description="Prefab source asset to spawn"/>
-        <Return Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Shared="true"/>
+        <Parameter Name="Prefab" Type="const AzFramework::Scripts::SpawnableScriptAssetRef&amp;" Description="Prefab source asset to spawn"/>
+        <Return Name="SpawnTicket" Type="AzFramework::EntitySpawnTicket" Shared="true"/>
     </Input>
   </Class>
 </ScriptCanvas>

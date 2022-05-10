@@ -83,17 +83,12 @@ public:
     }
 };
 
-TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
-}
-
 TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
+    ExpectParseError("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
 }
 
-TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)
+TEST_F(ScriptCanvasTestFixture, DISABLED_ParseErrorOnKnownNull)
 {
     ExpectParseError("LY_SC_UnitTest_ParseErrorOnKnownNull");
 }
@@ -671,14 +666,14 @@ TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResults)
     RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResults", ExecutionMode::Interpreted);
 }
 
-TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResultsGeneric)
+TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResultsByValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResultsGeneric", ExecutionMode::Interpreted);
+    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResultsByValue", ExecutionMode::Interpreted);
 }
 
-TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResultsGenericByValue)
+TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnSameTypeResults)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResultsGenericByValue", ExecutionMode::Interpreted);
+    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnSameTypeResults", ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedMultipleStartNodes)
@@ -943,4 +938,19 @@ TEST_F(ScriptCanvasTestFixture, PromotedUserVariables)
 TEST_F(ScriptCanvasTestFixture, UseClassWithDefaultOut)
 {
     RunUnitTestGraph("LY_SC_UnitTest_UseClassWithDefaultOut", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, GlobalMethodsCheckedOperation)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_GlobalMethodsCheckedOperation", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, GlobalMultipleReturnResults)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_GlobalMultipleReturnResults", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, GlobalMultipleReturnResultsByValue)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_GlobalMultipleReturnResultsByValue", ExecutionMode::Interpreted);
 }

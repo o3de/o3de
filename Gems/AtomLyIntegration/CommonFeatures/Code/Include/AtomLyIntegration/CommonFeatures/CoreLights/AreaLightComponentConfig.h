@@ -63,6 +63,10 @@ namespace AZ
             uint16_t m_filteringSampleCount = 12;
             float m_esmExponent = 87.0f;
 
+            // Global Illumination
+            bool m_affectsGI = true;
+            float m_affectsGIFactor = 1.0f;
+
             // The following functions provide information to an EditContext...
 
             AZStd::vector<Edit::EnumConstant<PhotometricUnit>> GetValidPhotometricUnits() const;
@@ -92,7 +96,10 @@ namespace AZ
 
             //! Returns true if the light type supports shadows.
             bool SupportsShadows() const;
-            
+
+            //! Returns true if the light type can be configured to affect global illumination.
+            bool SupportsAffectsGI() const;
+
             //! Returns true if shadows are turned on
             bool ShadowsDisabled() const;
 
