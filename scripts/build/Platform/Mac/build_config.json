@@ -9,8 +9,8 @@
   },
   "profile_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "nightly-incremental-internal",
+      "weekly-clean-internal"
     ],
     "steps": [
       "profile",
@@ -30,8 +30,8 @@
   },
   "debug": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "nightly-incremental-internal",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -59,8 +59,8 @@
   },
   "profile_nounity": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "nightly-incremental-internal",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -75,8 +75,8 @@
   "asset_profile": {
     "TAGS": [
       "weekly-build-metrics",
-      "nightly-incremental",
-      "nightly-clean"
+      "nightly-incremental-internal",
+      "weekly-clean-internal"
     ],
     "COMMAND": "build_asset_mac.sh",
     "PARAMETERS": {
@@ -108,8 +108,8 @@
   },
   "periodic_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "nightly-incremental-internal",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_mac.sh",
@@ -125,8 +125,8 @@
   },
   "benchmark_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "nightly-incremental-internal",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_mac.sh",
@@ -142,8 +142,8 @@
   },
   "release": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "nightly-incremental-internal",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -157,8 +157,8 @@
   },
   "monolithic_release": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "nightly-incremental-internal",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -183,8 +183,8 @@
   },
   "install_profile_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "nightly-incremental-internal",
+      "weekly-clean-internal"
     ],
     "PIPELINE_ENV": {
       "PROJECT_REPOSITORY_NAME": "TestProject"

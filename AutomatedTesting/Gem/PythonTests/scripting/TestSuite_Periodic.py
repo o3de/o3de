@@ -221,7 +221,6 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
-
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
             "Verified no tabs open: True",

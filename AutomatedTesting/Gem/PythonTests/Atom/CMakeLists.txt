@@ -8,9 +8,48 @@
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_pytest(
-        NAME AutomatedTesting::Atom_TestSuite_Main
+        NAME AutomatedTesting::Atom_Main_Null_Render_00
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_Level_Loads.py
+        TEST_SERIAL
+        TIMEOUT 600
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Main_Null_Render_01
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_Component_01.py
+        TEST_SERIAL
+        TIMEOUT 600
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Main_Null_Render_02
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_Component_02.py
+        TEST_SERIAL
+        TIMEOUT 600
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Main_Null_Render_03
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_Component_03.py
         TEST_SERIAL
         TIMEOUT 600
         RUNTIME_DEPENDENCIES

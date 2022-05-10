@@ -80,5 +80,21 @@ namespace AZ
             return m_shapeBus->GetQuadHeight() * GetTransform().GetUniformScale();
         }
 
+        void QuadLightDelegate::SetAffectsGI(bool affectsGI)
+        {
+            if (GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
+            }
+        }
+
+        void QuadLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+        {
+            if (GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
+            }
+        }
+
     } // namespace Render
 } // namespace AZ
