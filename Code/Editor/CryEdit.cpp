@@ -518,7 +518,6 @@ public:
             { "NSDocumentRevisionsDebugMode", nsDocumentRevisionsDebugMode},
             { "skipWelcomeScreenDialog", m_bSkipWelcomeScreenDialog},
             { "autotest_mode", m_bAutotestMode},
-            { "command-line-file", m_bCommandLineFile },
             { "regdumpall", dummy },
             { "attach-debugger", dummy }, // Attaches a debugger for the current application
             { "wait-for-debugger", dummy }, // Waits until a debugger is attached to the current application
@@ -956,7 +955,6 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
     m_bExportMode = cmdInfo.m_bExport;
     m_bRunPythonTestScript = cmdInfo.m_bRunPythonTestScript;
     m_bRunPythonScript = cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript;
-    m_bCommandLineFile = cmdInfo.m_bCommandLineFile;
     m_execFile = cmdInfo.m_execFile;
     m_execLineCmd = cmdInfo.m_execLineCmd;
     m_bAutotestMode = cmdInfo.m_bAutotestMode || cmdInfo.m_bConsoleMode;
@@ -1464,34 +1462,35 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
     using namespace AzToolsFramework;
     if (cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript)
     {
-        // cmdInfo data is only available on startup, copy it
-        QByteArray fileStr = cmdInfo.m_strFileName.toUtf8();
-
-        AZStd::vector<AZStd::string_view> fileList;
-
-        if (cmdInfo.m_bCommandLineFile)
+        std::string fileStr;
+        // We support specifying multiple files in the cmdline by separating them with ';'
+        // If a semicolon list of .py files is provided we look at the arg string
+        if (cmdInfo.m_strFileName.endsWith(".py"))
         {
-            AZStd::vector<AZStd::string_view> testcaseList;
-            std::ifstream argsFile (fileStr);
-            std::string nextLine;
-            if (argsFile.is_open()) {
-                while (argsFile) {
-                    std::getline(argsFile, nextLine);
-                    AZ_TracePrintf("Foo", nextLine);
-                }
-            }
+            // cmdInfo data is only available on startup, copy it
+            fileStr = cmdInfo.m_strFileName.toUtf8().constData();
         }
-        else {
-
-            // We support specifying multiple files in the cmdline by separating them with ';'
-            AZ::StringFunc::TokenizeVisitor(
-                fileStr.constData(),
-                [&fileList](AZStd::string_view elem)
-                {
-                    fileList.push_back(elem);
-                }, ';', false /* keepEmptyStrings */
-            );
+        else if (std::ifstream inputFile = std::ifstream(cmdInfo.m_strFileName.toUtf8().data()); inputFile.is_open()) 
+        {
+            // Otherwise, we look to see if we can read the file for test modules
+            // The file is expected to contain a single semicolon separated string of Editor pytest modules
+            std::getline(inputFile, fileStr);
         }
+        else
+        {
+            AZ_Error("RunInitPythonScript", false, "Failed to read Python files from --runpythontest arg. "
+                "Expects a semi colon separated list of python modules or a file containing a semi colon separated list of python modules");
+            return;
+        }
+        AZStd::vector<AZStd::string_view> fileList;
+        AZ::StringFunc::TokenizeVisitor(
+            fileStr.c_str(),
+            [&fileList](AZStd::string_view elem)
+            {
+                fileList.push_back(elem);
+            },
+            ';', false /* keepEmptyStrings */
+        );
         
         if (cmdInfo.m_pythonArgs.length() > 0 || cmdInfo.m_bRunPythonTestScript)
         {
