@@ -194,6 +194,7 @@ namespace AssetProcessor
         void SetQueryLogging(bool enableLogging);
 
         void SetBuilderDebugFlag(bool enabled);
+        bool GetBuilderDebugFlag() const { return m_builderDebugFlag; }
 
         //! Scans assets that match the given pattern for content that looks like a missing product dependency.
         //! Note that the database pattern is used as an SQL query, so use SQL syntax for the search (wildcard is %, not *).

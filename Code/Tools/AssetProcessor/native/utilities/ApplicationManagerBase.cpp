@@ -1615,9 +1615,10 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
             }
         };
 
+        const bool debugOutput = m_assetProcessorManager->GetBuilderDebugFlag();
         // Also override the processJob function to run externally
         modifiedBuilderDesc.m_processJobFunction =
-            [](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+            [debugOutput](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
         {
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
@@ -1626,6 +1627,13 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
 
             if (builderRef)
             {
+                if (debugOutput)
+                {
+                    AssetProcessor::BuilderManagerBus::Broadcast(
+                        &AssetProcessor::BuilderManagerBusTraits::AddAssetToBuilderProcessedList, builderRef->GetUuid(),
+                        request.m_fullPath);
+                }
+
                 int retryCount = 0;
                 AssetProcessor::BuilderRunJobOutcome result;
 
