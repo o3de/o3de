@@ -1,4 +1,4 @@
-# Pre-Built Gem hook insutrctions
+# Pre-Built Gem Hook Instructions
 
 The following are instructions on how to reference pre-existing static libraries, shared libraries or executable files into the Pre-Build Gem CMake target
 
