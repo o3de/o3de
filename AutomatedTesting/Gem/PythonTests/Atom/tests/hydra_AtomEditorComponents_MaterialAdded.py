@@ -255,7 +255,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         # 16. Wait for LOD Materials to indicate count 5 terminate early if container fails to reflect correct count
         Report.critical_result(Tests.lod_material_count, TestHelper.wait_for_condition(
             lambda: (material_component.get_container_count(
-                AtomComponentProperties.material('LOD Materials')) == 5), timeout_in_seconds=10))
+                AtomComponentProperties.material('LOD Materials')) == 5), timeout_in_seconds=5))
 
         # 17. Get the slot zero list from LOD Material
         item = material_component.get_container_item(

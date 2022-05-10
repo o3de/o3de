@@ -11,7 +11,6 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/std/containers/deque.h>
-#include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
@@ -26,7 +25,6 @@ namespace AzToolsFramework
 
         class InstanceUpdateExecutor
             : public InstanceUpdateExecutorInterface
-            , private AzFramework::GameEntityContextEventBus::Handler
         {
         public:
             AZ_RTTI(InstanceUpdateExecutor, "{E21DB0D4-0478-4DA9-9011-31BC96F55837}", InstanceUpdateExecutorInterface);
@@ -43,10 +41,9 @@ namespace AzToolsFramework
 
         private:
 
-            // GameEntityContextEventBus
-            void OnPreGameEntitiesStarted() override;
-            void OnGameEntitiesReset() override;
-
+            //! Connect the game mode event handler in a lazy fashion rather than at construction of this class.
+            //! This is required because the event won't be ready for connection during construction as EditorEntityContextComponent
+            //! gets initialized after the PrefabSystemComponent
             void LazyConnectGameModeEventHandler();
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;

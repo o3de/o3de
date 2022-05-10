@@ -31,7 +31,7 @@ namespace AzToolsFramework
             , m_GameModeEventHandler(
                   [this](GameModeState state)
                   {
-                      m_isGameModeInProgress = (state == GameModeState::Started) ? true : false;
+                      m_isGameModeInProgress = (state == GameModeState::Started);
                   })
         {
         }
@@ -51,13 +51,11 @@ namespace AzToolsFramework
                 "Check that it is being correctly initialized.");
 
             AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
-            //AzFramework::GameEntityContextEventBus::Handler::BusConnect();
         }
 
         void InstanceUpdateExecutor::UnregisterInstanceUpdateExecutorInterface()
         {
             m_GameModeEventHandler.Disconnect();
-            //AzFramework::GameEntityContextEventBus::Handler::BusDisconnect();
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
@@ -277,16 +275,6 @@ namespace AzToolsFramework
             }
 
             return isUpdateSuccessful;
-        }
-
-        void InstanceUpdateExecutor::OnPreGameEntitiesStarted()
-        {
-            m_isGameModeInProgress = true;
-        }
-
-        void InstanceUpdateExecutor::OnGameEntitiesReset()
-        {
-            m_isGameModeInProgress = false;
         }
     }
 }
