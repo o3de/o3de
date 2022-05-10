@@ -82,7 +82,7 @@ def Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx():
     model_asset = Asset.find_asset_by_path(STATIC_MESH)
     mesh_component.set_component_property_value("Controller|Configuration|Model Asset", model_asset.id)
     model_asset.id = mesh_component.get_component_property_value("Controller|Configuration|Model Asset")
-    Report.result(Tests.assign_mesh_asset, model_asset.get_path().lower() == STATIC_MESH.replace(os.sep, "/").lower())
+    Report.result(Tests.assign_model_asset, model_asset.get_path().lower() == STATIC_MESH.replace(os.sep, "/").lower())
 
     # 5) Add PhysX Collider component
     test_component = test_entity.add_component("PhysX Collider")
