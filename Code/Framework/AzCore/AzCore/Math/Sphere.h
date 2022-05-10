@@ -21,9 +21,7 @@ namespace AZ
         AZ_TYPE_INFO(Sphere, "{34BB6527-81AE-4854-99ED-D1A319DCD0A9}");
 
         Sphere() = default;
-
-        explicit Sphere(const Vector3& center, float radius);
-        Sphere(const Sphere& sphere);
+        Sphere(const Vector3& center, float radius);
 
         static Sphere CreateUnitSphere();
         static Sphere CreateFromAabb(const Aabb& aabb);
@@ -33,7 +31,7 @@ namespace AZ
         void SetCenter(const Vector3& center);
         void SetRadius(float radius);
 
-        // O3DE_DEPRECATION_NOTICE(GHI-XX)
+        // O3DE_DEPRECATION_NOTICE(GHI-9453)
         //! @deprecated can be set through an assignment
         void Set(const Sphere& sphere);
 
