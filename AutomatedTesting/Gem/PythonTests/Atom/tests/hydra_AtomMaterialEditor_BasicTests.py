@@ -113,7 +113,7 @@ def run():
 
     # 6) Test Case: Saving Material
     document_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
-    property_name = azlmbr.name.Name("baseColor.color")
+    property_name = "baseColor.color"
     initial_color = material_editor.get_property(document_id, property_name)
     # Assign new color to the material file and save the actual material
     expected_color = math.Color(0.25, 0.25, 0.25, 1.0)
@@ -171,14 +171,14 @@ def run():
     # 9) Test Case: Saving all Open Materials
     # Open first material and make change to the values
     document1_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
-    property1_name = azlmbr.name.Name("metallic.factor")
+    property1_name = "metallic.factor"
     initial_metallic_factor = material_editor.get_property(document1_id, property1_name)
     expected_metallic_factor = 0.444
     material_editor.set_property(document1_id, property1_name, expected_metallic_factor)
 
     # Open second material and make change to the values
     document2_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2))
-    property2_name = azlmbr.name.Name("baseColor.color")
+    property2_name = "baseColor.color"
     initial_color = material_editor.get_property(document2_id, property2_name)
     expected_color = math.Color(0.4156, 0.0196, 0.6862, 1.0)
     material_editor.set_property(document2_id, property2_name, expected_color)
