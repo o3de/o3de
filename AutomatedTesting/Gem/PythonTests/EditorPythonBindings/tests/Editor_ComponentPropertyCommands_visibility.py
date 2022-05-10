@@ -40,15 +40,15 @@ class Editor_ComponentPropertyCommands_visibility(BaseClass):
         paths = pte.build_paths_list_with_types()
 
         # test for visibility (default all nodes are exposed)
-        check_result(pte.get_value('Controller|Configuration|Mesh Asset').IsSuccess(), "Found property hidden node in path")
+        check_result(pte.get_value('Controller|Configuration|Model Asset').IsSuccess(), "Found property hidden node in path")
 
         # enable visibility enforcement
         pte.set_visible_enforcement(True)
         paths = pte.build_paths_list_with_types()
-        check_result(pte.get_value('Controller|Configuration|Mesh Asset').IsSuccess() is not True, "Property Controller|Configuration| is now a hidden path")
+        check_result(pte.get_value('Controller|Configuration|Model Asset').IsSuccess() is not True, "Property Controller|Configuration| is now a hidden path")
 
         # test for visibility (missing some property paths parts now)
-        check_result(pte.get_value('Mesh Asset').IsSuccess(), "Property path enforcement of visibility")
+        check_result(pte.get_value('Model Asset').IsSuccess(), "Property path enforcement of visibility")
 
 if __name__ == "__main__":
     tester = Editor_ComponentPropertyCommands_visibility()

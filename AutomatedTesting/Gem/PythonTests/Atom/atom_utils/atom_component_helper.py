@@ -224,7 +224,7 @@ def create_basic_atom_rendering_scene():
     ground_plane_mesh_asset_path = os.path.join("TestData", "Objects", "plane.azmodel")
     ground_plane_mesh_asset = Asset.find_asset_by_path(ground_plane_mesh_asset_path, False)
     ground_plane_mesh_component.set_component_property_value(
-        AtomComponentProperties.mesh('Mesh Asset'), ground_plane_mesh_asset.id)
+        AtomComponentProperties.mesh('Model Asset'), ground_plane_mesh_asset.id)
     ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
     ground_plane_material_asset = Asset.find_asset_by_path(ground_plane_material_asset_path, False)
     ground_plane_material_component.set_component_property_value(
@@ -244,7 +244,7 @@ def create_basic_atom_rendering_scene():
     sphere_mesh_asset_path = os.path.join("Models", "sphere.azmodel")
     sphere_mesh_asset = Asset.find_asset_by_path(sphere_mesh_asset_path, False)
     sphere_mesh_component.set_component_property_value(
-        AtomComponentProperties.mesh('Mesh Asset'), sphere_mesh_asset.id)
+        AtomComponentProperties.mesh('Model Asset'), sphere_mesh_asset.id)
     sphere_material_component = sphere_entity.add_component(AtomComponentProperties.material())
     sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
     sphere_material_asset = Asset.find_asset_by_path(sphere_material_asset_path, False)
