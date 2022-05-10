@@ -405,24 +405,15 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
-        const bool automatedTest = commandLine.HasSwitch("autotest_mode") || commandLine.HasSwitch("runpythontest");
-        if (automatedTest)
+        if (commandLine.HasSwitch("autotest_mode") || commandLine.HasSwitch("runpythontest"))
         {
             // Nullroute all stdout to null for automated tests, this way we make sure
             // that the test result output is not polluted with unrelated output data.
             RedirectStdoutToNull();
         }
 
-        if (!automatedTest)
-        {
-            // Enable native UI for some low level system popup message when it's not in automated test mode
-            if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
-            {
-                nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
-            }
-        }
-
-        if (commandLine.HasSwitch("activatewindow"))
+        const AZStd::string activateWindowSwitchName = "activatewindow";
+        if (commandLine.HasSwitch(activateWindowSwitchName))
         {
             AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
         }
@@ -456,9 +447,21 @@ namespace AtomToolsFramework
         runScripts("runpython");
         runScripts("runpythontest");
 
-        if (automatedTest || commandLine.HasSwitch("exitaftercommands"))
+        const AZStd::string exitAfterCommandsSwitchName = "exitaftercommands";
+        if (commandLine.HasSwitch(exitAfterCommandsSwitchName))
         {
             ExitMainLoop();
+        }
+
+        // Enable native UI for some low level system popup message when it's not in automated test mode
+        constexpr const char* testModeSwitch = "autotest_mode";
+        m_isAutoTestMode = commandLine.HasSwitch(testModeSwitch);
+        if (!m_isAutoTestMode)
+        {
+            if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+            {
+                nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+            }
         }
     }
 
