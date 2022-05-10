@@ -44,59 +44,125 @@ namespace AZ::Render
                     "SkyAtmosphereComponentConfig", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_atmosphereRadius, "Atmosphere radius", "Atmosphere radius")
+
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Planet")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SkyAtmosphereComponentConfig::m_originMode, "Origin", "The origin to use for the atmosphere")
+                            ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::GroundAtWorldOrigin, "Ground at World Origin")
+                            ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::GroundAtLocalOrigin, "Ground at Local Origin")
+                            ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::PlanetCenterAtLocalOrigin, "Planet center at local origin")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_groundRadius, "Ground radius", "Ground radius")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+                            ->Attribute(AZ::Edit::Attributes::Suffix, "km")
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 10000.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100000.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_planetRadius, "Planet radius", "Planet radius")
+
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_groundAlbedo, "Ground albedo", "Additional light from the surface of the ground")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Atmosphere")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_atmosphereHeight, "Atmosphere height", "Atmosphere height")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+                            ->Attribute(AZ::Edit::Attributes::Suffix, " km")
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 10000.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 1000.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, 100000.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_sun, "Sun orientation", "Optional sun entity to use for orientation")
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_drawSun, "Draw sun", "Whether to draw the sun or not")
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunRadiusFactor, "Sun radius factor", "Sun radius factor")
-                            ->Attribute(AZ::Edit::Attributes::SoftMin, 0.01f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunFalloffFactor, "Sun falloff factor", "Sun falloff factor")
-                            ->Attribute(AZ::Edit::Attributes::SoftMin, 0.01f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunIlluminance, "Sun illuminance", "Sun illuminance")
+                            ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_luminanceFactor, "Illuminance factor", "An additional factor to brighten or darken the overall atmosphere.")
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+
+
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Atmosphere Rayleigh (air) scattering")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_rayleighScatteringScale, "Rayleigh scattering Scale", "Raleigh scattering scale")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_rayleighScattering, "Rayleigh scattering", "Raleigh scattering coefficients from air molecules at surface of the planet.")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_rayleighExponentialDistribution, "Rayleigh exponential distribution", "Altitude at which Rayleigh scattering is reduced to roughly 40%.")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+                            ->Attribute(AZ::Edit::Attributes::Suffix, " km")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 400.0f)
+
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Atmosphere Mie (aerosole) scattering")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieScatteringScale, "Mie scattering Scale", "Mie scattering scale")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_mieScattering, "Mie scattering", "Mie scattering coefficients from aerosole molecules at surface of the planet.")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieAbsorptionScale, "Mie absorption Scale", "Mie absorption scale")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_mieAbsorption, "Mie absorption", "Mie absorption coefficients from aerosole molecules at surface of the planet.")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieExponentialDistribution, "Mie exponential distribution", "Altitude at which Mie scattering is reduced to roughly 40%.")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+                            ->Attribute(AZ::Edit::Attributes::Suffix, "km")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 400.0f)
+
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Atmosphere ozone absorption")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_absorptionScale, "Absorption Scale", "Ozone molecule absorption scale")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_absorption, "Absorption", "Absorption coefficients from ozone molecules in a layer most dense at roughly the middle height of the atmosphere.")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
+
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Sun")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_drawSun, "Show sun", "Whether to show the sun or not")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_sun, "Sun orientation", "Optional sun entity to use for orientation")
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_sunColor, "Sun color", "Sun color")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunRadiusFactor, "Sun radius factor", "Sun radius factor")
+                            ->Attribute(AZ::Edit::Attributes::SoftMin, 0.001f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 200.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunFalloffFactor, "Sun falloff factor", "Sun falloff factor")
+                            ->Attribute(AZ::Edit::Attributes::SoftMin, 0.001f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 200.0f)
+
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Advanced")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::DisplayOrder, 50)
+
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_fastSkyEnabled, "Fast sky", "Enable to use a less accurate but faster performing sky algorithm")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_minSamples, "Min samples", "Minimum number of samples when tracing")
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 20.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 32.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 64.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_maxSamples, "Max samples", "Maximum number of samples when tracing")
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 20.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax, 32.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 64.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_rayleighScattering, "Raleigh scattering", "Raleigh scattering")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieScattering, "Mie scattering", "Mie scattering")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieExtinction, "Mie extinction", "Mie extinction")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_absorptionExtinction, "Absorption extinction", "Absorption extinction")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_groundAlbedo, "Ground albedo", "Additional light from the surface of the ground")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSkyAtmosphereComponent::OnLUTConfigurationChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SkyAtmosphereComponentConfig::m_originMode, "Origin", "The origin to use for the atmosphere")
-                            ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::CenterAtLocalOrigin, "Center at Local Origin")
-                            ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::SurfaceAtLocalOrigin, "Surface at Local Origin")
-                            ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::SurfaceAtWorldOrigin, "Surface at World Origin")
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_fastSkyEnabled, "Fast sky", "Enable to use a less accurate but faster performing sky algorithm")
                     ;
             }
         }
@@ -114,11 +180,16 @@ namespace AZ::Render
             auto id = m_controller.m_atmosphereId;
             auto config = m_controller.m_configuration;
 
-            featureProcessor->SetAbsorptionExtinction(id, config.m_absorptionExtinction);
+            featureProcessor->SetAtmosphereRadius(id, config.m_groundRadius + config.m_atmosphereHeight);
+            featureProcessor->SetAbsorption(id, config.m_absorption * config.m_absorptionScale);
             featureProcessor->SetGroundAlbedo(id, config.m_groundAlbedo);
-            featureProcessor->SetMieScattering(id, config.m_mieScattering);
-            featureProcessor->SetRaleighScattering(id, config.m_rayleighScattering);
-            featureProcessor->SetSunIlluminance(id, config.m_sunIlluminance);
+            featureProcessor->SetLuminanceFactor(id, config.m_luminanceFactor);
+            featureProcessor->SetMieScattering(id, config.m_mieScattering * config.m_mieScatteringScale);
+            featureProcessor->SetMieAbsorption(id, config.m_mieAbsorption * config.m_mieAbsorptionScale);
+            featureProcessor->SetMieExpDistribution(id, config.m_mieExponentialDistribution);
+            featureProcessor->SetPlanetRadius(id, config.m_groundRadius);
+            featureProcessor->SetRayleighScattering(id, config.m_rayleighScattering * config.m_rayleighScatteringScale);
+            featureProcessor->SetRayleighExpDistribution(id, config.m_rayleighExponentialDistribution);
         }
 
         return Edit::PropertyRefreshLevels::AttributesAndValues;
@@ -131,9 +202,13 @@ namespace AZ::Render
             auto id = m_controller.m_atmosphereId;
             auto config = m_controller.m_configuration;
 
-            featureProcessor->SetAtmosphereRadius(id, config.m_atmosphereRadius);
+            featureProcessor->SetFastSkyEnabled(id, config.m_fastSkyEnabled);
+            featureProcessor->SetSunEnabled(id, config.m_drawSun);
+            featureProcessor->SetSunColor(id, config.m_sunColor);
+            featureProcessor->SetSunRadiusFactor(id, config.m_sunRadiusFactor);
+            featureProcessor->SetSunFalloffFactor(id, config.m_sunFalloffFactor);
+
             featureProcessor->SetMinMaxSamples(id, config.m_minSamples, config.m_maxSamples);
-            featureProcessor->SetPlanetRadius(id, config.m_planetRadius);
             
             // update the transform again in case the sun entity changed
             const AZ::Transform& transform = m_controller.m_transformInterface ? m_controller.m_transformInterface->GetWorldTM() : Transform::Identity();

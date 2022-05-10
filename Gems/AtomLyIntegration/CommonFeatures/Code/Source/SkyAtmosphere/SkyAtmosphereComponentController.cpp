@@ -64,15 +64,23 @@ namespace AZ::Render
 
             m_atmosphereId = m_featureProcessorInterface->CreateAtmosphere();
 
-            m_featureProcessorInterface->SetAbsorptionExtinction(m_atmosphereId, m_configuration.m_absorptionExtinction);
-            m_featureProcessorInterface->SetAtmosphereRadius(m_atmosphereId, m_configuration.m_atmosphereRadius);
+            m_featureProcessorInterface->SetAbsorption(m_atmosphereId, m_configuration.m_absorption * m_configuration.m_absorptionScale);
+            m_featureProcessorInterface->SetAtmosphereRadius(m_atmosphereId, m_configuration.m_groundRadius + m_configuration.m_atmosphereHeight);
+            m_featureProcessorInterface->SetFastSkyEnabled(m_atmosphereId, m_configuration.m_fastSkyEnabled);
             m_featureProcessorInterface->SetGroundAlbedo(m_atmosphereId, m_configuration.m_groundAlbedo);
-            m_featureProcessorInterface->SetMieScattering(m_atmosphereId, m_configuration.m_mieScattering);
+            m_featureProcessorInterface->SetLuminanceFactor(m_atmosphereId, m_configuration.m_luminanceFactor);
+            m_featureProcessorInterface->SetMieScattering(m_atmosphereId, m_configuration.m_mieScattering * m_configuration.m_mieScatteringScale);
+            m_featureProcessorInterface->SetMieAbsorption(m_atmosphereId, m_configuration.m_mieAbsorption * m_configuration.m_mieAbsorptionScale);
+            m_featureProcessorInterface->SetMieExpDistribution(m_atmosphereId, m_configuration.m_mieExponentialDistribution);
             m_featureProcessorInterface->SetMinMaxSamples(m_atmosphereId, m_configuration.m_minSamples, m_configuration.m_maxSamples);
-            m_featureProcessorInterface->SetPlanetRadius(m_atmosphereId, m_configuration.m_planetRadius);
-            m_featureProcessorInterface->SetRaleighScattering(m_atmosphereId, m_configuration.m_rayleighScattering);
-            m_featureProcessorInterface->SetSunIlluminance(m_atmosphereId, m_configuration.m_sunIlluminance);
+            m_featureProcessorInterface->SetPlanetRadius(m_atmosphereId, m_configuration.m_groundRadius);
+            m_featureProcessorInterface->SetRayleighScattering(m_atmosphereId, m_configuration.m_rayleighScattering * m_configuration.m_rayleighScatteringScale);
+            m_featureProcessorInterface->SetRayleighExpDistribution(m_atmosphereId, m_configuration.m_rayleighExponentialDistribution);
+            m_featureProcessorInterface->SetSunEnabled(m_atmosphereId, m_configuration.m_drawSun);
             m_featureProcessorInterface->SetSunDirection(m_atmosphereId, -sunTransform.GetBasisY());
+            m_featureProcessorInterface->SetSunColor(m_atmosphereId, m_configuration.m_sunColor);
+            m_featureProcessorInterface->SetSunFalloffFactor(m_atmosphereId, m_configuration.m_sunFalloffFactor);
+            m_featureProcessorInterface->SetSunRadiusFactor(m_atmosphereId, m_configuration.m_sunRadiusFactor);
 
             UpdatePlanetOrigin();
 
@@ -139,15 +147,15 @@ namespace AZ::Render
             AZ::Vector3 originInKm;
             switch (m_configuration.m_originMode)
             {
-            case SkyAtmosphereComponentConfig::AtmosphereOrigin::CenterAtLocalOrigin:
+            case SkyAtmosphereComponentConfig::AtmosphereOrigin::PlanetCenterAtLocalOrigin:
                 originInKm = m_transformInterface->GetWorldTranslation() * 0.001f;
                 break;
-            case SkyAtmosphereComponentConfig::AtmosphereOrigin::SurfaceAtLocalOrigin:
-                originInKm = m_transformInterface->GetWorldTranslation() * 0.001f - AZ::Vector3(0.0, 0.0, m_configuration.m_planetRadius);
+            case SkyAtmosphereComponentConfig::AtmosphereOrigin::GroundAtLocalOrigin:
+                originInKm = m_transformInterface->GetWorldTranslation() * 0.001f - AZ::Vector3(0.0, 0.0, m_configuration.m_groundRadius);
                 break;
             default:
-            case SkyAtmosphereComponentConfig::AtmosphereOrigin::SurfaceAtWorldOrigin:
-                originInKm = -AZ::Vector3(0.0, 0.0, m_configuration.m_planetRadius);
+            case SkyAtmosphereComponentConfig::AtmosphereOrigin::GroundAtWorldOrigin:
+                originInKm = -AZ::Vector3(0.0, 0.0, m_configuration.m_groundRadius);
                 break;
             }
 

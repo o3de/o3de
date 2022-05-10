@@ -38,19 +38,25 @@ namespace AZ::Render
         struct AtmosphereParams 
         {
             bool m_enabled = true;
-            bool m_originAtSurface = true;
+            bool m_sunEnabled = true;
+            bool m_fastSkyEnabled = true;
             bool m_lutUpdateRequired = true;
             AZ::Vector3 m_planetOrigin = AZ::Vector3(0,0,0);
             AZ::Vector3 m_sunDirection = AZ::Vector3(0,0,-1);
-            float m_sunIlluminance = 1.0f;
+            AZ::Color m_sunColor = AZ::Color(1.f, 1.f, 1.f, 1.f);
+            float m_sunRadiusFactor = 1.f;
+            float m_sunFalloffFactor = 1.f;
+            AZ::Vector3 m_luminanceFactor = AZ::Vector3(1.f,1.f,1.f);
             float m_planetRadius = 6360.0f;
             float m_atmosphereRadius = 6460.0f;
             uint32_t m_minSamples = 4;
             uint32_t m_maxSamples = 14;
             AZ::Vector3 m_rayleighScattering = AZ::Vector3(0.005802f, 0.013558f, 0.033100f);
+            float m_rayleighExpDistribution = 8.f;
             AZ::Vector3 m_mieScattering = AZ::Vector3(0.003996f, 0.003996f, 0.003996f);
-            AZ::Vector3 m_absorptionExtinction = AZ::Vector3(0.000650f, 0.001881f, 0.000085f);
-            AZ::Vector3 m_mieExtinction = AZ::Vector3(0.004440f, 0.004440f, 0.004440f);
+            float m_mieExpDistribution = 1.2f;
+            AZ::Vector3 m_mieAbsorption = AZ::Vector3(0.004440f, 0.004440f, 0.004440f);
+            AZ::Vector3 m_absorption = AZ::Vector3(0.000650f, 0.001881f, 0.000085f);
             AZ::Vector3 m_groundAlbedo = AZ::Vector3(0.0f, 0.0f, 0.0f);
         };
 
@@ -74,43 +80,47 @@ namespace AZ::Render
 
         struct AtmosphereGPUParams 
         {
-            float absorption_extinction[3];
-            float pad0;
+            float m_absorption[3] = {.000650f, 0.001881f, 0.000085f};
+            float m_fastSkyEnabled = 1.0f;
 
-            float rayleigh_scattering[3];
-            float mie_phase_function_g;
+            float m_rayleighScattering[3] = {0.005802f, 0.013558f, 0.033100f};
+            float m_miePhaseFunctionG = 0.8f;
 
-            float mie_scattering[3];
-            float bottom_radius;
+            float m_mieScattering[3] = {0.003996f, 0.003996f, 0.003996f}; // 1/km
+            float m_bottomRadius = 6360.f; // km
 
-            float mie_extinction[3];
-            float top_radius;
+            float m_mieExtinction[3] = {0.004440f, 0.004440f, 0.004440f}; // 1/km
+            float m_topRadius = 6460.f; // km
 
-            float mie_absorption[3];
-            float pad1;
+            float m_mieAbsorption[3] = { 0.000444f, 0.000444f, 0.000444f }; // 1/km
+            float m_rayMarchMin = 4.f;
 
-            float ground_albedo[3];
-            float pad2;
+            float m_groundAlbedo[3] = {0.f, 0.f, 0.f};
+            float m_rayMarchMax = 14.f;
 
-            float rayleigh_density[12];
-            float mie_density[12];
-            float absorption_density[12];
+            float m_rayleighDensityExpScale = -1.f / 8.f;
+            float m_mieDensityExpScale = -1.f / 1.2f;
+            float m_absorptionDensity0LayerWidth = 25.f;
+            float m_absorptionDensity0ConstantTerm = -2.f / 3.f; 
 
-            float gSunIlluminance[3];
-            float pad3;
+            float m_absorptionDensity0LinearTerm = 1.5f / 15.f;
+            float m_absorptionDensity1ConstantTerm = 8.f / 3.f;
+            float m_absorptionDensity1LinearTerm = -1.f / 15.f;
+            float m_pad0; // not used
 
-            float sun_direction[3];
-            float MultipleScatteringFactor;
+            float m_sunColor[3];
+            float m_sunEnabled = 1.0f;
 
-            float RayMarchMinMaxSPP[2]; // x = min, y = max
-            float pad4[2];
+            float m_sunDirection[3] = {0.f,0.f,-1.f};
+            float m_sunRadiusFactor = 1.f;
 
-            float planet_origin[3];
-            float pad5;
+            float m_luminanceFactor[3] = {1.f, 1.f, 1.f};
+            float m_sunFalloffFactor = 1.f;
 
-            uint32_t gResolution[2];
-            uint32_t pad6[2];
+            float m_planetOrigin[3] = {0.f, 0.f, 0.f};
+            float m_pad1 = 0.f;
         };
+
         void InitializeConstants(AtmosphereGPUParams& atmosphereConstants);
 
         SkyAtmosphereFeatureProcessorInterface::AtmosphereId m_atmosphereId;

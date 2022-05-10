@@ -5,20 +5,14 @@
         {
             "Enable": false,  //required to bind depth buffer SRV
             "CompareFunc" : "Always"
-            //"CompareFunc" : "GreaterEqual"
         }
     },
     "DrawList": "forward",
-
     "BlendState": {
         "Enable": true,
         "BlendSource": "One",
-        //"BlendSource": "AlphaSource",
         "BlendDest": "One",
         "BlendOp": "Add"
-        //"BlendAlphaSource": "Zero",
-        //"BlendAlphaDest": "One",
-        //"BlendAlphaOp": "Add"
     },
     "ProgramSettings": {
         "EntryPoints": [
@@ -31,10 +25,5 @@
             "type" : "Fragment"
         }
         ]
-    },
-    "CompilerHints" : 
-    {
-        "DxcDisableOptimizations": true,
-        "DxcGenerateDebugInfo" : true
     }
 }

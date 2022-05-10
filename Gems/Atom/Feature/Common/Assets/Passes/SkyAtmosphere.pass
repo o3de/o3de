@@ -36,6 +36,20 @@
                     "Enabled": true
                 },
                 {
+                    "Name": "SkyViewLUTPass",
+                    "TemplateName": "SkyViewLUTTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkyTransmittanceLUTInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyTransmittanceLUTPass",
+                                "Attachment": "SkyTransmittanceLUTOutput"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "SkyRayMarchingPass",
                     "TemplateName": "SkyRayMarchingTemplate",
                     "Enabled": true,
@@ -45,6 +59,13 @@
                             "AttachmentRef": {
                                 "Pass": "SkyTransmittanceLUTPass",
                                 "Attachment": "SkyTransmittanceLUTOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SkyViewLUTInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyViewLUTPass",
+                                "Attachment": "SkyViewLUTOutput"
                             }
                         },
                         {

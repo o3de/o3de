@@ -41,16 +41,24 @@ namespace AZ::Render
 
         void Enable(AtmosphereId id, bool enable) override;
         bool IsEnabled(AtmosphereId id) override;
-        void SetSunDirection(AtmosphereId id, const Vector3& direction) override;
-        void SetSunIlluminance(AtmosphereId id, float illuminance) override;
+        void SetAbsorption(AtmosphereId id, const AZ::Vector3& absorption) override;
+        void SetAtmosphereRadius(AtmosphereId id, float radius) override;
+        void SetFastSkyEnabled(AtmosphereId id, bool enabled) override;
+        void SetGroundAlbedo(AtmosphereId id, const AZ::Vector3& albedo) override;
+        void SetLuminanceFactor(AtmosphereId id, const AZ::Vector3& factor) override;
+        void SetMieScattering(AtmosphereId id, const AZ::Vector3& scattering) override;
+        void SetMieAbsorption(AtmosphereId id, const AZ::Vector3& absorption) override;
+        void SetMieExpDistribution(AtmosphereId id, float distribution) override;
         void SetMinMaxSamples(AtmosphereId id, uint32_t minSamples, uint32_t maxSamples) override;
         void SetPlanetOrigin(AtmosphereId id, const AZ::Vector3& planetOrigin) override;
-        void SetRaleighScattering(AtmosphereId id, const AZ::Vector3& scattering) override;
-        void SetMieScattering(AtmosphereId id, const AZ::Vector3& scattering) override;
-        void SetAbsorptionExtinction(AtmosphereId id, const AZ::Vector3& extinction) override;
-        void SetGroundAlbedo(AtmosphereId id, const AZ::Vector3& albedo) override;
         void SetPlanetRadius(AtmosphereId id, float radius) override;
-        void SetAtmosphereRadius(AtmosphereId id, float radius) override;
+        void SetRayleighScattering(AtmosphereId id, const AZ::Vector3& scattering) override;
+        void SetRayleighExpDistribution(AtmosphereId id, float distribution) override;
+        void SetSunEnabled(AtmosphereId id, bool enabled) override;
+        void SetSunDirection(AtmosphereId id, const Vector3& direction) override;
+        void SetSunColor(AtmosphereId id, const Color& color) override;
+        void SetSunFalloffFactor(AtmosphereId id, float factor) override;
+        void SetSunRadiusFactor(AtmosphereId id, float factor) override;
 
     private:
 

@@ -105,6 +105,10 @@
                 "Path": "Passes/SkyTransmittanceLUT.pass"
             },
             {
+                "Name": "SkyViewLUTTemplate",
+                "Path": "Passes/SkyViewLUT.pass"
+            },
+            {
                 "Name": "SkyRayMarchingTemplate",
                 "Path": "Passes/SkyRayMarching.pass"
             },

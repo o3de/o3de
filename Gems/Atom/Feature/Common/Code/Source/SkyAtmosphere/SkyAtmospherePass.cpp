@@ -13,7 +13,6 @@
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 
 
-#pragma optimize("", off)
 namespace AZ::Render
 {
     SkyAtmospherePass::SkyAtmospherePass(const RPI::PassDescriptor& descriptor, SkyAtmosphereFeatureProcessorInterface::AtmosphereId id)
@@ -84,6 +83,8 @@ namespace AZ::Render
         }
 
         {
+            // create and bind transmittance LUT
+
             // this may be possible to do in the Pass file somehow...
             constexpr AZ::u32 width = 256;
             constexpr AZ::u32 height = 64;
@@ -102,7 +103,7 @@ namespace AZ::Render
                 childPass->AttachImageToSlot(Name("SkyTransmittanceLUTOutput"), m_transmittanceLUTImage);
             }
 
-            childPass = FindChildPass(Name("BypassFullScreenPass"));
+            childPass = FindChildPass(Name("SkyViewLUTPass"));
             if (childPass)
             {
                 childPass->AttachImageToSlot(Name("SkyTransmittanceLUTInput"), m_transmittanceLUTImage);
@@ -116,11 +117,13 @@ namespace AZ::Render
         }
 
         {
+            // create and bind sky view LUT
+
             // this may be possible to do in the Pass file somehow...
-            constexpr AZ::u32 width = 200;
-            constexpr AZ::u32 height = 200;
+            constexpr AZ::u32 width = 192;
+            constexpr AZ::u32 height = 108;
             RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2D(
-                RHI::ImageBindFlags::ShaderReadWrite, width, height, RHI::Format::R16G16B16A16_FLOAT);
+                RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite, width, height, RHI::Format::R11G11B10_FLOAT);
             if (!m_skyViewLUTImage)
             {
                 CreateImage(Name("SkyViewLUTImageAttachment"), imageDesc, m_skyViewLUTImage);
@@ -159,29 +162,63 @@ namespace AZ::Render
 
     void SkyAtmospherePass::UpdateRenderPassSRG(const AtmosphereParams& params)
     {
-        m_constants.bottom_radius = params.m_planetRadius;
-        m_constants.top_radius = params.m_atmosphereRadius;
-        params.m_sunDirection.GetNormalized().StoreToFloat3(m_constants.sun_direction);
-        constexpr uint32_t maxSamples{ 64 }; // avoid oversampling (too many loops) causing device removal 
-        m_constants.RayMarchMinMaxSPP[0] = static_cast<float>(AZStd::min(maxSamples, params.m_minSamples)); 
-        m_constants.RayMarchMinMaxSPP[1] = static_cast<float>(AZStd::min(maxSamples, params.m_maxSamples));
-        params.m_planetOrigin.StoreToFloat3(m_constants.planet_origin);
+        m_constants.m_fastSkyEnabled = params.m_fastSkyEnabled ? 1.f : 0.f;
+        m_constants.m_bottomRadius = params.m_planetRadius;
+        m_constants.m_topRadius = params.m_atmosphereRadius;
+        m_constants.m_sunEnabled = params.m_sunEnabled ? 1.f : 0.f;
+        m_constants.m_sunRadiusFactor = params.m_sunRadiusFactor;
+        m_constants.m_sunFalloffFactor = params.m_sunFalloffFactor;
+        params.m_sunColor.GetAsVector3().StoreToFloat3(m_constants.m_sunColor);
+        params.m_sunDirection.GetNormalized().StoreToFloat3(m_constants.m_sunDirection);
+        params.m_planetOrigin.StoreToFloat3(m_constants.m_planetOrigin);
+
+        // avoid oversampling (too many loops) causing device removal
+        constexpr uint32_t maxSamples{ 64 };  
+        if (params.m_minSamples > maxSamples)
+        {
+            AZ_WarningOnce("SkyAtmosphere", false, "Clamping min samples to %ul to avoid device removal", maxSamples);
+            m_constants.m_rayMarchMin = maxSamples; 
+        }
+        else
+        {
+            m_constants.m_rayMarchMin = aznumeric_cast<float>(params.m_minSamples); 
+        }
+
+        if (params.m_maxSamples > maxSamples)
+        {
+            AZ_WarningOnce("SkyAtmosphere", false, "Clamping max samples to %ul to avoid device removal", maxSamples);
+            m_constants.m_rayMarchMax = maxSamples; 
+        }
+        else
+        {
+            m_constants.m_rayMarchMax = aznumeric_cast<float>(params.m_maxSamples); 
+        }
 
         if (params.m_lutUpdateRequired)
         {
-            m_constants.gSunIlluminance[0] = params.m_sunIlluminance;
-            m_constants.gSunIlluminance[1] = params.m_sunIlluminance;
-            m_constants.gSunIlluminance[2] = params.m_sunIlluminance;
-            params.m_rayleighScattering.StoreToFloat3(m_constants.rayleigh_scattering);
-            params.m_mieScattering.StoreToFloat3(m_constants.mie_scattering);
-            params.m_mieExtinction.StoreToFloat3(m_constants.mie_extinction);
-            params.m_absorptionExtinction.StoreToFloat3(m_constants.absorption_extinction);
-            params.m_groundAlbedo.StoreToFloat3(m_constants.ground_albedo);
+            params.m_luminanceFactor.StoreToFloat3(m_constants.m_luminanceFactor);
+            params.m_rayleighScattering.StoreToFloat3(m_constants.m_rayleighScattering);
+            params.m_mieScattering.StoreToFloat3(m_constants.m_mieScattering);
+            params.m_mieAbsorption.StoreToFloat3(m_constants.m_mieAbsorption);
+            (params.m_mieScattering + params.m_mieAbsorption).StoreToFloat3(m_constants.m_mieExtinction);
+            params.m_absorption.StoreToFloat3(m_constants.m_absorption);
+            params.m_groundAlbedo.StoreToFloat3(m_constants.m_groundAlbedo);
 
-            for (int i = 0; i < 3; ++i)
+            const float atmosphereHeight = params.m_atmosphereRadius - params.m_planetRadius;
+            if (atmosphereHeight > 0 && params.m_rayleighExpDistribution > 0 && params.m_mieExpDistribution > 0)
             {
-                m_constants.mie_absorption[i] = AZStd::max(0.f, m_constants.mie_extinction[i] - m_constants.mie_scattering[i]);
+                // prevent rayleigh and mie distributions being larger than the atmosphere size
+                m_constants.m_rayleighDensityExpScale = -1.f / static_cast<float>(AZStd::min(params.m_rayleighExpDistribution, atmosphereHeight));
+                m_constants.m_mieDensityExpScale = -1.f / static_cast<float>(AZStd::min(params.m_mieExpDistribution, atmosphereHeight));
             }
+
+            // absorption density layer uses a tent distribution
+            // for now we'll base this distribution on earth settings for ozone
+            m_constants.m_absorptionDensity0LayerWidth = atmosphereHeight * 0.25f; // altitude at which absorption reaches its maximum value
+            m_constants.m_absorptionDensity0LinearTerm = 1.f / 15.f;
+            m_constants.m_absorptionDensity0ConstantTerm = -2.f / 3.f;
+            m_constants.m_absorptionDensity1LinearTerm = -1.f / 15.f;
+            m_constants.m_absorptionDensity1ConstantTerm = 8.f / 3.f;
         }
 
         if (!m_children.empty())
@@ -215,79 +252,42 @@ namespace AZ::Render
 
     void SkyAtmospherePass::InitializeConstants(AtmosphereGPUParams& atmosphereConstants)
     {
-        atmosphereConstants.bottom_radius = 6360.f; // km
-        atmosphereConstants.top_radius = atmosphereConstants.bottom_radius + 100.f; // 100km
+        atmosphereConstants.m_fastSkyEnabled = 1.f; // enabled
+        atmosphereConstants.m_bottomRadius = 6360.f; // km
+        atmosphereConstants.m_topRadius = atmosphereConstants.m_bottomRadius + 100.f; // 100km
 
-        atmosphereConstants.gResolution[0] = 1920;
-        atmosphereConstants.gResolution[1] = 800;
-        AZ::Vector3(0.000650f, 0.001881f, 0.000085f).StoreToFloat3(atmosphereConstants.absorption_extinction);
-        AZ::Vector3(0.005802f, 0.013558f, 0.033100f).StoreToFloat3(atmosphereConstants.rayleigh_scattering);
-        atmosphereConstants.mie_phase_function_g = 0.8f;
-        AZ::Vector3 mieScattering(0.003996f, 0.003996f, 0.003996f);
-        mieScattering.StoreToFloat3(atmosphereConstants.mie_scattering);
+        AZ::Vector3(0.000650f, 0.001881f, 0.000085f).StoreToFloat3(atmosphereConstants.m_absorption);
+        AZ::Vector3(0.005802f, 0.013558f, 0.033100f).StoreToFloat3(atmosphereConstants.m_rayleighScattering);
 
-        AZ::Vector3 mieExtinction(0.004440f, 0.004440f, 0.004440f);
-        mieExtinction.StoreToFloat3(atmosphereConstants.mie_extinction);
+        constexpr float mieScattering = 0.004440f;
+        constexpr float mieExtinction = 0.003996f;
+        constexpr float mieAbsorption = mieScattering - mieExtinction;
+        AZ::Vector3(mieScattering, mieScattering, mieScattering).StoreToFloat3(atmosphereConstants.m_mieScattering);
+        AZ::Vector3(mieExtinction, mieExtinction, mieExtinction).StoreToFloat3(atmosphereConstants.m_mieExtinction);
+        AZ::Vector3(mieAbsorption, mieAbsorption, mieAbsorption).StoreToFloat3(atmosphereConstants.m_mieAbsorption);
 
-        for (int i = 0; i < 3; ++i)
-        {
-            atmosphereConstants.mie_absorption[i] = AZStd::max(0.f, atmosphereConstants.mie_extinction[i] - atmosphereConstants.mie_scattering[i]);
-        }
-        //AZ::Vector3 mieAbsorption = mieExtinction - mieScattering;
-        //auto MaxZero3 = [](AZ::Vector3& vec)
-        //{
-        //    for (int i = 0; i < 3; ++i)
-        //    {
-        //        if (vec.GetElement(i) < 0.f)
-        //        {
-        //            vec.SetElement(i, 0.f);
-        //        }
-        //    }
-        //};
-        //MaxZero3(mieAbsorption);
-        //mieAbsorption.StoreToFloat3(atmosphereConstants.mie_absorption);
+        atmosphereConstants.m_miePhaseFunctionG = 0.8f;
 
-        AZ::Vector3(0.0, 0.0, 0.0).StoreToFloat3(atmosphereConstants.ground_albedo);
-
-        struct DensityProfileLayer
-        {
-            float width;
-            float exp_term;
-            float exp_scale;
-            float linear_term;
-            float constant_term;
-        };
-
-        struct DensityProfile
-        {
-            DensityProfileLayer layers[2];
-        };
+        AZ::Vector3(0.0, 0.0, 0.0).StoreToFloat3(atmosphereConstants.m_groundAlbedo);
 
         constexpr float EarthRayleighScaleHeight = 8.0f;
         constexpr float EarthMieScaleHeight = 1.2f;
 
-        DensityProfile rayleigh_density;
-        rayleigh_density.layers[0] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
-        rayleigh_density.layers[1] = { 0.0f, 1.0f, -1.0f / EarthRayleighScaleHeight, 0.0f, 0.0f };
+        atmosphereConstants.m_rayleighDensityExpScale = -1.f / EarthRayleighScaleHeight;
+        atmosphereConstants.m_mieDensityExpScale = -1.f / EarthMieScaleHeight;
+        atmosphereConstants.m_absorptionDensity0LayerWidth = 25.f;
+        atmosphereConstants.m_absorptionDensity0ConstantTerm = -2.f / 3.f; 
+        atmosphereConstants.m_absorptionDensity0LinearTerm = 1.5f / 15.f;
+        atmosphereConstants.m_absorptionDensity1ConstantTerm = 8.f / 3.f;
+        atmosphereConstants.m_absorptionDensity1LinearTerm = -1.f / 15.f;
 
-        DensityProfile mie_density;
-        mie_density.layers[0] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
-        mie_density.layers[1] = { 0.0f, 1.0f, -1.0f / EarthMieScaleHeight, 0.0f, 0.0f };
+        AZ::Vector3(1.0, 1.0, 1.0).StoreToFloat3(atmosphereConstants.m_luminanceFactor);
 
-        DensityProfile absorption_density;
-        absorption_density.layers[0] = { 25.0f, 0.0f, 0.0f, 1.0f / 15.0f, -2.0f / 3.0f };
-        absorption_density.layers[1] = { 0.0f, 0.0f, 0.0f, -1.0f / 15.0f, 8.0f / 3.0f };
-
-        memcpy(atmosphereConstants.rayleigh_density, &rayleigh_density, sizeof(rayleigh_density));
-        memcpy(atmosphereConstants.mie_density, &mie_density, sizeof(mie_density));
-        memcpy(atmosphereConstants.absorption_density, &absorption_density, sizeof(absorption_density));
-
-        // remaining
-        AZ::Vector3(1.0, 1.0, 1.0).StoreToFloat3(atmosphereConstants.gSunIlluminance);
-        AZ::Vector3(-0.76823, 0.6316, 0.10441).GetNormalized().StoreToFloat3(atmosphereConstants.sun_direction);
-        atmosphereConstants.MultipleScatteringFactor = 1.0f;
-        atmosphereConstants.RayMarchMinMaxSPP[0] = 4;
-        atmosphereConstants.RayMarchMinMaxSPP[1] = 14;
+        atmosphereConstants.m_sunEnabled = 1.f;
+        atmosphereConstants.m_sunRadiusFactor = 1.f;
+        atmosphereConstants.m_sunFalloffFactor = 1.f;
+        AZ::Vector3(1.0, 1.0, 1.0).StoreToFloat3(atmosphereConstants.m_sunColor);
+        AZ::Vector3(-0.76823, 0.6316, 0.10441).GetNormalized().StoreToFloat3(atmosphereConstants.m_sunDirection);
     }
 
     void SkyAtmospherePass::ResetInternal()
@@ -305,5 +305,3 @@ namespace AZ::Render
         return m_atmosphereId;
     }
 } // namespace AZ::Render
-
-#pragma optimize("", on)

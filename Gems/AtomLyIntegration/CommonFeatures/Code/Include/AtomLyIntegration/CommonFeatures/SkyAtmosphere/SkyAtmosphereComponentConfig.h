@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector2.h>
 
@@ -22,30 +23,47 @@ namespace AZ::Render
 
         enum class AtmosphereOrigin
         {
-            SurfaceAtWorldOrigin,
-            SurfaceAtLocalOrigin,
-            CenterAtLocalOrigin
+            GroundAtWorldOrigin,
+            GroundAtLocalOrigin,
+            PlanetCenterAtLocalOrigin
         };
 
         static void Reflect(AZ::ReflectContext* context);
 
-        float m_atmosphereRadius = 6460.0f;
-        float m_planetRadius = 6360.0f;
+        // ground 
+        AtmosphereOrigin m_originMode = AtmosphereOrigin::GroundAtWorldOrigin;
+        float m_groundRadius = 6360.0f;
+        float m_atmosphereHeight = 100.0f;
+        AZ::Vector3 m_groundAlbedo = AZ::Vector3(0.0f, 0.0f, 0.0f);
+        AZ::Vector3 m_luminanceFactor = AZ::Vector3(1.0f, 1.0f, 1.0f);
 
-        AZ::EntityId m_sun; // optional sun entity to use for orientation
+        // rayleigh (air) scattering
+        float m_rayleighScatteringScale = 0.033100f;
+        AZ::Vector3 m_rayleighScattering = AZ::Vector3(0.175287f, 0.409607f, 1.f);
+        float m_rayleighExponentialDistribution = 8.f;
+
+        // mie (aerosols) scattering
+        float m_mieScatteringScale = 0.003996f;
+        AZ::Vector3 m_mieScattering = AZ::Vector3(1., 1.f, 1.f);
+        float m_mieAbsorptionScale = 0.004440f;
+        AZ::Vector3 m_mieAbsorption = AZ::Vector3(1.f, 1.f, 1.f);
+        float m_mieExponentialDistribution = 1.2f;
+
+        // absorption
+        float m_absorptionScale = 0.001881f;
+        AZ::Vector3 m_absorption = AZ::Vector3(0.345561f, 1.f, 0.045188f);
+
+        // sun
         bool m_drawSun = true;
+        AZ::EntityId m_sun; // optional sun entity to use for orientation
+        AZ::Color m_sunColor = AZ::Color(1.f, 1.f, 1.f, 1.f);
         float m_sunRadiusFactor = 1.0f;
         float m_sunFalloffFactor = 1.0f;
-        float m_sunIlluminance = 1.0f;
-        uint32_t m_minSamples = 4;
-        uint32_t m_maxSamples = 14;
-        AZ::Vector3 m_rayleighScattering = AZ::Vector3(0.005802f, 0.013558f, 0.033100f);
-        AZ::Vector3 m_mieScattering = AZ::Vector3(0.003996f, 0.003996f, 0.003996f);
-        AZ::Vector3 m_absorptionExtinction = AZ::Vector3(0.000650f, 0.001881f, 0.000085f);
-        AZ::Vector3 m_mieExtinction = AZ::Vector3(0.004440f, 0.004440f, 0.004440f);
-        AZ::Vector3 m_groundAlbedo = AZ::Vector3(0.0f, 0.0f, 0.0f);
-        AtmosphereOrigin m_originMode = AtmosphereOrigin::SurfaceAtWorldOrigin;
+
+        // advanced
         bool m_fastSkyEnabled = true;
         AZ::Vector2 m_fastSkyLUTSize = AZ::Vector2(192.0f, 108.0f);
+        uint32_t m_minSamples = 4;
+        uint32_t m_maxSamples = 14;
     };
 } // namespace AZ::Render

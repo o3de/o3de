@@ -37,8 +37,6 @@ SkyTransmittanceLUTPSOutput SkyTransmittanceLUTPS(VSOutput Input)
 	float2 pixPos = Input.m_position.xy;
 	AtmosphereParameters atmosphere = GetAtmosphereParameters();
 
-	float3 sunDir = AtmosParamsSRG::m_constants.sun_direction;
-
 	// Compute camera position from LUT coords
 	float2 uv = Input.m_texCoord;
 	float viewHeight;
@@ -53,6 +51,7 @@ SkyTransmittanceLUTPSOutput SkyTransmittanceLUTPS(VSOutput Input)
 	const float depth = -1.0;
 	const bool variableSampleCount = false;
 	const bool mieRayPhase = false;
+	const float3 sunDir = float3(0,0,1); // not actually used to calculate optical depth
 	float3 transmittance = exp(-IntegrateScatteredLuminance(pixPos, uv, worldPos, worldDir, sunDir, atmosphere, ground, sampleCount, depth, variableSampleCount, mieRayPhase).OpticalDepth);
 
 	OUT.m_skyTransmittanceLut = float4(transmittance, 1.0f);

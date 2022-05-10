@@ -18,7 +18,6 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 
 
-#pragma optimize("", off)
 namespace AZ::Render
 {
     void SkyAtmosphereFeatureProcessor::Reflect(ReflectContext* context)
@@ -92,6 +91,13 @@ namespace AZ::Render
         return params.m_enabled;
     }
 
+    void SkyAtmosphereFeatureProcessor::SetFastSkyEnabled(AtmosphereId id, bool enabled)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_fastSkyEnabled = enabled;
+        m_passNeedsUpdate = true;
+    }
+
     void SkyAtmosphereFeatureProcessor::SetSunDirection(AtmosphereId id, const Vector3& direction)
     {
         auto& params = m_params.GetElement(id.GetIndex());
@@ -99,10 +105,10 @@ namespace AZ::Render
         m_passNeedsUpdate = true;
     }
 
-    void SkyAtmosphereFeatureProcessor::SetSunIlluminance(AtmosphereId id, float illuminance)
+    void SkyAtmosphereFeatureProcessor::SetLuminanceFactor(AtmosphereId id, const AZ::Vector3& factor)
     {
         auto& params = m_params.GetElement(id.GetIndex());
-        params.m_sunIlluminance = illuminance;
+        params.m_luminanceFactor = factor;
         params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
@@ -115,10 +121,18 @@ namespace AZ::Render
         m_passNeedsUpdate = true;
     }
 
-    void SkyAtmosphereFeatureProcessor::SetRaleighScattering(AtmosphereId id, const AZ::Vector3& scattering)
+    void SkyAtmosphereFeatureProcessor::SetRayleighScattering(AtmosphereId id, const AZ::Vector3& scattering)
     {
         auto& params = m_params.GetElement(id.GetIndex());
         params.m_rayleighScattering = scattering;
+        params.m_lutUpdateRequired = true;
+        m_passNeedsUpdate = true;
+    }
+
+    void SkyAtmosphereFeatureProcessor::SetRayleighExpDistribution(AtmosphereId id, float distribution)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_rayleighExpDistribution = distribution;
         params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
@@ -131,10 +145,26 @@ namespace AZ::Render
         m_passNeedsUpdate = true;
     }
 
-    void SkyAtmosphereFeatureProcessor::SetAbsorptionExtinction(AtmosphereId id, const AZ::Vector3& extinction)
+    void SkyAtmosphereFeatureProcessor::SetMieAbsorption(AtmosphereId id, const AZ::Vector3& absorption)
     {
         auto& params = m_params.GetElement(id.GetIndex());
-        params.m_mieExtinction = extinction;
+        params.m_mieAbsorption = absorption;
+        params.m_lutUpdateRequired = true;
+        m_passNeedsUpdate = true;
+    }
+
+    void SkyAtmosphereFeatureProcessor::SetMieExpDistribution(AtmosphereId id, float distribution)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_mieExpDistribution = distribution;
+        params.m_lutUpdateRequired = true;
+        m_passNeedsUpdate = true;
+    }
+
+    void SkyAtmosphereFeatureProcessor::SetAbsorption(AtmosphereId id, const AZ::Vector3& absorption)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_mieAbsorption = absorption;
         params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
@@ -158,6 +188,7 @@ namespace AZ::Render
     {
         auto& params = m_params.GetElement(id.GetIndex());
         params.m_planetRadius= radius;
+        params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
 
@@ -165,6 +196,35 @@ namespace AZ::Render
     {
         auto& params = m_params.GetElement(id.GetIndex());
         params.m_atmosphereRadius = radius;
+        params.m_lutUpdateRequired = true;
+        m_passNeedsUpdate = true;
+    }
+
+    void SkyAtmosphereFeatureProcessor::SetSunEnabled(AtmosphereId id, bool enabled)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_sunEnabled = enabled;
+        m_passNeedsUpdate = true;
+    }
+
+    void SkyAtmosphereFeatureProcessor::SetSunColor(AtmosphereId id, const Color& color)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_sunColor = color;
+        m_passNeedsUpdate = true;
+    }
+
+    void SkyAtmosphereFeatureProcessor::SetSunFalloffFactor(AtmosphereId id, float factor)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_sunFalloffFactor = factor;
+        m_passNeedsUpdate = true;
+    }
+
+    void SkyAtmosphereFeatureProcessor::SetSunRadiusFactor(AtmosphereId id, float factor)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_sunRadiusFactor = factor;
         m_passNeedsUpdate = true;
     }
 
@@ -243,4 +303,3 @@ namespace AZ::Render
         }
     }
 }
-#pragma optimize("", on)
