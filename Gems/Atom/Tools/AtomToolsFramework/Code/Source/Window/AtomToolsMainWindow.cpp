@@ -233,7 +233,7 @@ namespace AtomToolsFramework
                 this, QObject::tr("Run Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
             if (!script.isEmpty())
             {
-                QTimer::singleShot(0, [this, script]() {
+                QTimer::singleShot(0, [script]() {
                     AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                         &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilename, script.toUtf8().constData());
                 });
