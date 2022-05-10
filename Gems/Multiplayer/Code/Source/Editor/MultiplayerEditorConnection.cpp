@@ -152,8 +152,17 @@ namespace Multiplayer
         m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
         m_byteStream.Truncate();
 
-        // Create in-memory spawnables without loading dependent assets. They will be loaded on level load
-        constexpr bool loadDependentAssets = false;
+        // Setup the normal multiplayer connection.
+        // This needs to be done before in-memory spawnable creation and level loading
+        // because the entity alias resolution is dependent on connection type
+        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+        INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
+
+        // Create in-memory spawnables and load dependent assets. This ensures dependent spawnables are loaded
+        // when the level is loaded by path. Otherwise the dependent spawnables may not load because they will
+        // already have a "Ready" status from the AssignAssetData call in InMemorySpawnableAssetContainer
+        // (ex. root.spawnable depends on the in-memory root.network.spawnable)
+        constexpr bool loadDependentAssets = true;
         AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult createSpawnableResult =
             m_inMemorySpawnableAssetContainer->CreateInMemorySpawnableAsset(rootSpawnableAssetDataInfoContainer, loadDependentAssets, "Root");
         if (!createSpawnableResult.IsSuccess())
@@ -167,10 +176,6 @@ namespace Multiplayer
         // Load the level via the root spawnable that was registered
         const auto console = AZ::Interface<AZ::IConsole>::Get();
         console->PerformCommand("LoadLevel Root.spawnable");
-
-        // Setup the normal multiplayer connection
-        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-        INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
 
         uint16_t sv_port = DefaultServerPort;
         if (console->GetCvarValue("sv_port", sv_port) != AZ::GetValueResult::Success)
