@@ -22,7 +22,7 @@
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
-
+#include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 
 namespace AZ::RPI
 {
