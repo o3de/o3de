@@ -221,6 +221,9 @@ namespace AtomToolsFramework
                 nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
             }
         }
+
+        // Per Qt documentation, forcing Stop to be called when the application is about to quit in case exit bypasses Stop or destructor
+        connect(this, &QApplication::aboutToQuit, this, [this] { Stop(); });
     }
 
     void AtomToolsApplication::Destroy()
@@ -260,13 +263,8 @@ namespace AtomToolsFramework
     void AtomToolsApplication::RunMainLoop()
     {
         // Start initial command line processing and application update as part of the Qt event loop 
-        QTimer::singleShot(0, this, [this]() { ProcessCommandLine(m_commandLine); OnIdle(); });
+        QTimer::singleShot(0, this, [this]() { OnIdle(); ProcessCommandLine(m_commandLine); });
         exec();
-    }
-
-    void AtomToolsApplication::ExitMainLoop()
-    {
-        m_exitMainLoopRequested = true;
     }
 
     void AtomToolsApplication::OnIdle()
@@ -287,12 +285,12 @@ namespace AtomToolsFramework
             return;
         }
 
-        QTimer::singleShot(0, this, &QApplication::quit);
+        quit();
     }
 
     void AtomToolsApplication::OnMainWindowClosing()
     {
-        ExitMainLoop();
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
     }
 
     AZStd::vector<AZStd::string> AtomToolsApplication::GetCriticalAssetFilters() const
@@ -360,7 +358,7 @@ namespace AtomToolsFramework
                 QString("Failed to compile the following critical assets:\n%1\n%2")
                 .arg(failedAssets.join(",\n"))
                 .arg("Make sure this is an Atom project."));
-            ExitMainLoop();
+            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
 
         AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
@@ -439,7 +437,7 @@ namespace AtomToolsFramework
             AZ_Printf(m_targetName.c_str(), "Timeout scheduled, shutting down in %u ms", timeoutInMs);
             QTimer::singleShot(timeoutInMs, this, [this]{
                 AZ_Printf(m_targetName.c_str(), "Timeout reached, shutting down");
-                ExitMainLoop();
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             });
         }
 
@@ -495,7 +493,7 @@ namespace AtomToolsFramework
 
             if (success)
             {
-                ExitMainLoop();
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             }
             else
             {
@@ -520,7 +518,7 @@ namespace AtomToolsFramework
             commandLine.HasSwitch("runpythontest") ||
             commandLine.HasSwitch("exitaftercommands"))
         {
-            ExitMainLoop();
+            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
     }
 
@@ -668,7 +666,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::PyExit()
     {
-        AtomToolsApplication::GetInstance()->ExitMainLoop();
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
     }
 
     void AtomToolsApplication::PyTestOutput(const AZStd::string& output)
