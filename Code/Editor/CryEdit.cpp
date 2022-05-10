@@ -1488,7 +1488,7 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
                 fileList.push_back(elem);
             }, ';', false /* keepEmptyStrings */
         );
-    
+
         if (cmdInfo.m_pythonArgs.length() > 0 || cmdInfo.m_bRunPythonTestScript)
         {
             QByteArray pythonArgsStr = cmdInfo.m_pythonArgs.toUtf8();
