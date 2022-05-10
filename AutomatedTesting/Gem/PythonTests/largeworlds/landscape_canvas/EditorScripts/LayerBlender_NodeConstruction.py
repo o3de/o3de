@@ -63,6 +63,7 @@ def LayerBlender_NodeConstruction():
     import azlmbr.math as math
 
     import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.prefab_utils import wait_for_propagation as WaitForPrefabPropagation
     from editor_python_test_tools.utils import Report
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
@@ -125,7 +126,7 @@ def LayerBlender_NodeConstruction():
     positionX += offsetX
     positionY += offsetY
 
-    general.idle_wait_frames(1)
+    WaitForPrefabPropagation()
 
     outboundAreaSlotId = graph.GraphModelSlotId('OutboundArea')
     inboundAreaSlotId = graph.GraphModelSlotId('InboundArea')

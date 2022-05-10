@@ -48,6 +48,7 @@ def Terrain_SupportsPhysics():
     :return: None
     """
 
+    from editor_python_test_tools.prefab_utils import wait_for_propagation as WaitForPrefabPropagation
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report, Tracer
     import editor_python_test_tools.hydra_editor_utils as hydra
@@ -118,7 +119,7 @@ def Terrain_SupportsPhysics():
 
         # 9) Disable and Enable the Terrain Gradient List so that it is recognised
         editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
-        general.idle_wait_frames(1)
+        WaitForPrefabPropagation()
 
         general.enter_game_mode()
 

@@ -122,6 +122,7 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
     from azlmbr.math import Math_IsClose
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorLevelEntity
+    from editor_python_test_tools.prefab_utils import wait_for_propagation as WaitForPrefabPropagation
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties, DISPLAY_MAPPER_PRESET, DISPLAY_MAPPER_OPERATION_TYPE
 
@@ -134,7 +135,7 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         # Test steps begin.
         # 1. Add Display Mapper level component to the level entity.
         display_mapper_component = EditorLevelEntity.add_component(AtomComponentProperties.display_mapper())
-        general.idle_wait_frames(1)
+        WaitForPrefabPropagation()
         Report.critical_result(
             Tests.display_mapper_component,
             EditorLevelEntity.has_component(AtomComponentProperties.display_mapper()))
@@ -142,13 +143,13 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         # 2. UNDO the level component addition.
         # -> UNDO component addition.
         general.undo()
-        general.idle_wait_frames(1)
+        WaitForPrefabPropagation()
         Report.result(Tests.creation_undo, not EditorLevelEntity.has_component(AtomComponentProperties.display_mapper()))
 
         # 3. REDO the level component addition.
         # -> REDO component addition.
         general.redo()
-        general.idle_wait_frames(1)
+        WaitForPrefabPropagation()
         Report.result(Tests.creation_redo, EditorLevelEntity.has_component(AtomComponentProperties.display_mapper()))
 
         # 4. Set LDR color Grading LUT asset.

@@ -46,6 +46,7 @@ def MeshBlocker_InstancesBlockedByMesh():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
+    from editor_python_test_tools.prefab_utils import wait_for_propagation as WaitForPrefabPropagation
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -77,7 +78,7 @@ def MeshBlocker_InstancesBlockedByMesh():
         bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "_primitives", "_box_1x1.azmodel"), math.Uuid(),
         False)
     blocker_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", cubeId)
-    general.idle_wait_frames(1)
+    WaitForPrefabPropagation()
     components.TransformBus(bus.Event, "SetLocalUniformScale", blocker_entity.id, 2.0)
 
     # Verify spawned instance counts are accurate after addition of Blocker Entity
