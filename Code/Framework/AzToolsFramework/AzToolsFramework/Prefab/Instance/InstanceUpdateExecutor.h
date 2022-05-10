@@ -11,6 +11,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/std/containers/deque.h>
+#include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -24,6 +26,7 @@ namespace AzToolsFramework
 
         class InstanceUpdateExecutor
             : public InstanceUpdateExecutorInterface
+            , private AzFramework::GameEntityContextEventBus::Handler
         {
         public:
             AZ_RTTI(InstanceUpdateExecutor, "{E21DB0D4-0478-4DA9-9011-31BC96F55837}", InstanceUpdateExecutorInterface);
@@ -39,11 +42,20 @@ namespace AzToolsFramework
             void UnregisterInstanceUpdateExecutorInterface();
 
         private:
+
+            // GameEntityContextEventBus
+            void OnPreGameEntitiesStarted() override;
+            void OnGameEntitiesReset() override;
+
+            void LazyConnectGameModeEventHandler();
+
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
-            int m_instanceCountToUpdateInBatch = 0;
             AZStd::deque<Instance*> m_instancesUpdateQueue;
+            AZ::Event<GameModeState>::Handler m_GameModeEventHandler;
+            int m_instanceCountToUpdateInBatch = 0;
             bool m_updatingTemplateInstancesInQueue { false };
+            bool m_isGameModeInProgress = false;
         };
     }
 }
