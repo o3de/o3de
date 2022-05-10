@@ -56,7 +56,7 @@ namespace AZ
                 AZ::Utils::SetEnv("VK_LAYER_PATH", exeDirectory, 1);
 
                 RawStringList validationLayers = Debug::GetValidationLayers();
-                m_descriptor.m_optionalLayers.insert(m_descriptor.m_requiredLayers.end(), validationLayers.begin(), validationLayers.end());
+                m_descriptor.m_optionalLayers.insert(m_descriptor.m_optionalLayers.end(), validationLayers.begin(), validationLayers.end());
                 m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
                 m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             }

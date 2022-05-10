@@ -303,8 +303,9 @@ set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${RUN_TARGET_NAME})
 )
 ")
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
-        else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
+        elseif(target_type STREQUAL STATIC_LIBRARY) # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
             set(target_location "\${LY_ROOT_FOLDER}/${archive_output_directory}/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>")
+        else() # OBJECT_LIBRARY has no output target
         endif()
 
         if(target_location)

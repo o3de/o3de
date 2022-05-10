@@ -24,9 +24,14 @@ namespace ScriptCanvasEditor
 
 namespace ScriptCanvasBuilder
 {
-// this MACRO enables highly verbose status updates from the builder data system which will later be routed through an imgui window.
-// #define DATA_SYSTEM_STATUS(window, msg, ...) AZ_TracePrintf(window, msg, __VA_ARGS__);
+/// this MACRO enables highly verbose status updates from the builder data system which will later be routed through an imgui window.
+// #define SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED
+
+#if defined(SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED)
+#define DATA_SYSTEM_STATUS(window, msg, ...) AZ_TracePrintf(window, msg, __VA_ARGS__);
+#else
 #define DATA_SYSTEM_STATUS(window, msg, ...)
+#endif//defined(SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED)
 
     /// <summary>
     /// Provides simplified access to status and compiled data for ScriptCanvas source files.
@@ -84,7 +89,6 @@ namespace ScriptCanvasBuilder
         void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/, bool /*isSuccessful*/) {}
         void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType);
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
