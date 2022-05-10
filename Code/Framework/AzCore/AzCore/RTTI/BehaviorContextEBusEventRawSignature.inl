@@ -16,21 +16,12 @@ namespace AZ::Internal
         , m_functionPtr(functionPointer)
     {
         SetParameters<R>(m_parameters, this);
-        SetParameters<Args...>(&m_parameters[s_startNamedArgumentIndex], this);
-        // optional ID parameter
-        SetBusIdType<s_isBusIdParameter == 1>();
-    }
-
-
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    template<bool IsBusId>
-    void BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::SetBusIdType()
-    {
-        if constexpr (IsBusId)
+        if constexpr (s_isBusIdParameter == 1)
         {
+            // optional ID parameter
             SetParameters<typename EBus::BusIdType>(&m_parameters[s_startArgumentIndex]);
         }
+        SetParameters<Args...>(&m_parameters[s_startNamedArgumentIndex], this);
     }
 
     //////////////////////////////////////////////////////////////////////////

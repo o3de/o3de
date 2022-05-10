@@ -734,9 +734,6 @@ namespace AZ
 
             BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context);
 
-            template<bool IsBusId>
-            inline void SetBusIdType();
-
             bool Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const override;
             bool HasResult() const override;
             bool IsMember() const override;
