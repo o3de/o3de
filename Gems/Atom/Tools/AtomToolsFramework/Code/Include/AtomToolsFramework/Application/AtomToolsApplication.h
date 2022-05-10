@@ -60,7 +60,6 @@ namespace AtomToolsFramework
         void StartCommon(AZ::Entity* systemEntity) override;
         void Destroy() override;
         void RunMainLoop() override;
-        void ExitMainLoop() override;
 
     protected:
         void OnIdle();
