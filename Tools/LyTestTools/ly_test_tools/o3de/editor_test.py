@@ -880,23 +880,18 @@ class EditorTestSuite:
         results = {}
         temp_batched_file = None
 
-        # The Editor cannot handle more than 10 args, so we instead create a file containing a semicolon separated list
-        if len(test_spec_list) > 10:
-            temp_batched_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
-            for test_spec in test_spec_list[:-1]:
-                temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec.test_module)
-                                        .replace('\\', '\\\\')+';')
-            # The last entry does not have a semicolon
-            temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec_list[-1].test_module)
-                                    .replace('\\', '\\\\'))
-            temp_batched_file.flush()
-            test_filenames = temp_batched_file.name
-        else:
-            test_filenames = ";".join(
-                editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
+        # We create a file containing a semicolon separated list for the Editor to read
+        temp_batched_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+        for test_spec in test_spec_list[:-1]:
+            temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec.test_module)
+                                    .replace('\\', '\\\\')+';')
+        # The last entry does not have a semicolon
+        temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec_list[-1].test_module)
+                                .replace('\\', '\\\\'))
+        temp_batched_file.flush()
 
         cmdline = [
-            "--runpythontest", test_filenames,
+            "--runpythontest", temp_batched_file.name,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
