@@ -13,35 +13,54 @@
 #include <AzCore/DOM/DomValue.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <QPointer>
 #include <QWidget>
 #endif // defined(Q_MOC_RUN)
 
 namespace AzToolsFramework
 {
+    //! Base class for all property editor widgets in the DocumentPropertyEditor.
+    //! Property handler widgets are registered to the PropertyEditorToolsSystemInterface and
+    //! instantited as part of the DocumentPropertyEditor, with one handler instance being constructed
+    //! for each property editor.
     class PropertyHandlerWidgetInterface
     {
     public:
         virtual ~PropertyHandlerWidgetInterface() = default;
 
+        //! Gets the widget that should be added to the DocumentPropertyEditor.
         virtual QWidget* GetWidget() = 0;
+        //! Sets up the widget provided by GetWidget to reflect the values provided by a given DOM node.
+        //! This should consume both the property value (if applicable) and any attributes, including OnChange.
         virtual void SetValueFromDom(const AZ::Dom::Value& node) = 0;
+        //! Returns the first widget in the tab order for this property editor, i.e. the widget that should be selected
+        //! when the user hits tab on the widget immediately prior to this.
+        //! By default, this returns GetWidget, a single widget tab order.
         virtual QWidget* GetFirstInTabOrder();
+        //! Returns the last widget in the tab order for this property editor, i.e. the widget that should select the
+        //! widget immediately subsequent to this property editor when the user presses tab.
+        //! By default, this returns GetWidget, a single widget tab order.
         virtual QWidget* GetLastInTabOrder();
 
+        //! Returns true if this handler should be used for this node (assuming its type already matches GetHandlerName())
+        //! This may be reimplemented in subclasses to allow handler specialization, for example a handler that handles
+        //! integral types and a separate handler for handling floating point types.
         static bool ShouldHandleNode([[maybe_unused]] const AZ::Dom::Value& node)
         {
             return true;
         }
 
+        //! This must be implemented in subclasses registered with PropertyEditorToolsSystemInterface::RegisterHandler.
+        //! Returns the handler name, used to look up the type of handler to use from a PropertyEditor node.
         static const AZStd::string_view GetHandlerName()
         {
             return "<undefined handler name>";
         }
     };
 
+    //! Helper class, provides a PropertyHandlerWidgetInterface implementation in which
+    //! the handler itself is-a QWidget of a given type.
+    //! BaseWidget can be any QWidget subclass.
     template<typename BaseWidget>
     class PropertyHandlerWidget
         : public BaseWidget
@@ -57,180 +76,5 @@ namespace AzToolsFramework
         {
             return this;
         }
-    };
-
-    template<typename RpePropertyHandler, typename WrappedType>
-    class RpePropertyHandlerWrapper
-        : public PropertyHandlerWidgetInterface
-        , public PropertyEditorGUIMessages::Bus::Handler
-    {
-    public:
-        RpePropertyHandlerWrapper()
-        {
-            m_proxyNode.m_classData = &m_proxyClassData;
-            m_proxyNode.m_classElement = &m_proxyClassElement;
-            m_proxyClassData.m_typeId = azrtti_typeid<WrappedType>();
-            m_proxyNode.m_instances.push_back(&m_proxyValue);
-
-            // We're creating a lot of bus instances here
-            // If this is slow, we should look into a single handler that does a lookup
-            // e.g. by setting a property on the widget created with GetWidget
-            PropertyEditorGUIMessages::Bus::Handler::BusConnect();
-        }
-
-        ~RpePropertyHandlerWrapper()
-        {
-            if (m_widget)
-            {
-                delete m_widget;
-            }
-        }
-
-        static PropertyHandlerBase& GetRpeHandler()
-        {
-            static RpePropertyHandler handler;
-            return handler;
-        }
-
-        QWidget* GetWidget() override
-        {
-            if (m_widget)
-            {
-                return m_widget;
-            }
-            m_widget = GetRpeHandler().CreateGUI(nullptr);
-            return m_widget;
-        }
-
-        void SetValueFromDom(const AZ::Dom::Value& node)
-        {
-            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
-
-            auto propertyEditorSystem = AZ::Interface<AZ::DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
-            AZ_Assert(
-                propertyEditorSystem != nullptr,
-                "RpePropertyHandlerWrapper::SetValueFromDom called with an uninitialized PropertyEditorSystemInterface");
-            if (propertyEditorSystem == nullptr)
-            {
-                return;
-            }
-
-            m_proxyClassElement.m_attributes.clear();
-            for (auto attributeIt = node.MemberBegin(); attributeIt != node.MemberEnd(); ++attributeIt)
-            {
-                const AZ::Name& name = attributeIt->first;
-                if (name == PropertyEditor::Type.GetName() || name == PropertyEditor::Value.GetName() ||
-                    name == PropertyEditor::ValueType.GetName())
-                {
-                    continue;
-                }
-                AZ::Crc32 attributeId = AZ::Crc32(name.GetStringView());
-
-                const AZ::DocumentPropertyEditor::AttributeDefinitionInterface* attribute =
-                    propertyEditorSystem->FindNodeAttribute(name, propertyEditorSystem->FindNode(AZ_NAME_LITERAL(GetHandlerName())));
-                AZStd::shared_ptr<AZ::Attribute> marshalledAttribute;
-                if (attribute != nullptr)
-                {
-                    marshalledAttribute = attribute->DomValueToLegacyAttribute(attributeIt->second);
-                }
-                else
-                {
-                    marshalledAttribute = AZ::Reflection::WriteDomValueToGenericAttribute(attributeIt->second);
-                }
-
-                if (marshalledAttribute)
-                {
-                    m_proxyClassElement.m_attributes.emplace_back(attributeId, AZStd::move(marshalledAttribute));
-                }
-            }
-
-            AZ::Dom::Value value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node).value();
-            m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value).value();
-            GetRpeHandler().ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
-            GetRpeHandler().ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
-
-            m_domNode = node;
-        }
-
-        static bool ShouldHandleNode(const AZ::Dom::Value& node)
-        {
-            using namespace AZ::DocumentPropertyEditor::Nodes;
-            auto typeId = PropertyEditor::ValueType.ExtractFromDomNode(node);
-            if (!typeId.has_value())
-            {
-                AZ::Dom::Value value = PropertyEditor::Value.ExtractFromDomNode(node).value_or({});
-                typeId = &AZ::Dom::Utils::GetValueTypeId(value);
-            }
-            return GetRpeHandler().HandlesType(*typeId.value());
-        }
-
-        static const AZStd::string_view GetHandlerName()
-        {
-            auto propertyEditorSystem = AZ::Interface<AZ::DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
-            AZ_Assert(
-                propertyEditorSystem != nullptr,
-                "RpePropertyHandlerWrapper::GetHandlerName called with an uninitialized PropertyEditorSystemInterface");
-            if (propertyEditorSystem == nullptr)
-            {
-                return {};
-            }
-            return propertyEditorSystem->LookupNameFromId(GetRpeHandler().GetHandlerName()).GetStringView();
-        }
-
-        void RequestWrite(QWidget* editorGUI)
-        {
-            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
-
-            if (editorGUI == m_widget)
-            {
-                GetRpeHandler().WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
-                const AZ::Dom::Value newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
-                PropertyEditor::OnChanged.InvokeOnDomNode(
-                    m_domNode, newValue, PropertyEditor::ValueChangeType::InProgressEdit);
-            }
-        }
-
-        void RequestRefresh(PropertyModificationRefreshLevel)
-        {
-        }
-
-        void AddElementsToParentContainer(QWidget*, size_t, const InstanceDataNode::FillDataClassCallback&)
-        {
-        }
-
-        void RequestPropertyNotify(QWidget*)
-        {
-        }
-
-        void OnEditingFinished(QWidget* editorGUI)
-        {
-            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
-
-            if (editorGUI == m_widget)
-            {
-                GetRpeHandler().WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
-                const AZ::Dom::Value newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
-                PropertyEditor::OnChanged.InvokeOnDomNode(
-                    m_domNode, newValue, PropertyEditor::ValueChangeType::FinishedEdit);
-            }
-        }
-
-        QWidget* GetFirstInTabOrder() override
-        {
-            return GetRpeHandler().GetFirstInTabOrder_Internal(GetWidget());
-        }
-
-        QWidget* GetLastInTabOrder() override
-        {
-            return GetRpeHandler().GetLastInTabOrder_Internal(GetWidget());
-        }
-
-    private:
-        AZ::Dom::Value m_domNode;
-        QPointer<QWidget> m_widget;
-        InstanceDataNode m_proxyNode;
-        AZ::SerializeContext::ClassData m_proxyClassData;
-        AZ::SerializeContext::ClassElement m_proxyClassElement;
-        WrappedType m_proxyValue;
     };
 } // namespace AzToolsFramework

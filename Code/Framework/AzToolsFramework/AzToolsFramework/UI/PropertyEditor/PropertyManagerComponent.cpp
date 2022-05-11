@@ -110,6 +110,8 @@ namespace AzToolsFramework
                 ++it;
             }
     #endif
+            pHandler->RegisterDpeHandler();
+
             m_Handlers.insert(AZStd::make_pair(pHandler->GetHandlerName(), pHandler));
 
             if (pHandler->IsDefaultHandler())
@@ -125,6 +127,8 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::UnregisterPropertyType(PropertyHandlerBase* pHandler)
         {
+            pHandler->UnregisterDpeHandler();
+
             bool foundIt = false;
             auto it = m_Handlers.find(pHandler->GetHandlerName());
             while ((it != m_Handlers.end()) && (it->first == pHandler->GetHandlerName()))

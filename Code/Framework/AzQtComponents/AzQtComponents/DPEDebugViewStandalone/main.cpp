@@ -36,7 +36,7 @@
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyDoubleSliderCtrl.hxx>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 namespace DPEDebugView
 {
@@ -233,21 +233,6 @@ int main(int argc, char** argv)
         theWindow->m_treeView->resizeColumnToContents(columnIndex);
     }
     theWindow->show();
-
-    QWidget* wrapperTest = new QWidget;
-    QVBoxLayout* wrapperTestLayout = new QVBoxLayout(wrapperTest);
-    using SliderHandler = AzToolsFramework::RpePropertyHandlerWrapper<AzToolsFramework::doublePropertySliderHandler, double>;
-    SliderHandler handler;
-    wrapperTestLayout->addWidget(handler.GetWidget());
-    AZ::Dom::Value node = AZ::Dom::Value::CreateNode("PropertyEditor");
-    node["Type"] = AZ::Dom::Value("Slider", true);
-    node["Min"] = 5.0;
-    node["Max"] = 20.0;
-    node["Value"] = 10.0;
-    node["ValueType"] = AZ::Dom::Utils::ValueFromType(azrtti_typeid<double>());
-    handler.SetValueFromDom(node);
-    wrapperTest->resize(500, 500);
-    wrapperTest->show();
 
     return qtApp.exec();
 }

@@ -27,6 +27,6 @@ namespace AzToolsFramework
         void UnregisterHandler(PropertyHandlerId handlerId) override;
 
     private:
-        AZStd::unordered_map<AZ::Name, AZStd::vector<AZStd::unique_ptr<HandlerData>>> m_registeredHandlers;
+        AZStd::unordered_map<AZ::Name, AZStd::list<HandlerData>> m_registeredHandlers;
     };
 }

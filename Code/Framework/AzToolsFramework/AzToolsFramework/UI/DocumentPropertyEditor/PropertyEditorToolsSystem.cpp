@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h>
 
 namespace AzToolsFramework
@@ -45,9 +46,9 @@ namespace AzToolsFramework
 
         for (auto handlerIt = handlerBucketIt->second.begin(); handlerIt != handlerBucketIt->second.end(); ++handlerIt)
         {
-            if (handlerIt->get()->m_shouldHandleNode(node))
+            if (handlerIt->m_shouldHandleNode(node))
             {
-                return handlerIt->get();
+                return &(*handlerIt);
             }
         }
 
@@ -67,12 +68,12 @@ namespace AzToolsFramework
 
     PropertyEditorToolsSystem::PropertyHandlerId PropertyEditorToolsSystem::RegisterHandler(HandlerData handlerData)
     {
-        // Insert a heap allocated holder for the data (heap allocated so that its address can be used as a persistent HandlerId)
-        auto storedHandlerData = AZStd::make_unique<HandlerData>(AZStd::move(handlerData));
-        PropertyHandlerId newId = storedHandlerData.get();
-        // Get or create a bucket for handlers with this handler's name
-        m_registeredHandlers[AZ::Name(handlerData.m_name)].push_back(AZStd::move(storedHandlerData));
-        return newId;
+        // Get or create a bucket for this handler's name
+        auto& handlerBucket = m_registeredHandlers[AZ::Name(handlerData.m_name)];
+        // Add this handler to the bucket
+        m_registeredHandlers[AZ::Name(handlerData.m_name)].emplace_back(AZStd::move(handlerData));
+        // Retrieve a reference to the inserted entry to serve as our persistent handler ID.
+        return &handlerBucket.back();
     }
 
     void PropertyEditorToolsSystem::UnregisterHandler(PropertyHandlerId handlerId)
@@ -92,14 +93,9 @@ namespace AzToolsFramework
         auto& handlerBucket = handlerBucketIt->second;
         for (auto handlerIt = handlerBucket.begin(); handlerIt != handlerBucket.end(); ++handlerIt)
         {
-            if (handlerIt->get() == handlerId)
+            if (&(*handlerIt) == handlerId)
             {
-                auto endIt = handlerBucket.end() - 1;
-                if (handlerIt != endIt)
-                {
-                    AZStd::swap(*handlerIt, *endIt);
-                }
-                handlerBucket.erase(endIt);
+                handlerBucket.erase(handlerIt);
                 return;
             }
         }

@@ -18,6 +18,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 
 class QWidget;
@@ -70,6 +71,7 @@ namespace AzToolsFramework
         virtual void PropertySelectionChanged(InstanceDataNode *, bool) {}
     };
 
+    class PropertyHandlerWidgetInterface;
 
     // this serves as the base class for all property managers.
     // you do not use this class directly.
@@ -79,7 +81,7 @@ namespace AzToolsFramework
         friend class ReflectedPropertyEditor;
         friend PropertyRowWidget;
         friend class Components::PropertyManagerComponent;
-        template<typename RpePropertyHandler, typename WrappedType>
+        template<typename WrappedType>
         friend class RpePropertyHandlerWrapper;
 
     public:
@@ -121,6 +123,18 @@ namespace AzToolsFramework
         // If the control needs to do anything when refreshes have been disabled, such as cancelling async / threaded
         // updates, it can be done in this function.
         virtual void PreventRefresh(QWidget* /*widget*/, bool /*shouldPrevent*/) {}
+
+        //! Registers this handler for usage in the DocumentPropertyHandler.
+        //! GenericPropertyHandler handles this for most cases.
+        virtual void RegisterDpeHandler()
+        {
+        }
+
+        //! Unregisters this handler from the DocumentPropertyHandler.
+        //! GenericPropertyHandler handles this for most cases.
+        virtual void UnregisterDpeHandler()
+        {
+        }
 
     protected:
         // we automatically take care of the rest:
@@ -230,6 +244,57 @@ namespace AzToolsFramework
         // for example if you have multiple objects selected, index will go from 0 to however many there are.
         virtual bool ReadValuesIntoGUI(size_t index, WidgetType* GUI, const PropertyType& instance, InstanceDataNode* node) = 0;
 
+        // registers this handler to the DocumentPropertyEditor
+        // can be overridden to provide an alternate handler to the DPE
+        // or to disable registration outright if a replacement has been provided
+        void RegisterDpeHandler() override
+        {
+            // For non-constructible types, we can't automatically create a wrapper
+            if constexpr (AZStd::is_constructible_v<PropertyType>)
+            {
+                AZ_Assert(m_registeredDpeHandlerId == nullptr, "RegisterDpeHandler called multiple times for the same handler");
+
+                auto dpeSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+                if (dpeSystemInterface == nullptr)
+                {
+                    AZ_WarningOnce("dpe", false, "RegisterDpeHandler failed, PropertyEditorToolsSystemInterface was not found");
+                    return;
+                }
+
+                using HandlerType = RpePropertyHandlerWrapper<PropertyType>;
+                PropertyEditorToolsSystemInterface::HandlerData registrationInfo;
+                registrationInfo.m_name = HandlerType::GetHandlerName(*this);
+                registrationInfo.m_shouldHandleNode = [this](const AZ::Dom::Value& node)
+                {
+                    return HandlerType::ShouldHandleNode(*this, node);
+                };
+                registrationInfo.m_factory = [this]()
+                {
+                    return AZStd::make_unique<HandlerType>(*this);
+                };
+                m_registeredDpeHandlerId = dpeSystemInterface->RegisterHandler(AZStd::move(registrationInfo));
+            }
+        }
+
+        // unregisters this handler from the DocumentPropertyEditor
+        void UnregisterDpeHandler() override
+        {
+            if constexpr (AZStd::is_constructible_v<PropertyType>)
+            {
+                AZ_Assert(m_registeredDpeHandlerId != nullptr, "UnregisterDpeHandler called for a handler that's not registered");
+
+                auto dpeSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+                if (dpeSystemInterface == nullptr)
+                {
+                    AZ_WarningOnce("dpe", false, "UnregisterDpeHandler failed, PropertyEditorToolsSystemInterface was not found");
+                    return;
+                }
+
+                dpeSystemInterface->UnregisterHandler(m_registeredDpeHandlerId);
+                m_registeredDpeHandlerId = nullptr;
+            }
+        }
+
     protected:
         // ---------------- INTERNAL -----------------------------
         virtual bool HandlesType(const AZ::Uuid& id) const override
@@ -291,6 +356,8 @@ namespace AzToolsFramework
                 }
             }
         }
+
+        PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId;
     };
 }
 

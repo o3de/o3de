@@ -33,7 +33,7 @@ namespace AzToolsFramework
     class InstanceDataNode
     {
         friend class InstanceDataHierarchy;
-        template<typename RpePropertyHandler, typename WrappedType>
+        template<typename WrappedType>
         friend class RpePropertyHandlerWrapper;
 
     public:
