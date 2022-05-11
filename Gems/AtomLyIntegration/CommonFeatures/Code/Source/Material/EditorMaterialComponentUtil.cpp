@@ -178,6 +178,8 @@ namespace AZ
                                 info, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, dependency.m_assetId);
                             if (info.m_assetType == azrtti_typeid<AZ::RPI::MaterialTypeAsset>())
                             {
+                                // Immediately return the first material type that's encountered because the material system currently
+                                // supports only one material type for any hierarchy of materials.
                                 return info.m_assetId;
                             }
                         }

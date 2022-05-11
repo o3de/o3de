@@ -192,7 +192,21 @@ namespace AZ
             {
                 if (!IsLoaded())
                 {
-                    m_overviewText->setText(tr("Selected entities and material slots must have valid and compatible materials."));
+                    if (m_entityIdsToEdit.size() > 1)
+                    {
+                        m_overviewText->setText(tr("The selected entities and materials cannot be edited.\n"
+                                                   "Multiple entities and materials have been selected for editing.\n"
+                                                   "All of the selected entities must be valid, active, and have a material component.\n"
+                                                   "Each material component must provide the selected material slot.\n"
+                                                   "The active material on each slot must have the same material type."));
+                    }
+                    else
+                    {
+                        m_overviewText->setText(tr("The selected entities and materials cannot be edited.\n"
+                                                   "The selected entity must be valid, active, and have a material component.\n"
+                                                   "The material component must provide the selected material slot."));
+                    }
+
                     m_overviewText->setAlignment(Qt::AlignCenter);
                     m_overviewImage->setVisible(false);
                     return;
@@ -213,7 +227,8 @@ namespace AZ
 
                 QString materialInfo;
                 materialInfo += tr("<table>");
-                materialInfo += tr("<tr><td><b>Entity&emsp;</b></td><td>%1</td></tr>").arg(entityName.c_str());
+                materialInfo += tr("<tr><td><b>Entity Name&emsp;</b></td><td>%1</td></tr>").arg(entityName.c_str());
+                materialInfo += tr("<tr><td><b>Entity Count&emsp;</b></td><td>%1</td></tr>").arg(m_entityIdsToEdit.size());
                 materialInfo += tr("<tr><td><b>Material Slot Name&emsp;</b></td><td>%1</td></tr>").arg(slotName.c_str());
                 materialInfo += m_materialAssignmentId.IsDefault() || m_materialAssignmentId.IsSlotIdOnly()
                     ? tr("<tr><td><b>Material Slot LOD&emsp;</b></td><td>%1</td></tr>").arg(-1)
@@ -241,12 +256,18 @@ namespace AZ
                 m_overviewText->setText(materialInfo);
                 m_overviewText->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
 
+                // Update the overview image with the last rendered preview of the primary entity's material.
                 QPixmap pixmap;
                 EditorMaterialSystemComponentRequestBus::BroadcastResult(
                     pixmap, &EditorMaterialSystemComponentRequestBus::Events::GetRenderedMaterialPreview, m_primaryEntityId,
                     m_materialAssignmentId);
                 m_overviewImage->setPixmap(pixmap);
-                m_overviewImage->setVisible(true);
+
+                // If more than one entity is selected for editing in this inspector then the image will be hidden.
+                // This will eliminate any confusion if editing multiple materials and they do not hold match the primary entities preview.
+                m_overviewImage->setVisible(m_entityIdsToEdit.size() == 1);
+
+                // If the image was not found then request that the preview be updated again at a later time
                 m_updatePreview |= pixmap.isNull();
             }
 

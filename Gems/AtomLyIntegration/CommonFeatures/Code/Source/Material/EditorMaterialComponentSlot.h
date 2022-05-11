@@ -20,8 +20,10 @@ namespace AZ
     namespace Render
     {
         //! Details for a single editable material assignment
-        //! When changes are applied to this material slot, it will attempt to forward all of those changes to applicable selected entities
-        //! and their materials
+        //! EditorMaterialComponentSlot will attempt to forward all changes to selected entities for actions invoked from a context menu or
+        //! entity inspector. The set of selected or pinned entities will be retrieved directly from the inspector. Updates will be
+        //! applied to the entities and their materials using MaterialComponentRequestBus.
+        //! Undo and redo for all of those entities will be managed flip calls to OnDataChanged.
         struct EditorMaterialComponentSlot final
         {
             AZ_RTTI(EditorMaterialComponentSlot, "{344066EB-7C3D-4E92-B53D-3C9EBD546488}");
