@@ -166,6 +166,9 @@ namespace Terrain
 
     void TerrainClipmapManager::InitializeClipmapData()
     {
+        const AZStd::array<uint32_t, 4> zeroUint = { 0, 0, 0, 0 };
+        const AZStd::array<float, 4> zeroFloat = { 0.0f, 0.0f, 0.0f, 0.0f };
+
         AZ::Vector2::CreateZero().StoreToFloat2(m_clipmapData.m_previousViewPosition.data());
         AZ::Vector2::CreateZero().StoreToFloat2(m_clipmapData.m_currentViewPosition.data());
 
@@ -190,6 +193,8 @@ namespace Terrain
         m_clipmapData.m_clipmapSizeFloat = aznumeric_cast<float>(m_config.m_clipmapSize);
         m_clipmapData.m_clipmapSizeUint = m_config.m_clipmapSize;
 
+        m_clipmapData.m_clipmapScaleInv.fill(zeroFloat);
+
         float clipmapScaleInv = 1.0f;
         for (int32_t clipmapIndex = m_macroClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
@@ -203,9 +208,10 @@ namespace Terrain
             clipmapScaleInv /= m_config.m_detailClipmapScaleBase;
         }
 
-        const AZStd::array<uint32_t, 4> zero = {0, 0, 0, 0};
-        m_clipmapData.m_macroClipmapBoundsRegions.fill(zero);
-        m_clipmapData.m_detailClipmapBoundsRegions.fill(zero);
+        m_clipmapData.m_macroClipmapCenters.fill(zeroUint);
+        m_clipmapData.m_macroClipmapCenters.fill(zeroUint);
+        m_clipmapData.m_macroClipmapBoundsRegions.fill(zeroUint);
+        m_clipmapData.m_detailClipmapBoundsRegions.fill(zeroUint);
     }
 
     void TerrainClipmapManager::InitializeClipmapImages()
@@ -273,7 +279,6 @@ namespace Terrain
     void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition)
     {
         const AZStd::array<uint32_t, 4> zero = { 0, 0, 0, 0 };
-        //const AZStd::array<uint32_t, 4> testAABB = { 514, 442, 547, 1024};
 
         // pass current to previous
         m_clipmapData.m_previousViewPosition[0] = m_clipmapData.m_currentViewPosition[0];

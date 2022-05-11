@@ -20,8 +20,6 @@
 #include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/CommandList.h>
 
-#pragma optimize("", off)
-
 namespace Terrain
 {
     TerrainClipmapGenerationPass::TerrainClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
@@ -343,5 +341,3 @@ namespace Terrain
         TerrainClipmapGenerationPass::CompileResources(context);
     }
 } // namespace Terrain
-
-#pragma optimize("", on)

@@ -111,8 +111,6 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::AttachmentImage> GetClipmapImage(ClipmapName clipmapName) const;
 
         //! Get the dispatch thread num for the clipmap compute shader based on the current frame.
-        //!
-        //!
         void GetMacroDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
         void GetDetailDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
     private:

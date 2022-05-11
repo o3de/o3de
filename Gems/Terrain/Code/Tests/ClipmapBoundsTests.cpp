@@ -274,7 +274,7 @@ namespace UnitTest
 
         {
             AZ::Aabb untouchedRegion = AZ::Aabb::CreateNull();
-            auto output = bounds.UpdateCenter(AZ::Vector2(-20.0f, -20.0f), &untouchedRegion);
+            auto output = bounds.UpdateCenter(AZ::Vector2(20.0f, 20.0f), &untouchedRegion);
             ASSERT_EQ(output.size(), 4);
 
             // Instead of checking bounds directly, do several checks to make sure the bounds are appropriate. Since
@@ -334,8 +334,11 @@ namespace UnitTest
 
     }
 
+    // This test is to ensure clipmap update compute shader receives 6 regions at most.
     TEST_F(ClipmapBoundsTests, MaxUpdateRegionTest)
     {
+        // The initial clipmap is divided into 4 parts.
+        // By traversing the 11x11 grid, all possible overlapping cases can be covered.
         for (int32_t i = -5; i <= 5; ++i)
         {
             for (int32_t j = -5; j <= 5; ++j)
