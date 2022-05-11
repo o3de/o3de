@@ -9,16 +9,161 @@
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 #include <TerrainRenderer/TerrainClipmapManager.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
+#include <Atom/RHI/CommandList.h>
+
+#pragma optimize("", off)
 
 namespace Terrain
 {
+    TerrainClipmapGenerationPass::TerrainClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
+        : AZ::RPI::RenderPass(descriptor)
+        , m_passDescriptor(descriptor)
+    {
+        LoadShader();
+    }
+
+    void TerrainClipmapGenerationPass::SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph)
+    {
+        AZ::RPI::RenderPass::SetupFrameGraphDependencies(frameGraph);
+        frameGraph.SetEstimatedItemCount(1);
+    }
+
+    void TerrainClipmapGenerationPass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)
+    {
+        if (m_shaderResourceGroup != nullptr)
+        {
+            BindPassSrg(context, m_shaderResourceGroup);
+            m_shaderResourceGroup->Compile();
+        }
+        if (m_drawSrg != nullptr)
+        {
+            BindSrg(m_drawSrg->GetRHIShaderResourceGroup());
+            m_drawSrg->Compile();
+        }
+    }
+
+    void TerrainClipmapGenerationPass::BuildCommandListInternal(const AZ::RHI::FrameGraphExecuteContext& context)
+    {
+        //! Skip invoking the compute shader.
+        if (m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX == 0 ||
+            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY == 0)
+        {
+            return;
+        }
+
+        AZ::RHI::CommandList* commandList = context.GetCommandList();
+
+        SetSrgsForDispatch(commandList);
+
+        commandList->Submit(m_dispatchItem);
+    }
+
+    void TerrainClipmapGenerationPass::OnShaderReinitialized([[maybe_unused]] const AZ::RPI::Shader& shader)
+    {
+        LoadShader();
+    }
+
+    void TerrainClipmapGenerationPass::OnShaderAssetReinitialized(
+        [[maybe_unused]] const AZ::Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset)
+    {
+        LoadShader();
+    }
+
+    void TerrainClipmapGenerationPass::OnShaderVariantReinitialized([[maybe_unused]] const AZ::RPI::ShaderVariant& shaderVariant)
+    {
+        LoadShader();
+    }
+
+    void TerrainClipmapGenerationPass::LoadShader()
+    {
+        // Load ComputePassData...
+        const TerrainClipmapGenerationPassData* passData = AZ::RPI::PassUtils::GetPassData<TerrainClipmapGenerationPassData>(m_passDescriptor);
+        if (passData == nullptr)
+        {
+            AZ_Error(
+                "PassSystem", false, "[TerrainClipmapGenerationPass '%s']: Trying to construct without valid pass data!",
+                GetPathName().GetCStr());
+            return;
+        }
+
+        // Load Shader
+        AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset;
+        if (passData->m_shaderReference.m_assetId.IsValid())
+        {
+            shaderAsset = AZ::RPI::FindShaderAsset(passData->m_shaderReference.m_assetId, passData->m_shaderReference.m_filePath);
+        }
+
+        if (!shaderAsset.GetId().IsValid())
+        {
+            AZ_Error(
+                "PassSystem", false, "[TerrainClipmapGenerationPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(),
+                passData->m_shaderReference.m_filePath.data());
+            return;
+        }
+
+        m_shader = AZ::RPI::Shader::FindOrCreate(shaderAsset);
+        if (m_shader == nullptr)
+        {
+            AZ_Error(
+                "PassSystem", false, "[TerrainClipmapGenerationPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(),
+                passData->m_shaderReference.m_filePath.data());
+            return;
+        }
+
+        // Load Pass SRG...
+        const auto passSrgLayout = m_shader->FindShaderResourceGroupLayout(AZ::RPI::SrgBindingSlot::Pass);
+        if (passSrgLayout)
+        {
+            m_shaderResourceGroup =
+                AZ::RPI::ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), passSrgLayout->GetName());
+
+            AZ_Assert(
+                m_shaderResourceGroup, "[TerrainClipmapGenerationPass '%s']: Failed to create SRG from shader asset '%s'",
+                GetPathName().GetCStr(), passData->m_shaderReference.m_filePath.data());
+
+            AZ::RPI::PassUtils::BindDataMappingsToSrg(m_passDescriptor, m_shaderResourceGroup.get());
+        }
+
+        // Load Draw SRG...
+        const auto drawSrgLayout = m_shader->FindShaderResourceGroupLayout(AZ::RPI::SrgBindingSlot::Draw);
+        if (drawSrgLayout)
+        {
+            m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
+        }
+
+        AZ::RHI::DispatchDirect dispatchArgs;
+
+        const auto outcome = AZ::RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), dispatchArgs);
+        if (!outcome.IsSuccess())
+        {
+            AZ_Error(
+                "PassSystem", false, "[TerrainClipmapGenerationPass '%s']: Shader '%.*s' contains invalid numthreads arguments:\n%s",
+                GetPathName().GetCStr(), passData->m_shaderReference.m_filePath.size(), passData->m_shaderReference.m_filePath.data(),
+                outcome.GetError().c_str());
+        }
+
+        m_dispatchItem.m_arguments = dispatchArgs;
+
+        // Setup pipeline state...
+        AZ::RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+        const auto& shaderVariant = m_shader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId);
+        shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+
+        m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+
+        AZ::RPI::ShaderReloadNotificationBus::Handler::BusDisconnect();
+        AZ::RPI::ShaderReloadNotificationBus::Handler::BusConnect(passData->m_shaderReference.m_assetId);
+    }
+
     AZ::RPI::Ptr<TerrainMacroClipmapGenerationPass> TerrainMacroClipmapGenerationPass::Create(const AZ::RPI::PassDescriptor& descriptor)
     {
         AZ::RPI::Ptr<TerrainMacroClipmapGenerationPass> pass = aznew TerrainMacroClipmapGenerationPass(descriptor);
@@ -26,7 +171,7 @@ namespace Terrain
     }
 
     TerrainMacroClipmapGenerationPass::TerrainMacroClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
-        : AZ::RPI::ComputePass(descriptor)
+        : TerrainClipmapGenerationPass(descriptor)
     {
     }
 
@@ -45,8 +190,6 @@ namespace Terrain
             clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::MacroColor, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
             clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::MacroNormal, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
         }
-
-        ComputePass::SetupFrameGraphDependencies(frameGraph);
     }
 
     void TerrainMacroClipmapGenerationPass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)
@@ -55,6 +198,13 @@ namespace Terrain
         TerrainFeatureProcessor* terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
         if (terrainFeatureProcessor)
         {
+            const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
+
+            clipmapManager.GetMacroDispatchThreadNum(
+                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX,
+                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY,
+                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ);
+
             auto terrainSrg = terrainFeatureProcessor->GetTerrainShaderResourceGroup();
             if (terrainSrg)
             {
@@ -69,8 +219,6 @@ namespace Terrain
 
             if (m_needsUpdate)
             {
-                const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
-
                 m_shaderResourceGroup->SetImage(
                     m_macroColorClipmapsIndex,
                     clipmapManager.GetClipmapImage(TerrainClipmapManager::ClipmapName::MacroColor)
@@ -84,8 +232,14 @@ namespace Terrain
                 m_needsUpdate = false;
             }
         }
+        else
+        {
+            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = 0;
+            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = 0;
+            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+        }
 
-        ComputePass::CompileResources(context);
+        TerrainClipmapGenerationPass::CompileResources(context);
     }
 
     AZ::RPI::Ptr<TerrainDetailClipmapGenerationPass> TerrainDetailClipmapGenerationPass::Create(const AZ::RPI::PassDescriptor& descriptor)
@@ -95,7 +249,7 @@ namespace Terrain
     }
 
     TerrainDetailClipmapGenerationPass::TerrainDetailClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
-        : AZ::RPI::ComputePass(descriptor)
+        : TerrainClipmapGenerationPass(descriptor)
         , m_clipmapImageIndex{
             AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::MacroColor]),
             AZ::RHI::ShaderInputNameIndex(TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::MacroNormal]),
@@ -138,7 +292,7 @@ namespace Terrain
             clipmapManager.UseClipmap(TerrainClipmapManager::ClipmapName::DetailOcclusion, AZ::RHI::ScopeAttachmentAccess::ReadWrite, frameGraph);
         }
 
-        ComputePass::SetupFrameGraphDependencies(frameGraph);
+        TerrainClipmapGenerationPass::SetupFrameGraphDependencies(frameGraph);
     }
 
     void TerrainDetailClipmapGenerationPass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)
@@ -147,6 +301,13 @@ namespace Terrain
         TerrainFeatureProcessor* terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
         if (terrainFeatureProcessor)
         {
+            const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
+
+            clipmapManager.GetDetailDispatchThreadNum(
+                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX,
+                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY,
+                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ);
+
             auto terrainSrg = terrainFeatureProcessor->GetTerrainShaderResourceGroup();
             if (terrainSrg)
             {
@@ -161,8 +322,6 @@ namespace Terrain
 
             if (m_needsUpdate)
             {
-                const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
-
                 for (uint32_t i = 0; i < TerrainClipmapManager::ClipmapName::Count; ++i)
                 {
                     m_shaderResourceGroup->SetImage(
@@ -174,7 +333,15 @@ namespace Terrain
                 m_needsUpdate = false;
             }
         }
+        else
+        {
+            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = 0;
+            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = 0;
+            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+        }
 
-        ComputePass::CompileResources(context);
+        TerrainClipmapGenerationPass::CompileResources(context);
     }
 } // namespace Terrain
+
+#pragma optimize("", on)

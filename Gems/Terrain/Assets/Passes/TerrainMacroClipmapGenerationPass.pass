@@ -7,14 +7,11 @@
             "Name": "TerrainMacroClipmapGenerationPassTemplate",
             "PassClass": "TerrainMacroClipmapGenerationPass",
             "PassData": {
-                "$type": "ComputePassData",
+                "$type": "TerrainClipmapGenerationPassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/Terrain/TerrainMacroClipmapGenerationPass.shader"
                 },
-                "PipelineViewTag": "MainCamera",
-                "Target Thread Count X": 1024,
-                "Target Thread Count Y": 1024,
-                "Target Thread Count Z": 1
+                "PipelineViewTag": "MainCamera"
             }
         }
     }

@@ -36,19 +36,19 @@ namespace Terrain
         //! Max render radius that the lowest resolution clipmap can cover.
         //! Radius in: meters.
         float m_macroClipmapMaxRenderRadius = 2048.0f;
-        float m_detailClipmapMaxRenderRadius = 512.0f;
+        float m_detailClipmapMaxRenderRadius = 256.0f;
 
         //! Max resolution of the clipmap stack.
         //! The actual max resolution may be bigger due to rounding.
         //! Resolution in: texels per meter.
         float m_macroClipmapMaxResolution = 2.0f;
-        float m_detailClipmapMaxResolution = 256.0f;
+        float m_detailClipmapMaxResolution = 64.0f;
 
         //! The scale base between two adjacent clipmap layers.
         //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times
         //! to what is covered by the nth clipmap.
         float m_macroClipmapScaleBase = 2.0f;
-        float m_detailClipmapScaleBase = 3.0f;
+        float m_detailClipmapScaleBase = 2.0f;
 
         //! Calculate how many layers of clipmap is needed.
         //! Final result must be less or equal than the MacroClipmapStackSizeMax/DetailClipmapStackSizeMax.
@@ -66,6 +66,7 @@ namespace Terrain
         TerrainClipmapManager();
         virtual ~TerrainClipmapManager() = default;
 
+        //! Clipmap name enums.
         enum ClipmapName : uint32_t
         {
             MacroColor = 0,
@@ -81,7 +82,7 @@ namespace Terrain
             Count
         };
 
-        // Shader input names
+        //! Shader input names
         static constexpr const char* ClipmapDataShaderInput = "m_clipmapData";
         static constexpr const char* ClipmapImageShaderInput[ClipmapName::Count] = {
             "m_macroColorClipmaps",
@@ -102,15 +103,21 @@ namespace Terrain
 
         void Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
-        // Import the clipmap to the frame graph and set scope attachment access,
-        // so that the compute pass can build dependencies accordingly.
+        //! Import the clipmap to the frame graph and set scope attachment access,
+        //! so that the compute pass can build dependencies accordingly.
         void ImportClipmap(ClipmapName clipmapName, AZ::RHI::FrameGraphAttachmentInterface attachmentDatabase) const;
         void UseClipmap(ClipmapName clipmapName, AZ::RHI::ScopeAttachmentAccess access, AZ::RHI::FrameGraphInterface frameGraph) const;
 
         AZ::Data::Instance<AZ::RPI::AttachmentImage> GetClipmapImage(ClipmapName clipmapName) const;
+
+        //! Get the dispatch thread num for the clipmap compute shader based on the current frame.
+        //!
+        //!
+        void GetMacroDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
+        void GetDetailDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
     private:
         void UpdateClipmapData(const AZ::Vector3& cameraPosition);
-        void InitializeClipmapBounds();
+        void InitializeClipmapBounds(const AZ::Vector2& center);
         void InitializeClipmapData();
         void InitializeClipmapImages();
 
@@ -140,22 +147,32 @@ namespace Terrain
             uint32_t m_detailClipmapStackSize;
 
             //! The size of the clipmap image in each layer.
-            float m_clipmapSize;
+            //! Given 2 copies in different types to save casting.
+            float m_clipmapSizeFloat;
+            uint32_t m_clipmapSizeUint;
 
-            uint32_t m_padding;
-
-            //! Clipmap centers in normalized UV coordinates [0, 1].
+            //! Clipmap centers in texel coordinates ranging [0, size).
             //! 0,1: previous clipmap centers; 2,3: current clipmap centers.
             //! They are used for toroidal addressing and may move each frame based on the view point movement.
             //! The move distance is scaled differently in each layer.
-            AZStd::array<AZStd::array<float, 4>, ClipmapConfiguration::MacroClipmapStackSizeMax> m_macroClipmapCenters;
-            AZStd::array<AZStd::array<float, 4>, ClipmapConfiguration::DetailClipmapStackSizeMax> m_detailClipmapCenters;
+            AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::MacroClipmapStackSizeMax> m_macroClipmapCenters;
+            AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::DetailClipmapStackSizeMax> m_detailClipmapCenters;
 
             //! A list of reciprocal the clipmap scale [s],
             //! where 1 pixel in the current layer of clipmap represents s meters.
             //! Fast lookup list to avoid redundant calculation in shaders.
             //! x: macro; y: detail
             AZStd::array<AZStd::array<float, 4>, AZStd::max(ClipmapConfiguration::MacroClipmapStackSizeMax, ClipmapConfiguration::DetailClipmapStackSizeMax)> m_clipmapScaleInv;
+
+            //! The region of the clipmap that needs update.
+            //! Each clipmap can have 0-2 regions to update each frame.
+            AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::MacroClipmapStackSizeMax * ClipmapBounds::MaxUpdateRegions> m_macroClipmapBoundsRegions;
+            AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::DetailClipmapStackSizeMax * ClipmapBounds::MaxUpdateRegions> m_detailClipmapBoundsRegions;
+
+            uint32_t m_macroDispatchGroupCountX = 1;
+            uint32_t m_macroDispatchGroupCountY = 1;
+            uint32_t m_detailDispatchGroupCountX = 1;
+            uint32_t m_detailDispatchGroupCountY = 1;
         };
 
         ClipmapData m_clipmapData;
@@ -173,5 +190,18 @@ namespace Terrain
 
         ClipmapConfiguration m_config;
         bool m_isInitialized = false;
+        bool m_fristTimeUpdate = true;
+
+        //! Dispatch threads for the compute pass.
+        uint32_t m_macroTotalDispatchThreadX = 0;
+        uint32_t m_macroTotalDispatchThreadY = 0;
+        uint32_t m_detailTotalDispatchThreadX = 0;
+        uint32_t m_detailTotalDispatchThreadY = 0;
+
+        //! Group threads difined in the compute shader.
+        static constexpr uint32_t MacroGroupThreadX = 8;
+        static constexpr uint32_t MacroGroupThreadY = 8;
+        static constexpr uint32_t DetailGroupThreadX = 8;
+        static constexpr uint32_t DetailGroupThreadY = 8;
     };
 }

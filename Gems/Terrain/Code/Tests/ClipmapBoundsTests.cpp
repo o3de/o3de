@@ -52,7 +52,7 @@ namespace UnitTest
         };
         
         // Check each quadrant returned
-        AZStd::vector<Terrain::ClipmapBoundsRegion> expected;
+        Terrain::ClipmapBoundsRegionList expected;
         expected.resize(4);
 
         expected.at(0).m_localAabb = Terrain::Aabb2i({localBoundary.m_x, localBoundary.m_y}, {intSize, intSize});
@@ -274,7 +274,7 @@ namespace UnitTest
 
         {
             AZ::Aabb untouchedRegion = AZ::Aabb::CreateNull();
-            auto output = bounds.UpdateCenter(AZ::Vector2(20.0f, 20.0f), &untouchedRegion);
+            auto output = bounds.UpdateCenter(AZ::Vector2(-20.0f, -20.0f), &untouchedRegion);
             ASSERT_EQ(output.size(), 4);
 
             // Instead of checking bounds directly, do several checks to make sure the bounds are appropriate. Since
@@ -333,4 +333,25 @@ namespace UnitTest
         }
 
     }
+
+    TEST_F(ClipmapBoundsTests, MaxUpdateRegionTest)
+    {
+        for (int32_t i = -5; i <= 5; ++i)
+        {
+            for (int32_t j = -5; j <= 5; ++j)
+            {
+                Terrain::ClipmapBoundsDescriptor desc;
+                desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
+                desc.m_clipmapUpdateMultiple = 0;
+                desc.m_clipToWorldScale = 1.0f;
+                desc.m_size = 1024;
+                Terrain::ClipmapBounds bounds(desc);
+
+                auto list = bounds.UpdateCenter(AZ::Vector2(256.0f * i, 256.0f * j));
+
+                EXPECT_LE(list.size(), Terrain::ClipmapBounds::MaxUpdateRegions);
+            }
+        }
+    }
+
 }
