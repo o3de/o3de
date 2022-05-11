@@ -10,10 +10,13 @@
 
 namespace WhiteBox
 {
-    // TODO: LYN-786
+    WhiteBoxNullRenderMesh::WhiteBoxNullRenderMesh([[maybe_unused]] AZ::EntityId entityId)
+    {
+        // noop
+    }
+
     void WhiteBoxNullRenderMesh::BuildMesh(
-        [[maybe_unused]] const WhiteBoxRenderData& renderData, [[maybe_unused]] const AZ::Transform& worldFromLocal,
-        [[maybe_unused]] AZ::EntityId entityId)
+        [[maybe_unused]] const WhiteBoxRenderData& renderData, [[maybe_unused]] const AZ::Transform& worldFromLocal)
     {
         // noop
     }
