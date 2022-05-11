@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<typesystem package="azqtpyside">
+    <load-typesystem name="typesystem_widgets.xml" generate="no"/>
+    <load-typesystem name="typesystem_quick.xml" generate="no"/>
+    <load-typesystem name="typesystem_core.xml" generate="no"/>
+    <load-typesystem name="typesystem_gui.xml" generate="no"/>
+    
+    <!--smart-pointer-type name="QPointer" type="shared" getter="data" /-->
+    <primitive-type name="uint32_t" target-lang-api-name="PyLong"/>
+    
+    <!-- Declaring this prevents addition of broken code by Shiboken.-->
+    <object-type name="QTabWidget" generate="no"/>
+    <object-type name="QSlider" generate="no"/>
+      
+   
+    
+    <!--object-type name="Ui_FilteredSearchWidget"/>
+    <namespace-type name="Ui" generate="no">
+        <object-type name="FilteredSearchWidget"/>
+    </namespace-type-->
+    
+    <object-type name="FlowLayout">
+        <inject-code class="native" position="beginning" file="glue/qtwidgets.cpp" snippet="qlayout-help-functions"/>
+    </object-type>
+     
+     <!-- Remove drawFrame class to prevent broken wrapping in BrowseEdit-->
+    <rejection class="QFrame" function-name="drawFrame"/>
+    
+    <!--namespace-type name="AzQtComponents" generate="no">
+        <object-type name="ColorValidator"/>
+        <object-type name="SearchTypeSelectorTreeView"/>
+        <object-type name="SearchTypeSelectorFilterModel"/>
+        <object-type name="CustomSlider"/>
+    </namespace-type-->
+    
+    <namespace-type name="AzQtComponents" generate="yes">
+    
+        
+        
+        <!--ColorPicker-->
+        <!--object-type name="ColorComponentEdit"/>
+        <object-type name="HSLSliders">
+            <enum-type name="Mode"/>
+        </object-type>
+        <object-type name="HSVSliders">
+            <enum-type name="Mode"/>
+        </object-type>
+        <object-type name="RGBSliders"/>
+        
+        <namespace-type name="internal" generate="no">
+            <custom-type name="SpinBoxLineEdit"/>
+        </namespace-type>
+        
+        <namespace-type name="Internal" generate="no">
+            <object-type name="ColorController"/-->
+            
+            <!--object-type name="AddSwatch"/-->
+        <!--/namespace-type>
+        
+        <object-type name="ColorHexEdit">
+            <object-type name="ParsedColor"/>
+        </object-type>
+                
+        <object-type name="ColorRGBAEdit">
+            <enum-type name="Mode"/>
+        </object-type>
+        
+        <object-type name="ColorPreview"/>
+                
+        <object-type name="ColorWarning">
+            <enum-type name="Mode"/>
+        </object-type>
+        
+        <object-type name="GammaEdit"/-->
+        
+        <!--custom-type name="MIME_TYPE_PALETTE"/-->
+        
+        <!--object-type name="Palette"/>
+        
+        <object-type name="PaletteCardBase"/>
+        <object-type name="PaletteCard"/>
+        <object-type name="QuickPaletteCard"/-->
+        
+        <!--object-type name="PaletteCardCollection"/-->
+        
+        <!--object-type name="PaletteView">
+            <object-type name="DropIndicator"/>
+            <object-type name="Config"/>
+        </object-type-->
+        
+        <!--object-type name="Swatch"/-->
+                
+        <!--Components-->
+        <object-type name="ButtonDivider"/>
+        <object-type name="ButtonStripe"/>
+        
+        <namespace-type name="ConfigHelpers" generate="yes">
+            <object-type name="GroupGuard"/>
+            
+            <rejection class="*" function-name="read"/>
+        </namespace-type>
+        
+        <object-type name="DockBar">
+            <enum-type name="DefaultValues"/>
+        </object-type>
+        <object-type name="DockBarButton">
+            <object-type name="Config"/>
+            <enum-type name="WindowDecorationButton"/>
+        </object-type>
+        <object-type name="DockMainWindow"/>
+        <object-type name="DockTabBar"/>
+        <object-type name="DockTabWidget"/>
+        <object-type name="ExtendedLabel"/>   
+
+        
+        
+        <object-type name="FancyDocking">
+            <object-type name="WidgetGrab"/>
+        </object-type>
+        <object-type name="FancyDockingDropZoneWidget"/>
+        <object-type name="FancyDockingGhostWidget"/>
+                
+        <object-type name="FilterCriteriaButton">
+            <enum-type name="ExtraButtonType"/>
+        </object-type>
+        <object-type name="SearchTypeFilter"/>
+        <object-type name="SearchTypeSelector"/>
+        <object-type name="FilteredSearchWidget">
+            <object-type name="Config"/>
+        </object-type>
+        
+        <object-type name="GlobalEventFilter"/>
+        <object-type name="HelpButton"/>
+        <object-type name="InteractiveWindowGeometryChanger"/>
+        <object-type name="SearchLineEdit"/>
+        <object-type name="Style">
+            <enum-type name="BorderStyle"/>
+        </object-type>
+        <object-type name="StyledBusyLabel"/>
+        <object-type name="StyledDetailsTableModel">
+            <enum-type name="StyledTableRoles"/>
+            <enum-type name="ColumnStyle"/>
+            <enum-type name="StatusType"/>
+        </object-type>
+        <object-type name="StyledDetailsTableView"/>
+        <object-type name="StyledDialog"/>
+        <object-type name="StyledDockWidget"/>
+        <object-type name="StyledLineEdit">
+            <enum-type name="Flavor"/>
+        </object-type>
+        
+        <object-type name="StyledDoubleSpinBox"/>
+        <object-type name="StyledSpinBox"/>
+        
+        <object-type name="StyleManager">
+            <inject-code class="native" position="beginning">
+                #include &lt;AzCore/IO/Path/Path.h&gt;
+            </inject-code>
+            
+            <add-function signature="initializePath(QString)">
+                <inject-code>
+                    AZStd::string pathString(%1.toUtf8());
+                    AZ::IO::PathView pathView(pathString);
+                    
+                    QApplication* application = static_cast&lt;QApplication*&gt;(QApplication::instance());
+                    cppSelf->initialize(application, pathView);
+                </inject-code>
+            </add-function>
+        </object-type>
+        
+        <object-type name="StyleSheetCache"/>
+        <object-type name="StylesheetPreprocessor"/>
+        <object-type name="TagSelector"/>
+        <object-type name="TitleBar">
+            <object-type name="Config">
+                <object-type name="TitleBar"/>
+                <object-type name="Icon"/>
+                <object-type name="Title"/>
+                <object-type name="Buttons"/>
+            </object-type>
+            <enum-type name="TitleBarDrawMode"/>
+        </object-type>
+        <object-type name="TitleBarOverdrawHandler"/>
+        <object-type name="ToastNotification"/>
+        
+        <enum-type name="ToastType"/>
+        <object-type name="ToastConfiguration"/>
+        
+        <object-type name="ToolBarArea"/>
+        <object-type name="ToolButtonComboBox"/>
+        <object-type name="ToolButtonLineEdit"/>
+        <object-type name="ToolButtonWithWidget"/>
+        <object-type name="VectorEdit"/>
+        <object-type name="WindowDecorationWrapper">
+            <enum-type name="Option" flags="Options"/>
+        </object-type>
+          
+        <!--Widgets-->
+        <object-type name="AssetFolderListView"/>
+        
+        <object-type name="AssetFolderThumbnailView">
+            <object-type name="Config">
+                <object-type name="Thumbnail"/>
+                <object-type name="ExpandButton"/>
+                <object-type name="ChildFrame"/>
+            </object-type>
+            <enum-type name="ThumbnailSize"/>
+        </object-type>
+        
+        <enum-type name="NavigationButton"/>
+        <object-type name="BreadCrumbs">
+            <object-type name="Config"/>
+        </object-type>
+        
+        
+        <object-type name="BrowseEdit"/>
+
+        <object-type name="Card">
+            <object-type name="Config"/>
+        </object-type>
+        
+        <!--rejection class="CardHeader" field-name="s_iconSize"/-->
+        <object-type name="CardHeader">
+            <enum-type name="ContextMenuIcon"/>
+            <value-type name="s_iconSize"/>
+        </object-type>
+        
+        <object-type name="CardNotification"/>
+        <object-type name="CheckBox">
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="ColorLabel"/>
+        
+        <!--namespace-type name="Internal" generate="yes">
+            <object-type name="ColorLibrarySettings"/>
+        </namespace-type>
+        <object-type name="ColorPicker">
+            <enum-type name="Configuration"/>
+            <object-type name="ColorGridConfig"/>
+            <object-type name="DialogButtonsConfig"/>
+            <object-type name="Config"/>
+        </object-type-->
+        
+        <object-type name="ComboBoxValidator"/>
+        <object-type name="ComboBox">
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="DialogButtonBox"/>
+        <object-type name="DragAndDrop">
+            <object-type name="DropIndicator"/>
+            <object-type name="DragIndicator"/>
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="ElidingLabel"/>
+        <object-type name="Eyedropper">
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="FileDialog">     
+            <modify-function signature="GetSaveFileName(QWidget*,const QString&amp;,const QString&amp;,const QString&amp;,QString*,QFlags&lt;QFileDialog::Option&gt;)" allow-thread="yes">
+                <inject-documentation format="target" mode="append">
+                    This method is works in the same way as the cpp version, with the exception that the selected filter
+                    is returned in a tuple with the selected filename (filename, filter), rather than being stored in the 
+                    filter argument."
+                </inject-documentation>
+                <modify-argument index="return">
+                    <replace-type modified-type="(fileName, selectedFilter)"/>
+                </modify-argument>
+                <modify-argument index="5">
+                    <replace-type modified-type="QString"/>
+                    <replace-default-expression with="QString()"/>
+                </modify-argument>
+                <inject-code class="target" position="end">
+                    //Comment left in to prevent Shiboken including invalid code.
+                    //%RETURN_TYPE retval_ = %CPPSELF.%FUNCTION_NAME(%1, %2, %3, %4, &amp;%5, %6);
+                
+                    %RETURN_TYPE retval_ = %CPPSELF.GetSaveFileName_(%1, %2, %3, %4, &amp;%5, %6);
+                    %PYARG_0 = PyTuple_New(2);
+                    PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[%RETURN_TYPE](retval_));
+                    PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[%ARG5_TYPE](%5));
+
+                </inject-code>
+            </modify-function>
+        </object-type>
+        <object-type name="GradientSlider"/>
+        
+        <rejection class="*" function-name="getBorderColor"/>
+        <rejection class="*" function-name="getBackgroundColor"/>
+        <rejection class="*" function-name="getLineWidth"/>
+        
+        <object-type name="LineEdit">
+            <object-type name="Config"/>
+        </object-type>
+        
+        <!--LogicalTabOrderingWidget will not bind as it's a template class-->
+        <!--namespace-type name="LogicalTabOrderingInternal" generate="yes">
+            <object-type name="TabKeyEntry"/>
+        </namespace-type>
+        <object-type name="LogicalTabOrderingWidget"/-->
+        
+        <object-type name="Menu">
+            <object-type name="Margins"/>
+            <object-type name="Config"/>
+        </object-type>
+        
+        <object-type name="AzMessageBox"/>
+        
+        <namespace-type name="Internal" generate="yes"/>
+        <object-type name="OverlayWidgetButton"/>
+        <object-type name="OverlayWidget"/>
+        
+        <object-type name="ProgressBar">
+            <object-type name="Config"/>
+        </object-type>
+        
+
+        <object-type name="PushButton">
+            <object-type name="Gradient"/>
+            <object-type name="ColorSet"/>
+            <object-type name="Border"/>
+            <object-type name="Frame"/>
+            <object-type name="SmallIcon"/>
+            <object-type name="IconButton"/>
+            <object-type name="DropdownButton"/>
+            <object-type name="Config"/>
+        </object-type>
+        
+        <object-type name="RadioButton">
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="ScrollBar">
+            <enum-type name="ScrollBarMode"/>
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="SegmentBar"/>
+        <object-type name="SegmentControl">
+            <enum-type name="TabPosition"/>
+        </object-type>
+        
+        <!--object-type name="CustomSlider"/-->
+        <object-type name="Slider">
+            <object-type name="Border"/>
+            <object-type name="GradientSliderConfig"/>
+            <object-type name="SliderConfig">
+                <object-type name="HandleConfig"/>
+                <object-type name="GrooveConfig"/>
+            </object-type>
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="SliderInt"/>
+        <object-type name="SliderDouble"/>
+        
+        <object-type name="SliderCombo"/>
+        <object-type name="SliderDoubleCombo"/>
+        
+        <namespace-type name="internal" generate="no">
+            <!--object-type name="SpinBoxLineEdit"/-->
+        </namespace-type>
+        <object-type name="SpinBox">
+            <object-type name="Config"/>
+        </object-type>
+        
+        <object-type name="StatusBar">
+            <object-type name="Config"/>
+        </object-type>
+        
+        <object-type name="TableView">
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="TableViewModel">
+            <enum-type name="TableViewModelRole"/>
+        </object-type>
+        <object-type name="TableViewItemDelegate"/>
+         
+
+        <object-type name="TabWidget">
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="TabWidgetActionToolBarContainer"/>
+        <object-type name="TabBar"/>
+        
+        <object-type name="TabWidgetActionToolBar"/>
+        
+        
+        <object-type name="Text">
+            <object-type name="Config"/>
+        </object-type>
+        
+        <object-type name="ToolBar">
+            <object-type name="ToolBarConfig"/>
+            <object-type name="Config"/>
+            <enum-type name="ToolBarIconSize"/>
+        </object-type>
+        
+        <object-type name="ToolButton">
+            <object-type name="Config"/>
+        </object-type>
+        
+        <object-type name="TreeView">
+            <object-type name="Config"/>
+        </object-type>
+        <object-type name="BranchDelegate"/>
+        <object-type name="StyledTreeView"/>
+        <object-type name="StyledTreeWidget"/>
+        
+        <object-type name="VectorEditElement">
+            <enum-type name="Flavor"/>
+        </object-type>
+        <object-type name="VectorElement">
+            <enum-type name="Coordinate"/>
+        </object-type>
+        <object-type name="VectorInput"/>
+        
+        
+        
+    </namespace-type>
+</typesystem>
