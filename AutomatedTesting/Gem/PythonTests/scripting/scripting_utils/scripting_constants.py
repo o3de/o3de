@@ -14,6 +14,11 @@ Constants for window and tab names
 SCRIPT_CANVAS_UI = "Script Canvas"
 NODE_PALETTE_UI = "Node Palette"
 
+"""
+String constants for Node Palette
+"""
+NODE_CATEGORY_MATH = "Math"
+NODE_STRING_TO_NUMBER = "String To Number"
 
 """
 Constants for QtWidgets.

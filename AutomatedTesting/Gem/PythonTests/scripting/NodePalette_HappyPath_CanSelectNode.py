@@ -10,11 +10,6 @@ class Tests:
     category_selected = ("Category can be selected", "Category cannot be selected")
     node_selected = ("Node can be selected",     "Node cannot be selected")
 
-
-NODE_CATEGORY = "Math"
-NODE_NAME = "String To Number"
-
-
 def TestNodePaletteHappyPathCanSelectNode():
 
 
@@ -48,7 +43,8 @@ def TestNodePaletteHappyPathCanSelectNode():
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
     import editor_python_test_tools.pyside_utils as pyside_utils
-    from scripting_utils.scripting_constants import SCRIPT_CANVAS_UI, NODE_PALETTE_UI, WAIT_TIME_3, TREE_VIEW_QT, NODE_PALETTE_QT
+    from scripting_utils.scripting_constants import SCRIPT_CANVAS_UI, NODE_PALETTE_UI, WAIT_TIME_3, TREE_VIEW_QT, \
+        NODE_PALETTE_QT, NODE_CATEGORY_MATH, NODE_STRING_TO_NUMBER
 
     general.idle_enable(True)
 
@@ -70,7 +66,7 @@ def TestNodePaletteHappyPathCanSelectNode():
     node_palette_tree_view.expandAll()
 
     # 4) Scroll down to the category we are looking for and verify we can click on it
-    category_index = pyside_utils.find_child_by_hierarchy(node_palette_tree_view, NODE_CATEGORY)
+    category_index = pyside_utils.find_child_by_hierarchy(node_palette_tree_view, NODE_CATEGORY_MATH)
     node_palette_tree_view.scrollTo(category_index)
     pyside_utils.item_view_index_mouse_click(node_palette_tree_view, category_index)
     pyside_utils.wait_for_condition(lambda: node_palette_tree_view.selectedIndexes() and
@@ -79,8 +75,8 @@ def TestNodePaletteHappyPathCanSelectNode():
     Report.result(Tests.category_selected, node_palette_tree_view.selectedIndexes()[0] == category_index)
 
     # 5) Scroll down to the node within the category and verify we can click on it
-    pyside_utils.find_child_by_pattern(node_palette_tree_view, NODE_NAME)
-    node_index = pyside_utils.find_child_by_pattern(node_palette_tree_view, NODE_NAME)
+    pyside_utils.find_child_by_pattern(node_palette_tree_view, NODE_STRING_TO_NUMBER)
+    node_index = pyside_utils.find_child_by_pattern(node_palette_tree_view, NODE_STRING_TO_NUMBER)
     node_palette_tree_view.scrollTo(node_index)
     pyside_utils.item_view_index_mouse_click(node_palette_tree_view, node_index)
     pyside_utils.wait_for_condition(lambda: node_palette_tree_view.selectedIndexes() and
@@ -95,3 +91,4 @@ def TestNodePaletteHappyPathCanSelectNode():
 if __name__ == "__periodic__":
     from editor_python_test_tools.utils import Report
     Report.start_test(TestNodePaletteHappyPathCanSelectNode)
+    
