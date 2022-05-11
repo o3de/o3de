@@ -137,6 +137,22 @@ namespace ScriptCanvas
 
         virtual void ReportError(const Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage);
 
+        // Finds and returns all nodes within the graph that are of the specified type
+        template <typename NodeType>
+        AZStd::vector<const NodeType*> GetNodesOfType() const
+        {
+            AZStd::vector<const NodeType*> nodes;
+            for (auto& nodeRef : m_graphData.m_nodes)
+            {
+                const NodeType* node = nodeRef->FindComponent<NodeType>();
+                if (node)
+                {
+                    nodes.push_back(node);
+                }
+            }
+            return nodes;
+        }
+
     protected:
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {

@@ -3702,6 +3702,7 @@ namespace ScriptCanvasEditor
             NodeDescriptorComponent* descriptor = nullptr;
             NodeDescriptorRequestBus::EventResult(descriptor, nodeId, &NodeDescriptorRequests::GetDescriptorComponent);
             contextMenu.AddMenuAction(aznew RenameFunctionDefinitionNodeAction(descriptor, &contextMenu));
+            contextMenu.AddMenuAction(aznew MakeScriptEventHelpersAction(&contextMenu));
             contextMenu.AddMenuAction(aznew SaveAsScriptEventAction(&contextMenu));
             contextMenu.AddMenuAction(aznew OpenScriptEventAction(&contextMenu));
         }

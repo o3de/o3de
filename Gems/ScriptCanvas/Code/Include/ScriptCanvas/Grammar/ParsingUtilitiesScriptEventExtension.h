@@ -3,6 +3,8 @@
 
 namespace ScriptCanvas
 {
+    class Node;
+
     namespace Nodes::Core
     {
         class FunctionDefinitionNode;
@@ -13,9 +15,22 @@ namespace ScriptCanvas
         struct FunctionNodeToScriptEventResult
         {
             bool m_isScriptEvent = false;
-            AZStd::vector<AZStd::string> m_reasons;
+            const Node* m_node = nullptr;
+            AZStd::vector<AZStd::string> m_parseErrors;
+            ScriptEvents::Method m_method;
         };
 
-        FunctionNodeToScriptEventResult IsScriptEvent(const Nodes::Core::FunctionDefinitionNode& node);
+        FunctionNodeToScriptEventResult ToScriptEvent(const Node& node);
+
+        struct GraphToScriptEventsResult
+        {
+            bool m_isScriptEvents = false;
+            ScriptCanvasEditor::SourceHandle m_graph;
+            AZStd::vector<AZStd::string> m_parseErrors;
+            AZStd::vector<FunctionNodeToScriptEventResult> m_nodeResults;
+            ScriptEvents::ScriptEvent m_event;
+        };
+
+        GraphToScriptEventsResult ToScriptEvents(Graph& graph);
     }
 }

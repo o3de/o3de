@@ -314,21 +314,6 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
         ScriptCanvas::DataPtr GetOwnership() const;
 
-        // Finds and returns all nodes within the graph that are of the specified type
-        template <typename NodeType>
-        AZStd::vector<const NodeType*> GetNodesOfType() const
-        {
-            AZStd::vector<const NodeType*> nodes;
-            for (auto& nodeRef : m_graphData.m_nodes)
-            {
-                const NodeType* node = nodeRef->FindComponent<NodeType>();
-                if (node)
-                {
-                    nodes.push_back(node);
-                }
-            }
-            return nodes;
-        }
 
     protected:
         void PostRestore(const UndoData& restoredData) override;
