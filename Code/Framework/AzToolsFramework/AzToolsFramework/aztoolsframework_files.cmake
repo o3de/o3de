@@ -330,9 +330,9 @@ set(FILES
     UI/Docking/DockWidgetUtils.h
     UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
-    UI/DocumentPropertyEditor/PropertyHandlerRegistryInterface.h>
-    UI/DocumentPropertyEditor/PropertyHandlerRegistry.cpp>
-    UI/DocumentPropertyEditor/PropertyHandlerRegistry.h>
+    UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
+    UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp>
+    UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h>
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp

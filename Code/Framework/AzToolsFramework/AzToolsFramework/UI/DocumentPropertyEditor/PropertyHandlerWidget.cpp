@@ -10,19 +10,6 @@
 
 namespace AzToolsFramework
 {
-    void PropertyHandlerWidgetInterface::SetValueChangedHandler(ValueChangedHandler handler)
-    {
-        m_handler = AZStd::move(handler);
-    }
-
-    void PropertyHandlerWidgetInterface::ValueChangedByUser(const AZ::Dom::Value& newValue, ValueChangeType changeType)
-    {
-        if (m_handler)
-        {
-            m_handler(newValue, changeType);
-        }
-    }
-
     QWidget* PropertyHandlerWidgetInterface::GetFirstInTabOrder()
     {
         return GetWidget();

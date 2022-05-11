@@ -25,8 +25,11 @@ namespace AzToolsFramework
     {
     public:
         virtual ~PropertyHandlerWidgetInterface() = default;
+
         virtual QWidget* GetWidget() = 0;
         virtual void SetValueFromDom(const AZ::Dom::Value& node) = 0;
+        virtual QWidget* GetFirstInTabOrder();
+        virtual QWidget* GetLastInTabOrder();
 
         static bool ShouldHandleNode([[maybe_unused]] const AZ::Dom::Value& node)
         {
@@ -37,23 +40,6 @@ namespace AzToolsFramework
         {
             return "<undefined handler name>";
         }
-
-        enum class ValueChangeType
-        {
-            InProgressEdit,
-            FinishedEdit,
-        };
-        using ValueChangedHandler = AZStd::function<void(const AZ::Dom::Value&, ValueChangeType)>;
-        void SetValueChangedHandler(ValueChangedHandler handler);
-
-        virtual QWidget* GetFirstInTabOrder();
-        virtual QWidget* GetLastInTabOrder();
-
-    protected:
-        void ValueChangedByUser(const AZ::Dom::Value& newValue, ValueChangeType changeType = ValueChangeType::FinishedEdit);
-
-    private:
-        ValueChangedHandler m_handler;
     };
 
     template<typename BaseWidget>
@@ -162,6 +148,8 @@ namespace AzToolsFramework
             m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value).value();
             GetRpeHandler().ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
             GetRpeHandler().ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
+
+            m_domNode = node;
         }
 
         static bool ShouldHandleNode(const AZ::Dom::Value& node)
@@ -191,10 +179,14 @@ namespace AzToolsFramework
 
         void RequestWrite(QWidget* editorGUI)
         {
+            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
+
             if (editorGUI == m_widget)
             {
                 GetRpeHandler().WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
-                ValueChangedByUser(AZ::Dom::Utils::ValueFromType(m_proxyValue), ValueChangeType::InProgressEdit);
+                const AZ::Dom::Value newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+                PropertyEditor::OnChanged.InvokeOnDomNode(
+                    m_domNode, newValue, PropertyEditor::ValueChangeType::InProgressEdit);
             }
         }
 
@@ -212,10 +204,14 @@ namespace AzToolsFramework
 
         void OnEditingFinished(QWidget* editorGUI)
         {
+            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
+
             if (editorGUI == m_widget)
             {
                 GetRpeHandler().WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
-                ValueChangedByUser(AZ::Dom::Utils::ValueFromType(m_proxyValue), ValueChangeType::FinishedEdit);
+                const AZ::Dom::Value newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+                PropertyEditor::OnChanged.InvokeOnDomNode(
+                    m_domNode, newValue, PropertyEditor::ValueChangeType::FinishedEdit);
             }
         }
 
@@ -230,6 +226,7 @@ namespace AzToolsFramework
         }
 
     private:
+        AZ::Dom::Value m_domNode;
         QPointer<QWidget> m_widget;
         InstanceDataNode m_proxyNode;
         AZ::SerializeContext::ClassData m_proxyClassData;

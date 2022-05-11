@@ -48,9 +48,15 @@ namespace AZ::DocumentPropertyEditor::Nodes
     //! that can edit an associated value.
     struct PropertyEditor : NodeDefinition
     {
+        enum class ValueChangeType
+        {
+            InProgressEdit,
+            FinishedEdit,
+        };
+
         static constexpr AZStd::string_view Name = "PropertyEditor";
         static constexpr auto Type = AttributeDefinition<AZStd::string_view>("Type");
-        static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&)>("OnChanged");
+        static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&, ValueChangeType)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = AttributeDefinition<const AZ::TypeId*>("ValueType");
     };
