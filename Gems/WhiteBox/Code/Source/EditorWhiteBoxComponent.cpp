@@ -768,7 +768,7 @@ namespace WhiteBox
     {
         // if we wish to display the render mesh, set a null render mesh indicating a mesh can exist
         // note: if the optional remains empty, no render mesh will be created
-        m_renderMesh.emplace(AZStd::make_unique<WhiteBoxNullRenderMesh>());
+        m_renderMesh.emplace(AZStd::make_unique<WhiteBoxNullRenderMesh>(AZ::EntityId{}));
         RebuildRenderMesh();
     }
 

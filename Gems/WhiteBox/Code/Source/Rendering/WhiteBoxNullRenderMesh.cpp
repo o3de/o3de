@@ -10,6 +10,11 @@
 
 namespace WhiteBox
 {
+    WhiteBoxNullRenderMesh::WhiteBoxNullRenderMesh([[maybe_unused]] AZ::EntityId entityId)
+    {
+        // noop
+    }
+
     void WhiteBoxNullRenderMesh::BuildMesh(
         [[maybe_unused]] const WhiteBoxRenderData& renderData, [[maybe_unused]] const AZ::Transform& worldFromLocal)
     {
