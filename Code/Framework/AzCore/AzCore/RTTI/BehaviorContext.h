@@ -69,8 +69,11 @@ namespace AZ
     };
 
     /**
-     * Stores information about a function parameter (no instance). During calls we use \ref BehaviorArgument which in addition
-     * offers value storage and functions to interact with the data
+     * Reflects information about a C++ function parameter, mostly for use in BehaviorContext Methods and Events. It only provides a
+     * description or the C++ characteristics of the parameter, e.g. type and storage specification. It does not refer to any C++ value.
+     *
+     * \note During actual runtime calls, using the BehaviorContext generic calling mechanism, use \ref BehaviorArgument to wrap arguments
+     * to the generic function call.
      */
     struct BehaviorParameter
     {
@@ -140,9 +143,12 @@ namespace AZ
     };
 
     /**
-     * BehaviorArgument is used for calls on the stack. It should not be reused or stored as we might store temp data
-     * during conversion in the class on the stack. For storing type info use \ref BehaviorParameter
+     * BehaviorArgument is used to wrap an actual C++ argument during a generic call using the BehaviorContext calling mechanisms.
+     * It is also used to wrap return values, as BehaviorContext return values are passed as the first argument into a BehaviorContextMethod.
+     * \note This is generally used for calls on the C++ runtime stack. It should not be reused or stored as it likely stores temporary data
+     * produced during conversion of the object on the stack.
      *
+     * For reflecting type information of C+++ parameters use \ref BehaviorParameter.
      */
     struct BehaviorArgument : public BehaviorParameter
     {
