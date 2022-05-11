@@ -94,21 +94,7 @@ namespace Terrain
         }
 
         // Load Shader
-        AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset;
-        if (passData->m_shaderReference.m_assetId.IsValid())
-        {
-            shaderAsset = AZ::RPI::FindShaderAsset(passData->m_shaderReference.m_assetId, passData->m_shaderReference.m_filePath);
-        }
-
-        if (!shaderAsset.GetId().IsValid())
-        {
-            AZ_Error(
-                "PassSystem", false, "[TerrainClipmapGenerationPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(),
-                passData->m_shaderReference.m_filePath.data());
-            return;
-        }
-
-        m_shader = AZ::RPI::Shader::FindOrCreate(shaderAsset);
+        m_shader = AZ::RPI::LoadShader(passData->m_shaderReference.m_assetId, passData->m_shaderReference.m_filePath);
         if (m_shader == nullptr)
         {
             AZ_Error(
@@ -121,8 +107,7 @@ namespace Terrain
         const auto passSrgLayout = m_shader->FindShaderResourceGroupLayout(AZ::RPI::SrgBindingSlot::Pass);
         if (passSrgLayout)
         {
-            m_shaderResourceGroup =
-                AZ::RPI::ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), passSrgLayout->GetName());
+            m_shaderResourceGroup = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), passSrgLayout->GetName());
 
             AZ_Assert(
                 m_shaderResourceGroup, "[TerrainClipmapGenerationPass '%s']: Failed to create SRG from shader asset '%s'",
@@ -135,7 +120,7 @@ namespace Terrain
         const auto drawSrgLayout = m_shader->FindShaderResourceGroupLayout(AZ::RPI::SrgBindingSlot::Draw);
         if (drawSrgLayout)
         {
-            m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
+            m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
         }
 
         AZ::RHI::DispatchDirect dispatchArgs;

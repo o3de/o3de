@@ -38,7 +38,7 @@ void MainCS(
 
     for (uint clipmapLevel = 0; clipmapLevel < TerrainSrg::m_clipmapData.m_detailClipmapStackSize; ++clipmapLevel)
     {
-        for (uint updateRegionIndex = 0; updateRegionIndex < 6; ++updateRegionIndex)
+        for (uint updateRegionIndex = 0; updateRegionIndex < UpdateRegionMax; ++updateRegionIndex)
         {
             uint4 updateRegion = TerrainSrg::m_clipmapData.m_detailClipmapBoundsRegions[clipmapLevel + DetailClipmapStackSizeMax * updateRegionIndex];
             uint2 size = uint2(updateRegion.z - updateRegion.x, updateRegion.w - updateRegion.y);

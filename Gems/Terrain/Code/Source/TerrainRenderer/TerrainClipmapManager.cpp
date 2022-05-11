@@ -305,9 +305,9 @@ namespace Terrain
         };
 
         // First time update will run through the whole clipmap
-        if (m_fristTimeUpdate)
+        if (m_firstTimeUpdate)
         {
-            m_fristTimeUpdate = false;
+            m_firstTimeUpdate = false;
 
             InitializeClipmapBounds(currentViewPosition);
 
@@ -384,8 +384,6 @@ namespace Terrain
             hasUpdate = hasUpdate || updateRegionList.size() > 0;
         }
 
-        // [TODO] We need some more test to determine if dynamic dispatch number works better.
-        //        Or static numbers better than 64x64.
         if (hasUpdate)
         {
             m_macroTotalDispatchThreadX = 64;
@@ -426,8 +424,6 @@ namespace Terrain
             hasUpdate = hasUpdate || updateRegionList.size() > 0;
         }
 
-        // [TODO] We need some more test to determine if dynamic dispatch number works better.
-        //        Or static numbers better than 64x64.
         if (hasUpdate)
         {
             m_detailTotalDispatchThreadX = 64;

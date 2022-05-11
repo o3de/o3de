@@ -163,10 +163,11 @@ namespace Terrain
             AZStd::array<AZStd::array<float, 4>, AZStd::max(ClipmapConfiguration::MacroClipmapStackSizeMax, ClipmapConfiguration::DetailClipmapStackSizeMax)> m_clipmapScaleInv;
 
             //! The region of the clipmap that needs update.
-            //! Each clipmap can have 0-2 regions to update each frame.
+            //! Each clipmap can have 0-6 regions to update each frame.
             AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::MacroClipmapStackSizeMax * ClipmapBounds::MaxUpdateRegions> m_macroClipmapBoundsRegions;
             AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::DetailClipmapStackSizeMax * ClipmapBounds::MaxUpdateRegions> m_detailClipmapBoundsRegions;
 
+            //! Numbers match the compute shader invoking call dispatch(X, Y, 1).
             uint32_t m_macroDispatchGroupCountX = 1;
             uint32_t m_macroDispatchGroupCountY = 1;
             uint32_t m_detailDispatchGroupCountX = 1;
@@ -188,7 +189,7 @@ namespace Terrain
 
         ClipmapConfiguration m_config;
         bool m_isInitialized = false;
-        bool m_fristTimeUpdate = true;
+        bool m_firstTimeUpdate = true;
 
         //! Dispatch threads for the compute pass.
         uint32_t m_macroTotalDispatchThreadX = 0;
@@ -196,7 +197,7 @@ namespace Terrain
         uint32_t m_detailTotalDispatchThreadX = 0;
         uint32_t m_detailTotalDispatchThreadY = 0;
 
-        //! Group threads difined in the compute shader.
+        //! Group threads defined in the compute shader.
         static constexpr uint32_t MacroGroupThreadX = 8;
         static constexpr uint32_t MacroGroupThreadY = 8;
         static constexpr uint32_t DetailGroupThreadX = 8;

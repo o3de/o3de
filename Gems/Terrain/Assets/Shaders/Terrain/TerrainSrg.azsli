@@ -13,8 +13,11 @@
 static const uint MacroClipmapStackSizeMax = 16u;
 static const uint DetailClipmapStackSizeMax = 16u;
 static const uint StackSizeMax = 16u; // = max(MacroClipmapStackSizeMax, DetailClipmapStackSizeMax)
-static const uint MacroClipmapStackSizeMax_x6 = 96u;
-static const uint DetailClipmapStackSizeMax_x6 = 96u;
+// Each clipmap can have at most 6 update regions based on the current algorithm.
+// Due to compilation limitation, the size of arrays must be direct constant.
+static const uint UpdateRegionMax = 6u;
+static const uint MacroClipmapUpdateRegionMax = 96u; // = MacroClipmapStackSizeMax * 6
+static const uint DetailClipmapUpdateRegionMax = 96u; // = DetailClipmapStackSizeMax * 6
 
 ShaderResourceGroupSemantic SRG_Terrain
 {
@@ -124,9 +127,12 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         // x: macro; y: detail
         float4 m_clipmapScaleInv[StackSizeMax];
 
-        uint4 m_macroClipmapBoundsRegions[MacroClipmapStackSizeMax_x6];
-        uint4 m_detailClipmapBoundsRegions[DetailClipmapStackSizeMax_x6];
+        // The region of the clipmap that needs update.
+        // Each clipmap can have 0-6 regions to update each frame.
+        uint4 m_macroClipmapBoundsRegions[MacroClipmapUpdateRegionMax];
+        uint4 m_detailClipmapBoundsRegions[DetailClipmapUpdateRegionMax];
 
+        // Numbers match the compute shader invoking call dispatch(X, Y, 1).
         uint m_macroDispatchGroupCountX;
         uint m_macroDispatchGroupCountY;
         uint m_detailDispatchGroupCountX;
