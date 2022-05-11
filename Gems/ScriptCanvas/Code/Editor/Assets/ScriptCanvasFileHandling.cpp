@@ -250,7 +250,7 @@ namespace ScriptCanvasEditor
         return AZ::Success(result);
     }
 
-    bool IsUsingLegacyNodes(AZStd::string_view jsonString)
+    bool IsUsingLegacySpawnTypes(AZStd::string_view jsonString)
     {
         return
             jsonString.contains(R"("$type": "SpawnTicketInstance")") ||
@@ -302,7 +302,7 @@ namespace ScriptCanvasEditor
                 , serializeContext
                 , AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))
             {
-                if (IsUsingLegacyNodes(asString))
+                if (IsUsingLegacySpawnTypes(asString))
                 {
                     return AZ::Failure(AZStd::string::format(
                         "Script Canvas source asset is using legacy Spawnable nodes and needs to be updated by running the update script: "
