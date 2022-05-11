@@ -20,5 +20,4 @@ class TestMaterialEditor(MaterialEditorTestSuite):
 
     class MaterialEditor_Atom_LaunchMaterialEditor(MaterialEditorBatchedTest):
 
-
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module

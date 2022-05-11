@@ -463,7 +463,7 @@ class TestUtils(unittest.TestCase):
     def test_SetupEditorTest_ValidArgs_CallsCorrectly(self, mock_prepare_ap, mock_kill_processes):
         mock_test_suite = test_suite_base.TestSuite()
         mock_editor = mock.MagicMock()
-        mock_test_suite._setup_editor_test(mock_editor, mock.MagicMock(), mock.MagicMock())
+        mock_test_suite._setup_instance_test(mock_editor, mock.MagicMock(), mock.MagicMock())
 
         assert mock_editor.configure_settings.called
         assert mock_prepare_ap.called
@@ -591,7 +591,7 @@ class TestRunningTests(unittest.TestCase):
         mock_editor.get_returncode.return_value = 0
         mock_get_output_results.return_value = {}
 
-        results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_instance_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Pass)
         assert mock_cycle_crash.called
@@ -616,7 +616,7 @@ class TestRunningTests(unittest.TestCase):
         mock_editor.get_returncode.return_value = 15
         mock_get_output_results.return_value = {}
 
-        results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_instance_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
 
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Fail)
@@ -643,7 +643,7 @@ class TestRunningTests(unittest.TestCase):
         mock_editor.get_returncode.return_value = 1
         mock_get_output_results.return_value = {}
 
-        results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_instance_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
         assert mock_cycle_crash.call_count == 2
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Crash)
@@ -669,7 +669,7 @@ class TestRunningTests(unittest.TestCase):
         mock_editor.wait.side_effect = ly_test_tools.launchers.exceptions.WaitTimeoutError()
         mock_get_output_results.return_value = {}
 
-        results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_instance_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
 
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Timeout)
@@ -697,7 +697,7 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec_list = [mock_test_spec, mock_test_spec_2]
         mock_get_filepath.return_value = ""
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_instance_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                          'mock_log_name', mock_test_spec_list, [])
         assert len(results) == 2
         assert isinstance(results['mock_test_name'], editor_test.Result.Pass)
@@ -723,7 +723,7 @@ class TestRunningTests(unittest.TestCase):
         mock_get_testcase_filepath.side_effect = ['mock_path', 'mock_path_2']
         mock_get_results.return_value = {'mock_test_name': mock.MagicMock(), 'mock_test_name_2': mock.MagicMock()}
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_instance_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                          'mock_log_name', mock_test_spec_list, [])
 
         assert len(results) == 2
@@ -758,7 +758,7 @@ class TestRunningTests(unittest.TestCase):
         mock_get_results.return_value = {mock_test_spec.__name__: mock_unknown_result,
                                          mock_test_spec_2.__name__: mock.MagicMock()}
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_instance_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                          'mock_log_name', mock_test_spec_list, [])
         assert mock_cycle_crash.call_count == 2
         assert mock_get_results.called
@@ -796,7 +796,7 @@ class TestRunningTests(unittest.TestCase):
         mock_get_results.return_value = {mock_test_spec.__name__: mock_unknown_result,
                                          mock_test_spec_2.__name__: mock_unknown_result}
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_instance_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                          'mock_log_name', mock_test_spec_list, [])
         assert mock_cycle_crash.call_count == 2
         assert mock_get_results.called
@@ -831,7 +831,7 @@ class TestRunningTests(unittest.TestCase):
         mock_get_results.return_value = {mock_test_spec.__name__: mock_unknown_result,
                                          mock_test_spec_2.__name__: mock_unknown_result}
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_instance_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                          'mock_log_name', mock_test_spec_list, [])
         assert mock_cycle_crash.called
         assert mock_get_results.called
@@ -840,27 +840,27 @@ class TestRunningTests(unittest.TestCase):
         assert results[mock_test_spec_2.__name__].extra_info, "Extra info missing from Unknown failure"
 
     @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._report_result')
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._exec_editor_test')
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._exec_instance_test')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_instance_test')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
-    def test_RunSingleTest_ValidTest_ReportsResults(self, mock_setup_test, mock_exec_editor_test, mock_report_result):
+    def test_RunSingleTest_ValidTest_ReportsResults(self, mock_setup_test, mock_exec_instance_test, mock_report_result):
         mock_test_suite = ly_test_tools.o3de.test_suite_base.TestSuite()
         mock_test_data = mock.MagicMock()
         mock_test_spec = mock.MagicMock()
         mock_result = mock.MagicMock()
         mock_test_name = 'mock_test_result'
-        mock_exec_editor_test.return_value = {mock_test_name: mock_result}
+        mock_exec_instance_test.return_value = {mock_test_name: mock_result}
 
         mock_test_suite._run_single_test(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock_test_data,
                                          mock_test_spec)
 
         assert mock_setup_test.called
-        assert mock_exec_editor_test.called
+        assert mock_exec_instance_test.called
         assert mock_test_data.results.update.called
         mock_report_result.assert_called_with(mock_test_name, mock_result)
 
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._exec_editor_multitest')
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._exec_instance_multitest')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_instance_test')
     def test_RunBatchedTests_ValidTests_CallsCorrectly(self, mock_setup_test, mock_exec_multitest):
         mock_test_suite = ly_test_tools.o3de.test_suite_base.TestSuite()
         mock_test_data = mock.MagicMock()
@@ -874,7 +874,7 @@ class TestRunningTests(unittest.TestCase):
 
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._get_number_parallel_instances')
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_instance_test')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelTests_TwoTestsAndEditors_TwoThreads(self, mock_setup_test, mock_get_num_editors, mock_thread):
         mock_test_suite = ly_test_tools.o3de.test_suite_base.TestSuite()
@@ -891,7 +891,7 @@ class TestRunningTests(unittest.TestCase):
 
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._get_number_parallel_instances')
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_instance_test')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelTests_TenTestsAndTwoEditors_TenThreads(self, mock_setup_test, mock_get_num_editors, mock_thread):
         mock_test_suite = ly_test_tools.o3de.test_suite_base.TestSuite()
@@ -910,7 +910,7 @@ class TestRunningTests(unittest.TestCase):
 
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._get_number_parallel_instances')
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_instance_test')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelTests_TenTestsAndThreeEditors_TenThreads(self, mock_setup_test, mock_get_num_editors,
                                                                  mock_thread):
@@ -930,7 +930,7 @@ class TestRunningTests(unittest.TestCase):
 
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._get_number_parallel_instances')
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_instance_test')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelBatchedTests_TwoTestsAndEditors_TwoThreads(self, mock_setup_test, mock_get_num_editors,
                                                                    mock_thread):
@@ -948,7 +948,7 @@ class TestRunningTests(unittest.TestCase):
 
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._get_number_parallel_instances')
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_instance_test')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelBatchedTests_TenTestsAndTwoEditors_2Threads(self, mock_setup_test, mock_get_num_editors,
                                                                       mock_thread):
@@ -968,7 +968,7 @@ class TestRunningTests(unittest.TestCase):
 
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._get_number_parallel_instances')
-    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.test_suite_base.TestSuite._setup_instance_test')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelBatchedTests_TenTestsAndThreeEditors_ThreeThreads(self, mock_setup_test, mock_get_num_editors,
                                                                         mock_thread):

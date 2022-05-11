@@ -4,6 +4,31 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+
+# Simplified O3DE test-writing utilities.
+#
+# Test writers should subclass from TestSuite for easy specification of python test scripts to run.
+#
+# Tests can be one of the following types ("instance" refers to the executable under test, for example the Editor).
+# 1. SingleTest (default): one test runs in one instance but allows for custom setup & teardown.
+# 2. ParallelTest: multiple tests run in multiple instances with one test per instance.
+# 3. BatchedTest: multiple tests run in one instance.
+#
+# This framework uses return codes from the instance to validate test success or failure.
+# Test results for all tests are collated and include crash detection (the Result class is used for this).
+#
+# Usage example:
+#    class MyTestSuite(TestSuite):
+#
+#        class MyFirstTest(SingleTest):
+#            from . import script_to_be_run_by_instance as test_module
+#
+#        class MyTestInParallel_1(ParallelTest):
+#            from . import another_script_to_be_run_by_instance as test_module
+#
+#        class MyTestInParallel_2(ParallelTest):
+#            from . import yet_another_script_to_be_run_by_instance as test_module
+
 from __future__ import annotations
 
 import pytest
@@ -59,6 +84,25 @@ class SingleTest(TestBase):
         # Whether to use null renderer, this will override use_null_renderer for the TestSuite if not None.
         self.use_null_renderer = None
 
+    def setup(self, **args):
+        """
+        User-overrideable setup function, which will run before the test
+        """
+        pass
+
+    def wrap_run(self, **args):
+        """
+        User-overrideable wrapper function, which will run before and after test.
+        Any code before the 'yield' statement will run before the test. With code after yield run after the test.
+        """
+        yield
+
+    def teardown(self, **args):
+        """
+        User-overrideable teardown function, which will run after the test
+        """
+        pass
+
 
 class SharedTest(TestBase):
     """
@@ -76,26 +120,21 @@ class SharedTest(TestBase):
 
 
 class ParallelTest(SharedTest):
-    """
-    Test that will be run in parallel with tests in multiple instances.
-    """
+    """Test that will be run in parallel with tests in multiple instances."""
     is_batchable = False
     is_parallelizable = True
 
 
 class BatchedTest(SharedTest):
-    """
-    Test that will be run as serially batched with other tests in a single instance.
-    """
+    """Test that will be run as serially batched with other tests in a single instance."""
     is_batchable = True
     is_parallelizable = False
 
 
-@pytest.mark.usefixtures("launcher")
 @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
 class TestSuite(object):
     """
-    This is the main object used to hold SingleTest, SharedTest, ParallelTest, and BatchedTest tests.
+    Main object used to run the tests, in conjunction with BaseTestClass which takes care of parsing test types.
     """
     # Extra cmdline arguments to supply for every instance for this test suite.
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
@@ -103,6 +142,10 @@ class TestSuite(object):
     use_null_renderer = True
     # Maximum time for a single instance to stay open on a shared test.
     shared_test_timeout = 300
+    # Determine the issubclass() check value for single tests.
+    single_test_class_type = SingleTest
+    # Determine the issubclass() check value for shared tests.
+    shared_test_class_type = SharedTest
 
     @staticmethod
     def get_number_parallel_instances():
@@ -173,13 +216,14 @@ class TestSuite(object):
         Custom pytest collector which programmatically adds test functions based on data in the TestSuite class.
         """
 
-        def __init__(self):
-            super(TestSuite.BaseTestClass, self).__init__(self)
-            self.single_tests = None
-            self.shared_tests = None
-            self.batched_tests = None
-            self.parallel_tests = None
-            self.parallel_batched_tests = None
+        # def __init__(self, name, collector, obj):
+        #     super(TestSuite.BaseTestClass, self).__init__(self, name, collector, obj)
+        #     self.obj = obj
+        #     self.single_tests = None
+        #     self.shared_tests = None
+        #     self.batched_tests = None
+        #     self.parallel_tests = None
+        #     self.parallel_batched_tests = None
 
         def collect(self):
             """
@@ -207,8 +251,8 @@ class TestSuite(object):
                 return spec_impl
 
             # Retrieve the test specs
-            self.single_tests = self.obj.get_single_tests()
-            self.shared_tests = self.obj.get_shared_tests()
+            self.single_tests = cls.get_single_tests()
+            self.shared_tests = cls.get_shared_tests()
             self.batched_tests = cls.filter_shared_tests(self.shared_tests, is_batchable=True)
             self.parallel_tests = cls.filter_shared_tests(self.shared_tests, is_parallelizable=True)
             self.parallel_batched_tests = cls.filter_shared_tests(
@@ -217,6 +261,9 @@ class TestSuite(object):
             # If user provides option to not parallelize/batch the tests, move them into single tests.
             no_parallelize = self.config.getoption("--no-instance-parallel", default=False)
             no_batch = self.config.getoption("--no-instance-batch", default=False)
+            batched_tests = []
+            parallel_tests = []
+            parallel_batched_tests = []
             if no_parallelize:
                 self.single_tests += self.parallel_tests
                 parallel_tests = []
@@ -232,34 +279,34 @@ class TestSuite(object):
             for test_spec in self.single_tests:
                 name = test_spec.__name__
 
-                def make_test_func(name, test_spec, launcher):
+                def make_test_func(name, test_spec):
                     @set_marks({"run_type": "run_single"})
-                    def single_run(self, request, workspace, test_data, launcher_platform, launcher):
+                    def single_run(self, request, workspace, test_data, launcher_platform):
                         # only single tests are allowed to have setup/teardown, however we can have shared tests that
                         # were explicitly set as single, for example via cmdline argument override
-                        is_single_test = issubclass(test_spec, SingleTest)
+                        is_single_test = issubclass(test_spec, self.single_test_class_type)
                         if is_single_test:
                             # Setup step for wrap_run
-                            wrap = test_spec.wrap_run(self, request, workspace, test_data, launcher_platform, *args)
+                            wrap = test_spec.wrap_run(self, request, workspace, test_data, launcher_platform)
                             assert isinstance(wrap,
                                               types.GeneratorType), "wrap_run must return a generator, did you forget 'yield'?"
                             next(wrap, None)
                             # Setup step
-                            test_spec.setup(self, request, workspace, test_data, launcher_platform, *args)
+                            test_spec.setup(self, request, workspace, test_data, launcher_platform)
                         # Run
-                        self._run_single_test(request, workspace, editor, test_data, test_spec)
+                        self._run_single_test(request, workspace, test_data, test_spec)
                         if is_single_test:
                             # Teardown
-                            test_spec.teardown(self, request, workspace, editor, test_data, launcher_platform)
+                            test_spec.teardown(self, request, workspace, test_data, launcher_platform)
                             # Teardown step for wrap_run
                             next(wrap, None)
 
                     return single_run
 
-                f = make_test_func(name, test_spec, launcher)
+                test_func = make_test_func(name, test_spec)
                 if hasattr(test_spec, "pytestmark"):
-                    f.pytestmark = test_spec.pytestmark
-                setattr(self.obj, name, f)
+                    test_func.pytestmark = test_spec.pytestmark
+                setattr(self.obj, name, test_func)
 
             # Add the shared tests, for these we will create a runner class for storing the run information
             # that will be later used for selecting what tests runners will be run
@@ -270,8 +317,8 @@ class TestSuite(object):
 
                 def make_func():
                     @set_marks({"runner": runner, "run_type": "run_shared"})
-                    def shared_run(self, request, workspace, editor, test_data, launcher_platform):
-                        getattr(self, function.__name__)(request, workspace, editor, test_data, runner.tests)
+                    def shared_run(self, request, workspace, test_data, launcher_platform):
+                        getattr(self, function.__name__)(request, workspace, test_data, runner.tests)
 
                     return shared_run
 
@@ -281,14 +328,14 @@ class TestSuite(object):
                 for test_spec in tests:
                     def make_func(test_spec):
                         @set_marks({"runner": runner, "test_spec": test_spec, "run_type": "result"})
-                        def result(self, request, workspace, editor, test_data, launcher_platform):
+                        def result(self, request, workspace, test_data, launcher_platform):
                             # The runner must have filled the test_data.results dict fixture for this test.
                             # Hitting this assert could mean if there was an error executing the runner
                             if test_spec.__name__ not in test_data.results:
-                                raise Result.TestResultException(f"No results found for {test_spec.__name__}. "
-                                                                       f"Test may not have ran due to the Editor "
-                                                                       f"shutting down. Check for issues in previous "
-                                                                       f"tests.")
+                                raise Result.TestResultException(
+                                    f"No results found for {test_spec.__name__}. "
+                                    "Test may not have ran due to the instance shutting down. "
+                                    "Check for issues in previous tests.")
                             cls._report_result(test_spec.__name__, test_data.results[test_spec.__name__])
 
                         return result
@@ -353,7 +400,9 @@ class TestSuite(object):
         return TestSuite.BaseTestClass(name, collector)
 
     @classmethod
-    def pytest_custom_modify_items(cls, session: _pytest.main.Session, items: list[TestBase],
+    def pytest_custom_modify_items(cls,
+                                   session: _pytest.main.Session,
+                                   items: list[TestBase],
                                    config: _pytest.config.Config) -> None:
         """
         Adds the runners' functions and filters the tests that will run. The runners will be added if they have any
@@ -384,11 +433,11 @@ class TestSuite(object):
         Usage example:
            class MyTestSuite(TestSuite):
                class MyFirstTest(SingleTest):
-                   from . import python_script_to_be_run_by_editor as test_module
+                   from . import python_script_to_be_run_by_instance as test_module
         :return: The list of single tests
         """
         single_tests = [c[1] for c in cls.__dict__.items() if
-                        inspect.isclass(c[1]) and issubclass(c[1], SingleTest)]
+                        inspect.isclass(c[1]) and issubclass(c[1], cls.single_test_class_type)]
         return single_tests
 
     @classmethod
@@ -402,7 +451,7 @@ class TestSuite(object):
         :return: The list of shared tests
         """
         shared_tests = [c[1] for c in cls.__dict__.items() if
-                        inspect.isclass(c[1]) and issubclass(c[1], SharedTest)]
+                        inspect.isclass(c[1]) and issubclass(c[1], cls.shared_test_class_type)]
         return shared_tests
 
     @classmethod
@@ -484,30 +533,17 @@ class TestSuite(object):
             test_data.asset_processor = None
             raise ex
 
-    def _setup_editor_test(self, editor: ly_test_tools.launchers.platforms.base.Launcher,
-                           workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                           test_data: TestData) -> None:
-        """
-        Sets up an editor test by preparing the Asset Processor, killing all other O3DE processes, and configuring
-        :editor: The launcher Editor object
-        :workspace: The test Workspace object
-        :test_data: The TestData from calling test_data()
-        :return: None
-        """
-        self._prepare_asset_processor(workspace, test_data)
-        editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        editor.configure_settings()
-
     @staticmethod
-    def _get_results_using_output(
-            test_spec_list: list[TestBase], output: str, editor_log_content: str) -> dict[str, Result]:
+    def _get_results_using_output(test_spec_list: list[TestBase],
+                                  output: str,
+                                  instance_log_content: str) -> dict[str, [Result.Unknown, Result.Pass, Result.Fail]]:
         """
-        Utility function for parsing the output information from the editor. It deserializes the JSON content printed in
-        the output for every test and returns that information.
-        :test_spec_list: The list of EditorTests
-        :output: The Editor from Editor.get_output()
-        :editor_log_content: The contents of the editor log as a string
-        :return: A dict of the tests and their respective Result objects
+        Utility function for parsing the output information from the instance.
+        It de-serializes the JSON content printed in the output for every test and returns that information.
+        :test_spec_list: The list of test classes.
+        :output: The string output from the Instance.get_output() call.
+        :instance_log_content: The contents of the instance (executable or app under test) log as a string.
+        :return: A dict of the tests and their respective Result objects.
         """
         results = {}
         pattern = re.compile(r"JSON_START\((.+?)\)JSON_END")
@@ -521,7 +557,7 @@ class TestSuite(object):
                 continue
 
         # Try to find the element in the log, this is used for cutting the log contents later
-        log_matches = pattern.finditer(editor_log_content)
+        log_matches = pattern.finditer(instance_log_content)
         for m in log_matches:
             try:
                 elem = json.loads(m.groups()[0])
@@ -536,20 +572,20 @@ class TestSuite(object):
             if name not in found_jsons.keys():
                 results[test_spec.__name__] = Result.Unknown(
                     test_spec, output,
-                    f"Found no test run information on stdout for {name} in the editor log",
-                    editor_log_content)
+                    f"Found no test run information on stdout for {name} in the instance/app log.",
+                    instance_log_content)
             else:
                 result = None
                 json_result = found_jsons[name]
                 json_output = json_result["output"]
 
-                # Cut the editor log so it only has the output for this run
+                # Cut the instance (executable or app under test) log so it only has the output for this run
                 if "log_match" in json_result:
                     m = json_result["log_match"]
                     end = m.end() if test_spec != test_spec_list[-1] else -1
                 else:
                     end = -1
-                cur_log = editor_log_content[log_start: end]
+                cur_log = instance_log_content[log_start: end]
                 log_start = end
 
                 if json_result["success"]:
@@ -563,9 +599,9 @@ class TestSuite(object):
     @staticmethod
     def _report_result(name: str, result: Result) -> None:
         """
-        Fails the test if the test result is not a PASS, specifying the information
-        :name: Name of the test
-        :result: The Result object which denotes if the test passed or not
+        Fails the test if the test result is not a PASS, specifying the information.
+        :name: Name of the test.
+        :result: The Result object which denotes if the test passed or not.
         :return: None
         """
         if isinstance(result, Result.Pass):
@@ -575,17 +611,31 @@ class TestSuite(object):
             error_str = f"Test {name}:\n{str(result)}"
             pytest.fail(error_str)
 
+    def _setup_instance_test(self, editor: ly_test_tools.launchers.platforms.base.Launcher,
+                             workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                             test_data: TestSuite.TestData) -> None:
+        """
+        Sets up an instance test by preparing AssetProcessor, killing all other O3DE processes, & configuring settings.
+        :editor: The launcher Editor object
+        :workspace: The test Workspace object
+        :test_data: The test data from calling TestSuite.TestData()
+        :return: None
+        """
+        self._prepare_asset_processor(workspace, test_data)
+        editor_utils.kill_all_ly_processes(include_asset_processor=False)
+        editor.configure_settings()
+
 
 class Result:
     class TestResultException(Exception):
-        """ Indicates that an unknown result was found during the tests  """
+        """Indicates that an unknown result was found during the tests."""
 
     class Base:
         def get_output_str(self):
             # type () -> str
             """
             Checks if the output attribute exists and returns it.
-            :return: Output string from running a test, or a no output message
+            :return: Output string from running a test, or a no output message.
             """
             output = getattr(self, "output", None)
             if output:
@@ -597,26 +647,26 @@ class Result:
             # type () -> str
             """
             Checks if a given instance's log attribute exists and returns it.
-            :return: Either the editor_log string or a no output message
+            :return: Either the test_instance_log string or a no output message.
             """
-            log = getattr(self, "editor_log", None)
+            log = getattr(self, "test_instance_log", None)
             if log:
                 return log
             else:
-                return "-- No editor log found --"
+                return "-- No instance (executable or app under test) log found --"
 
     class Pass(Base):
 
-        def __init__(self, test_spec: type(TestBase), output: str, editor_log: str):
+        def __init__(self, test_spec: type(TestBase), output: str, test_instance_log: str):
             """
-            Represents a test success
-            :test_spec: The type of TestBase
-            :output: The test output
-            :editor_log: The editor log's output
+            Represents a test success.
+            :test_spec: The test class of the test.
+            :output: The test output.
+            :test_instance_log: The instance (executable or app under test) log's output.
             """
             self.test_spec = test_spec
             self.output = output
-            self.editor_log = editor_log
+            self.test_instance_log = test_instance_log
 
         def __str__(self):
             output = (
@@ -630,16 +680,16 @@ class Result:
 
     class Fail(Base):
 
-        def __init__(self, test_spec: type(TestBase), output: str, editor_log: str):
+        def __init__(self, test_spec: type(TestBase), output: str, test_instance_log: str):
             """
-            Represents a normal test failure
-            :test_spec: The type of TestBase
-            :output: The test output
-            :editor_log: The editor log's output
+            Represents a normal test failure.
+            :test_spec: The test class of the test.
+            :output: The test output.
+            :test_instance_log: The instance (executable or app under test) log's output.
             """
             self.test_spec = test_spec
             self.output = output
-            self.editor_log = editor_log
+            self.test_instance_log = test_instance_log
 
         def __str__(self):
             output = (
@@ -649,7 +699,7 @@ class Result:
                 f"------------\n"
                 f"{self.get_output_str()}\n"
                 f"--------------\n"
-                f"| Editor log |\n"
+                f"| Instance (executable or app under test) log |\n"
                 f"--------------\n"
                 f"{self.get_instance_log_str()}\n"
             )
@@ -657,21 +707,25 @@ class Result:
 
     class Crash(Base):
 
-        def __init__(self, test_spec: type(TestBase), output: str, ret_code: int, stacktrace: str,
-                     editor_log: str):
+        def __init__(self,
+                     test_spec: type(TestBase),
+                     output: str,
+                     ret_code: int,
+                     stacktrace: str,
+                     test_instance_log: str or None):
             """
-            Represents a test which failed with an unexpected crash
-            :test_spec: The type of TestBase
-            :output: The test output
-            :ret_code: The test's return code
-            :stacktrace: The test's stacktrace if available
-            :editor_log: The editor log's output
+            Represents a test which failed with an unexpected crash.
+            :test_spec: The test class of the test.
+            :output: The test output.
+            :ret_code: The test's return code.
+            :stacktrace: The test's stacktrace if available.
+            :test_instance_log: The instance (executable or app under test) log's output.
             """
             self.output = output
             self.test_spec = test_spec
             self.ret_code = ret_code
             self.stacktrace = stacktrace
-            self.editor_log = editor_log
+            self.test_instance_log = test_instance_log
 
         def __str__(self):
             stacktrace_str = "-- No stacktrace data found --" if not self.stacktrace else self.stacktrace
@@ -686,7 +740,7 @@ class Result:
                 f"------------\n"
                 f"{self.get_output_str()}\n"
                 f"--------------\n"
-                f"| Editor log |\n"
+                f"| Instance (executable or app under test) log |\n"
                 f"--------------\n"
                 f"{self.get_instance_log_str()}\n"
             )
@@ -694,19 +748,19 @@ class Result:
 
     class Timeout(Base):
 
-        def __init__(self, test_spec: type(TestBase), output: str, time_secs: float, editor_log: str):
+        def __init__(self, test_spec: type(TestBase), output: str, time_secs: float, test_instance_log: str):
             """
-            Represents a test which failed due to freezing, hanging, or executing slowly
-            :test_spec: The type of TestBase
-            :output: The test output
-            :time_secs: The timeout duration in seconds
-            :editor_log: The editor log's output
-            :return: The Timeout object
+            Represents a test which failed due to freezing, hanging, or executing slowly.
+            :test_spec: The test class of the test.
+            :output: The test output.
+            :time_secs: The timeout duration in seconds.
+            :test_instance_log: The instance (executable or app under test) log's output.
+            :return: The Timeout object.
             """
             self.output = output
             self.test_spec = test_spec
             self.time_secs = time_secs
-            self.editor_log = editor_log
+            self.test_instance_log = test_instance_log
 
         def __str__(self):
             output = (
@@ -716,7 +770,7 @@ class Result:
                 f"------------\n"
                 f"{self.get_output_str()}\n"
                 f"--------------\n"
-                f"| Editor log |\n"
+                f"| Instance (executable or app under test) log |\n"
                 f"--------------\n"
                 f"{self.get_instance_log_str()}\n"
             )
@@ -724,18 +778,21 @@ class Result:
 
     class Unknown(Base):
 
-        def __init__(self, test_spec: type(TestBase), output: str = None, extra_info: str = None,
-                     editor_log: str = None):
+        def __init__(self,
+                     test_spec: type(TestBase),
+                     output: str = None,
+                     extra_info: str = None,
+                     test_instance_log: str = None):
             """
-            Represents a failure that the test framework cannot classify
-            :test_spec: The type of TestBase
-            :output: The test output
-            :extra_info: Any extra information as a string
-            :editor_log: The editor log's output
+            Represents a failure that the test framework cannot classify.
+            :test_spec: The test class of the test.
+            :output: The test output.
+            :extra_info: Any extra information as a string.
+            :test_instance_log: The instance (executable or app under test) log's output.
             """
             self.output = output
             self.test_spec = test_spec
-            self.editor_log = editor_log
+            self.test_instance_log = test_instance_log
             self.extra_info = extra_info
 
         def __str__(self):
@@ -746,7 +803,7 @@ class Result:
                 f"------------\n"
                 f"{self.get_output_str()}\n"
                 f"--------------\n"
-                f"| Editor log |\n"
+                f"| Instance (executable or app under test) log |\n"
                 f"--------------\n"
                 f"{self.get_instance_log_str()}\n"
             )

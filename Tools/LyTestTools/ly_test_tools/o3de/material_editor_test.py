@@ -380,7 +380,7 @@ class MaterialEditorTestSuite:
             self.run_pytestfunc = None
             self.result_pytestfuncs = []
 
-    class MaterialEditorTestClass(BaseTestClass):
+    class MaterialEditorTestClass(pytest.Class):
         """
         Custom pytest collector which programmatically adds test functions based on data in the TestSuite class
         """
@@ -692,7 +692,7 @@ class MaterialEditorTestSuite:
             material_editor_test_data.asset_processor = None
             raise ex
 
-    def _setup_editor_test(self,
+    def _setup_instance_test(self,
                            material_editor: ly_test_tools.launchers.platforms.base.Launcher,
                            workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                            material_editor_test_data: TestData) -> None:
@@ -786,7 +786,7 @@ class MaterialEditorTestSuite:
             error_str = f"Test {name}:\n{str(result)}"
             pytest.fail(error_str)
 
-    def _exec_editor_test(self,
+    def _exec_instance_test(self,
                           request: _pytest.fixtures.FixtureRequest,
                           workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                           material_editor: ly_test_tools.launchers.platforms.base.Launcher,
@@ -875,7 +875,7 @@ class MaterialEditorTestSuite:
         results[test_spec.__name__] = test_result
         return results
 
-    def _exec_editor_multitest(self,
+    def _exec_instance_multitest(self,
                                request: _pytest.fixtures.FixtureRequest,
                                workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                                material_editor: ly_test_tools.launchers.platforms.base.Launcher,
@@ -1033,12 +1033,12 @@ class MaterialEditorTestSuite:
         :test_spec: The test class that should be a subclass of MaterialEditorSingleTest
         :return: None
         """
-        self._setup_editor_test(material_editor, workspace, material_editor_test_data)
+        self._setup_instance_test(material_editor, workspace, material_editor_test_data)
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
 
-        result = self._exec_editor_test(request, workspace, material_editor, 1, "material_editor_test.log", test_spec,
+        result = self._exec_instance_test(request, workspace, material_editor, 1, "material_editor_test.log", test_spec,
                                         extra_cmdline_args)
         if result is None:
             logger.error(f"Unexpectedly found no test run in the editor log during {test_spec}")
@@ -1076,8 +1076,8 @@ class MaterialEditorTestSuite:
         if not test_spec_list:
             return
 
-        self._setup_editor_test(material_editor, workspace, material_editor_test_data)
-        results = self._exec_editor_multitest(
+        self._setup_instance_test(material_editor, workspace, material_editor_test_data)
+        results = self._exec_instance_multitest(
             request, workspace, material_editor, 1, "material_editor_test.log", test_spec_list, extra_cmdline_args)
         material_editor_test_data.results.update(results)
         # If at least one test did not pass, save assets with errors and warnings
@@ -1112,7 +1112,7 @@ class MaterialEditorTestSuite:
         if not test_spec_list:
             return
 
-        self._setup_editor_test(material_editor, workspace, material_editor_test_data)
+        self._setup_instance_test(material_editor, workspace, material_editor_test_data)
         parallel_editors = self._get_number_parallel_instances(request, "--material-editors-parallel")
         assert parallel_editors > 0, "Must have at least one editor"
 
@@ -1126,7 +1126,7 @@ class MaterialEditorTestSuite:
             for i in range(total_threads):
                 def make_func(test_spec, index, my_material_editor):
                     def run(request, workspace, extra_cmdline_args):
-                        results = self._exec_editor_test(
+                        results = self._exec_instance_test(
                             request, workspace, my_material_editor, index + 1, "material_editor_test.log", test_spec,
                             extra_cmdline_args)
                         assert results is not None
@@ -1184,7 +1184,7 @@ class MaterialEditorTestSuite:
         if not test_spec_list:
             return
 
-        self._setup_editor_test(material_editor, workspace, material_editor_test_data)
+        self._setup_instance_test(material_editor, workspace, material_editor_test_data)
         total_threads = self._get_number_parallel_instances(request, "--material-editors-parallel")
         assert total_threads > 0, "Must have at least one editor"
         threads = []
@@ -1197,7 +1197,7 @@ class MaterialEditorTestSuite:
                 def run(request, workspace, extra_cmdline_args):
                     results = None
                     if len(test_spec_list_for_material_editor) > 0:
-                        results = self._exec_editor_multitest(request, workspace, my_material_editor, index + 1,
+                        results = self._exec_instance_multitest(request, workspace, my_material_editor, index + 1,
                                                               "material_editor_test.log",
                                                               test_spec_list_for_material_editor, extra_cmdline_args)
                         assert results is not None

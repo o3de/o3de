@@ -3,25 +3,8 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Simplified O3DE Editor test-writing utilities.
-
-Test writers should subclass a test suite from TestSuite for easy specification of python test scripts for
-the editor to run. Tests can be parallelized (run in multiple editor instances at once) and/or batched (multiple tests
-run in the same editor instance), with collated results and crash detection.
-
-Usage example:
-   class MyTestSuite(TestSuite):
-
-       class MyFirstTest(EditorSingleTest):
-           from . import script_to_be_run_by_editor as test_module
-
-       class MyTestInParallel_1(EditorParallelTest):
-           from . import another_script_to_be_run_by_editor as test_module
-
-       class MyTestInParallel_2(EditorParallelTest):
-           from . import yet_another_script_to_be_run_by_editor as test_module
 """
+
 from __future__ import annotations
 import logging
 import math
@@ -29,10 +12,14 @@ import os
 import threading
 
 import pytest
+import _pytest.python
+import _pytest.outcomes
 
+import ly_test_tools._internal.pytest_plugin.test_tools_fixtures
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 
-from ly_test_tools.o3de.test_suite_base import Result, TestBase, TestSuite, SingleTest
+from ly_test_tools.launchers.exceptions import WaitTimeoutError
+from ly_test_tools.o3de.test_suite_base import Result, ParallelTest, SharedTest, SingleTest, TestBase, TestSuite
 
 # This file contains ready-to-use test functions which are not actual tests, avoid pytest collection
 __test__ = False
@@ -51,40 +38,65 @@ class EditorSingleTest(SingleTest):
         # Whether to use null renderer, this will override use_null_renderer for the Suite if not None
         self.use_null_renderer = None
 
-    @staticmethod
-    def setup(instance, request, workspace, editor, editor_test_results, launcher_platform):
+    def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
         """
         User-overrideable setup function, which will run before the test
         """
         pass
 
-    @staticmethod
-    def wrap_run(instance, request, workspace, editor, editor_test_results, launcher_platform):
+    def wrap_run(self, request, workspace, editor, editor_test_results, launcher_platform):
         """
         User-overrideable wrapper function, which will run before and after test.
         Any code before the 'yield' statement will run before the test. With code after yield run after the test.
         """
         yield
 
-    @staticmethod
-    def teardown(instance, request, workspace, editor, editor_test_results, launcher_platform):
+    def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
         """
         User-overrideable teardown function, which will run after the test
         """
         pass
 
 
-@pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
-class EditorTestSuite(TestSuite):
-    pass
+class EditorSharedTest(SharedTest):
+    """Editor shared test, see the SharedTest base class for more info."""
+    # Specifies if the test can be batched in the same editor instance.
+    is_batchable = True
+    # Specifies if the test can be run in multiple editor instances in parallel.
+    is_parallelizable = True
 
-    def _exec_editor_test(self,
-                          request: _pytest.fixtures.FixtureRequest,
-                          workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                          editor: ly_test_tools.launchers.platforms.base.Launcher,
-                          run_id: int, log_name:str,
-                          test_spec: TestBase,
-                          cmdline_args: list[str] = None) -> dict[str, Result]:
+
+class EditorParallelTest(EditorSharedTest):
+    """Test that will be run in parallel with tests in multiple editor instances."""
+    is_batchable = False
+    is_parallelizable = True
+
+
+class EditorBatchedTest(EditorSharedTest):
+    """Test that will be run as serially batched with other tests in a single editor instance."""
+    is_batchable = True
+    is_parallelizable = False
+
+
+# @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
+@pytest.mark.usefixtures("crash_log_watchdog")
+class EditorTestSuite(TestSuite):
+    """
+    Customized test run calls for the Editor, utilizes the TestSuite & BaseTestClass classes to achieve this.
+    """
+
+    # Determine the issubclass() check value for single tests.
+    single_test_class_type = EditorSingleTest
+    # Determine the issubclass() check value for shared tests.
+    shared_test_class_type = EditorSharedTest
+
+    def _exec_instance_test(self,
+                            request: _pytest.fixtures.FixtureRequest,
+                            workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                            editor: ly_test_tools.launchers.platforms.base.Launcher,
+                            run_id: int, log_name: str,
+                            test_spec: TestBase,
+                            cmdline_args: list[str] = None) -> dict[str, Result]:
         """
         Starts the editor with the given test and returns an result dict with a single element specifying the result
         :request: The pytest request
@@ -92,7 +104,7 @@ class EditorTestSuite(TestSuite):
         :editor: The LyTestTools Editor object
         :run_id: The unique run id
         :log_name: The name of the editor log to retrieve
-        :test_spec: The type of TestBase
+        :test_spec: The test class
         :cmdline_args: Any additional command line args
         :return: a dictionary of Result objects
         """
@@ -120,7 +132,8 @@ class EditorTestSuite(TestSuite):
         cmdline = [
                       "--runpythontest", test_filename,
                       "-logfile", f"@log@/{log_name}",
-                      "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+                      "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)
+                  ] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
@@ -166,11 +179,11 @@ class EditorTestSuite(TestSuite):
         results[test_spec.__name__] = test_result
         return results
 
-    def _exec_editor_multitest(self, request: _pytest.fixtures.FixtureRequest,
-                               workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                               editor: ly_test_tools.launchers.platforms.base.Launcher, run_id: int, log_name: str,
-                               test_spec_list: list[TestBase],
-                               cmdline_args: list[str] = None) -> dict[str, Result]:
+    def _exec_instance_multitest(self, request: _pytest.fixtures.FixtureRequest,
+                                 workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                                 editor: ly_test_tools.launchers.platforms.base.Launcher, run_id: int, log_name: str,
+                                 test_spec_list: list[TestBase],
+                                 cmdline_args: list[str] = None) -> dict[str, Result]:
         """
         Starts an editor executable with a list of tests and returns a dict of the result of every test ran within that
         editor instance. In case of failure this function also parses the editor output to find out what specific tests
@@ -180,7 +193,7 @@ class EditorTestSuite(TestSuite):
         :editor: The LyTestTools Editor object
         :run_id: The unique run id
         :log_name: The name of the editor log to retrieve
-        :test_spec_list: A list of TestBase tests to run in the same editor instance
+        :test_spec_list: A list of test classes to run in the same editor instance
         :cmdline_args: Any additional command line args
         :return: A dict of Result objects
         """
@@ -207,7 +220,8 @@ class EditorTestSuite(TestSuite):
         cmdline = [
                       "--runpythontest", test_filenames_str,
                       "-logfile", f"@log@/{log_name}",
-                      "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+                      "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)
+                  ] + test_cmdline_args
 
         editor.args.extend(cmdline)
         editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -232,7 +246,8 @@ class EditorTestSuite(TestSuite):
                     results[test_spec.__name__] = Result.Pass(test_spec, output, editor_log_content)
             else:
                 # Scrape the output to attempt to find out which tests failed.
-                # This function should always populate the result list, if it didn't find it, it will have "Unknown" type of result
+                # This function should always populate the result list.
+                # If it didn't find it, it will have "Unknown" type of result.
                 results = self._get_results_using_output(test_spec_list, output, editor_log_content)
                 assert len(results) == len(
                     test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
@@ -241,6 +256,7 @@ class EditorTestSuite(TestSuite):
                 has_crashed = return_code != TestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
                     crashed_result = None
+                    test_spec_name = None
                     for test_spec_name, result in results.items():
                         if isinstance(result, Result.Unknown):
                             if not crashed_result:
@@ -264,7 +280,7 @@ class EditorTestSuite(TestSuite):
                                                                        crash_error, result.editor_log)
                                 crashed_result = result
                             else:
-                                # If there are remaning "Unknown" results, these couldn't execute because of the crash,
+                                # If there are remaining "Unknown" results, these couldn't execute because of the crash,
                                 # update with info about the offender
                                 results[test_spec_name].extra_info = f"This test has unknown result," \
                                                                      f"test '{crashed_result.test_spec.__name__}'" \
@@ -309,22 +325,23 @@ class EditorTestSuite(TestSuite):
     def _run_single_test(self, request: _pytest.fixtures.FixtureRequest,
                          workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                          editor: ly_test_tools.launchers.platforms.base.Launcher,
-                         test_data: TestData, test_spec: EditorSingleTest) -> None:
+                         test_data: TestSuite.TestData,
+                         test_spec: EditorSingleTest) -> None:
         """
         Runs a single test (one editor, one test) with the given specs
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
         :editor: The LyTestTools Editor object
-        :test_data: The TestData from calling test_data()
+        :test_data: The test data from calling TestSuite.TestData()
         :test_spec: The test class that should be a subclass of EditorSingleTest
         :return: None
         """
-        self._setup_editor_test(editor, workspace, test_data)
+        self._setup_instance_test(editor, workspace, test_data)
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
 
-        result = self._exec_editor_test(request, workspace, editor, 1, "editor_test.log", test_spec, extra_cmdline_args)
+        result = self._exec_instance_test(request, workspace, editor, 1, "editor_test.log", test_spec, extra_cmdline_args)
         if result is None:
             logger.error(f"Unexpectedly found no test run in the editor log during {test_spec}")
             result = {"Unknown":
@@ -340,15 +357,15 @@ class EditorTestSuite(TestSuite):
 
     def _run_batched_tests(self, request: _pytest.fixtures.FixtureRequest,
                            workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                           editor: ly_test_tools.launchers.platforms.base.Launcher, test_data: TestData,
-                           test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = None) -> None:
+                           editor: ly_test_tools.launchers.platforms.base.Launcher, test_data: TestSuite.TestData,
+                           test_spec_list: list[SharedTest], extra_cmdline_args: list[str] = None) -> None:
         """
         Runs a batch of tests in one single editor with the given spec list (one editor, multiple tests)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
         :editor: The LyTestTools Editor object
-        :test_data: The TestData from calling test_data()
-        :test_spec_list: A list of EditorSharedTest tests to run
+        :test_data: The test data from calling TestSuite.TestData()
+        :test_spec_list: A list of SharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
@@ -358,9 +375,9 @@ class EditorTestSuite(TestSuite):
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace, test_data)
-        results = self._exec_editor_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list,
-                                              extra_cmdline_args)
+        self._setup_instance_test(editor, workspace, test_data)
+        results = self._exec_instance_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list,
+                                                extra_cmdline_args)
         test_data.results.update(results)
         # If at least one test did not pass, save assets with errors and warnings
         for result in results:
@@ -373,15 +390,17 @@ class EditorTestSuite(TestSuite):
 
     def _run_parallel_tests(self, request: _pytest.fixtures.FixtureRequest,
                             workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                            editor: ly_test_tools.launchers.platforms.base.Launcher, test_data: TestData,
-                            test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = None) -> None:
+                            editor: ly_test_tools.launchers.platforms.base.Launcher,
+                            test_data: TestSuite.TestData,
+                            test_spec_list: list[SharedTest],
+                            extra_cmdline_args: list[str] = None) -> None:
         """
         Runs multiple editors with one test on each editor (multiple editor, one test each)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
         :editor: The LyTestTools Editor object
-        :test_data: The TestData from calling test_data()
-        :test_spec_list: A list of EditorSharedTest tests to run
+        :test_data: The test data from calling TestSuite.TestData()
+        :test_spec_list: A list of SharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
@@ -391,7 +410,7 @@ class EditorTestSuite(TestSuite):
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace, test_data)
+        self._setup_instance_test(editor, workspace, test_data)
         parallel_editors = self._get_number_parallel_instances(request, "--editors-parallel")
         assert parallel_editors > 0, "Must have at least one editor"
 
@@ -405,8 +424,8 @@ class EditorTestSuite(TestSuite):
             for i in range(total_threads):
                 def make_func(test_spec, index, my_editor):
                     def run(request, workspace, extra_cmdline_args):
-                        results = self._exec_editor_test(request, workspace, my_editor, index + 1, f"editor_test.log",
-                                                         test_spec, extra_cmdline_args)
+                        results = self._exec_instance_test(request, workspace, my_editor, index + 1, f"editor_test.log",
+                                                           test_spec, extra_cmdline_args)
                         assert results is not None
                         results_per_thread[index] = results
 
@@ -426,11 +445,11 @@ class EditorTestSuite(TestSuite):
 
             for result in results_per_thread:
                 if result is None:
-                    logger.error("Unexpectedly found no test run in the editor log during EditorParallelTest")
-                    logger.debug(f"Results from EditorParallelTest thread:\n{results_per_thread}")
+                    logger.error("Unexpectedly found no test run in the editor log during ParallelTest")
+                    logger.debug(f"Results from ParallelTest thread:\n{results_per_thread}")
                     result = {"Unknown":
                         Result.Unknown(
-                            test_spec=EditorParallelTest,
+                            test_spec=ParallelTest,
                             extra_info="Unexpectedly found no test run information on stdout in the editor log")}
                 test_data.results.update(result)
                 if not isinstance(result, Result.Pass):
@@ -441,16 +460,17 @@ class EditorTestSuite(TestSuite):
 
     def _run_parallel_batched_tests(self, request: _pytest.fixtures.FixtureRequest,
                                     workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                                    editor: ly_test_tools.launchers.platforms.base.Launcher, test_data: TestData,
-                                    test_spec_list: list[EditorSharedTest],
+                                    editor: ly_test_tools.launchers.platforms.base.Launcher,
+                                    test_data: TestSuite.TestData,
+                                    test_spec_list: list[SharedTest],
                                     extra_cmdline_args: list[str] = None) -> None:
         """
         Runs multiple editors with a batch of tests for each editor (multiple editor, multiple tests each)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
         :editor: The LyTestTools Editor object
-        :test_data: The TestData from calling test_data()
-        :test_spec_list: A list of EditorSharedTest tests to run
+        :test_data: The test data from calling TestSuite.TestData()
+        :test_spec_list: A list of SharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
@@ -460,7 +480,7 @@ class EditorTestSuite(TestSuite):
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace, test_data)
+        self._setup_instance_test(editor, workspace, test_data)
         total_threads = self._get_number_parallel_instances(request, "--editors-parallel")
         assert total_threads > 0, "Must have at least one editor"
         threads = []
@@ -473,9 +493,9 @@ class EditorTestSuite(TestSuite):
                 def run(request, workspace, extra_cmdline_args):
                     results = None
                     if len(test_spec_list_for_editor) > 0:
-                        results = self._exec_editor_multitest(request, workspace, my_editor, index + 1,
-                                                              f"editor_test.log", test_spec_list_for_editor,
-                                                              extra_cmdline_args)
+                        results = self._exec_instance_multitest(request, workspace, my_editor, index + 1,
+                                                                "editor_test.log", test_spec_list_for_editor,
+                                                                extra_cmdline_args)
                         assert results is not None
                     else:
                         results = {}
@@ -496,11 +516,11 @@ class EditorTestSuite(TestSuite):
         save_asset_logs = False
         for result in results_per_thread:
             if result is None:
-                logger.error("Unexpectedly found no test run in the editor log during EditorSharedTest")
-                logger.debug(f"Results from EditorSharedTest thread:\n{results_per_thread}")
+                logger.error("Unexpectedly found no test run in the editor log during SharedTest execution.")
+                logger.debug(f"Results from SharedTest thread:\n{results_per_thread}")
                 result = {"Unknown":
                     Result.Unknown(
-                        test_spec=EditorSharedTest,
+                        test_spec=SharedTest,
                         extra_info="Unexpectedly found no test run information on stdout in the editor log")}
             test_data.results.update(result)
             if not isinstance(result, Result.Pass):
@@ -508,3 +528,4 @@ class EditorTestSuite(TestSuite):
         # If at least one test did not pass, save assets with errors and warnings
         if save_asset_logs:
             editor_utils.save_failed_asset_joblogs(workspace)
+
