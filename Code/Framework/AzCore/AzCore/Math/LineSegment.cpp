@@ -17,12 +17,6 @@ namespace AZ
     {
     }
 
-    LineSegment::LineSegment(const LineSegment& rhs)
-        : m_start(rhs.m_start)
-        , m_end(rhs.m_end)
-    {
-    }
-
     LineSegment LineSegment::CreateFromRayAndLength(const Ray& ray, float length) {
         return LineSegment(ray.GetOrigin(), ray.GetOrigin() + (ray.GetDirection() * length));
     }
@@ -42,8 +36,7 @@ namespace AZ
     }
 
     AZ::Vector3 LineSegment::GetPoint(float t) const {
-        return GetDifference().Lerp(AZ::Vector3(), t) + m_start;
+        return m_start.Lerp(m_end, t);
     }
-
 
 } // namespace AZ

@@ -13,7 +13,6 @@
 
 namespace AZ
 {
-
     class LineSegment;
 
     class Ray
@@ -23,8 +22,7 @@ namespace AZ
 
         Ray() = default;
         Ray(const AZ::Vector3& origin, const AZ::Vector3& direction);
-        Ray(const Ray& rhs);
-
+        
         static Ray CreateFromLineSegment(const LineSegment& segment);
 
         const AZ::Vector3& GetOrigin() const;

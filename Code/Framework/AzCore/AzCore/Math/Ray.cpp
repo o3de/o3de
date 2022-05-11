@@ -18,16 +18,9 @@ namespace AZ
         AZ_MATH_ASSERT(m_direction.IsNormalized(), "direction is not normalized");
     }
 
-    Ray::Ray(const Ray& rhs):
-        m_origin(rhs.m_origin),
-        m_direction(rhs.m_direction) {
-        AZ_MATH_ASSERT(m_direction.IsNormalized(), "direction is not normalized");
-    }
-
     Ray Ray::CreateFromLineSegment(const LineSegment& segment) {
         return Ray(segment.GetStart(), segment.GetDifference().GetNormalized());
     }
-
 
     const AZ::Vector3& Ray::GetOrigin() const
     {

@@ -22,7 +22,6 @@ namespace AZ
 
         LineSegment() = default;
         LineSegment(const AZ::Vector3& start, const AZ::Vector3& end);
-        LineSegment(const LineSegment& rhs);
 
         static LineSegment CreateFromRayAndLength(const Ray& segment, float length);
 
