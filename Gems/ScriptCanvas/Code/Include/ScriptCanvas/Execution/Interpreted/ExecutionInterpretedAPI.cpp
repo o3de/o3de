@@ -484,8 +484,7 @@ namespace ScriptCanvas
         int SetExecutionOut(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
-
+            
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
             AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");
@@ -507,7 +506,6 @@ namespace ScriptCanvas
         int SetExecutionOutResult(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
 
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOutResult is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOutResult is not a number");
