@@ -30,8 +30,8 @@
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 
-#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
 namespace DPEDebugView
 {
@@ -97,9 +97,7 @@ int main(int argc, char** argv)
     }
     theWindow->show();
 
-    // QPointer <AzToolsFramework::ReflectedPropertyEditor> rpeInstance = new AzToolsFramework::ReflectedPropertyEditor(nullptr);
-    // rpeInstance->show();
-
+    // create a real DPE on the same adapter as the debug adapter for testing purposes
     QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
     dpeInstance->SetAdapter(&cvarAdapter);
     dpeInstance->show();

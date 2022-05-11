@@ -9,10 +9,10 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QFrame>
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <QFrame>
 
 class QVBoxLayout;
 class QHBoxLayout;
@@ -29,13 +29,21 @@ namespace AzToolsFramework
         DPERowWidget(QWidget* parentWidget);
         ~DPERowWidget();
 
-        void Clear();
-        void PopulateFromValue(const AZ::Dom::Value& domValue);
+        void Clear(); //!< destroy all layout contents and clear DOM children
+        void AddChildFromDomValue(const AZ::Dom::Value& childValue, int domIndex);
+
+        //! clears and repopulates all children from a given DOM array
+        void SetChildrenFromDomArray(const AZ::Dom::Value& domArray);
+
+        //! handles a patch operation at the given path, or delegates to a child that will
+        void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex);
 
     protected:
         QVBoxLayout* m_mainLayout = nullptr;
         QHBoxLayout* m_columnLayout = nullptr;
-        QVBoxLayout* m_childLayout = nullptr;
+        QVBoxLayout* m_childRowLayout = nullptr;
+
+        AZStd::deque<QWidget*> m_domOrderedChildren;
     };
 
     class DocumentPropertyEditor : public QFrame
@@ -48,10 +56,12 @@ namespace AzToolsFramework
         DocumentPropertyEditor(QWidget* parentWidget);
         ~DocumentPropertyEditor();
 
+        //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
 
     protected:
         QVBoxLayout* GetVerticalLayout();
+        void addRowFromValue(const AZ::Dom::Value& domValue, int rowIndex);
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
