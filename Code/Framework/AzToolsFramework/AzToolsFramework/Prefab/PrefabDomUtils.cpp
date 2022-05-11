@@ -432,8 +432,9 @@ namespace AzToolsFramework
                         {
                             AZ_Warning(
                                 "Prefab", false,
-                                "A patch targeting '%s' is identified. Patches must be routed to Entities, Instances, or ContainerEntity.",
-                                patchPath);
+                                "A patch targeting '%.*s' is identified. Patches must be routed to Entities, Instances, or "
+                                "ContainerEntity.",
+                                AZ_STRING_ARG(patchPath));
                         }
                     }
                 }

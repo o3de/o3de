@@ -247,7 +247,6 @@ def AtomEditorComponents_Material_AddedToEntity():
 
         # 15. Enable the use of LOD materials
         material_component.set_component_property_value(AtomComponentProperties.material('Enable LOD Materials'), True)
-        general.idle_wait_frames(1)
         Report.result(
             Tests.enable_lod_materials,
             material_component.get_component_property_value(

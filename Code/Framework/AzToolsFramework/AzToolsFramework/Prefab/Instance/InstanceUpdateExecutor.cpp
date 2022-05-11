@@ -28,7 +28,12 @@ namespace AzToolsFramework
     {
         InstanceUpdateExecutor::InstanceUpdateExecutor(int instanceCountToUpdateInBatch)
             : m_instanceCountToUpdateInBatch(instanceCountToUpdateInBatch)
-        { 
+            , m_GameModeEventHandler(
+                  [this](GameModeState state)
+                  {
+                      m_isGameModeInProgress = (state == GameModeState::Started);
+                  })
+        {
         }
 
         void InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface()
@@ -50,6 +55,7 @@ namespace AzToolsFramework
 
         void InstanceUpdateExecutor::UnregisterInstanceUpdateExecutorInterface()
         {
+            m_GameModeEventHandler.Disconnect();
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
@@ -89,12 +95,25 @@ namespace AzToolsFramework
                 return entry == instance;
             });
         }
-
+        void InstanceUpdateExecutor::LazyConnectGameModeEventHandler()
+        {
+            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            
+            if (!m_GameModeEventHandler.IsConnected() && prefabEditorEntityOwnershipInterface)
+            {
+                prefabEditorEntityOwnershipInterface->RegisterGameModeEventHandler(m_GameModeEventHandler);
+            }
+            
+        }
         bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            LazyConnectGameModeEventHandler();
+
             bool isUpdateSuccessful = true;
-            if (!m_updatingTemplateInstancesInQueue)
+            if (!m_updatingTemplateInstancesInQueue && !m_isGameModeInProgress)
             {
                 m_updatingTemplateInstancesInQueue = true;
 

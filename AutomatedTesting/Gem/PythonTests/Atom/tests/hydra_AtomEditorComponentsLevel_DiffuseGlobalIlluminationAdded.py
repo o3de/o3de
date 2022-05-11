@@ -53,6 +53,7 @@ def AtomEditorComponentsLevel_DiffuseGlobalIllumination_AddedToEntity():
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorLevelEntity
+    from editor_python_test_tools.prefab_utils import wait_for_propagation as WaitForPrefabPropagation
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties, GLOBAL_ILLUMINATION_QUALITY
 
@@ -66,6 +67,7 @@ def AtomEditorComponentsLevel_DiffuseGlobalIllumination_AddedToEntity():
         # 1. Add Diffuse Global Illumination level component to the level entity.
         diffuse_global_illumination_component = EditorLevelEntity.add_component(
             AtomComponentProperties.diffuse_global_illumination())
+        WaitForPrefabPropagation()
         Report.critical_result(
             Tests.diffuse_global_illumination_component,
             EditorLevelEntity.has_component(AtomComponentProperties.diffuse_global_illumination()))
@@ -73,14 +75,14 @@ def AtomEditorComponentsLevel_DiffuseGlobalIllumination_AddedToEntity():
         # 2. UNDO the level component addition.
         # -> UNDO component addition.
         general.undo()
-        general.idle_wait_frames(1)
+        WaitForPrefabPropagation()
         Report.result(Tests.creation_undo,
                       not EditorLevelEntity.has_component(AtomComponentProperties.diffuse_global_illumination()))
 
         # 3. REDO the level component addition.
         # -> REDO component addition.
         general.redo()
-        general.idle_wait_frames(1)
+        WaitForPrefabPropagation()
         Report.result(Tests.creation_redo,
                       EditorLevelEntity.has_component(AtomComponentProperties.diffuse_global_illumination()))
 
