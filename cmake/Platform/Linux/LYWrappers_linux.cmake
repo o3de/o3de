@@ -71,41 +71,31 @@ function(ly_apply_debug_strip_options target)
     # Check the target type
     get_target_property(target_type ${target} TYPE)
 
+    # This script only supports executables, applications, modules, static libraries, and shared libraries
     if (NOT ${target_type} STREQUAL "STATIC_LIBRARY" AND 
         NOT ${target_type} STREQUAL "MODULE_LIBRARY" AND 
         NOT ${target_type} STREQUAL "SHARED_LIBRARY" AND 
         NOT ${target_type} STREQUAL "EXECUTABLE" AND 
         NOT ${target_type} STREQUAL "APPLICATION")
-        # Only executables, applications, modules, static libraries, and share libraries can have their debug symbols stripped
         return()
     endif()
 
     if (${LY_STRIP_DEBUG_SYMBOLS})
-
-        add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/StripDebugSymbols.cmake"
-                    ${GNU_STRIP_TOOL}
-                    "$<TARGET_FILE:${target}>"
-                    "$<CONFIG>"
-            COMMENT "Stripping debug symbols ..."
-            VERBATIM
-        )
-
+        set(DETACH_DEBUG_OPTION "DISCARD")
     else()
-
-        # Debug symbols cannot be detached and the debug link reattached to static libraries
-        if (NOT ${target_type} STREQUAL "STATIC_LIBRARY")
-
-            add_custom_command(TARGET ${target} POST_BUILD
-                COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/DetachDebugSymbols.cmake"
-                        ${GNU_STRIP_TOOL}
-                        ${GNU_OBJCOPY}
-                        "$<TARGET_FILE:${target}>"
-                        ${LY_DEBUG_SYMBOLS_FILE_EXTENSION}
-                COMMENT "Detaching debug symbols ..."
-                VERBATIM
-            )
-        endif()
+        set(DETACH_DEBUG_OPTION "DETACH")
     endif()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/ProcessDebugSymbols.cmake"
+                ${GNU_STRIP_TOOL}
+                ${GNU_OBJCOPY}
+                "$<TARGET_FILE:${target}>"
+                ${LY_DEBUG_SYMBOLS_FILE_EXTENSION}
+                ${target_type}
+                ${DETACH_DEBUG_OPTION}
+        COMMENT "Processing debug symbols ..."
+        VERBATIM
+    )
 
 endfunction()
