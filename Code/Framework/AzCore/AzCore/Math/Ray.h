@@ -22,11 +22,12 @@ namespace AZ
 
         Ray() = default;
         Ray(const AZ::Vector3& origin, const AZ::Vector3& direction);
-        
+
         static Ray CreateFromLineSegment(const LineSegment& segment);
 
         const AZ::Vector3& GetOrigin() const;
         const AZ::Vector3& GetDirection() const;
+
     private:
         AZ::Vector3 m_origin;
         AZ::Vector3 m_direction;

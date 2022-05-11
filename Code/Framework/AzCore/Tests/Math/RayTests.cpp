@@ -9,14 +9,15 @@
 #include <AzCore/Math/Ray.h>
 #include <AzCore/Math/LineSegment.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest
 {
     TEST(MATH_Ray, Ray_CreateFromOriginAndDirection)
     {
         AZ::Ray ray(AZ::Vector3(0.0f, 0.5f, 12.0f), AZ::Vector3(3.0f, 0.0f, 4.0f).GetNormalized());
-        EXPECT_TRUE(ray.GetOrigin().IsClose(AZ::Vector3(0.0f, 0.5f, 12.0f)));
-        EXPECT_TRUE(ray.GetDirection().IsClose(AZ::Vector3(3.0f, 0.0f, 4.0f).GetNormalized()));
+        EXPECT_THAT(ray.GetOrigin(), IsClose(AZ::Vector3(0.0f, 0.5f, 12.0f)));
+        EXPECT_THAT(ray.GetDirection(), IsClose(AZ::Vector3(3.0f, 0.0f, 4.0f).GetNormalized()));
     }
 
     TEST(MATH_Ray, Ray_CreateFromLineSegment)
@@ -24,7 +25,7 @@ namespace UnitTest
         AZ::LineSegment segment(AZ::Vector3(0.0f, 0.5f, 12.0f), AZ::Vector3(15.0f, 0.0f, 3.0f));
         AZ::Ray ray = AZ::Ray::CreateFromLineSegment(segment);
 
-        EXPECT_TRUE(ray.GetOrigin().IsClose(AZ::Vector3(0.0f, 0.5f, 12.0f)));
-        EXPECT_TRUE(ray.GetDirection().IsClose((AZ::Vector3(15.0f, 0.0f, 3.0f) - AZ::Vector3(0.0f, 0.5f, 12.0f)).GetNormalized()));
+        EXPECT_THAT(ray.GetOrigin(), IsClose(AZ::Vector3(0.0f, 0.5f, 12.0f)));
+        EXPECT_THAT(ray.GetDirection(), IsClose((AZ::Vector3(15.0f, 0.0f, 3.0f) - AZ::Vector3(0.0f, 0.5f, 12.0f)).GetNormalized()));
     }
 }

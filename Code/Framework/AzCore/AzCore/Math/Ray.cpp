@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzCore/Math/Ray.h>
 #include <AzCore/Math/LineSegment.h>
+#include <AzCore/Math/Ray.h>
 
 namespace AZ
 {
@@ -18,7 +18,8 @@ namespace AZ
         AZ_MATH_ASSERT(m_direction.IsNormalized(), "direction is not normalized");
     }
 
-    Ray Ray::CreateFromLineSegment(const LineSegment& segment) {
+    Ray Ray::CreateFromLineSegment(const LineSegment& segment)
+    {
         return Ray(segment.GetStart(), segment.GetDifference().GetNormalized());
     }
 

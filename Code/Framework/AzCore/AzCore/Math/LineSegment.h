@@ -27,7 +27,7 @@ namespace AZ
 
         const AZ::Vector3& GetStart() const;
         const AZ::Vector3& GetEnd() const;
-    
+
         AZ::Vector3 GetDifference() const;
         AZ::Vector3 GetPoint(float t) const;
 
@@ -36,4 +36,4 @@ namespace AZ
         AZ::Vector3 m_end;
     };
 
-} // namespace O3DE
+} // namespace AZ
