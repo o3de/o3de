@@ -14,7 +14,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ObjectEditor.h>
-#include <Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.h>
+#include <Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h>
 
 namespace EMotionFX
 {
@@ -25,7 +25,7 @@ namespace EMotionFX
             !physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes.empty();
     }
 
-    PhysicsSetupColliderTranslationManipulators::PhysicsSetupColliderTranslationManipulators()
+    ColliderTranslationManipulators::ColliderTranslationManipulators()
         : m_translationManipulators(
               AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne())
     {
@@ -33,12 +33,12 @@ namespace EMotionFX
         EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
-    PhysicsSetupColliderTranslationManipulators::~PhysicsSetupColliderTranslationManipulators()
+    ColliderTranslationManipulators::~ColliderTranslationManipulators()
     {
         EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
     }
 
-    void PhysicsSetupColliderTranslationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    void ColliderTranslationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
@@ -111,7 +111,7 @@ namespace EMotionFX
             });
     }
 
-    void PhysicsSetupColliderTranslationManipulators::Refresh()
+    void ColliderTranslationManipulators::Refresh()
     {
         if (CanCreateManipulators(m_physicsSetupManipulatorData))
         {
@@ -120,12 +120,12 @@ namespace EMotionFX
         }
     }
 
-    void PhysicsSetupColliderTranslationManipulators::Teardown()
+    void ColliderTranslationManipulators::Teardown()
     {
         m_translationManipulators.Unregister();
     }
 
-    void PhysicsSetupColliderTranslationManipulators::ResetValues()
+    void ColliderTranslationManipulators::ResetValues()
     {
         if (CanCreateManipulators(m_physicsSetupManipulatorData))
         {
@@ -134,13 +134,13 @@ namespace EMotionFX
         }
     }
 
-    AZ::Vector3 PhysicsSetupColliderTranslationManipulators::GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset) const
+    AZ::Vector3 ColliderTranslationManipulators::GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset) const
     {
         const float scale = AZ::GetMax(AZ::MinTransformScale, m_physicsSetupManipulatorData.m_nodeWorldTransform.GetUniformScale());
         return startPosition + offset / scale;
     }
 
-    void PhysicsSetupColliderTranslationManipulators::OnManipulatorMoved(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
+    void ColliderTranslationManipulators::OnManipulatorMoved(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
     {
         AZ::Vector3 newPosition = GetPosition(startPosition, offset);
         if (CanCreateManipulators(m_physicsSetupManipulatorData))
@@ -151,7 +151,7 @@ namespace EMotionFX
         m_physicsSetupManipulatorData.m_collidersWidget->Update();
     }
 
-    void PhysicsSetupColliderTranslationManipulators::BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
+    void ColliderTranslationManipulators::BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
     {
         if (!m_commandGroup.IsEmpty())
         {
@@ -168,7 +168,7 @@ namespace EMotionFX
         command->SetOldPosition(GetPosition(startPosition, offset));
     }
 
-    void PhysicsSetupColliderTranslationManipulators::FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
+    void ColliderTranslationManipulators::FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
     {
         if (m_commandGroup.IsEmpty())
         {
@@ -184,14 +184,14 @@ namespace EMotionFX
         m_commandGroup.Clear();
     }
 
-    bool PhysicsSetupColliderTranslationManipulators::DataChangedCallback::Execute(
+    bool ColliderTranslationManipulators::DataChangedCallback::Execute(
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         m_manipulators->Refresh();
         return true;
     }
 
-    bool PhysicsSetupColliderTranslationManipulators::DataChangedCallback::Undo(
+    bool ColliderTranslationManipulators::DataChangedCallback::Undo(
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         m_manipulators->Refresh();

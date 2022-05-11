@@ -8,14 +8,14 @@
 
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
-#include <Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.h>
+#include <Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 
 namespace EMotionFX
 {
     PhysicsSetupViewportUiCluster::PhysicsSetupViewportUiCluster()
     {
-        m_subModes[SubMode::ColliderTranslation] = AZStd::make_unique<PhysicsSetupColliderTranslationManipulators>();
+        m_subModes[SubMode::ColliderTranslation] = AZStd::make_unique<ColliderTranslationManipulators>();
     }
 
     void PhysicsSetupViewportUiCluster::SetCurrentMode(SubMode mode)

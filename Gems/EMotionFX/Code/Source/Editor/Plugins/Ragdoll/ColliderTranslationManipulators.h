@@ -15,11 +15,11 @@
 
 namespace EMotionFX
 {
-    class PhysicsSetupColliderTranslationManipulators : public PhysicsSetupManipulatorsBase
+    class ColliderTranslationManipulators : public PhysicsSetupManipulatorsBase
     {
     public:
-        PhysicsSetupColliderTranslationManipulators();
-        ~PhysicsSetupColliderTranslationManipulators();
+        ColliderTranslationManipulators();
+        ~ColliderTranslationManipulators();
         void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;
@@ -41,7 +41,7 @@ namespace EMotionFX
 
         public:
             explicit DataChangedCallback(
-                PhysicsSetupColliderTranslationManipulators* manipulators, bool executePreUndo, bool executePreCommand = false)
+                ColliderTranslationManipulators* manipulators, bool executePreUndo, bool executePreCommand = false)
                 : MCore::Command::Callback(executePreUndo, executePreCommand)
                 , m_manipulators(manipulators)
             {
@@ -50,7 +50,7 @@ namespace EMotionFX
             bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine) override;
 
         private:
-            PhysicsSetupColliderTranslationManipulators* m_manipulators{};
+            ColliderTranslationManipulators* m_manipulators{};
         };
 
         AZStd::unique_ptr<DataChangedCallback> m_adjustColliderCallback;

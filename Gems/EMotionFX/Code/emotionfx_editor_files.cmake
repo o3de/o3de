@@ -80,6 +80,8 @@ set(FILES
     Source/Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.cpp
     Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.h
     Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.cpp
+    Source/Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h
+    Source/Editor/Plugins/Ragdoll/ColliderTranslationManipulators.cpp
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.cpp
     Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h
@@ -89,8 +91,6 @@ set(FILES
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.cpp
     Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h
-    Source/Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.h
-    Source/Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.h
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h
