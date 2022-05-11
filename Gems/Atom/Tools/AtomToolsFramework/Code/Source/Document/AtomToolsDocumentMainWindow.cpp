@@ -68,7 +68,7 @@ namespace AtomToolsFramework
         QAction* insertPostion = !m_menuFile->actions().empty() ? m_menuFile->actions().front() : nullptr;
 
         // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
-        m_actionNew = CreateAction("&New...", [this]() {
+        m_actionNew = CreateActionAtPosition(m_menuFile, insertPostion, "&New...", [this]() {
             AZStd::string openPath;
             AZStd::string savePath;
             if (GetCreateDocumentParams(openPath, savePath))
@@ -77,15 +77,13 @@ namespace AtomToolsFramework
                     m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFilePath, openPath, savePath);
             }
         }, QKeySequence::New);
-        m_menuFile->insertAction(insertPostion, m_actionNew);
 
-        m_actionOpen = CreateAction("&Open...", [this]() {
+        m_actionOpen = CreateActionAtPosition(m_menuFile, insertPostion, "&Open...", [this]() {
             for (const auto& path : GetOpenDocumentParams())
             {
                 AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
             }
         }, QKeySequence::Open);
-        m_menuFile->insertAction(insertPostion, m_actionOpen);
 
         m_menuOpenRecent = new QMenu("Open Recent", this);
         connect(m_menuOpenRecent, &QMenu::aboutToShow, this, [this]() {
@@ -94,7 +92,7 @@ namespace AtomToolsFramework
         m_menuFile->insertMenu(insertPostion, m_menuOpenRecent);
         m_menuFile->insertSeparator(insertPostion);
 
-        m_actionSave = CreateAction("&Save", [this]() {
+        m_actionSave = CreateActionAtPosition(m_menuFile, insertPostion, "&Save", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             bool result = false;
             AtomToolsDocumentSystemRequestBus::EventResult(
@@ -104,9 +102,8 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::Save);
-        m_menuFile->insertAction(insertPostion, m_actionSave);
 
-        m_actionSaveAsCopy = CreateAction("Save &As...", [this]() {
+        m_actionSaveAsCopy = CreateActionAtPosition(m_menuFile, insertPostion, "Save &As...", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
 
@@ -119,9 +116,8 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document save failed: %1").arg(documentPath));
             }
         }, QKeySequence::SaveAs);
-        m_menuFile->insertAction(insertPostion, m_actionSaveAsCopy);
 
-        m_actionSaveAsChild = CreateAction("Save As &Child...", [this]() {
+        m_actionSaveAsChild = CreateActionAtPosition(m_menuFile, insertPostion, "Save As &Child...", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
 
@@ -134,9 +130,8 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document save failed: %1").arg(documentPath));
             }
         });
-        m_menuFile->insertAction(insertPostion, m_actionSaveAsChild);
 
-        m_actionSaveAll = CreateAction("Save A&ll", [this]() {
+        m_actionSaveAll = CreateActionAtPosition(m_menuFile, insertPostion, "Save A&ll", [this]() {
             bool result = false;
             AtomToolsDocumentSystemRequestBus::EventResult(
                 result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments);
@@ -145,31 +140,27 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document save all failed"));
             }
         });
-        m_menuFile->insertAction(insertPostion, m_actionSaveAll);
         m_menuFile->insertSeparator(insertPostion);
 
-        m_actionClose = CreateAction("&Close", [this]() {
+        m_actionClose = CreateActionAtPosition(m_menuFile, insertPostion, "&Close", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
         }, QKeySequence::Close);
-        m_menuFile->insertAction(insertPostion, m_actionClose);
 
-        m_actionCloseAll = CreateAction("Close All", [this]() {
+        m_actionCloseAll = CreateActionAtPosition(m_menuFile, insertPostion, "Close All", [this]() {
             AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
         });
-        m_menuFile->insertAction(insertPostion, m_actionCloseAll);
 
-        m_actionCloseOthers = CreateAction("Close Others", [this]() {
+        m_actionCloseOthers = CreateActionAtPosition(m_menuFile, insertPostion, "Close Others", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             AtomToolsDocumentSystemRequestBus::Event(
                 m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
         });
-        m_menuFile->insertAction(insertPostion, m_actionCloseOthers);
         m_menuFile->insertSeparator(insertPostion);
 
         insertPostion = !m_menuEdit->actions().empty() ? m_menuEdit->actions().front() : nullptr;
 
-        m_actionUndo = CreateAction("&Undo", [this]() {
+        m_actionUndo = CreateActionAtPosition(m_menuEdit, insertPostion, "&Undo", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             bool result = false;
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Undo);
@@ -178,9 +169,8 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document undo failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::Undo);
-        m_menuEdit->insertAction(insertPostion, m_actionUndo);
 
-        m_actionRedo = CreateAction("&Redo", [this]() {
+        m_actionRedo = CreateActionAtPosition(m_menuEdit, insertPostion, "&Redo", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             bool result = false;
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Redo);
@@ -189,20 +179,17 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document redo failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::Redo);
-        m_menuEdit->insertAction(insertPostion, m_actionRedo);
         m_menuEdit->insertSeparator(insertPostion);
 
         insertPostion = !m_menuView->actions().empty() ? m_menuView->actions().front() : nullptr;
 
-        m_actionPreviousTab = CreateAction("&Previous Tab", [this]() {
+        m_actionPreviousTab = CreateActionAtPosition(m_menuView, insertPostion, "&Previous Tab", [this]() {
             SelectPrevDocumentTab();
         }, Qt::CTRL | Qt::SHIFT | Qt::Key_Tab); //QKeySequence::PreviousChild is mapped incorrectly in Qt
-        m_menuView->insertAction(insertPostion, m_actionPreviousTab);
 
-        m_actionNextTab = CreateAction("&Next Tab", [this]() {
+        m_actionNextTab = CreateActionAtPosition(m_menuView, insertPostion, "&Next Tab", [this]() {
             SelectNextDocumentTab();
         }, Qt::CTRL | Qt::Key_Tab); //QKeySequence::NextChild works as expected but mirroring Previous
-        m_menuView->insertAction(insertPostion, m_actionNextTab);
         m_menuView->insertSeparator(insertPostion);
     }
 
@@ -622,11 +609,13 @@ namespace AtomToolsFramework
     }
 
     template<typename Functor>
-    QAction* AtomToolsDocumentMainWindow::CreateAction(const QString& text, Functor functor, const QKeySequence& shortcut)
+    QAction* AtomToolsDocumentMainWindow::CreateActionAtPosition(
+        QMenu* parent, QAction* position, const QString& text, Functor functor, const QKeySequence& shortcut)
     {
-        QAction* action = new QAction(text, this);
+        QAction* action = new QAction(text, parent);
         action->setShortcut(shortcut);
-        connect(action, &QAction::triggered, this, functor);
+        connect(action, &QAction::triggered, parent, functor);
+        parent->insertAction(position, action);
         return action;
     }
 } // namespace AtomToolsFramework
