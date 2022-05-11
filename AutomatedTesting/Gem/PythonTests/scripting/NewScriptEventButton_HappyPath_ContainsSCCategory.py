@@ -6,11 +6,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from PySide2 import QtWidgets
-import azlmbr.legacy.general as general
-
-import editor_python_test_tools.pyside_utils as pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
+import azlmbr.legacy.general as general
+import editor_python_test_tools.pyside_utils as pyside_utils
 
 
 class Tests:
@@ -20,7 +19,7 @@ class Tests:
     script_event = "New Script event created in Asset Editor"
 
 
-GENERAL_WAIT = 0.5  # seconds
+GENERAL_WAIT = 3  # seconds
 
 
 class TestAssetEditor_NewScriptEvent:
@@ -54,17 +53,18 @@ class TestAssetEditor_NewScriptEvent:
         # 1) Open Script Canvas window (Tools > Script Canvas)
         general.idle_enable(True)
         general.open_pane("Script Canvas")
-        helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 5.0)
+        helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), GENERAL_WAIT)
 
         # 2) Close any existing AssetEditor window
         general.close_pane("Asset Editor")
-        helper.wait_for_condition(lambda: not general.is_pane_visible("Asset Editor"), 5.0)
+        helper.wait_for_condition(lambda: not general.is_pane_visible("Asset Editor"), GENERAL_WAIT)
 
         # 3) Get the SC window object
         editor_window = pyside_utils.get_editor_main_window()
         sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
         node_palette = sc.findChild(QtWidgets.QDockWidget, "NodePalette")
         frame = node_palette.findChild(QtWidgets.QFrame, "searchCustomization")
+
         button = frame.findChild(QtWidgets.QToolButton)
         pyside_utils.click_button_async(button)
 
@@ -73,15 +73,14 @@ class TestAssetEditor_NewScriptEvent:
 
         def menu_has_focus():
             nonlocal menu
-            for fw in [
+            for focused_window in [
                 QtWidgets.QApplication.activePopupWidget(),
                 QtWidgets.QApplication.activeModalWidget(),
                 QtWidgets.QApplication.focusWidget(),
                 QtWidgets.QApplication.activeWindow(),
             ]:
-                print(fw)
-                if fw and isinstance(fw, QtWidgets.QMenu) and fw.isVisible():
-                    menu = fw
+                if focused_window and isinstance(focused_window, QtWidgets.QMenu) and focused_window.isVisible():
+                    menu = focused_window
                     return True
             return False
 
@@ -98,15 +97,21 @@ class TestAssetEditor_NewScriptEvent:
         # 6) Verify if a new asset with Script Canvas category is opened
         asset_editor = editor_window.findChild(QtWidgets.QDockWidget, "Asset Editor")
         row_container = asset_editor.findChild(QtWidgets.QWidget, "ContainerForRows")
+
         # NOTE: QWidget ContainerForRows will have frames of Name, Category, ToolTip etc.
         # To validate if a new script event file is generated, we check for
-        # QFrame Category and its value
+        # QFrame Category and its value.
+        # Order of objects in container not guaranteed!
         categories = row_container.findChildren(QtWidgets.QFrame, "Category")
         Report.info(f"{Tests.new_asset}: {len(categories)>0}")
         result = False
         for frame in categories:
+
             line_edit = frame.findChild(QtWidgets.QLineEdit)
-            result = True if (line_edit and line_edit.text() == "Script Events") else False
+            if line_edit and line_edit.text() == "Script Events":
+                result = True
+                break
+
         Report.info(f"{Tests.script_event}: {result}")
 
         # 7) Close Script Canvas and Asset Editor
