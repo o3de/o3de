@@ -9,6 +9,7 @@
 #include <RecastNavigationModuleInterface.h>
 #include <Components/Editor/EditorRecastNavigationMeshComponent.h>
 #include <Components/Editor/EditorRecastNavigationSurveyorComponent.h>
+#include <Components/Editor/EditorRecastNavigationTiledSurveyorComponent.h>
 
 namespace RecastNavigation
 {
@@ -24,6 +25,7 @@ namespace RecastNavigation
             m_descriptors.insert(m_descriptors.end(), {
                 EditorRecastNavigationMeshComponent::CreateDescriptor(),
                 EditorRecastNavigationSurveyorComponent::CreateDescriptor(),
+                EditorRecastNavigationTiledSurveyorComponent::CreateDescriptor(),
             });
         }
     };

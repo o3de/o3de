@@ -6,73 +6,78 @@
  *
  */
 
-#include "RecastNavigationTiledSurveyorComponent.h"
+#include "EditorRecastNavigationTiledSurveyorComponent.h"
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Math/MathStringConversions.h>
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <Components/RecastNavigationTiledSurveyorComponent.h>
+#include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 #pragma optimize("", off)
 
+AZ_DECLARE_BUDGET(Navigation);
+
 namespace RecastNavigation
 {
-    void RecastNavigationTiledSurveyorComponent::Reflect(AZ::ReflectContext* context)
+    void EditorRecastNavigationTiledSurveyorComponent::Reflect(AZ::ReflectContext* context)
     {
         if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<RecastNavigationTiledSurveyorComponent, AZ::Component>()
+            serialize->Class<EditorRecastNavigationTiledSurveyorComponent, AZ::Component>()
+                ->Field("Select by Tags", &EditorRecastNavigationTiledSurveyorComponent::m_tagSelectionList)
                 ->Version(1)
                 ;
-        }
 
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<RecastNavigationTiledSurveyorComponent>()->RequestBus("RecastNavigationSurveyorRequestBus");
+            if (AZ::EditContext* ec = serialize->GetEditContext())
+            {
+                ec->Class<EditorRecastNavigationTiledSurveyorComponent>("Recast Navigation Tiled Surveyor",
+                    "[Collects the geometry for navigation mesh within the area defined by a shape component]")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(nullptr, &EditorRecastNavigationTiledSurveyorComponent::m_tagSelectionList, "Select by Tags",
+                        "if specified, only entities with Tag component of provided tag values will be considered when building navigation mesh. "
+                        "If no tags are specified, any static PhysX object within the area will be included in navigation mesh calculations.")
+                    ;
+            }
         }
     }
 
-    void RecastNavigationTiledSurveyorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void EditorRecastNavigationTiledSurveyorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("RecastNavigationTiledSurveyorComponent"));
+        provided.push_back(AZ_CRC_CE("RecastNavigationSurveyorComponent"));
         provided.push_back(AZ_CRC_CE("RecastNavigationSurveyorService"));
     }
 
-    void RecastNavigationTiledSurveyorComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void EditorRecastNavigationTiledSurveyorComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("RecastNavigationTiledSurveyorComponent"));
+        incompatible.push_back(AZ_CRC_CE("RecastNavigationSurveyorComponent"));
         incompatible.push_back(AZ_CRC_CE("RecastNavigationSurveyorService"));
     }
 
-    void RecastNavigationTiledSurveyorComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void EditorRecastNavigationTiledSurveyorComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("BoxShapeService"));
     }
 
-    void RecastNavigationTiledSurveyorComponent::CollectGeometryWithinVolume(const AZ::Aabb& volume, AzPhysics::SceneQueryHits& overlapHits)
+    int EditorRecastNavigationTiledSurveyorComponent::GetNumberOfTiles(float tileSize) const
     {
-        AZ::Vector3 dimension = volume.GetExtents();
-        AZ::Transform pose = AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), volume.GetCenter());
+        const AZ::Aabb worldVolume = GetWorldBounds();
 
-        Physics::BoxShapeConfiguration shapeConfiguration;
-        shapeConfiguration.m_dimensions = dimension;
+        const AZ::Vector3 extents = worldVolume.GetExtents();
+        const int tilesAlongX = static_cast<int>(AZStd::ceilf(extents.GetX() / tileSize));
+        const int tilesAlongY = static_cast<int>(AZStd::ceilf(extents.GetY() / tileSize));
 
-        AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
-        request.m_queryType = AzPhysics::SceneQuery::QueryType::Static;
-        request.m_collisionGroup = AzPhysics::CollisionGroup::All;
-
-        auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
-        AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
-        overlapHits = AZ::Interface<AzPhysics::SceneInterface>::Get()->QueryScene(sceneHandle, &request);
+        return tilesAlongX * tilesAlongY;
     }
 
-    void RecastNavigationTiledSurveyorComponent::AppendColliderGeometry(
+    void EditorRecastNavigationTiledSurveyorComponent::AppendColliderGeometry(
         TileGeometry& geometry,
         const AzPhysics::SceneQueryHits& overlapHits)
     {
@@ -117,25 +122,38 @@ namespace RecastNavigation
         }
     }
 
-    void RecastNavigationTiledSurveyorComponent::Activate()
+    void EditorRecastNavigationTiledSurveyorComponent::Activate()
     {
+        for (const AZStd::string& tagName : m_tagSelectionList)
+        {
+            m_tags.push_back(AZ_CRC(tagName));
+        }
+
         AZ::Vector3 position = AZ::Vector3::CreateZero();
         AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
         RecastNavigationSurveyorRequestBus::Handler::BusConnect(GetEntityId());
     }
 
-    void RecastNavigationTiledSurveyorComponent::Deactivate()
+    void EditorRecastNavigationTiledSurveyorComponent::Deactivate()
     {
         RecastNavigationSurveyorRequestBus::Handler::BusDisconnect();
     }
 
-    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationTiledSurveyorComponent::CollectGeometry(float tileSize)
+    void EditorRecastNavigationTiledSurveyorComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    {
+        gameEntity->CreateComponent<RecastNavigationTiledSurveyorComponent>();
+    }
+
+    AZStd::vector<AZStd::shared_ptr<TileGeometry>> EditorRecastNavigationTiledSurveyorComponent::CollectGeometry(
+        [[maybe_unused]] float tileSize)
     {
         if (tileSize == 0.f)
         {
             return {};
         }
+
+        AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometry tiled");
 
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
 
@@ -174,9 +192,6 @@ namespace RecastNavigation
                 geometryData->m_worldBounds = tileVolume;
                 CollectGeometryWithinVolume(scanVolume, results);
 
-                AZ_Printf("RecastNavigationTiledSurveyorComponent", "Found %llu physx meshes in volume %s",
-                    results.m_hits.size(), AZStd::to_string(tileVolume).c_str());
-
                 AppendColliderGeometry(*geometryData, results);
 
                 geometryData->m_tileX = x;
@@ -188,22 +203,28 @@ namespace RecastNavigation
         return tiles;
     }
 
-    AZ::Aabb RecastNavigationTiledSurveyorComponent::GetWorldBounds() const
+    void EditorRecastNavigationTiledSurveyorComponent::CollectGeometryWithinVolume(const AZ::Aabb& volume, AzPhysics::SceneQueryHits& overlapHits)
+    {
+        AZ::Vector3 dimension = volume.GetExtents();
+        AZ::Transform pose = AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), volume.GetCenter());
+
+        Physics::BoxShapeConfiguration shapeConfiguration;
+        shapeConfiguration.m_dimensions = dimension;
+
+        AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
+        request.m_queryType = AzPhysics::SceneQuery::QueryType::Static;
+        request.m_collisionGroup = AzPhysics::CollisionGroup::All;
+
+        auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
+        overlapHits = AZ::Interface<AzPhysics::SceneInterface>::Get()->QueryScene(sceneHandle, &request);
+    }
+
+    AZ::Aabb EditorRecastNavigationTiledSurveyorComponent::GetWorldBounds() const
     {
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(worldBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
         return worldBounds;
-    }
-
-    int RecastNavigationTiledSurveyorComponent::GetNumberOfTiles(float tileSize) const
-    {
-        const AZ::Aabb worldVolume = GetWorldBounds();
-
-        const AZ::Vector3 extents = worldVolume.GetExtents();
-        const int tilesAlongX = static_cast<int>(AZStd::ceilf(extents.GetX() / tileSize));
-        const int tilesAlongY = static_cast<int>(AZStd::ceilf(extents.GetY() / tileSize));
-
-        return tilesAlongX * tilesAlongY;
     }
 } // namespace RecastNavigation
 

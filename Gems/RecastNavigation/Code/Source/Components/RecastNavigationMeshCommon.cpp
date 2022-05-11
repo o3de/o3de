@@ -10,8 +10,8 @@
 
 #include <DetourDebugDraw.h>
 #include <DetourNavMeshBuilder.h>
-#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -22,13 +22,15 @@ AZ_CVAR(
     bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, draw debug visual information about Navigation Mesh");
 
-#pragma optimize("", off)
+AZ_DEFINE_BUDGET(Navigation);
 
 namespace RecastNavigation
 {
     NavigationTileData RecastNavigationMeshCommon::CreateNavigationTile(TileGeometry* geom,
         const RecastNavigationMeshConfig& meshConfig, rcContext* context)
     {
+        AZ_PROFILE_SCOPE(Navigation, "Navigation: CreateNavigationTile");
+
         rcConfig config = {};
         AZStd::vector<AZ::u8> trianglesAreas;
         RecastPointer<rcHeightfield> solid;
@@ -337,6 +339,8 @@ namespace RecastNavigation
 
     bool RecastNavigationMeshCommon::AttachNavigationTileToMesh(NavigationTileData& navigationTileData)
     {
+        AZ_PROFILE_SCOPE(Navigation, "Navigation: addTile");
+
         dtTileRef tileRef = 0;
         const dtStatus status = m_navMesh->addTile(
             navigationTileData.m_data, navigationTileData.m_size,
@@ -351,5 +355,3 @@ namespace RecastNavigation
         return true;
     }
 } // namespace RecastNavigation
-
-#pragma optimize("", on)

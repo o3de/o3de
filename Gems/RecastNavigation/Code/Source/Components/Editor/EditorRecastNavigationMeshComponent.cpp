@@ -12,20 +12,24 @@
 #include <DetourDebugDraw.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <Components/RecastNavigationMeshComponent.h>
 #include <RecastNavigation/RecastNavigationSurveyorBus.h>
 
+AZ_DECLARE_BUDGET(Navigation);
+
 #pragma optimize("", off)
 
 namespace RecastNavigation
 {
     EditorRecastNavigationMeshComponent::EditorRecastNavigationMeshComponent()
-        : m_tickEvent([this]() { OnTick(); }, AZ::Name("EditorRecastNavigationDebugViewTick"))
+        : m_autoUpdateHandler([this](bool changed) { OnAutoUpdateChanged(changed); })
+        , m_showMeshHandler([this](bool changed) { OnShowNavMeshChanged(changed); })
+        , m_tickEvent([this]() { OnTick(); }, AZ::Name("EditorRecastNavigationDebugViewTick"))
         , m_updateNavMeshEvent([this]() { OnUpdateNavMeshEvent(); }, AZ::Name("EditorRecastNavigationUpdateNavMeshInEditor"))
-        , m_updateFrequencyHandler([this](int updatePeriod) { OnUpdatedPeriod(updatePeriod); })
     {
     }
 
@@ -80,29 +84,7 @@ namespace RecastNavigation
 
     AZ::Crc32 EditorRecastNavigationMeshComponent::UpdatedNavigationMeshInEditor()
     {
-        AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
-
-        RecastNavigationSurveyorRequestBus::EventResult(tiles, GetEntityId(),
-            &RecastNavigationSurveyorRequests::CollectGeometry,
-            m_meshConfig.m_tileSize);
-
-        for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
-        {
-            if (tile->IsEmpty())
-            {
-                continue;
-            }
-
-            NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
-                m_meshConfig, m_context.get());
-
-            m_navMesh->removeTile(m_navMesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0), nullptr, nullptr);
-
-            if (navigationTileData.IsValid())
-            {
-                AttachNavigationTileToMesh(navigationTileData);
-            }
-        }
+        OnUpdateNavMeshEvent();
 
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
@@ -128,23 +110,25 @@ namespace RecastNavigation
 
         CreateNavigationMesh(GetEntityId(), m_meshConfig.m_tileSize);
 
-        m_tickEvent.Enqueue(AZ::TimeMs{ 0 }, true);
-
         m_navigationTaskExecutor = AZStd::make_unique<AZ::TaskExecutor>(m_meshEditorConfig.m_backgroundThreadsToUse);
 
-        m_meshEditorConfig.BindUpdateEveryNSecondsFieldEventHandler(m_updateFrequencyHandler);
+        m_meshEditorConfig.BindAutoUpdateChangedEventHandler(m_autoUpdateHandler);
+        m_meshEditorConfig.BindShowNavMeshChangedEventHandler(m_showMeshHandler);
 
-        if (m_meshEditorConfig.m_updateEveryNSeconds >= 0)
-        {
-            m_updateNavMeshEvent.Enqueue(AZ::TimeMs{ m_meshEditorConfig.m_updateEveryNSeconds * 1000 }, true);
-        }
+        OnAutoUpdateChanged(m_meshEditorConfig.m_autoUpdateNavigationMesh);
+        OnShowNavMeshChanged(m_meshEditorConfig.m_showNavigationMesh);
     }
 
     void EditorRecastNavigationMeshComponent::Deactivate()
     {
-        m_updateFrequencyHandler.Disconnect();
-        m_taskGraphEvent->Wait();
-        m_taskGraphEvent = {};
+        m_autoUpdateHandler.Disconnect();
+        m_showMeshHandler.Disconnect();
+
+        if (m_taskGraphEvent)
+        {
+            m_taskGraphEvent->Wait();
+            m_taskGraphEvent = {};
+        }
         m_navigationTaskExecutor = {};
 
         m_tickEvent.RemoveFromQueue();
@@ -191,15 +175,20 @@ namespace RecastNavigation
 
             if (updateNow)
             {
-                AZ::TaskGraph graph;
+                AZ_PROFILE_SCOPE(Navigation, "Navigation: OnUpdateNavMeshEvent");
+
+                m_graph.Reset();
 
                 AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
 
-                RecastNavigationSurveyorRequestBus::EventResult(tiles, GetEntityId(),
-                    &RecastNavigationSurveyorRequests::CollectGeometry,
-                    m_meshConfig.m_tileSize);
+                {
+                    AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometry");
+                    RecastNavigationSurveyorRequestBus::EventResult(tiles, GetEntityId(),
+                        &RecastNavigationSurveyorRequests::CollectGeometry,
+                        m_meshConfig.m_tileSize);
+                }
 
-                AZ::TaskToken updateDoneTask = graph.AddTask(
+                AZ::TaskToken updateDoneTask = m_graph.AddTask(
                     m_taskDescriptor,
                     [this]
                     {
@@ -214,10 +203,12 @@ namespace RecastNavigation
                         continue;
                     }
 
-                    AZ::TaskToken processAndAddTileTask = graph.AddTask(
+                    AZ::TaskToken processAndAddTileTask = m_graph.AddTask(
                         m_taskDescriptor,
                         [this, tile]
                         {
+                            AZ_PROFILE_SCOPE(Navigation, "Navigation: processing a tile");
+
                             NavigationTileData navigationTileData = CreateNavigationTile(
                                 tile.get(),
                                 m_meshConfig, m_context.get());
@@ -237,7 +228,7 @@ namespace RecastNavigation
                 }
 
                 m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
-                graph.SubmitOnExecutor(*m_navigationTaskExecutor, m_taskGraphEvent.get());
+                m_graph.SubmitOnExecutor(*m_navigationTaskExecutor, m_taskGraphEvent.get());
             }
         }
     }
@@ -247,15 +238,27 @@ namespace RecastNavigation
         gameEntity->CreateComponent<RecastNavigationMeshComponent>(m_meshConfig, m_meshEditorConfig.m_showNavigationMesh);
     }
 
-    void EditorRecastNavigationMeshComponent::OnUpdatedPeriod(int newUpdatePeriodInSeconds)
+    void EditorRecastNavigationMeshComponent::OnAutoUpdateChanged(bool changed)
     {
-        if (newUpdatePeriodInSeconds >= 0)
+        if (changed)
         {
-            m_updateNavMeshEvent.Requeue(AZ::TimeMs{ newUpdatePeriodInSeconds * 1000 });
+            m_updateNavMeshEvent.Enqueue(AZ::TimeMs{ 1000 }, true);
         }
         else
         {
             m_updateNavMeshEvent.RemoveFromQueue();
+        }
+    }
+
+    void EditorRecastNavigationMeshComponent::OnShowNavMeshChanged(bool changed)
+    {
+        if (changed)
+        {
+            m_tickEvent.Enqueue(AZ::TimeMs{ 0 }, true);
+        }
+        else
+        {
+            m_tickEvent.RemoveFromQueue();
         }
     }
 } // namespace RecastNavigation

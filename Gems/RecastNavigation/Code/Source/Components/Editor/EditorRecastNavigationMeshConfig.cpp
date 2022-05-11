@@ -18,8 +18,8 @@ namespace RecastNavigation
 
             serialize->Class<EditorRecastNavigationMeshConfig>()
                 ->Field("Draw Mesh", &Self::m_showNavigationMesh)
-                ->Field("Update Every (N) Seconds", &Self::m_updateEveryNSeconds)
-                ->Field("(N) Threads to Use", &Self::m_backgroundThreadsToUse)
+                ->Field("Auto Update in Editor", &Self::m_autoUpdateNavigationMesh)
+                ->Field("Threads", &Self::m_backgroundThreadsToUse)
                 ->Version(1)
                 ;
 
@@ -33,24 +33,36 @@ namespace RecastNavigation
 
                     ->DataElement(nullptr, &Self::m_showNavigationMesh, "Draw Mesh",
                         "Draw the debug view of mesh in Editor viewport")
-                    ->DataElement(nullptr, &Self::m_updateEveryNSeconds, "Update Every (N) Seconds",
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshConfig::OnShowNavMeshChanged)
+                    ->DataElement(nullptr, &Self::m_autoUpdateNavigationMesh, "Auto Update in Editor",
                         "Re-calculate the navigation mesh at least every (N) seconds. A negative value disables updates.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshConfig::OnUpdateEveryNSecondsChanged)
-                    ->DataElement(nullptr, &Self::m_backgroundThreadsToUse, "(N) Threads to Use",
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshConfig::OnAutoUpdateChanged)
+                    ->DataElement(nullptr, &Self::m_backgroundThreadsToUse, "Threads",
                         "Number of background threads to use when re-building navigation mesh in Editor viewport")
                     ;
             }
         }
     }
 
-    void EditorRecastNavigationMeshConfig::BindUpdateEveryNSecondsFieldEventHandler(AZ::Event<int>::Handler& handler)
+    void EditorRecastNavigationMeshConfig::BindAutoUpdateChangedEventHandler(AZ::Event<bool>::Handler& handler)
     {
-        handler.Connect(m_updateEveryNSecondsFieldEvent);
+        handler.Connect(m_autoUpdateNavigationMeshEvent);
     }
 
-    AZ::Crc32 EditorRecastNavigationMeshConfig::OnUpdateEveryNSecondsChanged()
+    void EditorRecastNavigationMeshConfig::BindShowNavMeshChangedEventHandler(AZ::Event<bool>::Handler& handler)
     {
-        m_updateEveryNSecondsFieldEvent.Signal(m_updateEveryNSeconds);
+        handler.Connect(m_showNavigationMeshEvent);
+    }
+
+    AZ::Crc32 EditorRecastNavigationMeshConfig::OnShowNavMeshChanged()
+    {
+        m_showNavigationMeshEvent.Signal(m_showNavigationMesh);
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    AZ::Crc32 EditorRecastNavigationMeshConfig::OnAutoUpdateChanged()
+    {
+        m_autoUpdateNavigationMeshEvent.Signal(m_autoUpdateNavigationMesh);
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 }

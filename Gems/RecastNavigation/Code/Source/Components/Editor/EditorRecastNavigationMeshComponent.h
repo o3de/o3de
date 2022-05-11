@@ -56,14 +56,18 @@ namespace RecastNavigation
         RecastNavigationMeshConfig m_meshConfig;
 
         EditorRecastNavigationMeshConfig m_meshEditorConfig;
-        AZ::Event<int>::Handler m_updateFrequencyHandler;
-        void OnUpdatedPeriod(int newUpdatePeriodInSeconds);
+        AZ::Event<bool>::Handler m_autoUpdateHandler;
+        void OnAutoUpdateChanged(bool changed);
+
+        AZ::Event<bool>::Handler m_showMeshHandler;
+        void OnShowNavMeshChanged(bool changed);
 
         AZStd::mutex m_navigationMeshMutex;
         bool m_updatingNavMeshInProgress = false;
         AZ::TaskDescriptor m_taskDescriptor{ "UpdatingNavMesh", "RecastNavigation" };
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZStd::unique_ptr<AZ::TaskExecutor> m_navigationTaskExecutor;
+        AZ::TaskGraph m_graph;
 
         AZ::Crc32 UpdatedNavigationMeshInEditor();
 

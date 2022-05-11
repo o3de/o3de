@@ -21,14 +21,18 @@ namespace RecastNavigation
         static void Reflect(AZ::ReflectContext* context);
 
         bool m_showNavigationMesh = true;
-        int m_updateEveryNSeconds = -1;
+        bool m_autoUpdateNavigationMesh = false;
         int m_backgroundThreadsToUse = 4;
 
-        void BindUpdateEveryNSecondsFieldEventHandler(AZ::Event<int>::Handler& handler);
+        void BindAutoUpdateChangedEventHandler(AZ::Event<bool>::Handler& handler);
+        void BindShowNavMeshChangedEventHandler(AZ::Event<bool>::Handler& handler);
 
     private:
-        AZ::Crc32 OnUpdateEveryNSecondsChanged();
-        AZ::Event<int> m_updateEveryNSecondsFieldEvent;
+        AZ::Crc32 OnShowNavMeshChanged();
+        AZ::Event<bool> m_showNavigationMeshEvent;
+
+        AZ::Crc32 OnAutoUpdateChanged();
+        AZ::Event<bool> m_autoUpdateNavigationMeshEvent;
     };
 
 } // namespace RecastNavigation
