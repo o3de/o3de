@@ -48,7 +48,7 @@ def Terrain_World_ConfigurationWorks():
      13) Check height value is the expected one when query resolution is changed
     """
 
-    from editor_python_test_tools.prefab_utils import wait_for_propagation as WaitForPrefabPropagation
+    import editor_python_test_tools.prefab_utils as PrefabUtils
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report, Tracer
     import editor_python_test_tools.hydra_editor_utils as hydra
@@ -118,7 +118,7 @@ def Terrain_World_ConfigurationWorks():
         height_provider_entity.get_set_test(2, "Configuration|Frequency", frequency)
         frequencyVal = hydra.get_component_property_value(height_provider_entity.components[2], "Configuration|Frequency")
         Report.result(Tests.frequency_changed, math.isclose(frequency, frequencyVal, abs_tol = 0.00001))
-        WaitForPrefabPropagation()
+        PrefabUtils.wait_for_propagation()
 
         # 9) Set the Gradient List to height_provider_entity
         propertyTree = hydra.get_property_tree(terrain_spawner_entity.components[2])
