@@ -12,6 +12,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <QPixmap>
 
 namespace AZ
@@ -30,15 +31,18 @@ namespace AZ
             //! Open source material in material editor
             virtual void OpenMaterialEditor(const AZStd::string& sourcePath) = 0;
 
-            //! Open material instance editor
+            //! Open the material instance editor to preview and edit material property overrides for the primary entity while applying
+            //! changes to all entities in the editable set
             virtual void OpenMaterialInspector(
-                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;
+                const AZ::EntityId& primaryEntityId,
+                const AzToolsFramework::EntityIdSet& entityIdsToEdit,
+                const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;
 
-            //! Generate a material preview image
+            //! Generate a material preview image for a specific entity and material slot with material and property overrides applied 
             virtual void RenderMaterialPreview(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;
 
-            //! Get recently rendered material preview image
+            //! Get the most recently rendered material preview image for the entity and material slot if one is available
             virtual QPixmap GetRenderedMaterialPreview(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) const = 0;
         };
