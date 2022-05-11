@@ -65,10 +65,45 @@ namespace AzToolsFramework
         return handlerId->m_factory();
     }
 
-    void PropertyEditorToolsSystem::RegisterHandler(HandlerData handlerData)
+    PropertyEditorToolsSystem::PropertyHandlerId PropertyEditorToolsSystem::RegisterHandler(HandlerData handlerData)
     {
-        // Get or create a bucket for handlers with this handler's name
         // Insert a heap allocated holder for the data (heap allocated so that its address can be used as a persistent HandlerId)
-        m_registeredHandlers[AZ::Name(handlerData.m_name)].push_back(AZStd::make_unique<HandlerData>(AZStd::move(handlerData)));
+        auto storedHandlerData = AZStd::make_unique<HandlerData>(AZStd::move(handlerData));
+        PropertyHandlerId newId = storedHandlerData.get();
+        // Get or create a bucket for handlers with this handler's name
+        m_registeredHandlers[AZ::Name(handlerData.m_name)].push_back(AZStd::move(storedHandlerData));
+        return newId;
+    }
+
+    void PropertyEditorToolsSystem::UnregisterHandler(PropertyHandlerId handlerId)
+    {
+        if (handlerId == InvalidHandlerId)
+        {
+            AZ_Assert(false, "Attempted to unregister an invalid handler ID");
+            return;
+        }
+
+        auto handlerBucketIt = m_registeredHandlers.find(AZ::Name(handlerId->m_name));
+        if (handlerBucketIt == m_registeredHandlers.end())
+        {
+            AZ_Warning("DPE", false, "UnregisterHandler: the specified handler was not found");
+        }
+
+        auto& handlerBucket = handlerBucketIt->second;
+        for (auto handlerIt = handlerBucket.begin(); handlerIt != handlerBucket.end(); ++handlerIt)
+        {
+            if (handlerIt->get() == handlerId)
+            {
+                auto endIt = handlerBucket.end() - 1;
+                if (handlerIt != endIt)
+                {
+                    AZStd::swap(*handlerIt, *endIt);
+                }
+                handlerBucket.erase(endIt);
+                return;
+            }
+        }
+
+        AZ_Warning("DPE", false, "UnregisterHandler: the specified handler was not found");
     }
 } // namespace AzToolsFramework

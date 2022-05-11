@@ -23,7 +23,8 @@ namespace AzToolsFramework
 
         PropertyHandlerId GetPropertyHandlerForNode(const AZ::Dom::Value node) override;
         PropertyHandlerInstance CreateHandlerInstance(PropertyHandlerId handlerId) override;
-        void RegisterHandler(HandlerData handlerData) override;
+        PropertyHandlerId RegisterHandler(HandlerData handlerData) override;
+        void UnregisterHandler(PropertyHandlerId handlerId) override;
 
     private:
         AZStd::unordered_map<AZ::Name, AZStd::vector<AZStd::unique_ptr<HandlerData>>> m_registeredHandlers;

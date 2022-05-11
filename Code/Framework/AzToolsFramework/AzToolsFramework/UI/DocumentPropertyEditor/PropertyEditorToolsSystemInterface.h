@@ -31,7 +31,8 @@ namespace AzToolsFramework
 
         virtual PropertyHandlerId GetPropertyHandlerForNode(const AZ::Dom::Value node) = 0;
         virtual PropertyHandlerInstance CreateHandlerInstance(PropertyHandlerId handlerId) = 0;
-        virtual void RegisterHandler(HandlerData handlerData) = 0;
+        virtual PropertyHandlerId RegisterHandler(HandlerData handlerData) = 0;
+        virtual void UnregisterHandler(PropertyHandlerId handlerId) = 0;
 
         template <typename HandlerType>
         void RegisterHandler()
