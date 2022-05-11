@@ -2252,6 +2252,17 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
 
     m_bPrevActive = bActive;
 
+    // Tick System Events, even in the background
+    AZ::ComponentApplicationRequests* componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+    if (componentApplicationRequests)
+    {
+        AZ::ComponentApplication* componentApplication = componentApplicationRequests->GetApplication();
+        if (componentApplication)
+        {
+            componentApplication->TickSystem();
+        }
+    }
+
     // Don't tick application if we're doing idle processing during an assert.
     const bool isErrorWindowVisible = (gEnv && gEnv->pSystem->IsAssertDialogVisible());
     if (isErrorWindowVisible)
@@ -2279,17 +2290,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     else if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
     {
         GetIEditor()->GetSystem()->GetILog()->Update(); // print messages from other threads
-    }
-
-    // Tick System Events, even in the background
-    AZ::ComponentApplicationRequests* componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
-    if (componentApplicationRequests)
-    {
-        AZ::ComponentApplication* componentApplication = componentApplicationRequests->GetApplication();
-        if (componentApplication)
-        {
-            componentApplication->TickSystem();
-        }
     }
 
     DisplayLevelLoadErrors();
