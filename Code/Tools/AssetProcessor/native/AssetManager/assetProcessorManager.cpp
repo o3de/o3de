@@ -5041,6 +5041,7 @@ namespace AssetProcessor
         AZ::u64 filesFound{ 0 };
         for (QString sourcePath : reprocessList)
         {
+            // Remove invalid characters
             sourcePath.remove(QRegExp("[\\n\\r]"));
 
             QString scanFolderName;
@@ -5049,7 +5050,6 @@ namespace AssetProcessor
             {
                 continue;
             }
-            // Remove invalid characters
 
             AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs; //should only find one when we specify builder, job key, platform
             m_stateData->GetJobsBySourceName(relativePathToFile, jobs);
