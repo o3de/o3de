@@ -27,6 +27,7 @@ namespace AzNetworking
     class NetworkingSystemComponent final
         : public AZ::Component
         , public AZ::TickBus::Handler
+        , public AZ::SystemTickBus::Handler
         , public INetworking
     {
     public:
@@ -51,15 +52,22 @@ namespace AzNetworking
         int GetTickOrder() override;
         //! @}
 
+        //! AZ::TickBus::Handler overrides.
+        //! @{
+        void OnSystemTick() override;
+        //! @}
+
         //! INetworking overrides.
         //! @{
         INetworkInterface* CreateNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) override;
+        INetworkInterface* CreateSystemNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) override;
         INetworkInterface* RetrieveNetworkInterface(const AZ::Name& name) override;
         bool DestroyNetworkInterface(const AZ::Name& name) override;
         void RegisterCompressorFactory(ICompressorFactory* factory) override;
         AZStd::unique_ptr<ICompressor> CreateCompressor(const AZStd::string_view name) override;
         bool UnregisterCompressorFactory(const AZStd::string_view name) override;
         const NetworkInterfaces& GetNetworkInterfaces() const override;
+        const NetworkInterfaces& GetSystemNetworkInterfaces() const override;
         uint32_t GetTcpListenThreadSocketCount() const override;
         AZ::TimeMs GetTcpListenThreadUpdateTime() const override;
         uint32_t GetUdpReaderThreadSocketCount() const override;
@@ -76,6 +84,7 @@ namespace AzNetworking
         AZ_CONSOLEFUNC(NetworkingSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for all instantiated network interfaces");
 
         NetworkInterfaces m_networkInterfaces;
+        NetworkInterfaces m_systemNetworkInterfaces;
         AZStd::unique_ptr<TcpListenThread> m_listenThread;
         AZStd::unique_ptr<UdpReaderThread> m_readerThread;
 

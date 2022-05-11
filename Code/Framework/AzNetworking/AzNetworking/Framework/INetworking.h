@@ -46,6 +46,16 @@ namespace AzNetworking
         //! @return pointer to the instantiated network interface, or nullptr on error
         virtual INetworkInterface* CreateNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) = 0;
 
+        //! Creates a new network interface instance with the provided parameters that operates on the SystemTickBus.
+        //! System Network Interfaces are suitable for cases where updates occur regardless of application state such as debug utilities.
+        //! Caller does not assume ownership, instance should be destroyed by calling DestroyNetworkInterface
+        //! @param name         the name to assign to this network interface
+        //! @param protocolType the type of interface to instantiate (Tcp or Udp)
+        //! @param trustZone    the trust level associated with this network interface (client to server or server to server)
+        //! @param listener     the connection listener responsible for handling connection events
+        //! @return pointer to the instantiated network interface, or nullptr on error
+        virtual INetworkInterface* CreateSystemNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) = 0;
+
         //! Retrieves a network interface instance by name.
         //! @param name the name of the network interface to retrieve
         //! @return pointer to the requested network interface, or nullptr on error
@@ -73,6 +83,10 @@ namespace AzNetworking
         //! Returns the raw network interfaces owned by the networking instance.
         //! @return the raw network interfaces owned by the networking instance
         virtual const NetworkInterfaces& GetNetworkInterfaces() const = 0;
+
+        //! Returns the raw network interfaces on the SystemTickBus owned by the networking instance
+        //! @return the raw network interfaces on the SystemTickBus owned by the networking instance
+        virtual const NetworkInterfaces& GetSystemNetworkInterfaces() const = 0;
 
         //! Returns the number of sockets monitored by our TcpListenThread.
         //! @return the number of sockets monitored by our TcpListenThread

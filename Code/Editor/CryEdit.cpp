@@ -2274,17 +2274,18 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
 
             GetIEditor()->Notify(eNotify_OnIdleUpdate);
         }
-
-        AZ::ComponentApplication* componentApplication = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationRequests::GetApplication);
-        if (componentApplication)
-        {
-            componentApplication->TickSystem();
-        }
     }
     else if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
     {
         GetIEditor()->GetSystem()->GetILog()->Update(); // print messages from other threads
+    }
+
+    // Tick System Events, even in the background
+    AZ::ComponentApplication* componentApplication = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationRequests::GetApplication);
+    if (componentApplication)
+    {
+        componentApplication->TickSystem();
     }
 
     DisplayLevelLoadErrors();

@@ -50,6 +50,7 @@ namespace AzNetworking
     {
         // Delete all our network interfaces first so they can unregister from the reader and listen threads
         m_networkInterfaces.clear();
+        m_systemNetworkInterfaces.clear();
 
         m_compressorFactories.clear();
 
@@ -64,11 +65,13 @@ namespace AzNetworking
     void NetworkingSystemComponent::Activate()
     {
         AZ::TickBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
     }
 
     void NetworkingSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void NetworkingSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -76,6 +79,16 @@ namespace AzNetworking
         AZ::TimeMs elapsedMs = aznumeric_cast<AZ::TimeMs>(aznumeric_cast<int64_t>(deltaTime / 1000.0f));
         m_readerThread->SwapBuffers();
         for (auto& networkInterface : m_networkInterfaces)
+        {
+            networkInterface.second->Update(elapsedMs);
+        }
+    }
+
+    void NetworkingSystemComponent::OnSystemTick()
+    {
+        // Elapsed time is presently unused by NetworkInterfaces so pass 0
+        AZ::TimeMs elapsedMs = aznumeric_cast<AZ::TimeMs>(0);
+        for (auto& networkInterface : m_systemNetworkInterfaces)
         {
             networkInterface.second->Update(elapsedMs);
         }
@@ -108,10 +121,38 @@ namespace AzNetworking
         return returnResult;
     }
 
+    INetworkInterface* NetworkingSystemComponent::CreateSystemNetworkInterface(
+        const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener)
+    {
+        AZ_Assert(RetrieveNetworkInterface(name) == nullptr, "A network interface with this name already exists");
+
+        AZStd::unique_ptr<INetworkInterface> result = nullptr;
+        switch (protocolType)
+        {
+        case ProtocolType::Tcp:
+            result = AZStd::make_unique<TcpNetworkInterface>(name, listener, trustZone, *m_listenThread);
+            break;
+        case ProtocolType::Udp:
+            result = AZStd::make_unique<UdpNetworkInterface>(name, listener, trustZone, *m_readerThread);
+            break;
+        }
+        INetworkInterface* returnResult = result.get();
+        if (result != nullptr)
+        {
+            m_systemNetworkInterfaces.emplace(name, AZStd::move(result));
+        }
+        return returnResult;
+    }
+
     INetworkInterface* NetworkingSystemComponent::RetrieveNetworkInterface(const AZ::Name& name)
     {
         auto networkInterface = m_networkInterfaces.find(name);
         if (networkInterface != m_networkInterfaces.end())
+        {
+            return networkInterface->second.get();
+        }
+        networkInterface = m_systemNetworkInterfaces.find(name);
+        if (networkInterface != m_systemNetworkInterfaces.end())
         {
             return networkInterface->second.get();
         }
@@ -120,7 +161,17 @@ namespace AzNetworking
 
     bool NetworkingSystemComponent::DestroyNetworkInterface(const AZ::Name& name)
     {
-        return m_networkInterfaces.erase(name) > 0;
+        if (m_networkInterfaces.erase(name) > 0)
+        {
+            return true;
+        }
+
+        if (m_systemNetworkInterfaces.erase(name) > 0)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     void NetworkingSystemComponent::RegisterCompressorFactory(ICompressorFactory* factory)
@@ -151,6 +202,11 @@ namespace AzNetworking
     const NetworkInterfaces& NetworkingSystemComponent::GetNetworkInterfaces() const
     {
         return m_networkInterfaces;
+    }
+
+    const NetworkInterfaces& NetworkingSystemComponent::GetSystemNetworkInterfaces() const
+    {
+        return m_systemNetworkInterfaces;
     }
 
     uint32_t NetworkingSystemComponent::GetTcpListenThreadSocketCount() const
