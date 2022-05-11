@@ -40,8 +40,8 @@ namespace AZ::IO
 
     StorageDrive::StorageDrive(u32 maxFileHandles)
         : StreamStackEntry("Storage drive (generic)")
+        , m_recentlyUsed(maxFileHandles)
     {
-        m_fileLastUsed.resize(maxFileHandles, AZStd::chrono::system_clock::time_point::min());
         m_filePaths.resize(maxFileHandles);
         m_fileHandles.resize(maxFileHandles);
 
@@ -163,7 +163,7 @@ namespace AZ::IO
         StreamStackEntry::UpdateCompletionEstimates(now, internalPending, pendingBegin, pendingEnd);
 
         const RequestPath* activeFile = nullptr;
-        if (m_activeCacheSlot != s_fileNotFound)
+        if (m_activeCacheSlot != InvalidFileIndex)
         {
             activeFile = &m_filePaths[m_activeCacheSlot];
         }
@@ -229,7 +229,7 @@ namespace AZ::IO
         {
             if (activeFile && activeFile != targetFile)
             {
-                if (FindFileInCache(*targetFile) == s_fileNotFound)
+                if (FindFileInCache(*targetFile) == InvalidFileIndex)
                 {
                     AZStd::chrono::microseconds fileOpenCloseTimeAverage = m_fileOpenCloseTimeAverage.CalculateAverage();
                     startTime += fileOpenCloseTimeAverage;
@@ -260,29 +260,19 @@ namespace AZ::IO
         SystemFile* file = nullptr;
 
         // If the file is already open, use that file handle and update it's last touched time.
-        size_t cacheIndex = FindFileInCache(data->m_path);
-        if (cacheIndex != s_fileNotFound)
+        u32 cacheIndex = FindFileInCache(data->m_path);
+        if (cacheIndex != InvalidFileIndex)
         {
             file = m_fileHandles[cacheIndex].get();
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
+            m_recentlyUsed.Touch(cacheIndex);
         }
 
         // If the file is not open, eject the entry from the cache that hasn't been used for the longest time
         // and open the file for reading.
         if (!file)
         {
-            AZStd::chrono::system_clock::time_point oldest = m_fileLastUsed[0];
-            cacheIndex = 0;
-            size_t numFiles = m_filePaths.size();
-            for (size_t i = 1; i < numFiles; ++i)
-            {
-                if (m_fileLastUsed[i] < oldest)
-                {
-                    oldest = m_fileLastUsed[i];
-                    cacheIndex = i;
-                }
-            }
-
+            cacheIndex = m_recentlyUsed.TouchLeastRecentlyUsed();
+            
             TIMED_AVERAGE_WINDOW_SCOPE(m_fileOpenCloseTimeAverage);
             AZStd::unique_ptr<SystemFile> newFile = AZStd::make_unique<SystemFile>();
             bool isOpen = newFile->Open(data->m_path.GetAbsolutePathCStr(), SystemFile::OpenMode::SF_OPEN_READ_ONLY);
@@ -294,7 +284,6 @@ namespace AZ::IO
             }
 
             file = newFile.get();
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
             m_fileHandles[cacheIndex] = AZStd::move(newFile);
             m_filePaths[cacheIndex] = data->m_path;
         }
@@ -343,8 +332,8 @@ namespace AZ::IO
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileExistsTimeAverage);
 
         auto& fileExists = AZStd::get<Requests::FileExistsCheckData>(request->GetCommand());
-        size_t cacheIndex = FindFileInCache(fileExists.m_path);
-        if (cacheIndex != s_fileNotFound)
+        u32 cacheIndex = FindFileInCache(fileExists.m_path);
+        if (cacheIndex != InvalidFileIndex)
         {
             fileExists.m_found = true;
         }
@@ -362,8 +351,8 @@ namespace AZ::IO
 
         auto& command = AZStd::get<Requests::FileMetaDataRetrievalData>(request->GetCommand());
         // If the file is already open, use the file handle which usually is cheaper than asking for the file by name.
-        size_t cacheIndex = FindFileInCache(command.m_path);
-        if (cacheIndex != s_fileNotFound)
+        u32 cacheIndex = FindFileInCache(command.m_path);
+        if (cacheIndex != InvalidFileIndex)
         {
             AZ_Assert(m_fileHandles[cacheIndex],
                 "File path '%s' doesn't have an associated file handle.", m_filePaths[cacheIndex].GetRelativePathCStr());
@@ -392,10 +381,10 @@ namespace AZ::IO
 
     void StorageDrive::FlushCache(const RequestPath& filePath)
     {
-        size_t cacheIndex = FindFileInCache(filePath);
-        if (cacheIndex != s_fileNotFound)
+        u32 cacheIndex = FindFileInCache(filePath);
+        if (cacheIndex != InvalidFileIndex)
         {
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::system_clock::time_point();
+            m_recentlyUsed.Flush(cacheIndex);
             m_fileHandles[cacheIndex].reset();
             m_filePaths[cacheIndex].Clear();
         }
@@ -406,23 +395,23 @@ namespace AZ::IO
         size_t numFiles = m_filePaths.size();
         for (size_t i = 0; i < numFiles; ++i)
         {
-            m_fileLastUsed[i] = AZStd::chrono::system_clock::time_point();
             m_fileHandles[i].reset();
             m_filePaths[i].Clear();
         }
+        m_recentlyUsed.FlushAll();
     }
 
-    size_t StorageDrive::FindFileInCache(const RequestPath& filePath) const
+    u32 StorageDrive::FindFileInCache(const RequestPath& filePath) const
     {
         size_t numFiles = m_filePaths.size();
         for (size_t i = 0; i < numFiles; ++i)
         {
             if (m_filePaths[i] == filePath)
             {
-                return i;
+                return aznumeric_caster(i);
             }
         }
-        return s_fileNotFound;
+        return InvalidFileIndex;
     }
 
     void StorageDrive::CollectStatistics(AZStd::vector<Statistic>& statistics) const

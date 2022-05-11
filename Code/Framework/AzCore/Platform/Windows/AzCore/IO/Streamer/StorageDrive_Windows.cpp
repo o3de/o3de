@@ -65,7 +65,8 @@ namespace AZ::IO
     //
     StorageDriveWin::StorageDriveWin(const AZStd::vector<AZStd::string_view>& drivePaths, u32 maxFileHandles, u32 maxMetaDataCacheEntries,
         size_t physicalSectorSize, size_t logicalSectorSize, u32 ioChannelCount, s32 overCommit, ConstructionOptions options)
-        : m_maxFileHandles(maxFileHandles)
+        : m_metaDataCache_recentlyUsed(maxMetaDataCacheEntries)
+        , m_maxFileHandles(maxFileHandles)
         , m_physicalSectorSize(physicalSectorSize)
         , m_logicalSectorSize(logicalSectorSize)
         , m_ioChannelCount(ioChannelCount)
@@ -146,8 +147,6 @@ namespace AZ::IO
         m_readSizeAverage.PushEntry(1);
         m_readTimeAverage.PushEntry(AZStd::chrono::microseconds(1));
 
-        AZ_Assert(IStreamerTypes::IsPowerOf2(maxMetaDataCacheEntries),
-            "StorageDriveWin requires a power-of-2 for maxMetaDataCacheEntries. Received %zu", maxMetaDataCacheEntries);
         m_metaDataCache_paths.resize(maxMetaDataCacheEntries);
         m_metaDataCache_fileSize.resize(maxMetaDataCacheEntries);
     }
@@ -445,17 +444,18 @@ namespace AZ::IO
             aznumeric_cast<s32>(m_pendingRequests.size()) - m_activeReads_Count;
     }
 
-    auto StorageDriveWin::OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const Requests::ReadData& data) -> OpenFileResult
+    auto StorageDriveWin::OpenFile(HANDLE& fileHandle, u32& cacheSlot, FileRequest* request, const Requests::ReadData& data) -> OpenFileResult
     {
         HANDLE file = INVALID_HANDLE_VALUE;
 
         // If the file is already opened for use, use that file handle and update it's last touched time.
-        size_t cacheIndex = FindInFileHandleCache(data.m_path);
+        u32 cacheIndex = FindInFileHandleCache(data.m_path);
         if (cacheIndex != InvalidFileCacheIndex)
         {
             file = m_fileCache_handles[cacheIndex];
             AZ_Assert(file != INVALID_HANDLE_VALUE, "Found the file '%s' in cache, but file handle is invalid.\n",
                 data.m_path.GetRelativePath());
+            m_fileCache_recentlyUsed.Touch(cacheIndex);
         }
         else
         {
@@ -496,7 +496,7 @@ namespace AZ::IO
                     return OpenFileResult::RequestForwarded;
                 }
 
-                // Remove any alertable IO completion notifications that could be queued by the IO Manager.
+                // Remove any alert-able IO completion notifications that could be queued by the IO Manager.
                 if (!::SetFileCompletionNotificationModes(file, FILE_SKIP_SET_EVENT_ON_HANDLE | FILE_SKIP_COMPLETION_PORT_ON_SUCCESS))
                 {
                     AZ_Warning("StorageDriveWin", false, "Failed to remove alertable IO completion notifications. (Error: %u)\n", ::GetLastError());
@@ -508,6 +508,8 @@ namespace AZ::IO
                 }
             }
 
+            m_fileCache_recentlyUsed.TouchLeastRecentlyUsed();
+
             // Fill the cache entry with data about the new file.
             m_fileCache_handles[cacheIndex] = file;
             m_fileCache_activeReads[cacheIndex] = 0;
@@ -517,8 +519,6 @@ namespace AZ::IO
         AZ_Assert(file != INVALID_HANDLE_VALUE, "While searching for file '%s' in StorageDeviceWin::OpenFile failed to detect a problem.",
             data.m_path.GetRelativePath());
 
-        // Set the current request and update timestamp, regardless of cache hit or miss.
-        m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::system_clock::now();
         fileHandle = file;
         cacheSlot = cacheIndex;
         return OpenFileResult::FileOpened;
@@ -530,7 +530,7 @@ namespace AZ::IO
 
         if (!m_cachesInitialized)
         {
-            m_fileCache_lastTimeUsed.resize(m_maxFileHandles, AZStd::chrono::system_clock::time_point::min());
+            m_fileCache_recentlyUsed = RecentlyUsedFileIndex(m_maxFileHandles);
             m_fileCache_paths.resize(m_maxFileHandles);
             m_fileCache_handles.resize(m_maxFileHandles, INVALID_HANDLE_VALUE);
             m_fileCache_activeReads.resize(m_maxFileHandles, 0);
@@ -567,7 +567,7 @@ namespace AZ::IO
         AZ_Assert(data, "Read request in StorageDriveWin doesn't contain read data.");
 
         HANDLE file = INVALID_HANDLE_VALUE;
-        size_t fileCacheSlot = InvalidFileCacheIndex;
+        u32 fileCacheSlot = InvalidFileCacheIndex;
         switch (OpenFile(file, fileCacheSlot, request, *data))
         {
         case OpenFileResult::FileOpened:
@@ -800,7 +800,7 @@ namespace AZ::IO
             "FileExistsRequest was queued on a StorageDriveWin that doesn't service files on the given path '%s'.",
             fileExists.m_path.GetRelativePath());
 
-        size_t cacheIndex = FindInFileHandleCache(fileExists.m_path);
+        u32 cacheIndex = FindInFileHandleCache(fileExists.m_path);
         if (cacheIndex != InvalidFileCacheIndex)
         {
             fileExists.m_found = true;
@@ -815,9 +815,10 @@ namespace AZ::IO
             fileExists.m_found = true;
             request->SetStatus(IStreamerTypes::RequestStatus::Completed);
             m_context->MarkRequestAsCompleted(request);
+            m_metaDataCache_recentlyUsed.Touch(cacheIndex);
             return;
         }
-
+        
         WIN32_FILE_ATTRIBUTE_DATA attributes;
         AZStd::wstring filenameW;
         AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePathCStr());
@@ -830,7 +831,7 @@ namespace AZ::IO
                 fileSize.LowPart = attributes.nFileSizeLow;
                 fileSize.HighPart = attributes.nFileSizeHigh;
 
-                cacheIndex = GetNextMetaDataCacheSlot();
+                cacheIndex = m_metaDataCache_recentlyUsed.TouchLeastRecentlyUsed();
                 m_metaDataCache_paths[cacheIndex] = fileExists.m_path;
                 m_metaDataCache_fileSize[cacheIndex] = aznumeric_caster(fileSize.QuadPart);
                 fileExists.m_found = true;
@@ -852,13 +853,14 @@ namespace AZ::IO
             m_name.c_str(), command.m_path.GetRelativePath());
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileMetaDataRetrievalTimeAverage);
 
-        size_t cacheIndex = FindInMetaDataCache(command.m_path);
+        u32 cacheIndex = FindInMetaDataCache(command.m_path);
         if (cacheIndex != InvalidMetaDataCacheIndex)
         {
             command.m_fileSize = m_metaDataCache_fileSize[cacheIndex];
             command.m_found = true;
             request->SetStatus(IStreamerTypes::RequestStatus::Completed);
             m_context->MarkRequestAsCompleted(request);
+            m_metaDataCache_recentlyUsed.Touch(cacheIndex);
             return;
         }
 
@@ -896,7 +898,7 @@ namespace AZ::IO
         command.m_fileSize = aznumeric_caster(fileSize.QuadPart);
         command.m_found = true;
 
-        cacheIndex = GetNextMetaDataCacheSlot();
+        cacheIndex = m_metaDataCache_recentlyUsed.TouchLeastRecentlyUsed();
 
         m_metaDataCache_paths[cacheIndex] = command.m_path;
         m_metaDataCache_fileSize[cacheIndex] = aznumeric_caster(fileSize.QuadPart);
@@ -909,26 +911,35 @@ namespace AZ::IO
     {
         if (m_cachesInitialized)
         {
-            size_t cacheIndex = FindInFileHandleCache(filePath);
-            if (cacheIndex != InvalidFileCacheIndex)
+            // Clear file handle from cache.
             {
-                if (m_fileCache_handles[cacheIndex] != INVALID_HANDLE_VALUE)
+                u32 cacheIndex = FindInFileHandleCache(filePath);
+                if (cacheIndex != InvalidFileCacheIndex)
                 {
-                    AZ_Assert(m_fileCache_activeReads[cacheIndex] == 0, "Flushing '%s' but it has %u active reads\n",
-                        filePath.GetRelativePath(), m_fileCache_activeReads[cacheIndex]);
-                    ::CloseHandle(m_fileCache_handles[cacheIndex]);
-                    m_fileCache_handles[cacheIndex] = INVALID_HANDLE_VALUE;
+                    if (m_fileCache_handles[cacheIndex] != INVALID_HANDLE_VALUE)
+                    {
+                        AZ_Assert(
+                            m_fileCache_activeReads[cacheIndex] == 0, "Flushing '%s' but it has %u active reads\n",
+                            filePath.GetRelativePath(), m_fileCache_activeReads[cacheIndex]);
+                        ::CloseHandle(m_fileCache_handles[cacheIndex]);
+                        m_fileCache_handles[cacheIndex] = INVALID_HANDLE_VALUE;
+                        m_fileCache_recentlyUsed.Flush(cacheIndex);
+                    }
+                    m_fileCache_activeReads[cacheIndex] = 0;
+                    m_fileCache_recentlyUsed.Flush(cacheIndex);
+                    m_fileCache_paths[cacheIndex].Clear();
                 }
-                m_fileCache_activeReads[cacheIndex] = 0;
-                m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::system_clock::time_point();
-                m_fileCache_paths[cacheIndex].Clear();
             }
 
-            cacheIndex = FindInMetaDataCache(filePath);
-            if (cacheIndex != InvalidMetaDataCacheIndex)
+            // Clear file meta data from cache.
             {
-                m_metaDataCache_paths[cacheIndex].Clear();
-                m_metaDataCache_fileSize[cacheIndex] = 0;
+                u32 cacheIndex = FindInMetaDataCache(filePath);
+                if (cacheIndex != InvalidMetaDataCacheIndex)
+                {
+                    m_metaDataCache_paths[cacheIndex].Clear();
+                    m_metaDataCache_fileSize[cacheIndex] = 0;
+                    m_metaDataCache_recentlyUsed.Flush(cacheIndex);
+                }
             }
         }
     }
@@ -948,15 +959,15 @@ namespace AZ::IO
                     m_fileCache_handles[cacheIndex] = INVALID_HANDLE_VALUE;
                 }
                 m_fileCache_activeReads[cacheIndex] = 0;
-                m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::system_clock::time_point();
                 m_fileCache_paths[cacheIndex].Clear();
             }
+            m_fileCache_recentlyUsed.FlushAll();
 
             // Clear meta data cache
+            m_metaDataCache_recentlyUsed.FlushAll();
             auto metaDataCacheSize = m_metaDataCache_paths.size();
             m_metaDataCache_paths.clear();
             m_metaDataCache_fileSize.clear();
-            m_metaDataCache_front = 0;
             m_metaDataCache_paths.resize(metaDataCacheSize);
             m_metaDataCache_fileSize.resize(metaDataCacheSize);
         }
@@ -1053,36 +1064,29 @@ namespace AZ::IO
         }
     }
 
-    size_t StorageDriveWin::FindInFileHandleCache(const RequestPath& filePath) const
+    u32 StorageDriveWin::FindInFileHandleCache(const RequestPath& filePath) const
     {
         size_t numFiles = m_fileCache_paths.size();
         for (size_t i = 0; i < numFiles; ++i)
         {
             if (m_fileCache_paths[i] == filePath)
             {
-                return i;
+                return aznumeric_caster(i);
             }
         }
         return InvalidFileCacheIndex;
     }
 
-    size_t StorageDriveWin::FindAvailableFileHandleCacheIndex() const
+    u32 StorageDriveWin::FindAvailableFileHandleCacheIndex()
     {
         AZ_Assert(m_cachesInitialized, "Using file cache before it has been (lazily) initialized\n");
 
-        // This needs to look for files with no active reads, and the oldest file among those.
-        size_t cacheIndex = InvalidFileCacheIndex;
-        AZStd::chrono::system_clock::time_point oldest = AZStd::chrono::system_clock::time_point::max();
-        for (size_t index = 0; index < m_maxFileHandles; ++index)
+        u32 cacheIndex = m_fileCache_recentlyUsed.GetLeastRecentlyUsed();
+        if (m_fileCache_activeReads[cacheIndex] == 0)
         {
-            if (m_fileCache_activeReads[index] == 0 && m_fileCache_lastTimeUsed[index] < oldest)
-            {
-                oldest = m_fileCache_lastTimeUsed[index];
-                cacheIndex = index;
-            }
+            return cacheIndex;
         }
-
-        return cacheIndex;
+        return InvalidFileCacheIndex; 
     }
 
     size_t StorageDriveWin::FindAvailableReadSlot()
@@ -1097,23 +1101,17 @@ namespace AZ::IO
         return InvalidReadSlotIndex;
     }
 
-    size_t StorageDriveWin::FindInMetaDataCache(const RequestPath& filePath) const
+    u32 StorageDriveWin::FindInMetaDataCache(const RequestPath& filePath) const
     {
         size_t numFiles = m_metaDataCache_paths.size();
         for (size_t i = 0; i < numFiles; ++i)
         {
             if (m_metaDataCache_paths[i] == filePath)
             {
-                return i;
+                return aznumeric_caster(i);
             }
         }
         return InvalidMetaDataCacheIndex;
-    }
-
-    size_t StorageDriveWin::GetNextMetaDataCacheSlot()
-    {
-        m_metaDataCache_front = (m_metaDataCache_front + 1) & (m_metaDataCache_paths.size() - 1);
-        return m_metaDataCache_front;
     }
 
     bool StorageDriveWin::IsServicedByThisDrive(AZ::IO::PathView filePath) const

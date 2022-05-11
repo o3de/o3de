@@ -10,6 +10,7 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/Streamer/RecentlyUsedIndex.h>
 #include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -89,16 +90,18 @@ namespace AZ::IO
         void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
 
     protected:
+        using RecentlyUsedFileIndex = RecentlyUsedIndex<u32>;
+        using RecentlyUsedMetaIndex = RecentlyUsedIndex<u32>;
         static const AZStd::chrono::microseconds s_averageSeekTime;
 
-        inline static constexpr size_t InvalidFileCacheIndex = std::numeric_limits<size_t>::max();
+        inline static constexpr u32 InvalidFileCacheIndex = std::numeric_limits<u32>::max();
         inline static constexpr size_t InvalidReadSlotIndex = std::numeric_limits<size_t>::max();
-        inline static constexpr size_t InvalidMetaDataCacheIndex = std::numeric_limits<size_t>::max();
+        inline static constexpr u32 InvalidMetaDataCacheIndex = std::numeric_limits<u32>::max();
 
         struct FileReadStatus
         {
             OVERLAPPED m_overlapped{};
-            size_t m_fileHandleIndex{ InvalidFileCacheIndex };
+            u32 m_fileHandleIndex{ InvalidFileCacheIndex };
         };
 
         struct FileReadInformation
@@ -119,17 +122,16 @@ namespace AZ::IO
             CacheFull
         };
 
-        OpenFileResult OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const Requests::ReadData& data);
+        OpenFileResult OpenFile(HANDLE& fileHandle, u32& cacheSlot, FileRequest* request, const Requests::ReadData& data);
         bool ReadRequest(FileRequest* request);
         bool ReadRequest(FileRequest* request, size_t readSlot);
         bool CancelRequest(FileRequest* cancelRequest, FileRequestPtr& target);
         void FileExistsRequest(FileRequest* request);
         void FileMetaDataRetrievalRequest(FileRequest* request);
-        size_t FindInFileHandleCache(const RequestPath& filePath) const;
-        size_t FindAvailableFileHandleCacheIndex() const;
+        u32 FindInFileHandleCache(const RequestPath& filePath) const;
+        u32 FindAvailableFileHandleCacheIndex();
         size_t FindAvailableReadSlot();
-        size_t FindInMetaDataCache(const RequestPath& filePath) const;
-        size_t GetNextMetaDataCacheSlot();
+        u32 FindInMetaDataCache(const RequestPath& filePath) const;
         bool IsServicedByThisDrive(AZ::IO::PathView filePath) const;
 
         void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
@@ -166,11 +168,12 @@ namespace AZ::IO
         AZStd::vector<FileReadStatus> m_readSlots_statusInfo;
         AZStd::vector<bool> m_readSlots_active;
 
-        AZStd::vector<AZStd::chrono::system_clock::time_point> m_fileCache_lastTimeUsed;
+        RecentlyUsedFileIndex m_fileCache_recentlyUsed;
         AZStd::vector<RequestPath> m_fileCache_paths;
         AZStd::vector<HANDLE> m_fileCache_handles;
         AZStd::vector<u16> m_fileCache_activeReads;
 
+        RecentlyUsedMetaIndex m_metaDataCache_recentlyUsed;
         AZStd::vector<RequestPath> m_metaDataCache_paths;
         AZStd::vector<u64> m_metaDataCache_fileSize;
 
@@ -180,9 +183,8 @@ namespace AZ::IO
 
         size_t m_physicalSectorSize{ 0 };
         size_t m_logicalSectorSize{ 0 };
-        size_t m_activeCacheSlot{ InvalidFileCacheIndex };
-        size_t m_metaDataCache_front{ 0 };
         u64 m_activeOffset{ 0 };
+        u32 m_activeCacheSlot{ InvalidFileCacheIndex };
         u32 m_maxFileHandles{ 1 };
         u32 m_ioChannelCount{ 1 };
         s32 m_overCommit{ 0 };

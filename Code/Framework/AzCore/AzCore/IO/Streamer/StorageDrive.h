@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/IO/Streamer/RecentlyUsedIndex.h>
 #include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -64,10 +65,12 @@ namespace AZ::IO
         void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
 
     protected:
+        using RecentlyUsedFileIndex = RecentlyUsedIndex<u32>;
         static const AZStd::chrono::microseconds s_averageSeekTime;
         static constexpr s32 s_maxRequests = 1;
+        static constexpr u32 InvalidFileIndex = AZStd::numeric_limits<u32>::max();
 
-        size_t FindFileInCache(const RequestPath& filePath) const;
+        u32 FindFileInCache(const RequestPath& filePath) const;
         void ReadFile(FileRequest* request);
         void CancelRequest(FileRequest* cancelRequest, FileRequestPtr& target);
         void FileExistsRequest(FileRequest* request);
@@ -88,8 +91,7 @@ namespace AZ::IO
         //! File requests that are queued for processing.
         AZStd::deque<FileRequest*> m_pendingRequests;
 
-        //! The last time a file handle was used to access a file. The handle is stored in m_fileHandles.
-        AZStd::vector<AZStd::chrono::system_clock::time_point> m_fileLastUsed;
+        RecentlyUsedFileIndex m_recentlyUsed;
         //! The file path to the file handle. The handle is stored in m_fileHandles.
         AZStd::vector<RequestPath> m_filePaths;
         //! A list of file handles that's being cached in case they're needed again in the future.
@@ -98,6 +100,6 @@ namespace AZ::IO
         //! The offset into the file that's cached by the active cache slot.
         u64 m_activeOffset = 0;
         //! The index into m_fileHandles for the file that's currently being read.
-        size_t m_activeCacheSlot = s_fileNotFound;
+        u32 m_activeCacheSlot = InvalidFileIndex;
     };
 } // namespace AZ::IO
