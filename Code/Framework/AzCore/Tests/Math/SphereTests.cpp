@@ -8,29 +8,30 @@
 
 #include <AzCore/Math/Sphere.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest
 {
     TEST(MATH_Sphere, TestCreateUnitSphere)
     {
         AZ::Sphere unitSphere = AZ::Sphere::CreateUnitSphere();
-        EXPECT_EQ(unitSphere.GetCenter(), AZ::Vector3::CreateZero());
-        EXPECT_EQ(unitSphere.GetRadius(), 1.f);
+        EXPECT_THAT(unitSphere.GetCenter(), IsClose(AZ::Vector3::CreateZero()));
+        EXPECT_NEAR(unitSphere.GetRadius(), 1.f, 0.0001f);
     }
 
     TEST(MATH_Sphere, TestCreateFromAabb)
     {
         AZ::Aabb testBox = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-1.0f), AZ::Vector3(1.0f));
         AZ::Sphere testSphere = AZ::Sphere::CreateFromAabb(testBox);
-        EXPECT_TRUE(testSphere.GetCenter().IsClose(AZ::Vector3::CreateZero()));
+        EXPECT_THAT(testSphere.GetCenter(), IsClose(AZ::Vector3::CreateZero()));
         EXPECT_NEAR(testSphere.GetRadius(), 1.f, 0.0001f);
     }
 
     TEST(MATH_Sphere, TestConstructFromVec3AndRadius)
     {
         AZ::Sphere sphere1(AZ::Vector3(10.f, 10.f, 10.f), 15.f);
-        EXPECT_EQ(sphere1.GetCenter(), AZ::Vector3(10.f, 10.f, 10.f));
-        EXPECT_EQ(sphere1.GetRadius(), 15.f);
+        EXPECT_THAT(sphere1.GetCenter(), IsClose(AZ::Vector3(10.f, 10.f, 10.f)));
+        EXPECT_NEAR(sphere1.GetRadius(), 15.f, 0.0001f);
     }
 
     TEST(MATH_Sphere, TestSet)
