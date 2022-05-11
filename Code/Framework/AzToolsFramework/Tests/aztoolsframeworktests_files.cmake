@@ -11,6 +11,7 @@ set(FILES
     ActionManager/ActionManagerFixture.cpp
     ActionManager/ActionManagerFixture.h
     ActionManager/ActionManagerTests.cpp
+    ActionManager/MenuManagerTests.cpp
     ArchiveTests.cpp
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp

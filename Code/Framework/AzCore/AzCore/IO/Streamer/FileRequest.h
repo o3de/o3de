@@ -11,6 +11,7 @@
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/IO/IStreamerTypes.h>
 #include <AzCore/IO/Streamer/FileRange.h>
+#include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/functional.h>
@@ -108,19 +109,15 @@ namespace AZ::IO::Requests
         FileRange m_range;
     };
 
-    enum class ReportType : int8_t
-    {
-        FileLocks
-    };
-
     struct ReportData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityLow;
         inline constexpr static bool s_failWhenUnhandled = false;
 
-        explicit ReportData(ReportType reportType);
+        ReportData(AZStd::vector<AZ::IO::Statistic>& output, IStreamerTypes::ReportType reportType);
 
-        ReportType m_reportType;
+        AZStd::vector<AZ::IO::Statistic>& m_output;
+        IStreamerTypes::ReportType m_reportType;
     };
 
     //! Stores a reference to the external request so it stays alive while the request is being processed.
@@ -312,7 +309,7 @@ namespace AZ::IO
         void CreateFlushAll();
         void CreateDedicatedCacheCreation(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
         void CreateDedicatedCacheDestruction(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
-        void CreateReport(Requests::ReportType reportType);
+        void CreateReport(AZStd::vector<AZ::IO::Statistic>& output, IStreamerTypes::ReportType reportType);
         void CreateCustom(AZStd::any data, bool failWhenUnhandled = true, FileRequest* parent = nullptr);
 
         void SetCompletionCallback(OnCompletionCallback callback);
