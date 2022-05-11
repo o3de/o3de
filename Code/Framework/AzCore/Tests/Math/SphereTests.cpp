@@ -14,8 +14,8 @@ namespace UnitTest
     TEST(MATH_Sphere, TestCreateUnitSphere)
     {
         AZ::Sphere unitSphere = AZ::Sphere::CreateUnitSphere();
-        EXPECT_TRUE(unitSphere.GetCenter() == AZ::Vector3::CreateZero());
-        EXPECT_TRUE(unitSphere.GetRadius() == 1.f);
+        EXPECT_EQ(unitSphere.GetCenter(), AZ::Vector3::CreateZero());
+        EXPECT_EQ(unitSphere.GetRadius(), 1.f);
     }
 
     TEST(MATH_Sphere, TestCreateFromAabb)
@@ -29,18 +29,18 @@ namespace UnitTest
     TEST(MATH_Sphere, TestConstructFromVec3AndRadius)
     {
         AZ::Sphere sphere1(AZ::Vector3(10.f, 10.f, 10.f), 15.f);
-        EXPECT_TRUE(sphere1.GetCenter() == AZ::Vector3(10.f, 10.f, 10.f));
-        EXPECT_TRUE(sphere1.GetRadius() == 15.f);
+        EXPECT_EQ(sphere1.GetCenter(), AZ::Vector3(10.f, 10.f, 10.f));
+        EXPECT_EQ(sphere1.GetRadius(), 15.f);
     }
 
     TEST(MATH_Sphere, TestSet)
     {
         AZ::Sphere sphere1(AZ::Vector3(10.f, 10.f, 10.f), 15.f);
         AZ::Sphere sphere2(AZ::Vector3(12.f, 12.f, 12.f), 13.f);
-        EXPECT_TRUE(sphere2 != sphere1);
+        EXPECT_NE(sphere2, sphere1);
 
         sphere1.Set(sphere2);
-        EXPECT_TRUE(sphere2 == sphere1);
+        EXPECT_EQ(sphere2, sphere1);
     }
 
     TEST(MATH_Sphere, TestSetCenterAndRadius)
@@ -49,7 +49,7 @@ namespace UnitTest
         AZ::Sphere sphere3(AZ::Vector3(10.f, 10.f, 10.f), 15.f);
         sphere3.SetCenter(AZ::Vector3(12.f, 12.f, 12.f));
         sphere3.SetRadius(13.f);
-        EXPECT_TRUE(sphere2 == sphere3);
+        EXPECT_EQ(sphere2, sphere3);
     }
 
     TEST(MATH_Sphere, TestAssignment)
@@ -57,13 +57,13 @@ namespace UnitTest
         AZ::Sphere unitSphere = AZ::Sphere::CreateUnitSphere();
         AZ::Sphere sphere2(AZ::Vector3(12.f, 12.f, 12.f), 13.f);
         sphere2 = unitSphere;
-        EXPECT_TRUE(sphere2 == unitSphere);
+        EXPECT_EQ(sphere2, unitSphere);
     }
 
     TEST(MATH_Sphere, TestCopyConstructor)
     {
         AZ::Sphere unitSphere = AZ::Sphere::CreateUnitSphere();
         AZ::Sphere sphere2(unitSphere);
-        EXPECT_TRUE(sphere2 == unitSphere);
+        EXPECT_EQ(sphere2, unitSphere);
     }
-}
+} // namespace UnitTest
