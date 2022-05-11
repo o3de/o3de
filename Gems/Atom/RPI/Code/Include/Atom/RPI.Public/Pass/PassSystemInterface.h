@@ -92,7 +92,7 @@ namespace AZ
             virtual void RemoveRenderPipeline(RenderPipeline* renderPipeline) = 0;
 
             //! Used to add passes that do not belong to any render pipeline
-            virtual void AddNonePipelinePass(const Ptr<Pass>& pass) = 0;
+            virtual void AddPassWithoutPipeline(const Ptr<Pass>& pass) = 0;
 
             //! Processes pass tree changes that were queued by QueueFor*() functions. This is called
             //! automatically in FrameUpdate(), but may be called manually when needed, like when 

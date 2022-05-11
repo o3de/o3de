@@ -11,7 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 
 #include <Atom/RPI.Public/Base.h>
-#include <Atom/RPI.Public/Pass/PassContainer.h>
+#include <Atom/RPI.Public/Pass/PassTree.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
@@ -278,7 +278,7 @@ namespace AZ
             Scene* m_scene = nullptr;
 
             // Holds the passes belonging to the pipeline
-            PassContainer m_passes;
+            PassTree m_passTree;
 
             // Attachment bindings/connections that can be referenced from any pass in the pipeline in a global manner
             AZStd::vector<PipelineGlobalBinding> m_pipelineGlobalConnections;

@@ -36,7 +36,7 @@
     friend class PassFactory;                                                       \
     friend class PassLibrary;                                                       \
     friend class PassSystem;                                                        \
-    friend class PassContainer;                                                     \
+    friend class PassTree;                                                          \
     friend class ParentPass;                                                        \
     friend class RenderPipeline;                                                    \
     friend class UnitTest::PassTests;                                               \

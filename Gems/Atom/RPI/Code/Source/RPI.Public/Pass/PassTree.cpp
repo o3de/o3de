@@ -6,28 +6,28 @@
  *
  */
 
-#include <Atom/RPI.Public/Pass/PassContainer.h>
+#include <Atom/RPI.Public/Pass/PassTree.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
 namespace AZ::RPI
 {
-    void PassContainer::EraseFromLists(AZStd::function<bool(const RHI::Ptr<Pass>&)> predicate)
+    void PassTree::EraseFromLists(AZStd::function<bool(const RHI::Ptr<Pass>&)> predicate)
     {
-        erase_if(m_removePassList, predicate);
-        erase_if(m_buildPassList, predicate);
-        erase_if(m_initializePassList, predicate);
+        AZStd::erase_if(m_removePassList, predicate);
+        AZStd::erase_if(m_buildPassList, predicate);
+        AZStd::erase_if(m_initializePassList, predicate);
     }
 
-    void PassContainer::ClearQueues()
+    void PassTree::ClearQueues()
     {
         m_removePassList.clear();
         m_buildPassList.clear();
         m_initializePassList.clear();
     }
 
-    void PassContainer::RemovePasses()
+    void PassTree::RemovePasses()
     {
-        AZ_PROFILE_SCOPE(RPI, "PassContainer::RemovePasses");
+        AZ_PROFILE_SCOPE(RPI, "PassTree::RemovePasses");
 
         if (!m_removePassList.empty())
         {
@@ -42,9 +42,9 @@ namespace AZ::RPI
         }
     }
 
-    void PassContainer::BuildPasses()
+    void PassTree::BuildPasses()
     {
-        AZ_PROFILE_SCOPE(RPI, "PassContainer::BuildPasses");
+        AZ_PROFILE_SCOPE(RPI, "PassTree::BuildPasses");
 
         m_passesChangedThisFrame = m_passesChangedThisFrame || !m_buildPassList.empty();
 
@@ -58,7 +58,7 @@ namespace AZ::RPI
             m_buildPassList.clear();
 
             // Erase passes which were removed from pass tree already (which parent is empty)
-            erase_if(buildListCopy, [](const RHI::Ptr<Pass>& currentPass) {
+            AZStd::erase_if(buildListCopy, [](const RHI::Ptr<Pass>& currentPass) {
                     return !currentPass->m_flags.m_partOfHierarchy;
                 });
 
@@ -86,9 +86,9 @@ namespace AZ::RPI
         }
     }
 
-    void PassContainer::InitializePasses()
+    void PassTree::InitializePasses()
     {
-        AZ_PROFILE_SCOPE(RPI, "PassContainer::InitializePasses");
+        AZ_PROFILE_SCOPE(RPI, "PassTree::InitializePasses");
 
         m_passesChangedThisFrame = m_passesChangedThisFrame || !m_initializePassList.empty();
 
@@ -99,7 +99,7 @@ namespace AZ::RPI
             m_initializePassList.clear();
 
             // Erase passes which were removed from pass tree already (which parent is empty)
-            erase_if(initListCopy, [](const RHI::Ptr<Pass>& currentPass) {
+            AZStd::erase_if(initListCopy, [](const RHI::Ptr<Pass>& currentPass) {
                     return !currentPass->m_flags.m_partOfHierarchy;
                 });
 
@@ -118,7 +118,7 @@ namespace AZ::RPI
         }
     }
 
-    void PassContainer::Validate()
+    void PassTree::Validate()
     {
         if (PassValidation::IsEnabled())
         {
@@ -135,7 +135,7 @@ namespace AZ::RPI
         }
     }
 
-    bool PassContainer::ProcessQueuedChanges()
+    bool PassTree::ProcessQueuedChanges()
     {
         RemovePasses();
         BuildPasses();

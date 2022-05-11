@@ -11,7 +11,7 @@
 
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
-#include <Atom/RPI.Public/Pass/PassContainer.h>
+#include <Atom/RPI.Public/Pass/PassTree.h>
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -78,7 +78,7 @@ namespace AZ
             void DebugBreakOnPass(const Pass* pass) const override;
             void AddRenderPipeline(RenderPipeline* renderPipeline) override;
             void RemoveRenderPipeline(RenderPipeline* renderPipeline) override;
-            void AddNonePipelinePass(const Ptr<Pass>& pass) override;
+            void AddPassWithoutPipeline(const Ptr<Pass>& pass) override;
 
             // PassSystemInterface statistics related functions
             void IncrementFrameDrawItemCount(u32 numDrawItems) override;
@@ -133,7 +133,7 @@ namespace AZ
             AZStd::vector< RenderPipeline* > m_renderPipelines;
 
             // Collection of passes that don't belong to any rendering pipeline
-            PassContainer m_passesWithoutPipeline;
+            PassTree m_passesWithoutPipeline;
 
             // Library of pass descriptors that can be instantiated through data driven pass requests
             PassLibrary m_passLibrary;

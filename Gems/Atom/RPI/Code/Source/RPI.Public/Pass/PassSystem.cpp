@@ -152,7 +152,7 @@ namespace AZ
             }
             else if (pass->GetRenderPipeline())
             {
-                pass->GetRenderPipeline()->m_passes.m_buildPassList.push_back(pass);
+                pass->GetRenderPipeline()->m_passTree.m_buildPassList.push_back(pass);
             }
             else
             {
@@ -169,7 +169,7 @@ namespace AZ
             }
             else if (pass->GetRenderPipeline())
             {
-                pass->GetRenderPipeline()->m_passes.m_removePassList.push_back(pass);
+                pass->GetRenderPipeline()->m_passTree.m_removePassList.push_back(pass);
             }
             else
             {
@@ -186,7 +186,7 @@ namespace AZ
             }
             else if (pass->GetRenderPipeline())
             {
-                pass->GetRenderPipeline()->m_passes.m_initializePassList.push_back(pass);
+                pass->GetRenderPipeline()->m_passTree.m_initializePassList.push_back(pass);
             }
             else
             {
@@ -206,7 +206,7 @@ namespace AZ
             // Process render pipelines
             for (RenderPipeline*& pipeline : m_renderPipelines)
             {
-                change = pipeline->m_passes.ProcessQueuedChanges() || change;
+                change = pipeline->m_passTree.ProcessQueuedChanges() || change;
             }
 
             // Erase any passes with pipelines from the passes without pipeline container
@@ -293,20 +293,20 @@ namespace AZ
         void PassSystem::AddRenderPipeline(RenderPipeline* renderPipeline)
         {
             m_renderPipelines.push_back(renderPipeline);
-            m_rootPass->AddChild(renderPipeline->m_passes.m_rootPass);
+            m_rootPass->AddChild(renderPipeline->m_passTree.m_rootPass);
         }
 
         void PassSystem::RemoveRenderPipeline(RenderPipeline* renderPipeline)
         {
-            renderPipeline->m_passes.ProcessQueuedChanges();
-            renderPipeline->m_passes.m_rootPass->SetEnabled(false);
-            renderPipeline->m_passes.m_rootPass->QueueForRemoval();
-            renderPipeline->m_passes.ProcessQueuedChanges();
+            renderPipeline->m_passTree.ProcessQueuedChanges();
+            renderPipeline->m_passTree.m_rootPass->SetEnabled(false);
+            renderPipeline->m_passTree.m_rootPass->QueueForRemoval();
+            renderPipeline->m_passTree.ProcessQueuedChanges();
 
             erase(m_renderPipelines, renderPipeline);
         }
 
-        void PassSystem::AddNonePipelinePass(const Ptr<Pass>& pass)
+        void PassSystem::AddPassWithoutPipeline(const Ptr<Pass>& pass)
         {
             m_passesWithoutPipeline.m_rootPass->AddChild(pass);
         }

@@ -20,7 +20,7 @@ namespace AZ::RPI
     // The container has queues for pass building, initialization and removal. These queues
     // are so that logic modifying or removing passes isn't triggered while the passes are 
     // rendering, but instead at the start of the frame when it is safe to do so.
-    class PassContainer
+    class PassTree
     {
         // Everything is private, class should only be used by PassSystem and RenderPipeline
         friend class PassSystem;
