@@ -23,7 +23,7 @@ namespace AZ
         //! EditorMaterialComponentSlot will attempt to forward all changes to selected entities for actions invoked from a context menu or
         //! entity inspector. The set of selected or pinned entities will be retrieved directly from the inspector. Updates will be
         //! applied to the entities and their materials using MaterialComponentRequestBus.
-        //! Undo and redo for all of those entities will be managed flip calls to OnDataChanged.
+        //! Undo and redo for all of those entities will be managed by calls to OnDataChanged.
         struct EditorMaterialComponentSlot final
         {
             AZ_RTTI(EditorMaterialComponentSlot, "{344066EB-7C3D-4E92-B53D-3C9EBD546488}");
@@ -72,7 +72,7 @@ namespace AZ
             //! Open the material instance inspector to edit material property overrides for a set of entities 
             void OpenMaterialInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
 
-            //! Opens the dialog for you mapping UV channels for models and materials
+            //! Open the dialog for mapping UV channels for models and materials
             void OpenUvNameMapInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
 
             //! Bypass the UI to export the active material to the export path 

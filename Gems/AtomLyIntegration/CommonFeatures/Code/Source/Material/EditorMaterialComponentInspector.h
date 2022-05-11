@@ -61,7 +61,7 @@ namespace AZ
                 void UnloadMaterial();
 
                 //! Returns true if all of the edit data has been loaded, the instance has been created, the primary entity and material
-                //! slot has not changed the assigned material, and all of the entities share material types
+                //! slot has not changed the assigned material, and all of the entities share the same material type
                 bool IsLoaded() const;
 
                 // AtomToolsFramework::InspectorRequestBus::Handler overrides...
