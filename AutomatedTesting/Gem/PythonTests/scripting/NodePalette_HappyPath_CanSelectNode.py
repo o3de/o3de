@@ -43,7 +43,8 @@ def TestNodePaletteHappyPathCanSelectNode():
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
     import editor_python_test_tools.pyside_utils as pyside_utils
-    from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, NODE_PALETTE_UI, WAIT_TIME_3, TREE_VIEW_QT, NODE_PALETTE_QT, NODE_CATEGORY_MATH, NODE_STRING_TO_NUMBER)
+    from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, NODE_PALETTE_UI, WAIT_TIME_3, TREE_VIEW_QT,
+                                                     NODE_PALETTE_QT, NODE_CATEGORY_MATH, NODE_STRING_TO_NUMBER)
 
     general.idle_enable(True)
 
