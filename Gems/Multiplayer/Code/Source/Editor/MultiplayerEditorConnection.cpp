@@ -35,7 +35,7 @@ namespace Multiplayer
         : m_byteStream(&m_buffer)
     {
         const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
-        m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateSystemNetworkInterface(
+        m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
             editorInterfaceName, ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
         m_networkEditorInterface->SetTimeoutMs(AZ::Time::ZeroTimeMs); // Disable timeouts on this network interface
 

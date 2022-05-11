@@ -211,7 +211,7 @@ namespace AzFramework
         td.m_cpuId = AFFINITY_MASK_USERTHREADS;
         m_threadHandle = AZStd::thread(td, AZStd::bind(&TargetManagementComponent::TickThread, this));
 
-        m_networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateSystemNetworkInterface(
+        m_networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
             m_networkInterfaceName, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
         m_networkInterface->SetTimeoutMs(AZ::TimeMs(0));
         m_targetJoinThread = AZStd::make_unique<TargetJoinThread>(target_autoconnect_interval);

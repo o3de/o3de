@@ -38,6 +38,7 @@ AZ_POP_DISABLE_WARNING
 
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -2173,7 +2174,7 @@ bool CCryEditApp::OnIdle([[maybe_unused]] LONG lCount)
 {
     if (0 == m_disableIdleProcessingCounter)
     {
-        return IdleProcessing(false);
+        return IdleProcessing(gSettings.backgroundUpdatePeriod == -1);
     }
     else
     {
@@ -2281,11 +2282,14 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     }
 
     // Tick System Events, even in the background
-    AZ::ComponentApplication* componentApplication = nullptr;
-    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationRequests::GetApplication);
-    if (componentApplication)
+    AZ::ComponentApplicationRequests* componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+    if (componentApplicationRequests)
     {
-        componentApplication->TickSystem();
+        AZ::ComponentApplication* componentApplication = componentApplicationRequests->GetApplication();
+        if (componentApplication)
+        {
+            componentApplication->TickSystem();
+        }
     }
 
     DisplayLevelLoadErrors();
