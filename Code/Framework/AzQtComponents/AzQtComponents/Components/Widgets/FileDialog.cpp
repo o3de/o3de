@@ -85,6 +85,17 @@ namespace AzQtComponents
         return filePath;
     }
 
+    QString FileDialog::GetSaveFileName_(
+        QWidget* parent,
+        const QString& caption,
+        const QString& dir,
+        const QString& filter,
+        QString* selectedFilter,
+        QFileDialog::Options options)
+    {
+        return GetSaveFileName(parent, caption, dir, filter, selectedFilter, options);
+    }
+
     bool FileDialog::ApplyMissingExtension(const QString& selectedFilter, QString& filePath)
     {
         if (selectedFilter.isEmpty())

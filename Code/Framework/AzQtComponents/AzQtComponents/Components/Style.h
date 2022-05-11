@@ -48,7 +48,7 @@ namespace AzQtComponents
         struct Data;
 
     public:
-        enum
+        enum BorderStyle
         {
             CORNER_RECTANGLE = -1
         };
@@ -140,8 +140,10 @@ namespace AzQtComponents
         using QProxyStyle::polish;
         void polish(QApplication* application) override;
         void polish(QWidget* widget) override;
+        void polish(QPalette& palette) override;
         using QProxyStyle::unpolish;
         void unpolish(QWidget* widget) override;
+        void unpolish(QApplication* widget) override;
 
         QPalette standardPalette() const override;
         QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption* option, const QWidget* widget) const override;
