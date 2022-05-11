@@ -13,7 +13,7 @@
 
 namespace NodeableOutCpp
 {
-    void NoOp([[maybe_unused]] AZ::BehaviorValueParameter*, [[maybe_unused]] AZ::BehaviorValueParameter*, [[maybe_unused]] int) {}
+    void NoOp([[maybe_unused]] AZ::BehaviorArgument*, [[maybe_unused]] AZ::BehaviorArgument*, [[maybe_unused]] int) {}
 }
 
 namespace ScriptCanvas
@@ -30,12 +30,12 @@ namespace ScriptCanvas
     {}   
 
 #if defined(SC_RUNTIME_CHECKS_ENABLED) 
-    void Nodeable::CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const
+    void Nodeable::CallOut(size_t index, AZ::BehaviorArgument* resultBVP, AZ::BehaviorArgument* argsBVPs, int numArguments) const
     {
         GetExecutionOutChecked(index)(resultBVP, argsBVPs, numArguments);
     }
 #else
-    void Nodeable::CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const
+    void Nodeable::CallOut(size_t index, AZ::BehaviorArgument* resultBVP, AZ::BehaviorArgument* argsBVPs, int numArguments) const
     {
         GetExecutionOut(index)(resultBVP, argsBVPs, numArguments);
     }
