@@ -24,6 +24,7 @@ namespace AzToolsFramework
         class PropertyManagerComponent
             : public AZ::Component
             , private PropertyTypeRegistrationMessages::Bus::Handler
+            , private PropertyEditorGUIMessages::Bus::Handler
         {
         public:
             friend class PropertyManagerComponentFactory;
@@ -60,6 +61,12 @@ namespace AzToolsFramework
             // PropertyTypeRegistrationMessages::Bus::Handler
             void RegisterPropertyType(PropertyHandlerBase* pHandler) override;
             void UnregisterPropertyType(PropertyHandlerBase* pHandler) override;
+            //////////////////////////////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////////////////
+            // PropertyEditorGUIMessages::Bus::Handler
+            void RequestWrite(QWidget* editorGUI) override;
+            void OnEditingFinished(QWidget* editorGUI) override;
             //////////////////////////////////////////////////////////////////////////
 
             typedef AZStd::unordered_multimap<AZ::u32, PropertyHandlerBase*> HandlerMap;

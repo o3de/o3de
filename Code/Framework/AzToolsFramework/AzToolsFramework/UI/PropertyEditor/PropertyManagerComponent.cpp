@@ -51,6 +51,7 @@ namespace AzToolsFramework
         void PropertyManagerComponent::Activate()
         {
             PropertyTypeRegistrationMessages::Bus::Handler::BusConnect();
+            PropertyEditorGUIMessages::Bus::Handler::BusConnect();
 
             CreateBuiltInHandlers();
         }
@@ -91,6 +92,7 @@ namespace AzToolsFramework
             m_Handlers.clear();
             m_DefaultHandlers.clear();
 
+            PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
             PropertyTypeRegistrationMessages::Bus::Handler::BusDisconnect();
         }
 
@@ -169,6 +171,19 @@ namespace AzToolsFramework
             }
         }
 
+        void PropertyManagerComponent::RequestWrite(QWidget* editorGUI)
+        {
+            IndividualPropertyHandlerEditNotifications::Bus::Event(
+                editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
+                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::InProgressEdit);
+        }
+
+        void PropertyManagerComponent::OnEditingFinished(QWidget* editorGUI)
+        {
+            IndividualPropertyHandlerEditNotifications::Bus::Event(
+                editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
+                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
+        }
 
         void PropertyManagerComponent::CreateBuiltInHandlers()
         {
