@@ -177,6 +177,7 @@ set(FILES
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
+    IO/IStreamerProfiler.h
     IO/IStreamerTypes.h
     IO/IStreamerTypes.inl
     IO/IStreamerTypes.cpp

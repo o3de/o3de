@@ -713,7 +713,9 @@ class AtomComponentProperties:
     def mesh(property: str = 'name') -> str:
         """
         Mesh component properties.
-          - 'Mesh Asset' Asset.id of the mesh model.
+          - 'Model Asset' Asset.id of the mesh model.
+          - 'Mesh Asset' Mesh Asset is deprecated in favor of Model Asset, but this property will continue
+             to exist and map to the new Model Asset property to keep older tests working.
           - 'Sort Key' dis-ambiguates which mesh renders in front of others (signed int 64)
           - 'Use ray tracing' Toggles interaction with ray tracing (bool)
           - 'Lod Type' options: default, screen coverage, specific lod
@@ -729,7 +731,8 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'Mesh',
-            'Mesh Asset': 'Controller|Configuration|Mesh Asset',
+            'Model Asset': 'Controller|Configuration|Model Asset',
+            'Mesh Asset': 'Controller|Configuration|Model Asset',
             'Sort Key': 'Controller|Configuration|Sort Key',
             'Use ray tracing': 'Controller|Configuration|Use ray tracing',
             'Lod Type': 'Controller|Configuration|Lod Type',

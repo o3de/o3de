@@ -35,6 +35,11 @@ namespace AzToolsFramework
             );
         }
 
+        if (m_actionContexts.contains(identifier))
+        {
+            return AZ::Failure(AZStd::string::format("Action Manager - Could not register action context \"%.s\" twice.", identifier.c_str()));
+        }
+
         m_actionContexts.insert(
             {
                 identifier,
