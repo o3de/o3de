@@ -92,6 +92,12 @@ namespace EMotionFX
 
     void ColliderRotationManipulators::ResetValues()
     {
+        if (m_physicsSetupManipulatorData.HasColliders())
+        {
+            BeginEditing(m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_rotation);
+            FinishEditing(AZ::Quaternion::CreateIdentity());
+            Refresh();
+        }
     }
 
     void ColliderRotationManipulators::OnManipulatorMoved(const AZ::Quaternion& rotation)

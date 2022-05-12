@@ -122,8 +122,10 @@ namespace EMotionFX
     {
         if (m_physicsSetupManipulatorData.HasColliders())
         {
-            m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position = AZ::Vector3::CreateZero();
-            m_translationManipulators.SetLocalPosition(AZ::Vector3::CreateZero());
+            BeginEditing(
+                m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position, AZ::Vector3::CreateZero());
+            FinishEditing(AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero());
+            Refresh();
         }
     }
 
