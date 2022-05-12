@@ -36,6 +36,7 @@ namespace EMotionFX
             , private AZ::TransformNotificationBus::Handler
             , private AZ::TickBus::Handler
             , private ActorComponentRequestBus::Handler
+            , private ActorComponentNotificationBus::Handler
             , private EditorActorComponentRequestBus::Handler
             , private LmbrCentral::AttachmentComponentNotificationBus::Handler
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
@@ -141,7 +142,14 @@ namespace EMotionFX
             void OnAttached(AZ::EntityId targetId) override;
             void OnDetached(AZ::EntityId targetId) override;
 
+            // ActorComponentNotificationBus::Handler
+            void OnActorInstanceCreated(ActorInstance* actorInstance) override;
+            void OnActorInstanceDestroyed(ActorInstance* actorInstance) override;
+
             void CheckActorCreation();
+            void CheckAttachToEntity();
+            void DetachFromEntity() override;
+            void AttachToInstance(ActorInstance* targetActorInstance);
             void BuildGameEntity(AZ::Entity* gameEntity) override;
 
             void LoadActorAsset();
