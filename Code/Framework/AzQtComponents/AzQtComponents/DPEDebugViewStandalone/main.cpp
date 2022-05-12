@@ -34,6 +34,8 @@
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
@@ -225,6 +227,11 @@ int main(int argc, char** argv)
         theWindow->m_treeView->resizeColumnToContents(columnIndex);
     }
     theWindow->show();
+
+    // create a real DPE on the same adapter as the debug adapter for testing purposes
+    QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+    dpeInstance->SetAdapter(adapter.get());
+    dpeInstance->show();
 
     return qtApp.exec();
 }
