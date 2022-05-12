@@ -222,7 +222,6 @@ namespace AZ
             AZ::Vector3& normal) const
         {
             using Intersect::IntersectRayAABB2;
-            using Intersect::IntersectSegmentTriangleCCW;
             using Intersect::ISECT_RAY_AABB_NONE;
 
             if (!pNode)
@@ -254,6 +253,9 @@ namespace AZ
                     return false;
                 }
 
+                const AZ::Vector3 rayEnd = raySrc + rayDir;
+                Intersect::SegmentTriangleHitTester hitTester(raySrc, rayEnd);
+
                 float nearestDistanceNormalized = distanceNormalized;
                 for (AZ::u32 i = 0; i < nVBuffSize; ++i)
                 {
@@ -275,9 +277,8 @@ namespace AZ
 
                     float hitDistanceNormalized;
                     AZ::Vector3 intersectionNormal;
-                    const AZ::Vector3 rayEnd = raySrc + rayDir;
-                    if (IntersectSegmentTriangleCCW(raySrc, rayEnd, trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                        intersectionNormal, hitDistanceNormalized) != ISECT_RAY_AABB_NONE)
+                    if (hitTester.IntersectSegmentTriangleCCW(trianglePoints[0], trianglePoints[1], trianglePoints[2],
+                        intersectionNormal, hitDistanceNormalized))
                     {
                         if (nearestDistanceNormalized > hitDistanceNormalized)
                         {

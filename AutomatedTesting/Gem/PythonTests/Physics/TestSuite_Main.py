@@ -73,6 +73,7 @@ class TestAutomation(EditorTestSuite):
         ]
         base_dir = "AutomatedTesting/Registry"
 
+    @pytest.mark.skip(reason="GHI #9422: Test Periodically Fails")
     class Collider_DiffCollisionGroupDiffCollidingLayersNotCollide(EditorSingleTest_WithFileOverrides):
         from .tests.collider import Collider_DiffCollisionGroupDiffCollidingLayersNotCollide as test_module
         files_to_override = [
@@ -159,6 +160,7 @@ class TestAutomation(EditorTestSuite):
         from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
         # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
 
+    @pytest.mark.skip(reason="GHI #9301: Test Periodically Fails")
     class Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx(EditorSharedTest):
         from .tests.collider import Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx as test_module
 
