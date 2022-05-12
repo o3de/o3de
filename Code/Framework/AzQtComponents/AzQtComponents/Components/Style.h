@@ -151,9 +151,9 @@ namespace AzQtComponents
         int styleHint(QStyle::StyleHint hint, const QStyleOption* option, const QWidget* widget, QStyleHintReturn* returnData) const override;
 
         // A path to draw a border frame when color != Qt::transparent
-        QPainterPath borderLineEditRect(const QRect& contentsRect, int borderWidth = -1, int borderRadius = CORNER_RECTANGLE) const;
+        QPainterPath borderLineEditRect(const QRect& contentsRect, int borderWidth = -1, int borderRadius = Style::BorderStyle::CORNER_RECTANGLE) const;
         // A path to draw a border frame when color == Qt::Transparent
-        QPainterPath lineEditRect(const QRect& contentsRect, int borderWidth = -1, int borderRadius = CORNER_RECTANGLE) const;
+        QPainterPath lineEditRect(const QRect& contentsRect, int borderWidth = -1, int borderRadius = Style::BorderStyle::CORNER_RECTANGLE) const;
 
         bool eventFilter(QObject* watched, QEvent* ev) override;
 

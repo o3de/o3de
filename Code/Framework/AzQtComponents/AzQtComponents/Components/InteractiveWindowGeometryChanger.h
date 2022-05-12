@@ -40,7 +40,7 @@ namespace AzQtComponents
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::InteractiveWindowGeometryChanger::m_targetWindow': class 'QPointer<QWindow>' needs to have dll-interface to be used by clients of class 'AzQtComponents::InteractiveWindowGeometryChanger'
         QPointer<QWindow> m_targetWindow;
         AZ_POP_DISABLE_WARNING
-        const QPoint m_originalCursorPos;
+        QPoint m_originalCursorPos;
         bool m_restoreCursorAtExit = true;
     };
 
