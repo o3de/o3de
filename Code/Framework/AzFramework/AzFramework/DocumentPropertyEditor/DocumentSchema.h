@@ -203,7 +203,7 @@ namespace AZ::DocumentPropertyEditor
                 AttributeType value;
                 if (!reader.Read<AttributeType>(value))
                 {
-                    return {};
+                    return AZ::Dom::Value();
                 }
                 return AZ::Dom::Utils::ValueFromType(value);
             }
