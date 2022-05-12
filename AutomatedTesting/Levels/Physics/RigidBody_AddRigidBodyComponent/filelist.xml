@@ -1,6 +1,0 @@
-<download name="C4976194_PhysX_RigidBodies_Physicscomponent" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39334" md5="f9ebec87df57dbbcd4a79fc851d617e9"/>
- </files>
-</download>
