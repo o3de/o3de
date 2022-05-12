@@ -1,6 +1,0 @@
-<download name="C13351703_CenterOfMass_NotIncludeTriggerShapes" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39330" md5="87b56a4f73ab773ff6adf564599ebf83"/>
- </files>
-</download>
