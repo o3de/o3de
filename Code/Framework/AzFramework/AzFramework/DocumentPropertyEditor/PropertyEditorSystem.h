@@ -33,7 +33,7 @@ namespace AZ::DocumentPropertyEditor
     private:
         void AddNameToCrcTable(AZ::Name name);
 
-        AZStd::unordered_map<AZ::Crc32, AZ::Name> m_crcToName;
+        mutable AZStd::unordered_map<AZ::Crc32, AZ::Name> m_crcToName;
         AZStd::unordered_map<AZ::Name, NodeMetadata> m_nodeMetadata;
         AZStd::unordered_map<AZ::Name, AZStd::unordered_map<AZ::Name, const AttributeDefinitionInterface*>> m_attributeMetadata;
     };

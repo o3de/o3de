@@ -101,6 +101,8 @@ namespace AZ::DocumentPropertyEditor
             return crcIt->second;
         }
         AZ_Warning("DPE", false, "No name found for CRC, falling back to CRC value: %" PRIu32, static_cast<AZ::u32>(crc));
-        return AZ::Name(AZStd::fixed_string<16>::format("%" PRIu32, static_cast<AZ::u32>(crc)));
+        AZ::Name hashName(AZStd::fixed_string<16>::format("%" PRIu32, static_cast<AZ::u32>(crc)));
+        m_crcToName[crc] = hashName;
+        return hashName;
     }
 } // namespace AZ::DocumentPropertyEditor
