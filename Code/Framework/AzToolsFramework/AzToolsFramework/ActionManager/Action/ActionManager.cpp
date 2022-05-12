@@ -8,8 +8,6 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 
-#include <AzCore/RTTI/BehaviorContext.h>
-
 namespace AzToolsFramework
 {
     ActionManager::ActionManager()
