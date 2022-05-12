@@ -24,6 +24,7 @@
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/ObjectEditor.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h>
 #include <Editor/SkeletonModel.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <MysticQt/Source/MysticQtManager.h>
@@ -145,6 +146,11 @@ namespace EMotionFX
                 }
             }
         }
+    }
+
+    void ColliderPropertyNotify::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
+    {
+        PhysicsSetupManipulatorRequestBus::Broadcast(&PhysicsSetupManipulatorRequests::OnUnderlyingPropertiesChanged);
     }
 
     void ColliderPropertyNotify::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)

@@ -8,44 +8,46 @@
 
 #pragma once
 
-#include <AzToolsFramework/Manipulators/TranslationManipulators.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzToolsFramework/Manipulators/RotationManipulators.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
 
 namespace EMotionFX
 {
-    class ColliderTranslationManipulators
+    class ColliderRotationManipulators
         : public PhysicsSetupManipulatorsBase
+        , private AZ::TickBus::Handler
         , private PhysicsSetupManipulatorRequestBus::Handler
     {
     public:
-        ColliderTranslationManipulators();
-        ~ColliderTranslationManipulators();
+        ColliderRotationManipulators();
+        ~ColliderRotationManipulators();
         void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;
         void ResetValues() override;
 
     private:
-        AZ::Vector3 GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset) const;
-        void OnManipulatorMoved(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
-        void BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
-        void FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
+        // AZ::TickBus::Handler ...
+        void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
+
+        AZ::s32 GetViewportId();
+
+        void OnManipulatorMoved(const AZ::Quaternion& rotation);
+        void BeginEditing(const AZ::Quaternion& rotation);
+        void FinishEditing(const AZ::Quaternion& rotation);
 
         // PhysicsSetupManipulatorRequestBus::Handler ...
         void OnUnderlyingPropertiesChanged() override;
-
-        MCore::CommandGroup m_commandGroup;
-        PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
-        AzToolsFramework::TranslationManipulators m_translationManipulators;
 
         class DEFINECOMMANDCALLBACK_API DataChangedCallback : public MCore::Command::Callback
         {
             MCORE_MEMORYOBJECTCATEGORY(DataChangedCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MCore::MCORE_MEMCATEGORY_COMMANDSYSTEM);
 
         public:
-            explicit DataChangedCallback(ColliderTranslationManipulators* manipulators, bool executePreUndo, bool executePreCommand = false)
+            explicit DataChangedCallback(ColliderRotationManipulators* manipulators, bool executePreUndo, bool executePreCommand = false)
                 : MCore::Command::Callback(executePreUndo, executePreCommand)
                 , m_manipulators(manipulators)
             {
@@ -54,9 +56,13 @@ namespace EMotionFX
             bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine) override;
 
         private:
-            ColliderTranslationManipulators* m_manipulators{};
+            ColliderRotationManipulators* m_manipulators{};
         };
 
+        AzToolsFramework::RotationManipulators m_rotationManipulators;
+        PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
+        AZStd::optional<AZ::s32> m_viewportId;
+        MCore::CommandGroup m_commandGroup;
         AZStd::unique_ptr<DataChangedCallback> m_adjustColliderCallback;
 
         friend class DataChangedCallback;

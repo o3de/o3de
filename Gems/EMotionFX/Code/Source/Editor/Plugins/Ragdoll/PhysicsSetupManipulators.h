@@ -8,7 +8,7 @@
 
 #pragma once
 #include <AzCore/Math/Transform.h>
-#include <QWidget>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h>
 
 namespace Physics
 {
@@ -24,6 +24,8 @@ namespace EMotionFX
 
     struct PhysicsSetupManipulatorData
     {
+        bool HasColliders();
+
         AZ::Transform m_nodeWorldTransform = AZ::Transform::CreateIdentity();
         Physics::CharacterColliderNodeConfiguration* m_colliderNodeConfiguration = nullptr;
         Actor* m_actor = nullptr;
