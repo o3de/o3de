@@ -37,6 +37,7 @@ namespace EMotionFX
         m_subModes[m_subMode]->Teardown();
         m_subMode = mode;
         m_subModes[m_subMode]->Setup(m_physicsSetupManipulatorData);
+        m_subModes[m_subMode]->SetViewportId(GetViewportId());
 
         const auto modeIndex = static_cast<size_t>(mode);
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);

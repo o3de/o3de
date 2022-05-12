@@ -52,5 +52,9 @@ namespace EMotionFX
         //! Called when reset hot key is pressed.
         //! Should reset values in the manipulator mode to sensible defaults.
         virtual void ResetValues() = 0;
+
+        void SetViewportId(AZ::s32 viewportId);
+    protected:
+        AZ::s32 m_viewportId;
     };
 } // namespace EMotionFX

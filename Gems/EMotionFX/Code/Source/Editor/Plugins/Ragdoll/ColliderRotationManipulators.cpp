@@ -29,17 +29,6 @@ namespace EMotionFX
         EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
     }
 
-    AZ::s32 ColliderRotationManipulators::GetViewportId()
-    {
-        if (!m_viewportId.has_value())
-        {
-            AZ::s32 viewportId = -1;
-            EMStudio::ViewportPluginRequestBus::BroadcastResult(viewportId, &EMStudio::ViewportPluginRequestBus::Events::GetViewportId);
-            m_viewportId = viewportId;
-        }
-        return m_viewportId.value();
-    }
-
     void ColliderRotationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
@@ -150,7 +139,7 @@ namespace EMotionFX
 
     void ColliderRotationManipulators::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
     {
-        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(GetViewportId());
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(m_viewportId);
         m_rotationManipulators.RefreshView(cameraState.m_position);
     }
 

@@ -34,18 +34,15 @@ namespace EMotionFX
         // AZ::TickBus::Handler ...
         void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
 
-        AZ::s32 GetViewportId();
+        // PhysicsSetupManipulatorRequestBus::Handler ...
+        void OnUnderlyingPropertiesChanged() override;
 
         void OnManipulatorMoved(const AZ::Quaternion& rotation);
         void BeginEditing(const AZ::Quaternion& rotation);
         void FinishEditing(const AZ::Quaternion& rotation);
 
-        // PhysicsSetupManipulatorRequestBus::Handler ...
-        void OnUnderlyingPropertiesChanged() override;
-
         AzToolsFramework::RotationManipulators m_rotationManipulators;
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
-        AZStd::optional<AZ::s32> m_viewportId;
         MCore::CommandGroup m_commandGroup;
         AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustColliderCallback;
     };

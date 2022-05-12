@@ -15,4 +15,9 @@ namespace EMotionFX
     {
         return m_valid && m_colliderNodeConfiguration && !m_colliderNodeConfiguration->m_shapes.empty();
     }
+
+    void PhysicsSetupManipulatorsBase::SetViewportId(AZ::s32 viewportId)
+    {
+        m_viewportId = viewportId;
+    }
 } // namespace EMotionFX
