@@ -22,7 +22,7 @@ namespace ScriptAutomation
     {
         void Print(const AZStd::string& message [[maybe_unused]])
         {
-#ifndef RELEASE //AZ_TracePrintf does nothing in release, ignore this call
+#ifndef _RELEASE //AZ_TracePrintf does nothing in release, ignore this call
             auto func = [message]()
             {
                 AZ_TracePrintf("ScriptAutomation", "Script: %s\n", message.c_str());
@@ -34,7 +34,7 @@ namespace ScriptAutomation
 
         void Warning(const AZStd::string& message [[maybe_unused]])
         {
-#ifndef RELEASE //AZ_Warning does nothing in release, ignore this call
+#ifndef _RELEASE //AZ_Warning does nothing in release, ignore this call
             auto func = [message]()
             {
                 AZ_Warning("ScriptAutomation", false, "Script: %s", message.c_str());
@@ -46,7 +46,7 @@ namespace ScriptAutomation
 
         void Error(const AZStd::string& message [[maybe_unused]])
         {
-#ifndef RELEASE //AZ_Error does nothing in release, ignore this call
+#ifndef _RELEASE //AZ_Error does nothing in release, ignore this call
             auto func = [message]()
             {
                 AZ_Error("ScriptAutomation", false, "Script: %s", message.c_str());

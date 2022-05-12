@@ -253,7 +253,7 @@ namespace ScriptAutomation
         AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath, *m_scriptContext.get());
         if (!scriptAsset)
         {
-#ifndef RELEASE // AZ_Error is a no-op in release builds
+#ifndef _RELEASE // AZ_Error is a no-op in release builds
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([scriptFilePath]()
@@ -265,7 +265,7 @@ namespace ScriptAutomation
             return;
         }
 
-#ifndef RELEASE // AZ_Error is a no-op in release builds
+#ifndef _RELEASE // AZ_Error is a no-op in release builds
         QueueScriptOperation([scriptFilePath]()
             {
                 AZ_Printf("ScriptAutomation", "Running script '%s'...\n", scriptFilePath);
@@ -275,7 +275,7 @@ namespace ScriptAutomation
 
         if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), scriptFilePath, scriptAsset->m_data.GetScriptBuffer().size()))
         {
-#ifndef RELEASE // AZ_Error is a no-op in release builds
+#ifndef _RELEASE // AZ_Error is a no-op in release builds
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([scriptFilePath]()
