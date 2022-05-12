@@ -878,7 +878,6 @@ class EditorTestSuite:
         editor_utils.cycle_crash_report(run_id, workspace)
 
         results = {}
-        temp_batched_file = None
 
         # We create a file containing a semicolon separated list for the Editor to read
         temp_batched_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
@@ -889,6 +888,7 @@ class EditorTestSuite:
         temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec_list[-1].test_module)
                                 .replace('\\', '\\\\'))
         temp_batched_file.flush()
+        temp_batched_file.close()
 
         cmdline = [
             "--runpythontest", temp_batched_file.name,
@@ -989,7 +989,6 @@ class EditorTestSuite:
                                                          self.timeout_editor_shared_test, result.editor_log)
         finally:
             if temp_batched_file:
-                temp_batched_file.close()
                 os.unlink(temp_batched_file.name)
         return results
     
