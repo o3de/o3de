@@ -102,10 +102,10 @@ class TestsPythonAssetProcessing_APBatch(object):
         cache_folder = asset_processor.temp_asset_root()
         if platform == 'windows':
             platform = 'pc'
-        cache_folder = os.path.join(cache_folder, 'cache', platform)
+        cache_folder = os.path.join(cache_folder, 'Cache', platform)
 
         # compute the file name to the .dbgsg file
-        asset_dbgsg = os.path.join(cache_folder, dbgsg_filename).lower()
+        asset_dbgsg = os.path.join(cache_folder, dbgsg_filename)
         if os.path.isfile(asset_dbgsg) == False:
             raise Exception(f"Missing file {asset_dbgsg}")
 
