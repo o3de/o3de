@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/ActionManager/PythonEditorAction.h>
+#include <ActionManager/PythonEditorAction.h>
 
 PythonEditorAction::PythonEditorAction(PyObject* handler)
     : m_handler(handler)

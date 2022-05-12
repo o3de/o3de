@@ -11,11 +11,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/parallel/semaphore.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzCore/std/parallel/semaphore.h>
 
-#include <Source/ActionManager/PythonActionManagerHandler.h>
+#include <ActionManager/PythonActionManagerHandler.h>
 
 namespace EditorPythonBindings
 {

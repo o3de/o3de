@@ -7,7 +7,7 @@
  */
 
 #include <EditorPythonBindings/CustomTypeBindingBus.h>
-#include <Source/ActionManager/ActionManagerBus.h>
+#include <ActionManager/ActionManagerBus.h>
 
 namespace AzToolsFramework
 {
