@@ -11,7 +11,7 @@
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 
-namespace UnitTest
+namespace ScriptCanvasTests
 {
     struct EntityIdComparer
     {
