@@ -622,7 +622,8 @@ namespace AZ::Render
         TransformNotificationBus::Handler::BusConnect(m_entityId);
         MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
         MeshComponentRequestBus::Handler::BusConnect(m_entityId);
-        AZ::Render::SkinnedMeshOverrideRequestBus::Handler::BusConnect(m_entityId);
+        SkinnedMeshOverrideRequestBus::Handler::BusConnect(m_entityId);
+        MeshHandleStateRequestBus::Handler::BusConnect(m_entityId);
 
         const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
@@ -632,7 +633,8 @@ namespace AZ::Render
     {
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
 
-        AZ::Render::SkinnedMeshOverrideRequestBus::Handler::BusDisconnect(m_entityId);
+        MeshHandleStateRequestBus::Handler::BusDisconnect();
+        SkinnedMeshOverrideRequestBus::Handler::BusDisconnect(m_entityId);
         MeshComponentRequestBus::Handler::BusDisconnect();
         MaterialComponentNotificationBus::Handler::BusDisconnect();
         TransformNotificationBus::Handler::BusDisconnect();
@@ -784,6 +786,11 @@ namespace AZ::Render
                 }
             }
         }
+    }
+
+    const MeshFeatureProcessorInterface::MeshHandle* AtomActorInstance::GetMeshHandle() const
+    {
+        return m_meshHandle.get();
     }
 
 } // namespace AZ::Render
