@@ -26,9 +26,6 @@ namespace ScriptCanvas
         using namespace Data;
         static constexpr const char* k_categoryName = "Entity/Entity";
 
-        template<int t_Index>
-        AZ_INLINE void DefaultScale(Node& node) { SetDefaultValuesByIndex<t_Index>::_(node, Data::One()); }
-
         AZ_INLINE Vector3Type GetEntityRight(AZ::EntityId entityId, NumberType scale)
         {
             AZ::Transform worldTransform = {};
