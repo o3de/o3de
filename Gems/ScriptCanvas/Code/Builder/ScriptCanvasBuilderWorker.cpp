@@ -87,12 +87,6 @@ namespace ScriptCanvasBuilder
             }
         };
         const AZStd::set<AZ::Entity*, EntityIdComparer> sortedEntities(graphData->m_nodes.begin(), graphData->m_nodes.end());
-        AZ_TracePrintf(s_scriptCanvasBuilder, "Sorted entities are...");
-        for (const auto& nodeEntity : sortedEntities)
-        {
-            AZ_TracePrintf(
-                s_scriptCanvasBuilder, "\t%s: %s", nodeEntity->GetName().c_str(), nodeEntity->GetId().ToString().c_str());
-        }
 
         size_t fingerprint = 0;
         for (const auto& nodeEntity : sortedEntities)
@@ -100,12 +94,6 @@ namespace ScriptCanvasBuilder
             if (auto nodeComponent = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Node>(nodeEntity))
             {
                 AZStd::hash_combine(fingerprint, nodeComponent->GenerateFingerprint());
-                AZ_TracePrintf(s_scriptCanvasBuilder, "Fingerprint for entity %s with ID %s for node %s is %d. Fingerprint is %d",
-                    nodeEntity->GetName().c_str(),
-                    nodeEntity->GetId().ToString().c_str(),
-                    nodeComponent->GetNodeName().c_str(),
-                    nodeComponent->GenerateFingerprint(),
-                    fingerprint);
             }
         }
 
@@ -182,8 +170,6 @@ namespace ScriptCanvasBuilder
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
             jobDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
 
-            AZ_TracePrintf(
-                s_scriptCanvasBuilder, "jobDescriptor.m_additionalFingerprintInfo %s", jobDescriptor.m_additionalFingerprintInfo.c_str());
             // Graph process job needs to wait until its dependency asset job finished
             for (const auto& processingDependency : jobDependenciesByKey)
             {
