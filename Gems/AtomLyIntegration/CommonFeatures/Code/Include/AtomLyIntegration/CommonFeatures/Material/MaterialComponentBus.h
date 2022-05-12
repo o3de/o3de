@@ -23,6 +23,9 @@ namespace AZ
             virtual MaterialAssignmentMap GetOriginalMaterialAssignments() const = 0;
             //! Get material assignment id matching lod and label substring
             virtual MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
+            //! Get the asset ID for the active material applied at a given slot. It will be the material override if one exists. Otherwise,
+            //! it will be the default material
+            virtual AZ::Data::AssetId GetActiveMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const = 0;
             //! Get default material asset
             virtual AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const = 0;
             //! Get material slot label
