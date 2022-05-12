@@ -257,8 +257,11 @@ namespace AZ
             }
             m_passesWithoutPipeline.m_rootPass->FrameEnd();
 
-            // remove any pipelines that are marked as ExecuteOnce
-            for (RenderPipeline*& pipeline : m_renderPipelines)
+            // Copy list of render pipelines because some pipelines might be removed in next loop execution
+            AZStd::vector< RenderPipeline* > renderPipelinesCopy = m_renderPipelines;
+
+            // Remove any pipelines that are marked as ExecuteOnce
+            for (RenderPipeline*& pipeline : renderPipelinesCopy)
             {
                 if (pipeline && pipeline->IsExecuteOnce())
                 {
