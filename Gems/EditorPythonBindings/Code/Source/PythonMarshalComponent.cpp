@@ -33,7 +33,7 @@ namespace EditorPythonBindings
     }
 
     template <typename TInput, typename TPythonType>
-    pybind11::object MarshalBehaviorValueParameter(AZ::BehaviorValueParameter& result)
+    pybind11::object MarshalBehaviorValueParameter(AZ::BehaviorArgument& result)
     {
         if (result.ConvertTo<TInput>())
         {
@@ -80,7 +80,7 @@ namespace EditorPythonBindings
         : public PythonMarshalComponent::TypeConverter
     {
     public:
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
         {
             if (!CanConvertPythonToBehaviorValue(traits, pyObj))
             {
@@ -144,7 +144,7 @@ namespace EditorPythonBindings
             return AZStd::nullopt;
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
         {
             if ((behaviorValue.m_traits & AZ::BehaviorParameter::TR_POINTER) == AZ::BehaviorParameter::TR_POINTER)
             {
@@ -163,7 +163,7 @@ namespace EditorPythonBindings
             // is a registered convertible type?
             if (PythonMarshalTypeRequestBus::GetNumOfEventHandlers(anyValueTypId))
             {
-                AZ::BehaviorValueParameter tempBehaviorValue;
+                AZ::BehaviorArgument tempBehaviorValue;
                 tempBehaviorValue.m_typeId = anyValueTypId;
                 tempBehaviorValue.m_value = AZStd::any_cast<void>(anyValue);
 
@@ -209,7 +209,7 @@ namespace EditorPythonBindings
 
     protected:
         template <typename T>
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> ReturnSimpleType(T value, AZ::BehaviorValueParameter& outValue)
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> ReturnSimpleType(T value, AZ::BehaviorArgument& outValue)
         {
             AZStd::any* anyValue = aznew AZStd::any(value);
             outValue.Set<AZStd::any>(anyValue);
@@ -263,7 +263,7 @@ namespace EditorPythonBindings
             return aznew AZStd::any(address, valueInfo);
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToParameterWithProxy(EditorPythonBindings::PythonProxyObject* proxyObj, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue)
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToParameterWithProxy(EditorPythonBindings::PythonProxyObject* proxyObj, pybind11::object pyObj, AZ::BehaviorArgument& outValue)
         {
             auto behaviorObject = proxyObj->GetBehaviorObject();
             if (!behaviorObject)
@@ -286,7 +286,7 @@ namespace EditorPythonBindings
             return AZStd::make_optional(PythonMarshalTypeRequests::BehaviorValueResult{ true, deleteAny });
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> ReturnVectorFromList(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::list pyList, AZ::BehaviorValueParameter& outValue)
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> ReturnVectorFromList(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::list pyList, AZ::BehaviorArgument& outValue)
         {
             // empty lists are okay, sending as an empty AZStd::any()
             if (pyList.size() == 0)
@@ -359,7 +359,7 @@ namespace EditorPythonBindings
         : public PythonMarshalComponent::TypeConverter
     {
     public:
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
         {
             if (CanConvertPythonToBehaviorValue(traits,pyObj))
             {
@@ -369,7 +369,7 @@ namespace EditorPythonBindings
             return AZStd::nullopt;
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
         {
             PythonMarshalTypeRequests::PythonValueResult result;
             result.first = MarshalBehaviorValueParameter<bool, pybind11::bool_>(behaviorValue);
@@ -387,7 +387,7 @@ namespace EditorPythonBindings
         : public PythonMarshalComponent::TypeConverter
     {
     public:
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
         {
             if (CanConvertPythonToBehaviorValue(traits, pyObj))
             {
@@ -397,7 +397,7 @@ namespace EditorPythonBindings
             return AZStd::nullopt;
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
         {
             PythonMarshalTypeRequests::PythonValueResult result;
             result.first = MarshalBehaviorValueParameter<T, pybind11::int_>(behaviorValue);
@@ -415,7 +415,7 @@ namespace EditorPythonBindings
         : public PythonMarshalComponent::TypeConverter
     {
     public:
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
         {
             if (CanConvertPythonToBehaviorValue(traits, pyObj))
             {
@@ -426,7 +426,7 @@ namespace EditorPythonBindings
             return AZStd::nullopt;
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
         {
             PythonMarshalTypeRequests::PythonValueResult result;
             result.first = MarshalBehaviorValueParameter<BehaviorType, pybind11::float_>(behaviorValue);
@@ -444,7 +444,7 @@ namespace EditorPythonBindings
         : public PythonMarshalComponent::TypeConverter
     {
     public:
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
         {
             if (!CanConvertPythonToBehaviorValue(traits, pyObj))
             {
@@ -471,7 +471,7 @@ namespace EditorPythonBindings
             return AZStd::nullopt;
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
         {
             PythonMarshalTypeRequests::PythonValueResult result;
             result.first = pybind11::cast(behaviorValue.GetAsUnsafe<T>());
@@ -490,7 +490,7 @@ namespace EditorPythonBindings
         : public PythonMarshalComponent::TypeConverter
     {
     public:
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
         {
             if (!CanConvertPythonToBehaviorValue(traits, pyObj))
             {
@@ -515,7 +515,7 @@ namespace EditorPythonBindings
             return { { true, nullptr } };
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
         {
             if (IsPointerType(static_cast<PythonMarshalTypeRequests::BehaviorTraits>(behaviorValue.m_traits)))
             {
@@ -554,7 +554,7 @@ namespace EditorPythonBindings
             : public PythonMarshalComponent::TypeConverter
         {
         public:
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
             {
                 if (!CanConvertPythonToBehaviorValue(traits, pyObj))
                 {
@@ -583,7 +583,7 @@ namespace EditorPythonBindings
                 return { { true, deleteVector } };
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
             {
                 if (behaviorValue.ConvertTo(AZ::AzTypeInfo<AZStd::vector<AZ::u8>>::Uuid()))
                 {
@@ -609,7 +609,7 @@ namespace EditorPythonBindings
 
         AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> ProcessBehaviorObject(AZ::BehaviorObject& behaviorObject)
         {
-            AZ::BehaviorValueParameter source;
+            AZ::BehaviorArgument source;
             source.m_value = behaviorObject.m_address;
             source.m_typeId = behaviorObject.m_typeId;
 
@@ -629,7 +629,7 @@ namespace EditorPythonBindings
             return AZStd::nullopt;
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> ProcessPythonObject(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pythonObj, const AZ::TypeId& elementTypeId, AZ::BehaviorValueParameter& outValue)
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> ProcessPythonObject(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pythonObj, const AZ::TypeId& elementTypeId, AZ::BehaviorArgument& outValue)
         {
             // first try to convert using the element's type ID
             AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> result;
@@ -640,7 +640,7 @@ namespace EditorPythonBindings
             }
             else if (pybind11::isinstance<EditorPythonBindings::PythonProxyObject>(pythonObj))
             {
-                AZ::BehaviorValueParameter behaviorArg;
+                AZ::BehaviorArgument behaviorArg;
                 behaviorArg.m_traits = traits;
                 behaviorArg.m_typeId = elementTypeId;
 
@@ -656,7 +656,7 @@ namespace EditorPythonBindings
             AZ::SerializeContext::IDataContainer* pairContainer, size_t index, AZ::SerializeContext* serializeContext, void* newPair)
         {
             pybind11::object pyObj{ pybind11::reinterpret_borrow<pybind11::object>(pyItem) };
-            AZ::BehaviorValueParameter behaviorItem;
+            AZ::BehaviorArgument behaviorItem;
             auto behaviorResult = ProcessPythonObject(traits, pyObj, itemElement->m_typeId, behaviorItem);
             if (behaviorResult && behaviorResult.value().first)
             {
@@ -672,7 +672,7 @@ namespace EditorPythonBindings
             return true;
         }
 
-        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> ConvertPythonElement(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pythonElement, const AZ::TypeId& elementTypeId, AZ::BehaviorValueParameter& outValue)
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> ConvertPythonElement(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pythonElement, const AZ::TypeId& elementTypeId, AZ::BehaviorArgument& outValue)
         {
             // first try to convert using the element's type ID
             AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> result;
@@ -683,7 +683,7 @@ namespace EditorPythonBindings
             }
             else if (pybind11::isinstance<EditorPythonBindings::PythonProxyObject>(pythonElement))
             {
-                AZ::BehaviorValueParameter behaviorArg;
+                AZ::BehaviorArgument behaviorArg;
                 behaviorArg.m_traits = traits;
                 behaviorArg.m_typeId = elementTypeId;
 
@@ -708,7 +708,7 @@ namespace EditorPythonBindings
             {
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
             {
                 if (!CanConvertPythonToBehaviorValue(traits, pyObj))
                 {
@@ -806,7 +806,7 @@ namespace EditorPythonBindings
                 return PythonMarshalTypeRequests::BehaviorValueResult{ true, deleteMapInstance };
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
             {
                 // the class data must have a container interface
                 auto* containerInterface = m_classData->m_container;
@@ -917,7 +917,7 @@ namespace EditorPythonBindings
             {
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> HandlePythonElement(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pythonElement, const AZ::TypeId& elementTypeId, AZ::BehaviorValueParameter& outValue)
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> HandlePythonElement(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pythonElement, const AZ::TypeId& elementTypeId, AZ::BehaviorArgument& outValue)
             {
                 // first try to convert using the element's type ID
                 AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> result;
@@ -928,7 +928,7 @@ namespace EditorPythonBindings
                 }
                 else if (pybind11::isinstance<EditorPythonBindings::PythonProxyObject>(pythonElement))
                 {
-                    AZ::BehaviorValueParameter behaviorArg;
+                    AZ::BehaviorArgument behaviorArg;
                     behaviorArg.m_traits = traits;
                     behaviorArg.m_typeId = elementTypeId;
 
@@ -941,7 +941,7 @@ namespace EditorPythonBindings
             }
 
             // handle a vector of Behavior Class values
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorObjectList(const AZ::TypeId& elementType, const AZ::BehaviorClass* behaviorClass, PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue)
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorObjectList(const AZ::TypeId& elementType, const AZ::BehaviorClass* behaviorClass, PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue)
             {
                 auto iteratorToPushBackMethod = behaviorClass->m_methods.find("push_back");
                 if (iteratorToPushBackMethod == behaviorClass->m_methods.end())
@@ -959,11 +959,11 @@ namespace EditorPythonBindings
                 for (auto pyItem = pyList.begin(); pyItem != pyList.end(); ++pyItem)
                 {
                     auto pyObjItem = pybind11::cast<pybind11::object>(*pyItem);
-                    AZ::BehaviorValueParameter elementValue;
+                    AZ::BehaviorArgument elementValue;
                     auto result = HandlePythonElement(traits, pyObjItem, elementType, elementValue);
                     if (result && result.value().first)
                     {
-                        AZ::BehaviorValueParameter parameters[2];
+                        AZ::BehaviorArgument parameters[2];
                         parameters[0].Set(&instance);
                         parameters[1].Set(elementValue);
                         pushBackMethod->Call(parameters, 2);
@@ -991,7 +991,7 @@ namespace EditorPythonBindings
             }
 
             // handle a vector of a data type not registered with the Behavior Context
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorSerializedList(const AZ::TypeId& elementType, PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue)
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorSerializedList(const AZ::TypeId& elementType, PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue)
             {
                 // fetch the container parts
                 const AZ::SerializeContext::ClassData* classData = m_genericClassInfo->GetClassData();
@@ -1008,7 +1008,7 @@ namespace EditorPythonBindings
                 for (auto pyItem = pyList.begin(); pyItem != pyList.end(); ++pyItem)
                 {
                     auto pyObjItem = pybind11::cast<pybind11::object>(*pyItem);
-                    AZ::BehaviorValueParameter elementValue;
+                    AZ::BehaviorArgument elementValue;
                     auto elementResult = HandlePythonElement(traits, pyObjItem, elementType, elementValue);
                     if (elementResult && elementResult.value().first)
                     {
@@ -1042,7 +1042,7 @@ namespace EditorPythonBindings
                 return { { true, deleteVector } };
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
             {
                 AZStd::vector<AZ::Uuid> typeList = AZ::Utils::GetContainedTypes(m_typeId);
                 if (typeList.empty())
@@ -1068,7 +1068,7 @@ namespace EditorPythonBindings
 
             HandleResult HandleElement(AZ::BehaviorObject& behaviorObject, pybind11::list pythonList)
             {
-                AZ::BehaviorValueParameter source;
+                AZ::BehaviorArgument source;
                 source.m_value = behaviorObject.m_address;
                 source.m_typeId = behaviorObject.m_typeId;
 
@@ -1089,7 +1089,7 @@ namespace EditorPythonBindings
                 return AZStd::nullopt;
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
             {
                 auto* container = m_classData->m_container;
                 if (behaviorValue.ConvertTo(m_typeId) && container)
@@ -1160,7 +1160,7 @@ namespace EditorPythonBindings
             }
 
             // handle a vector of Behavior Class values
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorObjectSet(const AZ::TypeId& elementType, const AZ::BehaviorClass* behaviorClass, PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue)
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorObjectSet(const AZ::TypeId& elementType, const AZ::BehaviorClass* behaviorClass, PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue)
             {
                 auto iteratorToInsertMethod = behaviorClass->m_methods.find("Insert");
                 if (iteratorToInsertMethod == behaviorClass->m_methods.end())
@@ -1178,11 +1178,11 @@ namespace EditorPythonBindings
                 for (auto pyItem = pySet.begin(); pyItem != pySet.end(); ++pyItem)
                 {
                     auto pyObjItem = pybind11::cast<pybind11::object>(*pyItem);
-                    AZ::BehaviorValueParameter elementValue;
+                    AZ::BehaviorArgument elementValue;
                     auto result = ConvertPythonElement(traits, pyObjItem, elementType, elementValue);
                     if (result && result.value().first)
                     {
-                        AZ::BehaviorValueParameter parameters[2];
+                        AZ::BehaviorArgument parameters[2];
 
                         // set the 'this' pointer
                         parameters[0].m_value = instance.m_address;
@@ -1215,7 +1215,7 @@ namespace EditorPythonBindings
                 return { { true, deleteVector } };
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorSerializedSet(const AZ::TypeId& elementType, PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue)
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorSerializedSet(const AZ::TypeId& elementType, PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue)
             {
                 // fetch the container parts
                 const AZ::SerializeContext::ClassData* classData = m_genericClassInfo->GetClassData();
@@ -1232,7 +1232,7 @@ namespace EditorPythonBindings
                 for (auto pyItem = pySet.begin(); pyItem != pySet.end(); ++pyItem)
                 {
                     auto pyObjItem = pybind11::cast<pybind11::object>(*pyItem);
-                    AZ::BehaviorValueParameter elementValue;
+                    AZ::BehaviorArgument elementValue;
                     auto elementResult = ConvertPythonElement(traits, pyObjItem, elementType, elementValue);
                     if (elementResult && elementResult.value().first)
                     {
@@ -1266,7 +1266,7 @@ namespace EditorPythonBindings
                 return { { true, deleteVector } };
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
             {
                 AZStd::vector<AZ::Uuid> typeList = AZ::Utils::GetContainedTypes(m_typeId);
                 if (typeList.empty())
@@ -1290,7 +1290,7 @@ namespace EditorPythonBindings
 
             AZStd::optional<PythonMarshalTypeRequests::DeallocateFunction> HandleSetElement(AZ::BehaviorObject& behaviorObject, pybind11::set pythonSet)
             {
-                AZ::BehaviorValueParameter source;
+                AZ::BehaviorArgument source;
                 source.m_value = behaviorObject.m_address;
                 source.m_typeId = behaviorObject.m_typeId;
 
@@ -1311,7 +1311,7 @@ namespace EditorPythonBindings
                 return AZStd::nullopt;
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
             {
                 auto* container = m_classData->m_container;
                 AZ_Error("python", container, "Set container class data is missing");
@@ -1407,7 +1407,7 @@ namespace EditorPythonBindings
             {
             }
 
-            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override
+            AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override
             {
                 if (!CanConvertPythonToBehaviorValue(traits, pyObj))
                 {
@@ -1522,7 +1522,7 @@ namespace EditorPythonBindings
                 return PythonMarshalTypeRequests::BehaviorValueResult{ true, pairInstanceDeleter };
             }
             
-            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue) override
+            AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue) override
             {
                 // the class data must have a container interface
                 AZ::SerializeContext::IDataContainer* containerInterface = m_classData->m_container;
@@ -1667,7 +1667,7 @@ namespace EditorPythonBindings
         }
     }
 
-    AZStd::optional<PythonMarshalComponent::BehaviorValueResult> PythonMarshalComponent::PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue)
+    AZStd::optional<PythonMarshalComponent::BehaviorValueResult> PythonMarshalComponent::PythonToBehaviorValueParameter(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue)
     {
         const auto* typeId = PythonMarshalTypeRequestBus::GetCurrentBusId();
         AZ_Error("python", typeId, "Requires a valid non-null AZ::TypeId pointer");
@@ -1683,7 +1683,7 @@ namespace EditorPythonBindings
         return converterEntry->second->PythonToBehaviorValueParameter(traits, pyObj, outValue);
     }
 
-    AZStd::optional<PythonMarshalComponent::PythonValueResult> PythonMarshalComponent::BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue)
+    AZStd::optional<PythonMarshalComponent::PythonValueResult> PythonMarshalComponent::BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue)
     {
         const auto* typeId = PythonMarshalTypeRequestBus::GetCurrentBusId();
         AZ_Error("python", typeId, "Requires a valid non-null AZ::TypeId pointer");
