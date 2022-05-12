@@ -38,8 +38,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     {
         using namespace AzFramework;
 
-        if (m_spawnableScriptMediator.Despawn(spawnTicket) &&
-            !Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusIsConnectedId(spawnTicket.GetId()))
+        if (m_spawnableScriptMediator.Despawn(spawnTicket))
         {
             Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusConnect(spawnTicket.GetId());
         }

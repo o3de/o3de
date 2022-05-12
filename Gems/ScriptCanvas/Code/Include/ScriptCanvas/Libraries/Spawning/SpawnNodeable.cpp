@@ -43,8 +43,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     {
         using namespace AzFramework;
 
-        if (m_spawnableScriptMediator.SpawnAndParentAndTransform(spawnTicket, parentId, translation, rotation, aznumeric_cast<float>(scale)) &&
-            !Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusIsConnectedId(spawnTicket.GetId()))
+        if (m_spawnableScriptMediator.SpawnAndParentAndTransform(spawnTicket, parentId, translation, rotation, aznumeric_cast<float>(scale)))
         {
             Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusConnect(spawnTicket.GetId());
         }
