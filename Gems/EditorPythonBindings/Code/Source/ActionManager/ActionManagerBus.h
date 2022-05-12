@@ -16,6 +16,9 @@
 
 using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
 
+//! ActionManagerRequestBus
+//! Bus to register and trigger actions in the Editor via Python.
+//! If writing C++ code, use the ActionManagerInterface instead.
 class ActionManagerRequests : public AZ::EBusTraits
 {
 public:

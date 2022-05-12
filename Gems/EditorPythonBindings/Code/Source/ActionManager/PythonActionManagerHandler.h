@@ -9,6 +9,11 @@
 #include <EditorPythonBindings/CustomTypeBindingBus.h>
 #include <Source/ActionManager/ActionManagerBus.h>
 
+namespace AzToolsFramework
+{
+    class ActionManagerInterface;
+}
+
 class PythonEditorActionHandler final
     : public EditorPythonBindings::CustomTypeBindingNotificationBus::Handler
     , public ActionManagerRequestBus::Handler
@@ -41,4 +46,6 @@ public:
     bool CanConvertPythonToBehavior(AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const override;
     void CleanUpValue(ValueHandle handle) override;
 
+private:
+    AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
 };

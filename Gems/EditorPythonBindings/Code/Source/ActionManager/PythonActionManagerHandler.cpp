@@ -14,6 +14,9 @@
 
 PythonEditorActionHandler::PythonEditorActionHandler()
 {
+    m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+    AZ_Assert(m_actionManagerInterface, "Could not get ActionManagerInterface on PythonEditorActionHandler construction.");
+
     EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusConnect(azrtti_typeid<PythonEditorAction>());
     ActionManagerRequestBus::Handler::BusConnect();
 }
@@ -33,30 +36,18 @@ AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::Regist
     const AZStd::string& iconPath,
     PythonEditorAction handler)
 {
-    auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-    if (actionManagerInterface)
-    {
-        return actionManagerInterface->RegisterAction(
-            contextIdentifier, identifier, name, description, category, iconPath,
-            [h = AZStd::move(handler)]()
-            {
-                PyObject_CallObject(h.GetHandler(), NULL);
-            }
-        );
-    }
-
-    return AZ::Failure(AZStd::string("Could not find interface"));
+    return m_actionManagerInterface->RegisterAction(
+        contextIdentifier, identifier, name, description, category, iconPath,
+        [h = AZStd::move(handler)]()
+        {
+            PyObject_CallObject(h.GetHandler(), NULL);
+        }
+    );
 }
 
 AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::TriggerAction(const AZStd::string& actionIdentifier)
 {
-    auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-    if (actionManagerInterface)
-    {
-        return actionManagerInterface->TriggerAction(actionIdentifier);
-    }
-
-    return AZ::Failure(AZStd::string("Could not find interface"));
+    return m_actionManagerInterface->TriggerAction(actionIdentifier);
 }
 
 EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle PythonEditorActionHandler::AllocateDefault()
