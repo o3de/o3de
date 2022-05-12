@@ -15,6 +15,8 @@ set(FILES
     Source/PythonLogSymbolsComponent.h
     Source/PythonMarshalComponent.cpp
     Source/PythonMarshalComponent.h
+    Source/PythonMarshalTuple.cpp
+    Source/PythonMarshalTuple.h
     Source/PythonProxyBus.cpp
     Source/PythonProxyBus.h
     Source/PythonProxyObject.cpp
