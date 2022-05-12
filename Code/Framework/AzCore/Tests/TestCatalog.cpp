@@ -138,7 +138,7 @@ namespace UnitTest
     }
 
     void DataDrivenHandlerAndCatalog::GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type,
-        AZStd::chrono::milliseconds& defaultDeadline, AZ::IO::IStreamerTypes::Priority& defaultPriority) const
+        AZ::IO::IStreamerTypes::Deadline& defaultDeadline, AZ::IO::IStreamerTypes::Priority& defaultPriority) const
     {
         defaultDeadline = m_defaultDeadline;
         defaultPriority = m_defaultPriority;

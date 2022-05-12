@@ -79,7 +79,7 @@ namespace ScriptCanvasEditor
 
         void RegisterCustomNode(AZStd::string_view categoryPath, const AZ::Uuid& uuid, AZStd::string_view name, const AZ::SerializeContext::ClassData* classData);
         void RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass, const AZStd::string& methodName, const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorContext* behaviorContext, ScriptCanvas::PropertyStatus propertyStatus, bool isOverload);
-        void RegisterMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod);
+        void RegisterGlobalMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod);
         void RegisterGlobalConstant(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorProperty* behaviorProperty, const AZ::BehaviorMethod& behaviorMethod);
 
 
@@ -165,6 +165,7 @@ namespace ScriptCanvasEditor
         AZ_CLASS_ALLOCATOR(GlobalMethodNodeModelInformation, AZ::SystemAllocator, 0);
 
         AZStd::string m_methodName;
+        bool m_isProperty;
     };
 
     struct EBusHandlerNodeModelInformation

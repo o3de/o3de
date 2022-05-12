@@ -21,6 +21,7 @@ namespace AzFramework::Scripts
         {
             serializeContext
                 ->Class<SpawnableScriptAssetRef>()
+                ->Version(0)
                 ->EventHandler<SerializationEvents>()
                 ->Field("asset", &SpawnableScriptAssetRef::m_asset)
             ;
@@ -33,6 +34,8 @@ namespace AzFramework::Scripts
             {
                 editContext
                     ->Class<SpawnableScriptAssetRef>("SpawnableScriptAssetRef", "A wrapper around spawnable asset to be used as a variable in Script Canvas.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     // m_asset
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SpawnableScriptAssetRef::m_asset, "asset", "")
                     ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
@@ -44,13 +47,13 @@ namespace AzFramework::Scripts
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext
-                ->Class<SpawnableScriptAssetRef>("SpawnableScriptAssetRef")
-                ->Constructor()
+            behaviorContext->Class<SpawnableScriptAssetRef>("SpawnableScriptAssetRef")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
                 ->Attribute(AZ::Script::Attributes::Module, "prefabs")
-                ->Property("asset", BehaviorValueProperty(&SpawnableScriptAssetRef::m_asset));
+                ->Constructor()
+                ->Method("GetAsset", &SpawnableScriptAssetRef::GetAsset)
+                ->Method("SetAsset", &SpawnableScriptAssetRef::SetAsset);
         }
     }
 

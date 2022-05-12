@@ -77,6 +77,8 @@ namespace MaterialCanvas
         GraphModelIntegration::GraphManagerRequestBus::Broadcast(
             &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
 
+        m_graph.reset();
+
         delete m_sceneEntity;
     }
 
@@ -135,13 +137,23 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
         auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(m_absolutePath);
-        if (!loadResult || !loadResult.GetValue().is<AZStd::string>())
+        if (!loadResult || !loadResult.GetValue().is<GraphModel::Graph>())
         {
             return OpenFailed();
         }
 
+        // Cloning loaded data using the serialize context because the graph does not have a copy or move constructor
+        AZ::SerializeContext* serializeContext = {};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
+
+        m_graph.reset(serializeContext->CloneObject(AZStd::any_cast<const GraphModel::Graph>(&loadResult.GetValue())));
+        m_graph->PostLoadSetup(m_graphContext);
+
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusConnect(m_graphId);
         return OpenSucceeded();
     }
 
@@ -154,9 +166,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
-        AZStd::string placeholderData;
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -173,9 +183,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
-        AZStd::string placeholderData;
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -192,9 +200,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
-        AZStd::string placeholderData;
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -204,7 +210,7 @@ namespace MaterialCanvas
 
     bool MaterialCanvasDocument::IsOpen() const
     {
-        return AtomToolsDocument::IsOpen();
+        return AtomToolsDocument::IsOpen() && m_graph && m_graphId.IsValid();
     }
 
     bool MaterialCanvasDocument::IsModified() const
@@ -224,15 +230,19 @@ namespace MaterialCanvas
         return true;
     }
 
-    // MaterialCanvasDocumentRequestBus::Handler overrides...
-
-    inline GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
+    GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
     {
         return m_graphId;
     }
 
     void MaterialCanvasDocument::Clear()
     {
+        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
+
+        m_graph.reset();
+
         AtomToolsFramework::AtomToolsDocument::Clear();
     }
 

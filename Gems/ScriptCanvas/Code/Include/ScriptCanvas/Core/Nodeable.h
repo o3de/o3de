@@ -9,9 +9,10 @@
 #pragma once
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <ScriptCanvas/Core/Node.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
 
 #include "NodeableOut.h"
-#include <ScriptCanvas/Execution/ExecutionState.h>
 
 namespace AZ
 {
@@ -63,17 +64,11 @@ namespace ScriptCanvas
 
         void CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const;
 
-        AZ::Data::AssetId GetAssetId() const;
-
-        AZ::EntityId GetEntityId() const;
-
         const Execution::FunctorOut& GetExecutionOut(size_t index) const;
         
         const Execution::FunctorOut& GetExecutionOutChecked(size_t index) const;
 
         virtual NodePropertyInterface* GetPropertyInterface(AZ::Crc32 /*propertyId*/) { return nullptr; }
-
-        AZ::EntityId GetScriptCanvasId() const;
 
         void Deactivate();
 
@@ -88,6 +83,8 @@ namespace ScriptCanvas
         void SetExecutionOutChecked(size_t index, Execution::FunctorOut&& out);
 
     protected:
+        ExecutionStateWeakConstPtr GetExecutionState() const;
+
         void InitializeExecutionOutByRequiredCount();
 
         void InitializeExecutionState(ExecutionState* executionState);
@@ -133,7 +130,7 @@ namespace ScriptCanvas
             AZ::BehaviorValueParameter resultBVP(&result);
             CallOut(index, &resultBVP, nullptr, 0);
 
-#if !defined(RELEASE) 
+#if defined(SC_RUNTIME_CHECKS_ENABLED) 
             if (!resultBVP.GetAsUnsafe<t_Return>())
             {
                 AZ_Error("ScriptCanvas", false, "%s:CallOut(%zu) failed to provide a useable result", TYPEINFO_Name(), index);
@@ -158,7 +155,7 @@ namespace ScriptCanvas
             AZ::BehaviorValueParameter resultBVP(&result);
             CallOut(index, &resultBVP, argsBVPs.data(), sizeof...(t_Args));
 
-#if !defined(RELEASE) 
+#if defined(SC_RUNTIME_CHECKS_ENABLED) 
             if (!resultBVP.GetAsUnsafe<t_Return>())
             {
                 AZ_Error("ScriptCanvas", false, "%s:CallOut(%zu) failed to provide a useable result", TYPEINFO_Name(), index);

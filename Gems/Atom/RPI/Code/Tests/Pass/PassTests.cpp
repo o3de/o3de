@@ -656,7 +656,7 @@ namespace UnitTest
         PassFilter filter1 = PassFilter::CreateWithPassClass<Pass>();
 
         EXPECT_TRUE(filter1.Matches(pass.get()));
-        EXPECT_FALSE(filter1.Matches(parent1.get()));
+        EXPECT_TRUE(filter1.Matches(parent1.get())); // ParentPass inherits from Pass
 
         PassFilter filter2 = PassFilter::CreateWithPassClass<ParentPass>();
         EXPECT_FALSE(filter2.Matches(pass.get()));

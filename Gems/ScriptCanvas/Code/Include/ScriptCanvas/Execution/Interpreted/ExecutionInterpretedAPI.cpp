@@ -16,6 +16,7 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
@@ -23,6 +24,7 @@
 
 #include "ExecutionInterpretedClassAPI.h"
 #include "ExecutionInterpretedCloningAPI.h"
+#include "ExecutionInterpretedComponentAPI.h"
 #include "ExecutionInterpretedDebugAPI.h"
 #include "ExecutionInterpretedEBusAPI.h"
 #include "ExecutionInterpretedOut.h"
@@ -380,6 +382,7 @@ namespace ScriptCanvas
             lua_register(lua, k_GetRandomSwitchControlNumberName, &GetRandomSwitchControlNumber);
 
             RegisterTypeSafeEBusResultFunctions(lua);
+            RegisterComponentAPI(lua);
             RegisterCloningAPI(lua);
             RegisterDebugAPI(lua);
             RegisterEBusHandlerAPI(lua);
@@ -395,15 +398,22 @@ namespace ScriptCanvas
                 , "Failed to add ScriptCanvas user object inheritance to ScriptContext!");
         }
 
+        int ReportError(lua_State* lua, AZStd::string_view message)
+        {
+            using namespace ExecutionInterpretedAPICpp;
+            lua_pushlstring(lua, message.data(), message.length());
+            return ErrorHandler(lua);
+        }
+
         void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
-            AZ_Error("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
+            AZ_Error("ScriptCanvas", !runtimeData.m_areScriptLocalStaticsInitialized, "ScriptCanvas runtime data already initialized");
             {
-                runtimeData.m_areStaticsInitialized = true;
+                runtimeData.m_areScriptLocalStaticsInitialized = true;
 
                 for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    if (!dependency.Get()->m_runtimeData.m_areStaticsInitialized)
+                    if (!dependency.Get()->m_runtimeData.m_areScriptLocalStaticsInitialized)
                     {
                         InitializeInterpretedStatics(dependency.Get()->m_runtimeData);
                     }
@@ -474,8 +484,7 @@ namespace ScriptCanvas
         int SetExecutionOut(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
-
+            
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
             AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");
@@ -497,7 +506,6 @@ namespace ScriptCanvas
         int SetExecutionOutResult(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
 
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOutResult is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOutResult is not a number");
@@ -549,14 +557,9 @@ namespace ScriptCanvas
             return AZ::StackRead(lua, index, context, param, allocator);
         }
 
-        void InterpretedUnloadData(RuntimeData& runtimeData)
-        {
-            AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::ClearAssetReferences, runtimeData.m_script.GetId());
-        }
-
         struct DependencyConstructionPack
         {
-            ExecutionStateInterpreted* executionState;
+            ExecutionState* executionState;
             AZStd::vector<RuntimeDataOverrides>* dependencies;
             const size_t dependenciesIndex;
             RuntimeDataOverrides& runtimeOverrides;
@@ -564,7 +567,7 @@ namespace ScriptCanvas
 
         DependencyConstructionPack UnpackDependencyConstructionArgsSanitize(lua_State* lua)
         {
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             AZ_Assert(executionState, "Error in compiled lua file, 1st argument to UnpackDependencyArgs is not an ExecutionStateInterpreted");
             AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
             auto dependentOverrides = reinterpret_cast<AZStd::vector<RuntimeDataOverrides>*>(lua_touserdata(lua, 2));
@@ -577,7 +580,7 @@ namespace ScriptCanvas
         {
             ActivationInputArray storage;
             ActivationData data(args.runtimeOverrides, storage);
-            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, args.executionState->GetEntityId());
+            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return static_cast<int>(range.totalCount);
         }

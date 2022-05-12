@@ -77,7 +77,7 @@ namespace
     private:
         void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
         {
-            emit ViewportInfoStatusUpdated(static_cast<int>(state));
+            emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
         }
     };
 } // end anonymous namespace
@@ -380,7 +380,7 @@ void CViewportTitleDlg::OnInitDialog()
     UpdateDisplayInfo();
 
     QFontMetrics metrics({});
-    int width = static_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
+    int width = aznumeric_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
 
     m_cameraSpeed->setFixedWidth(width);
 
@@ -565,14 +565,13 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 void CViewportTitleDlg::OnMenuFOVCustom()
 {
     bool ok;
-    int fov = QInputDialog::getInt(this, tr("Custom FOV"), QString(), 60, 1, 120, 1, &ok);
+    int fovDegrees = QInputDialog::getInt(this, tr("Custom FOV"), QString(), 60, 1, 120, 1, &ok);
 
     if (ok)
     {
-        m_pViewPane->SetViewportFOV(static_cast<float>(fov));
-
+        m_pViewPane->SetViewportFOV(aznumeric_cast<float>(fovDegrees));
         // Update the custom presets.
-        const QString text = QString::number(fov);
+        const QString text = QString::number(fovDegrees);
         UpdateCustomPresets(text, m_customFOVPresets);
         SaveCustomPresets("FOVPresets", "FOVPreset", m_customFOVPresets);
     }
@@ -588,7 +587,14 @@ void CViewportTitleDlg::CreateFOVMenu()
 
     m_fovMenu->clear();
 
-    AddFOVMenus(m_fovMenu, [this](float f) { m_pViewPane->SetViewportFOV(f); }, m_customFOVPresets);
+    AddFOVMenus(
+        m_fovMenu,
+        [this](const float fovDegrees)
+        {
+            m_pViewPane->SetViewportFOV(fovDegrees);
+        },
+        m_customFOVPresets);
+
     if (!m_fovMenu->isEmpty())
     {
         m_fovMenu->addSeparator();
@@ -853,12 +859,13 @@ void CViewportTitleDlg::OnViewportSizeChanged(int width, int height)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CViewportTitleDlg::OnViewportFOVChanged(float fov)
+void CViewportTitleDlg::OnViewportFOVChanged(const float fovRadians)
 {
-    const float degFOV = RAD2DEG(fov);
     if (m_fovMenu)
     {
-        m_fovMenu->setTitle(QString::fromLatin1("FOV:  %1%2").arg(qRound(degFOV)).arg(QString(QByteArray::fromPercentEncoding("%C2%B0"))));
+        const float fovDegrees = AZ::RadToDeg(fovRadians);
+        m_fovMenu->setTitle(
+            QString::fromLatin1("FOV:  %1%2").arg(qRound(fovDegrees)).arg(QString(QByteArray::fromPercentEncoding("%C2%B0"))));
     }
 }
 
@@ -880,8 +887,8 @@ void CViewportTitleDlg::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_
     {
         if (m_pViewPane)
         {
-            const int eventWidth = static_cast<int>(wparam);
-            const int eventHeight = static_cast<int>(lparam);
+            const int eventWidth = aznumeric_cast<int>(wparam);
+            const int eventHeight = aznumeric_cast<int>(lparam);
             const QWidget* viewport = m_pViewPane->GetViewport();
 
             // This should eventually be converted to an EBus to make it easy to connect to the correct viewport

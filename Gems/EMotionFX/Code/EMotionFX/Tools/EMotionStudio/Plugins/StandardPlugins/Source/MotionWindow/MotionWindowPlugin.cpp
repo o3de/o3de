@@ -6,8 +6,10 @@
  *
  */
 
-#include "AzCore/std/limits.h"
+#include <AzCore/std/limits.h>
+#include <Editor/InspectorBus.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/MotionSystem.h>
@@ -15,10 +17,8 @@
 #include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionExtractionWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionPropertiesWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionRetargetingWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 #include <MCore/Source/LogManager.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
@@ -30,6 +30,7 @@
 #include <QSplitter>
 #include <QToolBar>
 #include <QVBoxLayout>
+
 
 namespace EMStudio
 {
@@ -120,21 +121,18 @@ namespace EMStudio
     MotionWindowPlugin::MotionWindowPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        m_dialogStack                        = nullptr;
         m_motionListWindow                   = nullptr;
         m_motionPropertiesWindow             = nullptr;
-        m_motionExtractionWindow             = nullptr;
-        m_motionRetargetingWindow            = nullptr;
         m_dirtyFilesCallback                 = nullptr;
         m_addMotionsAction                   = nullptr;
         m_saveAction                         = nullptr;
-        m_motionNameLabel                    = nullptr;
     }
-
 
     MotionWindowPlugin::~MotionWindowPlugin()
     {
-        delete m_dialogStack;
+        delete m_motionPropertiesWindow;
+        m_motionPropertiesWindow = nullptr;
+
         ClearMotionEntries();
 
         // unregister the command callbacks and get rid of the memory
@@ -147,7 +145,6 @@ namespace EMStudio
         GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
         delete m_dirtyFilesCallback;
     }
-
 
     void MotionWindowPlugin::ClearMotionEntries()
     {
@@ -180,18 +177,12 @@ namespace EMStudio
         QToolBar* toolBar = new QToolBar(container);
         container->layout()->addWidget(toolBar);
 
-        QSplitter* splitterWidget = new QSplitter(container);
-        splitterWidget->setOrientation(Qt::Horizontal);
-        splitterWidget->setChildrenCollapsible(false);
-
-        container->layout()->addWidget(splitterWidget);
-
         // create the motion list stack window
-        m_motionListWindow = new MotionListWindow(splitterWidget, this);
+        m_motionListWindow = new MotionListWindow(container, this);
         m_motionListWindow->Init();
         connect(m_motionListWindow, &MotionListWindow::SaveRequested, this, &MotionWindowPlugin::OnSave);
         connect(m_motionListWindow, &MotionListWindow::RemoveMotionsRequested, this, &MotionWindowPlugin::OnRemoveMotions);
-        splitterWidget->addWidget(m_motionListWindow);
+        container->layout()->addWidget(m_motionListWindow);
 
         // reinitialize the motion table entries
         ReInit();
@@ -204,42 +195,9 @@ namespace EMStudio
         connect(searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, m_motionListWindow, &MotionListWindow::OnTextFilterChanged);
         toolBar->addWidget(searchWidget);
 
-        // create the dialog stack
-        assert(m_dialogStack == nullptr);
-        m_dialogStack = new MysticQt::DialogStack(splitterWidget);
-        m_dialogStack->setMinimumWidth(279);
-        splitterWidget->addWidget(m_dialogStack);
-
         // add the motion properties stack window
-        m_motionPropertiesWindow = new MotionPropertiesWindow(m_dialogStack, this);
-        m_motionPropertiesWindow->Init();
-        m_dialogStack->Add(m_motionPropertiesWindow, "Motion Properties", false, true);
-
-        // add the motion name label
-        QWidget* motionName = new QWidget();
-        QBoxLayout* motionNameLayout = new QHBoxLayout(motionName);
-        m_motionNameLabel = new QLabel();
-        QLabel* label = new QLabel(tr("Motion name"));
-        motionNameLayout->addWidget(label);
-        motionNameLayout->addWidget(m_motionNameLabel);
-        motionNameLayout->setStretchFactor(label, 3);
-        motionNameLayout->setStretchFactor(m_motionNameLabel, 2);
-        m_motionPropertiesWindow->layout()->addWidget(motionName);
-
-        // add the motion extraction stack window
-        m_motionExtractionWindow = new MotionExtractionWindow(m_dialogStack, this);
-        m_motionExtractionWindow->Init();
-        m_motionPropertiesWindow->AddSubProperties(m_motionExtractionWindow);
-
-        // add the motion retargeting stack window
-        m_motionRetargetingWindow = new MotionRetargetingWindow(m_dialogStack, this);
-        m_motionRetargetingWindow->Init();
-        m_motionPropertiesWindow->AddSubProperties(m_motionRetargetingWindow);
-
-        m_motionPropertiesWindow->FinalizeSubProperties();
-
-        // connect the window activation signal to refresh if reactivated
-        connect(m_dock, &QDockWidget::visibilityChanged, this, &MotionWindowPlugin::VisibilityChanged);
+        m_motionPropertiesWindow = new MotionPropertiesWindow(nullptr, this);
+        m_motionPropertiesWindow->hide();
 
         // update the new interface and return success
         UpdateInterface();
@@ -487,7 +445,7 @@ namespace EMStudio
 
     void MotionWindowPlugin::UpdateMotions()
     {
-        m_motionRetargetingWindow->UpdateMotions();
+        m_motionPropertiesWindow->UpdateMotions();
     }
 
 
@@ -511,13 +469,6 @@ namespace EMStudio
         const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
         const bool hasSelectedMotions = selection.GetNumSelectedMotions() > 0;
 
-        if (m_motionNameLabel)
-        {
-            MotionTableEntry* entry = hasSelectedMotions ? FindMotionEntryByID(selection.GetMotion(0)->GetID()) : nullptr;
-            EMotionFX::Motion* motion = entry ? entry->m_motion : nullptr;
-            m_motionNameLabel->setText(motion ? motion->GetName() : nullptr);
-        }
-
         if (m_saveAction)
         {
             // related to the selected motions
@@ -528,22 +479,12 @@ namespace EMStudio
         {
             m_motionListWindow->UpdateInterface();
         }
-        if (m_motionExtractionWindow)
+
+        if (m_motionPropertiesWindow)
         {
-            m_motionExtractionWindow->UpdateInterface();
-        }
-        if (m_motionRetargetingWindow)
-        {
-            m_motionRetargetingWindow->UpdateInterface();
+            m_motionPropertiesWindow->UpdateInterface();
         }
     }
-
-
-
-    void MotionWindowPlugin::VisibilityChanged([[maybe_unused]] bool visible)
-    {
-    }
-
 
     AZStd::vector<EMotionFX::MotionInstance*>& MotionWindowPlugin::GetSelectedMotionInstances()
     {

@@ -28,8 +28,8 @@ void MainCS(
 
         float2 worldPosition = GetCurrentWorldPositionFromMacroClipmaps(pixelPosition, clipmapLevel);
         float clipmapScaleInv = GetMacroClipmapScaleInv(clipmapLevel);
-        float2 positionDdx = ddxPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance, clipmapScaleInv);
-        float2 positionDdy = ddyPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderDistance, clipmapScaleInv);
+        float2 positionDdx = ddxPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius, clipmapScaleInv);
+        float2 positionDdy = ddyPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius, clipmapScaleInv);
 
         float3 macroColor;
         float3 macroNormal;

@@ -27,7 +27,7 @@ namespace Terrain
 
         uint32_t stackSizeNeeded = 1u;
         // Add more layers until it meets the max resolution.
-        for (float distance = m_macroClipmapMaxRenderDistance; distance > minRenderDistance; distance /= m_macroClipmapScaleBase)
+        for (float radius = m_macroClipmapMaxRenderRadius; radius > minRenderDistance; radius /= m_macroClipmapScaleBase)
         {
             ++stackSizeNeeded;
         }
@@ -44,7 +44,7 @@ namespace Terrain
 
         uint32_t stackSizeNeeded = 1u;
         // Add more layers until it meets the max resolution.
-        for (float distance = m_detailClipmapMaxRenderDistance; distance > minRenderDistance; distance /= m_detailClipmapScaleBase)
+        for (float radius = m_detailClipmapMaxRenderRadius; radius > minRenderDistance; radius /= m_detailClipmapScaleBase)
         {
             ++stackSizeNeeded;
         }
@@ -82,6 +82,7 @@ namespace Terrain
         m_macroClipmapStackSize = m_config.CalculateMacroClipmapStackSize();
         m_detailClipmapStackSize = m_config.CalculateDetailClipmapStackSize();
 
+        InitializeClipmapBounds();
         InitializeClipmapData();
         InitializeClipmapImages();
 
@@ -131,6 +132,38 @@ namespace Terrain
         frameGraph.UseShaderAttachment(desc, access);
     }
 
+    void TerrainClipmapManager::InitializeClipmapBounds()
+    {
+        m_macroClipmapBounds.resize(m_macroClipmapStackSize);
+        float clipToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
+        for (int32_t clipmapIndex = m_macroClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
+        {
+            ClipmapBoundsDescriptor desc;
+            desc.m_size = m_config.m_clipmapSize;
+            desc.m_worldSpaceCenter = AZ::Vector2::CreateZero();
+            desc.m_clipmapUpdateMultiple = 4;
+            desc.m_clipToWorldScale = clipToWorldScale;
+
+            m_macroClipmapBounds[clipmapIndex] = ClipmapBounds(desc);
+
+            clipToWorldScale /= m_config.m_macroClipmapScaleBase;
+        }
+
+        m_detailClipmapBounds.resize(m_detailClipmapStackSize);
+        clipToWorldScale = m_config.m_detailClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
+        for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
+        {
+            ClipmapBoundsDescriptor desc;
+            desc.m_size = m_config.m_clipmapSize;
+            desc.m_worldSpaceCenter = AZ::Vector2::CreateZero();
+            desc.m_clipmapUpdateMultiple = 4;
+            desc.m_clipToWorldScale = clipToWorldScale;
+
+            m_detailClipmapBounds[clipmapIndex] = ClipmapBounds(desc);
+
+            clipToWorldScale /= m_config.m_detailClipmapScaleBase;
+        }
+    }
 
     void TerrainClipmapManager::InitializeClipmapData()
     {
@@ -146,8 +179,8 @@ namespace Terrain
         m_clipmapData.m_worldBoundsMax[0] = worldBounds.GetMax().GetX();
         m_clipmapData.m_worldBoundsMax[1] = worldBounds.GetMax().GetY();
 
-        m_clipmapData.m_macroClipmapMaxRenderDistance = m_config.m_macroClipmapMaxRenderDistance;
-        m_clipmapData.m_detailClipmapMaxRenderDistance = m_config.m_detailClipmapMaxRenderDistance;
+        m_clipmapData.m_macroClipmapMaxRenderRadius = m_config.m_macroClipmapMaxRenderRadius;
+        m_clipmapData.m_detailClipmapMaxRenderRadius = m_config.m_detailClipmapMaxRenderRadius;
 
         m_clipmapData.m_macroClipmapScaleBase = m_config.m_macroClipmapScaleBase;
         m_clipmapData.m_detailClipmapScaleBase = m_config.m_detailClipmapScaleBase;
@@ -235,41 +268,6 @@ namespace Terrain
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, detailOcclusionClipmapName, nullptr, nullptr);
     }
 
-    void TerrainClipmapManager::UpdateClipmapDataHelper(const AZ::Vector2& scaledTranslation, AZStd::array<float, 4>& dataToUpdate)
-    {
-        dataToUpdate[0] = dataToUpdate[2];
-        dataToUpdate[1] = dataToUpdate[3];
-
-        // If normalized translation on a certain level of clipmap goes out of the current clipmap representation,
-        // a full update will be triggered and the center will be reset to the center.
-        if (AZStd::abs(scaledTranslation.GetX()) >= 1.0f || AZStd::abs(scaledTranslation.GetY()) >= 1.0f)
-        {
-            dataToUpdate[2] = 0.5f;
-            dataToUpdate[3] = 0.5f;
-        }
-        else
-        {
-            float centerX = dataToUpdate[2] + scaledTranslation.GetX();
-            float centerY = dataToUpdate[3] + scaledTranslation.GetY();
-
-            AZ_Assert(
-                (centerX > -1.0f) && (centerX < 2.0f) && (centerY > -1.0f) && (centerY < 2.0f),
-                "The new translated clipmap center should be within this range. Otherwise it should fall into the other if branch "
-                "and reset the center to (0.5, 0.5).");
-
-            // Equivalent to modulation.
-            // It wraps around to use toroidal addressing.
-            centerX -= centerX > 1.0f ? 1.0f : 0.0f;
-            centerX += centerX < 0.0f ? 1.0f : 0.0f;
-
-            centerY -= centerY > 1.0f ? 1.0f : 0.0f;
-            centerY += centerY < 0.0f ? 1.0f : 0.0f;
-
-            dataToUpdate[2] = centerX;
-            dataToUpdate[3] = centerY;
-        }
-    }
-
     void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition)
     {
         // pass current to previous
@@ -277,41 +275,31 @@ namespace Terrain
         m_clipmapData.m_previousViewPosition[1] = m_clipmapData.m_currentViewPosition[1];
 
         // set new current
-        m_clipmapData.m_currentViewPosition[0] = cameraPosition.GetX();
-        m_clipmapData.m_currentViewPosition[1] = cameraPosition.GetY();
+        AZ::Vector2 currentViewPosition = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
+        currentViewPosition.StoreToFloat2(m_clipmapData.m_currentViewPosition.data());
 
-        const AZ::Vector2 viewTranslation = AZ::Vector2(
-            m_clipmapData.m_currentViewPosition[0] - m_clipmapData.m_previousViewPosition[0],
-            m_clipmapData.m_currentViewPosition[1] - m_clipmapData.m_previousViewPosition[1]);
+        auto UpdateCenter = [&](ClipmapBounds& clipmapBounds, AZStd::array<float, 4>& shaderData) -> void
+        {
+            clipmapBounds.UpdateCenter(currentViewPosition);
+
+            // copy current to previous slot
+            shaderData[0] = shaderData[2];
+            shaderData[1] = shaderData[3];
+
+            // write current center
+            clipmapBounds.GetNormalizedCenter().StoreToFloat2(&shaderData[2]);
+        };
 
         // macro clipmap data:
+        for (uint32_t clipmapIndex = 0; clipmapIndex < m_macroClipmapStackSize; ++clipmapIndex)
         {
-            const AZ::Vector2 normalizedViewTranslation = viewTranslation / m_config.m_macroClipmapMaxRenderDistance;
-
-            float clipmapScale = 1.0f;
-            for (int32_t clipmapIndex = m_macroClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
-            {
-                const AZ::Vector2 scaledTranslation = normalizedViewTranslation * clipmapScale;
-
-                UpdateClipmapDataHelper(scaledTranslation, m_clipmapData.m_macroClipmapCenters[clipmapIndex]);
-
-                clipmapScale *= m_config.m_macroClipmapScaleBase;
-            }
+            UpdateCenter(m_macroClipmapBounds[clipmapIndex], m_clipmapData.m_macroClipmapCenters[clipmapIndex]);
         }
 
         // detail clipmap data:
+        for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
-            const AZ::Vector2 normalizedViewTranslation = viewTranslation / m_config.m_detailClipmapMaxRenderDistance;
-
-            float clipmapScale = 1.0f;
-            for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
-            {
-                const AZ::Vector2 scaledTranslation = normalizedViewTranslation * clipmapScale;
-
-                UpdateClipmapDataHelper(scaledTranslation, m_clipmapData.m_detailClipmapCenters[clipmapIndex]);
-
-                clipmapScale *= m_config.m_detailClipmapScaleBase;
-            }
+            UpdateCenter(m_detailClipmapBounds[clipmapIndex], m_clipmapData.m_detailClipmapCenters[clipmapIndex]);
         }
     }
 
