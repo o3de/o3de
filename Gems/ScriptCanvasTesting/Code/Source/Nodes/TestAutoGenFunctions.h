@@ -11,7 +11,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/tuple.h>
 #include <ScriptCanvas/Data/NumericData.h>
-#include <Source/Nodes/TestAutoGenFunctions.generated.h>
 
 namespace ScriptCanvasTesting
 {

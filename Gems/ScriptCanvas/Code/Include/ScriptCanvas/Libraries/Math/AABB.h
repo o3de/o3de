@@ -13,7 +13,6 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/tuple.h>
-#include <Include/ScriptCanvas/Libraries/Math/AABB.generated.h>
 
 namespace ScriptCanvas
 {

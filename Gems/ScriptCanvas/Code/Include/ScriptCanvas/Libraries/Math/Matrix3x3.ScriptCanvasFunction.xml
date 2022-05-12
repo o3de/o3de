@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/Matrix3x3.h"
-        Name="Matrix3x3Functions"
         Namespace="ScriptCanvas::Matrix3x3Functions"
         Category="Math/Matrix3x3">
 

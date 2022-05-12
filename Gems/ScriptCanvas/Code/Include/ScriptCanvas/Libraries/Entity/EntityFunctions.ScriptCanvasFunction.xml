@@ -3,7 +3,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Entity/EntityFunctions.h"
-        Name="EntityFunctions"
         Namespace="ScriptCanvas::EntityFunctions"
         Category="Entity/Entity">
 

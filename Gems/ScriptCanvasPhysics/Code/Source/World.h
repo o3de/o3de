@@ -17,7 +17,6 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/string/string.h>
-#include <Source/World.generated.h>
 
 namespace ScriptCanvasPhysics
 {

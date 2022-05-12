@@ -21,8 +21,6 @@ namespace ScriptCanvas
 
     namespace StringFunctions
     {
-        REGISTER_SCRIPTCANVAS_FUNCTION(StringFunctions);
-
         AZStd::string ToLower(AZStd::string sourceString)
         {
             AZStd::to_lower(sourceString.begin(), sourceString.end());

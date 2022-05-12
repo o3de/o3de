@@ -3,7 +3,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/String/StringFunctions.h"
-        Name="StringFunctions"
         Namespace="ScriptCanvas::StringFunctions"
         Category="String">
 

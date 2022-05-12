@@ -20,8 +20,8 @@ ly_add_target(
         PUBLIC
             Gem::ScriptCanvas.Extensions
     AUTOGEN_RULES
-        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Header.jinja,$path/$fileprefix.generated.h
-        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Header.jinja,AutoGenFunctionRegistry.generated.h
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Source.jinja,AutoGenFunctionRegistry.generated.cpp
 )
 
 ly_add_target(

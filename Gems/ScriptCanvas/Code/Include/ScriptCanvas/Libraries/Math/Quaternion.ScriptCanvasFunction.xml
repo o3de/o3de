@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/Quaternion.h"
-        Name="QuaternionFunctions"
         Namespace="ScriptCanvas::QuaternionFunctions"
         Category="Math/Quaternion">
         

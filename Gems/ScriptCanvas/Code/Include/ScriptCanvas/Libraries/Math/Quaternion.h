@@ -9,7 +9,6 @@
 #pragma once
 
 #include <ScriptCanvas/Data/NumericData.h>
-#include <Include/ScriptCanvas/Libraries/Math/Quaternion.generated.h>
 
 namespace ScriptCanvas
 {

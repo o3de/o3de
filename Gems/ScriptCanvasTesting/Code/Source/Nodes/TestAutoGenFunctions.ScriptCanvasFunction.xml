@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScriptCanvas>
     <Library Include="Source/Nodes/TestAutoGenFunctions.h"
-		Name="TestAutoGenFunctions"
 		Namespace="ScriptCanvasTesting::TestAutoGenFunctions"
         Category="Tests">
 		

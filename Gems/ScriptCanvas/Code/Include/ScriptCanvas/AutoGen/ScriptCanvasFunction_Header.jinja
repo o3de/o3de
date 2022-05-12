@@ -5,54 +5,41 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 #}
 
-{% import 'ScriptCanvas_Macros.jinja' as macros %}
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // This code was produced with AzAutoGen, any modifications made will not be preserved.
 // If you need to modify this code see:
 //
-// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunction_Source.jinja
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunction_Header.jinja
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <AzCore/RTTI/BehaviorContext.h>
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+
+#pragma once
+
 #include <ScriptCanvasAutoGenRegistry.h>
 
-{% for ScriptCanvas in dataFiles %}
-{% for Library in ScriptCanvas%}
-
-{{- macros.Required('Include', Library, Library) -}}
-{{- macros.Required('Name', Library, Library) -}}
-
-{% set className = macros.CleanName('ScriptCanvas' + Library.attrib['Name']) %}
-{% set namespaceList = [] %}
-{% if Library.attrib['Namespace'] is defined and Library.attrib['Namespace'] %}
-{% set namespaceList = macros.CleanName(Library.attrib['Namespace']).split('::') %}
-{% endif %}
-
-{% for namespace in namespaceList %}
-namespace {{namespace}}
+namespace AZ
 {
-{% endfor %}
-
-class {{className}}
-    : public ScriptCanvas::IScriptCanvasFunctionRegistry
-{
-public:
-    {{className}}();
-
-    virtual ~{{className}}();
- 
-    void Reflect(AZ::ReflectContext* context) override;
-};
-
-{% for namespace in namespaceList %}
+    class ReflectContext;
 }
-{% endfor %}
 
-{{ macros.ReportErrors() }}
+namespace ScriptCanvas
+{
+    //! {{autogenTargetName}}FunctionRegistry
+    //! AutoGen registry to register function required metadata into system
+    class {{autogenTargetName}}FunctionRegistry
+        : public IScriptCanvasFunctionRegistry
+    {
+    public:
+        {{autogenTargetName}}FunctionRegistry();
+        virtual ~{{autogenTargetName}}FunctionRegistry();
+ 
+        //! Reflect function metadata into BehaviorContext
+        void Reflect(AZ::ReflectContext* context) override;
 
-{% endfor %}
-{% endfor %}
+        //! Get AutoGen registry name
+        static const char* GetRegistryName();
+    };
+}

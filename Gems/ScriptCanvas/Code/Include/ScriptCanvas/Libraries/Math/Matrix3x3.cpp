@@ -12,8 +12,6 @@ namespace ScriptCanvas
 {
     namespace Matrix3x3Functions
     {
-        REGISTER_SCRIPTCANVAS_FUNCTION(Matrix3x3Functions);
-
         Data::Matrix3x3Type FromColumns(
             const Data::Vector3Type& col0, const Data::Vector3Type& col1, const Data::Vector3Type& col2)
         {

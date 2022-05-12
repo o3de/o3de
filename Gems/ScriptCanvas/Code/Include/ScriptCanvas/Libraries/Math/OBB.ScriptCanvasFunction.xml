@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/OBB.h"
-        Name="OBBFunctions"
         Namespace="ScriptCanvas::OBBFunctions"
         Category="Math/OBB">
         

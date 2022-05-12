@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/Transform.h"
-        Name="TransformFunctions"
         Namespace="ScriptCanvas::TransformFunctions"
         Category="Math/Transform">
         

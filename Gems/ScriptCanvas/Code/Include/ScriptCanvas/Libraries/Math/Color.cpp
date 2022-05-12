@@ -15,8 +15,6 @@ namespace ScriptCanvas
 {
     namespace ColorFunctions
     {
-        REGISTER_SCRIPTCANVAS_FUNCTION(ColorFunctions);
-
         using namespace Data;
 
         NumberType Dot(ColorType a, ColorType b)

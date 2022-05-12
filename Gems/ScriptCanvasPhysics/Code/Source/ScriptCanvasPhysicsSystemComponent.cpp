@@ -11,7 +11,9 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include "ScriptCanvasPhysicsSystemComponent.h"
-#include <ScriptCanvasAutoGenRegistry.h>
+#include <AutoGenFunctionRegistry.generated.h>
+
+REGISTER_SCRIPTCANVAS_AUTOGEN(ScriptCanvasPhysicsStatic);
 
 namespace ScriptCanvasPhysics
 {

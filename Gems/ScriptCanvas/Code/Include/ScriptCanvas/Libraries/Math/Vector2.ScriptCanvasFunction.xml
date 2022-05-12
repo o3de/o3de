@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/Vector2.h"
-        Name="Vector2Functions"
         Namespace="ScriptCanvas::Vector2Functions"
         Category="Math/Vector2">
 

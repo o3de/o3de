@@ -10,7 +10,6 @@
 
 #include <AzCore/std/tuple.h>
 #include <ScriptCanvas/Data/NumericData.h>
-#include <Include/ScriptCanvas/Libraries/Math/Vector4.generated.h>
 
 namespace ScriptCanvas
 {

@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/Vector4.h"
-        Name="Vector4Functions"
         Namespace="ScriptCanvas::Vector4Functions"
         Category="Math/Vector4">
         

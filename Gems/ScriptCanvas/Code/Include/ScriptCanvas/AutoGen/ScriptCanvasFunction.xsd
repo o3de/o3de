@@ -93,11 +93,6 @@
                                 <xs:documentation>The header file contains function declarations.</xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
-                        <xs:attribute name="Name" type="NonEmptyString" use="required">
-                            <xs:annotation>
-                                <xs:documentation>The name of library.</xs:documentation>
-                            </xs:annotation>
-                        </xs:attribute>
                         <xs:attribute name="Namespace" type="NonEmptyString" use="required">
                             <xs:annotation>
                                 <xs:documentation>The namespace of functions, it has to be unique and same as function declaration.</xs:documentation>

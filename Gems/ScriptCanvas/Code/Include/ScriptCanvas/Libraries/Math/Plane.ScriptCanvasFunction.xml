@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/Plane.h"
-        Name="PlaneFunctions"
         Namespace="ScriptCanvas::PlaneFunctions"
         Category="Math/Plane">
         

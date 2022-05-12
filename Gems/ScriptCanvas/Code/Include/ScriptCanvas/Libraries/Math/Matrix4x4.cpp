@@ -12,8 +12,6 @@ namespace ScriptCanvas
 {
     namespace Matrix4x4Functions
     {
-        REGISTER_SCRIPTCANVAS_FUNCTION(Matrix4x4Functions);
-
         Data::Matrix4x4Type FromColumns(
             const Data::Vector4Type& col0, const Data::Vector4Type& col1, const Data::Vector4Type& col2, const Data::Vector4Type& col3)
         {

@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/Vector3.h"
-        Name="Vector3Functions"
         Namespace="ScriptCanvas::Vector3Functions"
         Category="Math/Vector3">
         

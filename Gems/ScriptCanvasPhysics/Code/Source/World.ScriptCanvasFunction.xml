@@ -3,7 +3,6 @@
 <ScriptCanvas>
     <Library
         Include="World.h"
-        Name="WorldFunctions"
         Namespace="ScriptCanvasPhysics::WorldFunctions"
         Category="PhysX/World">
 

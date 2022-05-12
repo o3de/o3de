@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/CRC.h"
-        Name="CRCFunctions"
         Namespace="ScriptCanvas::CRCFunctions"
         Category="Math/Crc32">
         

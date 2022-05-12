@@ -5,6 +5,15 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 #}
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunction_Source.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 {% import 'ScriptCanvas_Macros.jinja' as macros %}
 
 {%- macro CheckFunctionBranchResult(function) -%}
@@ -42,95 +51,88 @@ false
 {% endif -%}
 {%- endmacro -%}
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// This code was produced with AzAutoGen, any modifications made will not be preserved.
-// If you need to modify this code see:
-//
-// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunction_Source.jinja
-//
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#include "{{filename}}.h"
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <ScriptCanvasAutoGenRegistry.h>
-
 {% for ScriptCanvas in dataFiles %}
 {% for Library in ScriptCanvas%}
-
-{{- macros.Required('Include', Library, Library) -}}
-{{- macros.Required('Name', Library, Library) -}}
+{{ macros.Required('Include', Library, Library) -}}
 
 #include "{{ Library.attrib['Include'] }}"
 
-{% set className = macros.CleanName('ScriptCanvas' + Library.attrib['Name']) %}
-{% set namespaceList = [] %}
+{{- macros.ReportErrors() }}
+{% endfor %}
+{% endfor %}
+
+namespace ScriptCanvas
+{
+    {{autogenTargetName}}FunctionRegistry::{{autogenTargetName}}FunctionRegistry()
+    {
+        ScriptCanvas::AutoGenRegistry::GetInstance()->RegisterFunction(GetRegistryName(), this);
+    }
+
+    {{autogenTargetName}}FunctionRegistry::~{{autogenTargetName}}FunctionRegistry()
+    {
+        ScriptCanvas::AutoGenRegistry::GetInstance()->UnregisterFunction(GetRegistryName());
+    }
+
+    const char* {{autogenTargetName}}FunctionRegistry::GetRegistryName() {
+        return "{{autogenTargetName}}";
+    }
+
+    void {{autogenTargetName}}FunctionRegistry::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+{% for ScriptCanvas in dataFiles %}
+{% for Library in ScriptCanvas -%}
+
+{% set namespaceName = '' %}
 {% set sanitizedNamespaceName = 'GlobalMethod' %}
 {% if Library.attrib['Namespace'] is defined and Library.attrib['Namespace'] %}
-{% set namespaceList = macros.CleanName(Library.attrib['Namespace']).split('::') %}
+{% set namespaceName = Library.attrib['Namespace'] + '::' %}
 {% set sanitizedNamespaceName = macros.CleanName(Library.attrib['Namespace'].replace('::', '_')) %}
 {% endif %}
 {% set categoryName = Library.attrib['Category'] %}
-
-{% for namespace in namespaceList %}
-namespace {{namespace}}
-{
-{% endfor %}
-
-{{className}}::{{className}}()
-{
-    ScriptCanvas::AutoGenRegistry::GetInstance()->RegisterFunction("{{sanitizedNamespaceName}}_{{className}}", this);
-}
-
-{{className}}::~{{className}}()
-{
-    ScriptCanvas::AutoGenRegistry::GetInstance()->UnregisterFunction("{{sanitizedNamespaceName}}_{{className}}");
-}
-
-void {{className}}::Reflect(AZ::ReflectContext* context)
-{
-    if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-    {
+            // Reflect {{namespaceName}} functions
 {% for function in Library.findall('Function') %}
-        {
+            {
 {{ macros.Required('Name', function, Library) }}
 
 {%- set hasbranch = CheckFunctionBranchResult(function) -%}
 {% if hasbranch|booleanTrue == true %}
 {% set branchfunction = function.attrib['Branch'] %}
-            AZ::BranchOnResultInfo branchResultInfo;
+                AZ::BranchOnResultInfo branchResultInfo;
 {% if branchfunction is defined and branchfunction and not branchfunction == "Boolean" %}
 {% set sanitizedBranchFunctionName = macros.CleanName(branchfunction).replace('::', '_') %}
-            branchResultInfo.m_nonBooleanResultCheckName = "{{sanitizedNamespaceName}}_{{sanitizedBranchFunctionName}}";
+                branchResultInfo.m_nonBooleanResultCheckName = "{{sanitizedNamespaceName}}_{{sanitizedBranchFunctionName}}";
 {% endif -%}
 {% set branchwithvalue = function.attrib['BranchWithValue'] %}
 {%- if branchwithvalue is defined and branchwithvalue.lower() == "true" %}
-            branchResultInfo.m_returnResultInBranches = true;
+                branchResultInfo.m_returnResultInBranches = true;
 {% endif -%}
 {{SetBranchExecution(function)}}
 {%- endif -%}
 
 {% set functionName = macros.CleanName(function.attrib['Name']) %}
 {% set sanitizedFunctionName = macros.CleanName(function.attrib['Name']).replace('::', '_') %}
-            behaviorContext->Method("{{sanitizedNamespaceName}}_{{sanitizedFunctionName}}", &{{functionName}},
+                behaviorContext->Method("{{sanitizedNamespaceName}}_{{sanitizedFunctionName}}", &{{namespaceName}}{{functionName}},
 {{macros.GenerateFunctionMetaData(function)}})
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
 {% if categoryName %}
-                ->Attribute(AZ::Script::Attributes::Category, "{{categoryName}}")
+                    ->Attribute(AZ::Script::Attributes::Category, "{{categoryName}}")
 {% endif %}
 {% if hasbranch|booleanTrue == true %}
-                ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, branchResultInfo)
+                    ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, branchResultInfo)
 {% endif %}
-            ;
-        }
-{% endfor %}
-    }
-}
-
-{% for namespace in namespaceList %}
-}
-{% endfor %}
+                ;
+            }
+{% endfor -%}
 
 {{ macros.ReportErrors() }}
 
+{%- endfor %}
 {% endfor %}
-{% endfor %}
+        }
+    }
+}

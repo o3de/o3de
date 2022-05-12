@@ -2,7 +2,6 @@
 <ScriptCanvas>
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/MathFunctions.h"
-        Name="MathFunctions"
         Namespace="ScriptCanvas::MathFunctions"
         Category="Math">
         
@@ -19,7 +18,6 @@
 
     <Library
         Include="Include/ScriptCanvas/Libraries/Math/MathFunctions.h"
-        Name="MathRandoms"
         Namespace="ScriptCanvas::MathRandoms"
         Category="Math/Random">
 

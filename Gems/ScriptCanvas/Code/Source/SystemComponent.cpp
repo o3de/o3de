@@ -14,7 +14,6 @@
 #include <AzCore/Serialization/Utils.h>
 #include <Libraries/Libraries.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
 #include <ScriptCanvas/Core/Contract.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -32,6 +31,10 @@
 #if defined(SC_EXECUTION_TRACE_ENABLED)
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
 #endif
+
+#include <AutoGenFunctionRegistry.generated.h>
+
+REGISTER_SCRIPTCANVAS_AUTOGEN(ScriptCanvasStatic);
 
 namespace ScriptCanvasSystemComponentCpp
 {

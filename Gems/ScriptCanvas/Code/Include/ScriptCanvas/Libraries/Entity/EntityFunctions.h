@@ -10,7 +10,6 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector3.h>
-#include <Include/ScriptCanvas/Libraries/Entity/EntityFunctions.generated.h>
 
 namespace ScriptCanvas
 {
