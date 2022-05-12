@@ -36,6 +36,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Event("GetOriginalMaterialAssignments", &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments)
                     ->Event("FindMaterialAssignmentId", &MaterialComponentRequestBus::Events::FindMaterialAssignmentId)
+                    ->Event("GetActiveMaterialAssetId", &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId)
                     ->Event("GetDefaultMaterialAssetId", &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId)
                     ->Event("GetMaterialSlotLabel", &MaterialComponentRequestBus::Events::GetMaterialSlotLabel)
                     ->Event("SetMaterialOverrides", &MaterialComponentRequestBus::Events::SetMaterialOverrides)
@@ -298,6 +299,12 @@ namespace AZ
             return materialAssignmentId;
         }
 
+        AZ::Data::AssetId MaterialComponentController::GetActiveMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const
+        {
+            const AZ::Data::AssetId materialAssetId = GetMaterialOverride(materialAssignmentId);
+            return materialAssetId.IsValid() ? materialAssetId : GetDefaultMaterialAssetId(materialAssignmentId);
+        }
+
         AZ::Data::AssetId MaterialComponentController::GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const
         {
             RPI::ModelMaterialSlotMap modelMaterialSlots;
@@ -467,9 +474,12 @@ namespace AZ
         void MaterialComponentController::SetMaterialOverride(
             const MaterialAssignmentId& materialAssignmentId, const AZ::Data::AssetId& materialAssetId)
         {
-            m_configuration.m_materials[materialAssignmentId].m_materialAsset =
-                AZ::Data::Asset<AZ::RPI::MaterialAsset>(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
-            LoadMaterials();
+            auto& materialAsset = m_configuration.m_materials[materialAssignmentId].m_materialAsset;
+            if (materialAsset.GetId() != materialAssetId)
+            {
+                materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
+                LoadMaterials();
+            }
         }
 
         AZ::Data::AssetId MaterialComponentController::GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const
