@@ -10,10 +10,12 @@
 #include <viewsrg.srgi>
 #include "TerrainCommon.azsli"
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <TerrainSrg.azsli>
 
 struct VSDepthOutput
 {
     float4 m_position : SV_Position;
+    float2 m_cullDistance : SV_CullDistance;
 };
 
 VSDepthOutput MainVS(in VertexInput input)
@@ -43,6 +45,8 @@ VSDepthOutput MainVS(in VertexInput input)
 
     float3 worldPosition = float3(heightContext.m_xyPosition, height);
     output.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
-    
+
+    output.m_cullDistance = TerrainSrg::CalculateCullDistance(ObjectSrg::m_patchData.m_lodLevel, worldPosition);
+
     return output;
 }
