@@ -14,28 +14,32 @@
 
 #include <ActionManager/PythonEditorAction.h>
 
-using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
-
-//! ActionManagerRequestBus
-//! Bus to register and trigger actions in the Editor via Python.
-//! If writing C++ code, use the ActionManagerInterface instead.
-class ActionManagerRequests : public AZ::EBusTraits
+namespace EditorPythonBindings
 {
-public:
-    static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+    using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
 
-    //! Register a new Action to the Action Manager.
-    virtual ActionManagerOperationResult RegisterAction(
-        const AZStd::string& contextIdentifier,
-        const AZStd::string& identifier,
-        const AZStd::string& name,
-        const AZStd::string& description,
-        const AZStd::string& category,
-        const AZStd::string& iconPath,
-        PythonEditorAction handler) = 0;
+    //! ActionManagerRequestBus
+    //! Bus to register and trigger actions in the Editor via Python.
+    //! If writing C++ code, use the ActionManagerInterface instead.
+    class ActionManagerRequests : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-    //! Trigger an Action via its identifier.
-    virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
-};
+        //! Register a new Action to the Action Manager.
+        virtual ActionManagerOperationResult RegisterAction(
+            const AZStd::string& contextIdentifier,
+            const AZStd::string& identifier,
+            const AZStd::string& name,
+            const AZStd::string& description,
+            const AZStd::string& category,
+            const AZStd::string& iconPath,
+            PythonEditorAction handler) = 0;
 
-using ActionManagerRequestBus = AZ::EBus<ActionManagerRequests>;
+        //! Trigger an Action via its identifier.
+        virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
+    };
+
+    using ActionManagerRequestBus = AZ::EBus<ActionManagerRequests>;
+
+} // namespace EditorPythonBindings

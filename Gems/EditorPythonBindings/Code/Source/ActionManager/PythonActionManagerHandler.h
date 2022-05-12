@@ -14,38 +14,42 @@ namespace AzToolsFramework
     class ActionManagerInterface;
 }
 
-class PythonEditorActionHandler final
-    : public EditorPythonBindings::CustomTypeBindingNotificationBus::Handler
-    , public ActionManagerRequestBus::Handler
+namespace EditorPythonBindings
 {
-public:
-    using Handle = EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle;
-    using AllocationHandle = EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle;
-    constexpr static Handle NoAllocation{ ~0LL };
+    class PythonEditorActionHandler final
+        : public EditorPythonBindings::CustomTypeBindingNotificationBus::Handler
+        , public ActionManagerRequestBus::Handler
+    {
+    public:
+        using Handle = EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle;
+        using AllocationHandle = EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle;
+        constexpr static Handle NoAllocation{ ~0LL };
 
-    PythonEditorActionHandler();
-    ~PythonEditorActionHandler();
+        PythonEditorActionHandler();
+        ~PythonEditorActionHandler();
 
-    // ActionManagerPythonRequestBus overrides ...
-    ActionManagerOperationResult RegisterAction(
-        const AZStd::string& contextIdentifier,
-        const AZStd::string& identifier,
-        const AZStd::string& name,
-        const AZStd::string& description,
-        const AZStd::string& category,
-        const AZStd::string& iconPath,
-        PythonEditorAction handler) override;
-    ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
+        // ActionManagerPythonRequestBus overrides ...
+        ActionManagerOperationResult RegisterAction(
+            const AZStd::string& contextIdentifier,
+            const AZStd::string& identifier,
+            const AZStd::string& name,
+            const AZStd::string& description,
+            const AZStd::string& category,
+            const AZStd::string& iconPath,
+            PythonEditorAction handler) override;
+        ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
 
-    AZStd::unordered_map<void*, AZ::TypeId> m_allocationMap;
+        AZStd::unordered_map<void*, AZ::TypeId> m_allocationMap;
 
-    AllocationHandle AllocateDefault() override;
-    AZStd::optional<ValueHandle> PythonToBehavior(
-        PyObject* pyObj, AZ::BehaviorParameter::Traits traits, AZ::BehaviorValueParameter& outValue) override;
-    AZStd::optional<ValueHandle> BehaviorToPython(const AZ::BehaviorValueParameter& behaviorValue, PyObject*& outPyObj) override;
-    bool CanConvertPythonToBehavior(AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const override;
-    void CleanUpValue(ValueHandle handle) override;
+        AllocationHandle AllocateDefault() override;
+        AZStd::optional<ValueHandle> PythonToBehavior(
+            PyObject* pyObj, AZ::BehaviorParameter::Traits traits, AZ::BehaviorValueParameter& outValue) override;
+        AZStd::optional<ValueHandle> BehaviorToPython(const AZ::BehaviorValueParameter& behaviorValue, PyObject*& outPyObj) override;
+        bool CanConvertPythonToBehavior(AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const override;
+        void CleanUpValue(ValueHandle handle) override;
 
-private:
-    AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
-};
+    private:
+        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+    };
+
+} // namespace EditorPythonBindings
