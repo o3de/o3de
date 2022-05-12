@@ -352,7 +352,8 @@ namespace UnitTest
 
                 auto list = bounds.UpdateCenter(AZ::Vector2(256.0f * i, 256.0f * j));
 
-                EXPECT_LE(list.size(), Terrain::ClipmapBounds::MaxUpdateRegions);
+                uint32_t size = list.size();
+                EXPECT_LE(size, Terrain::ClipmapBounds::MaxUpdateRegions);
             }
         }
     }

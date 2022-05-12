@@ -116,7 +116,7 @@ namespace Terrain
         ClipmapBoundsRegionList UpdateCenter(const Vector2i& newCenter, AZ::Aabb* untouchedRegion = nullptr);
 
         //! The biggest possible number of regions can return when calling UpdateCenter();
-        static const uint32_t MaxUpdateRegions = 6;
+        static constexpr uint32_t MaxUpdateRegions = 6;
 
         //! Takes in a single world space region and transforms it into 0-4 regions in the clipmap clamped
         //! to the bounds of the clipmap.
