@@ -13,28 +13,38 @@ namespace EditorPythonBindings
 PythonEditorAction::PythonEditorAction(PyObject* handler)
     : m_handler(handler)
 {
-        // Increment the reference counter for the handler on the Python side to ensure the function isn't garbage collected.
-        if (m_handler)
-        {
-    Py_INCREF(m_handler);
-}
+    // Increment the reference handler on the Python side to ensure the function isn't garbage collected.
+    if (m_handler)
+    {
+        Py_INCREF(m_handler);
     }
+}
 
 PythonEditorAction::PythonEditorAction(const PythonEditorAction& obj)
     : m_handler(obj.m_handler)
 {
-        if (m_handler)
-        {
-    Py_INCREF(m_handler);
+    if (m_handler)
+    {
+        Py_INCREF(m_handler);
+    }
 }
+
+PythonEditorAction& PythonEditorAction::operator=(PythonEditorAction obj)
+{
+    if (m_handler)
+    {
+        Py_DECREF(m_handler);
     }
 
-    PythonEditorAction::PythonEditorAction(PythonEditorAction&& obj)
-        : m_handler(obj.m_handler)
+    m_handler = obj.m_handler;
+
+    if (m_handler)
     {
-        // Reference counter does not need to be touched since we're moving ownership.
-        obj.m_handler = nullptr;
+        Py_INCREF(m_handler);
     }
+
+    return *this;
+}
 
     PythonEditorAction& PythonEditorAction::operator=(const PythonEditorAction& obj)
     {
