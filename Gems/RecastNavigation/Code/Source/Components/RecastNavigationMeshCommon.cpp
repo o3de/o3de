@@ -65,7 +65,7 @@ namespace RecastNavigation
         config.detailSampleMaxError = meshConfig.m_cellHeight * meshConfig.m_detailSampleMaxError;
 
         config.tileSize = static_cast<int>(meshConfig.m_tileSize / config.cs);
-        config.borderSize = config.walkableRadius + 3; // Reserve enough padding.
+        config.borderSize = config.walkableRadius + meshConfig.m_borderSize; // Reserve enough padding.
         config.width = config.tileSize + config.borderSize * 2;
         config.height = config.tileSize + config.borderSize * 2;
 

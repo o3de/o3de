@@ -16,7 +16,7 @@ namespace RecastNavigation
         : public AZ::ComponentBus
     {
     public:
-        virtual AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize) = 0;
+        virtual AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) = 0;
         virtual int GetNumberOfTiles([[maybe_unused]] float tileSize) const { return 1; }
         
         //! Returns the world bounds that this surveyor is responsible for.

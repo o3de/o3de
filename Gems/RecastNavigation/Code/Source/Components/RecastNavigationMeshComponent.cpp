@@ -60,7 +60,7 @@ namespace RecastNavigation
 
         RecastNavigationSurveyorRequestBus::EventResult(tiles, GetEntityId(),
             &RecastNavigationSurveyorRequests::CollectGeometry,
-            m_meshConfig.m_tileSize);
+            m_meshConfig.m_tileSize, m_meshConfig.m_borderSize * m_meshConfig.m_cellSize);
 
         for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
         {

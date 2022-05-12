@@ -21,7 +21,7 @@
 
 AZ_DECLARE_BUDGET(Navigation);
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
 
 namespace RecastNavigation
 {
@@ -130,6 +130,7 @@ namespace RecastNavigation
             m_taskGraphEvent = {};
         }
         m_navigationTaskExecutor = {};
+        m_graph = {};
 
         m_tickEvent.RemoveFromQueue();
         m_updateNavMeshEvent.RemoveFromQueue();
@@ -177,7 +178,7 @@ namespace RecastNavigation
             {
                 AZ_PROFILE_SCOPE(Navigation, "Navigation: OnUpdateNavMeshEvent");
 
-                m_graph.Reset();
+                m_graph = AZStd::make_unique<AZ::TaskGraph>();
 
                 AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
 
@@ -185,16 +186,19 @@ namespace RecastNavigation
                     AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometry");
                     RecastNavigationSurveyorRequestBus::EventResult(tiles, GetEntityId(),
                         &RecastNavigationSurveyorRequests::CollectGeometry,
-                        m_meshConfig.m_tileSize);
+                        m_meshConfig.m_tileSize, m_meshConfig.m_borderSize * m_meshConfig.m_cellSize);
                 }
 
-                AZ::TaskToken updateDoneTask = m_graph.AddTask(
+                AZ::TaskToken updateDoneTask = m_graph->AddTask(
                     m_taskDescriptor,
                     [this]
                     {
+                        AZ_PROFILE_SCOPE(Navigation, "Navigation: update finished");
                         AZStd::lock_guard lock(m_navigationMeshMutex);
                         m_updatingNavMeshInProgress = false;
                     });
+
+                AZStd::vector<AZ::TaskToken*> tasks;
 
                 for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
                 {
@@ -203,7 +207,7 @@ namespace RecastNavigation
                         continue;
                     }
 
-                    AZ::TaskToken processAndAddTileTask = m_graph.AddTask(
+                    AZ::TaskToken processAndAddTileTask = m_graph->AddTask(
                         m_taskDescriptor,
                         [this, tile]
                         {
@@ -224,11 +228,16 @@ namespace RecastNavigation
                             }
                         });
 
-                    processAndAddTileTask.Precedes(updateDoneTask);
+                    tasks.push_back(&processAndAddTileTask);
+                }
+
+                for (AZ::TaskToken* task : tasks)
+                {
+                    task->Precedes(updateDoneTask);
                 }
 
                 m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
-                m_graph.SubmitOnExecutor(*m_navigationTaskExecutor, m_taskGraphEvent.get());
+                m_graph->SubmitOnExecutor(*m_navigationTaskExecutor, m_taskGraphEvent.get());
             }
         }
     }
@@ -263,4 +272,4 @@ namespace RecastNavigation
     }
 } // namespace RecastNavigation
 
-#pragma optimize("", on)
+//#pragma optimize("", on)

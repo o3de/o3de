@@ -146,7 +146,7 @@ namespace RecastNavigation
     }
 
     AZStd::vector<AZStd::shared_ptr<TileGeometry>> EditorRecastNavigationTiledSurveyorComponent::CollectGeometry(
-        [[maybe_unused]] float tileSize)
+        float tileSize, float borderSize)
     {
         if (tileSize == 0.f)
         {
@@ -166,7 +166,7 @@ namespace RecastNavigation
         const AZ::Vector3& worldMin = worldVolume.GetMin();
         const AZ::Vector3& worldMax = worldVolume.GetMax();
 
-        const AZ::Vector3 border = AZ::Vector3::CreateOne() * 5.f;
+        const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
 
         for (int y = 0; y < tilesAlongY; ++y)
         {

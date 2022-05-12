@@ -67,7 +67,7 @@ namespace RecastNavigation
         AZ::TaskDescriptor m_taskDescriptor{ "UpdatingNavMesh", "RecastNavigation" };
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZStd::unique_ptr<AZ::TaskExecutor> m_navigationTaskExecutor;
-        AZ::TaskGraph m_graph;
+        AZStd::unique_ptr<AZ::TaskGraph> m_graph;
 
         AZ::Crc32 UpdatedNavigationMeshInEditor();
 

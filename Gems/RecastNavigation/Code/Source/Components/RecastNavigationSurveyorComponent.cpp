@@ -106,7 +106,7 @@ namespace RecastNavigation
     }
 
     AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationSurveyorComponent::CollectGeometry(
-        [[maybe_unused]] float tileSize)
+        [[maybe_unused]] float tileSize, [[maybe_unused]] float borderSize)
     {
         AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
 

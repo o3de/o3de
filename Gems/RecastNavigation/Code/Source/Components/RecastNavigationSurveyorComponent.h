@@ -41,7 +41,7 @@ namespace RecastNavigation
         void Deactivate() override;
 
         // RecastNavigationSurveyorRequestBus interface implementation
-        AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize) override;
+        AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) override;
         AZ::Aabb GetWorldBounds() const override;
         bool IsTiled() const override { return false; }
 

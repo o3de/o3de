@@ -22,6 +22,7 @@ namespace RecastNavigation
         static void Reflect(AZ::ReflectContext* context);
 
         float m_tileSize = 32.f;
+        int m_borderSize = 3;
         float m_cellSize = 0.3f;
         float m_cellHeight = 0.2f;
 

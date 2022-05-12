@@ -35,6 +35,7 @@ namespace RecastNavigation
                 ->Field("Region Merge Size", &Self::m_regionMergeSize)
                 ->Field("Region Min Size", &Self::m_regionMinSize)
                 ->Field("Tile Size", &Self::m_tileSize)
+                ->Field("Border Size", &Self::m_borderSize)
                 ->Version(1)
                 ;
 
@@ -47,7 +48,9 @@ namespace RecastNavigation
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(nullptr, &Self::m_tileSize, "Tile Size",
-                        "The width/height size of tile's on the xy-plane. [Limit: >= 0] [Units: vx]")
+                        "The width/height size of tile's on the xy-plane. [Limit: >= 0] [Units: voxels]")
+                    ->DataElement(nullptr, &Self::m_borderSize, "Border Size",
+                        "The additional dimension around the tile to collect additional geometry in order to connect to adjacent tiles. [Limit: >= 0] [Units: voxels]")
                     ->DataElement(nullptr, &Self::m_agentHeight, "Agent Height",
                         "Minimum floor to 'ceiling' height that will still allow the floor area to be considered walkable. [Limit: >= 3]")
                     ->DataElement(nullptr, &Self::m_agentMaxClimb, "Agent Max Climb",
@@ -55,15 +58,15 @@ namespace RecastNavigation
                     ->DataElement(nullptr, &Self::m_agentMaxSlope, "Agent Max Slope",
                         "The maximum slope that is considered walkable. [Limits: 0 <= value < 90] [Units: Degrees] ")
                     ->DataElement(nullptr, &Self::m_agentRadius, "Agent Radius",
-                        "The distance to erode/shrink the walkable area of the heightfield away from obstructions.  [Limit: >=0] [Units: vx] ")
+                        "The distance to erode/shrink the walkable area of the heightfield away from obstructions.  [Limit: >=0] [Units: voxels] ")
                     ->DataElement(nullptr, &Self::m_cellHeight, "Cell Height",
-                        "The y-axis cell size to use for fields. [Limit: > 0] [Units: wu]")
+                        "The y-axis cell size to use for fields. [Limit: > 0] [Units: world units]")
                     ->DataElement(nullptr, &Self::m_cellSize, "Cell Size",
-                        "The xz-plane cell size to use for fields. [Limit: > 0] [Units: wu]")
+                        "The xz-plane cell size to use for fields. [Limit: > 0] [Units: world units]")
                     ->DataElement(nullptr, &Self::m_detailSampleDist, "Detail Sample Distance",
-                        "Sets the sampling distance to use when generating the detail mesh. (For height detail only.) [Limits: 0 or >= 0.9] [Units: wu] ")
+                        "Sets the sampling distance to use when generating the detail mesh. (For height detail only.) [Limits: 0 or >= 0.9] [Units: world units] ")
                     ->DataElement(nullptr, &Self::m_detailSampleMaxError, "Detail Sample Max Error",
-                        "The maximum distance the detail mesh surface should deviate from heightfield data. (For height detail only.) [Limit: >=0] [Units: wu]")
+                        "The maximum distance the detail mesh surface should deviate from heightfield data. (For height detail only.) [Limit: >=0] [Units: world units]")
                     ->DataElement(nullptr, &Self::m_edgeMaxError, "Edge Max Error",
                         "The maximum distance a simplified contour's border edges should deviate the original raw contour. [Limit: >=0]")
                     ->DataElement(nullptr, &Self::m_edgeMaxLen, "Edge Max Length",
