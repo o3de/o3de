@@ -17,11 +17,19 @@
     "icon_path": "preview.png",
     "copyFiles": [
         {
+            "file": ".gitignore",
+            "isTemplated": false
+        },
+        {
             "file": "CMakeLists.txt",
             "isTemplated": true
         },
         {
-            "file": "Code/${NameLower}_editor_files.cmake",
+            "file": "Code/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_private_files.cmake",
             "isTemplated": true
         },
         {
@@ -33,7 +41,11 @@
             "isTemplated": true
         },
         {
-            "file": "Code/${NameLower}_files.cmake",
+            "file": "Code/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
         {
@@ -53,11 +65,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Android/${NameLower}_android_files.cmake",
+            "file": "Code/Platform/Android/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Android/${NameLower}_shared_android_files.cmake",
+            "file": "Code/Platform/Android/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
@@ -65,11 +81,19 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -77,11 +101,19 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
+            "file": "Code/Platform/Mac/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
+            "file": "Code/Platform/Mac/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -89,11 +121,19 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
+            "file": "Code/Platform/Windows/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
+            "file": "Code/Platform/Windows/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
         {
@@ -101,11 +141,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/iOS/${NameLower}_ios_files.cmake",
+            "file": "Code/Platform/iOS/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/iOS/${NameLower}_shared_ios_files.cmake",
+            "file": "Code/Platform/iOS/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {

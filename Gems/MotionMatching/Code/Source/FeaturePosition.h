@@ -37,19 +37,18 @@ namespace EMotionFX::MotionMatching
         ~FeaturePosition() override = default;
 
         void ExtractFeatureValues(const ExtractFeatureContext& context) override;
-        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
-            size_t frameIndex) override;
-
+        void FillQueryVector(QueryVector& queryVector, const QueryVectorContext& context) override;
         float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const override;
 
-        void FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context) override;
+        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+            const Pose& currentPose,
+            const FeatureMatrix& featureMatrix,
+            size_t frameIndex) override;
 
         static void Reflect(AZ::ReflectContext* context);
 
         size_t GetNumDimensions() const override;
         AZStd::string GetDimensionName(size_t index) const override;
         AZ::Vector3 GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const;
-        void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& position);
     };
 } // namespace EMotionFX::MotionMatching

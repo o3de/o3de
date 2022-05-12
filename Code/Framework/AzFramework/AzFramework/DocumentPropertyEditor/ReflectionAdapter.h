@@ -28,19 +28,20 @@ namespace AZ::DocumentPropertyEditor
         //! the specified instance.
         //! \see SetValue
         ReflectionAdapter(void* instance, AZ::TypeId typeId);
+        ~ReflectionAdapter();
 
         //! Sets the instance to reflect. If typeId is a type registered to SerializeContext,
         //! this adapter will produce a property grid based on its contents.
         void SetValue(void* instance, AZ::TypeId typeId);
 
-        void OnContentsChanged(const Dom::Path& path, const Dom::Value& value);
+        void OnContentsChanged(const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType changeType);
 
     protected:
         Dom::Value GenerateContents() const override;
 
     private:
         void* m_instance = nullptr;
-        AZ::TypeId m_typeId;
+        AZ::TypeId m_typeId = AZ::TypeId::CreateNull();
 
         mutable AZStd::unique_ptr<ReflectionAdapterReflectionImpl> m_impl;
 

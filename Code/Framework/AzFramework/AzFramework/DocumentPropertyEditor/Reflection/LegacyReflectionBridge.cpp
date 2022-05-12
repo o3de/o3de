@@ -13,6 +13,7 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
 
@@ -20,9 +21,9 @@ namespace AZ::Reflection
 {
     namespace DescriptorAttributes
     {
-        Name Handler = Name::FromStringLiteral("Handler");
-        Name Label = Name::FromStringLiteral("Label");
-        Name SerializedPath = Name::FromStringLiteral("SerializedPath");
+        const Name Handler = Name::FromStringLiteral("Handler");
+        const Name Label = Name::FromStringLiteral("Label");
+        const Name SerializedPath = Name::FromStringLiteral("SerializedPath");
     } // namespace DescriptorAttributes
 
     namespace LegacyReflectionInternal
@@ -36,8 +37,12 @@ namespace AZ::Reflection
 
             struct AttributeData
             {
+                // Group from the attribute metadata (generally empty with Serialize/EditContext data)
                 Name m_group;
+                // Name of the attribute
                 Name m_name;
+                // DOM value of the attribute - currently only primitive attributes are supported,
+                // but other types may later be supported via opaque values
                 Dom::Value m_value;
             };
 
@@ -62,34 +67,28 @@ namespace AZ::Reflection
                 , m_serializeContext(serializeContext)
             {
                 m_stack.push({ instance, typeId });
-                RegisterPrimitiveHandlers<bool, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, float, double>();
+                RegisterPrimitiveHandlers<bool, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
             }
 
             template<typename T>
             void RegisterHandler(AZStd::function<bool(T&)> handler)
             {
-                m_handlers[azrtti_typeid<T>()] = [this, handler]() -> bool
+                m_handlers[azrtti_typeid<T>()] = [this, handler = AZStd::move(handler)]() -> bool
                 {
                     return handler(*reinterpret_cast<T*>(m_stack.top().m_instance));
                 };
             }
 
-            template<typename T>
+            template<typename... T>
             void RegisterPrimitiveHandlers()
             {
-                RegisterHandler<T>(
-                    [this](T& value) -> bool
-                    {
-                        m_visitor->Visit(value, *this);
-                        return false;
-                    });
-            }
-
-            template<typename T1, typename T2, typename... Rest>
-            void RegisterPrimitiveHandlers()
-            {
-                RegisterPrimitiveHandlers<T1>();
-                RegisterPrimitiveHandlers<T2, Rest...>();
+                (RegisterHandler<T>(
+                     [this](T& value) -> bool
+                     {
+                         m_visitor->Visit(value, *this);
+                         return false;
+                     }),
+                 ...);
             }
 
             void Visit()
@@ -169,29 +168,6 @@ namespace AZ::Reflection
                 return m_stack.top().m_instance;
             }
 
-            template<typename T>
-            bool TryReadAttribute(void* instance, AZ::Attribute* attribute, Dom::Value& result) const
-            {
-                AZ::AttributeReader reader(instance, attribute);
-                T value;
-                if (reader.Read<T>(value))
-                {
-                    result = Dom::Utils::ValueFromType(value);
-                    return true;
-                }
-                return false;
-            }
-
-            template<typename First, typename Second, typename... Rest>
-            bool TryReadAttribute(void* instance, AZ::Attribute* attribute, Dom::Value& result) const
-            {
-                if (TryReadAttribute<First>(instance, attribute, result))
-                {
-                    return true;
-                }
-                return TryReadAttribute<Second, Rest...>(instance, attribute, result);
-            }
-
             void CacheAttributes()
             {
                 StackEntry& nodeData = m_stack.top();
@@ -210,7 +186,7 @@ namespace AZ::Reflection
 
                 auto checkAttribute = [&](const AZ::AttributePair* it)
                 {
-                    AZ::Name name = propertyEditorSystem->LookupNameFromCrc(it->first);
+                    AZ::Name name = propertyEditorSystem->LookupNameFromId(it->first);
                     if (!name.IsEmpty())
                     {
                         // If a more specific attribute is already loaded, ignore the new value
@@ -219,13 +195,10 @@ namespace AZ::Reflection
                             return;
                         }
                         visitedAttributes.insert(name);
-                        Dom::Value attributeValue;
-                        const bool readSucceeded = TryReadAttribute<
-                            bool, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, AZStd::string, float, double>(
-                            nodeData.m_instance, it->second, attributeValue);
-                        if (readSucceeded)
+                        AZStd::optional<Dom::Value> attributeValue = ReadGenericAttributeToDomValue(nodeData.m_instance, it->second);
+                        if (attributeValue.has_value())
                         {
-                            cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue) });
+                            cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue.value()) });
                         }
                     }
                     else
@@ -246,7 +219,7 @@ namespace AZ::Reflection
                     {
                         if (elementEditData->m_elementId)
                         {
-                            AZ::Name handlerName = propertyEditorSystem->LookupNameFromCrc(elementEditData->m_elementId);
+                            AZ::Name handlerName = propertyEditorSystem->LookupNameFromId(elementEditData->m_elementId);
                             if (!handlerName.IsEmpty())
                             {
                                 nodeData.m_cachedAttributes.push_back(
@@ -325,7 +298,60 @@ namespace AZ::Reflection
                 }
             }
         };
+
+        template<typename T>
+        bool TryReadAttributeInternal(void* instance, AZ::Attribute* attribute, Dom::Value& result)
+        {
+            AZ::AttributeReader reader(instance, attribute);
+            T value;
+            if (reader.Read<T>(value))
+            {
+                result = Dom::Utils::ValueFromType(value);
+                return true;
+            }
+            return false;
+        }
+
+        template<typename... T>
+        bool TryReadAttribute(void* instance, AZ::Attribute* attribute, Dom::Value& result)
+        {
+            return (TryReadAttributeInternal<T>(instance, attribute, result) || ...);
+        }
+
+        template<typename T>
+        AZStd::shared_ptr<AZ::Attribute> MakeAttribute(T&& value)
+        {
+            return AZStd::make_shared<AttributeData<T>>(AZStd::move(value));
+        }
     } // namespace LegacyReflectionInternal
+
+    AZStd::shared_ptr<AZ::Attribute> WriteDomValueToGenericAttribute(const AZ::Dom::Value& value)
+    {
+        switch (value.GetType())
+        {
+        case AZ::Dom::Type::Bool:
+            return LegacyReflectionInternal::MakeAttribute(value.GetBool());
+        case AZ::Dom::Type::Int64:
+            return LegacyReflectionInternal::MakeAttribute(value.GetInt64());
+        case AZ::Dom::Type::Uint64:
+            return LegacyReflectionInternal::MakeAttribute(value.GetUint64());
+        case AZ::Dom::Type::Double:
+            return LegacyReflectionInternal::MakeAttribute(value.GetDouble());
+        case AZ::Dom::Type::String:
+            return LegacyReflectionInternal::MakeAttribute<AZStd::string>(value.GetString());
+        default:
+            return {};
+        }
+    }
+
+    AZStd::optional<AZ::Dom::Value> ReadGenericAttributeToDomValue(void* instance, AZ::Attribute* attribute)
+    {
+        Dom::Value result;
+        const bool readSucceeded = LegacyReflectionInternal::TryReadAttribute<
+            bool, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, AZStd::string, float, double>(
+            instance, attribute, result);
+        return readSucceeded ? result : AZStd::optional<AZ::Dom::Value>();
+    }
 
     void VisitLegacyInMemoryInstance(IRead* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext)
     {

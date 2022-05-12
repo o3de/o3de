@@ -177,6 +177,7 @@ set(FILES
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
+    IO/IStreamerProfiler.h
     IO/IStreamerTypes.h
     IO/IStreamerTypes.inl
     IO/IStreamerTypes.cpp
@@ -266,6 +267,8 @@ set(FILES
     Math/Frustum.inl
     Math/Geometry2DUtils.cpp
     Math/Geometry2DUtils.h
+    Math/Geometry3DUtils.cpp
+    Math/Geometry3DUtils.h
     Math/Guid.h
     Math/Internal/MathTypes.h
     Math/Internal/SimdMathVec1_neon.inl

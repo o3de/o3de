@@ -18,7 +18,9 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float3 m_direction;
         float  m_angularRadius;
         float3 m_rgbIntensity;
-        float  m_padding2;
+        float  m_affectsGIFactor;
+        bool   m_affectsGI;
+        float3 m_padding;
     };
     
     StructuredBuffer<DirectionalLight> m_directionalLights;
@@ -30,7 +32,9 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float3 m_position;
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
         float3 m_rgbIntensityCandelas;
-        float m_padding; // explicit padding.
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float3 m_padding;
     };
 
     StructuredBuffer<SimplePointLight> m_simplePointLights;
@@ -45,6 +49,9 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float m_cosInnerConeAngle; // cosine of the outer cone angle
         float3 m_rgbIntensityCandelas;
         float m_cosOuterConeAngle; // cosine of the inner cone angle
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float2 m_padding;
     };
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
@@ -58,7 +65,9 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float3 m_rgbIntensity;
         float  m_bulbRadius;
         uint3 m_shadowIndices;
-        uint m_padding;
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float3 m_padding;
     };
     
     StructuredBuffer<PointLight> m_pointLights;
@@ -77,6 +86,9 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float m_cosOuterConeAngle;
         float m_bulbPositionOffset;
         uint m_shadowIndex;
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float2 m_padding;
     };
     
     StructuredBuffer<DiskLight> m_diskLights;
@@ -91,6 +103,9 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float m_length;                         // length of the line segment making up the inside of the capsule. Doesn't include caps (0 length capsule == sphere)
         float3 m_rgbIntensityCandelas;          // total rgb luminous intensity of the capsule in candelas
         float m_invAttenuationRadiusSquared;    // inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float2 m_padding;
     };
     
     StructuredBuffer<CapsuleLight> m_capsuleLights;
@@ -107,6 +122,9 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float  m_halfHeight;                    // half-height of the quad. m_upDir * m_halfHeight is a vector from the center to the top edge.
         float3 m_rgbIntensityNits;
         uint   m_flags;                         // see QuadLightFlag enum
+        float  m_affectsGIFactor;
+        bool   m_affectsGI;
+        float2 m_padding;
     };
     
     StructuredBuffer<QuadLight> m_quadLights;

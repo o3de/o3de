@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
@@ -25,14 +23,14 @@ namespace AZ::DocumentPropertyEditor
         void PopulateDefaultEditors()
         {
             m_defaultEditorMap[azrtti_typeid<bool>()] = Nodes::CheckBox::Name;
-            m_defaultEditorMap[azrtti_typeid<uint8_t>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<uint16_t>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<uint32_t>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<uint64_t>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<int8_t>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<int16_t>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<int32_t>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<int64_t>()] = Nodes::IntSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::u8>()] = Nodes::UintSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::u16>()] = Nodes::UintSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::u32>()] = Nodes::UintSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::u64>()] = Nodes::UintSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::s8>()] = Nodes::IntSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::s16>()] = Nodes::IntSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::s32>()] = Nodes::IntSpinBox::Name;
+            m_defaultEditorMap[azrtti_typeid<AZ::s64>()] = Nodes::IntSpinBox::Name;
             m_defaultEditorMap[azrtti_typeid<float>()] = Nodes::DoubleSpinBox::Name;
             m_defaultEditorMap[azrtti_typeid<double>()] = Nodes::DoubleSpinBox::Name;
             m_defaultEditorMap[azrtti_typeid<AZStd::string>()] = Nodes::LineEdit::Name;
@@ -109,10 +107,10 @@ namespace AZ::DocumentPropertyEditor
             m_builder.BeginPropertyEditor(editorType, AZStd::move(value));
             ForwardAttributes(attributes);
             m_builder.OnEditorChanged(
-                [this, onChanged](const Dom::Path& path, const Dom::Value& value)
+                [this, onChanged](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType changeType)
                 {
                     Dom::Value newValue = onChanged(value);
-                    m_adapter->OnContentsChanged(path, newValue);
+                    m_adapter->OnContentsChanged(path, newValue, changeType);
                 });
             m_builder.EndPropertyEditor();
 
@@ -141,42 +139,42 @@ namespace AZ::DocumentPropertyEditor
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(int8_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::s8& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(int16_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::s16& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(int32_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::s32& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(int64_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::s64& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(uint8_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::u8& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(uint16_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::u16& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(uint32_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::u32& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
 
-        void Visit(uint64_t& value, const Reflection::IAttributes& attributes) override
+        void Visit(AZ::u64& value, const Reflection::IAttributes& attributes) override
         {
             VisitPrimitive(value, attributes);
         }
@@ -214,45 +212,35 @@ namespace AZ::DocumentPropertyEditor
                 });
         }
 
-        void Visit(Reflection::IArrayAccess& access, const Reflection::IAttributes& attributes) override
+        void Visit([[maybe_unused]] Reflection::IArrayAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
-        void Visit(Reflection::IMapAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] Reflection::IMapAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
-        void Visit(Reflection::IDictionaryAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] Reflection::IDictionaryAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
-        void Visit(int64_t value, const Reflection::IEnumAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] AZ::s64 value, [[maybe_unused]] const Reflection::IEnumAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)value;
-            (void)access;
-            (void)attributes;
         }
-        void Visit(Reflection::IPointerAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] Reflection::IPointerAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
-        void Visit(Reflection::IBufferAccess& access, const Reflection::IAttributes& attributes) override
+
+        void Visit([[maybe_unused]] Reflection::IBufferAccess& access, [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)access;
-            (void)attributes;
         }
+
         void Visit(
-            const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-            Reflection::IAssetAccess& access,
-            const Reflection::IAttributes& attributes) override
+            [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+            [[maybe_unused]] Reflection::IAssetAccess& access,
+            [[maybe_unused]] const Reflection::IAttributes& attributes) override
         {
-            (void)asset;
-            (void)access;
-            (void)attributes;
         }
     };
 
@@ -269,6 +257,9 @@ namespace AZ::DocumentPropertyEditor
         SetValue(instance, AZStd::move(typeId));
     }
 
+    // Declare dtor in implementation to make the unique_ptr deleter for m_impl accessible
+    ReflectionAdapter::~ReflectionAdapter() = default;
+
     void ReflectionAdapter::SetValue(void* instance, AZ::TypeId typeId)
     {
         m_instance = instance;
@@ -279,12 +270,15 @@ namespace AZ::DocumentPropertyEditor
     Dom::Value ReflectionAdapter::GenerateContents() const
     {
         m_impl->m_builder.BeginAdapter();
-        Reflection::VisitLegacyInMemoryInstance(m_impl.get(), m_instance, m_typeId);
+        if (m_instance != nullptr)
+        {
+            Reflection::VisitLegacyInMemoryInstance(m_impl.get(), m_instance, m_typeId);
+        }
         m_impl->m_builder.EndAdapter();
         return m_impl->m_builder.FinishAndTakeResult();
     }
 
-    void ReflectionAdapter::OnContentsChanged(const Dom::Path& path, const Dom::Value& value)
+    void ReflectionAdapter::OnContentsChanged(const Dom::Path& path, const Dom::Value& value, [[maybe_unused]] Nodes::PropertyEditor::ValueChangeType changeType)
     {
         NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, value) });
     }

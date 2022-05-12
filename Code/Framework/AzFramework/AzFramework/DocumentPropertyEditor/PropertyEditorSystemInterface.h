@@ -33,19 +33,20 @@ namespace AZ::DocumentPropertyEditor
         virtual void RegisterPropertyEditor(PropertyEditorMetadata metadata) = 0;
         //! Registers an attribute definition that can registered to a Node or PropertyEditor.
         //! Attributes have a name and a type that can be used to validate and extract the contens of a given node.
-        virtual void RegisterAttribute(AttributeMetadata metadata) = 0;
+        virtual void RegisterNodeAttribute(const NodeMetadata* node, const AttributeDefinitionInterface* attribute) = 0;
 
-        //! Look up the metadata associated with a Node. Reutnrs null if a node definition isn't found.
+        //! Look up the metadata associated with a Node. Returns null if a node definition isn't found.
         virtual const NodeMetadata* FindNode(AZ::Name name) const = 0;
         //! Looks up the metadata associated with a PropertyEditor. Equivalent to FindNode, but this will validate that
         //! the node is a property editor.
         virtual const PropertyEditorMetadata* FindPropertyEditor(AZ::Name name) const = 0;
         //! Looks up attribute metadata registered to a given property editor (or one of its parents)
         //! based on an attribute name. Returns null if no attribute is found.
-        virtual const AttributeMetadata* FindAttribute(AZ::Name name, const PropertyEditorMetadata* parent = nullptr) const = 0;
+        virtual const AttributeDefinitionInterface* FindNodeAttribute(
+            AZ::Name name, const PropertyEditorMetadata* parent = nullptr) const = 0;
         //! For a given CRC, looks up an equivalent Name.
         //! The pool of valid CRCs is registered from registered Node, PropertyEditor, and Attribute names.
-        virtual AZ::Name LookupNameFromCrc(AZ::Crc32 crc) const = 0;
+        virtual AZ::Name LookupNameFromId(AZ::Crc32 crc) const = 0;
 
         //! Register a node from a given NodeDefinition struct.
         template<typename NodeDefinition>
@@ -54,7 +55,7 @@ namespace AZ::DocumentPropertyEditor
             RegisterNode(NodeMetadata::FromType<NodeDefinition>());
         }
 
-        //! Register a node from a given NodeDefinitoin struct and its parent NodeDefinition.
+        //! Register a node from a given NodeDefinition struct and its parent NodeDefinition.
         template<typename NodeDefinition, typename ParentNodeDefinition>
         void RegisterNode()
         {
@@ -87,12 +88,12 @@ namespace AZ::DocumentPropertyEditor
 
         //! Registers an attribute based on an AttributeDefinition to a given node or property editor.
         template<typename NodeType, typename AttributeDefinition>
-        void RegisterAttribute(const AttributeDefinition& definition)
+        void RegisterNodeAttribute(const AttributeDefinition& definition)
         {
             const AZ::Name nodeName = GetNodeName<NodeType>();
             const NodeMetadata* node = FindNode(nodeName);
             AZ_Assert(node != nullptr, "DPE RegisterAttribute: No node definition found for parent \"%s\"", nodeName.GetCStr());
-            RegisterAttribute(AttributeMetadata::FromDefinition(definition, node));
+            RegisterNodeAttribute(node, &definition);
         }
     };
 } // namespace AZ::DocumentPropertyEditor

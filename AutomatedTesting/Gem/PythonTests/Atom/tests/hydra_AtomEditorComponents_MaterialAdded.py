@@ -54,9 +54,9 @@ class Tests:
     deletion_redo = (
         "REDO deletion success",
         "P0: REDO deletion failed")
-    mesh_asset = (
-        "Mesh Asset set",
-        "P1: Mesh Asset not set")
+    model_asset = (
+        "Model Asset set",
+        "P1: Model Asset not set")
     default_material = (
         "Default Material set to metal_gold.azmaterial",
         "P1: Default Material was not set as expected")
@@ -218,16 +218,16 @@ def AtomEditorComponents_Material_AddedToEntity():
         # Set a simple model to ensure that the more complex model will load cleanly
         model_path = os.path.join('Objects', 'cube.azmodel')
         model = Asset.find_asset_by_path(model_path)
-        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
+        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model.id)
         general.idle_wait_frames(1)
-        # Update mesh asset to a model with 5 LOD materials
+        # Update model asset to a model with 5 LOD materials
         model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.azmodel')
         model = Asset.find_asset_by_path(model_path)
-        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
+        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model.id)
         general.idle_wait_frames(1)
         Report.result(
-            Tests.mesh_asset,
-            mesh_component.get_component_property_value(AtomComponentProperties.mesh('Mesh Asset')) == model.id)
+            Tests.model_asset,
+            mesh_component.get_component_property_value(AtomComponentProperties.mesh('Model Asset')) == model.id)
 
         # 13. Wait for Model Materials to indicate count 5 terminate early if container fails to reflect correct count
         Report.critical_result(Tests.model_material_count, TestHelper.wait_for_condition(

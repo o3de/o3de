@@ -13,6 +13,18 @@
 
 namespace AssetProcessor
 {
+    void CleanupFilename(QString& string)
+    {
+        AZStd::string buffer(string.toUtf8().toStdString().c_str());
+        AZStd::string forbiddenChars("\\/:?\"<>|");
+        AZStd::replace_if(
+            buffer.begin(),
+            buffer.end(),
+            [forbiddenChars](char c) { return AZStd::string::npos != forbiddenChars.find(c); },
+            ' ');
+        string.clear();
+        string.append(buffer.c_str());
+    }
 
     QString ComputeArchiveFilePath(const AssetProcessor::BuilderParams& builderParams)
     {
@@ -20,10 +32,27 @@ namespace AssetProcessor
         QString assetServerAddress = QDir::toNativeSeparators(AssetUtilities::ServerAddress());
         if (!assetServerAddress.isEmpty())
         {
-            QDir assetServerDir(assetServerAddress);
             QString archiveFileName = builderParams.GetServerKey() + ".zip";
-            QString archiveFilePath = QDir(assetServerDir.filePath(fileInfo.path())).filePath(archiveFileName);
+            CleanupFilename(archiveFileName);
+            QDir archiveFolder = QDir(assetServerAddress).filePath(fileInfo.path());
+            QString archiveFilePath = archiveFolder.filePath(archiveFileName);
+
+            // create directories if does not exists
+            if (!archiveFolder.exists())
+            {
+                archiveFolder.mkdir(".");
+            }
             return archiveFilePath;
+        }
+        else
+        {
+            AZStd::string filePath;
+            AssetServerInfoBus::BroadcastResult(filePath, &AssetServerInfoBus::Events::ComputeArchiveFilePath, builderParams);
+            if (!filePath.empty())
+            {
+                QString archiveFilePath(filePath.c_str());
+                return archiveFilePath;
+            }
         }
 
         return QString();
@@ -78,7 +107,7 @@ namespace AssetProcessor
         AzToolsFramework::ArchiveCommandsBus::BroadcastResult(extractResult,
             &AzToolsFramework::ArchiveCommandsBus::Events::ExtractArchive,
             archiveAbsFilePath.toUtf8().data(), builderParams.GetTempJobDirectory());
-        bool success = extractResult.get();
+        bool success = extractResult.valid() ? extractResult.get() : false;
         AZ_Error(AssetProcessor::DebugChannel, success, "Extracting archive operation failed.\n");
         return success;
     }
@@ -117,7 +146,7 @@ namespace AssetProcessor
         AzToolsFramework::ArchiveCommandsBus::BroadcastResult(createResult,
             &AzToolsFramework::ArchiveCommandsBus::Events::CreateArchive,
             archiveAbsFilePath.toUtf8().data(), builderParams.GetTempJobDirectory());
-        bool success = createResult.get();
+        bool success = createResult.valid() ? createResult.get() : false;
         AZ_Error(AssetProcessor::DebugChannel, success, "Creating archive operation failed. \n");
 
         if (success && sourceFileList.size())
@@ -147,7 +176,7 @@ namespace AssetProcessor
             AzToolsFramework::ArchiveCommandsBus::BroadcastResult(addResult,
                 &AzToolsFramework::ArchiveCommandsBus::Events::AddFileToArchive,
                 archivePath.toUtf8().data(), sourceDir.path().toUtf8().data(), thisProduct.c_str());
-            bool success = addResult.get();
+            bool success = addResult.valid() ? addResult.get() : false;
             if (!success)
             {
                 AZ_Warning(AssetProcessor::DebugChannel, false, "Failed to add %s to %s", thisProduct.c_str(), archivePath.toUtf8().data());

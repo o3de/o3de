@@ -119,7 +119,7 @@ namespace AZ::Reflection
         virtual const AZ::TypeId& GetType() const = 0;
         virtual const AZ::TypeId& GetUnderlyingType() const = 0;
 
-        virtual bool SetValue(int64_t value) = 0;
+        virtual bool SetValue(AZ::s64 value) = 0;
         // Set the value by providing the name of the enum. Flags can be combined into a single string using
         // a '|' as a separator, for instance "flag1|flag2".
         virtual bool SetValue(AZStd::string_view value) = 0;
@@ -189,15 +189,15 @@ namespace AZ::Reflection
 
         virtual void Visit(bool value, const IAttributes& attributes);
 
-        virtual void Visit(int8_t value, const IAttributes& attributes);
-        virtual void Visit(int16_t value, const IAttributes& attributes);
-        virtual void Visit(int32_t value, const IAttributes& attributes);
-        virtual void Visit(int64_t value, const IAttributes& attributes);
+        virtual void Visit(AZ::s8 value, const IAttributes& attributes);
+        virtual void Visit(AZ::s16 value, const IAttributes& attributes);
+        virtual void Visit(AZ::s32 value, const IAttributes& attributes);
+        virtual void Visit(AZ::s64 value, const IAttributes& attributes);
 
-        virtual void Visit(uint8_t value, const IAttributes& attributes);
-        virtual void Visit(uint16_t value, const IAttributes& attributes);
-        virtual void Visit(uint32_t value, const IAttributes& attributes);
-        virtual void Visit(uint64_t value, const IAttributes& attributes);
+        virtual void Visit(AZ::u8 value, const IAttributes& attributes);
+        virtual void Visit(AZ::u16 value, const IAttributes& attributes);
+        virtual void Visit(AZ::u32 value, const IAttributes& attributes);
+        virtual void Visit(AZ::u64 value, const IAttributes& attributes);
 
         virtual void Visit(float value, const IAttributes& attributes);
         virtual void Visit(double value, const IAttributes& attributes);
@@ -212,7 +212,7 @@ namespace AZ::Reflection
         virtual void Visit(const IArrayAccess& access, const IAttributes& attributes);
         virtual void Visit(const IMapAccess& access, const IAttributes& attributes);
         virtual void Visit(const IDictionaryAccess& access, const IAttributes& attributes);
-        virtual void Visit(int64_t value, const IEnumAccess& access, const IAttributes& attributes) = 0;
+        virtual void Visit(AZ::s64 value, const IEnumAccess& access, const IAttributes& attributes) = 0;
         virtual void Visit(const IPointerAccess& access, const IAttributes& attributes);
         virtual void Visit(const IBufferAccess& access, const IAttributes& attributes);
         virtual void Visit(const AZ::Data::Asset<AZ::Data::AssetData>& asset, const IAssetAccess& access, const IAttributes& attributes);
@@ -225,15 +225,15 @@ namespace AZ::Reflection
 
         virtual void Visit(bool& value, const IAttributes& attributes);
 
-        virtual void Visit(int8_t& value, const IAttributes& attributes);
-        virtual void Visit(int16_t& value, const IAttributes& attributes);
-        virtual void Visit(int32_t& value, const IAttributes& attributes);
-        virtual void Visit(int64_t& value, const IAttributes& attributes);
+        virtual void Visit(AZ::s8& value, const IAttributes& attributes);
+        virtual void Visit(AZ::s16& value, const IAttributes& attributes);
+        virtual void Visit(AZ::s32& value, const IAttributes& attributes);
+        virtual void Visit(AZ::s64& value, const IAttributes& attributes);
 
-        virtual void Visit(uint8_t& value, const IAttributes& attributes);
-        virtual void Visit(uint16_t& value, const IAttributes& attributes);
-        virtual void Visit(uint32_t& value, const IAttributes& attributes);
-        virtual void Visit(uint64_t& value, const IAttributes& attributes);
+        virtual void Visit(AZ::u8& value, const IAttributes& attributes);
+        virtual void Visit(AZ::u16& value, const IAttributes& attributes);
+        virtual void Visit(AZ::u32& value, const IAttributes& attributes);
+        virtual void Visit(AZ::u64& value, const IAttributes& attributes);
 
         virtual void Visit(float& value, const IAttributes& attributes);
         virtual void Visit(double& value, const IAttributes& attributes);
@@ -248,7 +248,7 @@ namespace AZ::Reflection
         virtual void Visit(IArrayAccess& access, const IAttributes& attributes);
         virtual void Visit(IMapAccess& access, const IAttributes& attributes);
         virtual void Visit(IDictionaryAccess& access, const IAttributes& attributes);
-        virtual void Visit(int64_t value, const IEnumAccess& access, const IAttributes& attributes);
+        virtual void Visit(AZ::s64 value, const IEnumAccess& access, const IAttributes& attributes);
         virtual void Visit(IPointerAccess& access, const IAttributes& attributes);
         virtual void Visit(IBufferAccess& access, const IAttributes& attributes);
         virtual void Visit(const AZ::Data::Asset<AZ::Data::AssetData>& asset, IAssetAccess& access, const IAttributes& attributes);
@@ -261,15 +261,15 @@ namespace AZ::Reflection
 
         void Visit(bool& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
 
-        void Visit(int8_t& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
-        void Visit(int16_t& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
-        void Visit(int32_t& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
-        void Visit(int64_t& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+        void Visit(AZ::s8& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+        void Visit(AZ::s16& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+        void Visit(AZ::s32& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+        void Visit(AZ::s64& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
 
-        void Visit(uint8_t& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
-        void Visit(uint16_t& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
-        void Visit(uint32_t& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
-        void Visit(uint64_t& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+        void Visit(AZ::u8& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+        void Visit(AZ::u16& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+        void Visit(AZ::u32& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+        void Visit(AZ::u64& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
 
         void Visit(float& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
         void Visit(double& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
@@ -281,7 +281,7 @@ namespace AZ::Reflection
         void Visit(IArrayAccess& access, const IAttributes& attributes) override { m_reader->Visit(access, attributes); }
         void Visit(IMapAccess& access, const IAttributes& attributes) override { m_reader->Visit(access, attributes); }
         void Visit(IDictionaryAccess& access, const IAttributes& attributes) override { m_reader->Visit(access, attributes); }
-        void Visit(int64_t value, const IEnumAccess& access, const IAttributes& attributes) override { m_reader->Visit(value, access, attributes); }
+        void Visit(AZ::s64 value, const IEnumAccess& access, const IAttributes& attributes) override { m_reader->Visit(value, access, attributes); }
         void Visit(IPointerAccess& access, const IAttributes& attributes) override { m_reader->Visit(access, attributes); }
         void Visit(IBufferAccess& access, const IAttributes& attributes) override { m_reader->Visit(access, attributes); }
         void Visit(const AZ::Data::Asset<AZ::Data::AssetData>& asset, IAssetAccess& access, const IAttributes& attributes) override { m_reader->Visit(asset, access, attributes); }
