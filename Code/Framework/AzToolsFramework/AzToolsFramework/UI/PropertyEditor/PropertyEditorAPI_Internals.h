@@ -266,7 +266,7 @@ namespace AzToolsFramework
 
         static bool ShouldHandleNode(PropertyHandlerBase& rpeHandler, const AZ::Dom::Value& node)
         {
-            using namespace AZ::DocumentPropertyEditor::Nodes;
+            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
             auto typeId = PropertyEditor::ValueType.ExtractFromDomNode(node);
             if (!typeId.has_value())
             {

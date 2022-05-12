@@ -100,6 +100,10 @@ namespace AZ::DocumentPropertyEditor
     using PropertyEditorMetadata = NodeMetadata;
     using PropertyEditorDefinition = NodeDefinition;
 
+    //! Base class for a schema definition for an attribute type on a node.
+    //! Attributes are stroed as key/value pairs, and their definitions provide helpers for marshalling
+    //! data into and out of the DOM to their associated type.
+    //! \see AttributeDefinition
     class AttributeDefinitionInterface
     {
     public:
@@ -107,7 +111,9 @@ namespace AZ::DocumentPropertyEditor
         virtual Name GetName() const = 0;
         //! Gets this attribute's type ID.
         virtual const AZ::TypeId& GetTypeId() const = 0;
+        //! Converts this attribute to an AZ::Attribute usable by the ReflectedPropertyEditor.
         virtual AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const = 0;
+        //! Converts this attribute from an AZ::Attribute to a Dom::Value usable in the DocumentPropertyEditor.
         virtual AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const = 0;
     };
 

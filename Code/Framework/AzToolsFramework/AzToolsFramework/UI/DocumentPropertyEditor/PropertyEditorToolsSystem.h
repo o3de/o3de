@@ -13,6 +13,7 @@
 
 namespace AzToolsFramework
 {
+    //! Implementation of PropertyEditorToolsSystemInterface, 
     class PropertyEditorToolsSystem : public PropertyEditorToolsSystemInterface
     {
     public:
@@ -32,4 +33,4 @@ namespace AzToolsFramework
         // PropertyEditorSystem contains all non-UI system logic for the DPE, like the DOM schema
         AZ::DocumentPropertyEditor::PropertyEditorSystem m_lowLevelSystem;
     };
-}
+} // namespace AzToolsFramework

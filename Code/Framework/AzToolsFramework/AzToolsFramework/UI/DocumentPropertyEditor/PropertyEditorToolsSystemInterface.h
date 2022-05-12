@@ -58,7 +58,7 @@ namespace AzToolsFramework
         //! Registers a factory for a given type of PropertyHandlerWidgetInterface.
         //! This type must implement `static const AZStd::string_view GetHandlerName()`
         //! and may implement `static bool ShouldHandleNode(const AZ::Dom::Value& node)`
-        template <typename HandlerType>
+        template<typename HandlerType>
         void RegisterHandler()
         {
             HandlerData handlerData;
@@ -67,11 +67,11 @@ namespace AzToolsFramework
             {
                 return HandlerType::ShouldHandleNode(node);
             };
-            handlerData.m_factory = []()
+            handlerData.m_factory = []
             {
                 return AZStd::make_unique<HandlerType>();
             };
             RegisterHandler(AZStd::move(handlerData));
         }
     };
-}
+} // namespace AzToolsFramework

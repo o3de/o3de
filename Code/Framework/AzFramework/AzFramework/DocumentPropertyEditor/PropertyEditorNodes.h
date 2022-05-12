@@ -48,9 +48,14 @@ namespace AZ::DocumentPropertyEditor::Nodes
     //! that can edit an associated value.
     struct PropertyEditor : NodeDefinition
     {
+        //! Specifies the type of value change specifeid in OnChanged.
+        //! Used to determine whether a value update is suitable for expensive operations like updating the undo stack.
         enum class ValueChangeType
         {
+            //! This is a "live", in-progress edit, and additional updates may follow at an arbitrarily fast rate.
             InProgressEdit,
+            //! This is a "final" edit provided by the user doing something to signal a decision
+            //! e.g. releasing the mouse or pressing enter.
             FinishedEdit,
         };
 
