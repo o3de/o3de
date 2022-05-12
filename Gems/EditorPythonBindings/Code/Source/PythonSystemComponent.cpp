@@ -8,7 +8,6 @@
 
 #include <PythonSystemComponent.h>
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
-#include <Source/ActionManager/ActionManagerBus.h>
 
 #include <Source/PythonCommon.h>
 #include <Source/PythonSymbolsBus.h>

@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/ActionManager/PythonActionManagerHandler.h>
+#include <ActionManager/PythonActionManagerHandler.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <Source/PythonCommon.h>
@@ -90,10 +90,9 @@ bool PythonEditorActionHandler::CanConvertPythonToBehavior([[maybe_unused]] AZ::
 
 void PythonEditorActionHandler::CleanUpValue(ValueHandle handle)
 {
-        if (auto handleEntry = m_allocationMap.find(reinterpret_cast<void*>(handle)); handleEntry != m_allocationMap.end())
+    if (auto handleEntry = m_allocationMap.find(reinterpret_cast<void*>(handle)); handleEntry != m_allocationMap.end())
     {
         m_allocationMap.erase(handleEntry);
-
         azfree(reinterpret_cast<void*>(handle));
     }
 }

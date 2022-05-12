@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/ActionManager/PythonEditorAction.h>
+#include <ActionManager/PythonEditorAction.h>
 
 namespace EditorPythonBindings
 {
