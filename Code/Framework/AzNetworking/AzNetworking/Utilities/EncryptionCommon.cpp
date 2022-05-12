@@ -15,6 +15,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/ILogger.h>
 
+#include <openssl/opensslv.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
@@ -51,7 +52,7 @@ namespace AzNetworking
     {
 #if AZ_TRAIT_USE_OPENSSL
 
-        #if(OPENSSL_VERSION_PREREQ(3,0))
+        #if OPENSSL_VERSION_PREREQ(3,0)
             const char *func = nullptr;
             const int32_t errorCode = ERR_get_error_all(nullptr, nullptr, &func, nullptr, nullptr);
         #else
@@ -86,14 +87,14 @@ namespace AzNetworking
                 AZLOG_ERROR("%X - SSL_ERROR_SYSCALL: system error, check errno (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
                 break;
             case SSL_ERROR_SSL:
-                #if(OPENSSL_VERSION_PREREQ(3,0))
+                #if OPENSSL_VERSION_PREREQ(3,0)
                     AZLOG_ERROR("%X - SSL_ERROR_SSL: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), func, ERR_reason_error_string(errorCode));
                 #else
                     AZLOG_ERROR("%X - SSL_ERROR_SSL: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
                 #endif
                 break;
             default:
-                #if(OPENSSL_VERSION_PREREQ(3,0))
+                #if OPENSSL_VERSION_PREREQ(3,0)
                     AZLOG_ERROR("%X - Unknown error code: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), func, ERR_reason_error_string(errorCode));
                 #else
                     AZLOG_ERROR("%X - Unknown error code: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
@@ -379,7 +380,7 @@ namespace AzNetworking
         {
             SSL_library_init();
             SSL_load_error_strings();
-            #if(!OPENSSL_VERSION_PREREQ(3,0))
+            #if !OPENSSL_VERSION_PREREQ(3,0)
                 ERR_load_BIO_strings();
             #endif
             OpenSSL_add_all_algorithms();
