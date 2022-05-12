@@ -151,7 +151,9 @@ namespace AZ
         }
 
         void EditorMaterialSystemComponent::OpenMaterialInspector(
-            const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId)
+            const AZ::EntityId& primaryEntityId,
+            const AzToolsFramework::EntityIdSet& entityIdsToEdit,
+            const AZ::Render::MaterialAssignmentId& materialAssignmentId)
         {
             auto dockWidget = AzToolsFramework::InstanceViewPane("Material Property Inspector");
             if (dockWidget)
@@ -159,7 +161,7 @@ namespace AZ
                 auto inspector = static_cast<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector*>(dockWidget->widget());
                 if (inspector)
                 {
-                    inspector->LoadMaterial(entityId, materialAssignmentId);
+                    inspector->LoadMaterial(primaryEntityId, entityIdsToEdit, materialAssignmentId);
                 }
             }
         }
@@ -174,15 +176,10 @@ namespace AZ
             {
                 AZ::Data::AssetId materialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, materialAssignmentId);
+                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId, materialAssignmentId);
                 if (!materialAssetId.IsValid())
                 {
-                    MaterialComponentRequestBus::EventResult(
-                        materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, materialAssignmentId);
-                    if (!materialAssetId.IsValid())
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
