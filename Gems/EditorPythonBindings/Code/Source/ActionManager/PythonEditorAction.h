@@ -22,6 +22,7 @@ public:
 
     explicit PythonEditorAction(PyObject* handler);
     PythonEditorAction(const PythonEditorAction& obj);
+    PythonEditorAction& operator=(PythonEditorAction obj);
     virtual ~PythonEditorAction();
 
     PyObject* GetHandler() const;
