@@ -788,7 +788,7 @@ namespace EMotionFX
             };
             AZ::EntityId slowWalker = attachTo;
             AZ::EntityId fastWalker = attachTo;
-             while (fastWalker.IsValid())
+            while (fastWalker.IsValid())
             {
                 slowWalker = AttachmentStep(slowWalker, 1);
                 fastWalker = AttachmentStep(fastWalker, 2);
@@ -1080,6 +1080,11 @@ namespace EMotionFX
 
         void EditorActorComponent::AttachToInstance(ActorInstance* targetActorInstance)
         {
+            if (!targetActorInstance)
+            {
+                return;
+            }
+
             DetachFromEntity();
             Attachment* attachmentSkin = AttachmentSkin::Create(targetActorInstance, m_actorInstance.get());
             m_actorInstance->SetLocalSpaceTransform(Transform::CreateIdentity());
