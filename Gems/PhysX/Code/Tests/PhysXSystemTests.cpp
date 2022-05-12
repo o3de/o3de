@@ -99,7 +99,7 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, AddScenes_createsAllScenesRequested)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(GetNumScenesInSystem() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
@@ -118,7 +118,7 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, RemovedScene_IsRemoved)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(GetNumScenesInSystem() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
@@ -133,7 +133,7 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, RemoveManyScenes_AllRemoved)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(GetNumScenesInSystem() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
@@ -159,7 +159,7 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, RemovingScene_FreesSceneHandle_ForNextCreatedScene)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(GetNumScenesInSystem() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
@@ -180,7 +180,7 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, AddingScenes_PastLimitFails)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(GetNumScenesInSystem() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //generate the max number of scenes
         AzPhysics::SceneConfigurationList sceneConfigs;
