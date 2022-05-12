@@ -12,7 +12,7 @@
 #       in which case it will see if that platform is present here or in the restricted folder.
 #       i.e. It could here in our gem : Gems/${Name}/Code/Platform/<platorm_name>  or
 #            <restricted_folder>/<platform_name>/Gems/${Name}/Code
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_name}")
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
 # traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
@@ -21,19 +21,36 @@ include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 
 # If we are on a host platform, we want to add the host tools targets like the ${Name}.Editor target which
-# will also depend on ${Name}.Static
+# will also depend on ${Name}.Editor.API target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
+     # The ${Name}.Editor.API target can be used by other gems that want to interact with the ${Name}.Editor module
     ly_add_target(
-        NAME ${Name}.Editor.Static STATIC
+        NAME ${Name}.Editor.API INTERFACE
+        NAMESPACE Gem
+        FILES_CMAKE
+            ${NameLower}_editor_api_files.cmake
+            ${pal_dir}/${NameLower}_editor_api_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Include
+        BUILD_DEPENDENCIES
+            INTERFACE
+                AZ::AzToolsFramework
+    )
+
+    # The ${Name}.Editor.Private.Object target is an internal target
+    # which is only to be used by this Gem's CMakeLists.txt and any Subdirectories
+    # Other Gems should not use this target
+    ly_add_target(
+        NAME ${Name}.Editor.Private.Object OBJECT
         NAMESPACE Gem
         AUTORCC
         FILES_CMAKE
-            ${NameLower}_editor_files.cmake
+            ${NameLower}_editor_private_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Source
-            PUBLIC
                 Include
+                Source
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
@@ -52,7 +69,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PUBLIC
-                Gem::${Name}.Editor.Static
+                Gem::${Name}.Editor.API
+            PRIVATE
+                Gem::${Name}.Editor.Private.Object
         RUNTIME_DEPENDENCIES
             Gem::QtForPython.Editor
     )
@@ -63,6 +82,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${Name}.Tools    NAMESPACE Gem TARGETS Gem::${Name}.Editor)
     ly_create_alias(NAME ${Name}.Builders NAMESPACE Gem TARGETS Gem::${Name}.Editor)
 
+    # For the Tools and Builders variants of ${Name} Gem, an alias to the ${Name}.Editor API target will be made
+    ly_create_alias(NAME ${Name}.Tools.API NAMESPACE Gem TARGETS Gem::${Name}.Editor.API)
+    ly_create_alias(NAME ${Name}.Builders.API NAMESPACE Gem TARGETS Gem::${Name}.Editor.API)
 
 endif()
 
@@ -71,7 +93,7 @@ endif()
 ################################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    # We globally support tests, see if we support tests on this platform for ${Name}.Static
+    # We globally support tests, see if we support tests on this platform for ${Name}.Editor.Tests
 
     # If we are a host platform we want to add tools test like editor tests here
     if(PAL_TRAIT_BUILD_HOST_TOOLS)

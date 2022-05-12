@@ -64,6 +64,7 @@
         "Gems/SaveData",
         "Gems/SceneLoggingExample",
         "Gems/SceneProcessing",
+        "Gems/ScriptAutomation",
         "Gems/ScriptCanvas",
         "Gems/ScriptCanvasDeveloper",
         "Gems/ScriptCanvasPhysics",
@@ -91,6 +92,7 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/PrebuiltGem",
         "Templates/GemRepo",
         "Templates/AssetGem",
         "Templates/DefaultComponent",

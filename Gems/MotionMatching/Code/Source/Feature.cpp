@@ -28,6 +28,24 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator, 0)
 
+    Feature::ExtractFeatureContext::ExtractFeatureContext(FeatureMatrix& featureMatrix, AnimGraphPosePool& posePool)
+        : m_featureMatrix(featureMatrix)
+        , m_posePool(posePool)
+    {
+    }
+
+    Feature::QueryVectorContext::QueryVectorContext(const Pose& currentPose, const TrajectoryQuery& trajectoryQuery)
+        : m_currentPose(currentPose)
+        , m_trajectoryQuery(trajectoryQuery)
+    {
+    }
+
+    Feature::FrameCostContext::FrameCostContext(const QueryVector& queryVector, const FeatureMatrix& featureMatrix)
+        : m_queryVector(queryVector)
+        , m_featureMatrix(featureMatrix)
+    {
+    }
+
     bool Feature::Init(const InitSettings& settings)
     {
         const Actor* actor = settings.m_actorInstance->GetActor();
