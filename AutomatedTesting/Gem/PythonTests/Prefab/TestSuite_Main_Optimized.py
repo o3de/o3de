@@ -62,4 +62,6 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_DuplicatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
-    
+
+    class test_SC_Spawnables_SimpleSpawnAndDespawn(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_SimpleSpawnAndDespawn as test_module
