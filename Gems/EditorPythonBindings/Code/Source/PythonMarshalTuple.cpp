@@ -151,18 +151,18 @@ namespace EditorPythonBindings
         {
             // Python list, just grab raw pointers to each object.
             pybind11::list pyList(pyObj);
-            for (auto& item : pyList)
+            for (size_t listIdx = 0; listIdx < pyList.size(); listIdx++)
             {
-                items.push_back(item.ptr());
+                items.push_back(pyList[listIdx].ptr());
             }
         }
         else if (IsValidTuple(pyObj))
         {
             // Python tuple, just grab raw pointers to each object.
             pybind11::tuple pyTuple(pyObj);
-            for (auto& item : pyTuple)
+            for (size_t tupleIdx = 0; tupleIdx < pyTuple.size(); tupleIdx++)
             {
-                items.push_back(item.ptr());
+                items.push_back(pyTuple[tupleIdx].ptr());
             }
         }
         else if (IsCompatibleProxy(pyObj))
