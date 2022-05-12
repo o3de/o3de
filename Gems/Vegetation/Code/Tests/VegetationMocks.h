@@ -10,7 +10,6 @@
 #include <Vegetation/Ebuses/AreaNotificationBus.h>
 #include <Vegetation/Ebuses/AreaRequestBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
-#include <Vegetation/Ebuses/DependencyRequestBus.h>
 #include <Vegetation/Ebuses/DescriptorProviderRequestBus.h>
 #include <Vegetation/Ebuses/DescriptorSelectorRequestBus.h>
 #include <Vegetation/Ebuses/FilterRequestBus.h>
@@ -31,7 +30,6 @@
 #include <Source/InstanceSystemComponent.h>
 #include <ISerialize.h>
 #include <IIndexedMesh.h>
-#include <IStatObj.h>
 
 //////////////////////////////////////////////////////////////////////////
 // mock event bus classes for testing vegetation
@@ -313,74 +311,6 @@ namespace UnitTest
         }
     };
 
-    class MockShape
-        : public LmbrCentral::ShapeComponentRequestsBus::Handler
-    {
-    public:
-        AZ::Entity m_entity;
-        mutable int m_count = 0;
-
-        MockShape()
-        {
-            LmbrCentral::ShapeComponentRequestsBus::Handler::BusConnect(m_entity.GetId());
-        }
-
-        ~MockShape()
-        {
-            LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
-        }
-
-        AZ::Crc32 GetShapeType() override
-        {
-            ++m_count;
-            return AZ_CRC("TestShape", 0x856ca50c);
-        }
-
-        AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
-        AZ::Aabb GetEncompassingAabb() override
-        {
-            ++m_count;
-            return m_aabb;
-        }
-
-        AZ::Transform m_localTransform = AZ::Transform::CreateIdentity();
-        AZ::Aabb m_localBounds = AZ::Aabb::CreateNull();
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override
-        {
-            ++m_count;
-            transform = m_localTransform;
-            bounds = m_localBounds;
-        }
-
-        bool m_pointInside = true;
-        bool IsPointInside([[maybe_unused]] const AZ::Vector3& point) override
-        {
-            ++m_count;
-            return m_pointInside;
-        }
-
-        float m_distanceSquaredFromPoint = 0.0f;
-        float DistanceSquaredFromPoint([[maybe_unused]] const AZ::Vector3& point) override
-        {
-            ++m_count;
-            return m_distanceSquaredFromPoint;
-        }
-
-        AZ::Vector3 m_randomPointInside = AZ::Vector3::CreateZero();
-        AZ::Vector3 GenerateRandomPointInside([[maybe_unused]] AZ::RandomDistributionType randomDistribution) override
-        {
-            ++m_count;
-            return m_randomPointInside;
-        }
-
-        bool m_intersectRay = false;
-        bool IntersectRay([[maybe_unused]] const AZ::Vector3& src, [[maybe_unused]] const AZ::Vector3& dir, [[maybe_unused]] float& distance) override
-        {
-            ++m_count;
-            return m_intersectRay;
-        }
-    };
-
     struct MockSurfaceHandler
         : public SurfaceData::SurfaceDataSystemRequestBus::Handler
     {
@@ -399,19 +329,25 @@ namespace UnitTest
 
         AZ::Vector3 m_outPosition = {};
         AZ::Vector3 m_outNormal = {};
-        SurfaceData::SurfaceTagWeightMap m_outMasks;
+        SurfaceData::SurfaceTagWeights m_outMasks;
         void GetSurfacePoints([[maybe_unused]] const AZ::Vector3& inPosition, [[maybe_unused]] const SurfaceData::SurfaceTagVector& masks, SurfaceData::SurfacePointList& surfacePointList) const override
         {
             ++m_count;
-            SurfaceData::SurfacePoint outPoint;
-            outPoint.m_position = m_outPosition;
-            outPoint.m_normal = m_outNormal;
-            SurfaceData::AddMaxValueForMasks(outPoint.m_masks, m_outMasks);
-            surfacePointList.push_back(outPoint);
+            surfacePointList.Clear();
+            surfacePointList.StartListConstruction(AZStd::span<const AZ::Vector3>(&inPosition, 1), 1, {});
+            surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, m_outPosition, m_outNormal, m_outMasks);
+            surfacePointList.EndListConstruction();
         }
 
         void GetSurfacePointsFromRegion([[maybe_unused]] const AZ::Aabb& inRegion, [[maybe_unused]] const AZ::Vector2 stepSize, [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
-            [[maybe_unused]] SurfaceData::SurfacePointListPerPosition& surfacePointListPerPosition) const override
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointListPerPosition) const override
+        {
+        }
+
+        void GetSurfacePointsFromList(
+            [[maybe_unused]] AZStd::span<const AZ::Vector3> inPositions,
+            [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointLists) const override
         {
         }
 
@@ -450,6 +386,16 @@ namespace UnitTest
         void RefreshSurfaceData([[maybe_unused]] const AZ::Aabb& dirtyBounds) override
         {
             ++m_count;
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataProviderHandle([[maybe_unused]] const AZ::EntityId& providerEntityId) override
+        {
+            return {};
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataModifierHandle([[maybe_unused]] const AZ::EntityId& modifierEntityId) override
+        {
+            return {};
         }
     };
 
@@ -511,6 +457,15 @@ namespace UnitTest
         void SetVisibility(bool visibility) override
         {
             m_GetVisibilityOutput = visibility;
+        }
+
+        void SetRayTracingEnabled([[maybe_unused]] bool enabled) override
+        {
+        }
+
+        bool GetRayTracingEnabled() const override
+        {
+            return false;
         }
 
         AZ::Data::AssetId m_assetIdOutput;

@@ -103,7 +103,7 @@ namespace AZ
                 // the dynamic data that can be changed between passes.
                 Name bufferName = Name{ "SkinnedHairSharedBuffer" };
                 RPI::PassAttachmentBinding* localBinding = FindAttachmentBinding(bufferName);
-                if (localBinding && !localBinding->m_attachment)
+                if (localBinding && !localBinding->GetAttachment())
                 {
                     AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, HairSharedBufferInterface::Get()->GetBuffer());
                 }

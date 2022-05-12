@@ -13,6 +13,7 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <SurfaceData/SurfaceDataModifierRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
+#include <SurfaceData/SurfaceDataTagProviderRequestBus.h>
 
 namespace Terrain
 {
@@ -32,6 +33,7 @@ namespace Terrain
         : public AZ::Component
         , private SurfaceData::SurfaceDataProviderRequestBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
+        , private SurfaceData::SurfaceDataTagProviderRequestBus::Handler
     {
         friend class EditorTerrainSurfaceDataSystemComponent;
         TerrainSurfaceDataSystemComponent(const TerrainSurfaceDataSystemConfig&);
@@ -57,6 +59,8 @@ namespace Terrain
         //////////////////////////////////////////////////////////////////////////
         // SurfaceDataProviderRequestBus
         void GetSurfacePoints(const AZ::Vector3& inPosition, SurfaceData::SurfacePointList& surfacePointList) const override;
+        void GetSurfacePointsFromList(
+            AZStd::span<const AZ::Vector3> inPositions, SurfaceData::SurfacePointList& surfacePointList) const override;
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Terrain::TerrainDataNotificationBus
@@ -72,5 +76,9 @@ namespace Terrain
 
         AZ::Aabb m_terrainBounds = AZ::Aabb::CreateNull();
         AZStd::atomic_bool m_terrainBoundsIsValid{ false };
+
+        //////////////////////////////////////////////////////////////////////////
+        // SurfaceData::SurfaceDataTagProviderRequestBus
+        void GetRegisteredSurfaceTagNames(SurfaceData::SurfaceTagNameSet& names) const override;
     };
 }

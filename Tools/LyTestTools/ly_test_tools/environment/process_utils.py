@@ -20,6 +20,7 @@ _PROCESS_OUTPUT_ENCODING = 'utf-8'
 
 # Default list of processes names to kill
 LY_PROCESS_KILL_LIST = [
+    'AssetBuilder', 'AssetProcessor', 'AssetProcessorBatch',
     'CrySCompileServer', 'Editor',
     'Profiler', 'RemoteConsole',
     'rc'  # Resource Compiler
@@ -376,18 +377,18 @@ def _safe_kill_processes(processes):
             logger.info(f"Terminating process '{proc.name()}' with id '{proc.pid}'")
             proc.kill()
         except psutil.AccessDenied:
-            logger.warning("Termination failed, Access Denied", exc_info=True)
+            logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
         except psutil.NoSuchProcess:
-            logger.debug("Termination request ignored, process was already terminated during iteration", exc_info=True)
+            logger.debug("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
         except Exception:  # purposefully broad
-            logger.warning("Unexpected exception ignored while terminating process", exc_info=True)
+            logger.debug("Unexpected exception ignored while terminating process, with stacktrace:", exc_info=True)
 
     def on_terminate(proc):
         logger.info(f"process '{proc.name()}' with id '{proc.pid}' terminated with exit code {proc.returncode}")
     try:
         psutil.wait_procs(processes, timeout=30, callback=on_terminate)
     except Exception:  # purposefully broad
-        logger.warning("Unexpected exception while waiting for processes to terminate", exc_info=True)
+        logger.debug("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
 
 
 def _terminate_and_confirm_dead(proc):

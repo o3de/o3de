@@ -13,7 +13,6 @@
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
 #include <RHI/Conversion.h>

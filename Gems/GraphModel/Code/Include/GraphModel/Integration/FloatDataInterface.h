@@ -9,7 +9,7 @@
 #pragma once
 
 // Graph Canvas
-#include <GraphCanvas/Components/NodePropertyDisplay/DoubleDataInterface.h>
+#include <GraphCanvas/Components/NodePropertyDisplay/NumericDataInterface.h>
 
 // Graph Model
 #include <GraphModel/Model/Slot.h>
@@ -39,3 +39,4 @@ namespace GraphModelIntegration
         AZStd::weak_ptr<GraphModel::Slot> m_slot;
     };  
 }
+

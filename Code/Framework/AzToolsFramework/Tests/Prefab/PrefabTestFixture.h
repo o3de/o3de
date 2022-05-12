@@ -56,6 +56,7 @@ namespace UnitTest
         void CreateRootPrefab();
         AZ::Entity* CreateEntity(AZStd::string entityName, const bool shouldActivate = true);
         AZ::EntityId CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId = AZ::EntityId());
+        void PropagateAllTemplateChanges();
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
             bool shouldCompareContainerEntities = true);
@@ -73,6 +74,8 @@ namespace UnitTest
 
         // Performs a redo operation and ensures the tick-scheduled updates happen
         void Redo();
+
+        void AddRequiredEditorComponents(AZ::Entity* entity);
 
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;

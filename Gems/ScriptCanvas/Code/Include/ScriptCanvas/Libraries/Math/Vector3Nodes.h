@@ -343,8 +343,17 @@ namespace ScriptCanvas
             r.SetLength(static_cast<float>(optionalScale));
             return std::make_tuple(r, length);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{28FBD529-4C9A-4E34-B8A0-A13B5DB3C331}", "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0", "From", "To", "Scale");
 
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS
+            ( DirectionTo
+            , DirectionToDefaults
+            , k_categoryName, "{28FBD529-4C9A-4E34-B8A0-A13B5DB3C331}"
+            , "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0"
+            , "From"
+            , "To"
+            , "Scale"
+            , "Direction"
+            , "Length");
 
         using Registrar = RegistrarGeneric <
             AbsoluteNode

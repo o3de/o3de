@@ -53,7 +53,7 @@ namespace AzToolsFramework
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
-        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalReference instanceToExclude)
+        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude)
         {
             auto findInstancesResult =
                 m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId);
@@ -67,7 +67,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            Instance* instanceToExcludePtr = nullptr;
+            const Instance* instanceToExcludePtr = nullptr;
             if (instanceToExclude.has_value())
             {
                 instanceToExcludePtr = &(instanceToExclude->get());
@@ -154,7 +154,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        Instance::EntityList newEntities;
+                        EntityList newEntities;
 
                         // Climb up to the root of the instance hierarchy from this instance
                         InstanceOptionalConstReference rootInstance = *instanceToUpdate;

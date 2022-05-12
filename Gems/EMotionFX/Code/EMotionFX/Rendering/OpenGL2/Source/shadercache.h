@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_SHADERCACHE__H
-#define __RENDERGL_SHADERCACHE__H
+#pragma once
 
 #include "Shader.h"
 #include <AzCore/std/string/string.h>
@@ -45,5 +44,3 @@ namespace RenderGL
         AZStd::vector<Entry> m_entries;   // the shader cache entries
     };
 }   // namespace RenderGL
-
-#endif

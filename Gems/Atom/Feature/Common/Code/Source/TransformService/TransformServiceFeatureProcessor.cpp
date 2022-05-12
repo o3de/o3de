@@ -14,7 +14,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Utils/Utils.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <cinttypes>
 
 namespace AZ

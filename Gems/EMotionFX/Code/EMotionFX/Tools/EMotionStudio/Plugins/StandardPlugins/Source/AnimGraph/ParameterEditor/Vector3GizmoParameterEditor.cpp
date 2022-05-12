@@ -25,6 +25,8 @@ namespace EMStudio
         , m_currentValue(0.0f, 0.0f, 0.0f)
         , m_gizmoButton(nullptr)
         , m_transformationGizmo(nullptr)
+        , m_translationManipulators(
+              AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::Identity(), AZ::Vector3::CreateOne())
     {
         UpdateValue();
     }
@@ -102,6 +104,27 @@ namespace EMStudio
         m_gizmoButton->setCheckable(true);
         m_gizmoButton->setEnabled(!IsReadOnly());
         m_manipulatorCallback = manipulatorCallback;
+
+        // Setup the translation manipulator
+        AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(&m_translationManipulators);
+        m_translationManipulators.InstallLinearManipulatorMouseMoveCallback(
+            [this](const AzToolsFramework::LinearManipulator::Action& action)
+            {
+                OnManipulatorMoved(action.LocalPosition());
+            });
+
+        m_translationManipulators.InstallPlanarManipulatorMouseMoveCallback(
+            [this](const AzToolsFramework::PlanarManipulator::Action& action)
+            {
+                OnManipulatorMoved(action.LocalPosition());
+            });
+
+        m_translationManipulators.InstallSurfaceManipulatorMouseMoveCallback(
+            [this](const AzToolsFramework::SurfaceManipulator::Action& action)
+            {
+                OnManipulatorMoved(action.LocalPosition());
+            });
+
         return m_gizmoButton;
     }
 
@@ -183,6 +206,17 @@ namespace EMStudio
             EMStudioManager::MakeTransparentButton(m_gizmoButton, "Images/Icons/Vector3GizmoDisabled.png", "Show/Hide translation gizmo for visual manipulation");
         }
 
+        // These will enable/disable the translation manipulator for atom render viewport.
+        if (m_translationManipulators.Registered())
+        {
+            m_translationManipulators.Unregister();
+        }
+        else
+        {
+            m_translationManipulators.Register(g_animManipulatorManagerId);
+        }
+
+        // These will enable/disable the translation manipulator for opengl render viewport.
         if (!m_transformationGizmo)
         {
             m_transformationGizmo = static_cast<MCommon::TranslateManipulator*>(GetManager()->AddTransformationManipulator(new MCommon::TranslateManipulator(70.0f, true)));
@@ -195,6 +229,16 @@ namespace EMStudio
             GetManager()->RemoveTransformationManipulator(m_transformationGizmo);
             delete m_transformationGizmo;
             m_transformationGizmo = nullptr;
+        }
+    }
+
+    void Vector3GizmoParameterEditor::OnManipulatorMoved(const AZ::Vector3& position)
+    {
+        m_translationManipulators.SetLocalPosition(position);
+        SetValue(position);
+        if (m_manipulatorCallback)
+        {
+            m_manipulatorCallback();
         }
     }
 }

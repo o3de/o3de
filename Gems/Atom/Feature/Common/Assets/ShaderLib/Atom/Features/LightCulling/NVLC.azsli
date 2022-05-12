@@ -67,12 +67,14 @@ struct TileLightData
     // If there is a pixel of opaque geometry there, we mark a bit in this bin.
     uint mask;
     uint logMaxBins;
+    // true if there are too many lights or decals assigned to this tile
+    bool overflow;    
 };
 
  
 bool Light_IsInsideBin(uint package, uint bin)
 {
-    return (package & (1 << bin)) != 0;
+    return (package & (1u << bin)) != 0;
 }
 
 uint PackLightIndexWithBinMask(uint ind, uint bins)
@@ -115,7 +117,8 @@ TileLightData Tile_UnpackData(uint4 pack)
     data.zFar               = asfloat( pack.y | NVLC_BINS_MASK );
     data.mask               = pack.z;
     data.logMaxBins         = pack.y & NVLC_BINS_MASK;
-
+    // unpack the "lights overflowed" bit
+    data.overflow           = pack.w >> 31; 
     return data;
 }
 
@@ -127,7 +130,7 @@ uint NVLC_GetBin(const float viewZ, const TileLightData data)
     const float zFarCoordSystemAdjusted = data.zFar * RH_COORD_SYSTEM_REVERSE;
 
     float f = saturate( (abs(viewZCoordSystemAdjusted) - zNearCoordSystemAdjusted) / (zFarCoordSystemAdjusted - zNearCoordSystemAdjusted) );
-    float bin = min(f, 0.999999) * float(1 << data.logMaxBins);
+    float bin = min(f, 0.999999) * float(1u << data.logMaxBins);
 
     return uint(bin);
 }

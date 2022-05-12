@@ -154,6 +154,16 @@ namespace AzToolsFramework
             (void)debugName;
         }
 
+        // provides an option to specify reading parent element attributes.
+        // This allows parent elements to override attributes of their children if needed.
+        virtual void ConsumeParentAttribute(WidgetType* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
+        {
+            (void)widget;
+            (void)attrib;
+            (void)attrValue;
+            (void)debugName;
+        }
+
         // override GetFirstInTabOrder, GetLastInTabOrder in your base class to define which widget gets focus first when pressing tab,
         // and also what widget is last.
         // for example, if your widget is a compound widget and contains, say, 5 buttons

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_GBUFFER_H
-#define __RENDERGL_GBUFFER_H
+#pragma once
 
 // include required headers
 #include <MCore/Source/StandardHeaders.h>
@@ -76,6 +75,3 @@ namespace RenderGL
         RenderTexture*      m_renderTargetE; /**< Render target with width and height divided by four. */
     };
 }   // namespace RenderGL
-
-
-#endif

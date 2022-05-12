@@ -16,13 +16,13 @@ import os
 sys.path.append(os.path.dirname(__file__))
 from hydra_utils import launch_test_case
 
-
 @pytest.mark.SUITE_sandbox
 @pytest.mark.parametrize('launcher_platform', ['windows_editor'])
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['Simple'])
 class TestObjectManagerAutomation(object):
 
+    # It needs a new test level in prefab format to make it testable again.
     def test_ViewPane(self, request, editor, level, launcher_platform):
 
         unexpected_lines=[]

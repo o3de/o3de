@@ -315,7 +315,7 @@ EditorWindow::~EditorWindow()
     // unload the preview mode canvas if it exists (e.g. if we close the editor window while in preview mode)
     if (m_previewModeCanvasEntityId.IsValid())
     {
-        gEnv->pLyShine->ReleaseCanvas(m_previewModeCanvasEntityId, false);
+        AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_previewModeCanvasEntityId, false);
     }
 
     delete m_sliceLibraryTree;
@@ -564,7 +564,7 @@ bool EditorWindow::OnPreWarning(const char* /*window*/, const char* /*fileName*/
 
 void EditorWindow::DestroyCanvas(const UiCanvasMetadata& canvasMetadata)
 {
-    gEnv->pLyShine->ReleaseCanvas(canvasMetadata.m_canvasEntityId, true);
+    AZ::Interface<ILyShine>::Get()->ReleaseCanvas(canvasMetadata.m_canvasEntityId, true);
 }
 
 bool EditorWindow::IsCanvasTabMetadataValidForTabIndex(int index)
@@ -950,14 +950,14 @@ bool EditorWindow::LoadCanvas(const QString& canvasFilename, bool autoLoad, bool
     bool errorsOnLoad = false;
     if (canvasFilename.isEmpty())
     {
-        canvasEntityId = gEnv->pLyShine->CreateCanvasInEditor(entityContext);
+        canvasEntityId = AZ::Interface<ILyShine>::Get()->CreateCanvasInEditor(entityContext);
     }
     else
     {
         // Collect errors and warnings during the canvas load
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
-        canvasEntityId = gEnv->pLyShine->LoadCanvasInEditor(assetIdPathname.c_str(), sourceAssetPathName.c_str(), entityContext);
+        canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvasInEditor(assetIdPathname.c_str(), sourceAssetPathName.c_str(), entityContext);
 
         // Stop receiving error and warning events
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
@@ -1603,7 +1603,7 @@ void EditorWindow::ToggleEditorMode()
             EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_previewModeCanvasEntityId);
             if (entity)
             {
-                gEnv->pLyShine->ReleaseCanvas(m_previewModeCanvasEntityId, false);
+                AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_previewModeCanvasEntityId, false);
             }
             m_previewModeCanvasEntityId.SetInvalid();
         }

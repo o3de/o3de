@@ -8,6 +8,7 @@
 
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/functional.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>

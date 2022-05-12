@@ -142,6 +142,7 @@ namespace AZ
             void OnBeginPrepareRender() override;
             void OnEndPrepareRender() override;
 
+            TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const override;
             MeshHandle AcquireMesh(
                 const MeshHandleDescriptor& descriptor,
                 const MaterialAssignmentMap& materials = {}) override;
@@ -176,6 +177,7 @@ namespace AZ
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
+            bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
 

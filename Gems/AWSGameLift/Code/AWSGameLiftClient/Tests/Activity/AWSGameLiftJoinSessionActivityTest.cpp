@@ -6,6 +6,8 @@
  *
  */
 
+#include <Multiplayer/Session/ISessionHandlingRequests.h>
+
 #include <AWSGameLiftClientFixture.h>
 #include <Activity/AWSGameLiftJoinSessionActivity.h>
 
@@ -26,7 +28,7 @@ TEST_F(AWSGameLiftJoinSessionActivityTest, BuildAWSGameLiftCreatePlayerSessionRe
     EXPECT_TRUE(strcmp(awsRequest.GetGameSessionId().c_str(), request.m_sessionId.c_str()) == 0);
 }
 
-TEST_F(AWSGameLiftJoinSessionActivityTest, BuildSessionConnectionConfig_Call_GetExpectedResult)
+TEST_F(AWSGameLiftJoinSessionActivityTest, BuildSessionConnectionConfig_Call_GetIpAddressAsDestinationResult)
 {
     Aws::GameLift::Model::PlayerSession playerSession;
     playerSession.SetIpAddress("dummyIpAddress");
@@ -37,7 +39,26 @@ TEST_F(AWSGameLiftJoinSessionActivityTest, BuildSessionConnectionConfig_Call_Get
     Aws::GameLift::Model::CreatePlayerSessionOutcome createPlayerSessionOutcome(createPlayerSessionResult);
     auto connectionConfig = JoinSessionActivity::BuildSessionConnectionConfig(createPlayerSessionOutcome);
 
+    EXPECT_TRUE(strcmp(connectionConfig.m_dnsName.c_str(), "") == 0);
     EXPECT_TRUE(strcmp(connectionConfig.m_ipAddress.c_str(), playerSession.GetIpAddress().c_str()) == 0);
+    EXPECT_TRUE(strcmp(connectionConfig.m_playerSessionId.c_str(), playerSession.GetPlayerSessionId().c_str()) == 0);
+    EXPECT_TRUE(connectionConfig.m_port == playerSession.GetPort());
+}
+
+TEST_F(AWSGameLiftJoinSessionActivityTest, BuildSessionConnectionConfig_Call_GetDNSAsDestinationResult)
+{
+    Aws::GameLift::Model::PlayerSession playerSession;
+    playerSession.SetDnsName("gameliftunittest.amazongamelift.com");
+    playerSession.SetIpAddress("dummyIpAddress");
+    playerSession.SetPlayerSessionId("dummyPlayerSessionId");
+    playerSession.SetPort(123);
+    Aws::GameLift::Model::CreatePlayerSessionResult createPlayerSessionResult;
+    createPlayerSessionResult.SetPlayerSession(playerSession);
+    Aws::GameLift::Model::CreatePlayerSessionOutcome createPlayerSessionOutcome(createPlayerSessionResult);
+    auto connectionConfig = JoinSessionActivity::BuildSessionConnectionConfig(createPlayerSessionOutcome);
+
+    EXPECT_TRUE(strcmp(connectionConfig.m_dnsName.c_str(), playerSession.GetDnsName().c_str()) == 0);
+    EXPECT_TRUE(strcmp(connectionConfig.m_ipAddress.c_str(), "") == 0);
     EXPECT_TRUE(strcmp(connectionConfig.m_playerSessionId.c_str(), playerSession.GetPlayerSessionId().c_str()) == 0);
     EXPECT_TRUE(connectionConfig.m_port == playerSession.GetPort());
 }
@@ -45,7 +66,7 @@ TEST_F(AWSGameLiftJoinSessionActivityTest, BuildSessionConnectionConfig_Call_Get
 TEST_F(AWSGameLiftJoinSessionActivityTest, ValidateJoinSessionRequest_CallWithBaseType_GetFalseResult)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    auto result = JoinSessionActivity::ValidateJoinSessionRequest(AzFramework::JoinSessionRequest());
+    auto result = JoinSessionActivity::ValidateJoinSessionRequest(Multiplayer::JoinSessionRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message 
     EXPECT_FALSE(result);
 }

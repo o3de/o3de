@@ -41,7 +41,7 @@ namespace AZ
             childRequest.m_connections.emplace_back(passConnection);
 
             // Get the template
-            AZStd::shared_ptr<RPI::PassTemplate> childTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(childRequest.m_templateName);
+            const AZStd::shared_ptr<const RPI::PassTemplate> childTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(childRequest.m_templateName);
             AZ_Assert(childTemplate, "ShadowmapPass::CreateWIthPassRequest - attempting to create a shadowmap pass before the template has been created.");
 
             // Create the pass

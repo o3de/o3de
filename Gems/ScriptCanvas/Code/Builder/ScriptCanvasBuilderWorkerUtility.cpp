@@ -20,7 +20,6 @@
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Connection.h>
@@ -154,7 +153,7 @@ namespace ScriptCanvasBuilder
             return AZ::Failure(AZStd::string("Cannot compile graph data from a nullptr Script Canvas Entity"));
         }
 
-        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(scriptCanvasEntity);
+        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::EditorGraph>(scriptCanvasEntity);
         if (!sourceGraph)
         {
             return AZ::Failure(AZStd::string("Failed to find Script Canvas Graph Component"));
@@ -386,48 +385,9 @@ namespace ScriptCanvasBuilder
             ;
     }
 
-    AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB)
+    ScriptCanvasEditor::EditorGraph* PrepareSourceGraph(AZ::Entity* const buildEntity)
     {
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
-
-        // Read the asset into a memory buffer, then hand ownership of the buffer to assetDataStream
-        {
-            AZ::IO::FileIOStream stream(filePath.data(), AZ::IO::OpenMode::ModeRead);
-            if (!AZ::IO::RetryOpenStream(stream))
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", filePath.data());
-                AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-            }
-            AZStd::vector<AZ::u8> fileBuffer(stream.GetLength());
-            size_t bytesRead = stream.Read(fileBuffer.size(), fileBuffer.data());
-            if (bytesRead != stream.GetLength())
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be read.", filePath.data());
-                AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-            }
-
-            assetDataStream->Open(AZStd::move(fileBuffer));
-        }
-
-        ScriptCanvasEditor::ScriptCanvasAssetHandler editorAssetHandler;
-
-        AZ::SerializeContext* context{};
-        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
-        asset.Create(assetId);
-
-        if (editorAssetHandler.LoadAssetData(asset, assetDataStream, assetFilterCB) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
-        {
-            return AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-        }
-
-        return AZ::Success(asset);
-    }
-
-    ScriptCanvasEditor::Graph* PrepareSourceGraph(AZ::Entity* const buildEntity)
-    {
-        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(buildEntity);
+        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::EditorGraph>(buildEntity);
         if (!sourceGraph)
         {
             return nullptr;
@@ -531,7 +491,8 @@ namespace ScriptCanvasBuilder
         input.response->m_outputProducts.push_back(AZStd::move(jobProduct));
 
         const AZ::Data::AssetId scriptAssetId(input.assetID.m_guid, jobProduct.m_productSubID);
-        const AZ::Data::Asset<AZ::ScriptAsset> scriptAsset(scriptAssetId, jobProduct.m_productAssetType, {});
+        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset(scriptAssetId, jobProduct.m_productAssetType, {});
+        scriptAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         input.runtimeDataOut.m_script = scriptAsset;
 
         const ScriptCanvas::OrderedDependencies& orderedDependencies = translationResult.m_model->GetOrderedDependencies();
@@ -540,13 +501,15 @@ namespace ScriptCanvasBuilder
         for (const auto& subgraphAssetID : orderedDependencies.orderedAssetIds)
         {
             const AZ::Data::AssetId dependentSubgraphAssetID(subgraphAssetID.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
-            const AZ::Data::Asset<ScriptCanvas::RuntimeAsset> subgraphAsset(dependentSubgraphAssetID, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+            AZ::Data::Asset<ScriptCanvas::RuntimeAsset> subgraphAsset(dependentSubgraphAssetID, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+            subgraphAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
             input.runtimeDataOut.m_requiredAssets.push_back(subgraphAsset);
         }
 
         for (const auto& scriptEventAssetID : dependencyReport.scriptEventsAssetIds)
         {
-            const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> subgraphAsset(scriptEventAssetID, azrtti_typeid<ScriptEvents::ScriptEventsAsset>(), {});
+            AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> subgraphAsset(scriptEventAssetID, azrtti_typeid<ScriptEvents::ScriptEventsAsset>(), {});
+            subgraphAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
             input.runtimeDataOut.m_requiredScriptEvents.push_back(subgraphAsset);
         }
 
@@ -561,7 +524,7 @@ namespace ScriptCanvasBuilder
     {
         AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> runtimeAsset;
         runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72)));
-        runtimeAsset.Get()->SetData(subgraphInterface);
+        runtimeAsset.Get()->m_interfaceData = subgraphInterface;
 
         AZStd::vector<AZ::u8> byteBuffer;
         AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
@@ -597,7 +560,7 @@ namespace ScriptCanvasBuilder
     {
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
         runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC("RuntimeData", 0x163310ae)));
-        runtimeAsset.Get()->SetData(runtimeData);
+        runtimeAsset.Get()->m_runtimeData = runtimeData;
 
         AZStd::vector<AZ::u8> byteBuffer;
         AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);

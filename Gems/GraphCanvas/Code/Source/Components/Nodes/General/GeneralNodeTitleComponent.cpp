@@ -276,6 +276,11 @@ namespace GraphCanvas
             m_subTitleWidget->SetLabel(subtitle);
             updateLayout = true;
         }
+
+        if (updateLayout)
+        {
+            UpdateLayout();
+        }
     }
 
     void GeneralNodeTitleGraphicsWidget::SetTitle(const AZStd::string& title)
@@ -463,13 +468,6 @@ namespace GraphCanvas
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
 
-        Styling::PaletteStyle style = m_styleHelper.GetAttribute(Styling::Attribute::PaletteStyle, Styling::PaletteStyle::Solid);
-
-        if (m_paletteOverride)
-        {
-            style = m_paletteOverride->GetAttribute(Styling::Attribute::PaletteStyle, Styling::PaletteStyle::Solid);
-        }
-        
         // Background
         QRectF bounds = boundingRect();
 

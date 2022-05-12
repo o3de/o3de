@@ -13,8 +13,8 @@
 
 .QDockWidget
 {
-    titlebar-close-icon: url(:/stylesheet/img/UI20/titlebar-close.svg);
-    titlebar-normal-icon: url(:/stylesheet/img/UI20/titlebar-popout-small.svg);
+    titlebar-close-icon: url(:/Application/titlebar-close.svg);
+    titlebar-normal-icon: url(:/Application/titlebar-popout-small.svg);
 }
 
 .QDockWidget::title

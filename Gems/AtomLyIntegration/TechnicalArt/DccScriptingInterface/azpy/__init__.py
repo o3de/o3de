@@ -40,9 +40,9 @@ __all__ = ['config_utils',
 
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
-_DCCSIG_PATH = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
-_DCCSIG_PATH = os.getenv('DCCSIG_PATH', _DCCSIG_PATH)
-site.addsitedir(_DCCSIG_PATH)
+_PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
+_PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
+site.addsitedir(_PATH_DCCSIG)
 
 # azpy
 import azpy.return_stub as return_stub
@@ -52,12 +52,31 @@ import azpy.config_utils as config_utils
 
 _DCCSI_GDEBUG = env_bool.env_bool(constants.ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool.env_bool(constants.ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_LOGLEVEL = int(env_bool.env_bool(constants.ENVAR_DCCSI_LOGLEVEL, int(20)))
-if _DCCSI_GDEBUG:
-    _DCCSI_LOGLEVEL = int(10)
+_DCCSI_GDEBUGGER = env_bool.env_bool(constants.ENVAR_DCCSI_GDEBUGGER, 'WING')
 
+# default loglevel to info unless set
+_DCCSI_LOGLEVEL = int(env_bool.env_bool(constants.ENVAR_DCCSI_LOGLEVEL,
+                                        _logging.INFO))
+if _DCCSI_GDEBUG:
+    # override loglevel if runnign debug
+    _DCCSI_LOGLEVEL = _logging.DEBUG
+
+# set up module logging
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
+    
+_logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                     format=constants.FRMT_LOG_LONG,
+                     datefmt='%m-%d %H:%M')
+
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # for py2.7 (Maya) we provide this, so we must assume some bootstrapping
-# has occured, see DccScriptingInterface\\config.py (_DCCSI_PYTHON_LIB_PATH)
+# has occured, see DccScriptingInterface\\config.py (_PATH_DCCSI_PYTHON_LIB)
 
 try:
     import pathlib
@@ -70,37 +89,27 @@ if _DCCSI_GDEBUG:
 
 
 # -------------------------------------------------------------------------
-# set up module logging
-#for handler in _logging.root.handlers[:]:
-    #_logging.root.removeHandler(handler)
-_logging.basicConfig(format=constants.FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
-_LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 # get/set the project name
 _O3DE_DEV = Path(os.getenv(constants.ENVAR_O3DE_DEV,
                     config_utils.get_stub_check_path(in_path=os.getcwd(),
                                                      check_stub='engine.json')))
 _LOGGER.debug('_O3DE_DEV" {}'.format(_O3DE_DEV.resolve()))
 
-_O3DE_PROJECT_PATH = Path(os.getenv(constants.ENVAR_O3DE_PROJECT_PATH,
+_PATH_O3DE_PROJECT = Path(os.getenv(constants.ENVAR_PATH_O3DE_PROJECT,
                                config_utils.get_o3de_project_path()))
-_LOGGER.debug('_O3DE_PROJECT_PATH" {}'.format(_O3DE_PROJECT_PATH.resolve()))
+_LOGGER.debug('_PATH_O3DE_PROJECT" {}'.format(_PATH_O3DE_PROJECT.resolve()))
 
 # get/set the project name
-if _O3DE_PROJECT_PATH:
+if _PATH_O3DE_PROJECT:
     _O3DE_PROJECT = str(os.getenv(constants.ENVAR_O3DE_PROJECT,
-                                   _O3DE_PROJECT_PATH.name))
+                                   _PATH_O3DE_PROJECT.name))
 else:
     _O3DE_PROJECT='o3de'
 
 # project cache log dir path
 from azpy.constants import TAG_DCCSI_NICKNAME
 from azpy.constants import PATH_DCCSI_LOG_PATH
-_DCCSI_LOG_PATH = Path(PATH_DCCSI_LOG_PATH.format(O3DE_PROJECT_PATH=_O3DE_PROJECT_PATH.resolve(),
+_DCCSI_LOG_PATH = Path(PATH_DCCSI_LOG_PATH.format(PATH_O3DE_PROJECT=_PATH_O3DE_PROJECT.resolve(),
                                                   TAG_DCCSI_NICKNAME=TAG_DCCSI_NICKNAME))
 # -------------------------------------------------------------------------
 
@@ -214,7 +223,7 @@ if _DCCSI_GDEBUG:
 # debug breadcrumbs to check this module and used paths
 _LOGGER.debug('MODULE_PATH: {}'.format(_MODULE_PATH))
 _LOGGER.debug('O3DE_DEV_PATH: {}'.format(_O3DE_DEV))
-_LOGGER.debug('DCCSI_PATH: {}'.format(_DCCSIG_PATH))
+_LOGGER.debug('PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
 _LOGGER.debug('O3DE_PROJECT_TAG: {}'.format(_O3DE_PROJECT))
 _LOGGER.debug('DCCSI_LOG_PATH: {}'.format(_DCCSI_LOG_PATH))
 # -------------------------------------------------------------------------
@@ -258,5 +267,5 @@ if __name__ == '__main__':
     _DCCSI_DEV_MODE = True
 
     if _DCCSI_GDEBUG:
-        print(_DCCSIG_PATH)
+        print(_PATH_DCCSIG)
         test_imports()

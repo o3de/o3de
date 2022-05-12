@@ -9,6 +9,7 @@
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -40,14 +41,14 @@ namespace AZ
                 rootRequest.m_templateName = desc.m_rootPassTemplate;
 
                 Ptr<Pass> rootPass = passSystem->CreatePassFromRequest(&rootRequest);
-                AZ_Assert(rootPass != nullptr && rootPass->AsParent() != nullptr, "Error creating root pass for pipeline!");
-                pipeline->m_rootPass = rootPass->AsParent();
+                pipeline->m_rootPass = azrtti_cast<ParentPass*>(rootPass.get());
             }
             else
             {
                 // Otherwise create an empty root pass with pipeline name
                 pipeline->m_rootPass = passSystem->CreatePass<ParentPass>(passName);
             }
+            AZ_Assert(pipeline->m_rootPass != nullptr, "Error creating root pass for pipeline!");
 
             InitializeRenderPipeline(pipeline, desc);
 
@@ -85,9 +86,13 @@ namespace AZ
         RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext)
         {
             RenderPipeline* pipeline = aznew RenderPipeline();
+            PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             PassDescriptor swapChainDescriptor(Name(desc.m_name));
-            pipeline->m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, Name(desc.m_rootPassTemplate.c_str()));
+            Name tempalteName = Name(desc.m_rootPassTemplate.c_str());
+            swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(tempalteName);
+
+            pipeline->m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
 
             InitializeRenderPipeline(pipeline, desc);
@@ -97,12 +102,12 @@ namespace AZ
 
         void RenderPipeline::InitializeRenderPipeline(RenderPipeline* pipeline, const RenderPipelineDescriptor& desc)
         {
+            pipeline->m_descriptor = desc;
             pipeline->m_mainViewTag = Name(desc.m_mainViewTagName);
             pipeline->m_nameId = desc.m_name.data();
-            pipeline->m_executeOnce = desc.m_executeOnce;
-            pipeline->m_originalRenderSettings = desc.m_renderSettings;
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_rootPass->SetRenderPipeline(pipeline);
+            pipeline->m_rootPass->m_flags.m_isPipelineRoot = true;
             pipeline->m_rootPass->ManualPipelineBuildAndInitialize();
         }
 
@@ -318,10 +323,9 @@ namespace AZ
                 passSystem->SetHotReloading(true);
 
                 // Attempt to re-create hierarchy under root pass
-                Ptr<ParentPass> newRoot = m_rootPass->Recreate();
+                Ptr<ParentPass> newRoot = azrtti_cast<ParentPass*>(m_rootPass->Recreate().get());
                 newRoot->SetRenderPipeline(this);
-
-                // Manually build the pipeline
+                newRoot->m_flags.m_isPipelineRoot = true;
                 newRoot->ManualPipelineBuildAndInitialize();
 
                 // Validate the new root
@@ -336,6 +340,10 @@ namespace AZ
                     // Set new root
                     m_rootPass = newRoot;
                     passSystem->GetRootPass()->AddChild(m_rootPass);
+
+                    // Re-Apply render pipeline change
+                    m_wasModifiedByScene = false;
+                    m_scene->TryApplyRenderPipelineChanges(this);
 
                     m_wasPassModified = true;
                 }
@@ -366,7 +374,7 @@ namespace AZ
 
         bool RenderPipeline::IsExecuteOnce()
         {
-            return m_executeOnce;
+            return m_descriptor.m_executeOnce;
         }
 
         void RenderPipeline::RemoveFromScene()
@@ -435,6 +443,44 @@ namespace AZ
             }
         }
 
+        const PipelineGlobalBinding* RenderPipeline::GetPipelineGlobalConnection(const Name& globalName) const
+        {
+            for (const PipelineGlobalBinding& connection : m_pipelineGlobalConnections)
+            {
+                if (connection.m_globalName == globalName)
+                {
+                    return &connection;
+                }
+            }
+            return nullptr;
+        }
+
+        void RenderPipeline::AddPipelineGlobalConnection(const Name& globalName, PassAttachmentBinding* binding, Pass* pass)
+        {
+            m_pipelineGlobalConnections.push_back(PipelineGlobalBinding{ globalName, binding, pass });
+        }
+
+        void RenderPipeline::RemovePipelineGlobalConnectionsFromPass(Pass* passOnwer)
+        {
+            auto iter = m_pipelineGlobalConnections.begin();
+            while (iter != m_pipelineGlobalConnections.end())
+            {
+                if (iter->m_pass == passOnwer)
+                {
+                    m_pipelineGlobalConnections.erase(iter);
+                }
+                else
+                {
+                    ++iter;
+                }
+            }
+        }
+
+        void RenderPipeline::ClearGlobalBindings()
+        {
+            m_pipelineGlobalConnections.clear();
+        }
+
         RenderPipelineId RenderPipeline::GetId() const
         {
             return m_nameId;
@@ -477,25 +523,22 @@ namespace AZ
 
         void RenderPipeline::RevertRenderSettings()
         {
-            m_activeRenderSettings = m_originalRenderSettings;
+            m_activeRenderSettings = m_descriptor.m_renderSettings;
         }
 
         void RenderPipeline::AddToRenderTickOnce()
         {
-            m_rootPass->SetEnabled(true);
             m_renderMode = RenderMode::RenderOnce;
         }
 
         void RenderPipeline::AddToRenderTick()
         {
-            m_rootPass->SetEnabled(true);
             m_renderMode = RenderMode::RenderEveryTick;
         }
 
         void RenderPipeline::RemoveFromRenderTick()
         {
             m_renderMode = RenderMode::NoRender;
-            m_rootPass->SetEnabled(false);
         }
 
         RenderPipeline::RenderMode RenderPipeline::GetRenderMode() const
@@ -529,6 +572,61 @@ namespace AZ
             {
                 m_drawFilterMask = 0;
             }
+        }
+
+        const RenderPipelineDescriptor& RenderPipeline::GetDescriptor() const
+        {
+            return m_descriptor;
+        }
+
+        bool RenderPipeline::AddPassBefore(Ptr<Pass> newPass, const AZ::Name& referencePassName)
+        {
+            auto foundPass = FindFirstPass(referencePassName);
+
+            if (!foundPass)
+            {
+                AZ_Warning("RenderPipeline", false, "Add pass to render pipeline failed: can't find reference pass [%s] in render pipeline [%s]",
+                    referencePassName.GetCStr(), GetId().GetCStr());
+                return false;
+            }
+
+            // insert the pass 
+            auto parentPass = foundPass->GetParent();
+            auto passIndex = parentPass->FindChildPassIndex(referencePassName);
+            // Note: no need to check if passIndex is valid since the pass was already found
+            return parentPass->InsertChild(newPass, passIndex.GetIndex());
+        }
+
+        bool RenderPipeline::AddPassAfter(Ptr<Pass> newPass, const AZ::Name& referencePassName)
+        {            
+            auto foundPass = FindFirstPass(referencePassName);
+
+            if (!foundPass)
+            {
+                AZ_Warning("RenderPipeline", false, "Add pass to render pipeline failed: can't find reference pass [%s] in render pipeline [%s]",
+                    referencePassName.GetCStr(), GetId().GetCStr());
+                return false;
+            }
+
+            // insert the pass 
+            auto parentPass = foundPass->GetParent();
+            auto passIndex = parentPass->FindChildPassIndex(referencePassName);
+            // Note: no need to check if passIndex is valid since the pass was already found
+            return parentPass->InsertChild(newPass, passIndex.GetIndex()+1);
+        }
+
+        Ptr<Pass> RenderPipeline::FindFirstPass(const AZ::Name& passName)
+        {
+            auto passFilter = RPI::PassFilter::CreateWithPassHierarchy({passName});
+            passFilter.SetOwnerRenderPipeline(this);
+            RPI::Ptr<RPI::Pass> foundPass = nullptr;
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&foundPass](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    foundPass = pass;
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                });
+
+            return foundPass;
         }
     }
 }

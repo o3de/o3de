@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Serialization/ObjectStream.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace AZ
 {
@@ -41,14 +41,20 @@ namespace ScriptCanvasEditor
         AZStd::string ToString(size_t depth = 0) const;
     };
 
-    AZ::Outcome<SourceHandle, AZStd::string> LoadFromFile(AZStd::string_view path);
-
-    AZ::Outcome<void, AZStd::string> LoadDataFromJson
+    // both success and failure return JSON deserialization errors, regardless of parsing / loading success
+    AZ::Outcome<AZStd::string, AZStd::string> LoadDataFromJson
         ( ScriptCanvas::ScriptCanvasData& dataTarget
         , AZStd::string_view source
         , AZ::SerializeContext& serializeContext);
 
     AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, EditorAssetTree* parent = nullptr);
-        
+
+    struct FileLoadSuccess
+    {
+        SourceHandle handle;
+        AZStd::string deserializationErrors;
+    };
+    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path);
+
     AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream);
 }

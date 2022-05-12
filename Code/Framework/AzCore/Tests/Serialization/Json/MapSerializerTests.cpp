@@ -475,7 +475,7 @@ namespace JsonSerializationTests
         EXPECT_STRCASEEQ("value_42", worldKey->second.m_value.c_str());
     }
 
-    TEST_F(JsonMapSerializerTests, Load_DuplicateKey_EntryIgnored)
+    TEST_F(JsonMapSerializerTests, Load_DuplicateKey_EntryUpdated)
     {
         using namespace AZ::JsonSerializationResult;
 
@@ -489,12 +489,12 @@ namespace JsonSerializationTests
         StringMap values;
         ResultCode result = m_unorderedMapSerializer.Load(&values, azrtti_typeid(&values), *m_jsonDocument, *m_jsonDeserializationContext);
 
-        EXPECT_EQ(Processing::PartialAlter, result.GetProcessing());
-        EXPECT_EQ(Outcomes::Unavailable, result.GetOutcome());
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        EXPECT_EQ(Outcomes::Success, result.GetOutcome());
 
         auto entry = values.find("Hello");
         ASSERT_NE(values.end(), entry);
-        EXPECT_STRCASEEQ("World", entry->second.c_str());
+        EXPECT_EQ("Other", entry->second);
     }
 
     TEST_F(JsonMapSerializerTests, Load_DuplicateMultiKey_LoadEverything)
@@ -536,8 +536,8 @@ namespace JsonSerializationTests
         ResultCode result = m_unorderedMapSerializer.Load(&values,
             azrtti_typeid(&values), *m_jsonDocument, *m_jsonDeserializationContext);
 
-        EXPECT_EQ(Processing::Altered, result.GetProcessing());
-        EXPECT_EQ(Outcomes::Unavailable, result.GetOutcome());
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        EXPECT_EQ(Outcomes::Success, result.GetOutcome());
 
         auto entry = values.find("Hello");
         ASSERT_NE(values.end(), entry);

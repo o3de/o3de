@@ -19,8 +19,6 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
-
 // #define AZ_DX12_FRAMESCHEDULER_LOG_TRANSITIONS
 
 namespace AZ
@@ -479,8 +477,7 @@ namespace AZ
                 return;
             }
 
-            D3D12_RESOURCE_TRANSITION_BARRIER transition;
-            memset(&transition, 0, sizeof(D3D12_RESOURCE_TRANSITION_BARRIER)); // C4701 potentially unitialized local variable 'transition' used
+            D3D12_RESOURCE_TRANSITION_BARRIER transition = {0};
             transition.pResource = image.GetMemoryView().GetMemory();
 
             Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
@@ -695,7 +692,7 @@ namespace AZ
         {
             Device& device = static_cast<Device&>(GetDevice());
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             CommandQueueContext& context = device.GetCommandQueueContext();
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())

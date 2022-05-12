@@ -63,7 +63,7 @@ namespace AZ
         void FastDepthAwareBlurHorPass::FrameBeginInternal(FramePrepareParams params)
         {
             AZ_Assert(GetOutputCount() > 0, "FastDepthAwareBlurHorPass: No output bindings!");
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "FastDepthAwareBlurHorPass: Output binding has no attachment!");
             RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
@@ -105,7 +105,7 @@ namespace AZ
         void FastDepthAwareBlurVerPass::FrameBeginInternal(FramePrepareParams params)
         {
             AZ_Assert(GetOutputCount() > 0, "FastDepthAwareBlurVerPass: No output bindings!");
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "FastDepthAwareBlurVerPass: Output binding has no attachment!");
             RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;

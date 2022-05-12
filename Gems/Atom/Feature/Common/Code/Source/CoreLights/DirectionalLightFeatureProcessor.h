@@ -176,6 +176,8 @@ namespace AZ
                 // If true, this will reduce the shadow acne introduced by large pcf kernels by estimating the angle of the triangle being shaded
                 // with the ddx/ddy functions. 
                 bool m_isReceiverPlaneBiasEnabled = true;
+
+                bool m_blendBetwenCascades = false;
             };
 
             static void Reflect(ReflectContext* context);
@@ -215,6 +217,7 @@ namespace AZ
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
+            void SetCascadeBlendingEnabled(LightHandle handle, bool enable) override;
             void SetShadowBias(LightHandle handle, float bias) override;
             void SetNormalShadowBias(LightHandle handle, float normalShadowBias) override;
 
@@ -367,6 +370,7 @@ namespace AZ
             Name m_lightTypeName = Name("directional");
             Name m_directionalShadowFilteringMethodName = Name("o_directional_shadow_filtering_method");
             Name m_directionalShadowReceiverPlaneBiasEnableName = Name("o_directional_shadow_receiver_plane_bias_enable");
+            Name m_BlendBetweenCascadesEnableName = Name("o_blend_between_cascades_enable");
             static constexpr const char* FeatureProcessorName = "DirectionalLightFeatureProcessor";
         };
     } // namespace Render

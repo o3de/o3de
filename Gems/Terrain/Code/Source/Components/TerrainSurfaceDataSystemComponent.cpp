@@ -7,6 +7,7 @@
  */
 
 #include <Components/TerrainSurfaceDataSystemComponent.h>
+#include <Terrain/TerrainDataConstants.h>
 #include <AzCore/Debug/Profiler.h> 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -14,6 +15,7 @@
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <SurfaceData/SurfaceDataTagProviderRequestBus.h>
 
 namespace Terrain
 {
@@ -96,6 +98,7 @@ namespace Terrain
     {
         m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        SurfaceData::SurfaceDataTagProviderRequestBus::Handler::BusConnect();
 
         UpdateTerrainData(AZ::Aabb::CreateNull());
     }
@@ -110,6 +113,7 @@ namespace Terrain
         }
 
         SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
+        SurfaceData::SurfaceDataTagProviderRequestBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
 
         // Clear the cached terrain bounds data
@@ -142,43 +146,40 @@ namespace Terrain
     void TerrainSurfaceDataSystemComponent::GetSurfacePoints(
         const AZ::Vector3& inPosition, SurfaceData::SurfacePointList& surfacePointList) const
     {
-        if (m_terrainBoundsIsValid)
-        {
-            auto enumerationCallback = [&](AzFramework::Terrain::TerrainDataRequests* terrain) -> bool
-            {
-                if (terrain->GetTerrainAabb().Contains(inPosition))
-                {
-                    bool isTerrainValidAtPoint = false;
-                    AzFramework::SurfaceData::SurfacePoint terrainSurfacePoint;
-                    terrain->GetSurfacePoint(
-                        inPosition, terrainSurfacePoint, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
-                        &isTerrainValidAtPoint);
-
-                    const bool isHole = !isTerrainValidAtPoint;
-
-                    SurfaceData::SurfacePoint point;
-                    point.m_entityId = GetEntityId();
-                    point.m_position = terrainSurfacePoint.m_position;
-                    point.m_normal = terrainSurfacePoint.m_normal;
-
-                    // Always add a "terrain" or "terrainHole" tag.
-                    const AZ::Crc32 terrainTag =
-                        isHole ? SurfaceData::Constants::s_terrainHoleTagCrc : SurfaceData::Constants::s_terrainTagCrc;
-                    SurfaceData::AddMaxValueForMasks(point.m_masks, terrainTag, 1.0f);
-
-                    // Add all of the surface tags that the terrain has at this point.
-                    for (auto& tag : terrainSurfacePoint.m_surfaceTags)
-                    {
-                        SurfaceData::AddMaxValueForMasks(point.m_masks, tag.m_surfaceType, tag.m_weight);
-                    }
-                    surfacePointList.push_back(point);
-                }
-                // Only one handler should exist.
-                return false;
-            };
-            AzFramework::Terrain::TerrainDataRequestBus::EnumerateHandlers(enumerationCallback);
-        }
+        GetSurfacePointsFromList(AZStd::span<const AZ::Vector3>(&inPosition, 1), surfacePointList);
     }
+
+    void TerrainSurfaceDataSystemComponent::GetSurfacePointsFromList(
+        AZStd::span<const AZ::Vector3> inPositions, SurfaceData::SurfacePointList& surfacePointList) const
+    {
+        if (!m_terrainBoundsIsValid)
+        {
+            return;
+        }
+
+        size_t inPositionIndex = 0;
+
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequestBus::Events::ProcessSurfacePointsFromList, inPositions,
+            [this, inPositions, &inPositionIndex, &surfacePointList]
+                (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            {
+                AZ_Assert(inPositionIndex < inPositions.size(), "Too many points returned from ProcessSurfacePointsFromList");
+
+                SurfaceData::SurfaceTagWeights weights(surfacePoint.m_surfaceTags);
+
+                // Always add a "terrain" or "terrainHole" tag.
+                const AZ::Crc32 terrainTag = terrainExists ? Constants::s_terrainTagCrc : Constants::s_terrainHoleTagCrc;
+                weights.AddSurfaceTagWeight(terrainTag, 1.0f);
+
+                surfacePointList.AddSurfacePoint(
+                    GetEntityId(), inPositions[inPositionIndex], surfacePoint.m_position, surfacePoint.m_normal, weights);
+
+                inPositionIndex++;
+            },
+            AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+    }
+
 
     AZ::Aabb TerrainSurfaceDataSystemComponent::GetSurfaceAabb() const
     {
@@ -189,8 +190,8 @@ namespace Terrain
     SurfaceData::SurfaceTagVector TerrainSurfaceDataSystemComponent::GetSurfaceTags() const
     {
         SurfaceData::SurfaceTagVector tags;
-        tags.push_back(SurfaceData::Constants::s_terrainHoleTagCrc);
-        tags.push_back(SurfaceData::Constants::s_terrainTagCrc);
+        tags.push_back(Constants::s_terrainHoleTagCrc);
+        tags.push_back(Constants::s_terrainTagCrc);
         return tags;
     }
 
@@ -204,6 +205,7 @@ namespace Terrain
         registryEntry.m_entityId = GetEntityId();
         registryEntry.m_bounds = GetSurfaceAabb();
         registryEntry.m_tags = GetSurfaceTags();
+        registryEntry.m_maxPointsCreatedPerInput = 1;
 
         m_terrainBounds = registryEntry.m_bounds;
         m_terrainBoundsIsValid = m_terrainBounds.IsValid();
@@ -214,10 +216,10 @@ namespace Terrain
         {
             AZ_Assert((m_providerHandle != SurfaceData::InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
 
-            // Our terrain was valid before and after, it just changed in some way.  If we have a valid dirty region passed in
-            // then it's possible that the heightmap has been modified in the Editor.  Otherwise, just notify that the entire
-            // terrain has changed in some way.
-            if (dirtyRegion.IsValid())
+            // Our terrain was valid before and after, it just changed in some way.  If we have a valid dirty region, and the terrain
+            // bounds themselves haven't changed, just notify that our terrain data has changed within the bounds.  Otherwise, notify
+            // that the entire terrain provider needs to be updated, since it either has new bounds or the entire set of data is dirty.
+            if (dirtyRegion.IsValid() && m_terrainBounds.IsClose(terrainBoundsBeforeUpdate))
             {
                 SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                     &SurfaceData::SurfaceDataSystemRequestBus::Events::RefreshSurfaceData, dirtyRegion);
@@ -248,7 +250,6 @@ namespace Terrain
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
-
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
         }
         else
@@ -262,5 +263,11 @@ namespace Terrain
         const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
         UpdateTerrainData(dirtyRegion);
+    }
+
+    void TerrainSurfaceDataSystemComponent::GetRegisteredSurfaceTagNames(SurfaceData::SurfaceTagNameSet& names) const
+    {
+        names.insert(Constants::s_terrainHoleTagName);
+        names.insert(Constants::s_terrainTagName);
     }
 }

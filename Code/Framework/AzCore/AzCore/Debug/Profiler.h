@@ -10,11 +10,6 @@
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
-#ifdef USE_PIX
-#include <AzCore/PlatformIncl.h>
-#include <WinPixEventRuntime/pix3.h>
-#endif
-
 #if defined(AZ_PROFILER_MACRO_DISABLE) // by default we never disable the profiler registers as their overhead should be minimal, you can
                                        // still do that for your code though.
 #define AZ_PROFILE_SCOPE(...)
@@ -72,8 +67,7 @@ namespace AZ::Debug
         Profiler() = default;
         virtual ~Profiler() = default;
 
-        // support for the extra macro args (e.g. format strings) will come in a later PR
-        virtual void BeginRegion(const Budget* budget, const char* eventName) = 0;
+        virtual void BeginRegion(const Budget* budget, const char* eventName, size_t eventNameArgCount, ...) = 0;
         virtual void EndRegion(const Budget* budget) = 0;
     };
 
@@ -81,12 +75,11 @@ namespace AZ::Debug
     {
     public:
         template<typename... T>
-        static void BeginRegion([[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args);
-
-        static void EndRegion([[maybe_unused]] Budget* budget);
+        static void BeginRegion(Budget* budget, const char* eventName, T const&... args);
+        static void EndRegion(Budget* budget);
 
         template<typename... T>
-        ProfileScope(Budget* budget, char const* eventName, T const&... args);
+        ProfileScope(Budget* budget, const char* eventName, T const&... args);
 
         ~ProfileScope();
 

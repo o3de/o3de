@@ -17,7 +17,6 @@
 #include <ScriptCanvasDeveloperEditor/NodeListDumpAction.h>
 #include <ScriptCanvasDeveloperEditor/TSGenerateAction.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/DynamicSlotFullCreation.h>
-#include <ScriptCanvasDeveloperEditor/AutomationActions/FullyConnectedNodePaletteCreation.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/NodePaletteFullCreation.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/VariableListFullCreation.h>
 #include <ScriptCanvasDeveloperEditor/Developer.h>

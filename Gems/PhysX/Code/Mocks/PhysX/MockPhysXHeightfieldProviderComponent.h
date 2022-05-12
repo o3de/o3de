@@ -73,6 +73,7 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetHeightfieldMaxHeight, float());
         MOCK_CONST_METHOD0(GetHeightfieldGridColumns, int32_t());
         MOCK_CONST_METHOD0(GetHeightfieldGridRows, int32_t());
+        MOCK_CONST_METHOD2(UpdateHeightsAndMaterials, void(const Physics::UpdateHeightfieldSampleFunction&, const AZ::Aabb&));
     };
 
 } // namespace UnitTest

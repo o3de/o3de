@@ -122,5 +122,3 @@ void CTimeRangeKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& s
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CTimeRangeKeyUIControls, "TrackView.KeyUI.TimeRange", "TrackViewKeyUI");

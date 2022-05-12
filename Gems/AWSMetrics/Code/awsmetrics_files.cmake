@@ -7,27 +7,28 @@
 #
 
 set(FILES
-    Include/Public/AWSMetricsBus.h
-    Include/Public/MetricsAttribute.h
-    Include/Private/AWSMetricsConstant.h
-    Include/Private/AWSMetricsServiceApi.h
-    Include/Private/AWSMetricsSystemComponent.h
-    Include/Private/ClientConfiguration.h
-    Include/Private/DefaultClientIdProvider.h
-    Include/Private/GlobalStatistics.h
-    Include/Private/IdentityProvider.h
-    Include/Private/MetricsEvent.h
-    Include/Private/MetricsEventBuilder.h    
-    Include/Private/MetricsManager.h
-    Include/Private/MetricsQueue.h
-    Source/ClientConfiguration.cpp
-    Source/DefaultClientIdProvider.cpp
+    Include/AWSMetricsBus.h
+    Include/MetricsAttribute.h
+
+    Source/AWSMetricsConstant.h
     Source/AWSMetricsServiceApi.cpp
+    Source/AWSMetricsServiceApi.h
     Source/AWSMetricsSystemComponent.cpp
+    Source/AWSMetricsSystemComponent.h
+    Source/ClientConfiguration.cpp
+    Source/ClientConfiguration.h
+    Source/DefaultClientIdProvider.h
+    Source/DefaultClientIdProvider.cpp
+    Source/GlobalStatistics.h
     Source/IdentityProvider.cpp
-    Source/MetricsEvent.cpp
-    Source/MetricsEventBuilder.cpp
+    Source/IdentityProvider.h
     Source/MetricsAttribute.cpp
+    Source/MetricsEvent.cpp
+    Source/MetricsEvent.h
+    Source/MetricsEventBuilder.cpp
+    Source/MetricsEventBuilder.h
     Source/MetricsManager.cpp
+    Source/MetricsManager.h
     Source/MetricsQueue.cpp
+    Source/MetricsQueue.h
 )

@@ -14,6 +14,13 @@
 
 namespace AzQtComponents
 {
+    bool FileDialog::IsValidFileName(const QString& fileName)
+    {
+        QRegularExpression validFileNameRegex("^[a-zA-Z0-9_\\-./]*$");
+        QRegularExpressionMatch validFileNameMatch = validFileNameRegex.match(fileName);
+        return validFileNameMatch.hasMatch();
+    }
+
     QString FileDialog::GetSaveFileName(QWidget* parent, const QString& caption, const QString& dir,
         const QString& filter, QString* selectedFilter, QFileDialog::Options options)
     {
@@ -37,12 +44,8 @@ namespace AzQtComponents
                 QFileInfo fileInfo(filePath);
                 QString fileName = fileInfo.fileName();
 
-                // Check if the filename has any invalid characters
-                QRegularExpression validFileNameRegex("^[a-zA-Z0-9_\\-./]*$");
-                QRegularExpressionMatch validFileNameMatch = validFileNameRegex.match(fileName);
-
                 // If the filename had invalid characters, then show a warning message and then we will re-prompt the save filename dialog
-                if (!validFileNameMatch.hasMatch())
+                if (!IsValidFileName(fileName))
                 {
                     QMessageBox::warning(parent, QObject::tr("Invalid filename"),
                         QObject::tr("O3DE assets are restricted to alphanumeric characters, hyphens (-), underscores (_), and dots (.)\n\n%1").arg(fileName));

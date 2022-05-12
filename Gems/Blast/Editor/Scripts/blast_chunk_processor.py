@@ -12,10 +12,10 @@ into a scene manifest
 This is also a SceneAPI script that executes from a foo.fbx.assetinfo scene
 manifest that writes out asset chunk data for .blast files
 """
-import os, traceback, binascii, sys, json, pathlib
+import os, traceback, binascii, sys, json, pathlib, logging
 import azlmbr.math
 import azlmbr.asset
-import azlmbr.asset.entity
+import azlmbr.entity
 import azlmbr.asset.builder
 import azlmbr.bus
 
@@ -23,6 +23,14 @@ import azlmbr.bus
 # SceneAPI Processor
 #
 blastChunksAssetType = azlmbr.math.Uuid_CreateString('{993F0B0F-37D9-48C6-9CC2-E27D3F3E343E}', 0)
+
+def log_exception_traceback():
+    """
+    Outputs an exception stacktrace.
+    """
+    data = traceback.format_exc()
+    logger = logging.getLogger('python')
+    logger.error(data)
 
 def export_chunk_asset(scene, outputDirectory, platformIdentifier, productList):
     import azlmbr.scene
@@ -90,14 +98,14 @@ def get_mesh_node_names(sceneGraph):
         if sceneGraph.has_node_sibling(node):
             node = sceneGraph.get_node_sibling(node)
         elif children:
-            node = children.pop()
+            node = children.pop(0)
         else:
             node = azlmbr.scene.graph.NodeIndex()
 
     return meshDataList
 
 def update_manifest(scene):
-    import uuid, os
+    import uuid, os, json
     import azlmbr.scene as sceneApi
     import azlmbr.scene.graph
     from scene_api import scene_data as sceneData
@@ -115,7 +123,14 @@ def update_manifest(scene):
         meshGroup = sceneManifest.add_mesh_group(meshGroupName)
         meshGroup['id'] = '{' + str(uuid.uuid5(uuid.NAMESPACE_DNS, sourceFilenameOnly + chunkPath)) + '}'
         sceneManifest.mesh_group_select_node(meshGroup, chunkPath)
+        # un-select all other mesh nodes
+        for otherMeshIndex, otherMeshName in enumerate(meshNameList):
+            if otherMeshName is not chunkName:
+                sceneManifest.mesh_group_unselect_node(meshGroup, otherMeshName.get_path())
 
+    # combine both scene manifests so the OnPrepareForExport will be called
+    originalManifest = json.loads(scene.manifest.ExportToJson())
+    sceneManifest.manifest["values"].append(originalManifest["values"][0])
     return sceneManifest.export()
 
 sceneJobHandler = None

@@ -96,7 +96,7 @@ namespace AZ
 
             //! Return the timestamp when the shader asset was built.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZStd::sys_time_t GetShaderAssetBuildTimestamp() const;
+            AZStd::sys_time_t GetBuildTimestamp() const;
 
             //! Returns the shader option group layout.
             const ShaderOptionGroupLayout* GetShaderOptionGroupLayout() const;
@@ -158,8 +158,8 @@ namespace AZ
 
 
             //! Returns the set of shader resource group layouts owned by a given supervariant.
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts( SupervariantIndex supervariantIndex) const;
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts( SupervariantIndex supervariantIndex) const;
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const
             {
                 return GetShaderResourceGroupLayouts(DefaultSupervariantIndex);
             }
@@ -294,7 +294,7 @@ namespace AZ
             Name m_drawListName;
 
             //! Use to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZ::u64 m_shaderAssetBuildTimestamp = 0;
+            AZ::u64 m_buildTimestamp = 0; 
 
 
             ///////////////////////////////////////////////////////////////////

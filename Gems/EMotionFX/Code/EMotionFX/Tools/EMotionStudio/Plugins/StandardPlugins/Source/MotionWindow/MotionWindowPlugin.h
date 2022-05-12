@@ -61,7 +61,7 @@ namespace EMStudio
         bool Init() override;
         EMStudioPlugin* Clone() override;
 
-        void Render(RenderPlugin* renderPlugin, EMStudioPlugin::RenderInfo* renderInfo) override;
+        void LegacyRender(RenderPlugin* renderPlugin, EMStudioPlugin::RenderInfo* renderInfo) override;
 
         void ReInit();
 

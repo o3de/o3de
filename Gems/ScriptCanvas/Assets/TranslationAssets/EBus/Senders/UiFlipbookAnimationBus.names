@@ -21,7 +21,8 @@
                     },
                     "details": {
                         "name": "Get Loop Type",
-                        "tooltip": "Gets the type of looping behavior for the animation"
+                        "tooltip": "Gets the type of looping behavior for the animation",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -44,7 +45,8 @@
                     },
                     "details": {
                         "name": "Get Reverse Delay",
-                        "tooltip": "Gets the delay (in seconds) before playing the reverse loop sequence (PingPong loop types only)"
+                        "tooltip": "Gets the delay (in seconds) before playing the reverse loop sequence (PingPong loop types only)",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -67,7 +69,8 @@
                     },
                     "details": {
                         "name": "Set Is Auto Play Enabled",
-                        "tooltip": "Sets whether the animation will begin playing as soon as the element is activated"
+                        "tooltip": "Sets whether the animation will begin playing as soon as the element is activated",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -91,7 +94,8 @@
                     },
                     "details": {
                         "name": "Set Current Frame",
-                        "tooltip": "Sets the frame to immediately display for the animation"
+                        "tooltip": "Sets the frame to immediately display for the animation",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -115,7 +119,8 @@
                     },
                     "details": {
                         "name": "Get Loop Start Frame",
-                        "tooltip": "Gets the first frame that is displayed within an animation loop. Applicable only when the \"Loop Type\" is set to anything other than \"None\""
+                        "tooltip": "Gets the first frame that is displayed within an animation loop. Applicable only when the \"Loop Type\" is set to anything other than \"None\"",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -138,7 +143,8 @@
                     },
                     "details": {
                         "name": "Set Loop Type",
-                        "tooltip": "Sets the type of looping behavior for this animation"
+                        "tooltip": "Sets the type of looping behavior for this animation",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -162,7 +168,8 @@
                     },
                     "details": {
                         "name": "Get Start Delay",
-                        "tooltip": "Gets the delay (in seconds) before playing the flipbook (applied only once during playback)"
+                        "tooltip": "Gets the delay (in seconds) before playing the flipbook (applied only once during playback)",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -185,7 +192,8 @@
                     },
                     "details": {
                         "name": "Set Start Delay",
-                        "tooltip": "Sets the delay (in seconds) before playing the flipbook (applied only once during playback)"
+                        "tooltip": "Sets the delay (in seconds) before playing the flipbook (applied only once during playback)",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -209,7 +217,8 @@
                     },
                     "details": {
                         "name": "Get Current Frame",
-                        "tooltip": "Gets the frame of the animation currently displayed"
+                        "tooltip": "Gets the frame of the animation currently displayed",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -232,7 +241,8 @@
                     },
                     "details": {
                         "name": "Get Framerate",
-                        "tooltip": "Gets the speed used to determine when to transition to the next frame. Framerate is defined relative to unit of time, specified by FramerateUnits"
+                        "tooltip": "Gets the speed used to determine when to transition to the next frame. Framerate is defined relative to unit of time, specified by FramerateUnits",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -255,7 +265,8 @@
                     },
                     "details": {
                         "name": "Set Loop Delay",
-                        "tooltip": "Sets the delay (in seconds) before playing the loop sequence"
+                        "tooltip": "Sets the delay (in seconds) before playing the loop sequence",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -279,7 +290,8 @@
                     },
                     "details": {
                         "name": "Get Start Frame",
-                        "tooltip": "Gets the first frame to display when starting the animation"
+                        "tooltip": "Gets the first frame to display when starting the animation",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -302,7 +314,8 @@
                     },
                     "details": {
                         "name": "Set Framerate Unit",
-                        "tooltip": "Sets the framerate unit (0 = Frames per second, 1 = Seconds per frame)"
+                        "tooltip": "Sets the framerate unit (0 = Frames per second, 1 = Seconds per frame)",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -326,7 +339,8 @@
                     },
                     "details": {
                         "name": "Is Playing",
-                        "tooltip": "Returns whether the animation is currently playing"
+                        "tooltip": "Returns whether the animation is currently playing",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -349,7 +363,8 @@
                     },
                     "details": {
                         "name": "Set End Frame",
-                        "tooltip": "Sets the last frame to display for the animation"
+                        "tooltip": "Sets the last frame to display for the animation",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -373,7 +388,8 @@
                     },
                     "details": {
                         "name": "Set Loop Start Frame",
-                        "tooltip": "Sets the first frame that is displayed within an animation loop. Applicable only when the \"Loop Type\" is set to anything other than \"None\""
+                        "tooltip": "Sets the first frame that is displayed within an animation loop. Applicable only when the \"Loop Type\" is set to anything other than \"None\"",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -397,7 +413,8 @@
                     },
                     "details": {
                         "name": "Set Reverse Delay",
-                        "tooltip": "Sets the delay (in seconds) before playing the reverse loop sequence (PingPong loop types only)"
+                        "tooltip": "Sets the delay (in seconds) before playing the reverse loop sequence (PingPong loop types only)",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -421,7 +438,8 @@
                     },
                     "details": {
                         "name": "Stop",
-                        "tooltip": "Ends the animation"
+                        "tooltip": "Ends the animation",
+                        "subtitle": "UI Flipbook"
                     }
                 },
                 {
@@ -436,7 +454,8 @@
                     },
                     "details": {
                         "name": "Set Framerate",
-                        "tooltip": "Sets the speed used to determine when to transition to the next frame. Framerate is defined relative to unit of time, specified by FramerateUnits"
+                        "tooltip": "Sets the speed used to determine when to transition to the next frame. Framerate is defined relative to unit of time, specified by FramerateUnits",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -460,7 +479,8 @@
                     },
                     "details": {
                         "name": "Is Auto Play Enabled",
-                        "tooltip": "Returns whether the animation will begin playing as soon as the element is activated"
+                        "tooltip": "Returns whether the animation will begin playing as soon as the element is activated",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -483,7 +503,8 @@
                     },
                     "details": {
                         "name": "Start",
-                        "tooltip": "Begins playing the flipbook animation"
+                        "tooltip": "Begins playing the flipbook animation",
+                        "subtitle": "UI Flipbook"
                     }
                 },
                 {
@@ -498,7 +519,8 @@
                     },
                     "details": {
                         "name": "Set Start Frame",
-                        "tooltip": "Sets the first frame to display when starting the animation"
+                        "tooltip": "Sets the first frame to display when starting the animation",
+                        "subtitle": "UI Flipbook"
                     },
                     "params": [
                         {
@@ -522,7 +544,8 @@
                     },
                     "details": {
                         "name": "Get End Frame",
-                        "tooltip": "Gets the last frame to display for the animation"
+                        "tooltip": "Gets the last frame to display for the animation",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -545,7 +568,8 @@
                     },
                     "details": {
                         "name": "Get Framerate Unit",
-                        "tooltip": "Gets the framerate unit (0 = Frames per second, 1 = Seconds per frame)"
+                        "tooltip": "Gets the framerate unit (0 = Frames per second, 1 = Seconds per frame)",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {
@@ -568,7 +592,8 @@
                     },
                     "details": {
                         "name": "Get Loop Delay",
-                        "tooltip": "Gets the delay (in seconds) before playing the loop sequence"
+                        "tooltip": "Gets the delay (in seconds) before playing the loop sequence",
+                        "subtitle": "UI Flipbook"
                     },
                     "results": [
                         {

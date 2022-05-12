@@ -12,7 +12,6 @@
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
-
 namespace SurfaceData
 {
     namespace Details
@@ -124,10 +123,7 @@ namespace SurfaceData
 
     void EditorSurfaceDataSystemComponent::GetRegisteredSurfaceTagNames(SurfaceTagNameSet& masks) const
     {
-        for (const auto& tagName : Constants::s_allTagNames)
-        {
-            masks.insert(tagName);
-        }
+        masks.insert(Constants::s_unassignedTagName);
 
         for (const auto& assetPair : m_surfaceTagNameAssets)
         {

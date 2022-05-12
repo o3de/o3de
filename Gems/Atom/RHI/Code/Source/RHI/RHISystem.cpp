@@ -165,6 +165,7 @@ namespace AZ
             RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
             if (device->Init(*physicalDeviceFound) == RHI::ResultCode::Success)
             {
+                m_physicalDeviceDescriptor = physicalDeviceFound->GetDescriptor();
                 PlatformLimitsDescriptor::Create();
                 return device;
             }
@@ -278,6 +279,11 @@ namespace AZ
         void RHISystem::QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable)
         {
             m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
+        }
+
+        const PhysicalDeviceDescriptor& RHISystem::GetPhysicalDeviceDescriptor()
+        {
+            return m_physicalDeviceDescriptor;
         }
     } //namespace RPI
 } //namespace AZ

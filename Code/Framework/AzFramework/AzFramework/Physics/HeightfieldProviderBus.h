@@ -35,17 +35,18 @@ namespace Physics
         {
         }
 
-        virtual ~HeightMaterialPoint() = default;
+        ~HeightMaterialPoint() = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ_RTTI(HeightMaterialPoint, "{DF167ED4-24E6-4F7B-8AB7-42622F7DBAD3}");
+        AZ_TYPE_INFO(HeightMaterialPoint, "{DF167ED4-24E6-4F7B-8AB7-42622F7DBAD3}");
         float m_height{ 0.0f }; //!< Holds the height of this point in the heightfield relative to the heightfield entity location.
         QuadMeshType m_quadMeshType{ QuadMeshType::SubdivideUpperLeftToBottomRight }; //!< By default, create two triangles like this |\|, where this point is in the upper left corner.
         uint8_t m_materialIndex{ 0 }; //!< The surface material index for the upper left corner of this quad.
         uint16_t m_padding{ 0 }; //!< available for future use.
-
     };
+
+    using UpdateHeightfieldSampleFunction = AZStd::function<void(int32_t, int32_t, const Physics::HeightMaterialPoint&)>;
 
     //! An interface to provide heightfield values.
     class HeightfieldProviderRequests
@@ -105,6 +106,9 @@ namespace Physics
         //! Returns the list of heights and materials used by the height field.
         //! @return the rows*columns vector of the heights and materials.
         virtual AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const = 0;
+
+        //! Updates the list of heights and materials within the region. Pass Null region to update the entire list.
+        virtual void UpdateHeightsAndMaterials(const UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& region) const = 0;
     };
 
     using HeightfieldProviderRequestsBus = AZ::EBus<HeightfieldProviderRequests>;
@@ -116,15 +120,28 @@ namespace Physics
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
+        enum class HeightfieldChangeMask : AZ::u8
+        {
+            None = 0,
+            Settings = (1 << 0),
+            HeightData = (1 << 1),
+            MaterialData = (1 << 2),
+            SurfaceData = (1 << 3),
+            Unspecified = 0xff
+        };
+
         //! Called whenever the heightfield data changes.
         //! @param the AABB of the area of data that changed.
-        virtual void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion)
+        virtual void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, 
+            [[maybe_unused]] Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
         {
         }
 
     protected:
         ~HeightfieldProviderNotifications() = default;
     };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(HeightfieldProviderNotifications::HeightfieldChangeMask)
 
     using HeightfieldProviderNotificationBus = AZ::EBus<HeightfieldProviderNotifications>;
 } // namespace Physics

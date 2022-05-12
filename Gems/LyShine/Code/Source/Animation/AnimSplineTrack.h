@@ -10,7 +10,6 @@
 #pragma once
 
 #include <LyShine/Animation/IUiAnimation.h>
-//#include "TCBSpline.h"
 #include "2DSpline.h"
 
 #define MIN_TIME_PRECISION 0.01f
@@ -378,7 +377,7 @@ private:
 
     UiAnimParamData m_componentParamData;
 
-    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) {};
+    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) { return false; };
 };
 
 //////////////////////////////////////////////////////////////////////////

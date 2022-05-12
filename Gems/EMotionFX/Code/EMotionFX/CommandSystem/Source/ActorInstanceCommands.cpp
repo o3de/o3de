@@ -439,6 +439,12 @@ namespace CommandSystem
             return false;
         }
 
+        if (actorInstance->GetEntity())
+        {
+            outResult = AZStd::string::format("Cannot remove actor instance. Actor instance %i belongs to an entity.", actorInstanceID);
+            return false;
+        }
+
         // store the old values before removing the instance
         m_oldPosition            = actorInstance->GetLocalSpaceTransform().m_position;
         m_oldRotation            = actorInstance->GetLocalSpaceTransform().m_rotation;
@@ -618,12 +624,24 @@ namespace CommandSystem
         MCore::CommandGroup commandGroup("Remove actor instances", numActorInstances);
         AZStd::string tempString;
 
-        // iterate over the selected instances and clone them
+        // iterate over the selected instances and remove them
         for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
             if (actorInstance == nullptr)
+            {
+                continue;
+            }
+
+            // Do not remove any runtime instance from the manager using the commands.
+            if (actorInstance->GetIsOwnedByRuntime())
+            {
+                continue;
+            }
+
+            // Do not remove the any instances owned by an entity from the manager using the commands.
+            if (actorInstance->GetEntity())
             {
                 continue;
             }

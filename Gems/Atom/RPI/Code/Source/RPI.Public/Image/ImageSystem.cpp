@@ -27,7 +27,6 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -199,6 +198,49 @@ namespace AZ
         const Data::Instance<Image>& ImageSystem::GetSystemImage(SystemImage simpleImage) const
         {
             return m_systemImages[static_cast<size_t>(simpleImage)];
+        }
+
+        bool ImageSystem::RegisterAttachmentImage(AttachmentImage* attachmentImage)
+        {
+            if (!attachmentImage)
+            {
+                return false;
+            }
+
+            auto itr = m_registeredAttachmentImages.find(attachmentImage->GetAttachmentId());
+            if (itr != m_registeredAttachmentImages.end())
+            {
+                AZ_Assert(false, "AttachmangeImage with name '%s' was already registered", attachmentImage->GetAttachmentId().GetCStr());
+                return false;
+            }
+
+            m_registeredAttachmentImages[attachmentImage->GetAttachmentId()] = attachmentImage;
+
+            return true;
+        }
+
+        void ImageSystem::UnregisterAttachmentImage(AttachmentImage* attachmentImage)
+        {
+            if (!attachmentImage)
+            {
+                return;
+            }
+            auto itr = m_registeredAttachmentImages.find(attachmentImage->GetAttachmentId());
+            if (itr != m_registeredAttachmentImages.end())
+            {
+                m_registeredAttachmentImages.erase(itr);
+            }
+        }
+
+        Data::Instance<AttachmentImage> ImageSystem::FindRegisteredAttachmentImage(const Name& uniqueName) const
+        {
+            auto itr = m_registeredAttachmentImages.find(uniqueName);
+
+            if (itr != m_registeredAttachmentImages.end())
+            {
+                return itr->second;
+            }
+            return nullptr;
         }
 
         void ImageSystem::CreateDefaultResources(const ImageSystemDescriptor& desc)

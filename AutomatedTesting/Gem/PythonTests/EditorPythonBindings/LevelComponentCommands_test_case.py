@@ -128,7 +128,7 @@ if len(sys.argv) > 1:
 
 # Open a level (any level should work)
 general.create_level_no_prompt('LevelComponentTest', 128, 1, 512, True)
-# Make sure the default slices get a chance to initialize.
+# Make sure the default prefabs get a chance to initialize.
 general.idle_wait(1.0)
 
 # Generate List of Component Types

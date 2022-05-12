@@ -11,6 +11,7 @@
 
 #include <Atom/RHI.Reflect/Vulkan/Base.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
@@ -85,31 +86,14 @@ namespace AZ
             RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor,
             const ShaderResourceGroupInfoList& srgInfoList,
             const RootConstantsInfo& rootConstantsInfo,
-            const RHI::ShaderCompilerArguments& shaderCompilerArguments)
+            const RHI::ShaderBuildArguments& shaderBuildArguments)
         {
             AZ_UNUSED(srgInfoList);
             AZ_UNUSED(rootConstantsInfo);
-            AZ_UNUSED(shaderCompilerArguments);
+            AZ_UNUSED(shaderBuildArguments);
 
             // Nothing to do, so we just finalize the layout descriptor.
             return pipelineLayoutDescriptor->Finalize() == RHI::ResultCode::Success;
-        }
-
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
-        {
-            // Note: all platforms use DirectX packing rules.
-            return shaderCompilerArguments.MakeAdditionalAzslcCommandLineString() +
-                " --use-spaces --unique-idx --namespace=vk --root-const=128";
-        }
-
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
-        {
-            return shaderCompilerArguments.MakeAdditionalAzslcWarningCommandLineString();
-        }
-
-        bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
-        {
-            return shaderCompilerArguments.m_generateDebugInfo;
         }
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
@@ -133,7 +117,7 @@ namespace AZ
             RHI::ShaderHardwareStage shaderAssetType,
             const AZStd::string& tempFolderPath,
             StageDescriptor& outputDescriptor,
-            const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
+            const RHI::ShaderBuildArguments& shaderBuildArguments) const
         {
             AZStd::vector<uint8_t> shaderByteCode;
 
@@ -143,7 +127,7 @@ namespace AZ
                 tempFolderPath,                          // AP temp folder for the job
                 functionName,                            // name of function that is the entry point
                 shaderAssetType,                         // shader stage (vertex shader, pixel shader, ...)
-                shaderCompilerArguments,
+                shaderBuildArguments,
                 shaderByteCode,                          // compiled shader output
                 platform,                                // target platform
                 outputDescriptor.m_byProducts);          // dynamic branch count output & debug dumps
@@ -175,7 +159,7 @@ namespace AZ
             const AZStd::string& tempFolder,
             const AZStd::string& entryPoint,
             const RHI::ShaderHardwareStage shaderStageType,
-            const RHI::ShaderCompilerArguments& shaderCompilerArguments,
+            const RHI::ShaderBuildArguments& shaderBuildArguments,
             AZStd::vector<uint8_t>& compiledShader,
             const AssetBuilderSDK::PlatformInfo& platform,
             ByProducts& byProducts) const
@@ -216,22 +200,25 @@ namespace AZ
                 return false;
             }
 
-            // Compilation parameters
-            AZStd::string params = shaderCompilerArguments.MakeAdditionalDxcCommandLineString();
-            params += " -spirv"; // Generate SPIRV shader
-
+            // Make a copy of compilation parameters for DXC. We'll need
+            // to do per shader stage customization of arguments.
+            // NOTE: The current architecture of the ShaderBuildArgumentsManager API
+            // would allow to easily customize build arguments per shader stage.
+            // At the moment it is an overkill to enable such customization.
+            // If, in the future, the need arises across other RHIs and platforms
+            // We can revisit these hard coded parameters.
+            auto dxcArguments = shaderBuildArguments.m_dxcArguments;
             switch (shaderStageType)
             {
             case RHI::ShaderHardwareStage::Vertex:
             case RHI::ShaderHardwareStage::Geometry:
             case RHI::ShaderHardwareStage::TessellationEvaluation:
-                params += " -fvk-invert-y";
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fvk-invert-y" });
                 break;
             case RHI::ShaderHardwareStage::Fragment:
                 // Enable the use of subpass input. DXC doesn't compile if a SubpassInput is present
                 // when compiling a shader stage that is not the fragment shader (even if it's not being used).
-                params += " -DAZ_USE_SUBPASSINPUT";
-                params += " -fvk-use-dx-position-w";
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-DAZ_USE_SUBPASSINPUT", "-fvk-use-dx-position-w"});
                 break;
             case RHI::ShaderHardwareStage::TessellationControl:
             case RHI::ShaderHardwareStage::Compute:
@@ -241,30 +228,6 @@ namespace AZ
                 AZ_Assert(false, "Invalid Shader stage.");
             }
 
-            // Enable half precision types when shader model >= 6.2
-            int shaderModelMajor = 0;
-            int shaderModelMinor = 0;
-            [[maybe_unused]] int numValuesRead = azsscanf(shaderModelVersion.c_str(), "%d_%d", &shaderModelMajor, &shaderModelMinor);
-            AZ_Assert(numValuesRead == 2, "Unknown shader model version format");
-
-            // For mobile, which has 16 bit support in almost all GPUs, we allow 16 bit types in the shader.
-            // For PC, 16 bit types will fallback to 32 bit types with a "RelaxedPrecision" decoration. This
-            // decoration allows drivers to only compute 16-bits of precision if they want. We don't use "RelaxedPrecision" for
-            // mobile because that decoration is not supported by most mobile drivers.
-            if (shaderModelMajor >= 6 && shaderModelMinor >= 2 && platform.HasTag("mobile"))
-            {
-                params += " -enable-16bit-types";
-            }
-
-            // Disable image depth hint because it causes some crashes on mobile drivers.
-            if (platform.HasTag("mobile"))
-            {
-                params += " -fvk-disable-depth-hint";
-            }
-
-            // Use the same memory layout as DX12, otherwise some offset of constant may get wrong.
-            params += " -fvk-use-dx-layout";
-            AZ::StringFunc::TrimWhiteSpace(params, true, false);
             AZStd::string prependFile;
             if(platform.HasTag("mobile"))
             {
@@ -281,11 +244,15 @@ namespace AZ
             args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend header
-            if (BuildHasDebugInfo(shaderCompilerArguments))
+            const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
+
+            if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
             {
                 // dump intermediate "true final HLSL" file (shadername.vulkan.shadersource.prepend)
                 byProducts.m_intermediatePaths.insert(dxcInputFile);
             }
+
+            const auto params = RHI::ShaderBuildArguments::ListAsString(dxcArguments);
             const auto dxcEntryPoint = (shaderStageType == RHI::ShaderHardwareStage::RayTracing) ? "" : AZStd::string::format("-E %s", entryPoint.c_str());
             //                                                1.entry   3.config           5.dxil  6.hlsl-in
             //                                                    |   2.SM  |   4.output       |      |
@@ -334,7 +301,7 @@ namespace AZ
                 byProducts.m_dynamicBranchCount = ByProducts::UnknownDynamicBranchCount;
             }
 
-            if (BuildHasDebugInfo(shaderCompilerArguments))
+            if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
             {
                 byProducts.m_intermediatePaths.emplace(AZStd::move(objectCodeOutputFile));
             }

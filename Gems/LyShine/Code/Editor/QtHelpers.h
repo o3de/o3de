@@ -16,9 +16,4 @@ namespace QtHelpers
     AZ::Vector2 MapGlobalPosToLocalVector2(const QWidget* widget, const QPoint& pos);
 
     bool IsGlobalPosInWidget(const QWidget* widget, const QPoint& pos);
-
-    float GetHighDpiScaleFactor(const QWidget& widget);
-
-    QSize GetDpiScaledViewportSize(const QWidget& widget);
-
 }   // namespace QtHelpers

@@ -122,27 +122,6 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    void CAudioControlsEditorWindow::keyPressEvent(QKeyEvent* pEvent)
-    {
-        if (pEvent->key() == Qt::Key_S && pEvent->modifiers() == Qt::ControlModifier)
-        {
-            Save();
-        }
-        else if (pEvent->key() == Qt::Key_Z && (pEvent->modifiers() & Qt::ControlModifier))
-        {
-            if (pEvent->modifiers() & Qt::ShiftModifier)
-            {
-                GetIEditor()->Redo();
-            }
-            else
-            {
-                GetIEditor()->Undo();
-            }
-        }
-        QMainWindow::keyPressEvent(pEvent);
-    }
-
-    //-------------------------------------------------------------------------------------------//
     void CAudioControlsEditorWindow::closeEvent(QCloseEvent* pEvent)
     {
         if (m_pATLModel && m_pATLModel->IsDirty())
@@ -220,6 +199,20 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
+    void CAudioControlsEditorWindow::RefreshAudioSystem()
+    {
+        QString sLevelName = GetIEditor()->GetLevelName();
+
+        if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
+        {
+            // Rather pass empty QString to indicate that no level is loaded!
+            sLevelName = QString();
+        }
+
+        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RefreshAudioSystem, sLevelName.toUtf8().data());
+    }
+
+    //-------------------------------------------------------------------------------------------//
     void CAudioControlsEditorWindow::Save()
     {
         bool bPreloadsChanged = m_pATLModel->IsTypeDirty(eACET_PRELOAD);
@@ -236,15 +229,7 @@ namespace AudioControls
             messageBox.setWindowTitle("Audio Controls Editor");
             if (messageBox.exec() == QMessageBox::Yes)
             {
-                QString sLevelName = GetIEditor()->GetLevelName();
-
-                if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
-                {
-                    // Rather pass empty QString to indicate that no level is loaded!
-                    sLevelName = QString();
-                }
-
-                Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RefreshAudioSystem, sLevelName.toUtf8().data());
+                RefreshAudioSystem();
             }
         }
         m_pATLModel->ClearDirtyFlags();

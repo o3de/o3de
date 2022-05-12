@@ -88,6 +88,8 @@ namespace AZ
                     ->Event("SetShadowBias", &DirectionalLightRequestBus::Events::SetShadowBias)
                     ->Event("GetNormalShadowBias", &DirectionalLightRequestBus::Events::GetNormalShadowBias)
                     ->Event("SetNormalShadowBias", &DirectionalLightRequestBus::Events::SetNormalShadowBias)
+                    ->Event("GetCascadeBlendingEnabled", &DirectionalLightRequestBus::Events::GetCascadeBlendingEnabled)
+                    ->Event("SetCascadeBlendingEnabled", &DirectionalLightRequestBus::Events::SetCascadeBlendingEnabled)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
@@ -104,7 +106,8 @@ namespace AZ
                     ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
                     ->VirtualProperty("ShadowReceiverPlaneBiasEnabled", "GetShadowReceiverPlaneBiasEnabled", "SetShadowReceiverPlaneBiasEnabled")
                     ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias")
-                    ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias");
+                    ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias")
+                    ->VirtualProperty("BlendBetweenCascadesEnabled", "GetCascadeBlendingEnabled", "SetCascadeBlendingEnabled");
                 ;
             }
         }
@@ -537,6 +540,7 @@ namespace AZ
             SetNormalShadowBias(m_configuration.m_normalShadowBias);
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
             SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
+            SetCascadeBlendingEnabled(m_configuration.m_cascadeBlendingEnabled);
 
             // [GFX TODO][ATOM-1726] share config for multiple light (e.g., light ID).
             // [GFX TODO][ATOM-2416] adapt to multiple viewports.
@@ -634,6 +638,17 @@ namespace AZ
         {
             m_configuration.m_receiverPlaneBiasEnabled = enable;
             m_featureProcessor->SetShadowReceiverPlaneBiasEnabled(m_lightHandle, enable);
+        }
+
+        bool DirectionalLightComponentController::GetCascadeBlendingEnabled() const
+        {
+            return m_configuration.m_cascadeBlendingEnabled;
+        }
+
+        void DirectionalLightComponentController::SetCascadeBlendingEnabled(bool enable)
+        {
+            m_configuration.m_cascadeBlendingEnabled = enable;
+            m_featureProcessor->SetCascadeBlendingEnabled(m_lightHandle, enable);
         }
 
     } // namespace Render

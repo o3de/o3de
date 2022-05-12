@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __GAMECONTROLLER_H
-#define __GAMECONTROLLER_H
+#pragma once
 
 
 // include the required headers
@@ -155,7 +154,5 @@ private:
     HRESULT InitDirectInput(HWND hWnd);
     void LogError(HRESULT value, const char* text);
 };
-
-#endif
 
 #endif

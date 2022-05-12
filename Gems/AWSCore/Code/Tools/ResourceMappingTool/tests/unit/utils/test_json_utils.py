@@ -10,6 +10,7 @@ from typing import (Dict, List)
 from unittest import TestCase
 from unittest.mock import (MagicMock, mock_open, patch)
 
+from utils import file_utils
 from utils import json_utils
 from model import constants
 from model.resource_mapping_attributes import (ResourceMappingAttributes, ResourceMappingAttributesBuilder,
@@ -49,6 +50,10 @@ class TestJsonUtils(TestCase):
     }
 
     def setUp(self) -> None:
+        schema_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__, 4),
+                                                'resource_mapping_schema.json')
+        json_utils.load_resource_mapping_json_schema(schema_path)
+
         self._mock_open = mock_open()
         open_patcher: patch = patch("utils.json_utils.open", self._mock_open)
         self.addCleanup(open_patcher.stop)

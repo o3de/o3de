@@ -62,7 +62,7 @@ namespace AZ
             return nullptr;
         }
 
-        const AZStd::shared_ptr<PassTemplate> PassLibrary::GetPassTemplate(const Name& templateName) const
+        const AZStd::shared_ptr<const PassTemplate> PassLibrary::GetPassTemplate(const Name& templateName) const
         {
             const TemplateEntry* entry = GetEntry(templateName);
             return entry ? entry->m_template : nullptr;
@@ -236,6 +236,19 @@ namespace AZ
             return true;
         }
 
+        void PassLibrary::RemovePassTemplate(const Name& name)
+        {
+            auto itr = m_templateEntries.find(name);
+            if (itr != m_templateEntries.end())
+            {
+                AZ_Assert(itr->second.m_passes.empty(), "Can not delete PassTemplate '%s' because there are %zu Passes referencing it",
+                    name.GetCStr(), itr->second.m_passes.size());
+                AZ_Assert(!itr->second.m_mappingAssetId.IsValid(), "Can not delete PassTemplate '%s' because it was created from an asset",
+                    name.GetCStr());
+                m_templateEntries.erase(itr);
+            }
+        }
+
         void PassLibrary::RemovePassFromLibrary(Pass* pass)
         {
             if (m_isShuttingDown)
@@ -281,7 +294,7 @@ namespace AZ
         void PassLibrary::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
             // Handle pass asset reload
-            Data::Asset<PassAsset> passAsset = Data::static_pointer_cast<PassAsset>(asset);
+            Data::Asset<PassAsset> passAsset = { asset.GetAs<PassAsset>() , AZ::Data::AssetLoadBehavior::PreLoad};
             if (passAsset && passAsset->GetPassTemplate())
             {
                 LoadPassAsset(passAsset->GetPassTemplate()->m_name, passAsset, true);

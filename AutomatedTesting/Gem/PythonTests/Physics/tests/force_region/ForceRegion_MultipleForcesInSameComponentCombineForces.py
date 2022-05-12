@@ -162,7 +162,7 @@ def ForceRegion_MultipleForcesInSameComponentCombineForces():
     helper.init_idle()
 
     # 1) Load Level
-    helper.open_level("physics", "ForceRegion_MultipleForcesInSameComponentCombineForces")
+    helper.open_level("Physics", "ForceRegion_MultipleForcesInSameComponentCombineForces")
 
     # 2) Enter Game Mode
     helper.enter_game_mode(Tests.enter_game_mode)

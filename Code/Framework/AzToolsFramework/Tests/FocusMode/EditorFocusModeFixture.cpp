@@ -8,11 +8,12 @@
 
 #include <Tests/FocusMode/EditorFocusModeFixture.h>
 
+#include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 #include <Tests/BoundsTestComponent.h>
 
-namespace AzToolsFramework
+namespace UnitTest
 {
     void ClearSelectedEntities()
     {
@@ -31,14 +32,14 @@ namespace AzToolsFramework
     void EditorFocusModeFixture::SetUpEditorFixtureImpl()
     {
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        m_containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
         ASSERT_TRUE(m_containerEntityInterface != nullptr);
 
-        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+        m_focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
         ASSERT_TRUE(m_focusModeInterface != nullptr);
 
         // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
@@ -68,35 +69,38 @@ namespace AzToolsFramework
         ClearSelectedEntities();
     }
 
-    void EditorFocusModeFixture::GenerateTestHierarchy() 
+    void EditorFocusModeFixture::GenerateTestHierarchy()
     {
         /*
-        *   City
-        *   |_  Street
-        *       |_  Car
-        *       |   |_ Passenger
-        *       |_  SportsCar
-        *           |_ Passenger
-        */
+         *   City
+         *   |_  Street
+         *       |_  Car
+         *       |   |_ Passenger
+         *       |_  SportsCar
+         *           |_ Passenger
+         */
 
-        m_entityMap[CityEntityName] =       CreateEditorEntity(CityEntityName,          AZ::EntityId());
-        m_entityMap[StreetEntityName] =     CreateEditorEntity(StreetEntityName,        m_entityMap[CityEntityName]);
-        m_entityMap[CarEntityName] =        CreateEditorEntity(CarEntityName,           m_entityMap[StreetEntityName]);
-        m_entityMap[Passenger1EntityName] = CreateEditorEntity(Passenger1EntityName,    m_entityMap[CarEntityName]);
-        m_entityMap[SportsCarEntityName] =  CreateEditorEntity(SportsCarEntityName,     m_entityMap[StreetEntityName]);
-        m_entityMap[Passenger2EntityName] = CreateEditorEntity(Passenger2EntityName,    m_entityMap[SportsCarEntityName]);
+        m_entityMap[CityEntityName] = CreateEditorEntity(CityEntityName, AZ::EntityId());
+        m_entityMap[StreetEntityName] = CreateEditorEntity(StreetEntityName, m_entityMap[CityEntityName]);
+        m_entityMap[CarEntityName] = CreateEditorEntity(CarEntityName, m_entityMap[StreetEntityName]);
+        m_entityMap[Passenger1EntityName] = CreateEditorEntity(Passenger1EntityName, m_entityMap[CarEntityName]);
+        m_entityMap[SportsCarEntityName] = CreateEditorEntity(SportsCarEntityName, m_entityMap[StreetEntityName]);
+        m_entityMap[Passenger2EntityName] = CreateEditorEntity(Passenger2EntityName, m_entityMap[SportsCarEntityName]);
 
         // Add a BoundsTestComponent to the Car entity.
-        AZ::Entity* entity = GetEntityById(m_entityMap[CarEntityName]);
+        AZ::Entity* entity = AzToolsFramework::GetEntityById(m_entityMap[CarEntityName]);
 
         entity->Deactivate();
         entity->CreateComponent<UnitTest::BoundsTestComponent>();
         entity->Activate();
 
-        // Move the CarEntity so it's out of the way.
-        AZ::TransformBus::Event(m_entityMap[CarEntityName], &AZ::TransformBus::Events::SetWorldTranslation, WorldCarEntityPosition);
+        // Move the City so that it is in view
+        AZ::TransformBus::Event(m_entityMap[CityEntityName], &AZ::TransformBus::Events::SetWorldTranslation, s_worldCityEntityPosition);
 
-        // Setup the camera so the Car entity is in view.
+        // Move the CarEntity so that it's not overlapping with the rest
+        AZ::TransformBus::Event(m_entityMap[CarEntityName], &AZ::TransformBus::Events::SetWorldTranslation, s_worldCarEntityPosition);
+
+        // Setup the camera so the entities is in view.
         AzFramework::SetCameraTransform(
             m_cameraState,
             AZ::Transform::CreateFromQuaternionAndTranslation(
@@ -113,4 +117,5 @@ namespace AzToolsFramework
 
         return entity->GetId();
     }
-}
+
+} // namespace UnitTest

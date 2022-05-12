@@ -6,7 +6,7 @@
  *
  */
 
-#include "DitherGradientComponent.h"
+#include <GradientSignal/Components/DitherGradientComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -174,90 +174,122 @@ namespace GradientSignal
         return false;
     }
 
-    int PositionToMatrixIndex(float position, int patternSize)
+    int DitherGradientComponent::ScaledPositionToPatternIndex(const AZ::Vector3& scaledPosition, int patternSize)
     {
-        int result = static_cast<int>(std::floor(fmod(position, static_cast<float>(patternSize))));
+        // The input position is expected to be scaled up so that each integer value is a unique point in our dither pattern, and
+        // the fractional value is just the amount within the point.  The output is the specific index into an NxN pattern to use
+        // for the dither comparison value.
 
-        if (result < 0)
-        {
-            result += patternSize;
-        }
+        // Get the floor before casting to int because we want fractional negative values to go "down" to the next negative value.
+        AZ::Vector3 flooredScaledPosition = scaledPosition.GetFloor();
 
-        return result;
+        // For a pattern of 4, we want our indices to go 0, 1, 2, 3, 0, 1, 2, 3, etc. However, we want it continuous across
+        // negative and positive positions so we can't just use mod with abs(). Instead, we use a double-mod which gives us
+        // a result that's continuous across all coordinate space.
+        const int x = ((static_cast<int>(flooredScaledPosition.GetX()) % patternSize) + patternSize) % patternSize;
+        const int y = ((static_cast<int>(flooredScaledPosition.GetY()) % patternSize) + patternSize) % patternSize;
+
+        return (patternSize * y + x);
     }
 
-    float GetDitherValue4x4(const AZ::Vector3& position)
+    float DitherGradientComponent::GetDitherValue4x4(const AZ::Vector3& scaledPosition)
     {
-        const int patternSize = 4;
-        const int patternSizeSq = patternSize * patternSize;
-        const int indexMatrix[patternSizeSq] = {
-            0, 8, 2, 10,
-            12, 4, 14, 6,
-            3, 11, 1, 9,
-            15, 7, 13, 5 };
+        constexpr int patternSize = 4;
+        constexpr float indexMatrix[] = {
+             0.0f / 16.0f,  8.0f / 16.0f,  2.0f / 16.0f, 10.0f / 16.0f,
+            12.0f / 16.0f,  4.0f / 16.0f, 14.0f / 16.0f,  6.0f / 16.0f,
+             3.0f / 16.0f, 11.0f / 16.0f,  1.0f / 16.0f,  9.0f / 16.0f,
+            15.0f / 16.0f,  7.0f / 16.0f, 13.0f / 16.0f,  5.0f / 16.0f };
 
-        const int x = PositionToMatrixIndex(position.GetX(), patternSize);
-        const int y = PositionToMatrixIndex(position.GetY(), patternSize);
-        
-        return indexMatrix[patternSize * y + x] / static_cast<float>(patternSizeSq);
+        return indexMatrix[ScaledPositionToPatternIndex(scaledPosition, patternSize)];
     }
 
-    float GetDitherValue8x8(const AZ::Vector3& position)
+    float DitherGradientComponent::GetDitherValue8x8(const AZ::Vector3& scaledPosition)
     {
-        const int patternSize = 8;
-        const int patternSizeSq = patternSize * patternSize;
-        const int indexMatrix[patternSizeSq] = {
-            0, 32, 8, 40, 2, 34, 10, 42,
-            48, 16, 56, 24, 50, 18, 58, 26,
-            12, 44, 4, 36, 14, 46, 6, 38,
-            60, 28, 52, 20, 62, 30, 54, 22,
-            3, 35, 11, 43, 1, 33, 9, 41,
-            51, 19, 59, 27, 49, 17, 57, 25,
-            15, 47, 7, 39, 13, 45, 5, 37,
-            63, 31, 55, 23, 61, 29, 53, 21 };
+        constexpr int patternSize = 8;
+        constexpr float indexMatrix[] = {
+             0.0f / 64.0f, 32.0f / 64.0f,  8.0f / 64.0f, 40.0f / 64.0f,  2.0f / 64.0f, 34.0f / 64.0f, 10.0f / 64.0f, 42.0f / 64.0f,
+            48.0f / 64.0f, 16.0f / 64.0f, 56.0f / 64.0f, 24.0f / 64.0f, 50.0f / 64.0f, 18.0f / 64.0f, 58.0f / 64.0f, 26.0f / 64.0f,
+            12.0f / 64.0f, 44.0f / 64.0f,  4.0f / 64.0f, 36.0f / 64.0f, 14.0f / 64.0f, 46.0f / 64.0f,  6.0f / 64.0f, 38.0f / 64.0f,
+            60.0f / 64.0f, 28.0f / 64.0f, 52.0f / 64.0f, 20.0f / 64.0f, 62.0f / 64.0f, 30.0f / 64.0f, 54.0f / 64.0f, 22.0f / 64.0f,
+             3.0f / 64.0f, 35.0f / 64.0f, 11.0f / 64.0f, 43.0f / 64.0f,  1.0f / 64.0f, 33.0f / 64.0f,  9.0f / 64.0f, 41.0f / 64.0f,
+            51.0f / 64.0f, 19.0f / 64.0f, 59.0f / 64.0f, 27.0f / 64.0f, 49.0f / 64.0f, 17.0f / 64.0f, 57.0f / 64.0f, 25.0f / 64.0f,
+            15.0f / 64.0f, 47.0f / 64.0f,  7.0f / 64.0f, 39.0f / 64.0f, 13.0f / 64.0f, 45.0f / 64.0f,  5.0f / 64.0f, 37.0f / 64.0f,
+            63.0f / 64.0f, 31.0f / 64.0f, 55.0f / 64.0f, 23.0f / 64.0f, 61.0f / 64.0f, 29.0f / 64.0f, 53.0f / 64.0f, 21.0f / 64.0f
+        };
 
-        const int x = PositionToMatrixIndex(position.GetX(), patternSize);
-        const int y = PositionToMatrixIndex(position.GetY(), patternSize);
-
-        return indexMatrix[patternSize * y + x] / static_cast<float>(patternSizeSq);
+        return indexMatrix[ScaledPositionToPatternIndex(scaledPosition, patternSize)];
     }
 
-    float DitherGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
+    float DitherGradientComponent::GetCalculatedPointsPerUnit() const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        const AZ::Vector3& coordinate = sampleParams.m_position;
-
         float pointsPerUnit = m_configuration.m_pointsPerUnit;
         if (m_configuration.m_useSystemPointsPerUnit)
         {
             SectorDataRequestBus::Broadcast(&SectorDataRequestBus::Events::GetPointsPerMeter, pointsPerUnit);
         }
-        pointsPerUnit = AZ::GetMax(pointsPerUnit, 0.0001f);
+        return AZ::GetMax(pointsPerUnit, 0.0001f);
+    }
 
-        auto scaledCoordinate = coordinate * pointsPerUnit;
-        auto x = std::floor(scaledCoordinate.GetX()) / pointsPerUnit;
-        auto y = std::floor(scaledCoordinate.GetY()) / pointsPerUnit;
-        auto z = std::floor(scaledCoordinate.GetZ()) / pointsPerUnit;
-        AZ::Vector3 flooredCoordinate(x, y, z);
-
-        GradientSampleParams adjustedSampleParams = sampleParams;
-        adjustedSampleParams.m_position = flooredCoordinate;
-        float value = m_configuration.m_gradientSampler.GetValue(adjustedSampleParams);
-
+    float DitherGradientComponent::GetDitherValue(const AZ::Vector3& scaledPosition, float value) const
+    {
         float d = 0.0f;
         switch (m_configuration.m_patternType)
         {
         default:
         case DitherGradientConfig::BayerPatternType::PATTERN_SIZE_4x4:
-            d = GetDitherValue4x4((scaledCoordinate) + m_configuration.m_patternOffset);
+            d = GetDitherValue4x4(scaledPosition + m_configuration.m_patternOffset);
             break;
         case DitherGradientConfig::BayerPatternType::PATTERN_SIZE_8x8:
-            d = GetDitherValue8x8((scaledCoordinate) + m_configuration.m_patternOffset);
+            d = GetDitherValue8x8(scaledPosition + m_configuration.m_patternOffset);
             break;
         }
 
-        return value > d ? 1.0f : 0.0f;
+        return (value > d) ? 1.0f : 0.0f;
+    }
+
+    float DitherGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
+    {
+        const AZ::Vector3& coordinate = sampleParams.m_position;
+
+        const float pointsPerUnit = GetCalculatedPointsPerUnit();
+
+        AZ::Vector3 scaledCoordinate = coordinate * pointsPerUnit;
+        AZ::Vector3 flooredCoordinate = scaledCoordinate.GetFloor() / pointsPerUnit;
+
+        GradientSampleParams adjustedSampleParams = sampleParams;
+        adjustedSampleParams.m_position = flooredCoordinate;
+        float value = m_configuration.m_gradientSampler.GetValue(adjustedSampleParams);
+
+        return GetDitherValue(scaledCoordinate, value);
+    }
+
+    void DitherGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        const float pointsPerUnit = GetCalculatedPointsPerUnit();
+
+        // Create the entire set of floored coordinates to use in the gradient value lookups.
+        AZStd::vector<AZ::Vector3> flooredCoordinates(positions.size());
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            AZ::Vector3 scaledCoordinate = positions[index] * pointsPerUnit;
+            flooredCoordinates[index] = scaledCoordinate.GetFloor() / pointsPerUnit;
+        }
+
+        m_configuration.m_gradientSampler.GetValues(flooredCoordinates, outValues);
+
+        // For each gradient value, turn it into a 0 or 1 based on the location and the dither pattern.
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            AZ::Vector3 scaledCoordinate = positions[index] * pointsPerUnit;
+            outValues[index] = GetDitherValue(scaledCoordinate, outValues[index]);
+        }
     }
 
     bool DitherGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const

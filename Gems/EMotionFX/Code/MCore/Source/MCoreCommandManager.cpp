@@ -547,7 +547,12 @@ namespace MCore
                     }
 
                     tmpStr = commandString.substr(lastResultIndex, rightPercentagePos - lastResultIndex + 1);
-                    AzFramework::StringFunc::Replace(commandString, tmpStr.c_str(), intermediateCommandResults[i - relativeIndex].c_str());
+                    AZStd::string replaceStr = intermediateCommandResults[i - relativeIndex];
+                    if (replaceStr.empty())
+                    {
+                        replaceStr = "-1";
+                    }
+                    AzFramework::StringFunc::Replace(commandString, tmpStr.c_str(), replaceStr.c_str());
                     replaceHappen = true;
 
                     // Search again in case the command group is referring to other results

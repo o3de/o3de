@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "base": "{BA107060-249D-4818-9CEC-7573718273FC}",
+            "base": "{E73DB180-A325-763B-A1FE-517B548AF66E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -17,21 +17,34 @@
                     }
                 },
                 {
+                    "base": "DataInput_Interval_0",
+                    "details": {
+                        "name": "Interval"
+                    }
+                },
+                {
+                    "base": "Output_On Start_0",
+                    "details": {
+                        "name": "On Start"
+                    }
+                },
+                {
                     "base": "Input_Stop_1",
                     "details": {
                         "name": "Stop"
                     }
                 },
                 {
-                    "base": "Output_Pulse_0",
+                    "base": "Output_On Stop_1",
                     "details": {
-                        "name": "Pulse"
+                        "name": "On Stop"
                     }
                 },
                 {
-                    "base": "DataInput_Interval_0",
+                    "base": "Output_Pulse_2",
                     "details": {
-                        "name": "Interval"
+                        "name": "Pulse",
+                        "tooltip": "Signaled at each specified interval."
                     }
                 }
             ]

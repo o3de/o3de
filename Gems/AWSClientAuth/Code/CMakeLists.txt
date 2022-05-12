@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 ly_add_target(
     NAME AWSClientAuth.Static STATIC
@@ -15,9 +15,9 @@ ly_add_target(
         awsclientauth_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Include/Public
+            Include
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -35,7 +35,7 @@ ly_add_target(
         awsclientauth_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -97,8 +97,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awsclientauth_test_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                "Include/Private"
-                "Include/Public"
+                Source
+                Include
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
@@ -106,13 +106,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
-                AZ::AWSNativeSDKInit
+                AZ::AWSNativeSDKTestLibs
                 Gem::AWSClientAuth.Static
                 Gem::AWSCore
                 Gem::HttpRequestor
         RUNTIME_DEPENDENCIES
             Gem::AWSCore
-            AZ::AWSNativeSDKInit
             Gem::HttpRequestor
    )
    ly_add_googletest(

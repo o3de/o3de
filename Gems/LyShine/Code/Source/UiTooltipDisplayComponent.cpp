@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/Time/ITime.h>
 
 #include <LyShine/Bus/UiTransform2dBus.h>
 #include <LyShine/Bus/UiElementBus.h>
@@ -18,8 +19,6 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/UiTooltipDataPopulatorBus.h>
 #include <LyShine/UiSerializeHelpers.h>
-
-#include <ITimer.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -173,8 +172,8 @@ void UiTooltipDisplayComponent::Hide()
     {
         // Since sequences can't have keys that represent current values,
         // only play the hide animation if the show animation has completed.
-
-        m_timeSinceLastShown = gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI);
+        const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+        m_timeSinceLastShown = AZ::TimeMsToSeconds(realTimeMs);
 
         EndTransitionState();
 
@@ -184,7 +183,8 @@ void UiTooltipDisplayComponent::Hide()
 
     case State::Shown:
     {
-        m_timeSinceLastShown = gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI);
+        const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+        m_timeSinceLastShown = AZ::TimeMsToSeconds(realTimeMs);
 
         // Check if there is a hide animation to play
         IUiAnimationSystem* animSystem = nullptr;
@@ -220,7 +220,9 @@ void UiTooltipDisplayComponent::Update()
     if (m_state == State::DelayBeforeShow)
     {
         // Check if it's time to show the tooltip
-        if ((gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI) - m_stateStartTime) >= m_curDelayTime)
+        const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+        const float currentTime = AZ::TimeMsToSeconds(realTimeMs);
+        if ((currentTime - m_stateStartTime) >= m_curDelayTime)
         {
             // Make sure nothing has changed with the hover interactable
             if (m_tooltipElement.IsValid() && UiTooltipDataPopulatorBus::FindFirstHandler(m_tooltipElement))
@@ -238,7 +240,9 @@ void UiTooltipDisplayComponent::Update()
         // Check if it's time to hide the tooltip
         if (m_displayTime >= 0.0f)
         {
-            if ((gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI) - m_stateStartTime) >= m_displayTime)
+            const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+            const float currentTime = AZ::TimeMsToSeconds(realTimeMs);
+            if ((currentTime - m_stateStartTime) >= m_displayTime)
             {
                 // Hide tooltip
                 Hide();
@@ -425,7 +429,8 @@ void UiTooltipDisplayComponent::Deactivate()
 void UiTooltipDisplayComponent::SetState(State state)
 {
     m_state = state;
-    m_stateStartTime = gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI);
+    const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+    m_stateStartTime = AZ::TimeMsToSeconds(realTimeMs);
 
     switch (m_state)
     {

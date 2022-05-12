@@ -285,12 +285,14 @@ namespace EMotionFX
         numRemoved = motionData.ReduceSamples(reduceSettings);
         EXPECT_EQ(motionData.GetNumFloatSamples(0), 2);
         EXPECT_EQ(numRemoved, 9);
-
-        // Set the sample in the middle to 1.0 and the rest to 0.
-        //
-        //                        /\
-        //                       /  \
-        // ---------------------/    \---------------------
+        
+        /*
+           Set the sample in the middle to 1.0 and the rest to 0.
+          
+                                  /\
+                                 /  \
+           ---------------------/    \---------------------
+        */
         motionData.AllocateFloatSamples(0, 11);
         for (size_t i = 0; i < motionData.GetNumFloatSamples(0); ++i)
         {
@@ -301,12 +303,14 @@ namespace EMotionFX
         numRemoved = motionData.ReduceSamples(reduceSettings);
         EXPECT_EQ(motionData.GetNumFloatSamples(0), 5);
         EXPECT_EQ(numRemoved, 6);
-
-        // Make a bump of 2 frames.
-        //
-        //                        /------\
-        //                       /        \
-        // ---------------------/          \---------------
+        
+        /*
+           Make a bump of 2 frames.
+          
+                                  /------\
+                                 /        \
+           ---------------------/          \---------------
+        */
         motionData.AllocateFloatSamples(0, 11);
         for (size_t i = 0; i < motionData.GetNumFloatSamples(0); ++i)
         {
@@ -398,11 +402,13 @@ namespace EMotionFX
         EXPECT_EQ(motionData.GetNumJointRotationSamples(0), 0);
         EXPECT_EQ(numRemoved, 11);
 
-        // Set the sample in the middle to 1.0 and the rest to 0.
-        //
-        //                        /\
-        //                       /  \
-        // ---------------------/    \---------------------
+        /*
+           Set the sample in the middle to 1.0 and the rest to 0.
+          
+                                  /\
+                                 /  \
+           ---------------------/    \---------------------
+        */
         motionData.AllocateJointRotationSamples(0, 11);
         for (size_t i = 0; i < motionData.GetNumJointRotationSamples(0); ++i)
         {
@@ -413,12 +419,14 @@ namespace EMotionFX
         numRemoved = motionData.ReduceSamples(reduceSettings);
         EXPECT_EQ(motionData.GetNumJointRotationSamples(0), 5);
         EXPECT_EQ(numRemoved, 6);
-
-        // Make a bump of 2 frames.
-        //
-        //                        /------\
-        //                       /        \
-        // ---------------------/          \---------------
+        
+        /*
+           Make a bump of 2 frames.
+          
+                                  /------\
+                                 /        \
+           ---------------------/          \---------------
+        */
         motionData.AllocateJointRotationSamples(0, 11);
         for (size_t i = 0; i < motionData.GetNumJointRotationSamples(0); ++i)
         {
@@ -509,11 +517,13 @@ namespace EMotionFX
         EXPECT_EQ(motionData.GetNumJointPositionSamples(0), 0);
         EXPECT_EQ(numRemoved, 11);
 
-        // Set the sample in the middle to 1.0 and the rest to 0.
-        //
-        //                        /\
-        //                       /  \
-        // ---------------------/    \---------------------
+        /*
+           Set the sample in the middle to 1.0 and the rest to 0.
+          
+                                  /\
+                                 /  \
+           ---------------------/    \---------------------
+        */
         motionData.AllocateJointPositionSamples(0, 11);
         for (size_t i = 0; i < motionData.GetNumJointPositionSamples(0); ++i)
         {
@@ -525,11 +535,13 @@ namespace EMotionFX
         EXPECT_EQ(motionData.GetNumJointPositionSamples(0), 5);
         EXPECT_EQ(numRemoved, 6);
 
-        // Make a bump of 2 frames.
-        //
-        //                        /------\
-        //                       /        \
-        // ---------------------/          \---------------
+        /*
+           Make a bump of 2 frames.
+          
+                                  /------\
+                                 /        \
+           ---------------------/          \---------------
+        */
         motionData.AllocateJointPositionSamples(0, 11);
         for (size_t i = 0; i < motionData.GetNumJointPositionSamples(0); ++i)
         {

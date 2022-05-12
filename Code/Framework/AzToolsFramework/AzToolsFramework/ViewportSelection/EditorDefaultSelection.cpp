@@ -21,9 +21,8 @@ namespace AzToolsFramework
     AZ_CLASS_ALLOCATOR_IMPL(EditorDefaultSelection, AZ::SystemAllocator, 0)
 
     EditorDefaultSelection::EditorDefaultSelection(
-        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+        const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
         : m_phantomWidget(nullptr)
-        , m_entityDataCache(entityDataCache)
         , m_viewportEditorModeTracker(viewportEditorModeTracker)
         , m_componentModeCollection(viewportEditorModeTracker)
     {

@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Math/Uuid.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
@@ -22,6 +23,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(JsonRegistrationContext, "{5A763774-CA8B-4245-A897-A03C503DCD60}", ReflectContext);
+        AZ_CLASS_ALLOCATOR(JsonRegistrationContext, SystemAllocator, 0);
 
         class SerializerBuilder;
         using SerializerMap = AZStd::unordered_map<Uuid, AZStd::unique_ptr<BaseJsonSerializer>, AZStd::hash<Uuid>>;
@@ -45,9 +47,8 @@ namespace AZ
             }
             else
             {
-                SerializerMap::const_iterator serializerIter = m_jsonSerializers.find(typeId);
-                AZ_Assert(serializerIter != m_jsonSerializers.end(), "Attempting to unregister a serializer that has not been registered yet with typeid %s", typeId.ToString<AZStd::string>().c_str());
-                m_jsonSerializers.erase(serializerIter);
+                [[maybe_unused]] size_t erased = m_jsonSerializers.erase(typeId);
+                AZ_Assert(erased == 1, "Attempting to unregister a serializer that has not been registered yet with typeid %s", typeId.ToString<AZStd::string>().c_str());
                 return SerializerBuilder(this, m_jsonSerializers.end());
             }
         }
@@ -70,7 +71,13 @@ namespace AZ
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
+#if defined(AZ_COMPILER_MSVC)
+            // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
+            // template argument with a type variadic pack vs a template template argument with a non-type auto variadic pack. 
             template<template<AZStd::size_t...> class T>
+#else
+            template<template<auto...> class T>
+#endif // defined(AZ_COMPILER_MSVC)
             SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);

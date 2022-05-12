@@ -10,7 +10,7 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <BuilderSettings/ImageProcessingDefines.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Atom/ImageProcessing/PixelFormats.h>
 
 namespace ImageProcessingAtom

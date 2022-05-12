@@ -100,7 +100,7 @@ namespace AZ::IO
 
         void QueueReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
             if (data)
             {
                 if (m_fakeFileFound)
@@ -122,15 +122,15 @@ namespace AZ::IO
                 m_context->MarkRequestAsCompleted(request);
             }
             else if (
-                AZStd::holds_alternative<FileRequest::FlushData>(request->GetCommand()) ||
-                AZStd::holds_alternative<FileRequest::FlushAllData>(request->GetCommand()))
+                AZStd::holds_alternative<Requests::FlushData>(request->GetCommand()) ||
+                AZStd::holds_alternative<Requests::FlushAllData>(request->GetCommand()))
             {
                 request->SetStatus(IStreamerTypes::RequestStatus::Completed);
                 m_context->MarkRequestAsCompleted(request);
             }
-            else if (AZStd::holds_alternative<FileRequest::FileMetaDataRetrievalData>(request->GetCommand()))
+            else if (AZStd::holds_alternative<Requests::FileMetaDataRetrievalData>(request->GetCommand()))
             {
-                auto& data2 = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
+                auto& data2 = AZStd::get<Requests::FileMetaDataRetrievalData>(request->GetCommand());
                 data2.m_found = m_fakeFileFound;
                 data2.m_fileSize = m_fakeFileLength;
                 request->SetStatus(m_fakeFileFound ? IStreamerTypes::RequestStatus::Completed : IStreamerTypes::RequestStatus::Failed);
@@ -158,16 +158,16 @@ namespace AZ::IO
 
         void QueueCanceledReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
             if (data)
             {
                 ReadFile(data->m_output, data->m_path, data->m_offset, data->m_size);
                 request->SetStatus(IStreamerTypes::RequestStatus::Canceled);
                 m_context->MarkRequestAsCompleted(request);
             }
-            else if (AZStd::holds_alternative<FileRequest::FileMetaDataRetrievalData>(request->GetCommand()))
+            else if (AZStd::holds_alternative<Requests::FileMetaDataRetrievalData>(request->GetCommand()))
             {
-                auto& data2 = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
+                auto& data2 = AZStd::get<Requests::FileMetaDataRetrievalData>(request->GetCommand());
                 data2.m_found = true;
                 data2.m_fileSize = m_fakeFileLength;
                 request->SetStatus(IStreamerTypes::RequestStatus::Completed);

@@ -120,9 +120,10 @@ namespace AZ
 
         namespace SubProducts = ShaderBuilderUtility::AzslSubProducts;
 
-        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::string& parameters, const AZStd::string& outputFile /* = ""*/) const
+        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::vector<AZStd::string>& azslcArguments, const AZStd::string& outputFile /* = ""*/) const
         {
-            bool success = Compile("--full " + parameters, outputFile);
+            const auto azslArgsStr = RHI::ShaderBuildArguments::ListAsString(azslcArguments);
+            bool success = Compile(azslArgsStr, outputFile);
             if (!success)
             {
                 return Failure();

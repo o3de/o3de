@@ -69,8 +69,8 @@ def InputBindings_Add_Remove_Input_Events():
 
         import azlmbr.legacy.general as general
 
+        import editor_python_test_tools.hydra_editor_utils as hydra
         from editor_python_test_tools.utils import Report
-        from editor_python_test_tools.utils import TestHelper as helper
 
         def open_asset_editor():
             general.open_pane("Asset Editor")
@@ -81,8 +81,7 @@ def InputBindings_Add_Remove_Input_Events():
             return not general.is_pane_visible("Asset Editor")
 
         # 1) Open an existing simple level
-        helper.init_idle()
-        helper.open_level("Physics", "Base")
+        hydra.open_base_level()
 
         # 2) Open Asset Editor
         Report.result(Tests.asset_editor_opened, open_asset_editor())

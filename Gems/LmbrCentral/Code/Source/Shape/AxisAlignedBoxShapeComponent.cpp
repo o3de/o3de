@@ -27,16 +27,12 @@ namespace LmbrCentral
     {
         incompatible.push_back(AZ_CRC_CE("ShapeService"));
         incompatible.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void AxisAlignedBoxShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-    }
-
-    void AxisAlignedBoxShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
-        dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void AxisAlignedBoxShapeDebugDisplayComponent::Reflect(AZ::ReflectContext* context)
@@ -54,8 +50,6 @@ namespace LmbrCentral
     {
         EntityDebugDisplayComponent::Activate();
         ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
-        m_nonUniformScale = AZ::Vector3::CreateOne();
-        AZ::NonUniformScaleRequestBus::EventResult(m_nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
     }
 
     void AxisAlignedBoxShapeDebugDisplayComponent::Deactivate()
@@ -74,7 +68,7 @@ namespace LmbrCentral
         transform.SetRotation(AZ::Quaternion::CreateIdentity());
         saveMatrix = debugDisplay.PopPremultipliedMatrix();
         debugDisplay.PushMatrix(transform);
-        DrawBoxShape(drawParams, m_boxShapeConfig, debugDisplay, m_nonUniformScale);
+        DrawBoxShape(drawParams, m_boxShapeConfig, debugDisplay);
         debugDisplay.PopMatrix();
         debugDisplay.PushPremultipliedMatrix(saveMatrix);
     }
@@ -104,7 +98,6 @@ namespace LmbrCentral
         if (changeReason == ShapeChangeReasons::ShapeChanged)
         {
             BoxShapeComponentRequestsBus::EventResult(m_boxShapeConfig, GetEntityId(), &BoxShapeComponentRequests::GetBoxConfiguration);
-            AZ::NonUniformScaleRequestBus::EventResult(m_nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
         }
     }
 

@@ -6,7 +6,7 @@
  *
  */
 
-#include "ShapeAreaFalloffGradientComponent.h"
+#include <GradientSignal/Components/ShapeAreaFalloffGradientComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -157,21 +157,55 @@ namespace GradientSignal
 
     float ShapeAreaFalloffGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         float distance = 0.0f;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, sampleParams.m_position);
 
-        // In the special case of 0 falloff, make sure that all points inside the shape (0 distance) return 
-        // 1.0, and all points outside the shape return 0.
-        if (m_configuration.m_falloffWidth == 0.0f)
+        // Since this is outer falloff, distance should give us values from 1.0 at the minimum distance to 0.0 at the maximum distance.
+        // The statement is written specifically to handle the 0 falloff case as well. For 0 falloff, all points inside the shape
+        // (0 distance) return 1.0, and all points outside the shape return 0. This works because division by 0 gives infinity, which gets
+        // clamped by the GetMax() to 0.  However, if distance == 0, it would give us NaN, so we have the separate conditional check to
+        // handle that case and clamp to 1.0.
+        return (distance <= 0.0f) ? 1.0f : AZ::GetMax(1.0f - (distance / m_configuration.m_falloffWidth), 0.0f);
+    }
+
+    void ShapeAreaFalloffGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
         {
-            return (distance > 0.0f) ? 0.0f : 1.0f;
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
         }
 
-        // Since this is outer falloff, distance should give us values from 1.0 at the minimum distance
-        // to 0.0 at the maximum distance.
-        return GetRatio(m_configuration.m_falloffWidth, 0.0f, distance);
+        bool shapeConnected = false;
+        const float falloffWidth = m_configuration.m_falloffWidth;
+
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            m_configuration.m_shapeEntityId,
+            [falloffWidth, positions, &outValues, &shapeConnected](LmbrCentral::ShapeComponentRequestsBus::Events* shapeRequests)
+            {
+                shapeConnected = true;
+
+                for (size_t index = 0; index < positions.size(); index++)
+                {
+                    float distance = shapeRequests->DistanceFromPoint(positions[index]);
+
+                    // Since this is outer falloff, distance should give us values from 1.0 at the minimum distance to 0.0 at the maximum
+                    // distance. The statement is written specifically to handle the 0 falloff case as well. For 0 falloff, all points
+                    // inside the shape (0 distance) return 1.0, and all points outside the shape return 0. This works because division by 0
+                    // gives infinity, which gets clamped by the GetMax() to 0.  However, if distance == 0, it would give us NaN, so we have
+                    // the separate conditional check to handle that case and clamp to 1.0.
+                    outValues[index] = (distance <= 0.0f) ? 1.0f : AZ::GetMax(1.0f - (distance / falloffWidth), 0.0f);
+                }
+            });
+
+        // If there's no shape, there's no falloff.
+        if (!shapeConnected)
+        {
+            for (auto& outValue : outValues)
+            {
+                outValue = 1.0f;
+            }
+        }
     }
 
     AZ::EntityId ShapeAreaFalloffGradientComponent::GetShapeEntityId() const

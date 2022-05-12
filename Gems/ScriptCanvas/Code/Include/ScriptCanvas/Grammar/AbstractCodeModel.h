@@ -142,8 +142,8 @@ namespace ScriptCanvas
 
             bool IsErrorFree() const;
 
-            // has modified data or handlers
-            bool IsPerEntityDataRequired() const;
+            // has state or handlers
+            bool IsClass() const;
 
             // if only functions, constant data, but no with state operations on state or handlers, etc
             bool IsPureLibrary() const;

@@ -149,5 +149,3 @@ void CEventKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selec
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CEventKeyUIControls, "TrackView.KeyUI.Event", "TrackViewKeyUI");

@@ -13,4 +13,7 @@ namespace AZStd
 {
     using std::is_floating_point;
     using std::is_floating_point_v;
+
+    template<class T>
+    /*concept*/ constexpr bool floating_point = is_floating_point_v<T>;
 }

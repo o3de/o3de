@@ -54,6 +54,21 @@ namespace FastNoiseGem
         return AZ::Edit::PropertyVisibility::Hide;
     }
 
+    bool FastNoiseGradientConfig::operator==(const FastNoiseGradientConfig& rhs) const
+    {
+        return (m_cellularDistanceFunction == rhs.m_cellularDistanceFunction)
+        && (m_cellularJitter == rhs.m_cellularJitter)
+        && (m_cellularReturnType == rhs.m_cellularReturnType)
+        && (m_fractalType == rhs.m_fractalType)
+        && (m_frequency == rhs.m_frequency)
+        && (m_gain == rhs.m_gain)
+        && (m_interp == rhs.m_interp)
+        && (m_lacunarity == rhs.m_lacunarity)
+        && (m_noiseType == rhs.m_noiseType)
+        && (m_octaves == rhs.m_octaves)
+        && (m_seed == rhs.m_seed);
+    }
+
     void FastNoiseGradientConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -249,6 +264,9 @@ namespace FastNoiseGem
 
     void FastNoiseGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientSignal::GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         // Some platforms require random seeds to be > 0.  Clamp to a positive range to ensure we're always safe.
         m_generator.SetSeed(AZ::GetMax(m_configuration.m_seed, 1));
         m_generator.SetFrequency(m_configuration.m_frequency);
@@ -272,6 +290,7 @@ namespace FastNoiseGem
     {
         GradientSignal::GradientRequestBus::Handler::BusDisconnect();
         FastNoiseGradientRequestBus::Handler::BusDisconnect();
+        GradientSignal::GradientTransformNotificationBus::Handler::BusDisconnect();
     }
 
     bool FastNoiseGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -294,22 +313,50 @@ namespace FastNoiseGem
         return false;
     }
 
+    void FastNoiseGradientComponent::OnGradientTransformChanged(const GradientSignal::GradientTransform& newTransform)
+    {
+        AZStd::unique_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        m_gradientTransform = newTransform;
+    }
+
     float FastNoiseGradientComponent::GetValue(const GradientSignal::GradientSampleParams& sampleParams) const
     {
-        AZ::Vector3 uvw = sampleParams.m_position;
-
+        AZ::Vector3 uvw;
         bool wasPointRejected = false;
-        const bool shouldNormalizeOutput = false;
-        GradientSignal::GradientTransformRequestBus::Event(
-            GetEntityId(), &GradientSignal::GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
 
-        if (!wasPointRejected)
         {
-            // Generator returns a range between [-1, 1], map that to [0, 1]
-            return AZ::GetClamp((m_generator.GetNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ()) + 1.0f) / 2.0f, 0.0f, 1.0f);
+            AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+            m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
         }
 
-        return 0.0f;
+        // Generator returns a range between [-1, 1], map that to [0, 1]
+        return wasPointRejected ?
+            0.0f :
+            AZ::GetClamp((m_generator.GetNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ()) + 1.0f) / 2.0f, 0.0f, 1.0f);
+    }
+
+    void FastNoiseGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        AZ::Vector3 uvw;
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            bool wasPointRejected = false;
+
+            m_gradientTransform.TransformPositionToUVW(positions[index], uvw, wasPointRejected);
+
+            // Generator returns a range between [-1, 1], map that to [0, 1]
+            outValues[index] = wasPointRejected ?
+                0.0f :
+                AZ::GetClamp((m_generator.GetNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ()) + 1.0f) / 2.0f, 0.0f, 1.0f);
+        }
     }
 
     template <typename TValueType, TValueType FastNoiseGradientConfig::*TConfigMember, void (FastNoise::*TMethod)(TValueType)>

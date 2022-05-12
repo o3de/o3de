@@ -16,6 +16,8 @@
 #include <EngineInfo.h>
 #include <CreateProjectCtrl.h>
 #include <TagWidget.h>
+
+#include <AzCore/Math/Uuid.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 
 #include <QVBoxLayout>
@@ -205,6 +207,7 @@ namespace O3DE::ProjectManager
         {
             m_templateDisplayName = new QLabel(this);
             m_templateDisplayName->setObjectName("displayName");
+            m_templateDisplayName->setWordWrap(true);
             templateDetailsLayout->addWidget(m_templateDisplayName);
 
             m_templateSummary = new QLabel(this);
@@ -225,7 +228,7 @@ namespace O3DE::ProjectManager
             moreGemsLabel->setObjectName("moreGems");
             templateDetailsLayout->addWidget(moreGemsLabel);
 
-            QLabel* browseCatalogLabel = new QLabel(tr("Browse the  Gems Catalog to further customize your project."), this);
+            QLabel* browseCatalogLabel = new QLabel(tr("Browse the Gems Catalog to further customize your project."), this);
             browseCatalogLabel->setObjectName("browseCatalog");
             browseCatalogLabel->setWordWrap(true);
             templateDetailsLayout->addWidget(browseCatalogLabel);

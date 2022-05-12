@@ -14,6 +14,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/ConsoleFunctor.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace AZ
 {
@@ -111,6 +112,7 @@ namespace AZ
              console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());           \
              console->ExecuteDeferredConsoleCommands();                                          \
         }                                                                                        \
+        AZ::NameDictionary::Instance().LoadDeferredNames(AZ::Name::GetDeferredHead());           \
         return aznew MODULE_CLASSNAME;                                                           \
     }                                                                                            \
     extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module* module) { delete module; }

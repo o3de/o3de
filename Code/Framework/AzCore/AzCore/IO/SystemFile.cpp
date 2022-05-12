@@ -8,7 +8,6 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/functional.h>
@@ -101,23 +100,11 @@ bool SystemFile::Open(const char* fileName, int mode, int platformFlags)
     {
         if (strlen(fileName) > m_fileName.max_size())
         {
-            EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, 0);
             return false;
         }
 
         // store the filename
         m_fileName = fileName;
-    }
-
-    if (FileIOBus::HasHandlers())
-    {
-        bool isOpen = false;
-        bool isHandled = false;
-        EBUS_EVENT_RESULT(isHandled, FileIOBus, OnOpen, *this, m_fileName.c_str(), mode, platformFlags, isOpen);
-        if (isHandled)
-        {
-            return isOpen;
-        }
     }
 
     AZ_Assert(!IsOpen(), "This file (%s) is already open!", m_fileName.c_str());
@@ -133,31 +120,11 @@ bool SystemFile::ReOpen(int mode, int platformFlags)
 
 void SystemFile::Close()
 {
-    if (FileIOBus::HasHandlers())
-    {
-        bool isHandled = false;
-        EBUS_EVENT_RESULT(isHandled, FileIOBus, OnClose, *this);
-        if (isHandled)
-        {
-            return;
-        }
-    }
-
     PlatformClose();
 }
 
 void SystemFile::Seek(SeekSizeType offset, SeekMode mode)
 {
-    if (FileIOBus::HasHandlers())
-    {
-        bool isHandled = false;
-        EBUS_EVENT_RESULT(isHandled, FileIOBus, OnSeek, *this, offset, mode);
-        if (isHandled)
-        {
-            return;
-        }
-    }
-
     Platform::Seek(m_handle, this, offset, mode);
 }
 
@@ -178,33 +145,11 @@ AZ::u64 SystemFile::ModificationTime()
 
 SystemFile::SizeType SystemFile::Read(SizeType byteSize, void* buffer)
 {
-    if (FileIOBus::HasHandlers())
-    {
-        SizeType numRead = 0;
-        bool isHandled = false;
-        EBUS_EVENT_RESULT(isHandled, FileIOBus, OnRead, *this, byteSize, buffer, numRead);
-        if (isHandled)
-        {
-            return numRead;
-        }
-    }
-
     return Platform::Read(m_handle, this, byteSize, buffer);
 }
 
 SystemFile::SizeType SystemFile::Write(const void* buffer, SizeType byteSize)
 {
-    if (FileIOBus::HasHandlers())
-    {
-        SizeType numWritten = 0;
-        bool isHandled = false;
-        EBUS_EVENT_RESULT(isHandled, FileIOBus, OnWrite, *this, buffer, byteSize, numWritten);
-        if (isHandled)
-        {
-            return numWritten;
-        }
-    }
-
     return Platform::Write(m_handle, this, buffer, byteSize);
 }
 

@@ -8,6 +8,7 @@
 
 set(FILES
     ../Common/WinAPI/AzTest/ColorizedOutput_WinAPI.cpp
+    ../Common/WinAPI/AzTest/Utils_WinAPI.cpp
     Platform_Windows.cpp
     ScopedAutoTempDirectory_Windows.cpp
     AzTest_Traits_Platform.h

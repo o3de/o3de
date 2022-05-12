@@ -273,7 +273,7 @@ namespace UnitTest
         // Also enable extra verbosity in the AZ::IO::Archive code
         CVarIntValueScope previousLocationPriority{ *console, "sys_pakPriority" };
         CVarIntValueScope oldArchiveVerbosity{ *console, "az_archive_verbosity" };
-        console->PerformCommand("sys_PakPriority", { AZ::CVarFixedString::format("%d", aznumeric_cast<int>(AZ::IO::ArchiveLocationPriority::ePakPriorityPakOnly)) });
+        console->PerformCommand("sys_PakPriority", { AZ::CVarFixedString::format("%d", aznumeric_cast<int>(AZ::IO::FileSearchPriority::PakOnly)) });
         console->PerformCommand("az_archive_verbosity", { "1" });
 
         // ---- Archive FGetCachedFileDataTests (these leverage Archive CachedFile mechanism for caching data ---
@@ -459,7 +459,7 @@ namespace UnitTest
 
         // Once the archive has been deleted it should no longer be searched
         CVarIntValueScope previousLocationPriority{ *console, "sys_pakPriority" };
-        console->PerformCommand("sys_PakPriority", { AZ::CVarFixedString::format("%d", aznumeric_cast<int>(AZ::IO::ArchiveLocationPriority::ePakPriorityPakOnly)) });
+        console->PerformCommand("sys_PakPriority", { AZ::CVarFixedString::format("%d", aznumeric_cast<int>(AZ::IO::FileSearchPriority::PakOnly)) });
 
         handle = archive->FindFirst("levels\\*");
         EXPECT_FALSE(static_cast<bool>(handle));
@@ -785,7 +785,7 @@ namespace UnitTest
 
         EXPECT_TRUE(archive->OpenPack("@usercache@", realNameBuf));
         EXPECT_TRUE(archive->IsFileExist("@usercache@/foundit.dat"));
-        EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat", AZ::IO::FileSearchLocation::OnDisk));
         EXPECT_FALSE(archive->IsFileExist("@usercache@/notfoundit.dat"));
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
 
@@ -793,7 +793,7 @@ namespace UnitTest
         EXPECT_TRUE(archive->OpenPack("@products@", realNameBuf));
         EXPECT_TRUE(archive->IsFileExist("@products@/foundit.dat"));
         EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat")); // do not find it in the previous location!
-        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat", AZ::IO::FileSearchLocation::OnDisk));
         EXPECT_FALSE(archive->IsFileExist("@products@/notfoundit.dat"));
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
 
@@ -802,8 +802,8 @@ namespace UnitTest
         EXPECT_TRUE(archive->IsFileExist("@products@/mystuff/foundit.dat"));
         EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat")); // do not find it in the previous locations!
         EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat")); // do not find it in the previous locations!
-        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
-        EXPECT_FALSE(archive->IsFileExist("@products@/mystuff/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat", AZ::IO::FileSearchLocation::OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@products@/mystuff/foundit.dat", AZ::IO::FileSearchLocation::OnDisk));
         EXPECT_FALSE(archive->IsFileExist("@products@/notfoundit.dat")); // non-existent file
         EXPECT_FALSE(archive->IsFileExist("@products@/mystuff/notfoundit.dat")); // non-existent file
         EXPECT_TRUE(archive->ClosePack(realNameBuf));

@@ -516,7 +516,7 @@ namespace ScriptCanvasEditor
             GraphCanvas::SlotRequestBus::EventResult(endpoint, slotId2, &GraphCanvas::SlotRequests::GetEndpoint);
 
             bool promotedElement = false;
-            GraphCanvas::GraphModelRequestBus::EventResult(promotedElement, graphId2, &GraphCanvas::GraphModelRequests::PromoteToVariableAction, endpoint);
+            GraphCanvas::GraphModelRequestBus::EventResult(promotedElement, graphId2, &GraphCanvas::GraphModelRequests::PromoteToVariableAction, endpoint, false);
 
             if (promotedElement)
             {

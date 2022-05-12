@@ -45,7 +45,7 @@ namespace ScriptCanvas
 namespace ScriptCanvasEditor
 {
     //! EditorGraph is the editor version of the ScriptCanvas::Graph component that is activated when executing the script canvas engine
-    class Graph
+    class EditorGraph
         : public ScriptCanvas::Graph
         , private NodeCreationNotificationBus::Handler
         , private SceneCounterRequestBus::Handler
@@ -77,7 +77,7 @@ namespace ScriptCanvasEditor
 
         typedef AZStd::unordered_map< AZ::EntityId, AZ::EntityId > WrappedNodeGroupingMap;
 
-        static void ConvertToGetVariableNode(Graph* graph, ScriptCanvas::VariableId variableId, const AZ::EntityId& nodeId, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& setVariableRemapping);
+        static void ConvertToGetVariableNode(EditorGraph* graph, ScriptCanvas::VariableId variableId, const AZ::EntityId& nodeId, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& setVariableRemapping);
 
         struct CRCCache
         {
@@ -100,13 +100,13 @@ namespace ScriptCanvasEditor
         };
 
     public:
-        AZ_COMPONENT(Graph, "{4D755CA9-AB92-462C-B24F-0B3376F19967}", ScriptCanvas::Graph);
+        AZ_COMPONENT(EditorGraph, "{4D755CA9-AB92-462C-B24F-0B3376F19967}", ScriptCanvas::Graph);
 
         static ScriptCanvas::DataPtr Create();
 
         static void Reflect(AZ::ReflectContext* context);
 
-        Graph(const ScriptCanvas::ScriptCanvasId& scriptCanvasId = AZ::Entity::MakeId())
+        EditorGraph(const ScriptCanvas::ScriptCanvasId& scriptCanvasId = AZ::Entity::MakeId())
             : ScriptCanvas::Graph(scriptCanvasId)
             , m_variableCounter(0)
             , m_graphCanvasSceneEntity(nullptr)
@@ -115,10 +115,20 @@ namespace ScriptCanvasEditor
             , m_upgradeSM(this)
         {}
 
-        ~Graph() override;
+        ~EditorGraph() override;
 
         void Activate() override;
         void Deactivate() override;
+
+        static const char* GetMimeType()
+        {
+            return "application/x-o3de-scriptcanvas";
+        }
+
+        static const char* GetWrappedNodeGroupingMimeType()
+        {
+            return "application/x-03de-scriptcanvas-wrappednodegrouping";
+        }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
@@ -175,12 +185,12 @@ namespace ScriptCanvasEditor
         void RemoveSlot(const GraphCanvas::Endpoint& endpoint) override;
         bool IsSlotRemovable(const GraphCanvas::Endpoint& endpoint) const override;
 
-        bool ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
-        bool CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
+        bool ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
+        bool CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
         GraphCanvas::CanHandleMimeEventOutcome CanHandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
         bool HandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
-        bool CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint) const override;
-        bool PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint) override;
+        bool CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) const override;
+        bool PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
         bool SynchronizeReferences(const GraphCanvas::Endpoint& sourceEndpoint, const GraphCanvas::Endpoint& targetEndpoint) override;
 
         bool ConvertSlotToValue(const GraphCanvas::Endpoint& endpoint) override;
@@ -326,7 +336,7 @@ namespace ScriptCanvasEditor
 
         void UnregisterToast(const AzToolsFramework::ToastId& toastId);
 
-        Graph(const Graph&) = delete;
+        EditorGraph(const EditorGraph&) = delete;
 
         void DisplayUpdateToast();
 

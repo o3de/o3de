@@ -279,6 +279,7 @@ namespace UnitTest
 
     TEST(MATH_Vector3, TestIsLessEqualThan)
     {
+        AZ_TEST_ASSERT(Vector3(1.0f, 2.0f, 3.0f).IsLessEqualThan(Vector3(1.0f, 2.0f, 3.0f)));
         AZ_TEST_ASSERT(Vector3(1.0f, 2.0f, 3.0f).IsLessEqualThan(Vector3(2.0f, 3.0f, 4.0f)));
         AZ_TEST_ASSERT(!Vector3(1.0f, 2.0f, 3.0f).IsLessEqualThan(Vector3(0.0f, 3.0f, 4.0f)));
         AZ_TEST_ASSERT(Vector3(1.0f, 2.0f, 3.0f).IsLessEqualThan(Vector3(2.0f, 2.0f, 4.0f)));
@@ -293,6 +294,7 @@ namespace UnitTest
 
     TEST(MATH_Vector3, TestIsGreaterEqualThan)
     {
+        AZ_TEST_ASSERT(Vector3(1.0f, 2.0f, 3.0f).IsGreaterEqualThan(Vector3(1.0f, 2.0f, 3.0f)));
         AZ_TEST_ASSERT(Vector3(1.0f, 2.0f, 3.0f).IsGreaterEqualThan(Vector3(0.0f, 1.0f, 2.0f)));
         AZ_TEST_ASSERT(!Vector3(1.0f, 2.0f, 3.0f).IsGreaterEqualThan(Vector3(0.0f, 3.0f, 2.0f)));
         AZ_TEST_ASSERT(Vector3(1.0f, 2.0f, 3.0f).IsGreaterEqualThan(Vector3(0.0f, 2.0f, 2.0f)));

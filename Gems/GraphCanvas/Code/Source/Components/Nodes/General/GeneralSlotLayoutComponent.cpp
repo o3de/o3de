@@ -188,9 +188,7 @@ namespace GraphCanvas
     void GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::DisplaySlot(const AZ::EntityId& slotId)
     {
         ConnectionType connectionType = ConnectionType::CT_Invalid;
-        SlotRequestBus::EventResult(connectionType, slotId, &SlotRequests::GetConnectionType);                
-        
-        int layoutOrder = 0;
+        SlotRequestBus::EventResult(connectionType, slotId, &SlotRequests::GetConnectionType);
 
         SlotLayoutInfo slotInfo(slotId);
 
@@ -199,14 +197,14 @@ namespace GraphCanvas
             SlotUINotificationBus::MultiHandler::BusConnect(slotId);
 
             m_inputSlotSet.insert(slotId);
-            layoutOrder = LayoutSlot(m_inputs, m_inputSlots, slotInfo);
+            LayoutSlot(m_inputs, m_inputSlots, slotInfo);
         }
         else if (connectionType == CT_Output)
         {
             SlotUINotificationBus::MultiHandler::BusConnect(slotId);
 
             m_outputSlotSet.insert(slotId);
-            LayoutSlot(m_outputs, m_outputSlots, slotInfo);            
+            LayoutSlot(m_outputs, m_outputSlots, slotInfo);
         }
         else
         {

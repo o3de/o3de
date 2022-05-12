@@ -4,6 +4,7 @@
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "The Atom O3DE Integration Gem provides components, libraries, and functionality to support and integrate Atom Renderer in Open 3D Engine.",
     "canonical_tags": [
@@ -25,5 +26,16 @@
         "CommonFeaturesAtom",
         "EMotionFX_Atom",
         "ImguiAtom"
+    ],
+    "external_subdirectories": [
+        "AtomBridge",
+        "AtomFont",
+        "AtomImGuiTools",
+        "AtomViewportDisplayIcons",
+        "AtomViewportDisplayInfo",
+        "CommonFeatures",
+        "EMotionFXAtom",
+        "ImguiAtom",
+        "TechnicalArt/DccScriptingInterface"
     ]
 }

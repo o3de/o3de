@@ -25,15 +25,15 @@
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
 
+AZ_DECLARE_BUDGET(MULTIPLAYER);
+
 namespace Multiplayer
 {
     AZ_CVAR(bool, net_DebugCheckNetworkEntityManager, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables extra debug checks inside the NetworkEntityManager");
-    AZ_CVAR(AZ::TimeMs, net_EntityDomainUpdateMs, AZ::TimeMs{ 500 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Frequency for updating the entity domain in ms");
 
     NetworkEntityManager::NetworkEntityManager()
         : m_networkEntityAuthorityTracker(*this)
         , m_removeEntitiesEvent([this] { RemoveEntities(); }, AZ::Name("NetworkEntityManager remove entities event"))
-        , m_updateEntityDomainEvent([this] { UpdateEntityDomain(); }, AZ::Name("NetworkEntityManager update entity domain event"))
     {
         AZ::Interface<INetworkEntityManager>::Register(this);
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
@@ -63,8 +63,6 @@ namespace Multiplayer
         }
 
         m_entityDomain = AZStd::move(entityDomain);
-        m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
-        m_entityDomain->ActivateTracking(m_ownedEntities);
     }
 
     bool NetworkEntityManager::IsInitialized() const
@@ -127,7 +125,7 @@ namespace Multiplayer
                 AZ_Assert(entityHandle.GetNetBindComponent(), "No NetBindComponent found on networked entity");
             }
             m_removeList.push_back(entityHandle.GetNetEntityId());
-            m_removeEntitiesEvent.Enqueue(AZ::TimeMs{ 0 });
+            m_removeEntitiesEvent.Enqueue(AZ::Time::ZeroTimeMs);
         }
     }
 
@@ -207,11 +205,13 @@ namespace Multiplayer
 
     void NetworkEntityManager::NotifyEntitiesDirtied()
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "NetworkEntityManager: NotifyEntitiesDirtied");
         m_onEntityMarkedDirty.Signal();
     }
 
     void NetworkEntityManager::NotifyEntitiesChanged()
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "NetworkEntityManager: NotifyEntitiesChanged");
         m_onEntityNotifyChanges.Signal();
     }
 
@@ -231,6 +231,82 @@ namespace Multiplayer
         m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
     }
 
+    void NetworkEntityManager::HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain)
+    {
+        for (NetEntityId exitingId : entitiesNotInDomain)
+        {
+            NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(exitingId);
+
+            bool safeToExit = IsHierarchySafeToExit(entityHandle, entitiesNotInDomain);;
+
+            // Validate that we aren't already planning to remove this entity
+            if (safeToExit)
+            {
+                for (auto remoteEntityId : m_removeList)
+                {
+                    if (remoteEntityId == remoteEntityId)
+                    {
+                        safeToExit = false;
+                    }
+                }
+            }
+
+            if (safeToExit)
+            {
+                // Tell all the attached replicators for this entity that it's exited the domain
+                m_entityExitDomainEvent.Signal(entityHandle);
+            }
+        }
+    }
+
+    void NetworkEntityManager::ForceAssumeAuthority(const ConstNetworkEntityHandle& entityHandle)
+    {
+        NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
+        if (netBindComponent != nullptr)
+        {
+            netBindComponent->ConstructControllers();
+        }
+    }
+
+    void NetworkEntityManager::MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant)
+    {
+        if (alwaysRelevant)
+        {
+            m_alwaysRelevantToClients.emplace(entityHandle);
+        }
+        else
+        {
+            m_alwaysRelevantToClients.erase(entityHandle);
+        }
+    }
+
+    void NetworkEntityManager::MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant)
+    {
+        if (alwaysRelevant)
+        {
+            m_alwaysRelevantToServers.emplace(entityHandle);
+        }
+        else
+        {
+            m_alwaysRelevantToServers.erase(entityHandle);
+        }
+    }
+
+    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevantToClientsSet() const
+    {
+        return m_alwaysRelevantToClients;
+    }
+
+    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevantToServersSet() const
+    {
+        return m_alwaysRelevantToServers;
+    }
+
+    void NetworkEntityManager::SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs)
+    {
+        m_networkEntityAuthorityTracker.SetTimeoutTimeMs(timeoutTimeMs);
+    }
+
     void NetworkEntityManager::DebugDraw() const
     {
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
@@ -241,9 +317,15 @@ namespace Multiplayer
         {
             AZ::Entity* entity = it->second;
             NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
+
             AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
+            if (!entityBounds.IsValid())
+            {
+                continue;
+            }
+
             entityBounds.Expand(AZ::Vector3(0.01f));
-            if (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
+            if ((netBindComponent != nullptr) && netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
             {
                 debugDisplay->SetColor(AZ::Colors::Black);
                 debugDisplay->SetAlpha(0.5f);
@@ -277,77 +359,11 @@ namespace Multiplayer
         m_localDeferredRpcMessages.clear();
     }
 
-    void NetworkEntityManager::UpdateEntityDomain()
-    {
-        if (m_entityDomain == nullptr)
-        {
-            return;
-        }
-
-        const IEntityDomain::EntitiesNotInDomain& entitiesNotInDomain = m_entityDomain->RetrieveEntitiesNotInDomain();
-        for (NetEntityId exitingId : entitiesNotInDomain)
-        {
-            OnEntityExitDomain(exitingId);
-        }
-    }
-
-    void NetworkEntityManager::OnEntityExitDomain(NetEntityId entityId)
-    {
-        bool safeToExit = true;
-        NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(entityId);
-
-        // We also need special handling for the NetworkHierarchy as well, since related entities need to be migrated together
-        NetworkHierarchyRootComponentController* hierarchyRootController = entityHandle.FindController<NetworkHierarchyRootComponentController>();
-        NetworkHierarchyChildComponentController* hierarchyChildController = entityHandle.FindController<NetworkHierarchyChildComponentController>();
-
-        // Find the root entity
-        AZ::Entity* hierarchyRootEntity = nullptr;
-        if (hierarchyRootController)
-        {
-            hierarchyRootEntity = hierarchyRootController->GetParent().GetHierarchicalRoot();
-        }
-        else if (hierarchyChildController)
-        {
-            hierarchyRootEntity = hierarchyChildController->GetParent().GetHierarchicalRoot();
-        }
-
-        if (hierarchyRootEntity)
-        {
-            NetEntityId rootNetId = GetNetEntityIdById(hierarchyRootEntity->GetId());
-            ConstNetworkEntityHandle rootEntityHandle = GetEntity(rootNetId);
-
-            // Check if the root entity is still tracked by this authority
-            if (rootEntityHandle.Exists() && rootEntityHandle.GetNetBindComponent()->HasController())
-            {
-                safeToExit = false;
-            }
-        }
-
-        // Validate that we aren't already planning to remove this entity
-        if (safeToExit)
-        {
-            for (auto remoteEntityId : m_removeList)
-            {
-                if (remoteEntityId == remoteEntityId)
-                {
-                    safeToExit = false;
-                }
-            }
-        }
-
-        if (safeToExit)
-        {
-            m_entityExitDomainEvent.Signal(entityHandle);
-        }
-    }
-
     void NetworkEntityManager::Reset()
     {
         m_multiplayerComponentRegistry.Reset();
         m_removeList.clear();
         m_entityDomain = nullptr;
-        m_updateEntityDomainEvent.RemoveFromQueue();
-        m_ownedEntities.clear();
         m_entityExitDomainEvent.DisconnectAllHandlers();
         m_onEntityMarkedDirty.DisconnectAllHandlers();
         m_onEntityNotifyChanges.DisconnectAllHandlers();
@@ -382,9 +398,9 @@ namespace Multiplayer
             m_networkEntityTracker.erase(entityId);
         }
     }
-    
+
     INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate(
-        const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, AutoActivate autoActivate)
+        const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, const AZ::Transform& transform, AutoActivate autoActivate)
     {
         INetworkEntityManager::EntityList returnList;
 
@@ -434,6 +450,7 @@ namespace Multiplayer
 
                 const NetEntityId netEntityId = NextId();
                 netBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
+                transformComponent->SetWorldTM(transform);
 
                 if (autoActivate == AutoActivate::DoNotActivate)
                 {
@@ -479,12 +496,12 @@ namespace Multiplayer
         {
             return returnList;
         }
-        
+
         auto spawnableAssetId = m_networkPrefabLibrary.GetAssetIdByName(prefabEntryId.m_prefabName);
         // Required for sync-instantiation. Todo: keep the reference in NetworkSpawnableLibrary
         auto netSpawnableAsset = AZ::Data::AssetManager::Instance().GetAsset<AzFramework::Spawnable>(spawnableAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
         AZ::Data::AssetManager::Instance().BlockUntilLoadComplete(netSpawnableAsset);
-       
+
         AzFramework::Spawnable* netSpawnable = netSpawnableAsset.GetAs<AzFramework::Spawnable>();
         if (!netSpawnable)
         {
@@ -495,7 +512,7 @@ namespace Multiplayer
 
         if (entityIndex == PrefabEntityId::AllIndices)
         {
-            return CreateEntitiesImmediate(*netSpawnable, netEntityRole, autoActivate);
+            return CreateEntitiesImmediate(*netSpawnable, netEntityRole, transform, autoActivate);
         }
 
         const AzFramework::Spawnable::EntityList& entities = netSpawnable->GetEntities();
@@ -564,7 +581,7 @@ namespace Multiplayer
         optionalArgs.m_preInsertionCallback = [netSpawnableName, rootTransform = transform]
             (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView entities)
         {
-            bool shouldUpdateTransform = (rootTransform.IsClose(AZ::Transform::Identity()) == false);
+            const bool shouldUpdateTransform = !rootTransform.IsClose(AZ::Transform::Identity());
 
             for (uint32_t netEntityIndex = 0, entitiesSize = aznumeric_cast<uint32_t>(entities.size());
                 netEntityIndex < entitiesSize; ++netEntityIndex)
@@ -632,4 +649,40 @@ namespace Multiplayer
                 netEntity->GetName().c_str());
         }
     }
+
+    bool NetworkEntityManager::IsHierarchySafeToExit(NetworkEntityHandle& entityHandle, const NetEntityIdSet& entitiesNotInDomain)
+    {
+        bool safeToExit = true;
+
+        // We also need special handling for the NetworkHierarchy as well, since related entities need to be migrated together
+        NetworkHierarchyRootComponentController* hierarchyRootController = entityHandle.FindController<NetworkHierarchyRootComponentController>();
+        NetworkHierarchyChildComponentController* hierarchyChildController = entityHandle.FindController<NetworkHierarchyChildComponentController>();
+
+        AZStd::vector<AZ::Entity*> hierarchicalEntities;
+
+        // Get the entities in this hierarchy
+        if (hierarchyRootController)
+        {
+            hierarchicalEntities = hierarchyRootController->GetParent().GetHierarchicalEntities();
+        }
+        else if (hierarchyChildController)
+        {
+            hierarchicalEntities = hierarchyChildController->GetParent().GetHierarchicalEntities();
+        }
+
+        // Check if *all* entities in the hierarchy are ready to migrate.
+        // If any are still "in domain", keep the whole hierarchy within the current authority for now
+        for (AZ::Entity* entity : hierarchicalEntities)
+        {
+            NetEntityId netEntityId = GetNetEntityIdById(entity->GetId());
+            if (netEntityId != InvalidNetEntityId && !entitiesNotInDomain.contains(netEntityId))
+            {
+                safeToExit = false;
+                break;
+            }
+        }
+
+        return safeToExit;
+    }
+
 }

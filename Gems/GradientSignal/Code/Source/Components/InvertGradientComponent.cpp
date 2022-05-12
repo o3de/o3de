@@ -6,7 +6,7 @@
  *
  */
 
-#include "InvertGradientComponent.h"
+#include <GradientSignal/Components/InvertGradientComponent.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -135,6 +135,21 @@ namespace GradientSignal
         output = 1.0f - AZ::GetClamp(m_configuration.m_gradientSampler.GetValue(sampleParams), 0.0f, 1.0f);
 
         return output;
+    }
+
+    void InvertGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        m_configuration.m_gradientSampler.GetValues(positions, outValues);
+        for (auto& outValue : outValues)
+        {
+            outValue = 1.0f - AZ::GetClamp(outValue, 0.0f, 1.0f);
+        }
     }
 
     bool InvertGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const

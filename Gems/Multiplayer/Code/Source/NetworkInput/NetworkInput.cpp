@@ -86,6 +86,31 @@ namespace Multiplayer
         return m_hostBlendFactor;
     }
 
+    AZStd::vector<MultiplayerAuditingElement> NetworkInput::GetComponentInputDeltaLogs() const
+    {
+        AZStd::vector<MultiplayerAuditingElement> logs;
+        for (uint16_t idx = 0; idx < m_componentInputs.size(); ++idx)
+        {
+            MultiplayerAuditingElement log = m_componentInputs[idx].get()->GetInputDeltaLog();
+            if (!log.m_elements.empty())
+            {
+                logs.push_back(AZStd::move(log));
+            }
+        }
+
+        return logs;
+    }
+
+    const AZStd::string NetworkInput::GetOwnerName() const
+    {
+        const AZ::Entity* owner = m_owner.GetEntity();
+        if (owner != nullptr)
+        {
+            return owner->GetName();
+        }
+        return "";
+    }
+
     void NetworkInput::AttachNetBindComponent(NetBindComponent* netBindComponent)
     {
         m_wasAttached = true;

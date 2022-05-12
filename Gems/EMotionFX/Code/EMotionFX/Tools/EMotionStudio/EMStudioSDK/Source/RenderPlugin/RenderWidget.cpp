@@ -1054,7 +1054,7 @@ namespace EMStudio
             EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
             EMStudioPlugin::RenderInfo renderInfo(renderUtil, m_camera, m_width, m_height);
 
-            plugin->Render(m_plugin, &renderInfo);
+            plugin->LegacyRender(m_plugin, &renderInfo);
         }
 
         RenderDebugDraw();

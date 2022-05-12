@@ -2,8 +2,9 @@
     "gem_name": "${Name}",
     "display_name": "${Name}",
     "license": "What license ${Name} uses goes here: i.e. Apache-2.0 Or MIT",
-    "license_url": "",
-    "origin": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "The name of the originator goes here. i.e. XYZ Inc.",
+    "origin_url": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
     "type": "Code",
     "summary": "A short description of ${Name}.",
     "canonical_tags": [
@@ -14,6 +15,7 @@
     ],
     "icon_path": "preview.png",
     "requirements": "",
+    "documentation_url": "",
     "dependencies": [
         "QtForPython"
     ]

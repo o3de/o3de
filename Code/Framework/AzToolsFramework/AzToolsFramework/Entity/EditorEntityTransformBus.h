@@ -10,10 +10,10 @@
 
 #include <AzCore/EBus/EBus.h>
 
+#include <AzToolsFramework/Entity/EntityTypes.h>
+
 namespace AzToolsFramework
 {
-    using EntityIdList = AZStd::vector<AZ::EntityId>;
-
     //! Notifications about entity transform changes from the editor.
     class EditorTransformChangeNotifications : public AZ::EBusTraits
     {

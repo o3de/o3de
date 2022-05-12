@@ -12,6 +12,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/Debug/Profiler.h>
 
 #include <IAudioInterfacesCommonData.h>

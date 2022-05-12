@@ -54,6 +54,17 @@ namespace Terrain
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainLayerSpawnerConfig::m_useGroundPlane, "Use Ground Plane", "Determines whether or not to provide a default ground plane")
                     ;
             }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<TerrainLayerSpawnerConfig>()
+                    ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                    ->Constructor()
+                    ->Property("layer", BehaviorValueProperty(&TerrainLayerSpawnerConfig::m_layer))
+                    ->Property("priority", BehaviorValueProperty(&TerrainLayerSpawnerConfig::m_priority))
+                    ->Property("useGroundPlane", BehaviorValueProperty(&TerrainLayerSpawnerConfig::m_useGroundPlane))
+                    ->Method("GetSelectableLayers", &TerrainLayerSpawnerConfig::GetSelectableLayers);
+            }
         }
     }
 

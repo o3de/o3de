@@ -49,7 +49,7 @@ namespace AZ
             return m_entity->GetId();
         }
 
-        AZ_Warning("System", false, "Can't get component %p entity ID as it is not attached to an entity yet!", this);
+        AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
         return EntityId();
     }
 
@@ -60,7 +60,7 @@ namespace AZ
             return NamedEntityId(m_entity->GetId(), m_entity->GetName());
         }
 
-        AZ_Warning("System", false, "Can't get component %p entity ID as it is not attached to an entity yet!", this);
+        AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
         return NamedEntityId();
     }
 

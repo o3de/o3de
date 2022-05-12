@@ -19,14 +19,13 @@
 #include <LyShine/Bus/Sprite/UiSpriteBus.h>
 #include <LyShine/Bus/UiIndexableImageBus.h>
 #include <LyShine/UiComponentTypes.h>
+#include <LyShine/UiRenderFormats.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Vector3.h>
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
-
-#include <IRenderer.h>
 
 class ITexture;
 class ISprite;
@@ -200,12 +199,12 @@ private: // member functions
     template<uint32 numValues> void RenderSlicedRadialCornerOrEdgeFilledSprite(uint32 packedColor, const AZ::Matrix4x4& transform, float* xValues, float* yValues, float* sValues, float* tValues);
 
     void ClipValuesForSlicedLinearFill(uint32 numValues, float* xValues, float* yValues, float* sValues, float* tValues);
-    void ClipAndRenderForSlicedRadialFill(uint32 numVertsPerside, uint32 numVerts, const SVF_P2F_C4B_T2F_F4B* verts, uint32 totalIndices, const uint16* indices);
-    void ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVertsPerside, uint32 numVerts, const SVF_P2F_C4B_T2F_F4B* verts, uint32 totalIndices, const uint16* indices);
+    void ClipAndRenderForSlicedRadialFill(uint32 numVertsPerside, uint32 numVerts, const LyShine::UiPrimitiveVertex* verts, uint32 totalIndices, const uint16* indices);
+    void ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVertsPerside, uint32 numVerts, const LyShine::UiPrimitiveVertex* verts, uint32 totalIndices, const uint16* indices);
 
-    int ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint16* indices, SVF_P2F_C4B_T2F_F4B* newVertex, uint16* renderIndices, int& vertexOffset, int idxOffset, const Vec2& lineOrigin, const Vec2& lineEnd);
+    int ClipToLine(const LyShine::UiPrimitiveVertex* vertices, const uint16* indices, LyShine::UiPrimitiveVertex* newVertex, uint16* renderIndices, int& vertexOffset, int idxOffset, const Vec2& lineOrigin, const Vec2& lineEnd);
 
-    void RenderTriangleList(const SVF_P2F_C4B_T2F_F4B* vertices, const uint16* indices, int numVertices, int numIndices);
+    void RenderTriangleList(const LyShine::UiPrimitiveVertex* vertices, const uint16* indices, int numVertices, int numIndices);
     void ClearCachedVertices();
     void ClearCachedIndices();
     void MarkRenderCacheDirty();
@@ -294,6 +293,6 @@ private: // data
     bool m_isAlphaOverridden;
 
     // cached rendering data for performance optimization
-    DynUiPrimitive m_cachedPrimitive;
+    LyShine::UiPrimitive m_cachedPrimitive;
     bool m_isRenderCacheDirty = true;
 };

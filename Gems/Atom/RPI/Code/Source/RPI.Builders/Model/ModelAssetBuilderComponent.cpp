@@ -948,19 +948,17 @@ namespace AZ
         {
             AZStd::vector<uint16_t>& skinJointIndices = productMesh.m_skinJointIndices;
             AZStd::vector<float>& skinWeights = productMesh.m_skinWeights;
-            const auto& sourceMeshData = sourceMesh.m_meshData;
 
             size_t numInfluencesAdded = 0;
             for (const auto& skinData : sourceMesh.m_skinData)
             {
-                const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(static_cast<int>(vertexIndex));
-                const size_t numSkinInfluences = skinData->GetLinkCount(controlPointIndex);
+                const size_t numSkinInfluences = skinData->GetLinkCount(vertexIndex);
 
                 size_t numInfluencesExcess = 0;
 
                 for (size_t influenceIndex = 0; influenceIndex < numSkinInfluences; ++influenceIndex)
                 {
-                    const AZ::SceneAPI::DataTypes::ISkinWeightData::Link& link = skinData->GetLink(controlPointIndex, influenceIndex);
+                    const AZ::SceneAPI::DataTypes::ISkinWeightData::Link& link = skinData->GetLink(vertexIndex, influenceIndex);
 
                     const float weight = link.weight;
                     const AZStd::string& boneName = skinData->GetBoneName(link.boneId);

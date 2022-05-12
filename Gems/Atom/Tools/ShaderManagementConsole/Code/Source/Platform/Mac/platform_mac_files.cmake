@@ -7,6 +7,4 @@
 #
 
 set(FILES
-    ShaderManagementConsole_Traits_Platform.h
-    ShaderManagementConsole_Traits_Mac.h
 )

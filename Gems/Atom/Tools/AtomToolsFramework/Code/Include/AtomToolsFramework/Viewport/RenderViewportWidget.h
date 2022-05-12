@@ -12,7 +12,7 @@
 #include <QElapsedTimer>
 #include <Atom/RPI.Public/Base.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Viewport/ViewportControllerInterface.h>
@@ -102,9 +102,11 @@ namespace AtomToolsFramework
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler overrides ...
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
+        void SetCursorMode(AzToolsFramework::CursorInputMode mode) override;
         bool IsMouseOver() const override;
         void SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride) override;
         void ClearOverrideCursor() override;
+        AZStd::optional<AzFramework::ScreenPoint> MousePosition() const override;
 
         // AzFramework::WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
@@ -116,6 +118,7 @@ namespace AtomToolsFramework
         void ToggleFullScreenState() override;
         float GetDpiScaleFactor() const override;
         uint32_t GetSyncInterval() const override;
+        bool SetSyncInterval(uint32_t newSyncInterval) override;
         uint32_t GetDisplayRefreshRate() const override;
 
     protected:
@@ -129,9 +132,11 @@ namespace AtomToolsFramework
         bool event(QEvent* event) override;
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
+        void mouseMoveEvent(QMouseEvent* mouseEvent) override;
 
     private:
         void SendWindowResizeEvent();
+        void SendWindowCloseEvent();
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;
@@ -143,7 +148,7 @@ namespace AtomToolsFramework
         // Our viewport-local aux geom pipeline for supplemental rendering.
         AZ::RPI::AuxGeomDrawPtr m_auxGeom;
         // Tracks whether the cursor is currently over our viewport, used for mouse input event book-keeping.
-        bool m_mouseOver = false;
+        AZStd::optional<AzFramework::ScreenPoint> m_mousePosition;
         // Captures the time between our render events to give controllers a time delta.
         QElapsedTimer m_renderTimer;
         // The time of the last recorded tick event from the system tick bus.

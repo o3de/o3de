@@ -11,7 +11,7 @@ import azlmbr.math
 import azlmbr.legacy.general as general
 
 # Open a level (any level should work)
-general.open_level_no_prompt('WaterSample')
+general.open_level_no_prompt('Base')
 general.idle_wait(0.5)
 
 test_success = True

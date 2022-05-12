@@ -8,9 +8,9 @@
 
 // include the required headers
 #include "RenderPlugin.h"
-#include "../EMStudioCore.h"
 #include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
 
 namespace EMStudio

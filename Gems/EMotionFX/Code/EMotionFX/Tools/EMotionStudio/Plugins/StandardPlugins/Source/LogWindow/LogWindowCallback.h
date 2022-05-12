@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_LOGWINDOWCALLBACK_H
-#define __EMSTUDIO_LOGWINDOWCALLBACK_H
+#pragma once
 
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
@@ -78,5 +77,3 @@ namespace EMStudio
 } // namespace EMStudio
 
 Q_DECLARE_METATYPE(MCore::LogCallback::ELogLevel)
-
-#endif

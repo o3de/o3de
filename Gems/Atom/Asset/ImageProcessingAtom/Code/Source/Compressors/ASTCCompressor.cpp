@@ -179,7 +179,7 @@ namespace ImageProcessingAtom
 
         // Create a context based on the configuration
         astcenc_context* context;
-        AZ::u32 blockCount = ((srcImage->GetWidth(0)+ dstFormatInfo->blockWidth-1)/dstFormatInfo->blockWidth) * ((srcImage->GetHeight(0) + dstFormatInfo->blockHeight-1)/dstFormatInfo->blockHeight);
+        AZ::u32 blockCount = AZ::DivideAndRoundUp(srcImage->GetWidth(0), dstFormatInfo->blockWidth) * AZ::DivideAndRoundUp(srcImage->GetHeight(0), dstFormatInfo->blockHeight);
         AZ::u32 threadCount = AZStd::min(AZStd::thread::hardware_concurrency()/2, blockCount);
         status = astcenc_context_alloc(&config, threadCount, &context);
         AZ_Assert( status == ASTCENC_SUCCESS, "ERROR: Codec context alloc failed: %s\n", astcenc_get_error_string(status));

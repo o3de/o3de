@@ -108,7 +108,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
-        asset = r"levels\testdependencieslevel\level.pak"
+        asset = r"levels\testdependencieslevel\testdependencieslevel.spawnable"
 
         # Create Asset list
         helper.call_assetLists(
@@ -191,7 +191,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
-        asset = r"levels\testdependencieslevel\level.pak"
+        asset = r"levels\testdependencieslevel\testdependencieslevel.spawnable"
 
         # Useful bundle locations / names (2 for comparing contents)
         # fmt:off
@@ -288,7 +288,8 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             "Please rerun with commandline option: '--bundle_platforms=pc,mac'"
         # fmt:on
 
-        seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
+        # Engine seed list
+        seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")
 
         # Useful bundle / asset list locations
         bundle_dir = os.path.dirname(helper["bundle_file"])
@@ -326,7 +327,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             assert os.path.isfile(bundle_file)
 
         # This asset is created both on mac and windows platform
-        file_to_check = b"engineassets/slices/defaultlevelsetup.slice"  # [use byte str because file is in binary]
+        file_to_check = b"engineassets/textures/Cubemap/default_level_cubemap.tif"  # [use byte str because file is in binary]
 
         # Extract the delta catalog file from pc archive. {file_to_check} SHOULD NOT be present for PC
         file_contents = helper.extract_file_content(bundle_files["pc"], "DeltaCatalog.xml")
@@ -924,7 +925,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         # Create a seed file
         helper.call_seeds(
             seedListFile=helper["seed_list_file"],
-            addSeed=r"levels\testdependencieslevel\level.pak",
+            addSeed=r"levels\testdependencieslevel\testdependencieslevel.spawnable",
             platform="pc",
         )
 
@@ -947,9 +948,9 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         # Specifying platform but not "add" or "remove" should fail
         result, _ = helper.call_assetLists(
             assetListFile=helper["asset_info_file_request"],
+            allowOverwrites="",
             seedListFile=helper["seed_list_file"],
             platform="pc",
-            allowOverwrites="",
         )
         assert result, "Overwriting with override threw an error"
 
@@ -982,7 +983,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         request.addfinalizer(lambda: fs.delete([bundle_result_path], True, False))
 
         bundles_folder = os.path.join(workspace.paths.project(), "Bundles")
-        level_pak = r"levels\testdependencieslevel\level.pak"
+        level_pak = r"levels\testdependencieslevel\testdependencieslevel.spawnable"
         bundle_request_path = os.path.join(bundles_folder, "bundle.pak")
         bundle_result_path = os.path.join(bundles_folder,
                                           helper.platform_file_name("bundle.pak", workspace.asset_processor_platform))
@@ -1101,27 +1102,29 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                                                                                    bundler_batch_helper):
         """
         Test Steps:
-        1. Create Asset List with a parent asset that is skipped
+        1. Create Asset List with multiple parent assets that are skipped
         2. Verify that Asset List was created
         3. Verify that only the expected assets are present in the asset list
         """
         expected_assets = [
-            "testassets/bundlerskiptest_grandparent.dynamicslice",
-            "testassets/bundlerskiptest_parenta.dynamicslice",
-            "testassets/bundlerskiptest_commonchild.dynamicslice"
+            "objects/cube_lod0.azlod",
+            "objects/cube_lod0_index.azbuffer",
+            "resourcepools/defaultvertexbufferpool.pool"
         ]
         # Test Asset Structure:
-        #     Grandparent
-        #      /      \
-        #   ParentA  ParentB
-        #      \      /
-        #     CommonChild
+        #          Grandparent
+        #      /        |        \
+        #   ParentA  ParentB  ParentC
+        #      \        |        /
+        #          CommonChild
 
-        # Even if we exclude "ParentB", we should still have "CommonChild" since it is a product dependency of "ParentA"
+        # Even if we exclude all parents besides "ParentA", we should still have "CommonChild" since it is a product dependency of "ParentA"
         bundler_batch_helper.call_assetLists(
             assetListFile=bundler_batch_helper['asset_info_file_request'],
-            addSeed="testassets/bundlerskiptest_grandparent.dynamicslice",
-            skip="testassets/bundlerskiptest_parentb.dynamicslice"
+            addSeed="objects/cube_lod0.azlod",
+            skip="objects/cube_lod0_position0.azbuffer, objects/cube_lod0_tangent0.azbuffer,"
+                 "objects/cube_lod0_normal0.azbuffer, objects/cube_lod0_bitangent0.azbuffer,"
+                 "objects/cube_lod0_uv0.azbuffer"
         )
         assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
         assets_in_list = []

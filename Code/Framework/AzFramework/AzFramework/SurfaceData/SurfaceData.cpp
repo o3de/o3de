@@ -37,6 +37,7 @@ namespace AzFramework::SurfaceData
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext->Class<AZStd::fixed_vector<SurfaceTagWeight, Constants::MaxSurfaceWeights>>();
             serializeContext->Class<SurfacePoint>()
                 ->Field("m_position", &SurfacePoint::m_position)
                 ->Field("m_normal", &SurfacePoint::m_normal)
@@ -46,6 +47,7 @@ namespace AzFramework::SurfaceData
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            behaviorContext->Class<AZStd::fixed_vector<SurfaceTagWeight, Constants::MaxSurfaceWeights>>();
             behaviorContext->Class<SurfacePoint>("AzFramework::SurfaceData::SurfacePoint")
                 ->Attribute(AZ::Script::Attributes::Category, "SurfaceData")
                 ->Constructor()

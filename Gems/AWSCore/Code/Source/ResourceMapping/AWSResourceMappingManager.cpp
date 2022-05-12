@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AWSCoreInternalBus.h>
@@ -244,14 +245,16 @@ namespace AWSCore
 
     bool AWSResourceMappingManager::ValidateJsonDocumentAgainstSchema(const rapidjson::Document& jsonDocument)
     {
-        rapidjson::Document jsonSchemaDocument;
-        if (jsonSchemaDocument.Parse(ResourceMappingJsonSchema).HasParseError())
+        AZ::IO::Path executablePath = AZ::IO::PathView(AZ::Utils::GetExecutableDirectory());
+        AZ::IO::Path jsonSchemaPath = (executablePath / ResourceMapppingJsonSchemaFilePath).LexicallyNormal();
+        AZ::Outcome<rapidjson::Document, AZStd::string> readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonFile(jsonSchemaPath.c_str());
+        if (!readJsonOutcome.IsSuccess() || readJsonOutcome.TakeValue().ObjectEmpty())
         {
             AZ_Error(AWSResourceMappingManagerName, false, ResourceMappingFileInvalidSchemaErrorMessage);
             return false;
         }
 
-        auto jsonSchema = rapidjson::SchemaDocument(jsonSchemaDocument);
+        auto jsonSchema = rapidjson::SchemaDocument(readJsonOutcome.TakeValue());
         rapidjson::SchemaValidator validator(jsonSchema);
 
         if (!jsonDocument.Accept(validator))

@@ -10,18 +10,19 @@
                     "Stack":
                     {
                         "PlayInEditor":
-                        [
-                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
-                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
-                        ],
+                        {
+                            "Editor info remover": { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                            "Prefab catchment": { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
+                        },
                         "GameObjectCreation":
-                        [
-                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                        {
+                            "Editor info remover": { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                            "Prefab catchment": 
                             { 
                                 "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor",
                                 "SerializationFormat": "Binary" // Options are "Binary" (default) or "Text". Prefer "Binary" for performance.
                             }
-                        ]
+                        }
                     }
                 }
             }

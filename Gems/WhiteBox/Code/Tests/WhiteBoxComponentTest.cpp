@@ -22,6 +22,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
@@ -37,10 +38,6 @@ namespace UnitTest
 {
     static const AzToolsFramework::ManipulatorManagerId TestManipulatorManagerId =
         AzToolsFramework::ManipulatorManagerId(AZ::Crc32("TestManipulatorManagerId"));
-
-    class NullDebugDisplayRequests : public AzFramework::DebugDisplayRequests
-    {
-    };
 
     class WhiteBoxManipulatorFixture : public WhiteBoxTestFixture
     {
@@ -67,7 +64,8 @@ namespace UnitTest
 
         // create the direct call manipulator viewport interaction and an immediate mode dispatcher
         AZStd::unique_ptr<AzManipulatorTestFramework::ManipulatorViewportInteraction> viewportManipulatorInteraction =
-            AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>();
+            AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>(
+                AZStd::make_shared<NullDebugDisplayRequests>());
         AZStd::unique_ptr<AzManipulatorTestFramework::ImmediateModeActionDispatcher> actionDispatcher =
             AZStd::make_unique<AzManipulatorTestFramework::ImmediateModeActionDispatcher>(
                 *viewportManipulatorInteraction);

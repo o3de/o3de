@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __COMMANDSYSTEM_CONFIG_H
-#define __COMMANDSYSTEM_CONFIG_H
+#pragma once
 
 #include <MCore/Source/StandardHeaders.h>
 
@@ -35,5 +34,3 @@ enum
 {
     MEMCATEGORY_COMMANDSYSTEM = 990
 };
-
-#endif

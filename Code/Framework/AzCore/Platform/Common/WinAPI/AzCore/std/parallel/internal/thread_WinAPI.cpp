@@ -38,7 +38,6 @@ namespace AZStd
             destroy_thread_info(ti);
 
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadExit, this_thread::get_id()); // goes to client listeners
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadExit, this_thread::get_id()); // goes to the profiler.
 
             return Platform::PostThreadRun();
         }
@@ -73,7 +72,6 @@ namespace AZStd
             }
 
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadEnter, thread::id(*id), desc);
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadEnter, thread::id(*id), desc);
 
             ::ResumeThread(hThread);
 

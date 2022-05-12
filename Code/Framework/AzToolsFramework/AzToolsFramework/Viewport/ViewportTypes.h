@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "AzFramework/Viewport/ScreenGeometry.h"
-
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 
 #include <QPoint>
 
@@ -20,7 +20,7 @@ namespace AZ
 {
     class ReflectContext;
     class SerializeContext;
-}
+} // namespace AZ
 
 namespace AzToolsFramework
 {
@@ -178,6 +178,12 @@ namespace AzToolsFramework
             //! @cond
             AZ_TYPE_INFO(MousePick, "{A69B9562-FC8C-4DE7-9137-0FF867B1513D}");
             MousePick() = default;
+            MousePick(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, const AzFramework::ScreenPoint& screenPoint)
+                : m_rayOrigin(rayOrigin)
+                , m_rayDirection(rayDirection)
+                , m_screenCoordinates(screenPoint)
+            {
+            }
             //! @endcond
 
             AZ::Vector3 m_rayOrigin = AZ::Vector3::CreateZero(); //!< World space.
@@ -249,6 +255,22 @@ namespace AzToolsFramework
             return mouseInteractionEvent.m_wheelDelta;
         }
 
+        //! A ray projection, originating from a point and extending in a direction specified as a normal.
+        struct ProjectedViewportRay
+        {
+            AZ::Vector3 m_origin;
+            AZ::Vector3 m_direction;
+        };
+
+        //! Utility function to return a viewport ray.
+        inline ProjectedViewportRay ViewportScreenToWorldRay(
+            const AzFramework::CameraState& cameraState, const AzFramework::ScreenPoint& screenPoint)
+        {
+            const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPoint, cameraState);
+            const AZ::Vector3 rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
+            return ProjectedViewportRay{ rayOrigin, rayDirection };
+        }
+
         //! Return QPoint from AzFramework::ScreenPoint.
         inline QPoint QPointFromScreenPoint(const AzFramework::ScreenPoint& screenPoint)
         {
@@ -300,6 +322,27 @@ namespace AzToolsFramework
             mouseButtons.m_mouseButtons = static_cast<AZ::u32>(button);
             return mouseButtons;
         }
+
+        //! Build a mouse pick from the specified mouse position and camera state.
+        inline MousePick BuildMousePick(const AzFramework::CameraState& cameraState, const AzFramework::ScreenPoint& screenPoint)
+        {
+            const auto ray = ViewportScreenToWorldRay(cameraState, screenPoint);
+            return MousePick(ray.m_origin, ray.m_direction, screenPoint);
+        }
+
+        //! Create a mouse interaction from the specified pick, buttons, interaction id and keyboard modifiers.
+        MouseInteraction BuildMouseInteraction(
+            const MousePick& mousePick, MouseButtons buttons, InteractionId interactionId, KeyboardModifiers modifiers);
+
+        //! Create a mouse buttons from the specified mouse button.
+        inline MouseButtons BuildMouseButtons(const MouseButton button)
+        {
+            return MouseButtons(aznumeric_cast<AZ::u32>(button));
+        }
+
+        //! Create a mouse interaction event from the specified interaction and event.
+        MouseInteractionEvent BuildMouseInteractionEvent(
+            const MouseInteraction& mouseInteraction, MouseEvent event, bool cursorCaptured = false);
 
         //! Reflect all viewport related types.
         void ViewportInteractionReflect(AZ::ReflectContext* context);

@@ -11,7 +11,6 @@
 #include "UnitTesting.h"
 
 #include "UnitTestBus.h"
-#include "UnitTestBusSenderMacros.h"
 
 namespace AZ
 {

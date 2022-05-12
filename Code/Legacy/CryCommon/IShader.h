@@ -52,7 +52,6 @@ enum EParamType
 };
 
 struct IShader;
-class CCamera;
 
 union UParamVal
 {
@@ -64,7 +63,6 @@ union UParamVal
     char* m_String;
     float m_Color[4];
     float m_Vector[3];
-    CCamera* m_pCamera;
 };
 
 struct SShaderParam

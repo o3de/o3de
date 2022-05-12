@@ -9,7 +9,6 @@
 #include <ScriptCanvas/Libraries/Core/Repeater.h>
 #include <ScriptCanvas/Libraries/Core/RepeaterNodeable.h>
 
-#include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Utils/SerializationUtils.h>
 #include <ScriptCanvas/Utils/VersionConverters.h>
 

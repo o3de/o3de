@@ -13,7 +13,6 @@
 
 
 #include <ISystem.h>
-#include <ITimer.h>
 #include <IXml.h>
 #include "SimpleSerialize.h"
 

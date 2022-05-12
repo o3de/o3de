@@ -6,13 +6,25 @@
  *
  */
 #pragma once
-#include <AzTest/AzTest.h>
-#include <Mocks/StubTimer.h>
-#include <Gestures/IGestureRecognizer.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/UnitTest/Mocks/MockITime.h>
+#include <AzTest/AzTest.h>
+#include <Gestures/IGestureRecognizer.h>
 
-class BaseGestureTest
-    : public ::testing::Test
+namespace GesturesTests
+{
+    struct StubTimer : public AZ::StubTimeSystem
+    {
+        AZ::TimeMs GetRealElapsedTimeMs() const override
+        {
+            return m_realElapsedTime;
+        }
+
+        AZ::TimeMs m_realElapsedTime = AZ::Time::ZeroTimeMs;
+    };
+} // namespace GesturesTests
+
+class BaseGestureTest : public ::testing::Test
 {
 public:
     BaseGestureTest()
@@ -24,39 +36,30 @@ public:
     {
         // global environment stubs
         m_env = new(AZ_OS_MALLOC(sizeof(SSystemGlobalEnvironment), alignof(SSystemGlobalEnvironment))) SSystemGlobalEnvironment();
-        m_stubTimer = new StubTimer(1.0f / 30.0f);
         gEnv = m_env;
-        gEnv->pTimer = m_stubTimer;
-
+        m_stubTimer = new GesturesTests::StubTimer();
         // simulated position
         m_pos = AZ::Vector2(0.0f, 0.0f);
     }
 
     void TearDown() override
     {
-        gEnv->pTimer = nullptr;
         gEnv = nullptr;
-        if (m_stubTimer)
-        {
-            delete m_stubTimer;
-            m_stubTimer = nullptr;
-        }
         if (m_env)
         {
             m_env->~SSystemGlobalEnvironment();
             AZ_OS_FREE(m_env);
             m_env = nullptr;
         }
+        delete m_stubTimer;
     }
 
-
 protected:
-
     // time manipulation
 
     void SetTime(float sec)
     {
-        m_stubTimer->SetTime(sec);
+        m_stubTimer->m_realElapsedTime = AZ::SecondsToTimeMs(sec);
     }
 
     // simple position caching interface
@@ -97,9 +100,7 @@ protected:
     }
 
 private:
-    SSystemGlobalEnvironment* m_env;
-    StubTimer* m_stubTimer;
+    SSystemGlobalEnvironment* m_env = nullptr;
+    GesturesTests::StubTimer* m_stubTimer = nullptr;
     AZ::Vector2 m_pos;
 };
-
-

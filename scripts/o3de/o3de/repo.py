@@ -15,8 +15,8 @@ import hashlib
 from datetime import datetime
 from o3de import manifest, utils, validation
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.repo')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def process_add_o3de_repo(file_name: str or pathlib.Path,

@@ -299,7 +299,7 @@ void android_main(android_app* appState)
 {
     // Adding a start up banner so you can see when the game is starting up in amongst the logcat spam
     LOGI("****************************************************************");
-    LOGI("*             Amazon Lumberyard - Launching Game...            *");
+    LOGI("*                      Launching Game...                       *");
     LOGI("****************************************************************");
 
     // setup the system command handler which are guaranteed to be called on the same

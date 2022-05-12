@@ -13,7 +13,6 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <Shape/AxisAlignedBoxShapeComponent.h>
@@ -26,7 +25,6 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_axisAlignedBoxShapeComponentDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_axisAlignedBoxShapeDebugDisplayComponentDescriptor;
-        AZStd::unique_ptr<AZ::ComponentDescriptor> m_nonUniformScaleComponentDescriptor;
 
     public:
         void SetUp() override
@@ -43,9 +41,6 @@ namespace UnitTest
             m_axisAlignedBoxShapeDebugDisplayComponentDescriptor =
                 AZStd::unique_ptr<AZ::ComponentDescriptor>(LmbrCentral::AxisAlignedBoxShapeDebugDisplayComponent::CreateDescriptor());
             m_axisAlignedBoxShapeDebugDisplayComponentDescriptor->Reflect(&(*m_serializeContext));
-            m_nonUniformScaleComponentDescriptor =
-                AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::NonUniformScaleComponent::CreateDescriptor());
-            m_nonUniformScaleComponentDescriptor->Reflect(&(*m_serializeContext));
         }
 
         void TearDown() override
@@ -53,7 +48,6 @@ namespace UnitTest
             m_transformComponentDescriptor.reset();
             m_axisAlignedBoxShapeComponentDescriptor.reset();
             m_axisAlignedBoxShapeDebugDisplayComponentDescriptor.reset();
-            m_nonUniformScaleComponentDescriptor.reset();
             m_serializeContext.reset();
             AllocatorsFixture::TearDown();
         }
@@ -71,23 +65,6 @@ namespace UnitTest
         AZ::TransformBus::Event(entity.GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
         LmbrCentral::BoxShapeComponentRequestsBus::Event(
             entity.GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions, dimensions);
-    }
-
-    void CreateAxisAlignedBoxWithNonUniformScale(
-        const AZ::Transform& transform, const AZ::Vector3& nonUniformScale, const AZ::Vector3& dimensions, AZ::Entity& entity)
-    {
-        entity.CreateComponent<LmbrCentral::AxisAlignedBoxShapeComponent>();
-        entity.CreateComponent<LmbrCentral::AxisAlignedBoxShapeDebugDisplayComponent>();
-        entity.CreateComponent<AzFramework::TransformComponent>();
-        entity.CreateComponent<AzFramework::NonUniformScaleComponent>();
-
-        entity.Init();
-        entity.Activate();
-
-        AZ::TransformBus::Event(entity.GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
-        LmbrCentral::BoxShapeComponentRequestsBus::Event(
-            entity.GetId(), &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions, dimensions);
-        AZ::NonUniformScaleRequestBus::Event(entity.GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
     }
 
     void CreateDefaultAxisAlignedBox(const AZ::Transform& transform, AZ::Entity& entity)
@@ -186,53 +163,5 @@ namespace UnitTest
         // The distance to the box should be 4.0 if not rotated but scaled and less if it is.
         EXPECT_TRUE(rayHit);
         EXPECT_NEAR(distance, 4.0f, 1e-2f);
-    }
-
-    TEST_F(AxisAlignedBoxShapeTest, RayIntersectWithBoxRotatedNonUniformScale)
-    {
-        AZ::Entity entity;
-        CreateAxisAlignedBoxWithNonUniformScale(
-            AZ::Transform(
-                AZ::Vector3(2.0f, -5.0f, 3.0f), AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
-                0.5f),
-            AZ::Vector3(2.2f, 1.8f, 0.4f), AZ::Vector3(0.2f, 2.6f, 1.2f), entity);
-
-        // This test creates a box of dimensions (2.2, 1.8, 0.4) centered on (2.0, -5, 3) and rotated about the Y axis by 45 degrees.
-        // The box is tested for axis-alignment by firing various rays and ensuring they either hit or miss the box. Any failure here
-        // would show the box has been rotated.
-
-        // Ray should just miss the box
-        bool rayHit = false;
-        float distance = AZ::Constants::FloatMax;
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(1.8f, -6.2f, 3.0f),
-            AZ::Vector3(1.0f, 0.0f, 0.0f), distance);
-        EXPECT_FALSE(rayHit);
-
-        // Ray should just hit the box
-        rayHit = false;
-        distance = AZ::Constants::FloatMax;
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(1.8f, -6.1f, 3.0f),
-            AZ::Vector3(1.0f, 0.0f, 0.0f), distance);
-        EXPECT_TRUE(rayHit);
-        EXPECT_NEAR(distance, 0.09f, 1e-3f);
-
-        // Ray should just miss the box
-        rayHit = false;
-        distance = AZ::Constants::FloatMax;
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(2.2f, -6.2f, 3.0f),
-            AZ::Vector3(0.0f, 1.0f, 0.0f), distance);
-        EXPECT_FALSE(rayHit);
-
-        // Ray should just hit the box
-        rayHit = false;
-        distance = AZ::Constants::FloatMax;
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            rayHit, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay, AZ::Vector3(2.1f, -6.2f, 3.0f),
-            AZ::Vector3(0.0f, 1.0f, 0.0f), distance);
-        EXPECT_TRUE(rayHit);
-        EXPECT_NEAR(distance, 0.03f, 1e-3f);
     }
 } // namespace UnitTest

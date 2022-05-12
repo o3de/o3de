@@ -348,14 +348,7 @@ namespace AZ::AtomBridge
     void AtomDebugDisplayViewportInterface::SetAlpha(float a)
     {
         m_rendState.m_color.SetA(a);
-        if (a < 1.0f)
-        {
-            m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Opaque;
-        }
-        else
-        {
-            m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Translucent;
-        }
+        m_rendState.m_opacityType = a < 1.0f ? AZ::RPI::AuxGeomDraw::OpacityType::Translucent : AZ::RPI::AuxGeomDraw::OpacityType::Opaque;
     }
 
     void AtomDebugDisplayViewportInterface::DrawQuad(

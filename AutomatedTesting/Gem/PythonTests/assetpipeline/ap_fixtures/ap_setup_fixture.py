@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-A fixture for Setting Up Asset Processor Batch workspace for tests in lmbr_test
+A fixture for Setting Up Asset Processor Batch workspace for tests
 """
 
 # Import builtin libraries

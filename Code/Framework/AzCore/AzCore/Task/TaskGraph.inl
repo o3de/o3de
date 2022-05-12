@@ -33,11 +33,6 @@ namespace AZ
         return m_semaphore.try_acquire_for(AZStd::chrono::milliseconds{ 0 });
     }
 
-    inline void TaskGraphEvent::Signal()
-    {
-        m_semaphore.release();
-    }
-
     template<typename Lambda>
     TaskToken TaskGraph::AddTask(TaskDescriptor const& desc, Lambda&& lambda)
     {

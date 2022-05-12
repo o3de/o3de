@@ -17,7 +17,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <ScriptCanvas/Core/Core.h>
-#include <Editor/Assets/ScriptCanvasAssetTracker.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 
 #endif

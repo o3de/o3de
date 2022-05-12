@@ -783,6 +783,7 @@ namespace AzToolsFramework
             }
 
             EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
         }
 
         void ScriptEditorComponent::LoadProperties()

@@ -85,9 +85,6 @@ public:
     MOCK_METHOD0(IsSelectionLocked, bool());
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
-    MOCK_METHOD1(GetDBItemManager, IDataBaseManager* (EDataBaseItemType));
-    MOCK_METHOD0(GetMaterialManagerLibrary, IBaseLibraryManager* ());
-    MOCK_METHOD0(GetIEditorMaterialManager, IEditorMaterialManager* ());
     MOCK_METHOD0(GetIconManager, IIconManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));
@@ -100,8 +97,6 @@ public:
     MOCK_METHOD0(GetActiveView, class CViewport* ());
     MOCK_METHOD1(SetActiveView, void(CViewport*));
     MOCK_METHOD0(GetFileMonitor, struct IEditorFileMonitor* ());
-    MOCK_METHOD1(RegisterEventLoopHook, void(IEventLoopHook* ));
-    MOCK_METHOD1(UnregisterEventLoopHook, void(IEventLoopHook* ));
     MOCK_CONST_METHOD0(CreateQMimeData, QMimeData* ());
     MOCK_CONST_METHOD1(DestroyQMimeData, void(QMimeData*));
     MOCK_METHOD0(GetLevelIndependentFileMan, class CLevelIndependentFileMan* ());
@@ -131,8 +126,6 @@ public:
     MOCK_METHOD1(CloseView, bool(const char* ));
     MOCK_METHOD1(SetViewFocus, bool(const char* ));
     MOCK_METHOD1(CloseView, void(const GUID& ));
-    MOCK_METHOD1(OpenWinWidget, QWidget* (WinWidgetId ));
-    MOCK_CONST_METHOD0(GetWinWidgetManager, WinWidget::WinWidgetManager* ());
     MOCK_METHOD2(SelectColor, bool(QColor &, QWidget *));
     MOCK_METHOD0(GetUndoManager, class CUndoManager* ());
     MOCK_METHOD0(BeginUndo, void());
@@ -170,12 +163,8 @@ public:
     MOCK_METHOD0(GetSourceControl, ISourceControl* ());
     MOCK_METHOD0(IsSourceControlAvailable, bool());
     MOCK_METHOD0(IsSourceControlConnected, bool());
-    MOCK_METHOD0(GetUIEnumsDatabase, CUIEnumsDatabase* ());
-    MOCK_METHOD0(AddUIEnums, void());
     MOCK_METHOD0(ReduceMemory, void());
     MOCK_METHOD0(GetExportManager, IExportManager* ());
-    MOCK_METHOD2(SetEditorConfigSpec, void(ESystemConfigSpec , ESystemConfigPlatform ));
-    MOCK_CONST_METHOD0(GetEditorConfigSpec, ESystemConfigSpec());
     MOCK_CONST_METHOD0(GetEditorConfigPlatform, ESystemConfigPlatform());
     MOCK_METHOD0(ReloadTemplates, void());
     MOCK_METHOD1(ShowStatusText, void(bool ));
@@ -187,6 +176,5 @@ public:
     MOCK_METHOD0(UnloadPlugins, void());
     MOCK_METHOD0(LoadPlugins, void());
     MOCK_METHOD1(GetSearchPath, QString(EEditorPathName));
-    MOCK_METHOD0(GetEditorPanelUtils, IEditorPanelUtils* ());
 
 };

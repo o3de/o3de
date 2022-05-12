@@ -81,6 +81,11 @@ namespace UnitTest
         rootEntity.Activate();
     }
 
+    void PrefabTestFixture::PropagateAllTemplateChanges()
+    {
+        m_prefabSystemComponent->OnSystemTick();
+    }
+
     AZ::Entity* PrefabTestFixture::CreateEntity(AZStd::string entityName, const bool shouldActivate)
     {
         // Circumvent the EntityContext system and generate a new entity with a transformcomponent
@@ -201,5 +206,14 @@ namespace UnitTest
     {
         m_undoStack->Redo();
         ProcessDeferredUpdates();
+    }
+
+    void PrefabTestFixture::AddRequiredEditorComponents(AZ::Entity* entity)
+    {
+        ASSERT_TRUE(entity != nullptr);
+        entity->Deactivate();
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
+        entity->Activate();
     }
 }

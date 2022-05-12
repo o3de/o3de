@@ -22,7 +22,7 @@ namespace ScriptCanvas
     ExecutionStateConfig::ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> runtimeAsset, RuntimeComponent& component)
         : asset(runtimeAsset)
         , component(component)
-        , runtimeData(runtimeAsset.Get()->GetData())
+        , runtimeData(runtimeAsset.Get()->m_runtimeData)
     {}
 
     ExecutionState::ExecutionState(const ExecutionStateConfig& config)

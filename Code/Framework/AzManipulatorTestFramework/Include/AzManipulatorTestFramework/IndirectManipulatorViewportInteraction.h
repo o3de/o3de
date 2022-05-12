@@ -21,12 +21,15 @@ namespace AzManipulatorTestFramework
     class IndirectCallManipulatorViewportInteraction : public ManipulatorViewportInteraction
     {
     public:
-        IndirectCallManipulatorViewportInteraction();
+        explicit IndirectCallManipulatorViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests);
         ~IndirectCallManipulatorViewportInteraction();
 
-        // ManipulatorViewportInteractionInterface ...
+        // ManipulatorViewportInteraction overrides ...
         const ViewportInteractionInterface& GetViewportInteraction() const override;
         const ManipulatorManagerInterface& GetManipulatorManager() const override;
+        // make non-const overloads visible
+        using ManipulatorViewportInteraction::GetViewportInteraction;
+        using ManipulatorViewportInteraction::GetManipulatorManager;
 
     private:
         AZStd::unique_ptr<ViewportInteraction> m_viewportInteraction;

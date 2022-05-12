@@ -65,8 +65,8 @@ namespace AZ
             const RHI::DispatchItem& GetRHIDispatchItem() const;
 
             Data::Instance<RPI::Buffer> GetBoneTransforms() const;
-            AZStd::array_view<RHI::Ptr<RHI::BufferView>> GetSourceUnskinnedBufferViews() const;
-            AZStd::array_view<RHI::Ptr<RHI::BufferView>> GetTargetSkinnedBufferViews() const;
+            AZStd::span<const RHI::Ptr<RHI::BufferView>> GetSourceUnskinnedBufferViews() const;
+            AZStd::span<const RHI::Ptr<RHI::BufferView>> GetTargetSkinnedBufferViews() const;
             size_t GetVertexCount() const;
         private:
             // SkinnedMeshShaderOptionNotificationBus::Handler

@@ -9,6 +9,7 @@
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 #include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
@@ -46,16 +47,19 @@ namespace AZ
 
         void FullscreenTrianglePass::OnShaderReinitialized(const Shader&)
         {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderReinitialized", this);
             LoadShader();
         }
 
         void FullscreenTrianglePass::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>&)
         {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderAssetReinitialized", this);
             LoadShader();
         }
 
         void FullscreenTrianglePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderVariantReinitialized", this);
             LoadShader();
         }
 
@@ -129,6 +133,8 @@ namespace AZ
         void FullscreenTrianglePass::InitializeInternal()
         {
             RenderPass::InitializeInternal();
+            
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::InitializeInternal", this);
 
             // This draw item purposefully does not reference any geometry buffers.
             // Instead it's expected that the extended class uses a vertex shader 
@@ -170,11 +176,11 @@ namespace AZ
             
             if (GetOutputCount() > 0)
             {
-                outputAttachment = GetOutputBinding(0).m_attachment.get();
+                outputAttachment = GetOutputBinding(0).GetAttachment().get();
             }
             else if(GetInputOutputCount() > 0)
             {
-                outputAttachment = GetInputOutputBinding(0).m_attachment.get();
+                outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             }
 
             AZ_Assert(outputAttachment != nullptr, "[FullscreenTrianglePass %s] has no valid output or input/output attachments.", GetPathName().GetCStr());

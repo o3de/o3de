@@ -32,7 +32,7 @@ namespace AtomToolsFramework
     {
         // build camera state from atom camera transforms
         AzFramework::CameraState cameraState =
-            AzFramework::CreateDefaultCamera(m_viewPtr->GetCameraTransform(), AzFramework::Vector2FromScreenSize(m_screenSizeFn()));
+            AzFramework::CreateDefaultCamera(m_viewPtr->GetCameraTransform(), m_screenSizeFn());
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, m_viewPtr->GetViewToClipMatrix());
         return cameraState;
     }
@@ -50,10 +50,7 @@ namespace AtomToolsFramework
     AzToolsFramework::ViewportInteraction::ProjectedViewportRay ViewportInteractionImpl::ViewportScreenToWorldRay(
         const AzFramework::ScreenPoint& screenPosition)
     {
-        const AzFramework::CameraState cameraState = GetCameraState();
-        const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPosition, cameraState);
-        const AZ::Vector3 rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
-        return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{ rayOrigin, rayDirection };
+        return AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(GetCameraState(), screenPosition);
     }
 
     float ViewportInteractionImpl::DeviceScalingFactor()

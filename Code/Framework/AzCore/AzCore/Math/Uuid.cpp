@@ -77,7 +77,7 @@ namespace AZ
 
         // check open brace
         char c = *current++;
-        bool has_open_brace = false;
+        [[maybe_unused]] bool has_open_brace = false;
         if (c == '{')
         {
             c = *current++;

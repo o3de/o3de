@@ -167,5 +167,3 @@ void CScreenFaderKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle&
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CScreenFaderKeyUIControls, "TrackView.KeyUI.ScreenFader", "TrackViewKeyUI");

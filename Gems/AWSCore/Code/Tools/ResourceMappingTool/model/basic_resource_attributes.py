@@ -70,8 +70,9 @@ class BasicResourceAttributes(object):
         self._region = new_region
 
     def is_valid(self) -> bool:
-        return not self._type == "" and not self._name_id == "" \
-               and not self._account_id == "" and not self._region == ""
+        return not self._type == "" \
+               and not self._name_id == "" \
+               and not self._region == ""
 
 
 class BasicResourceAttributesBuilder(object):

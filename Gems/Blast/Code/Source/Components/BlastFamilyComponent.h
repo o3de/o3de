@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AZCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Asset/BlastAsset.h>
 #include <AzCore/Component/Component.h>

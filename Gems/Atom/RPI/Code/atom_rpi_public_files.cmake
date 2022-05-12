@@ -73,6 +73,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/RasterPass.h
     Include/Atom/RPI.Public/Pass/RenderPass.h
     Include/Atom/RPI.Public/Pass/MSAAResolvePass.h
+    Include/Atom/RPI.Public/Pass/SlowClearPass.h
     Include/Atom/RPI.Public/Pass/Specific/DownsampleMipChainPass.h
     Include/Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h
     Include/Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h
@@ -149,6 +150,7 @@ set(FILES
     Source/RPI.Public/Pass/RasterPass.cpp
     Source/RPI.Public/Pass/RenderPass.cpp
     Source/RPI.Public/Pass/MSAAResolvePass.cpp
+    Source/RPI.Public/Pass/SlowClearPass.cpp
     Source/RPI.Public/Pass/Specific/DownsampleMipChainPass.cpp
     Source/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.cpp
     Source/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.cpp

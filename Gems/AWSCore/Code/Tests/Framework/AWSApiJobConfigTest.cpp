@@ -8,7 +8,6 @@
 
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobContext.h>
-#include <AzTest/AzTest.h>
 
 #include <aws/core/auth/AWSCredentialsProvider.h>
 
@@ -20,14 +19,14 @@
 using namespace AWSCore;
 
 class AwsApiJobConfigTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public AWSCoreFixture
     , AWSCredentialRequestBus::Handler
     , AWSCoreRequestBus::Handler
 {
 public:
     void SetUp() override
     {
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+        AWSCoreFixture::SetUpFixture();
 
         m_credentialsHandler = std::make_shared<Aws::Auth::AnonymousAWSCredentialsProvider>();
         AZ::JobManagerDesc jobDesc;
@@ -45,7 +44,7 @@ public:
         m_jobManager.reset();
         m_credentialsHandler.reset();
 
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
+        AWSCoreFixture::TearDownFixture();
     }
 
     // AWSCredentialRequestBus interface implementation

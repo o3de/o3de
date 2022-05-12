@@ -24,8 +24,7 @@ namespace AZ
             Initializing,
             Irradiance,
             Distance,
-            Relocation,
-            Classification,
+            ProbeData,
             Complete
         };
 
@@ -52,8 +51,7 @@ namespace AZ
 
             AZ::RPI::AttachmentReadback::ReadbackResult m_irradianceReadbackResult;
             AZ::RPI::AttachmentReadback::ReadbackResult m_distanceReadbackResult;
-            AZ::RPI::AttachmentReadback::ReadbackResult m_relocationReadbackResult;
-            AZ::RPI::AttachmentReadback::ReadbackResult m_classificationReadbackResult;
+            AZ::RPI::AttachmentReadback::ReadbackResult m_probeDataReadbackResult;
 
             // number of frames to delay before starting the texture readbacks, this allows the textures to settle
             static constexpr int32_t DefaultNumInitializationFrames = 50;

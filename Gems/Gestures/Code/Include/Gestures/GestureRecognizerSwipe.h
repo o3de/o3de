@@ -8,8 +8,8 @@
 #pragma once
 
 #include "IGestureRecognizer.h"
-#include <CryCommon/ITimer.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Time/ITime.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -66,7 +66,7 @@ namespace Gestures
        AZ::Vector2 GetDirection() const { return GetDelta().GetNormalized(); }
 
        float GetDistance() const { return GetEndPosition().GetDistance(GetStartPosition()); }
-       float GetDuration() const { return CTimeValue(m_endTime).GetDifferenceInSeconds(m_startTime); }
+       float GetDuration() const { return AZ::TimeMsToSeconds(m_endTime - m_startTime); }
        float GetVelocity() const { return GetDistance() / GetDuration(); }
 
     private:
@@ -81,8 +81,8 @@ namespace Gestures
         ScreenPosition m_startPosition;
         ScreenPosition m_endPosition;
 
-        int64 m_startTime;
-        int64 m_endTime;
+        AZ::TimeMs m_startTime;
+        AZ::TimeMs m_endTime;
 
         State m_currentState;
     };

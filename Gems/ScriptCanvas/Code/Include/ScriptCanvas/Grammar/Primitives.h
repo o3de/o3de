@@ -197,6 +197,7 @@ namespace ScriptCanvas
             virtual ~NodeableParse() {}
 
             VariableConstPtr m_nodeable;
+            bool m_isInterpreted = false;
             AZStd::string m_simpleName;
             AZStd::vector<ExecutionTreeConstPtr> m_onInputChanges;
             AZStd::vector<AZStd::pair<AZStd::string, ExecutionTreeConstPtr>> m_latents;

@@ -26,32 +26,35 @@ def Menus_ViewMenuOptions_Work():
     :return: None
     """
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
     import editor_python_test_tools.pyside_utils as pyside_utils
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     view_menu_options = [
         ("Center on Selection",),
         ("Show Quick Access Bar",),
+        ("Layouts", "Component Entity Layout",),
+        ("Layouts", "Save Layout",),
         ("Viewport", "Configure Layout"),
         ("Viewport", "Go to Position"),
         ("Viewport", "Center on Selection"),
         ("Viewport", "Go to Location"),
         ("Viewport", "Remember Location"),
         ("Viewport", "Switch Camera"),
-        ("Viewport", "Show/Hide Helpers"),
+        ("Viewport", "Show Helpers"),
+        ("Viewport", "Show Icons"),
         ("Refresh Style",),
     ]
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Interact with View Menu options
     editor_window = pyside_utils.get_editor_main_window()
     for option in view_menu_options:
         try:
             action = pyside_utils.get_action_for_menu_path(editor_window, "View", *option)
+            Report.info(f"Triggering {action.iconText()}")
             action.trigger()
             action_triggered = True
         except Exception as e:

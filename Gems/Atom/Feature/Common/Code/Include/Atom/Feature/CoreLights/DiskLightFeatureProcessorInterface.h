@@ -100,7 +100,8 @@ namespace AZ
             //! Sets all of the the disk data for the provided LightHandle.
             virtual void SetDiskData(LightHandle handle, const DiskLightData& data) = 0;
 
-
+            //! Get a read only copy of a disk lights data, useful for debug rendering
+            virtual const DiskLightData& GetDiskData(LightHandle handle) const = 0;
         };
     } // namespace Render
 } // namespace AZ

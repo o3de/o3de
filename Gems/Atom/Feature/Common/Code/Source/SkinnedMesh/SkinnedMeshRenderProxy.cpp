@@ -18,8 +18,6 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 
 #include <Atom/Utils/Utils.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Render
@@ -35,7 +33,7 @@ namespace AZ
 
         bool SkinnedMeshRenderProxy::Init(const RPI::Scene& scene, SkinnedMeshFeatureProcessor* featureProcessor)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(AzRender);
             if(!m_instance->m_model)
             {
                 return false;
@@ -147,7 +145,7 @@ namespace AZ
             }
         }
 
-        AZStd::array_view<AZStd::unique_ptr<SkinnedMeshDispatchItem>> SkinnedMeshRenderProxy::GetDispatchItems() const
+        AZStd::span<const AZStd::unique_ptr<SkinnedMeshDispatchItem>> SkinnedMeshRenderProxy::GetDispatchItems() const
         {
             return m_dispatchItemsByLod;
         }

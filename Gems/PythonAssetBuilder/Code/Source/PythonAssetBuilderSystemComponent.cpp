@@ -8,7 +8,6 @@
 
 #include <PythonAssetBuilderSystemComponent.h>
 #include <PythonAssetBuilder/PythonAssetBuilderBus.h>
-#include <PythonAssetBuilder/PythonBuilderRequestBus.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -57,13 +56,6 @@ namespace PythonAssetBuilder
                 ->Event("RegisterAssetBuilder", &PythonAssetBuilderRequestBus::Events::RegisterAssetBuilder)
                 ->Event("GetExecutableFolder", &PythonAssetBuilderRequestBus::Events::GetExecutableFolder)
                 ;
-
-            behaviorContext->EBus<PythonBuilderRequestBus>("PythonBuilderRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "asset.entity")
-                ->Event("WriteSliceFile", &PythonBuilderRequestBus::Events::WriteSliceFile)
-                ->Event("CreateEditorEntity", &PythonBuilderRequestBus::Events::CreateEditorEntity)
-                ;
         }
     }
 
@@ -97,13 +89,10 @@ namespace PythonAssetBuilder
         {
             pythonInterface->StartPython(true);
         }
-
-        PythonBuilderRequestBus::Handler::BusConnect();
     }
 
     void PythonAssetBuilderSystemComponent::Deactivate()
     {
-        PythonBuilderRequestBus::Handler::BusDisconnect();
         m_messageSink.reset();
 
         if (PythonAssetBuilderRequestBus::HasHandlers())
@@ -147,110 +136,5 @@ namespace PythonAssetBuilder
             return AZ::Success(AZStd::string(exeFolderName));
         }
         return AZ::Failure(AZStd::string("GetExecutableFolder access is missing."));
-    }
-
-    AZ::Outcome<AZ::EntityId, AZStd::string> PythonAssetBuilderSystemComponent::CreateEditorEntity(const AZStd::string& name)
-    {
-        AZ::EntityId entityId;
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            entityId,
-            &AzToolsFramework::EditorEntityContextRequestBus::Events::CreateNewEditorEntity,
-            name.c_str());
-
-        if (entityId.IsValid() == false)
-        {
-            return AZ::Failure<AZStd::string>("Failed to CreateNewEditorEntity.");
-        }
-
-        AZ::Entity* entity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-
-        if (entity == nullptr)
-        {
-            return AZ::Failure<AZStd::string>(AZStd::string::format("Failed to find created entityId %s", entityId.ToString().c_str()));
-        }
-
-        entity->Deactivate();
-
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents,
-            *entity);
-
-        entity->Activate();
-
-        return AZ::Success(entityId);
-    }
-
-    AZ::Outcome<AZ::Data::AssetType, AZStd::string> PythonAssetBuilderSystemComponent::WriteSliceFile(
-        AZStd::string_view filename,
-        AZStd::vector<AZ::EntityId> entityList,
-        bool makeDynamic)
-    {
-        using namespace AzToolsFramework::SliceUtilities;
-
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        if (serializeContext == nullptr)
-        {
-            return AZ::Failure<AZStd::string>("GetSerializeContext failed");
-        }
-
-        // transaction->Commit() requires the "@user@" alias
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        auto ioBase = AZ::IO::FileIOBase::GetInstance();
-        if (ioBase->GetAlias("@user@") == nullptr)
-        {
-            if (AZ::IO::Path userPath; settingsRegistry->Get(userPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
-            {
-                userPath /= "AssetProcessorTemp";
-                ioBase->SetAlias("@user@", userPath.c_str());
-            }
-        }
-
-        // transaction->Commit() expects the file to exist and write-able
-        AZ::IO::HandleType fileHandle;
-        AZ::IO::LocalFileIO::GetInstance()->Open(filename.data(), AZ::IO::OpenMode::ModeWrite, fileHandle);
-        if (fileHandle == AZ::IO::InvalidHandle)
-        {
-            return AZ::Failure<AZStd::string>(
-                AZStd::string::format("Failed to create slice file %.*s", aznumeric_cast<int>(filename.size()), filename.data()));
-        }
-        AZ::IO::LocalFileIO::GetInstance()->Close(fileHandle);
-
-        AZ::u32 creationFlags = 0;
-        if (makeDynamic)
-        {
-            creationFlags |= SliceTransaction::CreateAsDynamic;
-        }
-
-        SliceTransaction::TransactionPtr transaction = SliceTransaction::BeginNewSlice(nullptr, serializeContext, creationFlags);
-
-        // add entities
-        for (const AZ::EntityId& entityId : entityList)
-        {
-            auto addResult = transaction->AddEntity(entityId, SliceTransaction::SliceAddEntityFlags::DiscardSliceAncestry);
-            if (!addResult)
-            {
-                return AZ::Failure<AZStd::string>(AZStd::string::format("Failed slice add entity: %s", addResult.GetError().c_str()));
-            }
-        }
-
-        // commit to a file
-        AZ::Data::AssetType sliceAssetType;
-        auto resultCommit = transaction->Commit(filename.data(), nullptr, [&sliceAssetType](
-            SliceTransaction::TransactionPtr transactionPtr,
-            [[maybe_unused]] const char* fullPath,
-            const SliceTransaction::SliceAssetPtr& sliceAssetPtr)
-            {
-                sliceAssetType = sliceAssetPtr->GetType();
-                return AZ::Success();
-            });
-
-        if (!resultCommit)
-        {
-            return AZ::Failure<AZStd::string>(AZStd::string::format("Failed commit slice: %s", resultCommit.GetError().c_str()));
-        }
-
-        return AZ::Success(sliceAssetType);
     }
 }

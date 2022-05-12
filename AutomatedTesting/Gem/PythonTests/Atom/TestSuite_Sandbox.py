@@ -9,67 +9,34 @@ import os
 
 import pytest
 
+import ly_test_tools.environment.file_system as file_system
 import editor_python_test_tools.hydra_test_utils as hydra
+from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 
 logger = logging.getLogger(__name__)
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 
-class TestAtomEditorComponentsSandbox(object):
 
-    # It requires at least one test
-    def test_Dummy(self, request, editor, level, workspace, project, launcher_platform):
-        pass
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+class TestAutomation(EditorTestSuite):
 
-    @pytest.mark.parametrize("project", ["AutomatedTesting"])
-    @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-    @pytest.mark.parametrize("level", ["auto_test"])
-    class TestAtomEditorComponentsMain(object):
-        """Holds tests for Atom components."""
+    # this test is intermittently timing out without ever having executed. sandboxing while we investigate cause.
+    @pytest.mark.test_case_id("C36525660")
+    class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
 
-        @pytest.mark.test_case_id("C32078128")
-        def test_AtomEditorComponents_ReflectionProbeAddedToEntity(
-                self, request, editor, level, workspace, project, launcher_platform):
-            """
-            Please review the hydra script run by this test for more specific test info.
-            Tests the following Atom components and verifies all "expected_lines" appear in Editor.log:
-            1. Reflection Probe
-            """
-            cfg_args = [level]
+    # The "Sponza" level is failing with a hard lock 4-12% of the time, needs root causing and fixing.
+    @pytest.mark.test_case_id("C36529679")
+    class AtomLevelLoadTest_Editor_Sandbox(EditorSharedTest):
+        from Atom.tests import hydra_Atom_LevelLoadTest_Sandbox as test_module
 
-            expected_lines = [
-                # Reflection Probe Component
-                "Reflection Probe Entity successfully created",
-                "Reflection Probe_test: Component added to the entity: True",
-                "Reflection Probe_test: Component removed after UNDO: True",
-                "Reflection Probe_test: Component added after REDO: True",
-                "Reflection Probe_test: Entered game mode: True",
-                "Reflection Probe_test: Exit game mode: True",
-                "Reflection Probe_test: Entity disabled initially: True",
-                "Reflection Probe_test: Entity enabled after adding required components: True",
-                "Reflection Probe_test: Cubemap is generated: True",
-                "Reflection Probe_test: Entity is hidden: True",
-                "Reflection Probe_test: Entity is shown: True",
-                "Reflection Probe_test: Entity deleted: True",
-                "Reflection Probe_test: UNDO entity deletion works: True",
-                "Reflection Probe_test: REDO entity deletion works: True",
-            ]
+    class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
+        from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
 
-            hydra.launch_and_validate_results(
-                request,
-                TEST_DIRECTORY,
-                editor,
-                "hydra_AtomEditorComponents_AddedToEntity.py",
-                timeout=120,
-                expected_lines=expected_lines,
-                unexpected_lines=[],
-                halt_on_unexpected=True,
-                null_renderer=True,
-                cfg_args=cfg_args,
-            )
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_generic'])
-@pytest.mark.system
 class TestMaterialEditorBasicTests(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project):
@@ -117,11 +84,11 @@ class TestMaterialEditorBasicTests(object):
             "Document saved as copy is saved with changes: True",
             "Document saved as child is saved with changes: True",
             "Save All worked as expected: True",
+            "P1: Asset Browser visibility working as expected: True",
+            "P1: Inspector visibility working as expected: True",
         ]
         unexpected_lines = [
-            # "Trace::Assert",
-            # "Trace::Error",
-            "Traceback (most recent call last):"
+            # Including any lines in unexpected_lines will cause the test to run for the duration of the timeout
         ]
 
         hydra.launch_and_validate_results(
@@ -130,11 +97,10 @@ class TestMaterialEditorBasicTests(object):
             generic_launcher,
             "hydra_AtomMaterialEditor_BasicTests.py",
             run_python="--runpython",
-            timeout=120,
+            timeout=43,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
             null_renderer=True,
             log_file_name="MaterialEditor.log",
         )
-

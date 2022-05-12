@@ -20,7 +20,6 @@
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/EventManager.h>
-#include <EMotionFX/Exporters/ExporterLib/Exporter/ExporterFileProcessor.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
@@ -252,6 +251,7 @@ namespace CommandSystem
             if (undoObject.m_animGraphInstance)
             {
                 undoObject.m_animGraph = undoObject.m_animGraphInstance->GetAnimGraph();
+                undoObject.m_animGraphInstance->Destroy();
                 actorInstance->SetAnimGraphInstance(nullptr);
             }
 

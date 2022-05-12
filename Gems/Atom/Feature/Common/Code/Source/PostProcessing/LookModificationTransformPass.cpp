@@ -42,9 +42,9 @@ namespace AZ
         {
             // Get swap chain format
             RHI::Format swapChainFormat = RHI::Format::Unknown;
-            if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->m_attachment)
+            if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->GetAttachment())
             {
-                swapChainFormat = m_swapChainAttachmentBinding->m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+                swapChainFormat = m_swapChainAttachmentBinding->GetAttachment()->GetTransientImageDescriptor().m_imageDescriptor.m_format;
             }
 
             // Update the children passes

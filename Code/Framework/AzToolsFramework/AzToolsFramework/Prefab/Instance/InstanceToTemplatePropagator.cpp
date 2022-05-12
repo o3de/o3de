@@ -156,7 +156,7 @@ namespace AzToolsFramework
             }
         }
 
-        bool InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude)
+        bool InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
         {
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
@@ -172,7 +172,7 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ_Error(
+                AZ_Warning(
                     "Prefab",
                     (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
                     (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),

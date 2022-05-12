@@ -37,7 +37,6 @@
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/Start.h>
 #include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
-#include <ScriptCanvas/Profiler/Driller.h>
 #include <ScriptCanvas/Translation/Translation.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>
@@ -85,17 +84,6 @@ namespace ScriptCanvas
             }
         }
 
-        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::FixupVersionDataTypeId)
-        {
-            if (auto subElement = componentElementNode.FindSubElement(AZ_CRC_CE("versionData")))
-            {
-                if (subElement->GetId() == azrtti_typeid<SlotId>())
-                {
-                    componentElementNode.RemoveElementByName(AZ_CRC_CE("versionData"));
-                    componentElementNode.AddElementWithData(context, "versionData", VersionData());
-                }
-            }
-        }
         
         return true;
     }

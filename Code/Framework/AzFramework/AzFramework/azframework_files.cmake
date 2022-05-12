@@ -21,6 +21,7 @@ set(FILES
     Archive/ArchiveFindData.cpp
     Archive/ArchiveFindData.h
     Archive/ArchiveVars.h
+    Archive/ArchiveVars.cpp
     Archive/Codec.h
     Archive/IArchive.h
     Archive/INestedArchive.h
@@ -58,7 +59,6 @@ set(FILES
     Asset/AssetSeedList.h
     Asset/AssetSystemComponent.cpp
     Asset/AssetSystemComponent.h
-    Asset/CfgFileAsset.h
     Asset/GenericAssetHandler.h
     Asset/AssetBundleManifest.cpp
     Asset/AssetBundleManifest.h
@@ -77,7 +77,6 @@ set(FILES
     Asset/Benchmark/BenchmarkSettingsAsset.h
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
-    Debug/DebugCameraBus.h
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -122,7 +121,6 @@ set(FILES
     Entity/SliceGameEntityOwnershipService.cpp
     Entity/SliceGameEntityOwnershipServiceBus.h
     Entity/PrefabEntityOwnershipService.h
-    Entity/PrefabEntityOwnershipService.cpp
     Components/ComponentAdapter.h
     Components/ComponentAdapter.inl
     Components/ComponentAdapterHelpers.h
@@ -137,6 +135,17 @@ set(FILES
     Components/AzFrameworkConfigurationSystemComponent.cpp
     Components/NonUniformScaleComponent.h
     Components/NonUniformScaleComponent.cpp
+    DocumentPropertyEditor/AdapterBuilder.cpp
+    DocumentPropertyEditor/AdapterBuilder.h
+    DocumentPropertyEditor/BasicAdapter.cpp
+    DocumentPropertyEditor/BasicAdapter.h
+    DocumentPropertyEditor/DocumentAdapter.cpp
+    DocumentPropertyEditor/DocumentAdapter.h
+    DocumentPropertyEditor/DocumentSchema.h
+    DocumentPropertyEditor/PropertyEditorNodes.cpp
+    DocumentPropertyEditor/PropertyEditorNodes.h
+    DocumentPropertyEditor/CvarAdapter.cpp
+    DocumentPropertyEditor/CvarAdapter.h
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
     Font/FontInterface.h
@@ -167,10 +176,6 @@ set(FILES
     Logging/MissingAssetLogger.cpp
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
-    Matchmaking/IMatchmakingRequests.h
-    Matchmaking/MatchmakingRequests.cpp
-    Matchmaking/MatchmakingRequests.h
-    Matchmaking/MatchmakingNotifications.h
     Scene/Scene.h
     Scene/Scene.inl
     Scene/Scene.cpp
@@ -184,13 +189,6 @@ set(FILES
     Script/ScriptDebugMsgReflection.h
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
-    Session/ISessionHandlingRequests.h
-    Session/ISessionRequests.h
-    Session/SessionRequests.cpp
-    Session/SessionRequests.h
-    Session/SessionConfig.cpp
-    Session/SessionConfig.h
-    Session/SessionNotifications.h
     StreamingInstall/StreamingInstall.h
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
@@ -228,6 +226,8 @@ set(FILES
     Physics/Configuration/SimulatedBodyConfiguration.cpp
     Physics/Configuration/SystemConfiguration.h
     Physics/Configuration/SystemConfiguration.cpp
+    Physics/DebugDraw/CharacterPhysicsDebugDraw.h
+    Physics/DebugDraw/CharacterPhysicsDebugDraw.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h
@@ -268,13 +268,13 @@ set(FILES
     Physics/WindBus.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
-    Process/ProcessWatcher.cpp
-    Process/ProcessWatcher.h
     Process/ProcessCommon_fwd.h
     Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
     Process/ProcessCommon_fwd.h
+    Process/ProcessCommunicatorTracePrinter.cpp
+    Process/ProcessCommunicatorTracePrinter.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h
@@ -287,6 +287,7 @@ set(FILES
     Spawnable/RootSpawnableInterface.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
+    Spawnable/SpawnableAssetBus.h
     Spawnable/SpawnableAssetHandler.h
     Spawnable/SpawnableAssetHandler.cpp
     Spawnable/SpawnableEntitiesContainer.h

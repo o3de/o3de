@@ -1,11 +1,11 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "Materials\\Presets\\MacBeth\\00_illuminant.material",
-    "propertyLayoutVersion": 3,
+    "parentMaterial": "00_illuminant.material",
+    "materialType": "../../Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
-            "textureMap": "Materials/Presets/MacBeth/ColorChecker_sRGB_from_Lab_16bit_AfterNov2014.tif"
+            "textureMap": "ColorChecker_sRGB_from_Lab_16bit_AfterNov2014.tif"
         }
     }
 }

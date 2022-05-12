@@ -33,7 +33,7 @@ namespace O3DE::ProjectManager
     class GemCartWidget
         : public QScrollArea
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         GemCartWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);

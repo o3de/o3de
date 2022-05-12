@@ -256,6 +256,9 @@ namespace AssetProcessor
         //! Retrieve the scan folder at a given index.
         AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index);
 
+        //! Retrieve the scan folder at a given index.
+        const AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index) const;
+
         //!  Manually add a scan folder.  Also used for testing.
         void AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting = false);
 
@@ -298,7 +301,16 @@ namespace AssetProcessor
         QString FindFirstMatchingFile(QString relativeName) const;
 
         //! given a relative name with wildcard characters (* allowed) find a set of matching files or optionally folders
-        QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders = false, bool recursiveSearch = true) const;
+        QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders = false,
+            bool recursiveSearch = true) const;
+
+        //! given a relative name with wildcard characters (* allowed) find a set of matching files or optionally folders
+        QStringList FindWildcardMatches(
+            const QString& sourceFolder,
+            QString relativeName,
+            const AZStd::unordered_set<AZStd::string>& excludedFolders,
+            bool includeFolders = false,
+            bool recursiveSearch = true) const;
 
         //! given a fileName (as a full path), return the database source name which includes the output prefix.
         //!

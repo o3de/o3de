@@ -9,13 +9,13 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/std/limits.h>
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AZ
 {
@@ -36,6 +36,15 @@ namespace AZ
                     ->Field("MaterialSlots", &ModelAsset::m_materialSlots)
                     ->Field("LodAssets", &ModelAsset::m_lodAssets)
                     ;
+
+                // Note: This class needs to have edit context reflection so PropertyAssetCtrl::OnEditButtonClicked
+                //       can open the asset with the preferred asset editor (Scene Settings).
+                if (auto* editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<ModelAsset>("Model Asset", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ;
+                }
             }
         }
 
@@ -83,9 +92,9 @@ namespace AZ
             return m_lodAssets.size();
         }
 
-        AZStd::array_view<Data::Asset<ModelLodAsset>> ModelAsset::GetLodAssets() const
+        AZStd::span<const Data::Asset<ModelLodAsset>> ModelAsset::GetLodAssets() const
         {
-            return AZStd::array_view<Data::Asset<ModelLodAsset>>(m_lodAssets);
+            return AZStd::span<const Data::Asset<ModelLodAsset>>(m_lodAssets);
         }
 
         void ModelAsset::SetReady()
@@ -137,7 +146,7 @@ namespace AZ
                 // For runtime approach is to do this during asset processing and serialized spatial information alongside with mesh model assets
                 const auto jobLambda = [&]() -> void
                 {
-                    AZ_TRACE_METHOD();
+                    AZ_PROFILE_FUNCTION(RPI);
 
                     AZStd::unique_ptr<ModelKdTree> tree = AZStd::make_unique<ModelKdTree>();
                     tree->Build(this);
@@ -214,7 +223,7 @@ namespace AZ
                 }
 
                 RHI::BufferViewDescriptor positionBufferViewDesc = positionBufferView->GetBufferViewDescriptor();
-                AZStd::array_view<uint8_t> positionRawBuffer = bufferAssetViewPtr->GetBuffer();
+                AZStd::span<const uint8_t> positionRawBuffer = bufferAssetViewPtr->GetBuffer();
 
                 const uint32_t positionElementSize = positionBufferViewDesc.m_elementSize;
                 const uint32_t positionElementCount = positionBufferViewDesc.m_elementCount;
@@ -228,7 +237,7 @@ namespace AZ
                 }
 
                 RHI::BufferViewDescriptor indexBufferViewDesc = indexBufferView.GetBufferViewDescriptor();
-                AZStd::array_view<uint8_t> indexRawBuffer = indexAssetViewPtr->GetBuffer();
+                AZStd::span<const uint8_t> indexRawBuffer = indexAssetViewPtr->GetBuffer();
 
                 const AZ::Vector3 rayEnd = rayStart + rayDir;
                 AZ::Vector3 a, b, c;
@@ -298,7 +307,7 @@ namespace AZ
                 {
                     for (const ModelLodAsset::Mesh& mesh : loadAssetPtr->GetMeshes())
                     {
-                        const AZStd::array_view<ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
+                        const AZStd::span<const ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
 
                         // find position semantic
                         const ModelLodAsset::Mesh::StreamBufferInfo* positionBuffer = nullptr;

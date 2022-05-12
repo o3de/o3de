@@ -13,7 +13,6 @@
 #include <EMotionFX/CommandSystem/Source/ActorInstanceCommands.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
-#include "../../../../EMStudioSDK/Source/UnitScaleWindow.h"
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <QContextMenuEvent>
@@ -481,16 +480,6 @@ namespace EMStudio
         // create the context menu
         QMenu menu(this);
         menu.setToolTipsVisible(true);
-
-        bool actorSelected = false;
-        for (const QTreeWidgetItem* item : items)
-        {
-            if (item->parent() == nullptr)
-            {
-                actorSelected = true;
-                break;
-            }
-        }
 
         bool instanceSelected = false;
         const int selectedItemCount = items.count();

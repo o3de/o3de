@@ -51,5 +51,5 @@ class TestComponentAssetListAutomation(object):
             editor,
             "ComponentUpdateListProperty_test_case.py",
             expected_lines=expected_lines,
-            cfg_args=[level]
+            cfg_args=[level],
         )

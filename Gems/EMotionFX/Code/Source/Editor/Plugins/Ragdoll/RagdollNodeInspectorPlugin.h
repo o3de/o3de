@@ -54,17 +54,10 @@ namespace EMotionFX
         static void AddCollider(const QModelIndexList& modelIndices, const AZ::TypeId& colliderType);
         static void CopyColliders(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType copyFrom);
 
-        void Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
-        void RenderRagdoll(ActorInstance* actorInstance, bool renderColliders, bool renderJointLimits, EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo);
-        void RenderJointLimit(
-            const AzPhysics::JointConfiguration& jointConfiguration,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            const Node* parentNode,
-            EMStudio::RenderPlugin* renderPlugin,
-            EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-            const MCore::RGBAColor& color);
-        void RenderJointFrame(
+        //! Deprecated: All legacy render function is tied to openGL. Will be removed after openGLPlugin is completely removed.
+        void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
+        void LegacyRenderRagdoll(ActorInstance* actorInstance, bool renderColliders, bool renderJointLimits, EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo);
+        void LegacyRenderJointFrame(
             const AzPhysics::JointConfiguration& jointConfiguration,
             const ActorInstance* actorInstance,
             const Node* node,
@@ -82,14 +75,6 @@ namespace EMotionFX
     private:
         bool IsPhysXGemAvailable() const;
 
-        RagdollNodeWidget*          m_nodeWidget;
-
-        static float                s_scale;
-        static AZ::u32              s_angularSubdivisions;
-        static AZ::u32              s_radialSubdivisions;
-        AZStd::vector<AZ::Vector3>  m_vertexBuffer;
-        AZStd::vector<AZ::u32>      m_indexBuffer;
-        AZStd::vector<AZ::Vector3>  m_lineBuffer;
-        AZStd::vector<bool>         m_lineValidityBuffer;
+        RagdollNodeWidget* m_nodeWidget;
     };
 } // namespace EMotionFX

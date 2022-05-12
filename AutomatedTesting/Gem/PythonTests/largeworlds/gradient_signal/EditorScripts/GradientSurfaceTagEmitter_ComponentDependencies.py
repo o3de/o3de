@@ -42,8 +42,7 @@ def GradientSurfaceTagEmitter_ComponentDependencies():
         return editor.EditorComponentAPIBus(bus.Broadcast, "IsComponentEnabled", EntityComponentIdPair)
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Create an entity with Gradient Surface Tag Emitter component
     position = math.Vector3(512.0, 512.0, 32.0)

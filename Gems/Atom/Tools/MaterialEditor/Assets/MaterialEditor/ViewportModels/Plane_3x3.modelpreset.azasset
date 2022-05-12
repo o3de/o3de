@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Plane (3m x 3m)",
         "modelAsset": {
             "assetId": {
                 "guid": "{21839E4C-2A3B-538A-9D48-D04A157DD675}",

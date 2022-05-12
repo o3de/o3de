@@ -18,13 +18,15 @@ QT_FORWARD_DECLARE_CLASS(QEvent)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(AdjustableHeaderWidget)
+
     class GemRepoItemDelegate
         : public QStyledItemDelegate
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
-        explicit GemRepoItemDelegate(QAbstractItemModel* model, QObject* parent = nullptr);
+        explicit GemRepoItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent = nullptr);
         ~GemRepoItemDelegate() = default;
 
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
@@ -42,21 +44,28 @@ namespace O3DE::ProjectManager
         inline constexpr static qreal s_fontSize = 12.0;
 
         // Margin and borders
-        inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/0, /*top=*/8, /*right=*/60, /*bottom=*/8); // Item border distances
+        inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/0, /*top=*/8, /*right=*/0, /*bottom=*/8); // Item border distances
         inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/20, /*top=*/20, /*right=*/20, /*bottom=*/20); // Distances of the elements within an item to the item borders
         inline constexpr static int s_borderWidth = 4;
 
         // Content
-        inline constexpr static int s_contentSpacing = 5;
-        inline constexpr static int s_nameMaxWidth = 145;
-        inline constexpr static int s_creatorMaxWidth = 115;
-        inline constexpr static int s_updatedMaxWidth = 125;
+        inline constexpr static int s_nameDefaultWidth = 150;
+        inline constexpr static int s_creatorDefaultWidth = 120;
+        inline constexpr static int s_updatedDefaultWidth = 130;
 
         // Icon
         inline constexpr static int s_iconSize = 24;
         inline constexpr static int s_iconSpacing = 16;
         inline constexpr static int s_refreshIconSize = 14;
         inline constexpr static int s_refreshIconSpacing = 10;
+
+        enum class HeaderOrder
+        {
+            Name,
+            Creator,
+            Update,
+            Delete
+        };
 
     signals:
         void RemoveRepo(const QModelIndex& modelIndex);
@@ -65,12 +74,14 @@ namespace O3DE::ProjectManager
     protected:
         void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
-        QRect CalcButtonRect(const QRect& contentRect) const;
+        QPair<int, int> CalcColumnXBounds(HeaderOrder header) const;
         QRect CalcDeleteButtonRect(const QRect& contentRect) const;
         QRect CalcRefreshButtonRect(const QRect& contentRect) const;
         void DrawEditButtons(QPainter* painter, const QRect& contentRect) const;
 
         QAbstractItemModel* m_model = nullptr;
+
+        AdjustableHeaderWidget* m_headerWidget = nullptr;
 
         QPixmap m_refreshIcon;
         QPixmap m_editIcon;

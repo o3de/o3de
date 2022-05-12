@@ -16,7 +16,6 @@
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Interface/Interface.h>
 
@@ -122,7 +121,8 @@ namespace AZ
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Read;
                 break;
             case CommonBufferPoolType::ReadWrite:
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::ShaderRead;
+                // Add CopyRead flag too since it's often we need to readback gpu attachment buffers.
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;

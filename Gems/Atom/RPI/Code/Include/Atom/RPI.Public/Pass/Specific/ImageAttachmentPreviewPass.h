@@ -10,6 +10,7 @@
 #include <AtomCore/Instance/Instance.h>
 
 #include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -103,6 +104,7 @@ namespace AZ
             void LoadShader();
 
             // Pass overrides
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // RHI::ScopeProducer overrides...

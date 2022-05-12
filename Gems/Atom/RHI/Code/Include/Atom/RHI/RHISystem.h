@@ -53,6 +53,7 @@ namespace AZ
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const override;
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
+            const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -65,6 +66,8 @@ namespace AZ
             RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             RHI::FrameScheduler m_frameScheduler;
             RHI::FrameSchedulerCompileRequest m_compileRequest;
+            PhysicalDeviceDescriptor m_physicalDeviceDescriptor;
+            
         };
     } // namespace RPI
 } // namespace AZ

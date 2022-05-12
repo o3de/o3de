@@ -30,11 +30,13 @@ def EntityOutliner_EntityOrdering():
     5) Add another new entity, ensure the rest of the order is unchanged
     """
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    from PySide2 import QtCore
+
     import azlmbr.legacy.general as general
+
+    import editor_python_test_tools.hydra_editor_utils as hydra
+    import editor_python_test_tools.pyside_utils as pyside_utils
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
-    from PySide2 import QtCore, QtWidgets, QtGui, QtTest
 
     # Grab the Editor, Entity Outliner, and Outliner Model
     editor_window = pyside_utils.get_editor_main_window()
@@ -110,8 +112,7 @@ def EntityOutliner_EntityOrdering():
     expected_order = []
 
     # 1) Open the empty Prefab Base level
-    helper.init_idle()
-    helper.open_level("Prefab", "Base")
+    hydra.open_base_level()
 
     # 2) Add 5 entities to the outliner
     ENTITIES_TO_ADD = 5

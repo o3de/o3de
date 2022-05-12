@@ -53,7 +53,7 @@ namespace ScriptCanvasEditor
     using namespace ScriptCanvas;
     using namespace ScriptCanvas::UnitTesting;
 
-    constexpr const char* k_unitTestDirPathRelative = "@engroot@/Gems/ScriptCanvasTesting/Assets/ScriptCanvas/UnitTests";
+    constexpr const char* k_unitTestDirPathRelative = "@gemroot:ScriptCanvasTesting@/Assets/ScriptCanvas/UnitTests";
 
     class Reporter
         : public Bus::Handler
