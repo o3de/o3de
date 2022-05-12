@@ -76,4 +76,3 @@ def Atom_Editor_LevelLoad_Sponza():
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
     Report.start_test(Atom_Editor_LevelLoad_Sponza)
-    
