@@ -1059,8 +1059,8 @@ namespace EMotionFX
 
         void EditorActorComponent::OnActorInstanceCreated(ActorInstance* actorInstance)
         {
-            auto it = AZStd::find(m_attachments.begin(), m_attachments.end(), actorInstance->GetEntityId());
-            if (it != m_attachments.end())
+            auto attachmentIt = AZStd::find(m_attachments.begin(), m_attachments.end(), actorInstance->GetEntityId());
+            if (attachmentIt != m_attachments.end())
             {
                 if (m_actorInstance)
                 {
