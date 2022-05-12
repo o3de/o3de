@@ -12,12 +12,12 @@
 #include <Scene/PhysXScene.h>
 #include <System/PhysXAllocator.h>
 #include <System/PhysXCpuDispatcher.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Component/ComponentApplicationLifecycle.h>
-#include <AzCore/Asset/AssetManager.h>
 
-#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 // only enable physx timestep warning when not running debug or in Release
@@ -37,6 +37,8 @@ namespace PhysX
         static int NumSamplesOverLimit = 0;
         static float LostTime = 0.0f;
     }
+
+    AZ_CVAR(bool, physx_reportTimestepWarnings, false, nullptr, AZ::ConsoleFunctorFlags::Null, "A flag providing ability to turn on/off reporting of PhysX timestep warnings");
 #endif
 
     PhysXSystem::MaterialLibraryAssetHelper::MaterialLibraryAssetHelper(OnMaterialLibraryReloadedCallback callback)
@@ -76,7 +78,7 @@ namespace PhysX
         // Start PhysX allocator
         PhysXAllocator::Descriptor allocatorDescriptor;
         allocatorDescriptor.m_custom = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-        AZ::AllocatorInstance<PhysXAllocator>::Create();
+        AZ::AllocatorInstance<PhysXAllocator>::Create(allocatorDescriptor);
 
         InitializePhysXSdk(cookingParams);
     }
@@ -177,7 +179,7 @@ namespace PhysX
         }
         else
         {
-            AZ_Warning("PhysXSystem", FrameTimeWarning::NumSamplesOverLimit <= 0,
+            AZ_Warning("PhysXSystem", !physx_reportTimestepWarnings || FrameTimeWarning::NumSamplesOverLimit <= 0,
                 "[%d] of [%d] frames had a deltatime over the Max physics timestep[%.6f]. Physx timestep was clamped on those frames, losing [%.6f] seconds.",
                 FrameTimeWarning::NumSamplesOverLimit, FrameTimeWarning::NumSamples, m_systemConfig.m_maxTimestep, FrameTimeWarning::LostTime);
             FrameTimeWarning::NumSamples = 0;

@@ -155,7 +155,7 @@ namespace AZ
                 return false;
             }
 
-            if ((options & FilterOptions::PassClass) && pass->RTTI_GetType() != m_passClassTypeId)
+            if ((options & FilterOptions::PassClass) && !pass->RTTI_IsTypeOf(m_passClassTypeId))
             {
                 return false;
             }
