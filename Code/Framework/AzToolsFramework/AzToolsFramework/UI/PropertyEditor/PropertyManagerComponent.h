@@ -74,7 +74,7 @@ namespace AzToolsFramework
 
             // PropertyEditorToolsSystem adds support for registering handlers for the DocumentPropertyEditor
             // RPE handlers have a `RegisterDpeHandler` method that bridges the two systems
-            PropertyEditorToolsSystem m_dpeSystem;
+            AZStd::unique_ptr<PropertyEditorToolsSystem> m_dpeSystem;
             HandlerMap m_Handlers;
             DefaultHandlerMap m_DefaultHandlers;
 

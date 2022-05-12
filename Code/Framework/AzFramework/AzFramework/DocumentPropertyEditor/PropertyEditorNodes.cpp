@@ -71,5 +71,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<Vector2>();
         system->RegisterPropertyEditor<Vector3>();
         system->RegisterPropertyEditor<Vector4>();
+        system->RegisterPropertyEditor<FilePath>();
+        system->RegisterPropertyEditor<Asset>();
+        system->RegisterPropertyEditor<AudioControl>();
     }
 } // namespace AZ::DocumentPropertyEditor::Nodes

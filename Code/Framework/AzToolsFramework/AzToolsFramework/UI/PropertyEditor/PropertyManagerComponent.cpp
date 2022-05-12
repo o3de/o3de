@@ -52,6 +52,7 @@ namespace AzToolsFramework
         {
             PropertyTypeRegistrationMessages::Bus::Handler::BusConnect();
             PropertyEditorGUIMessages::Bus::Handler::BusConnect();
+            m_dpeSystem = AZStd::make_unique<PropertyEditorToolsSystem>();
 
             CreateBuiltInHandlers();
         }
@@ -92,6 +93,7 @@ namespace AzToolsFramework
             m_Handlers.clear();
             m_DefaultHandlers.clear();
 
+            m_dpeSystem.reset();
             PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
             PropertyTypeRegistrationMessages::Bus::Handler::BusDisconnect();
         }

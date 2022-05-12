@@ -173,4 +173,19 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         static constexpr AZStd::string_view Name = "Vector4";
     };
+
+    struct FilePath : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "FilePath";
+    };
+
+    struct Asset : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "Asset";
+    };
+
+    struct AudioControl : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "AudioControl";
+    };
 } // namespace AZ::DocumentPropertyEditor::Nodes

@@ -514,7 +514,7 @@ namespace AzToolsFramework
             }
         }
 
-        PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId;
+        PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId = PropertyEditorToolsSystemInterface::InvalidHandlerId;
     };
 }
 

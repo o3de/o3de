@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 namespace AzToolsFramework
@@ -28,5 +29,7 @@ namespace AzToolsFramework
 
     private:
         AZStd::unordered_map<AZ::Name, AZStd::list<HandlerData>> m_registeredHandlers;
+        // PropertyEditorSystem contains all non-UI system logic for the DPE, like the DOM schema
+        AZ::DocumentPropertyEditor::PropertyEditorSystem m_lowLevelSystem;
     };
 }
