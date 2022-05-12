@@ -57,6 +57,16 @@ namespace AzFramework::Terrain
 
     void TerrainDataRequests::Reflect(AZ::ReflectContext* context)
     {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            // Register all the tuple types used below so that they marshal to/from python correctly.
+            serializeContext->RegisterGenericType<AZStd::tuple<float, bool>>();
+            serializeContext->RegisterGenericType<AZStd::tuple<AZ::Vector3, bool>>();
+            serializeContext->RegisterGenericType<AZStd::tuple<SurfaceData::SurfaceTagWeight, bool>>();
+            serializeContext->RegisterGenericType<AZStd::tuple<SurfaceData::SurfaceTagWeightList, bool>>();
+            serializeContext->RegisterGenericType<AZStd::tuple<bool, AZ::Vector3, AZ::Vector3>>();
+        }
+
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<AzFramework::Terrain::TerrainDataRequestBus>("TerrainDataRequestBus")
