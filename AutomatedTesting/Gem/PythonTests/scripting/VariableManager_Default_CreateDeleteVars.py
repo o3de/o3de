@@ -8,8 +8,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 from PySide2 import QtWidgets, QtTest, QtCore
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
+from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_MANAGER_UI,
+                                                 VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, VARIABLE_TYPES)
 import azlmbr.legacy.general as general
 import editor_python_test_tools.pyside_utils as pyside_utils
+
 
 class VariableManager_Default_CreateDeleteVars:
     """
@@ -37,25 +40,27 @@ class VariableManager_Default_CreateDeleteVars:
     """
     @staticmethod
     def generate_variable_test_output(var_type, action):
-        return (f"{var_type} variable is {action}d")
+        return f"{var_type} variable is {action}d"
 
     @pyside_utils.wrap_async
     async def run_test(self):
 
-        # 1) Open Script Canvas window
+        # Preconditions
         general.idle_enable(True)
-        general.open_pane("Script Canvas")
-        helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 10.0)
+
+        # 1) Open Script Canvas window
+        general.open_pane(SCRIPT_CANVAS_UI)
+        helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
 
         # 2) Get the SC window object
         editor_window = pyside_utils.get_editor_main_window()
-        sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
+        sc = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
 
         # 3) Open Variable Manager if not opened already
-        if sc.findChild(QtWidgets.QDockWidget, "VariableManager") is None:
-            action = pyside_utils.find_child_by_pattern(sc, {"text": "Variable Manager", "type": QtWidgets.QAction})
+        if sc.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT) is None:
+            action = pyside_utils.find_child_by_pattern(sc, {"text": VARIABLE_MANAGER_UI, "type": QtWidgets.QAction})
             action.trigger()
-        variable_manager = sc.findChild(QtWidgets.QDockWidget, "VariableManager")
+        variable_manager = sc.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
 
         # 4) Create Graph
         action = pyside_utils.find_child_by_pattern(sc, {"objectName": "action_New_Script", "type": QtWidgets.QAction})
@@ -63,46 +68,52 @@ class VariableManager_Default_CreateDeleteVars:
 
         graph_vars = variable_manager.findChild(QtWidgets.QTableView, "graphVariables")
 
-        var_types = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
-        # 5) Create variable of each type and verify if it is created
-        for index, var_type in enumerate(var_types):
-            # Create new variable
+        # 5) Create variable_type of each type and verify if it is created
+        for index, variable_type in enumerate(VARIABLE_TYPES):
+            # Create new variable_type
             add_button = variable_manager.findChild(QtWidgets.QPushButton, "addButton")
             # Click on Create Variable button and wait for it to render
             add_button.click()
             helper.wait_for_condition((
-                lambda: variable_manager.findChild(QtWidgets.QTableView, "variablePalette") is not None), 3)
+                lambda: variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
 
-            # Select variable type
-            table_view = variable_manager.findChild(QtWidgets.QTableView, "variablePalette")
-            model_index = pyside_utils.find_child_by_pattern(table_view, var_type)
-            # Click on it to create variable
+            # Select variable_type type
+            table_view = variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
+            model_index = pyside_utils.find_child_by_pattern(table_view, variable_type)
+            # Click on it to create variable_type
             pyside_utils.item_view_index_mouse_click(table_view, model_index)
-            # Verify if the variable is created
-            # NOTE: To check if variable of a type is created, we are checking 1) rowcount
-            # 2) If we have row with variable "Variable <index>"
-            # 3) Type of variable, which is next column of the variable name
-            result = helper.wait_for_condition(lambda: graph_vars.model().rowCount(QtCore.QModelIndex()) == (
-                index + 1), 3)  # since we added 1 variable, rowcount will increase by 1
-            var_mi = pyside_utils.find_child_by_pattern(graph_vars, f"Variable {index+1}")
-            result = result and (var_mi is not None) and (var_mi.siblingAtColumn(1).data(QtCore.Qt.DisplayRole) == var_type)
-            test_output = self.generate_variable_test_output(var_type, "create")
+
+            # Drill into the variable_type list and make sure the new variable_type was created as expected
+            # Check if the number of rows in our variable_type list increased
+            row_count_increased = helper.wait_for_condition(lambda: graph_vars.model().rowCount(QtCore.QModelIndex()) == (
+                index + 1), WAIT_TIME_3)
+            # Get the variable_type entry from the list
+            new_var_entry = pyside_utils.find_child_by_pattern(graph_vars, f"Variable {index+1}")
+            # Get the variable_type's type
+            new_var_type = new_var_entry.siblingAtColumn(1).data(QtCore.Qt.DisplayRole)
+
+            # Verify the list size, list entry and variable_type type all match expectation
+            result = row_count_increased and (new_var_entry is not None) and (new_var_type == variable_type)
+
+            test_output = self.generate_variable_test_output(variable_type, "create")
             Report.info(f"{test_output}: {result}")
 
-        # 6) Delete each type of variable and verify if it is deleted
-        for index, var_type in enumerate(var_types):
-            # Delete variable and verify if its deleted
-            # NOTE: To check if variable of a type is deleted, we are checking rowcount
-            var_mi = pyside_utils.find_child_by_pattern(graph_vars, f"Variable {index+1}")
-            pyside_utils.item_view_index_mouse_click(graph_vars, var_mi)
+        # 6) Delete each type of variable_type and verify if it is deleted
+        for index, variable_type in enumerate(VARIABLE_TYPES):
+            # Get the variable entry from the list
+            var_entry = pyside_utils.find_child_by_pattern(graph_vars, f"Variable {index+1}")
+            # Click on it
+            pyside_utils.item_view_index_mouse_click(graph_vars, var_entry)
+            # Press the delete key
             QtTest.QTest.keyClick(graph_vars, QtCore.Qt.Key_Delete, QtCore.Qt.NoModifier)
-            # since variable is deleted, rowcount will decrease by 1
-            result = graph_vars.model().rowCount(QtCore.QModelIndex()) == (len(var_types) - (index + 1))
-            test_output = self.generate_variable_test_output(var_type, "delete")
+            # Check the number of rows in the variable list
+            result = graph_vars.model().rowCount(QtCore.QModelIndex()) == (len(VARIABLE_TYPES) - (index + 1))
+
+            test_output = self.generate_variable_test_output(variable_type, "delete")
             Report.info(f"{test_output}: {result}")
 
         # 7) Close SC window
-        general.close_pane("Script Canvas")
+        general.close_pane(SCRIPT_CANVAS_UI)
 
 
 test = VariableManager_Default_CreateDeleteVars()
