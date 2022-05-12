@@ -94,4 +94,15 @@ namespace EditorPythonBindings
         using TypeConverterMap = AZStd::unordered_map<AZ::TypeId, TypeConverterPointer>;
         TypeConverterMap m_typeConverterMap;
     };
+
+    namespace Container
+    {
+        AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> ProcessBehaviorObject(AZ::BehaviorObject& behaviorObject);
+        AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> ProcessPythonObject(
+            PythonMarshalTypeRequests::BehaviorTraits traits,
+            pybind11::object pythonObj,
+            const AZ::TypeId& elementTypeId,
+            AZ::BehaviorValueParameter& outValue);
+
+    } // namespace Container
 }

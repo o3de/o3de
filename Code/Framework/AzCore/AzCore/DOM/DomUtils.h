@@ -27,7 +27,11 @@ namespace AZ::Dom::Utils
     template<typename T>
     Dom::Value ValueFromType(const T& value)
     {
-        if constexpr (AZStd::is_same_v<AZStd::string_view, T>)
+        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
+        {
+            return value;
+        }
+        else if constexpr (AZStd::is_same_v<AZStd::string_view, T>)
         {
             return Dom::Value(value, true);
         }
@@ -41,10 +45,42 @@ namespace AZ::Dom::Utils
         }
     }
 
+    const AZ::TypeId& GetValueTypeId(const Dom::Value& value);
+
+    template <typename T>
+    bool CanConvertValueToType(const Dom::Value& value)
+    {
+        if constexpr (AZStd::is_same_v<T, bool>)
+        {
+            return value.IsBool();
+        }
+        else if constexpr (AZStd::is_integral_v<T> || AZStd::is_floating_point_v<T>)
+        {
+            return value.IsNumber();
+        }
+        else if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string> || AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string_view>)
+        {
+            return value.IsString();
+        }
+        else
+        {
+            if (!value.IsOpaqueValue())
+            {
+                return false;
+            }
+            const AZStd::any& opaqueValue = value.GetOpaqueValue();
+            return opaqueValue.is<T>();
+        }
+    }
+
     template <typename T>
     AZStd::optional<T> ValueToType(const Dom::Value& value)
     {
-        if constexpr (AZStd::is_same_v<T, bool>)
+        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
+        {
+            return value;
+        }
+        else if constexpr (AZStd::is_same_v<T, bool>)
         {
             if (!value.IsBool())
             {

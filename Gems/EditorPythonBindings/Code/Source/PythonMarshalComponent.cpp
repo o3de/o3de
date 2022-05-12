@@ -7,6 +7,7 @@
  */
 
 #include <Source/PythonMarshalComponent.h>
+#include <Source/PythonMarshalTuple.h>
 #include <Source/PythonUtility.h>
 #include <Source/PythonProxyObject.h>
 #include <Source/PythonTypeCasters.h>
@@ -1648,6 +1649,11 @@ namespace EditorPythonBindings
                 else if (AZ::Utils::IsPairContainerType(typeId))
                 {
                     registrant(typeId, AZStd::make_unique<TypeConverterPair>(serializeContext->FindGenericClassInfo(typeId), classData, typeId));
+                }
+                else if (AZ::Utils::IsTupleContainerType(typeId))
+                {
+                    registrant(
+                        typeId, AZStd::make_unique<TypeConverterTuple>(serializeContext->FindGenericClassInfo(typeId), classData, typeId));
                 }
                 else if (AZ::Utils::IsSetContainerType(typeId))
                 {

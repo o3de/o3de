@@ -54,7 +54,16 @@ namespace ScriptCanvasEditor
         SourceHandle handle;
         AZStd::string deserializationErrors;
     };
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path);
+
+    /**
+    * Loads the script canvas file at the given path.
+    * @param path Path to the file to load
+    * @param makeEntityIdsUnique controls if the entity IDs are re-generated for the graph to make them unique.
+    *   Set to true if there's a chance the graph may be loaded multiple times, so that buses can be used safely with those IDs.
+    *   Set to false when doing operations that rely on stable entity ID order between runs.
+    * @return An outcome with either the handle to the data loaded and a string with deserialization issues, or a failure if the file did not load.
+    */
+    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool makeEntityIdsUnique = true);
 
     AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream);
 }

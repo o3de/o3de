@@ -739,12 +739,15 @@ namespace AZ
 
                 BehaviorContext::ClassBuilder<ContainerType> builder = behaviorContext->Class<ContainerType>();
                 builder->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AttributeIsValid::IfPresent)
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::ScriptCanvasAttributes::ReturnValueTypesFunction, unpackFunctionHolder)
                     ->Attribute(AZ::ScriptCanvasAttributes::TupleConstructorFunction, constructorHolder)
-                    ;
+                    ->template Constructor<T...>()
+                ;
 
                 ReflectUnpackMethods<T...>(builder, AZStd::make_index_sequence<sizeof...(T)>{});
 
