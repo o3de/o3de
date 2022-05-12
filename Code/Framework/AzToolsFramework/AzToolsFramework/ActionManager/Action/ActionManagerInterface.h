@@ -10,7 +10,6 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/function/function_base.h>
 
 #include <QWidget>

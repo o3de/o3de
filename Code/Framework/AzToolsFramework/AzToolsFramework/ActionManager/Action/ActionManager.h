@@ -19,7 +19,7 @@ namespace AzToolsFramework
     //! Action Manager class definition.
     //! Handles Editor Actions and allows registration and access across tools.
     class ActionManager final
-        : public ActionManagerInterface
+        : private ActionManagerInterface
     {
     public:
         ActionManager();
