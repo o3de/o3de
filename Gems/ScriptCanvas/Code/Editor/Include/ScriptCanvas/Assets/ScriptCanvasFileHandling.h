@@ -54,7 +54,7 @@ namespace ScriptCanvasEditor
         SourceHandle handle;
         AZStd::string deserializationErrors;
     };
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path);
+    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool useObjectStreamOnly = false);
 
     AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream);
 }

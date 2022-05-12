@@ -100,16 +100,20 @@ namespace ScriptCanvasEditor
             return m_result;
         }
 
-        SourceHandle Scanner::LoadAsset()
+        AZStd::pair<SourceHandle, bool> Scanner::LoadAsset()
         {
-            auto fileOutcome = LoadFromFile(ModCurrentAsset().Path().c_str());
+            auto fileOutcome = LoadFromFile(ModCurrentAsset().Path().c_str(), true);
             if (fileOutcome.IsSuccess())
             {
-                return fileOutcome.GetValue().handle;
+                return { fileOutcome.GetValue().handle, true } ;
+            }
+            else if (fileOutcome.GetError() == "--converterted--")
+            {
+                return { {}, false };
             }
             else
             {
-                return {};
+                return { {}, true };
             }
         }
 
@@ -132,12 +136,14 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                if (auto asset = LoadAsset(); asset.IsGraphValid())
+                auto assetAndCountAsError = LoadAsset();
+                auto asset = assetAndCountAsError.first;
+                if (asset.IsGraphValid())
                 {
                     VE_LOG("Scanner: Loaded: %s ", ModCurrentAsset().Path().c_str());
                     FilterAsset(asset);
                 }
-                else
+                else if (assetAndCountAsError.second)
                 {
                     VE_LOG("Scanner: Failed to load: %s ", ModCurrentAsset().Path().c_str());
                     m_result.m_loadErrors.push_back(ModCurrentAsset().Describe());
