@@ -236,7 +236,7 @@ int main(int argc, char** argv)
 
     // create a real DPE on the same adapter as the debug adapter for testing purposes
     QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
-    dpeInstance->SetAdapter(&cvarAdapter);
+    dpeInstance->SetAdapter(adapter.get());
     dpeInstance->show();
 
     return qtApp.exec();
