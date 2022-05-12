@@ -9,6 +9,7 @@
 #include <Mesh/MeshComponentController.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
@@ -126,11 +127,11 @@ namespace AZ
             }
 
             values.reserve(lodCount + 1);
-            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default (Highest)" });
+            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default LOD 0 (Highest Detail)" });
 
             for (uint32_t i = 1; i < lodCount; ++i)
             {
-                AZStd::string enumDescription = AZStd::string::format("Lod %i", i);
+                AZStd::string enumDescription = AZStd::string::format("LOD %i", i);
                 values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(i), enumDescription.c_str() });
             }
 
@@ -252,6 +253,7 @@ namespace AZ
 
             const auto entityContextId = FindOwningContextId(entityId);
             MeshComponentRequestBus::Handler::BusConnect(entityId);
+            MeshHandleStateRequestBus::Handler::BusConnect(entityId);
             TransformNotificationBus::Handler::BusConnect(entityId);
             MaterialReceiverRequestBus::Handler::BusConnect(entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
@@ -270,10 +272,11 @@ namespace AZ
 
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusDisconnect();
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
-            MeshComponentRequestBus::Handler::BusDisconnect();
-            TransformNotificationBus::Handler::BusDisconnect();
-            MaterialReceiverRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
+            MaterialReceiverRequestBus::Handler::BusDisconnect();
+            TransformNotificationBus::Handler::BusDisconnect();
+            MeshComponentRequestBus::Handler::BusDisconnect();
+            MeshHandleStateRequestBus::Handler::BusDisconnect();
 
             m_nonUniformScaleChangedHandler.Disconnect();
 
@@ -385,6 +388,8 @@ namespace AZ
                 AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
                     m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
                     m_entityComponentIdPair.GetEntityId());
+
+                MeshHandleStateNotificationBus::Event(entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
             }
         }
 
@@ -434,6 +439,9 @@ namespace AZ
                 MeshComponentNotificationBus::Event(
                     m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnModelPreDestroy);
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
+
+                MeshHandleStateNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
 
                 // Model has been released which invalidates the material slot configuration
                 MaterialReceiverNotificationBus::Event(
@@ -657,6 +665,11 @@ namespace AZ
             }
 
             return result;
+        }
+
+        const MeshFeatureProcessorInterface::MeshHandle* MeshComponentController::GetMeshHandle() const
+        {
+            return &m_meshHandle;
         }
     } // namespace Render
 } // namespace AZ

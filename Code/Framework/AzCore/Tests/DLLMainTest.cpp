@@ -51,6 +51,7 @@ class DllModule
 {
 public:
     AZ_RTTI(DllModule, "{99C6BF95-847F-4EEE-BB60-9B26D02FF577}", AZ::Module);
+    AZ_CLASS_ALLOCATOR(DllModule, AZ::SystemAllocator, 0);
 
     DllModule()
     {
