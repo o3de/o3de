@@ -54,20 +54,18 @@ def ForceRegion_NoQuiverOnHighLinearDampingForce():
 
     :return: None
     """
-    import os
-    import sys
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
-    # Constants
-    FLOAT_THRESHOLD = sys.float_info.epsilon
-    TIMEOUT = 1
+    from Physics.utils.physics_constants import (WAIT_TIME_3, FLOAT_THRESHOLD_EPSILON, GET_LINEAR_VELOCITY,
+                                                 GET_WORLD_TRANSLATION, ON_CALCULATE_NET_FORCE)
+
+    # Local Test Constants
     VELOCITY_THRESHOLD = 0.01
     QUIVER_THRESHOLD = 0.01
-    SLOWDOWN_FRAMES = 30
     SPHERE_STOP_OFFSET = 3.5
 
     # Helper Functions
@@ -83,26 +81,26 @@ def ForceRegion_NoQuiverOnHighLinearDampingForce():
         @property
         def position(self):
             # type () -> Vector3
-            return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", self.id)
+            return azlmbr.components.TransformBus(azlmbr.bus.Event, GET_WORLD_TRANSLATION, self.id)
 
         @property
         def velocity(self):
             # type () -> Vector3
-            return azlmbr.physics.RigidBodyRequestBus(azlmbr.bus.Event, "GetLinearVelocity", self.id)
+            return azlmbr.physics.RigidBodyRequestBus(azlmbr.bus.Event, GET_LINEAR_VELOCITY, self.id)
 
         @property
         def is_moving_up(self):
             # type () -> bool
             return (
-                abs(self.velocity.x) < FLOAT_THRESHOLD
-                and abs(self.velocity.y) < FLOAT_THRESHOLD
+                abs(self.velocity.x) < FLOAT_THRESHOLD_EPSILON
+                and abs(self.velocity.y) < FLOAT_THRESHOLD_EPSILON
                 and self.velocity.z > 0.0
             )
 
         def set_handler(self):
             self.handler = azlmbr.physics.ForceRegionNotificationBusHandler()
             self.handler.connect(None)
-            self.handler.add_callback("OnCalculateNetForce", self.on_calculate_net_force)
+            self.handler.add_callback(ON_CALCULATE_NET_FORCE, self.on_calculate_net_force)
 
         def on_calculate_net_force(self, args):
             # type (list) -> None
@@ -118,8 +116,8 @@ def ForceRegion_NoQuiverOnHighLinearDampingForce():
     def sphere_above_force_region(sphere_position, force_region_position):
         # type () -> bool
         return (
-            abs(sphere_position.x - force_region_position.x) < FLOAT_THRESHOLD
-            and abs(sphere_position.y - force_region_position.y) < FLOAT_THRESHOLD
+            abs(sphere_position.x - force_region_position.x) < FLOAT_THRESHOLD_EPSILON
+            and abs(sphere_position.y - force_region_position.y) < FLOAT_THRESHOLD_EPSILON
             and sphere_position.z > force_region_position.z
         )
 
@@ -144,19 +142,21 @@ def ForceRegion_NoQuiverOnHighLinearDampingForce():
     # 4) Setup handler and wait for sphere to enter force region
     sphere.set_handler()
     Report.critical_result(
-        Tests.sphere_entered_force_region, helper.wait_for_condition(lambda: sphere.entered_force_region, TIMEOUT)
+        Tests.sphere_entered_force_region, helper.wait_for_condition(lambda: sphere.entered_force_region, WAIT_TIME_3)
     )
 
     # 5) Validate the Sphere remains in Force Region
     # Must wait for the sphere to slow down
-    Report.result(Tests.sphere_stopped_moving, helper.wait_for_condition(lambda: sphere.velocity.IsZero(VELOCITY_THRESHOLD), TIMEOUT))
+    Report.result(Tests.sphere_stopped_moving, helper.wait_for_condition(
+        lambda: sphere.velocity.IsZero(VELOCITY_THRESHOLD), WAIT_TIME_3))
+
     # Force region has scaling (5,5,5). Thus the upper edge of the force region is 2.5m above the transform. With proper offset we can
     # see that sphere is stuck on top of the force region and did not bounce off. 
     Report.result(Tests.sphere_still_above_force_region, (sphere.position.z - force_region.position.z) < SPHERE_STOP_OFFSET)
 
     # 6) Check to see if the sphere is quivering
     sphere.quiver_reference = sphere.position.z
-    Report.result(Tests.no_quiver, not helper.wait_for_condition(sphere_not_quivering, TIMEOUT))
+    Report.result(Tests.no_quiver, not helper.wait_for_condition(sphere_not_quivering, WAIT_TIME_3))
 
     # 7) Exit Game Mode
     helper.exit_game_mode(Tests.exit_game_mode)

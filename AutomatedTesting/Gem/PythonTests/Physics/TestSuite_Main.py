@@ -294,7 +294,6 @@ class TestAutomation(EditorTestSuite):
     class Material_EmptyLibraryUsesDefault(EditorSharedTest):
         from .tests.material import Material_EmptyLibraryUsesDefault as test_module
 
-    @pytest.mark.skip(reason="GHI #9365: Test periodically fails")
     class ForceRegion_NoQuiverOnHighLinearDampingForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_NoQuiverOnHighLinearDampingForce as test_module
 
