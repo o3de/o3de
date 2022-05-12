@@ -34,11 +34,6 @@
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
 #include <Editor/AnimGraphEditorBus.h>
 #include <Editor/InspectorBus.h>
-
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-    #include "GameControllerWindow.h"
-#endif
-
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
@@ -199,10 +194,6 @@ namespace EMStudio
         m_disableRendering               = false;
         m_lastPlayTime                   = -1;
         m_totalTime                      = FLT_MAX;
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        m_gameControllerWindow           = nullptr;
-        m_gameControllerDock             = nullptr;
-#endif
         m_animGraphModel                = nullptr;
         m_actionManager                 = nullptr;
     }
@@ -256,14 +247,6 @@ namespace EMStudio
             delete m_nodePaletteDock;
         }
 
-        // remove the game controller dock
-    #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        if (m_gameControllerDock)
-        {
-            EMStudio::GetMainWindow()->removeDockWidget(m_gameControllerDock);
-            delete m_gameControllerDock;
-        }
-    #endif
         if (m_navigationHistory)
         {
             delete m_navigationHistory;
@@ -302,10 +285,7 @@ namespace EMStudio
             m_dockWindowActions[WINDOWS_NODEGROUPWINDOW]->setCheckable(true);
             m_dockWindowActions[WINDOWS_PALETTEWINDOW] = parent->addAction("Palette Window");
             m_dockWindowActions[WINDOWS_PALETTEWINDOW]->setCheckable(true);
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-            m_dockWindowActions[WINDOWS_GAMECONTROLLERWINDOW] = parent->addAction("Game Controller Window");
-            m_dockWindowActions[WINDOWS_GAMECONTROLLERWINDOW]->setCheckable(true);
-#endif
+
             connect(m_dockWindowActions[WINDOWS_PARAMETERWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_PARAMETERWINDOW, checked);
             });
@@ -315,11 +295,6 @@ namespace EMStudio
             connect(m_dockWindowActions[WINDOWS_PALETTEWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_PALETTEWINDOW, checked);
             });
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-            connect(m_dockWindowActions[WINDOWS_GAMECONTROLLERWINDOW], &QAction::triggered, this, [this](bool checked) {
-                UpdateWindowVisibility(WINDOWS_GAMECONTROLLERWINDOW, checked);
-            });
-#endif
 
             // Keep our action checked state in sync by updating whenever we are about to show the menu,
             // since the user could've switched the active tab/closed tabs
@@ -342,11 +317,6 @@ namespace EMStudio
         case WINDOWS_PALETTEWINDOW:
             dockWidget = GetNodePaletteDock();
             break;
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        case WINDOWS_GAMECONTROLLERWINDOW:
-            dockWidget = GetGameControllerDock();
-            break;
-#endif
         }
 
         if (dockWidget)
@@ -385,9 +355,7 @@ namespace EMStudio
         SetOptionFlag(WINDOWS_PARAMETERWINDOW, GetParameterDock()->isVisible());
         SetOptionFlag(WINDOWS_PALETTEWINDOW, GetNodePaletteDock()->isVisible());
         SetOptionFlag(WINDOWS_NODEGROUPWINDOW, GetNodeGroupDock()->isVisible());
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        SetOptionFlag(WINDOWS_GAMECONTROLLERWINDOW, GetGameControllerDock()->isVisible());
-#endif
+
     }
 
     void AnimGraphPlugin::SetOptionFlag(EDockWindowOptionFlag option, bool isEnabled)
@@ -559,20 +527,6 @@ namespace EMStudio
         // it must be init after navigate widget is created because actions are linked to it
         m_viewWidget->Init(m_graphWidget);
 
-    #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        // create the game controller dock
-        m_gameControllerDock = new AzQtComponents::StyledDockWidget("Game Controller", mainWindow);
-        mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_gameControllerDock);
-        features = QDockWidget::NoDockWidgetFeatures;
-        //features |= QDockWidget::DockWidgetClosable;
-        features |= QDockWidget::DockWidgetFloatable;
-        features |= QDockWidget::DockWidgetMovable;
-        m_gameControllerDock->setFeatures(features);
-        m_gameControllerDock->setObjectName("AnimGraphPlugin::m_gameControllerDock");
-        m_gameControllerWindow = new GameControllerWindow(this);
-        m_gameControllerDock->setWidget(m_gameControllerWindow);
-    #endif
-
         // load options
         LoadOptions();
 
@@ -633,9 +587,6 @@ namespace EMStudio
 
         SetOptionFlag(WINDOWS_PARAMETERWINDOW, GetParameterDock()->isVisible());
         SetOptionFlag(WINDOWS_PALETTEWINDOW, GetNodePaletteDock()->isVisible());
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        SetOptionFlag(WINDOWS_GAMECONTROLLERWINDOW, GetGameControllerDock()->isVisible());
-#endif
         SetOptionFlag(WINDOWS_NODEGROUPWINDOW, GetNodeGroupDock()->isVisible());
     }
 
@@ -651,9 +602,6 @@ namespace EMStudio
         m_parameterWindow->Reinit();
         m_nodeGroupWindow->Init();
         m_viewWidget->UpdateAnimGraphOptions();
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        m_gameControllerWindow->ReInit();
-#endif
     }
 
 

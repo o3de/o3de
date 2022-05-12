@@ -27,17 +27,6 @@ namespace EMotionFX::MotionMatching
 
     AZ_CLASS_ALLOCATOR_IMPL(FeatureVelocity, MotionMatchAllocator, 0)
 
-    void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
-    {
-        PoseDataJointVelocities* velocityPoseData = context.m_currentPose.GetPoseData<PoseDataJointVelocities>();
-        AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
-        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_jointIndex);
-
-        queryFeatureValues[startIndex + 0] = currentVelocity.GetX();
-        queryFeatureValues[startIndex + 1] = currentVelocity.GetY();
-        queryFeatureValues[startIndex + 2] = currentVelocity.GetZ();
-    }
-
     void FeatureVelocity::ExtractFeatureValues(const ExtractFeatureContext& context)
     {
         const ActorInstance* actorInstance = context.m_actorInstance;
@@ -54,9 +43,26 @@ namespace EMotionFX::MotionMatching
                 m_relativeToNodeIndex);
 
             const AZ::Vector3& velocity = velocityPoseData->GetVelocities()[m_jointIndex];
-            SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
+            context.m_featureMatrix.SetVector3(context.m_frameIndex, m_featureColumnOffset, velocity);
         }
         context.m_posePool.FreePose(tempPose);
+    }
+
+    void FeatureVelocity::FillQueryVector(QueryVector& queryVector, const QueryVectorContext& context)
+    {
+        PoseDataJointVelocities* velocityPoseData = context.m_currentPose.GetPoseData<PoseDataJointVelocities>();
+        AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
+        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_jointIndex);
+
+        queryVector.SetVector3(currentVelocity, m_featureColumnOffset);
+    }
+
+    float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
+    {
+        const AZ::Vector3 queryVelocity = context.m_queryVector.GetVector3(m_featureColumnOffset);
+        const AZ::Vector3 frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
+
+        return CalcResidual(queryVelocity, frameVelocity);
     }
 
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
@@ -76,19 +82,8 @@ namespace EMotionFX::MotionMatching
     }
 
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-        MotionMatchingInstance* instance,
-        const AZ::Vector3& velocity,
-        size_t jointIndex,
-        size_t relativeToJointIndex,
-        const AZ::Color& color)
-    {
-        const ActorInstance* actorInstance = instance->GetActorInstance();
-        const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-        DebugDraw(debugDisplay, *pose, velocity, jointIndex, relativeToJointIndex, color);
-    }
-
-    void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-        MotionMatchingInstance* instance,
+        const Pose& currentPose,
+        const FeatureMatrix& featureMatrix,
         size_t frameIndex)
     {
         if (m_jointIndex == InvalidIndex)
@@ -96,21 +91,8 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        const MotionMatchingData* data = instance->GetData();
-        const AZ::Vector3 velocity = GetFeatureData(data->GetFeatureMatrix(), frameIndex);
-        DebugDraw(debugDisplay, instance, velocity, m_jointIndex, m_relativeToNodeIndex, m_debugColor);
-    }
-
-    float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
-    {
-        PoseDataJointVelocities* velocityPoseData = context.m_currentPose.GetPoseData<PoseDataJointVelocities>();
-        AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
-
-        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_jointIndex);
-        const AZ::Vector3 frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
-
-        const float speedDifferenceCost = (currentVelocity - frameVelocity).GetLength();
-        return CalcResidual(speedDifferenceCost);
+        const AZ::Vector3 velocity = GetFeatureData(featureMatrix, frameIndex);
+        DebugDraw(debugDisplay, currentPose, velocity, m_jointIndex, m_relativeToNodeIndex, m_debugColor);
     }
 
     void FeatureVelocity::Reflect(AZ::ReflectContext* context)
@@ -161,10 +143,5 @@ namespace EMotionFX::MotionMatching
     AZ::Vector3 FeatureVelocity::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
     {
         return featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
-    }
-
-    void FeatureVelocity::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& velocity)
-    {
-        featureMatrix.SetVector3(frameIndex, m_featureColumnOffset, velocity);
     }
 } // namespace EMotionFX::MotionMatching

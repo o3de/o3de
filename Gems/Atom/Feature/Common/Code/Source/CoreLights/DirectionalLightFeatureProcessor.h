@@ -66,7 +66,12 @@ namespace AZ
             AZStd::array<float, 3> m_direction = { { 1.0f, 0.0f, 0.0f } };
             float m_angularRadius = 0.0f;
             AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
-            float padding2 = 0.0f; // Padding between float3s in shader, can be used for other data later.
+            float m_affectsGIFactor = 1.0f;
+
+            bool m_affectsGI = true;
+            float m_padding0 = 0.0f;
+            float m_padding1 = 0.0f;
+            float m_padding2 = 0.0f;
         };
 
         // [GFX TODO][ATOM-15172] Look into compacting struct DirectionalLightShadowData
@@ -94,7 +99,7 @@ namespace AZ
             // Reduce acne by applying a small amount of bias to apply along shadow-space z.
             float m_shadowBias = 0.0f;
             // Reduces acne by biasing the shadowmap lookup along the geometric normal.
-            float m_normalShadowBias;
+            float m_normalShadowBias = 0.0f;
             uint32_t m_filteringSampleCount = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
@@ -220,6 +225,8 @@ namespace AZ
             void SetCascadeBlendingEnabled(LightHandle handle, bool enable) override;
             void SetShadowBias(LightHandle handle, float bias) override;
             void SetNormalShadowBias(LightHandle handle, float normalShadowBias) override;
+            void SetAffectsGI(LightHandle handle, bool affectsGI) override;
+            void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount() const;

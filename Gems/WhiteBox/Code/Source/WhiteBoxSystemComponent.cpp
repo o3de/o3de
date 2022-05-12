@@ -53,9 +53,9 @@ namespace WhiteBox
     {
         // default builder
         SetRenderMeshInterfaceBuilder(
-            []() -> AZStd::unique_ptr<RenderMeshInterface>
+            [](AZ::EntityId entityId) -> AZStd::unique_ptr<RenderMeshInterface>
             {
-                return AZStd::make_unique<AtomRenderMesh>();
+                return AZStd::make_unique<AtomRenderMesh>(entityId);
             });
 
         WhiteBoxRequestBus::Handler::BusConnect();
@@ -67,9 +67,9 @@ namespace WhiteBox
         m_assetHandlers.clear();
     }
 
-    AZStd::unique_ptr<RenderMeshInterface> WhiteBoxSystemComponent::CreateRenderMeshInterface()
+    AZStd::unique_ptr<RenderMeshInterface> WhiteBoxSystemComponent::CreateRenderMeshInterface(AZ::EntityId entityId)
     {
-        return m_renderMeshInterfaceBuilder();
+        return m_renderMeshInterfaceBuilder(entityId);
     }
 
     void WhiteBoxSystemComponent::SetRenderMeshInterfaceBuilder(RenderMeshInterfaceBuilderFn builder)
