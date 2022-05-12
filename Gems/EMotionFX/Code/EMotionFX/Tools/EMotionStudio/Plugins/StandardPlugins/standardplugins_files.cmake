@@ -50,10 +50,6 @@ set(FILES
     Source/AnimGraph/AnimGraphPlugin.h
     Source/AnimGraph/AnimGraphPluginCallbacks.cpp
     Source/AnimGraph/ContextMenu.cpp
-    Source/AnimGraph/GameController.cpp
-    Source/AnimGraph/GameController.h
-    Source/AnimGraph/GameControllerWindow.cpp
-    Source/AnimGraph/GameControllerWindow.h
     Source/AnimGraph/GraphNode.cpp
     Source/AnimGraph/GraphNode.h
     Source/AnimGraph/GraphNodeFactory.cpp
