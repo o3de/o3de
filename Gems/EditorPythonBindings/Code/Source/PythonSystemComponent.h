@@ -15,6 +15,8 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzCore/std/parallel/semaphore.h>
 
+#include <Source/ActionManager/PythonActionManagerHandler.h>
+
 namespace EditorPythonBindings
 {
     /**
@@ -69,6 +71,7 @@ namespace EditorPythonBindings
         AZStd::recursive_mutex m_lock;
         int m_lockRecursiveCounter = 0;
         AZStd::shared_ptr<SymbolLogHelper> m_symbolLogHelper;
+        PythonEditorActionHandler m_pythonEditorActionHandler;
     
         enum class Result
         {

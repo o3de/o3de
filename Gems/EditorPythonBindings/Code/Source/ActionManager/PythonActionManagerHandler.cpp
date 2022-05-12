@@ -1,0 +1,102 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Source/ActionManager/PythonActionManagerHandler.h>
+
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <Source/PythonCommon.h>
+#include <pybind11/pybind11.h>
+
+PythonEditorActionHandler::PythonEditorActionHandler()
+{
+    EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusConnect(azrtti_typeid<PythonEditorAction>());
+    ActionManagerRequestBus::Handler::BusConnect();
+}
+
+PythonEditorActionHandler ::~PythonEditorActionHandler()
+{
+    ActionManagerRequestBus::Handler::BusDisconnect();
+    EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusDisconnect();
+}
+
+AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterAction(
+    const AZStd::string& contextIdentifier,
+    const AZStd::string& identifier,
+    const AZStd::string& name,
+    const AZStd::string& description,
+    const AZStd::string& category,
+    const AZStd::string& iconPath,
+    PythonEditorAction handler)
+{
+    auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+    if (actionManagerInterface)
+    {
+        return actionManagerInterface->RegisterAction(
+            contextIdentifier, identifier, name, description, category, iconPath,
+            [h = AZStd::move(handler)]()
+            {
+                PyObject_CallObject(h.GetHandler(), NULL);
+            }
+        );
+    }
+
+    return AZ::Failure(AZStd::string("Could not find interface"));
+}
+
+AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::TriggerAction(const AZStd::string& actionIdentifier)
+{
+    auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+    if (actionManagerInterface)
+    {
+        return actionManagerInterface->TriggerAction(actionIdentifier);
+    }
+
+    return AZ::Failure(AZStd::string("Could not find interface"));
+}
+
+EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle PythonEditorActionHandler::AllocateDefault()
+{
+    AZ::BehaviorObject behaviorObject;
+
+    behaviorObject.m_address = azmalloc(sizeof(PythonEditorAction));
+    behaviorObject.m_typeId = azrtti_typeid<PythonEditorAction>();
+    m_allocationMap[behaviorObject.m_address] = behaviorObject.m_typeId;
+    return { { reinterpret_cast<Handle>(behaviorObject.m_address), AZStd::move(behaviorObject) } };
+}
+
+AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::PythonToBehavior(
+    PyObject* pyObj, [[maybe_unused]] AZ::BehaviorParameter::Traits traits, AZ::BehaviorValueParameter& outValue)
+{
+    outValue.ConvertTo<PythonEditorAction>();
+    outValue.StoreInTempData<PythonEditorAction>({ PythonEditorAction(pyObj) });
+    return { NoAllocation };
+}
+
+AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::BehaviorToPython(
+    const AZ::BehaviorValueParameter& behaviorValue, PyObject*& outPyObj)
+{
+    PythonEditorAction* value = behaviorValue.GetAsUnsafe<PythonEditorAction>();
+    outPyObj = value->GetHandler();
+    return { NoAllocation };
+}
+
+bool PythonEditorActionHandler::CanConvertPythonToBehavior([[maybe_unused]] AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const
+{
+    return PyCallable_Check(pyObj);
+}
+
+void PythonEditorActionHandler::CleanUpValue(ValueHandle handle)
+{
+    auto handleEntry = m_allocationMap.find(reinterpret_cast<void*>(handle));
+    if (handleEntry != m_allocationMap.end())
+    {
+        m_allocationMap.erase(handleEntry);
+
+        azfree(reinterpret_cast<void*>(handle));
+    }
+}

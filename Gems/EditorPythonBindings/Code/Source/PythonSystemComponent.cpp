@@ -8,6 +8,7 @@
 
 #include <PythonSystemComponent.h>
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
+#include <Source/ActionManager/ActionManagerBus.h>
 
 #include <Source/PythonCommon.h>
 #include <Source/PythonSymbolsBus.h>
@@ -354,6 +355,16 @@ namespace EditorPythonBindings
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
+        {
+            behaviorContext->EBus<ActionManagerRequestBus>("ActionManagerPythonRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Event("RegisterAction", &ActionManagerRequestBus::Handler::RegisterAction)
+                ->Event("TriggerAction", &ActionManagerRequestBus::Handler::TriggerAction);
         }
     }
 
