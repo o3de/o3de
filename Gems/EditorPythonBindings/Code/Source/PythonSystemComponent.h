@@ -17,6 +17,8 @@
 
 #include <Source/ActionManager/PythonActionManagerHandler.h>
 
+#include <Source/ActionManager/PythonActionManagerHandler.h>
+
 namespace EditorPythonBindings
 {
     /**

@@ -6,27 +6,27 @@
  *
  */
 
-#include <ActionManager/PythonEditorAction.h>
+#include <Source/ActionManager/PythonEditorAction.h>
 
 namespace EditorPythonBindings
 {
-    PythonEditorAction::PythonEditorAction(PyObject* handler)
-        : m_handler(handler)
-    {
+PythonEditorAction::PythonEditorAction(PyObject* handler)
+    : m_handler(handler)
+{
         // Increment the reference counter for the handler on the Python side to ensure the function isn't garbage collected.
         if (m_handler)
         {
-            Py_INCREF(m_handler);
-        }
+    Py_INCREF(m_handler);
+}
     }
 
-    PythonEditorAction::PythonEditorAction(const PythonEditorAction& obj)
-        : m_handler(obj.m_handler)
-    {
+PythonEditorAction::PythonEditorAction(const PythonEditorAction& obj)
+    : m_handler(obj.m_handler)
+{
         if (m_handler)
         {
-            Py_INCREF(m_handler);
-        }
+    Py_INCREF(m_handler);
+}
     }
 
     PythonEditorAction::PythonEditorAction(PythonEditorAction&& obj)
@@ -53,24 +53,24 @@ namespace EditorPythonBindings
         return *this;
     }
 
-    PythonEditorAction::~PythonEditorAction()
+PythonEditorAction::~PythonEditorAction()
+{
+    if (m_handler)
     {
-        if (m_handler)
-        {
-            Py_DECREF(m_handler);
-            // Clear the pointer in case the destructor is called multiple times.
-            m_handler = nullptr;
-        }
+        Py_DECREF(m_handler);
+        // Clear the pointer in case the destructor is called multiple times.
+        m_handler = nullptr;
+    }
     }
 
     PyObject* PythonEditorAction::GetHandler()
     {
         return m_handler;
-    }
+}
 
     const PyObject* PythonEditorAction::GetHandler() const
-    {
-        return m_handler;
-    }
+{
+    return m_handler;
+}
 
 } // namespace EditorPythonBindings

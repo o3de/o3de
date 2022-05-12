@@ -6,7 +6,7 @@
  *
  */
 
-#include <ActionManager/PythonActionManagerHandler.h>
+#include <Source/ActionManager/PythonActionManagerHandler.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <Source/PythonCommon.h>
@@ -14,86 +14,94 @@
 
 namespace EditorPythonBindings
 {
-    PythonEditorActionHandler::PythonEditorActionHandler()
-    {
+PythonEditorActionHandler::PythonEditorActionHandler()
+{
         m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
 
         if (m_actionManagerInterface)
         {
-            EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusConnect(azrtti_typeid<PythonEditorAction>());
-            ActionManagerRequestBus::Handler::BusConnect();
-        }
+    EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusConnect(azrtti_typeid<PythonEditorAction>());
+    ActionManagerRequestBus::Handler::BusConnect();
+}
     }
 
-    PythonEditorActionHandler ::~PythonEditorActionHandler()
-    {
+PythonEditorActionHandler ::~PythonEditorActionHandler()
+{
         if (m_actionManagerInterface)
         {
-            ActionManagerRequestBus::Handler::BusDisconnect();
-            EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusDisconnect();
-        }
+    ActionManagerRequestBus::Handler::BusDisconnect();
+    EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusDisconnect();
+}
     }
 
-    AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterAction(
-        const AZStd::string& contextIdentifier,
-        const AZStd::string& identifier,
-        const AZStd::string& name,
-        const AZStd::string& description,
-        const AZStd::string& category,
-        const AZStd::string& iconPath,
-        PythonEditorAction handler)
+AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterAction(
+    const AZStd::string& contextIdentifier,
+    const AZStd::string& identifier,
+    const AZStd::string& name,
+    const AZStd::string& description,
+    const AZStd::string& category,
+    const AZStd::string& iconPath,
+    PythonEditorAction handler)
+{
+    auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+    if (actionManagerInterface)
     {
-        return m_actionManagerInterface->RegisterAction(
+        return actionManagerInterface->RegisterAction(
             contextIdentifier, identifier, name, description, category, iconPath,
-            [h = AZStd::move(handler)]() mutable
+            [h = AZStd::move(handler)]()
             {
                 PyObject_CallObject(h.GetHandler(), NULL);
-            });
+            }
+        );
     }
 
-    AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::TriggerAction(const AZStd::string& actionIdentifier)
-    {
+    return AZ::Failure(AZStd::string("Could not find interface"));
+}
+
+AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::TriggerAction(const AZStd::string& actionIdentifier)
+{
         return m_actionManagerInterface->TriggerAction(actionIdentifier);
-    }
+}
 
-    EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle PythonEditorActionHandler::AllocateDefault()
-    {
-        AZ::BehaviorObject behaviorObject;
+EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle PythonEditorActionHandler::AllocateDefault()
+{
+    AZ::BehaviorObject behaviorObject;
 
-        behaviorObject.m_address = azmalloc(sizeof(PythonEditorAction));
-        behaviorObject.m_typeId = azrtti_typeid<PythonEditorAction>();
-        m_allocationMap[behaviorObject.m_address] = behaviorObject.m_typeId;
-        return { { reinterpret_cast<Handle>(behaviorObject.m_address), AZStd::move(behaviorObject) } };
-    }
+    behaviorObject.m_address = azmalloc(sizeof(PythonEditorAction));
+    behaviorObject.m_typeId = azrtti_typeid<PythonEditorAction>();
+    m_allocationMap[behaviorObject.m_address] = behaviorObject.m_typeId;
+    return { { reinterpret_cast<Handle>(behaviorObject.m_address), AZStd::move(behaviorObject) } };
+}
 
-    AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::PythonToBehavior(
+AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::PythonToBehavior(
         PyObject* pyObj, [[maybe_unused]] AZ::BehaviorParameter::Traits traits, AZ::BehaviorArgument& outValue)
-    {
-        outValue.ConvertTo<PythonEditorAction>();
-        outValue.StoreInTempData<PythonEditorAction>({ PythonEditorAction(pyObj) });
-        return { NoAllocation };
-    }
+{
+    outValue.ConvertTo<PythonEditorAction>();
+    outValue.StoreInTempData<PythonEditorAction>({ PythonEditorAction(pyObj) });
+    return { NoAllocation };
+}
 
-    AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::BehaviorToPython(
+AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::BehaviorToPython(
         const AZ::BehaviorArgument& behaviorValue, PyObject*& outPyObj)
-    {
-        PythonEditorAction* value = behaviorValue.GetAsUnsafe<PythonEditorAction>();
-        outPyObj = value->GetHandler();
-        return { NoAllocation };
-    }
+{
+    PythonEditorAction* value = behaviorValue.GetAsUnsafe<PythonEditorAction>();
+    outPyObj = value->GetHandler();
+    return { NoAllocation };
+}
 
-    bool PythonEditorActionHandler::CanConvertPythonToBehavior([[maybe_unused]] AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const
-    {
-        return PyCallable_Check(pyObj);
-    }
+bool PythonEditorActionHandler::CanConvertPythonToBehavior([[maybe_unused]] AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const
+{
+    return PyCallable_Check(pyObj);
+}
 
-    void PythonEditorActionHandler::CleanUpValue(ValueHandle handle)
-    {
+void PythonEditorActionHandler::CleanUpValue(ValueHandle handle)
+{
         if (auto handleEntry = m_allocationMap.find(reinterpret_cast<void*>(handle)); handleEntry != m_allocationMap.end())
-        {
-            m_allocationMap.erase(handleEntry);
-            azfree(reinterpret_cast<void*>(handle));
-        }
+    {
+        m_allocationMap.erase(handleEntry);
+
+        azfree(reinterpret_cast<void*>(handle));
     }
+}
 
 } // namespace EditorPythonBindings
