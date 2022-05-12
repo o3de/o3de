@@ -19,13 +19,12 @@ namespace AzToolsFramework
     //! Action Manager class definition.
     //! Handles Editor Actions and allows registration and access across tools.
     class ActionManager final
-        : public ActionManagerRequestBus::Handler
+        : public ActionManagerInterface
     {
     public:
         ActionManager();
         ~ActionManager();
 
-        static void Reflect(AZ::ReflectContext* context);
     private:
         // ActionManagerInterface overrides ...
         ActionManagerOperationResult RegisterActionContext(

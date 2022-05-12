@@ -36,8 +36,6 @@ namespace AzToolsFramework
         {
             serializeContext->Class<ActionManagerSystemComponent, AZ::Component>()->Version(1);
         }
-
-        ActionManager::Reflect(context);
     }
 
     void ActionManagerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
