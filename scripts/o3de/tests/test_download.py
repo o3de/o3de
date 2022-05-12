@@ -218,14 +218,11 @@ class TestObjectDownload:
             return file_obj
 
         def mocked_isfile(path):
-            matches = [pathlib.Path(x).name for x in self.created_files if pathlib.Path(x) == pathlib.Path(path)]
+            matches = [pathlib.Path(x).name for x in self.created_files if pathlib.Path(x).name == pathlib.Path(path).name]
             if len(matches) != 0:
                 return True
             else:
                 return False
-
-        def get_cache_folder():
-            return pathlib.Path('C:/Users/testuser/.o3de/cache')
 
         def mocked_copy(origin, dest):
             if mocked_isfile(origin):
@@ -237,7 +234,7 @@ class TestObjectDownload:
 
         with patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _1,\
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as _2, \
-                patch('o3de.manifest.get_o3de_cache_folder', side_effect=get_cache_folder) as _3, \
+                patch('o3de.utils.find_ancestor_dir_containing_file', return_value=None) as _3, \
                 patch('urllib.request.urlopen', side_effect=mocked_requests_get) as _4, \
                 patch('pathlib.Path.open', mocked_open) as _5, \
                 patch('pathlib.Path.is_file', mocked_isfile) as _6, \
