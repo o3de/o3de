@@ -26,18 +26,6 @@ namespace AzToolsFramework
         ClearActionContextMap();
     }
 
-    void ActionManager::Reflect(AZ::ReflectContext* context)
-    {
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
-        {
-            behaviorContext->EBus<ActionManagerRequestBus>("ActionManagerRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Category, "Action")
-                ->Attribute(AZ::Script::Attributes::Module, "action")
-                ->Event("TriggerAction", &ActionManagerRequestBus::Handler::TriggerAction);
-        }
-    }
-
     ActionManagerOperationResult ActionManager::RegisterActionContext(
         QWidget* widget,
         const AZStd::string& identifier,
