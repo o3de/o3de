@@ -78,9 +78,21 @@ namespace AZ::DocumentPropertyEditor
         //! \see AdapterBuilder for building out this DOM structure.
         virtual Dom::Value GenerateContents() const = 0;
 
+        //! Specifies the type of reset operation triggered in NotifyResetDocument.
+        enum class DocumentResetType
+        {
+            //! (Default) On soft reset, the adapter will compare any existing cached contents to the new result of
+            //! GetContents and produce patches based on the difference, assuming cached contents are available.
+            SoftReset,
+            //! On hard reset, the adapter will clear any cached contents and simply emit a reset event, ensuring
+            //! any views fully reset their contents. In cases where the new adapter contents are fully disparate,
+            //! this can be more efficient than the comparison from a soft reset.
+            HardReset,
+        };
+
         //! Subclasses may call this to trigger a ResetEvent and let the view know that GetContents should be requeried.
         //! Where possible, prefer to use NotifyContentsChanged instead.
-        void NotifyResetDocument();
+        void NotifyResetDocument(DocumentResetType resetType = DocumentResetType::SoftReset);
         //! Subclasses may call this to trigger a ChangedEvent to notify the view that this adapter's contents have changed.
         //! This patch should apply cleanly on the last result GetContents would have returned after any preceding changed
         //! or reset events.

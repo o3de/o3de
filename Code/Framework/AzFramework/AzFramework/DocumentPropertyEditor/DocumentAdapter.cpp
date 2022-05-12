@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/DOM/DomComparison.h>
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 
@@ -55,10 +56,22 @@ namespace AZ::DocumentPropertyEditor
         ed_debugDocumentPropertyEditorUpdates = enableDebugMode;
     }
 
-    void DocumentAdapter::NotifyResetDocument()
+    void DocumentAdapter::NotifyResetDocument(DocumentResetType resetType)
     {
-        m_cachedContents.SetNull();
-        m_resetEvent.Signal();
+        if (resetType == DocumentResetType::HardReset || m_cachedContents.IsNull())
+        {
+            // If it's a hard reset, or we don't have any lazily cached contents, just send the reset signal.
+            m_cachedContents.SetNull();
+            m_resetEvent.Signal();
+        }
+        else
+        {
+            // Otherwise, compare the new contents to the old contents and send the difference as patches.
+            Dom::Value newContents = GenerateContents();
+            Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents);
+            m_cachedContents = newContents;
+            m_changedEvent.Signal(patches.m_forwardPatches);
+        }
     }
 
     void DocumentAdapter::NotifyContentsChanged(const AZ::Dom::Patch& patch)
