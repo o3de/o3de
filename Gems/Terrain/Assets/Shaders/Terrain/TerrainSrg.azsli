@@ -21,6 +21,12 @@ ShaderResourceGroupSemantic SRG_Terrain
 
 ShaderResourceGroup TerrainSrg : SRG_Terrain
 {
+    struct MeshData
+    {
+        float3 m_mainCameraPosition;
+        float m_firstLodDistance;
+    };
+
     struct DetailMaterialData
     {
         // Uv
@@ -123,6 +129,8 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float4 m_clipmapScaleInv[StackSizeMax];
     };
 
+    MeshData m_meshData;
+
     // Clipmap SRG
     ClipmapData m_clipmapData;
 
@@ -148,6 +156,25 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     uint2 GetMacroGridResolution()
     {
         return uint2(m_macroMaterialGrid.m_resolution >> 16, m_macroMaterialGrid.m_resolution & 0xFFFF);
+    }
+    
+    float2 CalculateCullDistance(uint lodLevel, float3 worldPosition)
+    {
+        float minRange = 0;
+        float maxRange = m_meshData.m_firstLodDistance;
+        if (lodLevel > 0)
+        {
+            maxRange = maxRange * float(1u << lodLevel);
+            minRange = m_meshData.m_firstLodDistance * float(1u<< (lodLevel - 1u));
+        }
+
+        // This is conservative on both the min and max side to avoid holes, but it should be possible to use a single clipping plane when CLOD is implemented.
+        float viewDistanceToWorldPosition = length(m_meshData.m_mainCameraPosition - worldPosition);
+
+        float2 outcullDistance;
+        outcullDistance.x = viewDistanceToWorldPosition - minRange;
+        outcullDistance.y = maxRange - viewDistanceToWorldPosition;
+        return outcullDistance;
     }
 }
 
