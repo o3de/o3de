@@ -15,12 +15,10 @@ namespace AzToolsFramework
     ActionManager::ActionManager()
     {
         AZ::Interface<ActionManagerInterface>::Register(this);
-        ActionManagerRequestBus::Handler::BusConnect();
     }
 
     ActionManager::~ActionManager()
     {
-        ActionManagerRequestBus::Handler::BusDisconnect();
         AZ::Interface<ActionManagerInterface>::Unregister(this);
 
         ClearActionContextMap();
