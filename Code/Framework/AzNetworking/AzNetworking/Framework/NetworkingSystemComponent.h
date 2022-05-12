@@ -45,7 +45,7 @@ namespace AzNetworking
         void Deactivate() override;
         //! @}
 
-        //! AZ::TickBus::Handler overrides.
+        //! AZ::SystemTickBus::Handler overrides.
         //! @{
         void OnSystemTick() override;
         //! @}
