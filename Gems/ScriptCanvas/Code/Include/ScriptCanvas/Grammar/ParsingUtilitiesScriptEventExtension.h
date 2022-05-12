@@ -20,8 +20,6 @@ namespace ScriptCanvas
             ScriptEvents::Method m_method;
         };
 
-        FunctionNodeToScriptEventResult ToScriptEvent(const Node& node);
-
         struct GraphToScriptEventsResult
         {
             bool m_isScriptEvents = false;
@@ -31,6 +29,15 @@ namespace ScriptCanvas
             ScriptEvents::ScriptEvent m_event;
         };
 
-        GraphToScriptEventsResult ToScriptEvents(Graph& graph);
+        GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(Graph& graph);
+
+        FunctionNodeToScriptEventResult ParseScriptEvent(const Node& node);
+
+        GraphToScriptEventsResult ParseScriptEventsDefinition(Graph& graph);
     }
+}
+
+namespace ScriptEvents
+{
+    void AddScriptEventHelpers(ScriptCanvas::Graph& graph);
 }

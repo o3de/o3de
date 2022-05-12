@@ -371,19 +371,22 @@ namespace ScriptCanvasEditor
                             }
                         }
 
-                        // Now that the slot has a valid type/name, we can actually promote it to a variable
-                        if (PromoteToVariableAction(endpoint, true))
+                        if (!node->GetGraph()->IsScriptEventExtension())
                         {
-                            ScriptCanvas::GraphVariable* variable = slot->GetVariable();
-
-                            if (variable)
+                            // Now that the slot has a valid type/name, we can actually promote it to a variable
+                            if (PromoteToVariableAction(endpoint, true))
                             {
-                                if (variable->GetScope() != ScriptCanvas::VariableFlags::Scope::Function)
+                                ScriptCanvas::GraphVariable* variable = slot->GetVariable();
+
+                                if (variable)
                                 {
-                                    variable->SetScope(ScriptCanvas::VariableFlags::Scope::Function);
+                                    if (variable->GetScope() != ScriptCanvas::VariableFlags::Scope::Function)
+                                    {
+                                        variable->SetScope(ScriptCanvas::VariableFlags::Scope::Function);
+                                    }
                                 }
                             }
-                        }
+                        }                        
                     }
                     else
                     {

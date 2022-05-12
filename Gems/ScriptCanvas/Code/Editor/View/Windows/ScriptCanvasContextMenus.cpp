@@ -17,47 +17,45 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
+#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
+#include <Editor/Nodes/NodeCreateUtils.h>
 #include <Editor/Nodes/NodeUtils.h>
+#include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/VariablePanel/GraphVariablesTableView.h>
 #include <Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.h>
 
-#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
-#include <ScriptCanvas/Bus/RequestBus.h>
-#include <ScriptCanvas/Bus/NodeIdPair.h>
-#include <ScriptCanvas/Core/GraphBus.h>
-
 #include <GraphCanvas/Components/GridBus.h>
+#include <GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h>
 #include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
 #include <GraphCanvas/Components/Nodes/Group/NodeGroupBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
+#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/ViewBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
+#include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/GraphCanvasBus.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h>
-#include <GraphCanvas/Utils/NodeNudgingController.h>
+#include <GraphCanvas/Types/Endpoint.h>
 #include <GraphCanvas/Utils/ConversionUtils.h>
+#include <GraphCanvas/Utils/NodeNudgingController.h>
+#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h>
 
-#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
-#include <Editor/Nodes/NodeCreateUtils.h>
-#include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Bus/NodeIdPair.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Core/GraphBus.h>
+#include <ScriptCanvas/Core/Node.h>
+#include <ScriptCanvas/Core/NodeBus.h>
+#include <ScriptCanvas/Core/ScriptCanvasBus.h>
+#include <ScriptCanvas/Core/Slot.h>
+#include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
+#include <ScriptCanvas/GraphCanvas/MappingBus.h>
+#include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
+#include <ScriptCanvas/Libraries/Core/Method.h>
 
 #include "ScriptCanvasContextMenus.h"
 #include "Settings.h"
-
-#include <ScriptCanvas/Core/NodeBus.h>
-#include <ScriptCanvas/Core/Slot.h>
-#include <GraphCanvas/Editor/EditorTypes.h>
-#include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
-#include <ScriptCanvas/Libraries/Core/Method.h>
-#include <GraphCanvas/Types/Endpoint.h>
-#include <ScriptCanvas/Core/ScriptCanvasBus.h>
-#include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/GraphCanvas/MappingBus.h>
-#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
-#include <GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h>
-
 
 namespace ScriptCanvasEditor
 {
@@ -933,6 +931,39 @@ namespace ScriptCanvasEditor
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
 
+    MakeScriptEventHelpersAction::MakeScriptEventHelpersAction(QObject* parent)
+        : NodeContextMenuAction("Make Script Event Helpers", parent)
+    {}
+
+    void MakeScriptEventHelpersAction::RefreshAction
+        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
+        , [[maybe_unused]] const AZ::EntityId& targetId)
+    {
+        ScriptCanvas::ScriptCanvasId scriptCanvasId;
+        GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
+        ScriptCanvas::Graph* graph = nullptr;
+        ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
+
+        if (graph)
+        {
+            graph->MarkScriptEventExtension();
+        }
+
+        setEnabled(graph && !ScriptCanvas::ScriptEventGrammar::ParseMinimumScriptEventArtifacts(*graph).m_isScriptEvents);
+    }
+
+    GraphCanvas::ContextMenuAction::SceneReaction MakeScriptEventHelpersAction::TriggerAction
+        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
+        , [[maybe_unused]] const AZ::Vector2&)
+    {
+        ScriptCanvas::ScriptCanvasId scriptCanvasId;
+        GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
+        ScriptCanvas::Graph* graph = nullptr;
+        ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
+        ScriptEvents::AddScriptEventHelpers(*graph);
+        return GraphCanvas::ContextMenuAction::SceneReaction::PostUndo;
+    }
+
     SaveAsScriptEventAction::SaveAsScriptEventAction(QObject* parent)
         : NodeContextMenuAction("Save As Script Event", parent)
     {
@@ -940,22 +971,49 @@ namespace ScriptCanvasEditor
     }
 
     void SaveAsScriptEventAction::RefreshAction
-        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
+        ( const GraphCanvas::GraphId& graphId
         , [[maybe_unused]] const AZ::EntityId& targetId)
     {
+        using namespace ScriptCanvas::ScriptEventGrammar;
         // ask the model if is enabled, change name to reason why...?
-        // display a window listing the reasons why the script canvas node can't be saved out as a script event
+        ScriptCanvas::ScriptCanvasId scriptCanvasId;
+        GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
+
+        ScriptCanvas::Graph* graph = nullptr;
+        ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
+
+        if (graph)
+        {
+            if (const GraphToScriptEventsResult result = ParseScriptEventsDefinition(*graph); !result.m_isScriptEvents)
+            {
+                AZ_TracePrintf("ScriptEvents", "Failed to parse graph as ScriptEvents: ");
+                for (auto& reason : result.m_parseErrors)
+                {
+                    AZ_TracePrintf("ScriptEvents", reason.c_str());
+                }
+
+                setEnabled(false);
+                return;
+            }
+        }
+        else
+        {
+            AZ_Error("ScriptEvents", false, "No valid graph was discovered for SaveAsScriptEventAction::RefreshAction");
+            setEnabled(false);
+            return;
+        }
+
         setEnabled(true);
     }
 
     GraphCanvas::ContextMenuAction::SceneReaction SaveAsScriptEventAction::TriggerAction
-        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId, [[maybe_unused]] const AZ::Vector2&)
+        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
+        , [[maybe_unused]] const AZ::Vector2&)
     {
         // tell the model, to save, model will pop-up window or something
         // always return nothing
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
-
 
     OpenScriptEventAction::OpenScriptEventAction(QObject* parent)
         : NodeContextMenuAction("Open Script Event", parent)
@@ -971,7 +1029,8 @@ namespace ScriptCanvasEditor
     }
 
     GraphCanvas::ContextMenuAction::SceneReaction OpenScriptEventAction::TriggerAction
-        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId, [[maybe_unused]] const AZ::Vector2&)
+        ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
+        , [[maybe_unused]] const AZ::Vector2&)
     {
         AZ::IO::FixedMaxPath resolvedProjectRoot;
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");

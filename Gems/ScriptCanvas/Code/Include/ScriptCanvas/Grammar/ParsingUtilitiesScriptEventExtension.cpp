@@ -7,10 +7,11 @@
  */
 
 #include <ScriptCanvas/Core/Graph.h>
-#include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 #include <ScriptEvents/ScriptEventsMethod.h>
+#include <ScriptCanvas/Variable/VariableBus.h>
+#include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
 
 namespace ParsingUtilitiesScriptEventExtensionCpp
 {
@@ -34,7 +35,6 @@ namespace ParsingUtilitiesScriptEventExtensionCpp
             parameter.GetNameProperty().Set(slot->GetName());
             auto azType = slot->GetDataType().GetAZType();
             parameter.GetTypeProperty().Set(azType);
-            // \todo add tool tip
         }
                 
         auto methodValidateOutcome = method.Validate();
@@ -52,7 +52,42 @@ namespace ScriptCanvas::ScriptEventGrammar
     using namespace ScriptCanvas;
     using namespace ParsingUtilitiesScriptEventExtensionCpp;
 
-    FunctionNodeToScriptEventResult ToScriptEvent(const Node& node)
+    GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(Graph& graph)
+    {
+        GraphToScriptEventsResult result;
+
+        // get name, tool tip, category from variables
+        auto variableData = graph.GetVariableDataConst();
+        if (!variableData)
+        {
+            result.m_parseErrors.push_back("Missing variable data in graph. Parsing can not continue.");
+            return result;
+        }
+
+        auto assignStringProperty = [&](AZStd::string_view variableName, ScriptEventData::VersionedProperty& property)
+        {
+            auto stringVariable = variableData->FindVariable(variableName);
+
+            if (!stringVariable || stringVariable->GetDataType() != Data::Type::String())
+            {
+                result.m_parseErrors.push_back
+                    ( AZStd::string::format
+                    ( "Missing valid variable by name of '%.*s' and type 'String' in graph.", AZ_STRING_ARG(variableName)));
+            }
+            else
+            {
+                property.Set(*stringVariable->GetDatum()->GetAs<Data::StringType>());
+            }
+        };
+
+        assignStringProperty("Name", result.m_event.GetNameProperty());
+        assignStringProperty("Category", result.m_event.GetCategoryProperty());
+        assignStringProperty("Tooltip", result.m_event.GetTooltipProperty());
+        result.m_isScriptEvents = result.m_parseErrors.empty();
+        return result;
+    }
+
+    FunctionNodeToScriptEventResult ParseScriptEvent(const Node& node)
     {
         FunctionNodeToScriptEventResult result{ false, &node, {}, {} };
 
@@ -77,9 +112,10 @@ namespace ScriptCanvas::ScriptEventGrammar
         return result;
     }
 
-    GraphToScriptEventsResult ToScriptEvents(Graph& graph)
+    GraphToScriptEventsResult ParseScriptEventsDefinition(Graph& graph)
     {
-        GraphToScriptEventsResult result;
+        // get name, tool tip, category from variables
+        GraphToScriptEventsResult result = ParseMinimumScriptEventArtifacts(graph);
         
         {
             auto nodes = graph.GetNodesOfType<Node>();
@@ -87,7 +123,7 @@ namespace ScriptCanvas::ScriptEventGrammar
 
             for (auto node : nodes)
             {
-                result.m_nodeResults.push_back(ToScriptEvent(*node));
+                result.m_nodeResults.push_back(ParseScriptEvent(*node));
                 anyNodeWasInvalid = anyNodeWasInvalid || !result.m_nodeResults.back().m_isScriptEvent;
             }
 
@@ -97,45 +133,12 @@ namespace ScriptCanvas::ScriptEventGrammar
             }
         }
 
-        // get name, tool tip, address type from variables
+        // get address type from variables
         auto variableData = graph.GetVariableDataConst();
         if (!variableData)
         {
             result.m_parseErrors.push_back("Missing variable data in graph. Parsing can not continue.");
             return result;
-        }
-
-        auto assignStringProperty = [&](AZStd::string_view variableName, ScriptEventData::VersionedProperty& property)
-        {
-            auto stringVariable = variableData->FindVariable(variableName);
-
-            if (!stringVariable
-            || stringVariable->GetDataType() != Data::Type::String()
-            || stringVariable->GetDatum()
-            || !stringVariable->GetDatum()->GetAs<Data::StringType>())
-            {
-                result.m_parseErrors.push_back
-                    ( AZStd::string::format
-                        ( "Missing valid variable by name of '%.*s' and type 'String' in graph.", AZ_STRING_ARG(variableName)));
-            }
-
-            property.Set(*stringVariable->GetDatum()->GetAs<Data::StringType>());
-        };
-
-        assignStringProperty("Name", result.m_event.GetNameProperty());
-        assignStringProperty("Category", result.m_event.GetCategoryProperty());
-        assignStringProperty("Tooltip", result.m_event.GetTooltipProperty());
-
-        if (auto addressTypeVariable = variableData->FindVariable("Address Type"))
-        {
-            auto azType = addressTypeVariable->GetDataType().GetAZType();
-            result.m_event.GetAddressTypeProperty().Set(azType);
-        }
-        else
-        {
-            result.m_parseErrors.push_back
-                ( AZStd::string::format
-                    ("Missing variable by name of 'Address Type', which can be invalid or any allowable ScriptEvent data type."));
         }
 
         for (auto& nodeResult : result.m_nodeResults)
@@ -153,5 +156,43 @@ namespace ScriptCanvas::ScriptEventGrammar
 
         result.m_isScriptEvents = result.m_parseErrors.empty();
         return result;
+    }
+}
+
+namespace ScriptEvents
+{
+    void AddScriptEventHelpers(ScriptCanvas::Graph& graph)
+    {
+        using namespace ScriptCanvas;
+
+        if (auto variableData = graph.GetVariableData())
+        {
+            auto confirmStringVariable = [&](AZStd::string_view name, AZStd::string description)
+            {
+                auto nameVar = variableData->FindVariable(name);
+                if (!nameVar || nameVar->GetDataType() == Data::Type::String())
+                {
+                    Datum datum(Data::Type::String(), Datum::eOriginality::Original, &description, azrtti_typeid<AZStd::string>());
+                    AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
+                    GraphVariableManagerRequestBus::EventResult
+                        ( addOutcome, graph.GetScriptCanvasId(), &GraphVariableManagerRequests::AddVariable, name, datum, false);
+                    AZ_Warning
+                        ( "ScriptEvents"
+                        , addOutcome.IsSuccess()
+                        , "Failed to add helper variable: '%.*s', error: %s", AZ_STRING_ARG(name), addOutcome.GetError().c_str());
+                }
+            };
+
+            confirmStringVariable("Name", "<name of the ScriptEvent definition>");
+            confirmStringVariable("Tooltip", "<helpful explanation for the ScriptEvent definition>");
+            confirmStringVariable("Category", "<category for the ScriptEvent definition>");
+
+            // make sure and extenalize string to "Address Type"
+            // only add Address if no variable of any type by that name exists
+            if (!variableData->FindVariable("Address"))
+            {
+                confirmStringVariable("Address", "<delete for ScriptEvents with no address, or change type if desired>");
+            }
+        }
     }
 }

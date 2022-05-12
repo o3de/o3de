@@ -111,6 +111,7 @@ namespace ScriptCanvas
 
         GraphData* GetGraphData() override { return &m_graphData; }
         const GraphData* GetGraphDataConst() const override { return &m_graphData; }
+        VariableData* GetVariableData() override;
         const VariableData* GetVariableDataConst() const override { return const_cast<Graph*>(this)->GetVariableData(); }
 
         bool AddGraphData(const GraphData&) override;
@@ -144,7 +145,7 @@ namespace ScriptCanvas
             AZStd::vector<const NodeType*> nodes;
             for (auto& nodeRef : m_graphData.m_nodes)
             {
-                const NodeType* node = nodeRef->FindComponent<NodeType>();
+                const NodeType* node = AZ::EntityUtils::FindFirstDerivedComponent<NodeType>(nodeRef);
                 if (node)
                 {
                     nodes.push_back(node);
@@ -195,8 +196,6 @@ namespace ScriptCanvas
 
         void RefreshVariableReferences(const VariableId&) override {}
 
-        VariableData* GetVariableData() override;
-        
         const GraphVariableMapping* GetVariables() const override;
         GraphVariable* FindVariable(AZStd::string_view propName) override;
         GraphVariable* FindVariableById(const VariableId& variableId) override;
@@ -231,5 +230,12 @@ namespace ScriptCanvas
 
         void OnEntityActivated(const AZ::EntityId&) override;
         class GraphEventHandler;
+
+    public:
+        void MarkScriptEventExtension();
+        bool IsScriptEventExtension();
+
+    private:
+        bool m_isScriptEventExtension = false;
     };
 }
