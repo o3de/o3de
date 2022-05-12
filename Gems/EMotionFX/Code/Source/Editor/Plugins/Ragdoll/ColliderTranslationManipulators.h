@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
@@ -39,26 +40,6 @@ namespace EMotionFX
         MCore::CommandGroup m_commandGroup;
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         AzToolsFramework::TranslationManipulators m_translationManipulators;
-
-        class DEFINECOMMANDCALLBACK_API DataChangedCallback : public MCore::Command::Callback
-        {
-            MCORE_MEMORYOBJECTCATEGORY(DataChangedCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MCore::MCORE_MEMCATEGORY_COMMANDSYSTEM);
-
-        public:
-            explicit DataChangedCallback(ColliderTranslationManipulators* manipulators, bool executePreUndo, bool executePreCommand = false)
-                : MCore::Command::Callback(executePreUndo, executePreCommand)
-                , m_manipulators(manipulators)
-            {
-            }
-            bool Execute(MCore::Command* command, const MCore::CommandLine& commandLine) override;
-            bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine) override;
-
-        private:
-            ColliderTranslationManipulators* m_manipulators{};
-        };
-
-        AZStd::unique_ptr<DataChangedCallback> m_adjustColliderCallback;
-
-        friend class DataChangedCallback;
+        AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustColliderCallback;
     };
 } // namespace EMotionFX

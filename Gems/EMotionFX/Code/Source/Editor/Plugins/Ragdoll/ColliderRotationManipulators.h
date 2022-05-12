@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
@@ -42,29 +43,10 @@ namespace EMotionFX
         // PhysicsSetupManipulatorRequestBus::Handler ...
         void OnUnderlyingPropertiesChanged() override;
 
-        class DEFINECOMMANDCALLBACK_API DataChangedCallback : public MCore::Command::Callback
-        {
-            MCORE_MEMORYOBJECTCATEGORY(DataChangedCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MCore::MCORE_MEMCATEGORY_COMMANDSYSTEM);
-
-        public:
-            explicit DataChangedCallback(ColliderRotationManipulators* manipulators, bool executePreUndo, bool executePreCommand = false)
-                : MCore::Command::Callback(executePreUndo, executePreCommand)
-                , m_manipulators(manipulators)
-            {
-            }
-            bool Execute(MCore::Command* command, const MCore::CommandLine& commandLine) override;
-            bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine) override;
-
-        private:
-            ColliderRotationManipulators* m_manipulators{};
-        };
-
         AzToolsFramework::RotationManipulators m_rotationManipulators;
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         AZStd::optional<AZ::s32> m_viewportId;
         MCore::CommandGroup m_commandGroup;
-        AZStd::unique_ptr<DataChangedCallback> m_adjustColliderCallback;
-
-        friend class DataChangedCallback;
+        AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustColliderCallback;
     };
 } // namespace EMotionFX

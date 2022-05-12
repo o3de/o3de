@@ -20,7 +20,7 @@ namespace EMotionFX
         : m_rotationManipulators(AZ::Transform::Identity())
     {
         m_rotationManipulators.SetCircleBoundWidth(AzToolsFramework::ManipulatorCicleBoundWidth());
-        m_adjustColliderCallback = AZStd::make_unique<DataChangedCallback>(this, false);
+        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(false);
         EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
@@ -152,20 +152,6 @@ namespace EMotionFX
     {
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(GetViewportId());
         m_rotationManipulators.RefreshView(cameraState.m_position);
-    }
-
-    bool ColliderRotationManipulators::DataChangedCallback::Execute(
-        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
-    {
-        m_manipulators->Refresh();
-        return true;
-    }
-
-    bool ColliderRotationManipulators::DataChangedCallback::Undo(
-        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
-    {
-        m_manipulators->Refresh();
-        return true;
     }
 
     void ColliderRotationManipulators::OnUnderlyingPropertiesChanged()

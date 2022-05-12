@@ -19,7 +19,7 @@ namespace EMotionFX
         : m_translationManipulators(
               AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne())
     {
-        m_adjustColliderCallback = AZStd::make_unique<DataChangedCallback>(this, false);
+        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(false);
         EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
@@ -175,20 +175,6 @@ namespace EMotionFX
         AZStd::string result;
         CommandSystem::GetCommandManager()->ExecuteCommandGroup(m_commandGroup, result);
         m_commandGroup.Clear();
-    }
-
-    bool ColliderTranslationManipulators::DataChangedCallback::Execute(
-        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
-    {
-        m_manipulators->Refresh();
-        return true;
-    }
-
-    bool ColliderTranslationManipulators::DataChangedCallback::Undo(
-        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
-    {
-        m_manipulators->Refresh();
-        return true;
     }
 
     void ColliderTranslationManipulators::OnUnderlyingPropertiesChanged()
