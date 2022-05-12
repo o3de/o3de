@@ -65,8 +65,13 @@ namespace EditorPythonBindings
         if (behaviorResult && behaviorResult.value().first)
         {
             void* itemAddress = tupleContainer->GetElementByIndex(newTuple, itemElement, index);
-            AZ_Assert(
-                itemAddress, "Element reserved for associative container's tuple, but unable to retrieve address of the item:%d", index);
+            if (!itemAddress)
+            {
+                AZ_Error(
+                    "python", itemAddress,
+                    "Element reserved for associative container's tuple, but unable to retrieve address of the item:%d", index);
+                return false;
+            }
             serializeContext->CloneObjectInplace(itemAddress, behaviorItem.m_value, itemElement->m_typeId);
         }
         else
@@ -200,17 +205,30 @@ namespace EditorPythonBindings
         AZStd::vector<void*> reservedElements;
         for (size_t itemIdx = 0; itemIdx < elements.size(); itemIdx++)
         {
+            bool successfulConversion = true;
+
             // Allocate space for each element.
             void* reserved = tupleDataContainer->ReserveElement(tupleInstance.m_address, elements[itemIdx]);
-            AZ_Assert(reserved, "Could not allocate tuple's element %zu via ReserveElement()", itemIdx);
-
-            // Track the allocated space.
-            reservedElements.push_back(reserved);
+            if (reserved)
+            {
+                // Track the allocated space.
+                reservedElements.push_back(reserved);
+            }
+            else
+            {
+                AZ_Error("python", reserved, "Could not allocate tuple's element %zu via ReserveElement()", itemIdx);
+                successfulConversion = false;
+            }
 
             // Attempt to convert the value. If it fails to convert, free everything we've allocated so far and return.
             if (items[itemIdx] &&
                 !LoadPythonToTupleElement(
                     items[itemIdx], traits, elements[itemIdx], tupleDataContainer, itemIdx, serializeContext, tupleInstance.m_address))
+            {
+                successfulConversion = false;
+            }
+
+            if (!successfulConversion)
             {
                 for (auto& reservedElement : reservedElements)
                 {
@@ -253,10 +271,12 @@ namespace EditorPythonBindings
 
         auto cleanUpList = AZStd::make_shared<AZStd::vector<PythonMarshalTypeRequests::DeallocateFunction>>();
 
-        // return tuple as list, if conversion failed for an element it will remain as 'none'
-        pybind11::list pythonList;
+        // return tuple as python tuple - if conversion fails for an element it will remain as 'none'
+        size_t tupleSize = containerInterface->Size(behaviorValue.m_value);
+        pybind11::tuple pythonTuple(tupleSize);
+        size_t tupleElementIndex = 0;
                 
-        auto tupleElementCallback = [cleanUpList, &pythonList]
+        auto tupleElementCallback = [cleanUpList, tupleSize, &pythonTuple, &tupleElementIndex]
             (void* instancePair, const AZ::Uuid& elementClassId,
                 [[maybe_unused]] const AZ::SerializeContext::ClassData* elementGenericClassData,
                 [[maybe_unused]] const AZ::SerializeContext::ClassElement* genericClassElement)
@@ -264,9 +284,16 @@ namespace EditorPythonBindings
             AZ::BehaviorObject behaviorObjectValue(instancePair, elementClassId);
             auto result = Container::ProcessBehaviorObject(behaviorObjectValue);
 
+            if (tupleElementIndex >= tupleSize)
+            {
+                // We've ended up with too many elements in the tuple somehow.
+                AZ_Error("python", false, "Tuple contains more than the expected number of elements (%zu).", tupleSize);
+                return false;
+            }
+
             if (result.has_value())
             {
-                // If the element was converted, we'll add it to the list of results.
+                // If the element was converted, we'll put the converted value into the output tuple.
                 PythonMarshalTypeRequests::DeallocateFunction deallocateFunction = result.value().second;
                 if (result.value().second)
                 {
@@ -275,21 +302,23 @@ namespace EditorPythonBindings
                 }
 
                 pybind11::object pythonResult = result.value().first;
-                pythonList.append(pythonResult);
+                pythonTuple[tupleElementIndex] = pythonResult;
             }
             else
             {
-                // The element couldn't be converted, so we'll add 'none' as a placeholder in the list.
+                // The element couldn't be converted, so we'll add 'none' as a placeholder in the tuple.
                 AZ_Warning("python", false, "BehaviorObject was not processed, python item will remain 'none'.");
-                pythonList.append(pybind11::none());
+                pythonTuple[tupleElementIndex] = pybind11::none();
             }
+
+            tupleElementIndex++;
 
             return true;
         };
         containerInterface->EnumElements(behaviorValue.m_value, tupleElementCallback);
 
         PythonMarshalTypeRequests::PythonValueResult result;
-        result.first = pythonList;
+        result.first = pythonTuple;
 
         if (!cleanUpList->empty())
         {
