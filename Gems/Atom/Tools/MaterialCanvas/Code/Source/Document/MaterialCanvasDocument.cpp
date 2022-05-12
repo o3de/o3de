@@ -230,9 +230,7 @@ namespace MaterialCanvas
         return true;
     }
 
-    // MaterialCanvasDocumentRequestBus::Handler overrides...
-
-    inline GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
+    GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
     {
         return m_graphId;
     }

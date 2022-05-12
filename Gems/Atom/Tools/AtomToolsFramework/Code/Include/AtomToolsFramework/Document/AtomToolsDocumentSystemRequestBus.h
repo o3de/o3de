@@ -84,6 +84,10 @@ namespace AtomToolsFramework
 
         //! Get number of allocated documents
         virtual AZ::u32 GetDocumentCount() const = 0;
+
+        //! Determine if a document is open in the system
+        //! @param documentId unique id of document to check
+        virtual bool IsDocumentOpen(const AZ::Uuid& documentId) const = 0;
     };
 
     using AtomToolsDocumentSystemRequestBus = AZ::EBus<AtomToolsDocumentSystemRequests>;
