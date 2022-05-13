@@ -460,4 +460,14 @@ namespace Terrain
         outThreadY = m_detailTotalDispatchThreadY;
         outThreadZ = 1;
     }
+
+    bool TerrainClipmapManager::HasMacroClipmapUpdate() const
+    {
+        return m_macroTotalDispatchThreadX != 0 && m_macroTotalDispatchThreadY != 0;
+    }
+
+    bool TerrainClipmapManager::HasDetailClipmapUpdate() const
+    {
+        return m_detailTotalDispatchThreadX != 0 && m_detailTotalDispatchThreadY != 0;
+    }
 }

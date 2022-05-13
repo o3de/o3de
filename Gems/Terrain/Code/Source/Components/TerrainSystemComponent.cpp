@@ -35,8 +35,6 @@ namespace Terrain
                 ;
             }
         }
-
-        TerrainClipmapGenerationPassData::Reflect(context);
     }
 
     void TerrainSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

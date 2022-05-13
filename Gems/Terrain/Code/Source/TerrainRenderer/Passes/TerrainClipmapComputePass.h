@@ -21,69 +21,16 @@
 
 namespace Terrain
 {
-    struct TerrainClipmapGenerationPassData : public AZ::RPI::RenderPassData
-    {
-        AZ_RTTI(TerrainClipmapGenerationPassData, "{07C90E11-6607-4BD2-B041-96CEF46F8C55}", AZ::RPI::RenderPassData);
-        AZ_CLASS_ALLOCATOR(TerrainClipmapGenerationPassData, AZ::SystemAllocator, 0);
-
-        TerrainClipmapGenerationPassData() = default;
-        virtual ~TerrainClipmapGenerationPassData() = default;
-
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<TerrainClipmapGenerationPassData, AZ::RPI::RenderPassData>()->Version(1)->Field(
-                    "ShaderAsset", &TerrainClipmapGenerationPassData::m_shaderReference);
-            }
-        }
-
-        AZ::RPI::AssetReference m_shaderReference;
-    };
-
-    class TerrainClipmapGenerationPass
-        : public AZ::RPI::RenderPass
-        , private AZ::RPI::ShaderReloadNotificationBus::Handler
-    {
-        AZ_RPI_PASS(TerrainClipmapGenerationPass);
-
-    public:
-        AZ_RTTI(Terrain::TerrainClipmapGenerationPass, "{EA713973-1214-498C-BA05-A9A8B1AA99C7}", AZ::RPI::RenderPass);
-        AZ_CLASS_ALLOCATOR(Terrain::TerrainClipmapGenerationPass, AZ::SystemAllocator, 0);
-        virtual ~TerrainClipmapGenerationPass() = default;
-
-        void SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph) override;
-        void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
-        void BuildCommandListInternal(const AZ::RHI::FrameGraphExecuteContext& context) override;
-
-    protected:
-        TerrainClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
-
-        void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;
-        void OnShaderAssetReinitialized(const AZ::Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset) override;
-        void OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant& shaderVariant) override;
-
-        void LoadShader();
-
-        // Default draw SRG for using the shader option system's variant fallback key
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_drawSrg = nullptr;
-
-        // The draw item submitted by this pass
-        AZ::RHI::DispatchItem m_dispatchItem;
-
-        AZ::RPI::PassDescriptor m_passDescriptor;
-
-        // The compute shader that will be used by the pass
-        AZ::Data::Instance<AZ::RPI::Shader> m_shader = nullptr;
-    };
-
+    //! The compute pass to generate macro texture clipmaps.
+    //! DetailClipmapGenerationPass has images depending on this pass.
+    //! It will gather all the data from the macro materials into a clipmap stack.
     class TerrainMacroClipmapGenerationPass
-        : public TerrainClipmapGenerationPass
+        : public AZ::RPI::ComputePass
     {
         AZ_RPI_PASS(TerrainMacroClipmapGenerationPass);
 
     public:
-        AZ_RTTI(Terrain::TerrainMacroClipmapGenerationPass, "{E1F7C18F-E77A-496E-ABD7-1EC7D75AA4B0}", TerrainClipmapGenerationPass);
+        AZ_RTTI(Terrain::TerrainMacroClipmapGenerationPass, "{E1F7C18F-E77A-496E-ABD7-1EC7D75AA4B0}", AZ::RPI::ComputePass);
         AZ_CLASS_ALLOCATOR(Terrain::TerrainMacroClipmapGenerationPass, AZ::SystemAllocator, 0);
         virtual ~TerrainMacroClipmapGenerationPass() = default;
 
@@ -92,24 +39,32 @@ namespace Terrain
         void SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph) override;
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
 
+        //! Besides the standard enable flag,
+        //! the pass can be disabled by the case that no update is triggered.
+        bool IsEnabled() const override;
     private:
         TerrainMacroClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
 
+        //! Macro clipmap only contains color and normal. Bound as RW.
         AZ::RHI::ShaderInputNameIndex m_macroColorClipmapsIndex =
             TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::MacroColor];
         AZ::RHI::ShaderInputNameIndex m_macroNormalClipmapsIndex =
             TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::MacroNormal];
 
+        //! Flag to rebind clipmap images.
         bool m_needsUpdate = true;
     };
 
+    //! The compute pass to generate macro texture clipmaps.
+    //! It depends on MacroClipmapGenerationPass the generate macro color clipmaps first.
+    //! It will gather all the data from the detail materials into a clipmap stack.
     class TerrainDetailClipmapGenerationPass
-        : public TerrainClipmapGenerationPass
+        : public AZ::RPI::ComputePass
     {
         AZ_RPI_PASS(TerrainDetailClipmapGenerationPass);
 
     public:
-        AZ_RTTI(Terrain::TerrainDetailClipmapGenerationPass, "{BD504E93-87F4-484E-A17A-E337C3F2279C}", TerrainClipmapGenerationPass);
+        AZ_RTTI(Terrain::TerrainDetailClipmapGenerationPass, "{BD504E93-87F4-484E-A17A-E337C3F2279C}", AZ::RPI::ComputePass);
         AZ_CLASS_ALLOCATOR(Terrain::TerrainDetailClipmapGenerationPass, AZ::SystemAllocator, 0);
         virtual ~TerrainDetailClipmapGenerationPass() = default;
 
@@ -118,11 +73,16 @@ namespace Terrain
         void SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph) override;
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
 
+        //! Besides the standard enable flag,
+        //! the pass can be disabled by the case that no update is triggered.
+        bool IsEnabled() const override;
     private:
         TerrainDetailClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
 
+        //! It takes in all clipmaps including macro. Macro clipmaps are bound as RO and detail ones RW.
         AZ::RHI::ShaderInputNameIndex m_clipmapImageIndex[TerrainClipmapManager::ClipmapName::Count];
 
+        //! Flag to rebind clipmap images.
         bool m_needsUpdate = true;
     };
 } // namespace Terrain

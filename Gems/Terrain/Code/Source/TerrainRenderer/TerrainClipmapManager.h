@@ -18,6 +18,9 @@
 
 namespace Terrain
 {
+    //! Clipmap configuration to set basic properties of the clipmaps.
+    //! Derived properties will be automatically calculated based on the given data, including:
+    //! Precision of each clipmap level, depth of the clipmap stack.
     struct ClipmapConfiguration
     {
         AZ_CLASS_ALLOCATOR(ClipmapConfiguration, AZ::SystemAllocator, 0);
@@ -56,6 +59,9 @@ namespace Terrain
         uint32_t CalculateDetailClipmapStackSize() const;
     };
 
+    //! This class manages all terrain clipmaps' creation and update.
+    //! It should be owned by the TerrianFeature Processor and provide data and images
+    //! for the ClipmapGenerationPass and terrain forward rendering pass.
     class TerrainClipmapManager
     {
         friend class TerrainClipmapGenerationPass;
@@ -66,7 +72,7 @@ namespace Terrain
         TerrainClipmapManager();
         virtual ~TerrainClipmapManager() = default;
 
-        //! Clipmap name enums.
+        //! Name for each clipmap image.
         enum ClipmapName : uint32_t
         {
             MacroColor = 0,
@@ -108,13 +114,21 @@ namespace Terrain
         void ImportClipmap(ClipmapName clipmapName, AZ::RHI::FrameGraphAttachmentInterface attachmentDatabase) const;
         void UseClipmap(ClipmapName clipmapName, AZ::RHI::ScopeAttachmentAccess access, AZ::RHI::FrameGraphInterface frameGraph) const;
 
+        //! Get the clipmap images for passes using them.
         AZ::Data::Instance<AZ::RPI::AttachmentImage> GetClipmapImage(ClipmapName clipmapName) const;
 
         //! Get the dispatch thread num for the clipmap compute shader based on the current frame.
         void GetMacroDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
         void GetDetailDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
+
+        //! Returns if there are clipmap regions requiring update.
+        bool HasMacroClipmapUpdate() const;
+        bool HasDetailClipmapUpdate() const;
     private:
+        //! Update the C++ copy of the clipmap data. And will later be bound to the terrain SRG.
         void UpdateClipmapData(const AZ::Vector3& cameraPosition);
+
+        //! Initialzation functions.
         void InitializeClipmapBounds(const AZ::Vector2& center);
         void InitializeClipmapData();
         void InitializeClipmapImages();
@@ -176,18 +190,26 @@ namespace Terrain
 
         ClipmapData m_clipmapData;
 
+        //! They describe how clipmaps are initilized and updated.
+        //! Data will be gathered from them when camera moves.
         AZStd::vector<ClipmapBounds> m_macroClipmapBounds;
         AZStd::vector<ClipmapBounds> m_detailClipmapBounds;
 
+        //! Terrain SRG input.
         AZ::RHI::ShaderInputNameIndex m_terrainSrgClipmapDataIndex = ClipmapDataShaderInput;
         AZ::RHI::ShaderInputNameIndex m_terrainSrgClipmapImageIndex[ClipmapName::Count];
 
+        //! Clipmap images.
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_clipmaps[ClipmapName::Count];
 
+        //! The actual stack size calculated from the configuration.
         uint32_t m_macroClipmapStackSize;
         uint32_t m_detailClipmapStackSize;
 
+        //! Clipmap config that sets basic properties of the clipmaps.
         ClipmapConfiguration m_config;
+
+        //! Flag used to refresh the class and prevent doule initialization.
         bool m_isInitialized = false;
         bool m_firstTimeUpdate = true;
 

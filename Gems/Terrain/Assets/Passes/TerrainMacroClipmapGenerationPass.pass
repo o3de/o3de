@@ -7,7 +7,7 @@
             "Name": "TerrainMacroClipmapGenerationPassTemplate",
             "PassClass": "TerrainMacroClipmapGenerationPass",
             "PassData": {
-                "$type": "TerrainClipmapGenerationPassData",
+                "$type": "ComputePassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/Terrain/TerrainMacroClipmapGenerationPass.shader"
                 },
