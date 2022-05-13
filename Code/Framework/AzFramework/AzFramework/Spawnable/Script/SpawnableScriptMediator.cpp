@@ -6,6 +6,8 @@
  *
  */
 
+#include "SpawnableScriptMediator.h"
+
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptBus.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
@@ -48,12 +50,13 @@ namespace AzFramework::Scripts
     }
 
     SpawnableScriptMediator::SpawnableScriptMediator()
-        : m_ptr(this)
+        : m_ptr(new Ptr)
     {
     }
 
     SpawnableScriptMediator::~SpawnableScriptMediator()
     {
+        m_ptr.reset();
         Clear();
     }
 
@@ -102,7 +105,7 @@ namespace AzFramework::Scripts
             return false;
         }
 
-        AZStd::weak_ptr<SpawnableScriptMediator> weakPtr = m_ptr;
+        AZStd::weak_ptr<Ptr> weakPtr = m_ptr;
         auto preSpawnCB = [weakPtr, parentId, translation, rotation, scale]
             ([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableEntityContainerView view)
         {
@@ -125,11 +128,10 @@ namespace AzFramework::Scripts
         };
 
         auto spawnCompleteCB =
-            [weakPtr, spawnTicket]
+            [this, weakPtr, spawnTicket]
             ([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableConstEntityContainerView view)
         {
-            const auto mediator = weakPtr.lock();
-            if (!mediator)
+            if (!weakPtr.lock())
             {
                 return;
             }
@@ -142,7 +144,7 @@ namespace AzFramework::Scripts
             {
                 spawnResult.m_entityList.emplace_back(entity->GetId());
             }
-            mediator->QueueProcessResult(spawnResult);
+            QueueProcessResult(spawnResult);
         };
 
         SpawnAllEntitiesOptionalArgs optionalArgs;
@@ -161,12 +163,11 @@ namespace AzFramework::Scripts
             return false;
         }
 
-        AZStd::weak_ptr<SpawnableScriptMediator> weakPtr = m_ptr;
-        auto despawnCompleteCB = [weakPtr, spawnTicket]
+        AZStd::weak_ptr<Ptr> weakPtr = m_ptr;
+        auto despawnCompleteCB = [this, weakPtr, spawnTicket]
             ([[maybe_unused]] EntitySpawnTicket::Id ticketId)
         {
-            const auto mediator = weakPtr.lock();
-            if (!mediator)
+            if (!weakPtr.lock())
             {
                 return;
             }
@@ -174,7 +175,7 @@ namespace AzFramework::Scripts
             // and to provide easier access to it in OnDespawn callback
             DespawnResult despawnResult;
             despawnResult.m_spawnTicket = spawnTicket;
-            mediator->QueueProcessResult(despawnResult);
+            QueueProcessResult(despawnResult);
         };
 
         DespawnAllEntitiesOptionalArgs optionalArgs;
