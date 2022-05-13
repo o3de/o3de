@@ -25,7 +25,7 @@ namespace AzFramework::Scripts
 
         inline static constexpr const char* RootSpawnableRegistryKey = "/Amazon/AzCore/Bootstrap/RootSpawnable";
 
-        SpawnableScriptMediator() = default;
+        SpawnableScriptMediator();
         ~SpawnableScriptMediator();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -74,5 +74,6 @@ namespace AzFramework::Scripts
 
         AZStd::vector<ResultCommand> m_resultCommands;
         AZStd::recursive_mutex m_mutex;
+        AZStd::shared_ptr<SpawnableScriptMediator> m_ptr;
     };
 } // namespace AzFramework

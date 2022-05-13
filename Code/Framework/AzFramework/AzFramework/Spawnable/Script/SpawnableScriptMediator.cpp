@@ -47,6 +47,11 @@ namespace AzFramework::Scripts
         }
     }
 
+    SpawnableScriptMediator::SpawnableScriptMediator()
+        : m_ptr(this)
+    {
+    }
+
     SpawnableScriptMediator::~SpawnableScriptMediator()
     {
         Clear();
@@ -97,10 +102,14 @@ namespace AzFramework::Scripts
             return false;
         }
 
-        auto preSpawnCB = [parentId, translation, rotation, scale](
-                              [[maybe_unused]] EntitySpawnTicket::Id ticketId,
-            SpawnableEntityContainerView view)
+        AZStd::weak_ptr<SpawnableScriptMediator> weakPtr = m_ptr;
+        auto preSpawnCB = [weakPtr, parentId, translation, rotation, scale]
+            ([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableEntityContainerView view)
         {
+            if (!weakPtr.lock())
+            {
+                return;
+            }
             AZ::Entity* containerEntity = *view.begin();
             TransformComponent* entityTransform = containerEntity->FindComponent<TransformComponent>();
 
@@ -116,9 +125,14 @@ namespace AzFramework::Scripts
         };
 
         auto spawnCompleteCB =
-            [this,
-             spawnTicket]([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableConstEntityContainerView view)
+            [weakPtr, spawnTicket]
+            ([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableConstEntityContainerView view)
         {
+            const auto mediator = weakPtr.lock();
+            if (!mediator)
+            {
+                return;
+            }
             SpawnResult spawnResult;
             // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
             // and to provide easier access to it in OnSpawnCompleted callback
@@ -128,7 +142,7 @@ namespace AzFramework::Scripts
             {
                 spawnResult.m_entityList.emplace_back(entity->GetId());
             }
-            QueueProcessResult(spawnResult);
+            mediator->QueueProcessResult(spawnResult);
         };
 
         SpawnAllEntitiesOptionalArgs optionalArgs;
@@ -147,13 +161,20 @@ namespace AzFramework::Scripts
             return false;
         }
 
-        auto despawnCompleteCB = [this, spawnTicket]([[maybe_unused]] EntitySpawnTicket::Id ticketId)
+        AZStd::weak_ptr<SpawnableScriptMediator> weakPtr = m_ptr;
+        auto despawnCompleteCB = [weakPtr, spawnTicket]
+            ([[maybe_unused]] EntitySpawnTicket::Id ticketId)
         {
+            const auto mediator = weakPtr.lock();
+            if (!mediator)
+            {
+                return;
+            }
             // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
             // and to provide easier access to it in OnDespawn callback
             DespawnResult despawnResult;
             despawnResult.m_spawnTicket = spawnTicket;
-            QueueProcessResult(despawnResult);
+            mediator->QueueProcessResult(despawnResult);
         };
 
         DespawnAllEntitiesOptionalArgs optionalArgs;
