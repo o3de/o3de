@@ -13,6 +13,8 @@
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
 #include <AzCore/IO/Streamer/StorageDrive_Windows.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <AzCore/std/typetraits/decay.h>
 #include <AzCore/std/typetraits/is_unsigned.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -66,6 +68,7 @@ namespace AZ::IO
     StorageDriveWin::StorageDriveWin(const AZStd::vector<AZStd::string_view>& drivePaths, u32 maxFileHandles, u32 maxMetaDataCacheEntries,
         size_t physicalSectorSize, size_t logicalSectorSize, u32 ioChannelCount, s32 overCommit, ConstructionOptions options)
         : m_metaDataCache_recentlyUsed(maxMetaDataCacheEntries)
+        , m_taskExecutor(AZ::TaskExecutor::Instance())
         , m_maxFileHandles(maxFileHandles)
         , m_physicalSectorSize(physicalSectorSize)
         , m_logicalSectorSize(logicalSectorSize)
@@ -149,6 +152,10 @@ namespace AZ::IO
 
         m_metaDataCache_paths.resize(maxMetaDataCacheEntries);
         m_metaDataCache_fileSize.resize(maxMetaDataCacheEntries);
+
+        // Initialize read request task descriptor
+        m_readTaskDescriptor.taskName = "WinAPI ReadFile";
+        m_readTaskDescriptor.taskGroup = "AZ::IO:Streamer";         
     }
 
     StorageDriveWin::~StorageDriveWin()
@@ -241,11 +248,13 @@ namespace AZ::IO
         bool hasFinalizedReads = FinalizeReads();
         bool hasWorked = false;
 
+        TaskGraph readTasks;
+
         // Queue as many read requests as possible in order to maximize throughput.
         while (!m_pendingReadRequests.empty())
         {
             FileRequest* request = m_pendingReadRequests.front();
-            if (ReadRequest(request))
+            if (ReadRequest(request, readTasks))
             {
                 m_pendingReadRequests.pop_front();
                 hasWorked = true;
@@ -256,6 +265,11 @@ namespace AZ::IO
             }
         }
 
+        if (hasWorked && !readTasks.IsEmpty())
+        {
+            readTasks.Detach();
+            readTasks.SubmitOnExecutor(m_taskExecutor);
+        }
         // Pick up one other synchronous request if no read requests were issued.
         if (!hasWorked && !m_pendingRequests.empty())
         {
@@ -524,7 +538,7 @@ namespace AZ::IO
         return OpenFileResult::FileOpened;
     }
 
-    bool StorageDriveWin::ReadRequest(FileRequest* request)
+    bool StorageDriveWin::ReadRequest(FileRequest* request, TaskGraph& tasks)
     {
         AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
 
@@ -536,7 +550,7 @@ namespace AZ::IO
             m_fileCache_activeReads.resize(m_maxFileHandles, 0);
 
             m_readSlots_readInfo.resize(m_ioChannelCount);
-            m_readSlots_statusInfo.resize(m_ioChannelCount);
+            m_readSlots_statusInfo = AZStd::make_unique<FileReadStatus[]>(m_ioChannelCount);
             m_readSlots_active.resize(m_ioChannelCount);
 
             m_cachesInitialized = true;
@@ -550,10 +564,10 @@ namespace AZ::IO
         size_t readSlot = FindAvailableReadSlot();
         AZ_Assert(readSlot != InvalidReadSlotIndex, "Active read slot count indicates there's a read slot available, but no read slot was found.");
 
-        return ReadRequest(request, readSlot);
+        return ReadRequest(request, readSlot, tasks);
     }
 
-    bool StorageDriveWin::ReadRequest(FileRequest* request, size_t readSlot)
+    bool StorageDriveWin::ReadRequest(FileRequest* request, size_t readSlot, [[maybe_unused]]TaskGraph& tasks)
     {
         AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
 
@@ -674,33 +688,36 @@ namespace AZ::IO
         overlapped->hEvent = m_context->GetStreamerThreadSynchronizer().CreateEventHandle();
         readStatus.m_fileHandleIndex = fileCacheSlot;
 
-        bool result = false;
         {
             AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest ::ReadFile");
-            result = ::ReadFile(file, output, readSize, nullptr, overlapped);
-        }
-
-        if (!result)
-        {
-            DWORD error = ::GetLastError();
-            if (error != ERROR_IO_PENDING)
-            {
-                AZ_Warning("StorageDriveWin", false, "::ReadFile failed with error: %u\n", error);
-
-                m_context->GetStreamerThreadSynchronizer().DestroyEventHandle(overlapped->hEvent);
-
-                // Finish the request since this drive opened the file handle but the read failed.
-                request->SetStatus(IStreamerTypes::RequestStatus::Failed);
-                m_context->MarkRequestAsCompleted(request);
-                readInfo.Clear();
-                return true;
-            }
-        }
-        else
-        {
-            // If this scope is reached, it means that ::ReadFile processed the read synchronously.  This can happen if
-            // the OS already had the file in the cache.  The OVERLAPPED struct will still be filled out so we proceed as
-            // if the read was fully asynchronous.
+            tasks.AddTask(
+                m_readTaskDescriptor,
+                [this, file, output, readSize, overlapped, state = &readStatus.m_requestState]()
+                {
+                    AZ_PROFILE_SCOPE(AzCore, "::ReadFile WinAPI.");
+                    if (!::ReadFile(file, output, readSize, nullptr, overlapped))
+                    {
+                        DWORD error = ::GetLastError();
+                        if (error == ERROR_IO_PENDING)
+                        {
+                            *state = FileReadStatus::RequestState::SuccessfullyStarted;
+                            // The scheduler thread will be woken up by the OS when the read completes.
+                        }
+                        else
+                        {
+                            *state = FileReadStatus::RequestState::Error;
+                            m_context->WakeUpSchedulingThread();
+                        }
+                    }
+                    else
+                    {
+                        // If this scope is reached, it means that ::ReadFile processed the read synchronously.  This can happen if
+                        // the OS already had the file in the cache. The OVERLAPPED struct will still be filled out so we proceed as
+                        // if the read was fully asynchronous.
+                        *state = FileReadStatus::RequestState::SuccessfullyStarted;
+                        m_context->WakeUpSchedulingThread();
+                    }
+                });
         }
 
         auto now = AZStd::chrono::system_clock::now();
@@ -977,6 +994,8 @@ namespace AZ::IO
     {
         AZ_PROFILE_FUNCTION(AzCore);
 
+        TaskGraph readTasks;
+
         bool hasWorked = false;
         for (size_t readSlot = 0; readSlot < m_readSlots_active.size(); ++readSlot)
         {
@@ -984,34 +1003,55 @@ namespace AZ::IO
             {
                 FileReadStatus& status = m_readSlots_statusInfo[readSlot];
 
-                if (HasOverlappedIoCompleted(&status.m_overlapped))
+                if (status.m_requestState != FileReadStatus::RequestState::NotStarted)
                 {
-                    DWORD bytesTransferred = 0;
-                    BOOL result = ::GetOverlappedResult(m_fileCache_handles[status.m_fileHandleIndex],
-                        &status.m_overlapped, &bytesTransferred, FALSE);
-                    DWORD error = ::GetLastError();
-
-                    if (result || error == ERROR_OPERATION_ABORTED)
+                    if (status.m_requestState == FileReadStatus::RequestState::Error)
                     {
-                        hasWorked = true;
-                        constexpr bool encounteredError = false;
-                        FinalizeSingleRequest(status, readSlot, bytesTransferred, error == ERROR_OPERATION_ABORTED, encounteredError);
-                    }
-                    else if (error != ERROR_IO_PENDING && error != ERROR_IO_INCOMPLETE)
-                    {
-                        AZ_Error("StorageDriveWin", false, "Async file read operation completed with extended error code %u\n", error);
+                        AZ_Error("StorageDriveWin", false, "Async file read operation failed to queue a read request with the OS.\n");
                         hasWorked = true;
                         constexpr bool encounteredError = true;
-                        FinalizeSingleRequest(status, readSlot, bytesTransferred, false, encounteredError);
+                        constexpr bool isCanceled = false;
+                        FinalizeSingleRequest(status, readSlot, 0, isCanceled, encounteredError, readTasks);
+                        status.m_requestState = FileReadStatus::RequestState::NotStarted;
+                    }
+                    else if (HasOverlappedIoCompleted(&status.m_overlapped))
+                    {
+                        DWORD bytesTransferred = 0;
+                        BOOL result = ::GetOverlappedResult(
+                            m_fileCache_handles[status.m_fileHandleIndex], &status.m_overlapped, &bytesTransferred, FALSE);
+                        DWORD error = ::GetLastError();
+
+                        if (result || error == ERROR_OPERATION_ABORTED)
+                        {
+                            hasWorked = true;
+                            constexpr bool encounteredError = false;
+                            FinalizeSingleRequest(
+                                status, readSlot, bytesTransferred, error == ERROR_OPERATION_ABORTED, encounteredError, readTasks);
+                        }
+                        else if (error != ERROR_IO_PENDING && error != ERROR_IO_INCOMPLETE)
+                        {
+                            AZ_Error("StorageDriveWin", false, "Async file read operation completed with extended error code %u\n", error);
+                            hasWorked = true;
+                            constexpr bool encounteredError = true;
+                            constexpr bool isCanceled = false;
+                            FinalizeSingleRequest(status, readSlot, bytesTransferred, false, encounteredError, readTasks);
+                        }
+                        status.m_requestState = FileReadStatus::RequestState::NotStarted;
                     }
                 }
             }
         }
+
+        if (hasWorked && !readTasks.IsEmpty())
+        {
+            readTasks.Detach();
+            readTasks.SubmitOnExecutor(m_taskExecutor);
+        }
         return hasWorked;
     }
 
-    void StorageDriveWin::FinalizeSingleRequest(FileReadStatus& status, size_t readSlot, DWORD numBytesTransferred,
-        bool isCanceled, bool encounteredError)
+    void StorageDriveWin::FinalizeSingleRequest(
+        FileReadStatus& status, size_t readSlot, DWORD numBytesTransferred, bool isCanceled, bool encounteredError, TaskGraph& readTasks)
     {
         m_activeReads_ByteCount += numBytesTransferred;
         if (--m_activeReads_Count == 0)
@@ -1057,7 +1097,7 @@ namespace AZ::IO
         if (!m_pendingReadRequests.empty())
         {
             FileRequest* request = m_pendingReadRequests.front();
-            if (ReadRequest(request, readSlot))
+            if (ReadRequest(request, readSlot, readTasks))
             {
                 m_pendingReadRequests.pop_front();
             }

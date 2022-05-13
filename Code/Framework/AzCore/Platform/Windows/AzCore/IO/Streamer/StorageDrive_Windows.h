@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Task/TaskDescriptor.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/Streamer/RecentlyUsedIndex.h>
@@ -18,9 +19,16 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Statistics/RunningStatistic.h>
+
+namespace AZ
+{
+    class TaskExecutor;
+    class TaskGraph;
+}
 
 namespace AZ::IO::Requests
 {
@@ -100,8 +108,15 @@ namespace AZ::IO
 
         struct FileReadStatus
         {
+            enum class RequestState : u8
+            {
+                NotStarted,
+                SuccessfullyStarted,
+                Error
+            };
             OVERLAPPED m_overlapped{};
             u32 m_fileHandleIndex{ InvalidFileCacheIndex };
+            AZStd::atomic<RequestState> m_requestState{ RequestState::NotStarted };
         };
 
         struct FileReadInformation
@@ -123,8 +138,8 @@ namespace AZ::IO
         };
 
         OpenFileResult OpenFile(HANDLE& fileHandle, u32& cacheSlot, FileRequest* request, const Requests::ReadData& data);
-        bool ReadRequest(FileRequest* request);
-        bool ReadRequest(FileRequest* request, size_t readSlot);
+        bool ReadRequest(FileRequest* request, TaskGraph& tasks);
+        bool ReadRequest(FileRequest* request, size_t readSlot, TaskGraph& tasks);
         bool CancelRequest(FileRequest* cancelRequest, FileRequestPtr& target);
         void FileExistsRequest(FileRequest* request);
         void FileMetaDataRetrievalRequest(FileRequest* request);
@@ -144,8 +159,13 @@ namespace AZ::IO
         void FlushEntireCache();
 
         bool FinalizeReads();
-        void FinalizeSingleRequest(FileReadStatus& status, size_t readSlot, DWORD numBytesTransferred,
-            bool isCanceled, bool encounteredError);
+        void FinalizeSingleRequest(
+            FileReadStatus& status,
+            size_t readSlot,
+            DWORD numBytesTransferred,
+            bool isCanceled,
+            bool encounteredError,
+            TaskGraph& readTasks);
 
         void Report(const Requests::ReportData& data) const;
 
@@ -165,7 +185,7 @@ namespace AZ::IO
         AZStd::deque<FileRequest*> m_pendingRequests;
 
         AZStd::vector<FileReadInformation> m_readSlots_readInfo;
-        AZStd::vector<FileReadStatus> m_readSlots_statusInfo;
+        AZStd::unique_ptr<FileReadStatus[]> m_readSlots_statusInfo;
         AZStd::vector<bool> m_readSlots_active;
 
         RecentlyUsedFileIndex m_fileCache_recentlyUsed;
@@ -178,6 +198,9 @@ namespace AZ::IO
         AZStd::vector<u64> m_metaDataCache_fileSize;
 
         AZStd::vector<AZStd::string> m_drivePaths;
+
+        AZ::TaskDescriptor m_readTaskDescriptor;
+        AZ::TaskExecutor& m_taskExecutor;
 
         size_t m_activeReads_ByteCount{ 0 };
 
