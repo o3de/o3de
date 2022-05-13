@@ -5,7 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/Features/SrgSemantics.azsli>
+#define ENABLE_ATMOSPHERE_SHADOWS 0
+
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <SkyAtmosphereCommon.azsli>
 

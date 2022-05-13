@@ -40,8 +40,27 @@
                             "Depth"
                         ]
                     }
-                }
+                },
 
+                //------------- Shadowing Resources -------------
+                {
+                    "Name": "DirectionalShadowmap",
+                    "ShaderInputName": "m_directionalLightShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "ShaderInputName": "m_directionalLightExponentialShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                }
             ],
             "PassData": {
                 "$type": "FullscreenTrianglePassData",

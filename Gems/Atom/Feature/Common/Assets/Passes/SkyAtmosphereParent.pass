@@ -9,6 +9,14 @@
             "PassClass": "SkyAtmosphereParentPass",
             "Slots": [
                 {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "SlotType": "Input"
+                },
+                {
                     "Name": "SpecularInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"

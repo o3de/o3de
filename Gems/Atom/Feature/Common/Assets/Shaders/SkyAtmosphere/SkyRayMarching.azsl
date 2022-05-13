@@ -6,27 +6,22 @@
  *
  */
 
-#include <viewsrg.srgi>
 
+#define ENABLE_ATMOSPHERE_SHADOWS 1
+
+#include <viewsrg.srgi>
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
+
 #include <SkyAtmosphereCommon.azsli>
+
 
 struct RayMarchPixelOutputStruct
 {
 	float4 m_luminance : SV_Target0;
 	float4 m_reflection : SV_Target1;
 };
-
-float3 ScreenToWorldPosition(in float2 uv, in float depth)
-{
-	float2 ndcPos = float2(uv.x, 1.0f - uv.y) * 2.0f - 1.0f;
-	float4 projectedPos = float4(ndcPos, depth, 1.0f);
-	float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, projectedPos);
-	positionWS /= positionWS.w;
-	return  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
-}
 
 RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV_SampleIndex)
 {
@@ -36,13 +31,12 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 
 	// atmosphere units are km, but world units are meters
 	const float worldScale = 0.001f;
-	const float invWorldScale = 1.0 / worldScale;
     const float exposure = 20.0;
 	float3 luminance = 0;
 
 	// see ReflectionScreenSpaceComposite.azsl for example of reconstructing coords
 	float2 screenCoords = Input.m_position.xy;
-    float depth = AtmosParamsSRG::m_depth.Load(screenCoords, sampleIndex).r;
+    float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
 
 	float2 ndcPos = float2(Input.m_texCoord.x, 1.0f - Input.m_texCoord.y) * 2.0f - 1.0f;
 	float4 projectedPos = float4(ndcPos, depth, 1.0f);
@@ -50,36 +44,38 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 	positionWS /= positionWS.w;
 
 	float3 viewToPosition =  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
+	const float worldDepthKm = length(viewToPosition) * worldScale;
 	float3 worldDir = normalize(viewToPosition);
-	// Atmosphere.PlanetOrigin is in KM already
-	float3 worldPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
 
-	float worldDepth = depth * invWorldScale;
+	// Atmosphere.PlanetOrigin is in KM already
+	// cameraPlanetPosKm is relative to the planet origin
+	float3 cameraPlanetPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
+
 	if (depth == 0.0f)
 	{
 		// nothing is obstructing, add any luminance from the sun
-		luminance = GetSunLuminance(worldPosKm, worldDir, Atmosphere.BottomRadius);
+		luminance = GetSunLuminance(cameraPlanetPosKm, worldDir, Atmosphere.BottomRadius);
 
-		if(AtmosParamsSRG::m_constants.m_fastSkyEnabled > 0.0f)
+		if(PassSrg::m_constants.m_fastSkyEnabled > 0.0f)
 		{
-			float viewHeight = length(worldPosKm);
+			float viewHeight = length(cameraPlanetPosKm);
 			if(viewHeight < Atmosphere.TopRadius)
 			{
 				float2 uv;
-				float3 upVector = normalize(worldPosKm);
+				float3 upVector = normalize(cameraPlanetPosKm);
 				float viewZenithCosAngle = dot(worldDir, upVector);
 
 				float3 sideVector = normalize(cross(upVector, worldDir));		// assumes non parallel vectors
 				float3 forwardVector = normalize(cross(sideVector, upVector));	// aligns toward the sun light but perpendicular to up vector
-				float2 lightOnPlane = float2(dot(AtmosParamsSRG::m_constants.m_sunDirection, forwardVector), dot(AtmosParamsSRG::m_constants.m_sunDirection, sideVector));
+				float2 lightOnPlane = float2(dot(PassSrg::m_constants.m_sunDirection, forwardVector), dot(PassSrg::m_constants.m_sunDirection, sideVector));
 				lightOnPlane = normalize(lightOnPlane);
 				float lightViewCosAngle = lightOnPlane.x;
 
-				const bool intersectGround = raySphereIntersectNearest(worldPosKm, worldDir, float3(0, 0, 0), Atmosphere.BottomRadius) >= 0.0f;
+				const bool intersectGround = raySphereIntersectNearest(cameraPlanetPosKm, worldDir, float3(0, 0, 0), Atmosphere.BottomRadius) >= 0.0f;
 
 				SkyViewLutParamsToUv(Atmosphere, intersectGround, viewZenithCosAngle, lightViewCosAngle, viewHeight, uv);
 
-				luminance += AtmosParamsSRG::m_skyViewLUT.SampleLevel(AtmosParamsSRG::samplerLinearClamp, uv, 0).rgb;
+				luminance += PassSrg::m_skyViewLUT.SampleLevel(PassSrg::samplerLinearClamp, uv, 0).rgb;
 
 				// not sure we need to apply exposure here
 				output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0);
@@ -91,11 +87,13 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 
 	// when outside the atmosphere, this moves worldPosKM to the 
 	// start of the atmosphere, unless the entire ray never intersects
-	if (!MoveToTopAtmosphere(worldPosKm, worldDir, Atmosphere.TopRadius))
+	float distanceToTop = 0.f;
+	if (!MoveToTopAtmosphere(cameraPlanetPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, worldDepthKm))
 	{
 		// Ray is not intersecting the atmosphere
 		output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0);
 		output.m_reflection = output.m_luminance;
+		//output.m_reflection = float4(1.0,worldDepthKm,worldDepthKm,worldDepthKm);
 		return output;
 	}
 
@@ -103,20 +101,29 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 	float maxTraceDepth = 9000000.0f; 
 	if (depth > 0.0f)
 	{
-		maxTraceDepth = min(length(viewToPosition) * worldScale, maxTraceDepth);
+		const float3 viewToPositionKm = viewToPosition * worldScale;
+		// the camera was moved so we start tracing at the atmosphere start
+		//const float3 offset = cameraPlanetPosKm - cameraOriginalPosKm;
+		//maxTraceDepth = min(length(viewToPositionKm - offset), maxTraceDepth);
+		maxTraceDepth = min(length(viewToPositionKm) - distanceToTop, maxTraceDepth);
+
+		//maxTraceDepth = min(length(positionWS.xyz * worldScale - (cameraPlanetPosKm + float3(0.0, 0.0, -Atmosphere.BottomRadius))), maxTraceDepth);
+		//maxTraceDepth = length(cameraPlanetPosKm - oldPos);
 	}
 
-	const bool ground = false; 
+	const bool ground = true; 
 	const float sampleCountIni = 14.0f;
 	const bool variableSampleCount = true;
 	const bool mieRayPhase = true;
 
-	SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, Input.m_texCoord, worldPosKm, worldDir, AtmosParamsSRG::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
+	SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, Input.m_texCoord, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
 	luminance += ss.L;
 	const float Transmittance = dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
 
 	output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0 - Transmittance);
 	output.m_reflection = output.m_luminance;
+	//output.m_reflection = float4(maxTraceDepth,maxTraceDepth,maxTraceDepth,maxTraceDepth);
+	//output.m_reflection = float4(worldDepthKm,1.0,worldDepthKm,worldDepthKm);
 	return output;
 }
 

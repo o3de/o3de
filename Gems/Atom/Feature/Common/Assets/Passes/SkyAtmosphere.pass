@@ -27,6 +27,14 @@
                             "Depth"
                         ]
                     }
+                },
+                {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "SlotType": "Input"
                 }
             ],
             "PassRequests": [
@@ -45,6 +53,20 @@
                             "AttachmentRef": {
                                 "Pass": "SkyTransmittanceLUTPass",
                                 "Attachment": "SkyTransmittanceLUTOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
                             }
                         }
                     ]
@@ -87,6 +109,20 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SkyBoxDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
                             }
                         }
                     ]

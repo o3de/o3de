@@ -43,6 +43,15 @@ namespace AZ::Render
         passConnection.m_attachmentRef.m_attachment = Name{ "SkyBoxDepth" };
         childRequest.m_connections.emplace_back(passConnection);
 
+        passConnection.m_localSlot = Name{ "DirectionalShadowmap" };
+        passConnection.m_attachmentRef.m_attachment = Name{ "DirectionalShadowmap" };
+        childRequest.m_connections.emplace_back(passConnection);
+
+        passConnection.m_localSlot = Name{ "DirectionalESM" };
+        passConnection.m_attachmentRef.m_attachment = Name{ "DirectionalESM" };
+        childRequest.m_connections.emplace_back(passConnection);
+
+
         // Get the template
         const AZStd::shared_ptr<const RPI::PassTemplate> childTemplate =
             RPI::PassSystemInterface::Get()->GetPassTemplate(childRequest.m_templateName);

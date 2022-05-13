@@ -1,0 +1,11 @@
+{
+    "Shader" : "SkyRayMarching.shader",
+    "Variants" : [
+        {
+            "StableId": 1,
+            "Options": {
+                "o_enableShadows": "true"
+            }
+        }
+    ]
+}

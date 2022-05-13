@@ -6,6 +6,8 @@
  *
  */
 
+#define ENABLE_ATMOSPHERE_SHADOWS 1
+
 #include <viewsrg.srgi>
 
 #include <Atom/Features/SrgSemantics.azsli>
@@ -32,6 +34,7 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
 	positionWS /= positionWS.w;
 
 	float3 worldDir = normalize(positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition);
+    const float worldDepthKm = length(worldDir);
 	float3 worldPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
 	float viewHeight = length(worldPosKm);
 
@@ -40,7 +43,7 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
 	UvToSkyViewLutParams(Atmosphere, viewZenithCosAngle, lightViewCosAngle, viewHeight, Input.m_texCoord.xy);
 
     float3 upVector = worldPosKm / viewHeight;
-    float sunZenithCosAngle = dot(upVector, AtmosParamsSRG::m_constants.m_sunDirection);
+    float sunZenithCosAngle = dot(upVector, PassSrg::m_constants.m_sunDirection);
     float3 sunDir = normalize(float3(sqrt(1.0 - sunZenithCosAngle * sunZenithCosAngle), 0.0, sunZenithCosAngle));
 
 	worldPosKm = float3(0.0f, 0.0f, viewHeight);
@@ -51,7 +54,8 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
 		viewZenithSinAngle * sqrt(1.0 - lightViewCosAngle * lightViewCosAngle),
 		viewZenithCosAngle);
 
-	if (!MoveToTopAtmosphere(worldPosKm, worldDir, Atmosphere.TopRadius))
+    float distanceToTop = 0.f;
+	if (!MoveToTopAtmosphere(worldPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, worldDepthKm))
 	{
 		// ray does not intersect the atmosphere
 	    OUT.m_skyViewLut = float4(0, 0, 0, 1);
