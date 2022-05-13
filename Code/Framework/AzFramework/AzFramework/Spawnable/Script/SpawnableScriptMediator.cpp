@@ -6,8 +6,6 @@
  *
  */
 
-#include "SpawnableScriptMediator.h"
-
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptBus.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
