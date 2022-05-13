@@ -29,55 +29,82 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 #os.environ['PYTHONINSPECT'] = 'True'
-_START = timeit.default_timer() # start tracking
-
 # global scope
 _MODULENAME = 'Tools.DCC.Blender.start'
-_LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 
-#os.environ['PYTHONINSPECT'] = 'True'
-_MODULE_PATH = os.path.abspath(__file__)
-# -------------------------------------------------------------------------
+_START = timeit.default_timer() # start tracking
 
-
-# -------------------------------------------------------------------------
-# Maya is frozen
-#_MODULE_PATH = Path(__file__)
-# https://tinyurl.com/y49t3zzn
-# module path when frozen
-_MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
-_LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH.as_posix()))
-
-_PATH_DCCSI_TOOLS_BLENDER = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS_BLENDER = Path(os.getenv('PATH_DCCSI_TOOLS_BLENDER',
-                                           _PATH_DCCSI_TOOLS_BLENDER.as_posix()))
-
-# we don't have access yet to the DCCsi Lib\site-packages
-# (1) this will give us import access to dccsi.azpy (always?)
-# (2) this allows it to be set as ENVAR
-_PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS_BLENDER.parent.parent.parent)
-_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
+# we need to set up basic access to the DCCsi
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_PATH_DCCSIG = Path(_MODULE_PATH, '../../../..').resolve()
 site.addsitedir(_PATH_DCCSIG.as_posix())
 
-from Tools.DCC.Blender.constants import STR_PATH_DCCSI_PYTHON_LIB
+# set envar so DCCsi synthetic env bootstraps with it (config.py)
+from azpy.constants import ENVAR_PATH_DCCSIG
+_PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG,
+                              _PATH_DCCSIG.as_posix()))
 
-# override based on current executable
-_PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
-                                                         sys.version_info.major,
-                                                         sys.version_info.minor)
-_PATH_DCCSI_PYTHON_LIB = Path(_PATH_DCCSI_PYTHON_LIB)
-site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
+from azpy.constants import FRMT_LOG_LONG
+_logging.basicConfig(level=_logging.DEBUG,
+                     format=FRMT_LOG_LONG,
+                    datefmt='%m-%d %H:%M')
 
-# import others
-from Tools.DCC.Blender.constants import DCCSI_BLENDER_EXE
-from Tools.DCC.Blender.constants import DCCSI_BLENDER_LAUNCHER
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug(f'Initializing: {_MODULENAME}')
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
+_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG.as_posix()}')
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# now we have dccsi azpy api access
+from azpy.env_bool import env_bool
+from azpy.constants import ENVAR_DCCSI_GDEBUG
+from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import ENVAR_DCCSI_LOGLEVEL
+from azpy.constants import ENVAR_DCCSI_GDEBUGGER
+from azpy.constants import FRMT_LOG_LONG   
+
+# these allow these ENVARs to be set externally
+# defaults can be overriden/forced here for development
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
+_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# default local dccsi related paths for Blender
+# the constants module doesn't set these as ENVARs, so we can do that here.
+# these defaults could then be picked up in boostrap.py and/or config.py
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS
+from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS
+os.environ[ENVAR_PATH_DCCSI_TOOLS] = PATH_DCCSI_TOOLS.as_posix()
+
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS_DCC
+from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS_DCC
+os.environ[ENVAR_PATH_DCCSI_TOOLS_DCC] = PATH_DCCSI_TOOLS_DCC.as_posix()
+
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS_BLENDER
+from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS_BLENDER
+os.environ[ENVAR_PATH_DCCSI_TOOLS_BLENDER] = PATH_DCCSI_TOOLS_BLENDER.as_posix()
+
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_VERSION
+from Tools.DCC.Blender.constants import TAG_DCCSI_BLENDER_VERSION
+os.environ[ENVAR_DCCSI_BLENDER_VERSION] = TAG_DCCSI_BLENDER_VERSION
+
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_LOC
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOC
+os.environ[ENVAR_PATH_DCCSI_BLENDER_LOC] = PATH_DCCSI_BLENDER_LOC.as_posix()
+
+from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_EXE
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_EXE
+os.environ[ENVAR_PATH_DCCSI_BLENDER_EXE] = PATH_DCCSI_BLENDER_EXE.as_posix()
+
+from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
 from Tools.DCC.Blender.constants import DCCSI_BLENDER_PY_EXE
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-
+os.environ[ENVAR_DCCSI_BLENDER_PY_EXE] = DCCSI_BLENDER_PY_EXE.as_posix()
 
 # --- END -----------------------------------------------------------------
 
@@ -86,17 +113,8 @@ from Tools.DCC.Blender.constants import DCCSI_BLENDER_PY_EXE
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as main (external commandline)"""
-    
-    #os.environ['PYTHONINSPECT'] = 'True'
-    
+    """Run this file as main (external commandline)"""    
     STR_CROSSBAR = f"{'-' * 74}"
-    
-    _DCCSI_GDEBUG = False
-    _DCCSI_DEV_MODE = False
-    
-    # default loglevel to info unless set
-    _DCCSI_LOGLEVEL = _logging.INFO
     
     if _DCCSI_GDEBUG:
         # override loglevel if runnign debug
@@ -121,9 +139,6 @@ if __name__ == '__main__':
     _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
     _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
     _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
-    
-    # get the settings for the environment
-    from dynaconf import settings
     
     # commandline interface
     import argparse
@@ -178,7 +193,9 @@ if __name__ == '__main__':
     
     if args.blender_executable:
         if args.blender_executable == 'Blender':
-            subprocess.Popen(DCCSI_BLENDER_EXE, env=os.environ.copy(), shell=True)
+            _blender_exe = str(PATH_DCCSI_BLENDER_EXE.as_posix())
+            subprocess.Popen(f'{_blender_exe}',
+                             env=os.environ.copy(), shell=True)
             
         elif args.blender_executable == 'Launcher':
             _LOGGER.warn(f'Not Implemented Yet')

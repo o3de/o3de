@@ -1,6 +1,6 @@
 {
 	"O3DE_DCCSI_TOOLS_DCC_BLENDER":"True",
-	"BLENDER_VERSION":3.1,
+	"DCCSI_BLENDER_VERSION":"3.1",
 	"DCCSI_BLENDER_LOCATION":"C:\Program Files\Blender Foundation\Blender 3.1",
 	"DCCSI_BLENDER_EXE":"C:\Program Files\Blender Foundation\Blender 3.1\blender.exe",
 	"DCCSI_BLENDER_LAUNCHER":"C:\Program Files\Blender Foundation\Blender 3.1\blender-launcher.exe",

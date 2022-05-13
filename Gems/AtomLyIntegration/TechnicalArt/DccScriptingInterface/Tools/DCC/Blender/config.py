@@ -27,32 +27,51 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-_MODULENAME = 'Tools.DCC.Blender.config'
+#os.environ['PYTHONINSPECT'] = 'True'
+# global scope
+_MODULENAME = 'Tools.DCC.Blender.start'
 
-# configure basic logger
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
+_START = timeit.default_timer() # start tracking
 
+# we need to set up basic access to the DCCsi
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_PATH_DCCSIG = Path(_MODULE_PATH, '../../../..').resolve()
+
+# set envar so DCCsi synthetic env bootstraps with it (config.py)
+from azpy.constants import ENVAR_PATH_DCCSIG
+os.environ[ENVAR_PATH_DCCSIG] = str(_PATH_DCCSIG.as_posix())
+site.addsitedir(_PATH_DCCSIG.as_posix())
+
+from azpy.constants import FRMT_LOG_LONG
 _logging.basicConfig(level=_logging.DEBUG,
                      format=FRMT_LOG_LONG,
                     datefmt='%m-%d %H:%M')
 
 _LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug(f'Initializing: {_MODULENAME}')
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()')
+_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG.as_posix()')
+# -------------------------------------------------------------------------
 
-_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+
+# defaults, can be overriden/forced here for development
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
+_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# we don't use dynaconf setting here as we might not yet have access
-# we need to set up basic access to the DCCsi
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
-_PATH_DCCSIG = Path(_MODULE_PATH, '../../../..')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG.resolve()}')
-site.addsitedir(_PATH_DCCSIG.resolve())
+from azpy.constants import STR_PATH_DCCSI_PYTHON_LIB
+from Tools.DCC.Blender.constants import STR_PATH_DCCSI_PYTHON_LIB
 
-# set envar so DCCsi synthetic env bootstraps with it (config.py)
-from azpy.constants import ENVAR_PATH_DCCSIG
-os.environ[ENVAR_PATH_DCCSIG] = str(_PATH_DCCSIG.resolve())
+# override based on current executable
+_PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
+                                                         sys.version_info.major,
+                                                         sys.version_info.minor)
+_PATH_DCCSI_PYTHON_LIB = Path(_PATH_DCCSI_PYTHON_LIB)
+site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
 # -------------------------------------------------------------------------
 
 
@@ -87,6 +106,15 @@ settings = _CONFIG.get_config_settings(enable_o3de_python=False,
 # that will cause conflicts with the DCC tools python!!!
 # we are enabling the O3DE PySide2 (aka QtForPython) access
 
+# now we can extend the environment specific to Blender
+# start by grabbing the constants we want to work with as envars
+# import others
+from Tools.DCC.Blender.constants import *
+# import them all, but below are the ones we will use directly
+from Tools.DCC.Blender.constants import DCCSI_BLENDER_EXE
+from Tools.DCC.Blender.constants import DCCSI_BLENDER_LAUNCHER
+from Tools.DCC.Blender.constants import DCCSI_BLENDER_PY_EXE
+
 #_DCCSI_PATH_BLENDER = Path(sys.prefix)
 #os.environ["DYNACONF_DCCSI_PATH_BLENDER"] = _DCCSI_PATH_BLENDER.resolve()
 #_LOGGER.debug(f"Blender Install: {_DCCSI_PATH_BLENDER}")
@@ -100,11 +128,19 @@ settings.setenv()
 def get_dccsi_blender_settings(settings):
     return settings
 # -------------------------------------------------------------------------
-
-
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as main (external commandline for testing)"""
-    pass
+    """Run this file as a standalone cli script for testing/debugging"""
+    
+    # turn all of these off/on for testing
+    _DCCSI_GDEBUG = False
+    _DCCSI_DEV_MODE = False
+    _DCCSI_LOGLEVEL = _logging.DEBUG
+    _DCCSI_GDEBUGGER = 'WING'
+    
+    while 0: # easy flip these two on
+        _DCCSI_GDEBUG = True
+        _DCCSI_DEV_MODE = True
+        break    
