@@ -24,9 +24,22 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-    MotionMatchingEditorSystemComponent::MotionMatchingEditorSystemComponent() = default;
+    MotionMatchingEditorSystemComponent::MotionMatchingEditorSystemComponent()
+    {
+        if (MotionMatchingEditorInterface::Get() == nullptr)
+        {
+            MotionMatchingEditorInterface::Register(this);
+        }
+    }
 
-    MotionMatchingEditorSystemComponent::~MotionMatchingEditorSystemComponent() = default;
+    MotionMatchingEditorSystemComponent::~MotionMatchingEditorSystemComponent()
+    {
+        if (MotionMatchingEditorInterface::Get() == this)
+        {
+            MotionMatchingEditorInterface::Unregister(this);
+        }
+    }
+
 
     void MotionMatchingEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
@@ -52,6 +65,7 @@ namespace EMotionFX::MotionMatching
 
     void MotionMatchingEditorSystemComponent::Activate()
     {
+        MotionMatchingEditorRequestBus::Handler::BusConnect();
         MotionMatchingSystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
@@ -62,6 +76,7 @@ namespace EMotionFX::MotionMatching
         AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         MotionMatchingSystemComponent::Deactivate();
+        MotionMatchingEditorRequestBus::Handler::BusDisconnect();
     }
 
     void MotionMatchingEditorSystemComponent::SetDebugDrawFeatureSchema(FeatureSchema* featureSchema)

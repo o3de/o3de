@@ -18,6 +18,7 @@ namespace EMotionFX::MotionMatching
     /// System component for MotionMatching editor
     class MotionMatchingEditorSystemComponent
         : public MotionMatchingSystemComponent
+        , protected MotionMatchingEditorRequestBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = MotionMatchingSystemComponent;
@@ -28,20 +29,16 @@ namespace EMotionFX::MotionMatching
         MotionMatchingEditorSystemComponent();
         ~MotionMatchingEditorSystemComponent();
 
-        ////////////////////////////////////////////////////////////////////////
-        // AZTickBus interface implementation
+        // AZTickBus overrides ...
         int GetTickOrder() override
         {
             return AZ::TICK_PRE_RENDER;
         }
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        ////////////////////////////////////////////////////////////////////////
 
-        ////////////////////////////////////////////////////////////////////////
-        // MotionMatchingRequestBus interface implementation
+        // MotionMatchingRequestBus overrides ...
         void SetDebugDrawFeatureSchema(FeatureSchema* featureSchema) override;
         FeatureSchema* GetDebugDrawFeatureSchema() const override;
-        ////////////////////////////////////////////////////////////////////////
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
