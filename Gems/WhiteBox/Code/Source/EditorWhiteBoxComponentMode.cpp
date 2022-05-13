@@ -525,10 +525,7 @@ namespace WhiteBox
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
         {
             bool hasTransformMode = false;
-            if (!settingsRegistry->Get(hasTransformMode, WhiteBoxTransformFeature))
-            {
-                hasTransformMode = false;
-            }
+            settingsRegistry->Get(hasTransformMode, WhiteBoxTransformFeature);
             if (hasTransformMode)
             {
                 m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "TransformMode");

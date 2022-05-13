@@ -95,9 +95,11 @@ namespace WhiteBox
 
         //! The most up to date intersection and render data for the white box (edge and polygon bounds).
         AZStd::optional<IntersectionAndRenderData> m_intersectionAndRenderData;
-        AZ::Transform m_worldFromLocal; //!< The world transform of the entity this ComponentMode is on.
+        //! The world transform of the entity this ComponentMode is on.
+        AZ::Transform m_worldFromLocal;
+        //! The function to use for querying modifier keys (while drawing).
         KeyboardModifierQueryFn
-            m_keyboardMofifierQueryFn; //! The function to use for querying modifier keys (while drawing).
+            m_keyboardMofifierQueryFn;
 
         SubMode m_currentSubMode = SubMode::Default;
         bool m_restoreModifierHeld = false;
@@ -111,16 +113,21 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ButtonId
             m_transformScaleButtonId; 
 
+        //! Viewport UI cluster for changing sub mode.
         AzToolsFramework::ViewportUi::ClusterId
-            m_modeSelectionClusterId;  //! Viewport UI cluster for changing sub mode.
+            m_modeSelectionClusterId;
+        //! Id of the Viewport UI button for default mode.
         AzToolsFramework::ViewportUi::ButtonId
-            m_defaultModeButtonId;     //! Id of the Viewport UI button for default mode.
+            m_defaultModeButtonId;
+        //! Id of the Viewport UI button for edge restore mode.
         AzToolsFramework::ViewportUi::ButtonId
-            m_edgeRestoreModeButtonId; //! Id of the Viewport UI button for edge restore mode.
+            m_edgeRestoreModeButtonId;
+        //! Id of the Viewport UI button for transform mode.
         AzToolsFramework::ViewportUi::ButtonId
-            m_transformModeButtonId;   //! Id of the Viewport UI button for transform mode.
+            m_transformModeButtonId;
+        //! Event handler for sub mode changes.
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
-            m_modeSelectionHandler;    //! Event handler for sub mode changes.
+            m_modeSelectionHandler;
     };
 
     inline SubMode EditorWhiteBoxComponentMode::GetCurrentSubMode() const

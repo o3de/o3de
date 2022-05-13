@@ -16,11 +16,10 @@ namespace AZ
     class Color;
 }
 
-namespace AzToolsFramework 
+namespace AzToolsFramework
 {
     struct ActionOverride;
-} // namespace AzToolsFramework
-
+}
 
 namespace AzFramework
 {
@@ -115,6 +114,9 @@ namespace WhiteBox
     //! Utility function to draw all edge handles in edgeBoundsWithHandle.
     //! Note: Any edges in excludedEdgeHandles will be filtered out and not drawn.
     void DrawEdges(
-        AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color,
-        const AZStd::vector<EdgeBoundWithHandle>& edgeBoundsWithHandle, const Api::EdgeHandles& excludedEdgeHandles);
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        const AZ::Color& color,
+        const AZStd::vector<EdgeBoundWithHandle>& edgeBoundsWithHandle,
+        const Api::EdgeHandles& excludedEdgeHandles);
+
 } // namespace WhiteBox

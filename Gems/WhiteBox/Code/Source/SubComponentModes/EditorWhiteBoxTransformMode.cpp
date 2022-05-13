@@ -1,8 +1,15 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "EditorWhiteBoxTransformMode.h"
-#include "EditorWhiteBoxComponentModeCommon.h"
-#include "Viewport/WhiteBoxModifierUtil.h"
-#include "Viewport/WhiteBoxViewportConstants.h"
+#include <EditorWhiteBoxTransformMode.h>
+#include <EditorWhiteBoxComponentModeCommon.h>
+#include <Viewport/WhiteBoxModifierUtil.h>
+#include <Viewport/WhiteBoxViewportConstants.h>
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -25,6 +32,7 @@ namespace WhiteBox
     {
         return {};
     }
+
     void TransformMode::Display(
         const AZ::EntityComponentIdPair& entityComponentIdPair,
         const AZ::Transform& worldFromLocal,
@@ -33,6 +41,7 @@ namespace WhiteBox
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
     }
+
     bool TransformMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
         const AZ::EntityComponentIdPair& entityComponentIdPair,
@@ -42,4 +51,5 @@ namespace WhiteBox
     {
         return false;
     }
+
 } // namespace WhiteBox
