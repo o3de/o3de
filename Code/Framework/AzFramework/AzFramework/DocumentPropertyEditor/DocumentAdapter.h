@@ -74,3 +74,8 @@ namespace AZ::DocumentPropertyEditor
         ChangedEvent m_changedEvent;
     };
 } // namespace AZ::DocumentPropertyEditor
+
+namespace AZ
+{
+    namespace Dpe = AZ::DocumentPropertyEditor;
+} // namespace AZ
