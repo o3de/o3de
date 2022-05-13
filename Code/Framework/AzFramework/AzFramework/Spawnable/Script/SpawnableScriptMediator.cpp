@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptBus.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
@@ -48,7 +49,7 @@ namespace AzFramework::Scripts
     }
 
     SpawnableScriptMediator::SpawnableScriptMediator()
-        : m_ptr(new Ptr)
+        : m_sentinel(AZStd::make_shared<CallbackSentinel>())
     {
     }
 
@@ -102,7 +103,7 @@ namespace AzFramework::Scripts
             return false;
         }
 
-        AZStd::weak_ptr<Ptr> weakPtr = m_ptr;
+        AZStd::weak_ptr<CallbackSentinel> weakPtr = m_sentinel;
         auto preSpawnCB = [weakPtr, parentId, translation, rotation, scale]
             ([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableEntityContainerView view)
         {
@@ -160,7 +161,7 @@ namespace AzFramework::Scripts
             return false;
         }
 
-        AZStd::weak_ptr<Ptr> weakPtr = m_ptr;
+        AZStd::weak_ptr<CallbackSentinel> weakPtr = m_sentinel;
         auto despawnCompleteCB = [this, weakPtr, spawnTicket]
             ([[maybe_unused]] EntitySpawnTicket::Id ticketId)
         {

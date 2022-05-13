@@ -66,7 +66,9 @@ namespace AzFramework::Scripts
         {
             EntitySpawnTicket m_spawnTicket;
         };
-        struct Ptr{};
+        struct CallbackSentinel
+        {
+        };
         
         using ResultCommand = AZStd::variant<SpawnResult, DespawnResult>;
 
@@ -76,6 +78,6 @@ namespace AzFramework::Scripts
         AZStd::vector<ResultCommand> m_resultCommands;
         AZStd::recursive_mutex m_mutex;
         // used to track when SpawnableScriptMediator is destroyed to avoid executing logic in callbacks
-        AZStd::shared_ptr<Ptr> m_ptr;
+        AZStd::shared_ptr<CallbackSentinel> m_sentinel;
     };
 } // namespace AzFramework
