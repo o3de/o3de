@@ -17,5 +17,7 @@
     "icon_path": "preview.png",
     "requirements": "",
     "documentation_url": "",
-    "dependencies": []
+    "dependencies": [
+        "EditorPythonBindings"
+    ]
 }

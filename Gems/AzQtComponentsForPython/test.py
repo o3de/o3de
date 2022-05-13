@@ -8,9 +8,6 @@ project_path='C:\\ly\\git\\o3de'
 
 import sys
 
-# Remove the previous version of pyside from the path - it should be the last entry.
-sys.path.pop()
-
 # Add the path to the new version of pyside. Modify this to match your location.
 sys.path.append(package_path)
 

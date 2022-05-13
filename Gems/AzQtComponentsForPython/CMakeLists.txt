@@ -386,6 +386,7 @@ target_include_directories(${bindings_library} PRIVATE "${pyside2_include_dir}\\
 
 # Add link libraries.
 target_link_libraries(${bindings_library} PRIVATE Qt5::Widgets)
+target_link_libraries(${bindings_library} PRIVATE Qt5::Qml)
 target_link_libraries(${bindings_library} PRIVATE ${azqtcomponents_library})
 target_link_libraries(${bindings_library} PRIVATE ${pyside2_shared_libraries})
 target_link_libraries(${bindings_library} PRIVATE ${shiboken_shared_libraries})
@@ -440,5 +441,35 @@ if(WIN32)
     set_target_properties(${bindings_library} PROPERTIES LINK_FLAGS "${python_additional_link_flags}")
 endif()
 
-message ("installing to: ${CMAKE_CURRENT_BINARY_DIR}")
 install(FILES ${windows_shiboken_shared_libraries} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+# Temp: Copy dependencies.
+set(runtime_output_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+
+add_custom_command(TARGET ${bindings_library} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${qt_module_dir}/bin/Qt5Qml.dll"
+    ${runtime_output_directory})
+add_custom_command(TARGET ${bindings_library} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${qt_module_dir}/bin/Qt5Quick.dll"
+    ${runtime_output_directory})
+add_custom_command(TARGET ${bindings_library} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${qt_module_dir}/bin/Qt5QmlModels.dll"
+    ${runtime_output_directory})
+add_custom_command(TARGET ${bindings_library} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${qt_module_dir}/bin/Qt5Core.dll"
+    ${runtime_output_directory})
+add_custom_command(TARGET ${bindings_library} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${qt_module_dir}/bin/Qt5Widgets.dll"
+    ${runtime_output_directory})
+add_custom_command(TARGET ${bindings_library} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${qt_module_dir}/bin/Qt5Gui.dll"
+    ${runtime_output_directory})
+
+
+        
