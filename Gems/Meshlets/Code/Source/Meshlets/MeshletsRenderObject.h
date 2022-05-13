@@ -4,10 +4,12 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/map.h>
-#include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/array.h>
 
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
+
+#include <Atom/RHI/StreamBufferView.h>
 
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Model/Model.h>
@@ -36,21 +38,27 @@ namespace AZ
 
         struct MeshRenderData
         {
-            //! Render pass data
-            AZStd::vector<Data::Instance<RHI::BufferView>> m_renderBuffersViews;
-            AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> m_renderBuffersAllocators;
-            AZStd::vector<SrgBufferDescriptor> m_renderBuffersDescriptors;
-            Data::Instance<RPI::ShaderResourceGroup> m_renderSrg;
-            RPI::MeshDrawPacket m_drawPacket;
+            uint32_t m_meshletsAmount = 0;
 
-            //! Compute render data
+             //! Compute render data
+            Data::Instance<RPI::ShaderResourceGroup> m_computeSrg;          // Per object Compute data - can be shared across instances
+            MeshletsDispatchItem m_dispatchItem;
+            AZStd::vector<SrgBufferDescriptor> m_computeBuffersDescriptors;
             AZStd::vector<Data::Instance<RHI::BufferView>> m_computeBuffersViews;
             AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> m_computeBuffersAllocators;
-            AZStd::vector<SrgBufferDescriptor> m_computeBuffersDescriptors;
-            Data::Instance<RPI::ShaderResourceGroup> m_computeSrg;
-            Data::Instance<MeshletsDispatchItem> m_dispatchItem;
+            AZStd::vector <Data::Instance<RPI::Buffer>> m_computeBuffers;   // stand alone non shared buffers
+
+            //! Render pass data
+            Data::Instance<RPI::ShaderResourceGroup> m_renderObjectSrg;     // Per object render data - includes instanceId and vertex buffers
+            AZStd::vector<SrgBufferDescriptor> m_renderBuffersDescriptors;
+            RHI::IndexBufferView m_indexBufferView;
+            AZStd::vector<Data::Instance<RHI::BufferView>> m_renderBuffersViews;
+//            AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> m_renderBuffersAllocators; 
+            AZStd::vector <Data::Instance<RPI::Buffer>> m_renderBuffers;    // stand alone non shared buffers
+            uint32_t m_indexCount = 0;  // temporary - used by the direct Draw stage only
+            const RHI::DrawPacket* m_drawPacket = nullptr;
         };
-        using ModelLodDataArray = AZStd::vector<MeshRenderData>;    // MeshRenderData per mesh in the Lod
+        using ModelLodDataArray = AZStd::vector<MeshRenderData*>;    // MeshRenderData per mesh in the Lod
 
         //! Currently assuming single model without Lods so that the handling of the
         //! meshlet creation and handling of the array is easier. If several meshes or Lods
@@ -97,6 +105,11 @@ namespace AZ
                 RHI::BufferViewDescriptor& bufferDesc
             );
 
+            bool RetrieveSourceMeshData(
+                const RPI::ModelLodAsset::Mesh& meshAsset,
+                MeshRenderData& meshRenderData,
+                uint32_t vertexCount, uint32_t indexCount);
+
             uint32_t CreateMeshlets(GeneratorMesh& mesh);
 
             uint32_t CreateMeshlets(
@@ -108,10 +121,13 @@ namespace AZ
 
             uint32_t CreateMeshletsRenderObject(const RPI::ModelLodAsset::Mesh& meshAsset, MeshRenderData &meshRenderData);
 
+
+            bool BuildDrawPacket( RHI::DrawPacketBuilder::DrawRequest& drawRequest, MeshRenderData& meshRenderData);
+
             void PrepareRenderSrgDescriptors(MeshRenderData &meshRenderData, uint32_t vertexCount, uint32_t indicesCount);
             //! Should be called by CreateAndBindRenderBuffers
-            bool CreateAndBindRenderSrg(MeshRenderData &meshRenderData);
-            bool CreateAndBindRenderBuffers(MeshRenderData &meshRenderData);
+            bool CreateAndBindPerObjectRenderSrg(MeshRenderData &meshRenderData);
+            bool CreateRenderBuffers(MeshRenderData &meshRenderData);
 
             void PrepareComputeSrgDescriptors(MeshRenderData &meshRenderData, uint32_t vertexCount, uint32_t indexCount);
             //! Should be called by CreateAndBindComputeBuffers.

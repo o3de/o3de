@@ -7,17 +7,26 @@ set(FILES
     
     ../Assets/Passes/MeshletsPassTemplates.azasset
     ../Assets/Passes/MeshletsPassRequest.azasset
+    ../Assets/Passes/MeshletsParent.pass
     ../Assets/Passes/MeshletsCompute.pass
+    ../Assets/Passes/MeshletsRender.pass
     
     ../Assets/Shaders/MeshletsCompute.shader
     ../Assets/Shaders/MeshletsCompute.azsl
+    ../Assets/Shaders/MeshletsDebugRenderShader.shader
+    ../Assets/Shaders/MeshletsDebugRenderShader.azsl
+    ../Assets/Shaders/MeshletsPerObjectRenderSrg.azsli
     
+    Source/Meshlets/MeshletsRenderPass.h
+    Source/Meshlets/MeshletsRenderPass.cpp
     Source/Meshlets/MultiDispatchComputePass.h
     Source/Meshlets/MultiDispatchComputePass.cpp
     Source/Meshlets/MeshletsData.h
     Source/Meshlets/MeshletsDispatchItem.h
     Source/Meshlets/MeshletsDispatchItem.cpp
     Source/Meshlets/SharedBufferInterface.h
+    Source/Meshlets/MeshletsUtilities.h
+    Source/Meshlets/MeshletsUtilities.cpp
     Source/Meshlets/SharedBuffer.h
     Source/Meshlets/SharedBuffer.cpp
     Source/Meshlets/MeshletsRenderObject.h

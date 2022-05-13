@@ -5,10 +5,6 @@
     "ClassData": {
         "AssetPaths": [
             {
-                "Name": "MeshletsComputePassTemplate",
-                "Path": "Passes/MeshletsCompute.pass"
-            },  
-            {
                 "Name": "MSAAResolveColorTemplate",
                 "Path": "Passes/MSAAResolveColor.pass"
             },

@@ -10,14 +10,11 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 
-//#include <Atom/RPI.Public/Buffer/Buffer.h>
-// 
-//#include <Atom/RHI/Factory.h>
-//#include <Atom/RHI/BufferView.h>
-
 #include <limits>
 
 #include "MeshletsAssets.h"
+
+#pragma optimize("", off)
 
 namespace AZ
 {
@@ -70,3 +67,5 @@ namespace AZ
 
     } // namespace Meshlets
 } // namespace AZ
+
+#pragma optimize("", on)

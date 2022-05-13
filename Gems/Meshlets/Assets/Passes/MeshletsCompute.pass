@@ -8,30 +8,27 @@
             "PassClass": "MultiDispatchComputePass",
             "Slots": [
                 {
-                    "Name": "MeshletsSharedBuffer",
+                    "Name": "MeshletsSharedBufferOutput",
                     "ShaderInputName": "m_MeshletsSharedBuffer",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "Shader"
                 }
             ],
-            // [Adi] - FOr now we don't need to declare any connection as the connection 
-            // will only be required by the following passes that will use the buffer
-            //            "Connections": [
-            //                {
-            //                    "LocalSlot": "MeshletsSharedBufferOutput",
-            //                    "AttachmentRef": {
-            //                        "Pass": "This",
-            //                        "Attachment": "MeshletsSharedBuffer"
-            //                    }
-            //                }
-            //            ],
             "PassData": {
                 "$type": "ComputePassData",
                 "ShaderAsset": {
-                    // Looking for it in the Shaders directory relative to the Assets directory
                     "FilePath": "Shaders/MeshletsCompute.shader"
                 }
-            }
+            },
+            "Connections": [
+//                {
+//                    "LocalSlot": "MeshletsSharedBuffer",
+//                    "AttachmentRef": {
+//                        "Pass": "This",
+//                        "Attachment": "MeshletsSharedBuffer"
+//                    }
+//                }
+            ]
         }
     }
 }

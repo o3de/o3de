@@ -15,6 +15,7 @@
 #include <SharedBuffer.h>
 
 #include <MultiDispatchComputePass.h>
+#include <MeshletsRenderPass.h>
 
 namespace Render
 {
@@ -40,6 +41,7 @@ namespace AZ
             , private AZ::TickBus::Handler
         {
             Name MeshletsComputePassName;
+            Name MeshletsRenderPassName;
 
         public:
             AZ_RTTI(MeshletsFeatureProcessor, "{1D93DE27-2DC4-4E9B-90B3-DCDCB941C920}", RPI::FeatureProcessor);
@@ -59,6 +61,7 @@ namespace AZ
 //            void OnRenderEnd() override;
 
             bool InitComputePass(const Name& passName);
+            bool InitRenderPass(const Name& passName);
 
             // AZ::TickBus::Handler overrides
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -72,7 +75,8 @@ namespace AZ
             void AddMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject);
             void RemoveMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject);
 
-            Data::Instance<RPI::Shader> GetComputeShader() { return m_computeShader;  }
+            Data::Instance<RPI::Shader> GetComputeShader() { return m_computeShader; }
+            Data::Instance<RPI::Shader> GetRenderShader() { return m_renderShader; }
 
         protected:
             /// Implement equivalent
@@ -94,6 +98,7 @@ namespace AZ
             AZ::Data::Asset<AZ::RPI::AnyAsset> m_passRequestAsset;
 
             Data::Instance<MultiDispatchComputePass> m_computePass;
+            Data::Instance<MeshletsRenderPass> m_renderPass;
 
             AZStd::list<MeshletsRenderObject*> m_meshletsRenderObjects;
 

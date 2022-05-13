@@ -31,6 +31,7 @@ namespace AZ
         MeshletsFeatureProcessor::MeshletsFeatureProcessor()
         {
             MeshletsComputePassName = Name("MeshletsComputePass");
+            MeshletsRenderPassName = Name("MeshletsRenderPass");
             CreateResources();
         }
 
@@ -59,11 +60,13 @@ namespace AZ
         void MeshletsFeatureProcessor::CleanPasses()
         {
             m_computePass = nullptr;
+            m_renderPass = nullptr;
         }
 
         void MeshletsFeatureProcessor::Init([[maybe_unused]]RPI::RenderPipeline* pipeline)
         {
             InitComputePass(MeshletsComputePassName);
+            InitRenderPass(MeshletsRenderPassName);
         }
 
         void MeshletsFeatureProcessor::Reflect(ReflectContext* context)
@@ -118,10 +121,29 @@ namespace AZ
                     passName.GetCStr());
                 return false;
             }
-
             return true;
         }
 
+        bool MeshletsFeatureProcessor::InitRenderPass(const Name& passName)
+        {
+            m_renderPass = Data::Instance<MeshletsRenderPass>();
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(passName, m_renderPipeline);
+            RPI::Ptr<RPI::Pass> desiredPass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+
+            if (desiredPass)
+            {
+                m_renderPass = static_cast<MeshletsRenderPass*>(desiredPass.get());
+                m_renderShader = m_renderPass->GetShader();
+            }
+            else
+            {
+                AZ_Error("Meshlets", false,
+                    "%s does not exist in this pipeline. Check your game project's .pass assets.",
+                    passName.GetCStr());
+                return false;
+            }
+            return true;
+        }
 
         bool MeshletsFeatureProcessor::AddMeshletsPassesToPipeline(RPI::RenderPipeline* renderPipeline)
         {
@@ -162,6 +184,11 @@ namespace AZ
         void MeshletsFeatureProcessor::AddMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject)
         {
             m_meshletsRenderObjects.push_back(meshletsRenderObject);
+            if (m_renderPass)
+            {
+                m_renderPass->BuildDrawPacket(meshletsRenderObject->GetMeshletsRenderData());
+            }
+            AZ_Error("Meshlets", m_renderPass, "Meshlets object did not build DrawItem due to missing render pass");
         }
 
         void MeshletsFeatureProcessor::RemoveMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject)
@@ -192,20 +219,26 @@ namespace AZ
             }
 
             AZStd::list<RHI::DispatchItem*> dispatchItems;
+            AZStd::list<const RHI::DrawPacket*> drawPackets;
             for (auto renderObject : m_meshletsRenderObjects)
             {
-                // [Adi] For demo purposed the index is set for 0.
+                // [Adi] For demo purposed the model lod index is set for 0.
                 // This entire control scheme will be removed to be replaced with GPU
                 // driven pipeline control.
                 ModelLodDataArray& modelLodArray = renderObject->GetMeshletsRenderData(0);
 
-//                AZStd::vector<MeshRenderData>
                 for (auto& renderData : modelLodArray)
                 {
-                    dispatchItems.push_back(renderData.m_dispatchItem->GetDispatchItem());
+                    if (renderData)
+                    {
+                        dispatchItems.push_back(renderData->m_dispatchItem.GetDispatchItem());
+                        drawPackets.push_back(renderData->m_drawPacket);
+                    }
+                    AZ_Error("Meshlets", renderData, "Render data is NULL");
                 }
             }
             m_computePass->AddDispatchItems(dispatchItems);
+            m_renderPass->AddDrawPackets(drawPackets);
         }
 
         void MeshletsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)

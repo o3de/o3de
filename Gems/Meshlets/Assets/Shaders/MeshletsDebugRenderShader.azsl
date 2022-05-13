@@ -1,0 +1,118 @@
+// [Adi] - to use the object Id and VertexUtility the ObjectSrg must be created 
+// and passed with the Object Id here.
+// This will require more than several changes also on the CPU side, utilizing the 
+// transform (m_transformService->ReserveObjectId()) and setting the Id in the 
+// PerObjectSrg (objectSrg->SetConstant(objectIdIndex, m_objectId.GetIndex())).
+// Look at ModelDataInstance::Init(Data::Instance<RPI::Model> model) to see how
+// to set the model Id - this will lead to MeshDrawPacket::DoUpdate that will demonstrate 
+// how to set the Srgs.
+// There is no need to set all the Srgs in the DrawPacket - only the ones that the pass
+// does not add manually in the command list (check the inheritance of the commit method).
+//#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+
+//------------------------------------------------------------------------------
+//ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+ShaderResourceGroup PassSrg : SRG_PerPass
+{   
+    StructuredBuffer<int>     m_MeshletsSharedBuffer;
+//  RWStructuredBuffer<int>     m_MeshletsSharedBuffer;
+}
+
+ShaderResourceGroup DebugShaderPBRSrg : SRG_PerMaterial
+{
+    float3 m_baseColor;
+    float m_metallic;
+    float m_roughness;
+}
+
+// Vertex Assembly streams will NOT be used
+struct VSInput
+{
+    uint m_vertexIndex : SV_VertexID;
+//    float3 m_position : POSITION;
+//    float3 m_normal : NORMAL;
+//    float4 m_tangent : TANGENT; 
+//    float3 m_bitangent : BITANGENT; 
+//    float2 m_uv : UV0;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float2 m_uv : UV1;
+};
+
+struct MeshletsPassOutput
+{
+    float4 m_color  : SV_Target0;
+};
+
+struct MeshletsPassOutputWithDepth
+{
+    float4 m_color  : SV_Target0;
+    float m_depth : SV_Depth;
+};
+
+// Shader Resource Groups
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+// Math
+#include <Atom/RPI/Math.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
+
+//! @param skipShadowCoords can be useful for example when PixelDepthOffset is enable, because the pixel shader will have to run before the final world position is known
+void VertexHelper(uint vertexIndex, inout VSOutput OUT, float3 worldPosition)
+{
+    OUT.m_worldPosition = worldPosition;
+
+    // This paragraph is temporary to force the shader to include the Srg.
+    float dummyVariableToForceSrg = 0.00001 * (float)PassSrg::m_MeshletsSharedBuffer[0];
+    OUT.m_worldPosition.z += (abs(dummyVariableToForceSrg) < 0.001) ? dummyVariableToForceSrg : 0;
+
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    ConstructTBN( 
+        ObjectSrg::GetNormal(vertexIndex),  
+        ObjectSrg::GetTangent(vertexIndex), 
+        ObjectSrg::GetBitangent(vertexIndex), 
+        objectToWorld, objectToWorldIT, 
+        OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
+}
+
+VSOutput MeshletsDebugRender_MainPassVS(VSInput IN)
+{
+    VSOutput OUT;
+ 
+    float3 localPosition = ObjectSrg::GetPosition(IN.vertexIndex);
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(localPosition, 1.0)).xyz;
+ 
+    VertexHelper(IN.vertexIndex, OUT, worldPosition);
+
+    OUT.m_uv = ObjectSrg::GetUV(IN.vertexIndex);
+
+    return OUT;
+}
+
+MeshletsPassOutput MeshletsDebugRender_MainPassPS(VSOutput IN)
+{
+    // ------- Output -------
+    MeshletsPassOutput OUT;
+
+    // Debug purposes - uv will be colored by the Compute that 
+    // will generate the meshlets indices.
+    OUT.m_color = float4(IN.m_uv.rg, 0, 1);
+
+    return OUT;
+}
+

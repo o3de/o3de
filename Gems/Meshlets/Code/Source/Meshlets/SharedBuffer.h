@@ -37,7 +37,8 @@ namespace AZ
         struct SrgBufferDescriptor
         {
             //! Pool type to determine how a resource pool should be generated.
-//            RPI::CommonBufferPoolType m_poolType;
+            //! This is used for buffers that are not part of the shared buffer.
+            RPI::CommonBufferPoolType m_poolType = RPI::CommonBufferPoolType::ReadOnly;
             //! The format used for the buffer
             //! Should be Unknown for structured buffers, or R32 for raw buffers.
             RHI::Format m_elementFormat;
@@ -61,7 +62,7 @@ namespace AZ
 
             SrgBufferDescriptor() = default;
             SrgBufferDescriptor(
-//                RPI::CommonBufferPoolType poolType,
+                RPI::CommonBufferPoolType poolType,
                 RHI::Format elementFormat,
                 RHI::BufferBindFlags m_bindFlags,
                 uint32_t elementSize,
@@ -71,7 +72,7 @@ namespace AZ
                 uint32_t resourceShaderIndex,
                 uint32_t viewOffsetInBytes,
                 uint8_t* bufferData = nullptr
-            ) : //m_poolType(poolType),
+            ) : m_poolType(poolType),
                 m_elementFormat(elementFormat), m_bindFlags(m_bindFlags),
                 m_elementSize(elementSize), m_elementCount(elementCount),
                 m_bufferName(bufferName), m_paramNameInSrg(paramNameInSrg),

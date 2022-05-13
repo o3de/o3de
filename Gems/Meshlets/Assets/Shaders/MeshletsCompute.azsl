@@ -63,6 +63,7 @@ ShaderResourceGroup MeshletsDataSrg : SRG_PerObject
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {   
     RWStructuredBuffer<int>     m_MeshletsSharedBuffer;
+//    RWBuffer<int>   m_MeshletsSharedBuffer;
 }
 
 //------------------------------------------------------------------------------

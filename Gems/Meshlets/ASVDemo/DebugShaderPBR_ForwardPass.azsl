@@ -30,6 +30,10 @@ struct VSInput
     float4 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float2 m_uv : UV0;
+
+    uint4 m_meshlets : MESHLETS;
+    uint  m_meshletsTriangles : MESHLETS_TRIANGLES;
+    uint m_meshletsVtxLookup : MESHLETS_LOOKUP;
 //    float4 m_color : COLOR0;
 };
 

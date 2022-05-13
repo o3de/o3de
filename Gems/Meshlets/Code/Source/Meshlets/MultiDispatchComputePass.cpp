@@ -52,11 +52,11 @@ namespace AZ
             // Output
             // This is the buffer that is shared between all objects and dispatches and contains
             // the dynamic data that can be changed between passes.
-            Name bufferName = Name{ "MeshletsSharedBuffer" };
+            Name bufferName = Name{ "MeshletsSharedBufferOutput" };
             RPI::PassAttachmentBinding* localBinding = FindAttachmentBinding(bufferName);
             if (localBinding && !localBinding->GetAttachment() && Meshlets::SharedBufferInterface::Get())
             {
-                AttachBufferToSlot(Name{ "MeshletsSharedBuffer" }, Meshlets::SharedBufferInterface::Get()->GetBuffer());
+                AttachBufferToSlot(bufferName, Meshlets::SharedBufferInterface::Get()->GetBuffer());
             }
         }
 
@@ -70,6 +70,21 @@ namespace AZ
                 BindPassSrg(context, m_shaderResourceGroup);
                 m_shaderResourceGroup->Compile();
             }
+
+            // Instead of compiling per frame, have everything compiled only once after data initialization!
+            /*
+            for (auto& dispatchItem : m_dispatchItems)
+            {
+                if (dispatchItem)
+                {
+                    for (RHI::ShaderResourceGroup* srgInDispatch : dispatchItem->m_shaderResourceGroups)
+                    {
+                        srgInDispatch->Compile()
+                    }
+//                    ShaderResourceGroup* meshletsDataSrg = dispatchItem->m_shaderResourceGroups
+                }
+            }
+            */
         }
 
         void MultiDispatchComputePass::AddDispatchItems(AZStd::list<RHI::DispatchItem*>& dispatchItems)
@@ -87,13 +102,21 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
-            // and sends them to the command list ahead of the dispatch.
-            // This includes the PerView, PerScene and PerPass srgs (what about per draw?)
-            SetSrgsForDispatch(commandList);
-
             for (const RHI::DispatchItem* dispatchItem : m_dispatchItems)
             {
+                // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
+                // and sends them to the command list ahead of the dispatch.
+                // This includes the PerView, PerScene and PerPass srgs.
+                SetSrgsForDispatch(commandList);
+
+                // In a similar way, add the dispatch high frequencies srgs.
+                for (uint32_t srg = 0; srg < dispatchItem->m_shaderResourceGroupCount; ++srg)
+                {
+                    const RHI::ShaderResourceGroup* shaderResourceGroup = dispatchItem->m_shaderResourceGroups[srg];
+                    commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
+                }
+
+                // submit the dispatch
                 commandList->Submit(*dispatchItem);
             }
 

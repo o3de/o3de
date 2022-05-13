@@ -50,6 +50,7 @@ namespace AZ
             void SetPipelineState(RPI::Shader* shader);
 
             RHI::DispatchItem* GetDispatchItem() { return m_shader ? &m_dispatchItem : nullptr; }
+            Data::Instance<RPI::ShaderResourceGroup> GetMeshletDataSrg() { return m_meshletsDataSrg;  }
 
         private:
             RHI::DispatchItem m_dispatchItem;

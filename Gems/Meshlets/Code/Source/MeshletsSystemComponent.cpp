@@ -101,6 +101,7 @@ namespace AZ
             passSystem->ConnectEvent(m_loadTemplatesHandler);
 
             passSystem->AddPassCreator(AZ::Name("MultiDispatchComputePass"), &MultiDispatchComputePass::Create);
+            passSystem->AddPassCreator(AZ::Name("MeshletsRenderPass"), &MeshletsRenderPass::Create);
 
             MeshletsRequestBus::Handler::BusConnect();
             AZ::TickBus::Handler::BusConnect();

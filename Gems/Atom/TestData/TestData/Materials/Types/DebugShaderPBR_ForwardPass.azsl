@@ -30,7 +30,10 @@ struct VSInput
     float4 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float2 m_uv : UV0;
-//    float4 m_color : COLOR0;
+
+    uint4 m_meshlets : MESHLETS;
+    uint  m_meshletsTriangles : MESHLETS_TRIANGLES;
+    uint m_meshletsVtxLookup : MESHLETS_LOOKUP;
 };
 
 struct VSOutput
@@ -41,7 +44,7 @@ struct VSOutput
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
     float2 m_uv : UV1;
-//    float3 m_color : UV2;
+
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
 };
 
@@ -56,7 +59,6 @@ VSOutput DebugShaderPBR_MainPassVS(VSInput IN)
     VertexHelper(IN, OUT, worldPosition);
 
     OUT.m_uv = IN.m_uv;
- //   OUT.m_color = IN.m_color;
 
     return OUT;
 }
@@ -127,7 +129,6 @@ ForwardPassOutput DebugShaderPBR_MainPassPS(VSOutput IN)
 
     // Debug purposes
     OUT.m_diffuseColor = float4(IN.m_uv.rg, 0, 1);
-//    OUT.m_diffuseColor = float4(IN.m_color, 1);
 
     return OUT;
 }

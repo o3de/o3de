@@ -5,8 +5,8 @@
     "ClassData": {
         // [Adi] - temporary until we have more passes.
         // This should be replaced with a parent pass that will contain all meshlets passes
-        "Name": "MeshletsComputePass",
-        "TemplateName": "MeshletsComputePassTemplate",
+        "Name": "MeshletsParentPass",
+        "TemplateName": "MeshletsParentTemplate",
         "Enabled": true,
         // Currently no connections from the pipeline are required - this will change shortly
         // to have depth and lighting brought in.
