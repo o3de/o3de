@@ -62,7 +62,6 @@ namespace AzFramework
     {
         static constexpr size_t NoTargetSpawnable = AZStd::numeric_limits<size_t>::max();
         size_t targetSpawnableIndex = NoTargetSpawnable;
-        AZStd::vector<AZ::Data::AssetId> assetIds;
         SpawnableAssetData spawnableAssetData;
         AZStd::string rootProductId(rootSpawnableName);
         rootProductId += AzFramework::Spawnable::DotFileExtension;

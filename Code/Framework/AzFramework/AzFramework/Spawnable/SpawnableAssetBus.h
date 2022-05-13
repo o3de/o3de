@@ -36,7 +36,7 @@ namespace AzFramework
         //! Callback to allow systems to access a spawnable before it's been modified by aliasing.
         //! This will be called for all spawnables, even if there are no aliases on the spawnable
         virtual void OnPreparingSpawnable(
-            const Spawnable& spawnable, const AZStd::string& assetHint) {}
+            [[maybe_unused]] const Spawnable& spawnable, [[maybe_unused]] const AZStd::string& assetHint) {}
     };
 
     using SpawnableAssetEventsBus = AZ::EBus<SpawnableAssetEvents>;
