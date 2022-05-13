@@ -106,10 +106,10 @@ namespace AZ::SceneAPI::Behaviors
         };
 
         using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
-        using MeshTransformMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshNodeData>;
+        using MeshTransformMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, MeshNodeData>;
         using MeshIndexContainer = AZStd::unordered_set<Containers::SceneGraph::NodeIndex>;
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
-        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
+        using NodeEntityMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
         using EntityIdList = AZStd::vector<AZ::EntityId>;
 
         void AssignCustomPropertyMapIndex(
