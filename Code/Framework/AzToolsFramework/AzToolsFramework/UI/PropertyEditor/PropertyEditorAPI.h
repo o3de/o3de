@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentBus.h>
 #include "PropertyEditorAPI_Internals.h"
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 
 class QWidget;
 class QCheckBox;
@@ -105,11 +106,48 @@ namespace AzToolsFramework
         //virtual QWidget* DestroyGUI(QWidget* object) override;
     };
 
-    // A GenericPropertyHandler may be used to register a widget for a property handler ID that is always used, regardless of the underlying type
-    // This is useful for UI elements that don't have any specific underlying storage, like buttons
-    template <class WidgetType>
-    class GenericPropertyHandler
-        : public PropertyHandler_Internal<WidgetType>
+    // You can also talk to the property editor GUI itself, using your widget as the key to control which one you're talking to.
+    // the reason you need to feed your widget in as the key is that there is likely many property editor guis
+    // and multiple copies of your widget, in any of them.
+    class PropertyEditorGUIMessages : public AZ::EBusTraits
+    {
+    public:
+        //////////////////////////////////////////////////////////////////////////
+        // Bus configuration
+        static const AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::Single; // there's only one address to this bus, its always broadcast
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple; // each Property Editor GUI connects to it.
+        //////////////////////////////////////////////////////////////////////////
+
+        using Bus = AZ::EBus<PropertyEditorGUIMessages>;
+
+        virtual ~PropertyEditorGUIMessages()
+        {
+        }
+
+        // the GUI can call this to request that WriteGUIValuesIntoProperty is iterated on its handler.
+        // Alternatively, the handler (if its a QT object), can call this too, connecting the value changed
+        // messages in the GUI.
+        // calling this will result in WriteGUIValuesIntoProperty() being called on your handler
+        // and undo stack capture to occur.
+        virtual void RequestWrite([[maybe_unused]] QWidget* editorGUI) {}
+        virtual void RequestRefresh(PropertyModificationRefreshLevel) {}
+
+        virtual void AddElementsToParentContainer(
+            [[maybe_unused]] QWidget* editorGUI, [[maybe_unused]] size_t numElements, [[maybe_unused]] const InstanceDataNode::FillDataClassCallback& fillDataCallback) {}
+
+        // Invokes a Property Notification without writing modifying the property
+        virtual void RequestPropertyNotify([[maybe_unused]] QWidget* editorGUI) {}
+
+        // Invoked by widgets to notify the property editor that the editing session has finished
+        // This can be used to end an undo batch operation
+        virtual void OnEditingFinished([[maybe_unused]] QWidget* editorGUI) {}
+    }; 
+
+    // A GenericPropertyHandler may be used to register a widget for a property handler ID that is always used, regardless of the underlying
+    // type This is useful for UI elements that don't have any specific underlying storage, like buttons
+    template<class WidgetType>
+    class GenericPropertyHandler : public PropertyHandler_Internal<WidgetType>
     {
     public:
         virtual void WriteGUIValuesIntoProperty(size_t index, WidgetType* GUI, void* value, const AZ::Uuid& propertyType)
@@ -206,42 +244,6 @@ namespace AzToolsFramework
 
         // you probably don't need to use this, but you can.  Given a name and type it will return the property handler responsible were that type and name
         virtual PropertyHandlerBase* ResolvePropertyHandler(AZ::u32 handlerName, const AZ::Uuid& handlerType) = 0;
-    };
-
-    // You can also talk to the property editor GUI itself, using your widget as the key to control which one you're talking to.
-    // the reason you need to feed your widget in as the key is that there is likely many property editor guis
-    // and multiple copies of your widget, in any of them.
-    class PropertyEditorGUIMessages
-        : public AZ::EBusTraits
-    {
-    public:
-        //////////////////////////////////////////////////////////////////////////
-        // Bus configuration
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // there's only one address to this bus, its always broadcast
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple; // each Property Editor GUI connects to it.
-        //////////////////////////////////////////////////////////////////////////
-
-        using Bus = AZ::EBus<PropertyEditorGUIMessages>;
-
-        virtual ~PropertyEditorGUIMessages() {}
-
-        // the GUI can call this to request that WriteGUIValuesIntoProperty is iterated on its handler.
-        // Alternatively, the handler (if its a QT object), can call this too, connecting the value changed
-        // messages in the GUI.
-        // calling this will result in WriteGUIValuesIntoProperty() being called on your handler
-        // and undo stack capture to occur.
-        virtual void RequestWrite(QWidget* editorGUI) = 0;
-        virtual void RequestRefresh(PropertyModificationRefreshLevel) = 0;
-
-        virtual void AddElementsToParentContainer(QWidget* editorGUI, size_t numElements, const InstanceDataNode::FillDataClassCallback& fillDataCallback) = 0;
-
-        // Invokes a Property Notification without writing modifying the property
-        virtual void RequestPropertyNotify(QWidget* editorGUI) = 0;
-
-        // Invoked by widgets to notify the property editor that the editing session has finished
-        // This can be used to end an undo batch operation
-        virtual void OnEditingFinished(QWidget* editorGUI) = 0;
-
     };
 
     /**

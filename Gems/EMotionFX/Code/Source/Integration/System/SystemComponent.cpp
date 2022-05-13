@@ -30,7 +30,6 @@
 #include <EMotionFX/Source/EventDataFootIK.h>
 #include <EMotionFX/Source/MotionEvent.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
-#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <EMotionFX/Source/MotionEventTable.h>
 #include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
@@ -300,7 +299,6 @@ namespace EMotionFX
             EMotionFX::AnimGraphObject::Reflect(context);
             EMotionFX::AnimGraph::Reflect(context);
             EMotionFX::AnimGraphNodeGroup::Reflect(context);
-            EMotionFX::AnimGraphGameControllerSettings::Reflect(context);
 
             // Anim graph objects
             EMotionFX::AnimGraphObjectFactory::ReflectTypes(context);
