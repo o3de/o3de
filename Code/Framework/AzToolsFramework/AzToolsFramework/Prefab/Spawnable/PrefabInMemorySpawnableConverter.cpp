@@ -14,33 +14,33 @@
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
-#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetUtils.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableAssetBus.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    InMemorySpawnableAssetProcessor::~InMemorySpawnableAssetProcessor()
+    PrefabInMemorySpawnableConverter::~PrefabInMemorySpawnableConverter()
     {
         Deactivate();
     }
 
-    bool InMemorySpawnableAssetProcessor::Activate(AZStd::string_view stackProfile)
+    bool PrefabInMemorySpawnableConverter::Activate(AZStd::string_view stackProfile)
     {
         AZ_Assert(!IsActivated(),
-            "InMemorySpawnableAssetProcessor - Unable to activate an instance of InMemorySpawnableAssetProcessor as the instance is already active.");
+            "PrefabInMemorySpawnableConverter - Unable to activate an instance of PrefabInMemorySpawnableConverter as the instance is already active.");
 
         m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-        AZ_Assert(m_prefabSystemComponentInterface, "InMemorySpawnableAssetProcessor - Could not retrieve instance of PrefabSystemComponentInterface");
+        AZ_Assert(m_prefabSystemComponentInterface, "PrefabInMemorySpawnableConverter - Could not retrieve instance of PrefabSystemComponentInterface");
 
         m_loaderInterface = AZ::Interface<Prefab::PrefabLoaderInterface>::Get();
-        AZ_Assert(m_loaderInterface, "InMemorySpawnableAssetProcessor - Could not retrieve instance of PrefabLoaderInterface");
+        AZ_Assert(m_loaderInterface, "PrefabInMemorySpawnableConverter - Could not retrieve instance of PrefabLoaderInterface");
 
         m_stackProfile = stackProfile;
         return m_converter.LoadStackProfile(m_stackProfile);
     }
 
-    void InMemorySpawnableAssetProcessor::Deactivate()
+    void PrefabInMemorySpawnableConverter::Deactivate()
     {
         m_assetContainer.ClearAllInMemorySpawnableAssets();
         m_stackProfile = "";
@@ -48,17 +48,17 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         m_prefabSystemComponentInterface = nullptr;
     }
 
-    bool InMemorySpawnableAssetProcessor::IsActivated() const
+    bool PrefabInMemorySpawnableConverter::IsActivated() const
     {
         return m_converter.IsLoaded();
     }
 
-    AZStd::string_view InMemorySpawnableAssetProcessor::GetStackProfile() const
+    AZStd::string_view PrefabInMemorySpawnableConverter::GetStackProfile() const
     {
         return m_stackProfile;
     }
 
-    AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetProcessor::CreateInMemorySpawnableAsset(
+    AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult PrefabInMemorySpawnableConverter::CreateInMemorySpawnableAsset(
         AzToolsFramework::Prefab::TemplateId templateId, AZStd::string_view spawnableName, bool loadReferencedAssets)
     {
         if (!IsActivated())
@@ -91,7 +91,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 AZ_STRING_ARG(PrefabConversionUtils::IntegrationTests)));
         }
 
-        // Create temporary assets from the processed data.
+        // Convert products to in-memory spawnable assets
         AzFramework::InMemorySpawnableAssetContainer::AssetDataInfoContainer assetDataInfoContainer;
         for (auto& product : context.GetProcessedObjects())
         {
@@ -106,7 +106,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return m_assetContainer.CreateInMemorySpawnableAsset(assetDataInfoContainer, loadReferencedAssets, spawnableName);
     }
 
-    AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetProcessor::CreateInMemorySpawnableAsset(
+    AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult PrefabInMemorySpawnableConverter::CreateInMemorySpawnableAsset(
         AZStd::string_view prefabFilePath, AZStd::string_view spawnableName, bool loadReferencedAssets)
     {
         AZ::IO::Path relativePath = m_loaderInterface->GenerateRelativePath(prefabFilePath);
@@ -119,12 +119,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return CreateInMemorySpawnableAsset(templateId, spawnableName, loadReferencedAssets);
     }
 
-    const AzFramework::InMemorySpawnableAssetContainer& InMemorySpawnableAssetProcessor::GetAssetContainerConst() const
+    const AzFramework::InMemorySpawnableAssetContainer& PrefabInMemorySpawnableConverter::GetAssetContainerConst() const
     {
         return m_assetContainer;
     }
 
-    AzFramework::InMemorySpawnableAssetContainer& InMemorySpawnableAssetProcessor::GetAssetContainer()
+    AzFramework::InMemorySpawnableAssetContainer& PrefabInMemorySpawnableConverter::GetAssetContainer()
     {
         return m_assetContainer;
     }

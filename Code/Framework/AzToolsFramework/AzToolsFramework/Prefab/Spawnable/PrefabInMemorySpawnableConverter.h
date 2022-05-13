@@ -22,12 +22,12 @@ namespace AzToolsFramework::Prefab
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class InMemorySpawnableAssetProcessor
+    class PrefabInMemorySpawnableConverter
     {
     public:
-        AZ_CLASS_ALLOCATOR(InMemorySpawnableAssetProcessor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabInMemorySpawnableConverter, AZ::SystemAllocator, 0);
 
-        ~InMemorySpawnableAssetProcessor();
+        ~PrefabInMemorySpawnableConverter();
 
         bool Activate(AZStd::string_view stackProfile);
         void Deactivate();
