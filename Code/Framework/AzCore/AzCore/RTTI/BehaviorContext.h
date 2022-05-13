@@ -740,7 +740,7 @@ namespace AZ
 
             BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context);
 
-            bool Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const override;
+            bool Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const override;
             bool HasResult() const override;
             bool IsMember() const override;
             bool HasBusId() const override;

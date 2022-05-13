@@ -26,19 +26,19 @@ namespace AZ::Internal
 
     //////////////////////////////////////////////////////////////////////////
     template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    bool BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const
+    bool BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const
     {
         size_t totalArguments = GetNumArguments();
         if (numArguments < totalArguments)
         {
             // We are cloning all arguments on the stack, since Call is called only from Invoke we can reserve bigger "arguments" array
             // that can always handle all parameters. So far the don't use default values that ofter, so we will optimize for the common case first.
-            BehaviorValueParameter* newArguments = reinterpret_cast<BehaviorValueParameter*>(alloca(sizeof(BehaviorValueParameter)*  totalArguments));
+            BehaviorArgument* newArguments = reinterpret_cast<BehaviorArgument*>(alloca(sizeof(BehaviorArgument) * totalArguments));
             // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
             size_t argIndex = 0;
             for (; argIndex < numArguments; ++argIndex)
             {
-                new(&newArguments[argIndex]) BehaviorValueParameter(arguments[argIndex]);
+                new(&newArguments[argIndex]) BehaviorArgument(arguments[argIndex]);
             }
 
             // clone the default parameters if they exist
@@ -50,7 +50,7 @@ namespace AZ::Internal
                     AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", numArguments, totalArguments);
                     return false;
                 }
-                new(&newArguments[argIndex]) BehaviorValueParameter(defaultValue->GetValue());
+                new(&newArguments[argIndex]) BehaviorArgument(defaultValue->GetValue());
             }
 
             arguments = newArguments;
