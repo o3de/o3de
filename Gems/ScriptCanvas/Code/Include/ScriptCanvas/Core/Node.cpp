@@ -1260,31 +1260,6 @@ namespace ScriptCanvas
         OnReconfigurationEnd();        
     }
 
-    Signal Node::CreateNodeInputSignal(const SlotId& slotId) const
-    {
-        return Signal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), GetInputNodeType(slotId), CreateNamedEndpoint(slotId), CreateInputMap());
-    }
-
-    Signal Node::CreateNodeOutputSignal(const SlotId& slotId) const
-    {
-        return Signal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), GetOutputNodeType(slotId), CreateNamedEndpoint(slotId), CreateOutputMap());
-    }
-
-    NodeStateChange Node::CreateNodeStateUpdate() const
-    {
-        return NodeStateChange();
-    }
-
-    VariableChange Node::CreateVariableChange(const GraphVariable& graphVariable) const
-    {
-        return CreateVariableChange((*graphVariable.GetDatum()), graphVariable.GetVariableId());
-    }
-
-    VariableChange Node::CreateVariableChange(const Datum& /*datum*/, const VariableId& /*variableId*/) const
-    {
-        return VariableChange{};
-    }
-
     void Node::ClearDisplayType(const AZ::Crc32& dynamicGroup, ExploredDynamicGroupCache& exploredGroupCache)
     {
         SetDisplayType(dynamicGroup, Data::Type::Invalid(), exploredGroupCache);
@@ -2292,11 +2267,15 @@ namespace ScriptCanvas
             return AZ::Failure(AZStd::string("Trying to add a slot with an Invalid Slot Descriptor"));
         }
 
-        auto slotNameIter = m_slotNameMap.find(slotConfiguration.m_name);
-        if (slotConfiguration.m_addUniqueSlotByNameAndType && slotNameIter != m_slotNameMap.end() && slotNameIter->second->GetDescriptor() == slotConfiguration.GetSlotDescriptor())
+        auto findResult = m_slotNameMap.equal_range(slotConfiguration.m_name);
+        for (auto slotNameIter = findResult.first; slotNameIter != findResult.second; ++slotNameIter)
         {
-            iterOut = slotNameIter->second;
-            return AZ::Failure(AZStd::string::format("Slot with name %s already exist", slotConfiguration.m_name.data()));
+            if (slotConfiguration.m_addUniqueSlotByNameAndType &&
+                slotNameIter->second->GetDescriptor() == slotConfiguration.GetSlotDescriptor())
+            {
+                iterOut = slotNameIter->second;
+                return AZ::Failure(AZStd::string::format("Slot with name %s already exist", slotConfiguration.m_name.data()));
+            }
         }
 
         SlotIterator insertIter = (insertIndex < 0 || insertIndex >= azlossy_cast<AZ::s64>(m_slots.size())) ? m_slots.end() : AZStd::next(m_slots.begin(), insertIndex);

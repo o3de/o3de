@@ -191,7 +191,7 @@ namespace ScriptCanvasEditor
                             auto graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot), 0);
 
                             GraphCanvas::TranslationKey key;
-                            key << "EBusHandler" << eventHandler->GetEBusName() << "methods" << m_eventName;
+                            key << ScriptCanvasEditor::TranslationHelper::AssetContext::EBusHandlerContext << eventHandler->GetEBusName() << "methods" << m_eventName;
                             if (scriptCanvasSlot->IsExecution() && scriptCanvasSlot->IsOutput())
                             {
                                 key << "exit";
@@ -228,7 +228,7 @@ namespace ScriptCanvasEditor
                                 if (scriptCanvasSlot->IsData())
                                 {
                                     GraphCanvas::TranslationKey key;
-                                    key = "EBusHandler";
+                                    key = ScriptCanvasEditor::TranslationHelper::AssetContext::EBusHandlerContext;
                                     key << eventHandler->GetEBusName() << "methods" << m_eventName << "params" << index << "details";
 
                                     details.m_name = scriptCanvasSlot->GetName();

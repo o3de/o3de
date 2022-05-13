@@ -150,56 +150,52 @@ namespace AZ
 
         bool MaterialAssignment::ApplyProperties()
         {
-            // if there is no instance or no properties there's nothing to apply
+            // Immediately return true, skipping this material, if there is no instance or no properties to apply
             if (!m_materialInstance || m_propertyOverrides.empty())
             {
                 return true;
             }
 
-            if (m_materialInstance->CanCompile())
+            for (const auto& propertyPair : m_propertyOverrides)
             {
-                for (const auto& propertyPair : m_propertyOverrides)
+                if (!propertyPair.second.empty())
                 {
-                    if (!propertyPair.second.empty())
+                    bool wasRenamed = false;
+                    Name newName;
+                    RPI::MaterialPropertyIndex materialPropertyIndex =
+                        m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
+
+                    // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add
+                    // some extra info to help the user resolve it.
+                    AZ_Warning(
+                        "MaterialAssignment", !wasRenamed,
+                        "Consider running \"Apply Automatic Property Updates\" to use the latest property names.",
+                        propertyPair.first.GetCStr(), newName.GetCStr());
+
+                    if (wasRenamed && m_propertyOverrides.find(newName) != m_propertyOverrides.end())
                     {
-                        bool wasRenamed = false;
-                        Name newName;
-                        RPI::MaterialPropertyIndex materialPropertyIndex =
-                            m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
+                        materialPropertyIndex.Reset();
 
-                        // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add
-                        // some extra info to help the user resolve it.
                         AZ_Warning(
-                            "MaterialAssignment", !wasRenamed,
-                            "Consider running \"Apply Automatic Property Updates\" to use the latest property names.",
+                            "MaterialAssignment", false,
+                            "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with "
+                            "the old name will be ignored.",
                             propertyPair.first.GetCStr(), newName.GetCStr());
+                    }
 
-                        if (wasRenamed && m_propertyOverrides.find(newName) != m_propertyOverrides.end())
-                        {
-                            materialPropertyIndex.Reset();
+                    if (!materialPropertyIndex.IsNull())
+                    {
+                        const auto propertyDescriptor =
+                            m_materialInstance->GetMaterialPropertiesLayout()->GetPropertyDescriptor(materialPropertyIndex);
 
-                            AZ_Warning(
-                                "MaterialAssignment", false,
-                                "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with "
-                                "the old name will be ignored.",
-                                propertyPair.first.GetCStr(), newName.GetCStr());
-                        }
-
-                        if (!materialPropertyIndex.IsNull())
-                        {
-                            const auto propertyDescriptor =
-                                m_materialInstance->GetMaterialPropertiesLayout()->GetPropertyDescriptor(materialPropertyIndex);
-
-                            m_materialInstance->SetPropertyValue(
-                                materialPropertyIndex, ConvertMaterialPropertyValueFromScript(propertyDescriptor, propertyPair.second));
-                        }
+                        m_materialInstance->SetPropertyValue(
+                            materialPropertyIndex, ConvertMaterialPropertyValueFromScript(propertyDescriptor, propertyPair.second));
                     }
                 }
-
-                return m_materialInstance->Compile();
             }
 
-            return false;
+            // Return true if there is nothing to compile, meaning no properties changed, or the compile succeeded
+            return !m_materialInstance->NeedsCompile() || m_materialInstance->Compile();
         }
 
         AZStd::string MaterialAssignment::ToString() const

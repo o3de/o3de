@@ -303,8 +303,9 @@ set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${RUN_TARGET_NAME})
 )
 ")
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
-        else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
+        elseif(target_type STREQUAL STATIC_LIBRARY) # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
             set(target_location "\${LY_ROOT_FOLDER}/${archive_output_directory}/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>")
+        else() # OBJECT_LIBRARY has no output target
         endif()
 
         if(target_location)
@@ -590,7 +591,7 @@ endif()
 
     set(permutation_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     file(GENERATE OUTPUT ${permutation_builtin_file}
-        CONTENT ${builtinpackages}
+        CONTENT "${builtinpackages}"
     )
     ly_install(FILES "${permutation_builtin_file}"
         DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
@@ -611,15 +612,17 @@ function(ly_setup_runtime_dependencies)
         foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
             string(TOUPPER ${conf} UCONF)
             ly_install(CODE
-"function(ly_copy source_file target_directory)
-    cmake_path(GET source_file FILENAME target_filename)
-    cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
-    cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
-    if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
-        message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
-        file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
-        file(TOUCH_NOCREATE \"${target_file}\")
-    endif()
+"function(ly_copy source_files target_directory)
+    foreach(source_file IN LISTS source_files)
+        cmake_path(GET source_file FILENAME target_filename)
+        cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
+        cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
+        if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
+            message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
+            file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
+            file(TOUCH_NOCREATE \"${target_file}\")
+        endif()
+    endforeach()
 endfunction()"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             )

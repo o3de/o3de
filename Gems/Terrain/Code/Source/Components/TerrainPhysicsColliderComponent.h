@@ -34,7 +34,7 @@ namespace Terrain
     {
     public:
         AZ_CLASS_ALLOCATOR(TerrainPhysicsSurfaceMaterialMapping, AZ::SystemAllocator, 0);
-        AZ_RTTI(TerrainPhysicsSurfaceMaterialMapping, "{A88B5289-DFCD-4564-8395-E2177DFE5B18}");
+        AZ_TYPE_INFO(TerrainPhysicsSurfaceMaterialMapping, "{A88B5289-DFCD-4564-8395-E2177DFE5B18}");
         static void Reflect(AZ::ReflectContext* context);
         static AZ::Data::AssetId GetMaterialLibraryId();
 
@@ -49,11 +49,10 @@ namespace Terrain
     };
 
     class TerrainPhysicsColliderConfig
-        : public AZ::ComponentConfig
     {
     public:
         AZ_CLASS_ALLOCATOR(TerrainPhysicsColliderConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(TerrainPhysicsColliderConfig, "{E9EADB8F-C3A5-4B9C-A62D-2DBC86B4CE59}", AZ::ComponentConfig);
+        AZ_TYPE_INFO(TerrainPhysicsColliderConfig, "{E9EADB8F-C3A5-4B9C-A62D-2DBC86B4CE59}");
         static void Reflect(AZ::ReflectContext* context);
 
         Physics::MaterialSelection m_defaultMaterialSelection;
@@ -68,8 +67,7 @@ namespace Terrain
         , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
-        template<typename, typename>
-        friend class LmbrCentral::EditorWrappedComponentBase;
+        friend class EditorTerrainPhysicsColliderComponent;
         AZ_COMPONENT(TerrainPhysicsColliderComponent, "{33C20287-1D37-44D0-96A0-2C3766E23624}");
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
@@ -97,13 +95,13 @@ namespace Terrain
         void UpdateHeightsAndMaterials(const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
             const AZ::Aabb& region = AZ::Aabb::CreateNull()) const override;
 
+        void UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration);
+
     protected:
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Activate() override;
         void Deactivate() override;
-        bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
-        bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
         uint8_t GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const;
         Physics::MaterialId FindMaterialIdForSurfaceTag(const SurfaceData::SurfaceTag tag) const;
@@ -111,9 +109,9 @@ namespace Terrain
         void GenerateHeightsInBounds(AZStd::vector<float>& heights) const;
         AZ::Aabb GetRegionClampedToGrid(const AZ::Aabb& region) const;
 
-        void NotifyListenersOfHeightfieldDataChange(const AZ::Aabb* dirtyRegion = nullptr,
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask =
-                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified);
+        void NotifyListenersOfHeightfieldDataChange(
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask,
+            const AZ::Aabb& dirtyRegion);
 
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
@@ -124,5 +122,6 @@ namespace Terrain
 
     private:
         TerrainPhysicsColliderConfig m_configuration;
+        bool m_terrainDataActive = false;
     };
 }

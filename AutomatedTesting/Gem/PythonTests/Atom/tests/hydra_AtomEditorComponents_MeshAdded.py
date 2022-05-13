@@ -18,9 +18,9 @@ class Tests:
     mesh_component_added = (
         "Entity has a Mesh component",
         "P0: Entity failed to find Mesh component")
-    mesh_asset_specified = (
-        "Mesh asset set",
-        "P0: Mesh asset not set")
+    model_asset_specified = (
+        "Model Asset set",
+        "P0: Model Asset not set")
     enter_game_mode = (
         "Entered game mode",
         "P0: Failed to enter game mode")
@@ -125,11 +125,11 @@ def AtomEditorComponents_Mesh_AddedToEntity():
     import os
 
     import azlmbr.legacy.general as general
-
+    from Atom.atom_utils.atom_constants import (MESH_LOD_TYPE,
+                                                AtomComponentProperties)
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import AtomComponentProperties, MESH_LOD_TYPE
+    from editor_python_test_tools.utils import Report, TestHelper, Tracer
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -173,12 +173,12 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         Report.result(Tests.creation_redo, mesh_entity.exists())
 
         # 5. Set Mesh component asset property
-        model_path = os.path.join('Objects', 'sphere_5lods_fbx_psphere_base_1.azmodel')
+        model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.azmodel')
         model = Asset.find_asset_by_path(model_path)
-        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
-        Report.result(Tests.mesh_asset_specified,
+        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model.id)
+        Report.result(Tests.model_asset_specified,
                       mesh_component.get_component_property_value(
-                          AtomComponentProperties.mesh('Mesh Asset')) == model.id)
+                          AtomComponentProperties.mesh('Model Asset')) == model.id)
 
         # 6. Set Mesh component Sort Key property
         # This part of the test is currently disabled due to a bug.

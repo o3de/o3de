@@ -137,7 +137,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
 {
     // Check that the heightfield grid size is correct when the shape bounds match the grid resolution.
     AddTerrainPhysicsColliderToEntity(Terrain::TerrainPhysicsColliderConfig());
-    ActivateEntity(m_entity.get());
 
     const float boundsMin = 0.0f;
     const float boundsMax = 1024.0f;
@@ -149,6 +148,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
     float mockHeightResolution = 1.0f;
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+
+    ActivateEntity(m_entity.get());
 
     int32_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
@@ -164,7 +165,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMinBoun
     // Check that the heightfield grid is correctly expanded if the minimum value of the bounds needs expanding
     // to correctly encompass it.
     AddTerrainPhysicsColliderToEntity(Terrain::TerrainPhysicsColliderConfig());
-    ActivateEntity(m_entity.get());
 
     const float boundsMin = 0.1f;
     const float boundsMax = 1024.0f;
@@ -176,6 +176,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMinBoun
     float mockHeightResolution = 1.0f;
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+
+    ActivateEntity(m_entity.get());
 
     int32_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
@@ -192,7 +194,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoun
     // Check that the heightfield grid is correctly expanded if the maximum value of the bounds needs expanding
     // to correctly encompass it.
     AddTerrainPhysicsColliderToEntity(Terrain::TerrainPhysicsColliderConfig());
-    ActivateEntity(m_entity.get());
 
     const float boundsMin = 0.0f;
     const float boundsMax = 1023.5f;
@@ -204,6 +205,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoun
     float mockHeightResolution = 1.0f;
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+
+    ActivateEntity(m_entity.get());
 
     int32_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
@@ -219,7 +222,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
 {
     // Check that the TerrainPhysicsCollider returns a heightfield of the expected size.
     AddTerrainPhysicsColliderToEntity(Terrain::TerrainPhysicsColliderConfig());
-    ActivateEntity(m_entity.get());
 
     const float boundsMin = 0.0f;
     const float boundsMax = 1024.0f;
@@ -241,6 +243,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
         }
     );
 
+    ActivateEntity(m_entity.get());
+
     int32_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
@@ -259,7 +263,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
 {
     // Check that the values stored in the heightfield returned by the TerrainPhysicsCollider are correct.
     AddTerrainPhysicsColliderToEntity(Terrain::TerrainPhysicsColliderConfig());
-    ActivateEntity(m_entity.get());
 
     const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
     const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
@@ -278,6 +281,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
                 [mockHeight]([[maybe_unused]]size_t x, [[maybe_unused]]size_t y){ return mockHeight; });
         }
     );
+
+    ActivateEntity(m_entity.get());
 
     // Just return the bounds as setup. This is equivalent to the box being at the origin.
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
@@ -441,19 +446,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
 
     // Intentionally don't set the mapping for "tag2". It's expected the default material will substitute.
     AddTerrainPhysicsColliderToEntity(config);
-    ActivateEntity(m_entity.get());
-
-    // Validate material list is generated with the default material
-    {
-        AZStd::vector<Physics::MaterialId> materialList;
-        Physics::HeightfieldProviderRequestsBus::EventResult(
-            materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
-
-        // The materialList should be 2 items long: the default material and mat1.
-        EXPECT_EQ(materialList.size(), 2);
-        EXPECT_EQ(materialList[0], defaultSurfaceMaterial);
-        EXPECT_EQ(materialList[1], mat1);
-    }
 
     const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
     const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
@@ -482,6 +474,20 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
     }
     );
 
+    ActivateEntity(m_entity.get());
+
+    // Validate material list is generated with the default material
+    {
+        AZStd::vector<Physics::MaterialId> materialList;
+        Physics::HeightfieldProviderRequestsBus::EventResult(
+            materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
+
+        // The materialList should be 2 items long: the default material and mat1.
+        EXPECT_EQ(materialList.size(), 2);
+        EXPECT_EQ(materialList[0], defaultSurfaceMaterial);
+        EXPECT_EQ(materialList[1], mat1);
+    }
+
     // Validate material indices 
     {
         AZStd::vector<Physics::HeightMaterialPoint> heightsAndMaterials;
@@ -507,17 +513,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
     const Physics::MaterialId defaultSurfaceMaterial = Physics::MaterialId::Create();
     config.m_defaultMaterialSelection.SetMaterialId(defaultSurfaceMaterial);
     AddTerrainPhysicsColliderToEntity(config);
-    ActivateEntity(m_entity.get());
-
-    // Validate material list is generated with the default material
-    {
-        AZStd::vector<Physics::MaterialId> materialList;
-        Physics::HeightfieldProviderRequestsBus::EventResult(
-            materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
-
-        EXPECT_EQ(materialList.size(), 1);
-        EXPECT_EQ(materialList[0], defaultSurfaceMaterial);
-    }
 
     const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
     const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
@@ -548,6 +543,18 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
             [mockHeight]([[maybe_unused]]size_t x, [[maybe_unused]]size_t y){ return mockHeight; });
     }
     );
+
+    ActivateEntity(m_entity.get());
+
+    // Validate material list is generated with the default material
+    {
+        AZStd::vector<Physics::MaterialId> materialList;
+        Physics::HeightfieldProviderRequestsBus::EventResult(
+            materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
+
+        EXPECT_EQ(materialList.size(), 1);
+        EXPECT_EQ(materialList[0], defaultSurfaceMaterial);
+    }
 
     // Validate material indices 
     {

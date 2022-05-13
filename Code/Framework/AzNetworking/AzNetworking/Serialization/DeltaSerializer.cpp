@@ -257,6 +257,11 @@ namespace AzNetworking
         ;
     }
 
+    DeltaSerializerApply::~DeltaSerializerApply()
+    {
+        ;
+    }
+
     SerializerMode DeltaSerializerApply::GetSerializerMode() const
     {
         return SerializerMode::WriteToObject;

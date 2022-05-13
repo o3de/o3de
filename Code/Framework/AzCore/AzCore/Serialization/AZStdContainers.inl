@@ -1783,7 +1783,7 @@ namespace AZ
             /// Returns true if the container is a smart pointer.
             bool IsSmartPointer() const override             { return true; }
 
-            /// Returns true if the container elements can be addressesd by index, otherwise false.
+            /// Returns true if the container elements can be addressed by index, otherwise false.
             bool CanAccessElementsByIndex() const override   { return false; }
 
             /// Reserve element
@@ -1796,6 +1796,7 @@ namespace AZ
             }
 
             /// Get an element's address by its index (called before the element is loaded).
+            /// Caller should ensure CanAccessElementsByIndex returns true for this to be valid.
             void* GetElementByIndex(void* instance, const SerializeContext::ClassElement* classElement, size_t index) override
             {
                 (void)classElement;
@@ -1808,7 +1809,7 @@ namespace AZ
                     return false;
                 };
                 EnumElements(instance, captureValue);
-                typename T::value_type *valuePtr = *reinterpret_cast<typename T::value_type**>(ptrToRawPtr);
+                typename T::value_type* valuePtr = *reinterpret_cast<typename T::value_type**>(ptrToRawPtr);
                 return valuePtr;
             }
 
@@ -2873,6 +2874,11 @@ namespace AZ
         }
     };
 
+    AZ_INLINE const Uuid GetGenericClassTupleTypeId()
+    {
+        return Uuid("{F98DF943-F870-4FE2-B6A9-3E8BC5861782}");
+    };
+
     /// Generic specialization for AZStd::tuple
     template<typename... Types>
     struct SerializeGenericTypeInfo< AZStd::tuple<Types...> >
@@ -2883,7 +2889,7 @@ namespace AZ
             : public GenericClassInfo
         {
         public:
-            AZ_TYPE_INFO(GenericClassTuple, "{F98DF943-F870-4FE2-B6A9-3E8BC5861782}");
+            AZ_TYPE_INFO(GenericClassTuple, GetGenericClassTupleTypeId());
             GenericClassTuple()
                 : m_classData{ SerializeContext::ClassData::Create<TupleType>("AZStd::tuple", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_tupleContainer) }
             {

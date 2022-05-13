@@ -67,9 +67,11 @@ namespace AzFramework::Scripts
             EntitySpawnTicket m_spawnTicket;
         };
         
+        using ResultCommand = AZStd::variant<SpawnResult, DespawnResult>;
+
+        void QueueProcessResult(const ResultCommand& resultCommand); 
         void ProcessResults();
 
-        using ResultCommand = AZStd::variant<SpawnResult, DespawnResult>;
         AZStd::vector<ResultCommand> m_resultCommands;
         AZStd::recursive_mutex m_mutex;
     };

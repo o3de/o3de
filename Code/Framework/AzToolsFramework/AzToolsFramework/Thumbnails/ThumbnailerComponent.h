@@ -49,7 +49,6 @@ namespace AzToolsFramework
             void UnregisterThumbnailProvider(const char* providerName) override;
             SharedThumbnail GetThumbnail(SharedThumbnailKey thumbnailKey) override;
             bool IsLoading(SharedThumbnailKey thumbnailKey) override;
-            QThreadPool* GetThreadPool() override;
 
             void RedrawThumbnail();
 
@@ -69,9 +68,6 @@ namespace AzToolsFramework
             SharedThumbnail m_missingThumbnail;
             //! Default loading thumbnail used when thumbnail is found by is not yet generated
             SharedThumbnail m_loadingThumbnail;
-            //! There is only a limited number of threads on global threadPool, because there can be many thumbnails rendering at once
-            //! an individual threadPool is needed to avoid deadlocks
-            QThreadPool m_threadPool;
         };
     } // Thumbnailer
 } // namespace AssetBrowser

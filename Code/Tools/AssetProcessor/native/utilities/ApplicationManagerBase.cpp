@@ -94,7 +94,7 @@ int ApplicationManagerBase::ProcessedAssetCount() const
 }
 int ApplicationManagerBase::FailedAssetsCount() const
 {
-    return m_failedAssetsCount;
+    return static_cast<int>(m_failedAssets.size());
 }
 
 void ApplicationManagerBase::ResetProcessedAssetCount()
@@ -104,7 +104,7 @@ void ApplicationManagerBase::ResetProcessedAssetCount()
 
 void ApplicationManagerBase::ResetFailedAssetCount()
 {
-    m_failedAssetsCount = 0;
+    m_failedAssets = AZStd::set<AZStd::string>{};
 }
 
 
@@ -178,6 +178,7 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     const APCommandLineSwitch Command_debugOutput("debugOutput", "When enabled, builders that support it will output debug information as product assets. Used primarily with scene files.");
     const APCommandLineSwitch Command_sortJobsByDBSourceName("sortJobsByDBSourceName", "When enabled, sorts pending jobs with equal priority and dependencies by database source name instead of job ID. Useful for automated tests to process assets in the same order each time.");
     const APCommandLineSwitch Command_truncatefingerprint("truncatefingerprint", "Truncates the fingerprint used for processed assets. Useful if you plan to compress product assets to share on another machine because some compression formats like zip will truncate file mod timestamps.");
+    const APCommandLineSwitch Command_reprocessFileList("reprocessFileList", "Reprocesses files in the passed in newline separated text file.");
     const APCommandLineSwitch Command_help("help", "Displays this message.");
     const APCommandLineSwitch Command_h("h", Command_help.m_helpText);
 
@@ -205,6 +206,11 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     {
         m_dependencyScanPattern = commandLine->GetSwitchValue(Command_dsp.m_switch, 0).c_str();
     }
+
+    if (commandLine->HasSwitch(Command_reprocessFileList.m_switch))
+    {
+        m_reprocessFileList = commandLine->GetSwitchValue(Command_reprocessFileList.m_switch, 0).c_str();
+    }    
 
     m_fileDependencyScanPattern = "*";
 
@@ -303,6 +309,7 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_debugOutput.m_switch, Command_debugOutput.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_sortJobsByDBSourceName.m_switch, Command_sortJobsByDBSourceName.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_truncatefingerprint.m_switch, Command_truncatefingerprint.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_reprocessFileList.m_switch, Command_reprocessFileList.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_help.m_switch, Command_help.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_h.m_switch, Command_h.m_helpText);
         AZ_TracePrintf("AssetProcessor", "\tregset : set the given registry key to the given value.\n");
@@ -493,7 +500,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
             {
                 m_fileStateCache->UpdateFile(path);
             }
-            
+
             [[maybe_unused]] bool result = QMetaObject::invokeMethod(
                 m_assetProcessorManager,
                 [this, path]
@@ -940,6 +947,19 @@ bool ApplicationManagerBase::Run()
 
     AZ_Printf(AssetProcessor::ConsoleChannel, "-----------------------------------------\n");
     AZ_Printf(AssetProcessor::ConsoleChannel, "Asset Processor Batch Processing complete\n");
+
+    if (!m_failedAssets.empty())
+    {
+        AZ_Printf(AssetProcessor::ConsoleChannel, "---------------FAILED ASSETS-------------\n");
+
+        for (const auto& failedAsset : m_failedAssets)
+        {
+            AZ_Printf(AssetProcessor::ConsoleChannel, "%s\n", failedAsset.c_str());
+        }
+
+        AZ_Printf(AssetProcessor::ConsoleChannel, "-----------------------------------------\n");
+    }
+
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Assets Successfully Processed: %d.\n", ProcessedAssetCount());
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Assets Failed to Process: %d.\n", FailedAssetsCount());
     AZ_Printf(AssetProcessor::ConsoleChannel, "Number of Warnings Reported: %d.\n", m_warningCount);
@@ -1206,6 +1226,11 @@ void ApplicationManagerBase::CheckForIdle()
 
     if (CheckFullIdle())
     {
+        if (CheckReprocessFileList())
+        {
+            return;
+        }
+         
         if (shouldExit)
         {
             // If everything else is done, and it was requested to scan for missing product dependencies, perform that scan now.
@@ -1334,6 +1359,48 @@ bool ApplicationManagerBase::GetAssetDatabaseLocation(AZStd::string& location)
 }
 
 // ------------------------------------------------------------
+
+bool ApplicationManagerBase::CheckReprocessFileList()
+{
+    if (m_reprocessFileList.isEmpty() && m_filesToReprocess.isEmpty())
+    {
+        return false;
+    }
+
+    if (!m_reprocessFileList.isEmpty())
+    {
+        QFile reprocessFile(m_reprocessFileList);
+        m_reprocessFileList.clear();
+        if (!reprocessFile.open(QIODevice::ReadOnly))
+        {
+            AZ_Error("AssetProcessor", false, "Unable to open reprocess file list with path %s.", reprocessFile.fileName().toUtf8().data());
+            return false;
+        }
+
+        while (!reprocessFile.atEnd())
+        {
+            m_filesToReprocess.append(reprocessFile.readLine());
+        }
+
+        reprocessFile.close();
+
+        if (m_filesToReprocess.empty())
+        {
+            AZ_Error(
+                "AssetProcessor", false, "No files listed to reprocess in the file at path %s.", reprocessFile.fileName().toUtf8().data());
+            return false;
+        }
+
+    }
+
+    // Queue one at a time, and wait for idle.
+    // This makes sure the files in the list are processed in the same order.
+    // Otherwise, the order can shuffle based on Asset Processor state.
+    m_assetProcessorManager->RequestReprocess(m_filesToReprocess.front());
+    m_filesToReprocess.pop_front();
+
+    return true;
+}
 
 bool ApplicationManagerBase::Activate()
 {
@@ -1510,6 +1577,40 @@ bool ApplicationManagerBase::InitializeInternalBuilders()
     return result;
 }
 
+static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& result, int retryCount, AssetProcessor::BuilderRef& builderRef)
+{
+    // If a lost connection occured or the process was terminated before a response can be read, and there is another retry to get the
+    // response from a Builder, then handle the logic to log and sleep before attempting the retry of the job
+    if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+         result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
+    {
+        const int delay = 1 << (retryCount-1);
+
+        // Check if we need a new builder, and if so, request a new one
+        if (!builderRef->IsValid())
+        {
+            // If the connection was lost and the process handle is no longer valid, then we need to request a new builder to reprocess the job
+            AZStd::string oldBuilderId = builderRef->GetUuid().ToString<AZStd::string>();
+            builderRef.release();
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
+                            oldBuilderId.c_str(),
+                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                            retryCount+1,
+                            delay);
+        } 
+        else
+        {
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying (Attempt %d  with %d second delay)",
+                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                            retryCount+1,
+                            delay);
+        }
+        AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
+    }
+}
+
 void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::AssetBuilderDesc& builderDesc)
 {
     if (!builderDesc.IsExternalBuilder())
@@ -1555,8 +1656,12 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
-                } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
-                         retryCount <= AssetProcessor::RetriesForJobNetworkError);
+
+                    HandleConditionalRetry(result, retryCount, builderRef);
+
+                } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection || 
+                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
+                          retryCount <= AssetProcessor::RetriesForJobLostConnection);
             }
             else
             {
@@ -1564,9 +1669,10 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
             }
         };
 
+        const bool debugOutput = m_assetProcessorManager->GetBuilderDebugFlag();
         // Also override the processJob function to run externally
         modifiedBuilderDesc.m_processJobFunction =
-            [](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+            [debugOutput](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
         {
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
@@ -1575,6 +1681,13 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
 
             if (builderRef)
             {
+                if (debugOutput)
+                {
+                    AssetProcessor::BuilderManagerBus::Broadcast(
+                        &AssetProcessor::BuilderManagerBusTraits::AddAssetToBuilderProcessedList, builderRef->GetUuid(),
+                        request.m_fullPath);
+                }
+
                 int retryCount = 0;
                 AssetProcessor::BuilderRunJobOutcome result;
 
@@ -1583,8 +1696,12 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
-                } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
-                         retryCount <= AssetProcessor::RetriesForJobNetworkError);
+                    
+                    HandleConditionalRetry(result, retryCount, builderRef);
+                    
+                } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
+                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
+                          retryCount <= AssetProcessor::RetriesForJobLostConnection);
             }
             else
             {

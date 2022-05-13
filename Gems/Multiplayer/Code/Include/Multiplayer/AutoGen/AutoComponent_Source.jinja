@@ -1483,7 +1483,7 @@ namespace {{ Component.attrib['Namespace'] }}
     {{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Client', true)|indent(4) }}
 
 {% for Service in Component.iter('ComponentRelation') %}
-{%      if (Service.attrib['HasController']|booleanTrue) and (Service.attrib['Constraint'] != 'Incompatible') %}
+{%      if (Service.attrib['Constraint'] != 'Incompatible') and (Service.attrib['HasController']|booleanTrue)%}
     {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}Controller* {{ ControllerBaseName }}::Get{{ Service.attrib['Name'] }}Controller()
     {
         Multiplayer::MultiplayerComponent* controllerComponent = GetParent().Get{{ Service.attrib['Name'] }}();

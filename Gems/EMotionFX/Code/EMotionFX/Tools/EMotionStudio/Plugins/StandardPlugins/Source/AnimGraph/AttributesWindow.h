@@ -87,7 +87,6 @@ namespace EMStudio
         AZStd::vector<QCheckBox*>   m_checkboxes;
     };
 
-
     class AttributesWindow
         : public QWidget
         , public AttributesWindowRequestBus::Handler
@@ -135,6 +134,7 @@ namespace EMStudio
         void OnPasteConditions();
         void OnPasteConditionsSelective();
         void OnConditionContextMenu(const QPoint& position);
+        void UpdateAndShowInInspector();
 
     private slots:
         void AddCondition(const AZ::TypeId& conditionType);
@@ -148,7 +148,6 @@ namespace EMStudio
         void OnRemoveTransitionAction();
         void OnRemoveStateAction();
 
-        void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
     private:
         AddConditionButton* m_addConditionButton = nullptr;

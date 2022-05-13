@@ -44,8 +44,8 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "EditorModeFeedbackPassParent",
-                        "Attachment": "OutputColor"
+                        "Pass": "ChromaticAberrationPass",
+                        "Attachment": "Output"
                     }
                 },
                 {
@@ -215,28 +215,7 @@
 			                }
 			            }
 		            ]
-		        },
-		        {
-                    "Name": "EditorModeFeedbackPassParent",
-                    "TemplateName": "EditorModeFeedbackParentTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "Depth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputColor",
-                            "AttachmentRef": {
-                                "Pass": "ChromaticAberrationPass",
-                                "Attachment": "Output"
-                            }
-                        }
-                    ]
-                }
+		        }
             ]
         }
     }

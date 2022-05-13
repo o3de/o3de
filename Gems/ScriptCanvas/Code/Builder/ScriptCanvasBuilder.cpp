@@ -293,6 +293,8 @@ namespace ScriptCanvasBuilder
                 overrideValue.SetAllowSignalOnChange(false);
             }
         }
+
+        m_isComponentScript = abstractCodeModel->GetInterface().RefersToSelfEntityId();
     }
 
     void BuildVariableOverrides::SetHandlesToDescription()
@@ -310,7 +312,9 @@ namespace ScriptCanvasBuilder
         ScriptCanvas::RuntimeDataOverrides runtimeOverrides;
 
         runtimeOverrides.m_runtimeAsset = AZ::Data::Asset<ScriptCanvas::RuntimeAsset>
-            (AZ::Data::AssetId(buildOverrides.m_source.Id(), AZ_CRC("RuntimeData", 0x163310ae)), azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+            ({ buildOverrides.m_source.Id(), ScriptCanvas::RuntimeDataSubId }
+            , azrtti_typeid<ScriptCanvas::RuntimeAsset>()
+            , {});
         runtimeOverrides.m_runtimeAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         runtimeOverrides.m_variableIndices.resize(buildOverrides.m_variables.size());
 
@@ -420,6 +424,34 @@ namespace ScriptCanvasBuilder
         }
 
         return AZ::Success(result);
+    }
+
+    bool ReplaceAsset(ScriptCanvas::RuntimeDataOverrides& overrides, ScriptCanvas::RuntimeAssetPtr asset)
+    {
+        if (!asset.Get())
+        {
+            return false;
+        }
+
+        overrides.m_runtimeAsset = asset;
+        auto dependencyCount = overrides.m_dependencies.size();
+
+        if (dependencyCount == asset->m_runtimeData.m_requiredAssets.size())
+        {
+            for (size_t index = 0; index < dependencyCount; ++index)
+            {
+                if (!ReplaceAsset(overrides.m_dependencies[index], asset->m_runtimeData.m_requiredAssets[index]))
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        return true;
     }
 }
 
