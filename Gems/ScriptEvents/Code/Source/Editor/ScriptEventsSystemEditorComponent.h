@@ -22,10 +22,6 @@ namespace AzToolsFramework { class PropertyHandlerBase; }
 
 namespace ScriptEventsEditor
 {
-    AZ::Outcome<ScriptEvents::ScriptEvent, AZStd::string> LoadDefinitionSource(const AZ::IO::Path& path);
-
-    AZ::Outcome<void, AZStd::string> SaveDefinitionSourceFile(const ScriptEvents::ScriptEvent& events, const AZ::IO::Path& path);
-
     // This is the ScriptEvent asset handler used by the Asset Editor, it does additional validation that is not
     // needed when saving the asset through the builder
     class ScriptEventAssetHandler 

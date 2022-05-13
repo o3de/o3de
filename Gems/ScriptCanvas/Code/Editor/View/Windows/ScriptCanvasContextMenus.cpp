@@ -1029,8 +1029,14 @@ namespace ScriptCanvasEditor
 
                 if (!fileName.isEmpty())
                 {
-                    // use the ScriptEventBus, also to get fundamental types
+                    // use the ScriptEventBus, also to get fundamental types(?)
                     // ScriptEventsEditor::SaveDefinitionSourceFile(result.m_event, fileName.toUtf8().constData());
+                    AZ::Outcome<void, AZStd::string> saveOutcome = AZ::Failure(AZStd::string("failed to save"));
+                    ScriptEvents::ScriptEventBus::BroadcastResult
+                        ( saveOutcome
+                        , &ScriptEvents::ScriptEventRequests::SaveDefinitionSourceFile
+                        , result.m_event
+                        , fileName.toUtf8().constData());
                 }
                 else
                 {

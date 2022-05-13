@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/IO/Path/Path.h>
+
 #include "ScriptEventSystem.h"
 #include "ScriptEventDefinition.h"
 #include "ScriptEventsAsset.h"
@@ -94,4 +96,34 @@ namespace ScriptEvents
         return &m_fundamentalTypes;
     }
 
+    AZ::Outcome<ScriptEvents::ScriptEvent, AZStd::string> ScriptEventsSystemComponentImpl::LoadDefinitionSource([[maybe_unused]] const AZ::IO::Path& path)
+    {
+
+
+
+        return AZ::Failure(AZStd::string("FINIS ME!"));
+    }
+
+    AZ::Outcome<void, AZStd::string> ScriptEventsSystemComponentImpl::SaveDefinitionSourceFile([[maybe_unused]] const ScriptEvents::ScriptEvent& events, [[maybe_unused]] const AZ::IO::Path& path)
+    {
+        using namespace ScriptEvents;
+
+        ScriptEventAssetRuntimeHandler assetHandler("assetHandler", "ScriptEvents", ".scriptevents");
+        
+        AZ::IO::FileIOStream outFileStream(path.c_str(), AZ::IO::OpenMode::ModeWrite);
+        if (!outFileStream.IsOpen())
+        {
+            return AZ::Failure(AZStd::string::format("Failed to open output file %s", path.c_str()));
+        }
+
+        ScriptEvents::ScriptEventsAsset assetData;
+        assetData.m_definition = events;
+        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset(&assetData, AZ::Data::AssetLoadBehavior::Default);
+        if (!assetHandler.SaveAssetData(asset, &outFileStream))
+        {
+            return AZ::Failure(AZStd::string::format("Failed to save output file %s", path.c_str()));
+        }
+        
+        return AZ::Success();
+    }
 }
