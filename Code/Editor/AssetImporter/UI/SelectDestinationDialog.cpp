@@ -20,7 +20,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
-static const char* g_assetProcessorLink = "<a href=\"https://o3de.org/docs/user-guide/assets/pipeline/processor-ui/\">Asset Processor</a>";
+static const char* g_assetProcessorLink = "<a href=\"https://www.o3de.org/docs/user-guide/assets/asset-processor/\">Asset Processor</a>";
 static const char* g_copyFilesMessage = "The original file will remain outside of the project and the %1 will not monitor the file.";
 static const char* g_moveFilesMessage = "The original file will be moved inside of the project and the %1 will monitor the file for changes.";
 static const char* g_selectDestinationFilesPath = "AssetImporter/SelectDestinationFilesPath";

@@ -20,6 +20,8 @@ AZ_POP_DISABLE_WARNING
 
 #include <array>
 #include <string>
+#include <iostream>
+#include <fstream>
 
 #include "CryEdit.h"
 
@@ -1458,13 +1460,29 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
     using namespace AzToolsFramework;
     if (cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript)
     {
-        // cmdInfo data is only available on startup, copy it
-        QByteArray fileStr = cmdInfo.m_strFileName.toUtf8();
-
+        std::string fileStr;
         // We support specifying multiple files in the cmdline by separating them with ';'
+        // If a semicolon list of .py files is provided we look at the arg string
+        if (cmdInfo.m_strFileName.endsWith(".py"))
+        {
+            // cmdInfo data is only available on startup, copy it
+            fileStr = cmdInfo.m_strFileName.toUtf8().constData();
+        }
+        else if (std::ifstream inputFile = std::ifstream(cmdInfo.m_strFileName.toUtf8().data()); inputFile.is_open()) 
+        {
+            // Otherwise, we look to see if we can read the file for test modules
+            // The file is expected to contain a single semicolon separated string of Editor pytest modules
+            std::getline(inputFile, fileStr);
+        }
+        else
+        {
+            AZ_Error("RunInitPythonScript", false, "Failed to read Python files from --runpythontest arg. "
+                "Expects a semi colon separated list of python modules or a file containing a semi colon separated list of python modules");
+            return;
+        }
         AZStd::vector<AZStd::string_view> fileList;
         AZ::StringFunc::TokenizeVisitor(
-            fileStr.constData(),
+            fileStr.c_str(),
             [&fileList](AZStd::string_view elem)
             {
                 fileList.push_back(elem);

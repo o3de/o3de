@@ -13,6 +13,11 @@
 static const uint MacroClipmapStackSizeMax = 16u;
 static const uint DetailClipmapStackSizeMax = 16u;
 static const uint StackSizeMax = 16u; // = max(MacroClipmapStackSizeMax, DetailClipmapStackSizeMax)
+// Each clipmap can have at most 6 update regions based on the current algorithm.
+// Due to compilation limitation, the size of arrays must be direct constant.
+static const uint UpdateRegionMax = 6u;
+static const uint MacroClipmapUpdateRegionMax = 96u; // = MacroClipmapStackSizeMax * 6
+static const uint DetailClipmapUpdateRegionMax = 96u; // = DetailClipmapStackSizeMax * 6
 
 ShaderResourceGroupSemantic SRG_Terrain
 {
@@ -110,23 +115,34 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         uint m_detailClipmapStackSize;
 
         //! The size of the clipmap image in each layer.
-        float m_clipmapSize;
-        
-        uint m_padding;
+        //! Given 2 copies in different types to save casting.
+        float m_clipmapSizeFloat;
+        uint m_clipmapSizeUint;
 
-        // Clipmap centers in normalized UV coordinates [0, 1].
+        // Clipmap centers in texel coordinates ranging [0, size).
         // xy represent previous clipmap centers, zw represent current clipmap centers.
         // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
         // They are used for toroidal addressing and may move each frame based on the view point movement.
         // The move distance is scaled differently in each layer.
-        float4 m_macroClipmapCenters[MacroClipmapStackSizeMax];
-        float4 m_detailClipmapCenters[DetailClipmapStackSizeMax];
+        uint4 m_macroClipmapCenters[MacroClipmapStackSizeMax];
+        uint4 m_detailClipmapCenters[DetailClipmapStackSizeMax];
 
         // A list of reciprocal the clipmap scale [s],
         // where 1 pixel in the current layer of clipmap represents s meters. 
         // Fast lookup list to avoid redundant calculation in shaders.
         // x: macro; y: detail
         float4 m_clipmapScaleInv[StackSizeMax];
+
+        // The region of the clipmap that needs update.
+        // Each clipmap can have 0-6 regions to update each frame.
+        uint4 m_macroClipmapBoundsRegions[MacroClipmapUpdateRegionMax];
+        uint4 m_detailClipmapBoundsRegions[DetailClipmapUpdateRegionMax];
+
+        // Numbers match the compute shader invoking call dispatch(X, Y, 1).
+        uint m_macroDispatchGroupCountX;
+        uint m_macroDispatchGroupCountY;
+        uint m_detailDispatchGroupCountX;
+        uint m_detailDispatchGroupCountY;
     };
 
     MeshData m_meshData;
