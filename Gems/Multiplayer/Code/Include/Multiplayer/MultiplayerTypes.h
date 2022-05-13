@@ -24,7 +24,16 @@ namespace Multiplayer
     static constexpr uint32_t RewindHistorySize = 128;
 
     //! The default blend factor for ScopedAlterTime
-    static constexpr float DefaultBlendFactor = 1.f;
+    static constexpr float DefaultBlendFactor = 1.0f;
+
+    //! The maximum number of entity updates we can stuff into a single update packet
+    static constexpr uint32_t MaxAggregateEntityMessages = 2048;
+
+    //! The maximum number of RPC's we can aggregate into a single packet
+    static constexpr uint32_t MaxAggregateRpcMessages = 1024;
+
+    //! The maximum number of netEntityIds we can stuff into a single reset packet
+    static constexpr uint32_t MaxAggregateEntityResets = 2048;
 
     using HostId = AzNetworking::IpAddress;
     static const HostId InvalidHostId = HostId();
@@ -32,10 +41,8 @@ namespace Multiplayer
     AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint64_t);
     static constexpr NetEntityId InvalidNetEntityId = static_cast<NetEntityId>(-1);
 
-    using NetEntityIdSet = AZStd::unordered_set<NetEntityId>;
+    using NetEntityIdSet = AZStd::set<NetEntityId>;
 
-    //! The maximum number of netEntityIds we can stuff into a single reset packet
-    static const uint32_t MaxAggregateEntityResets = 2048;
     using NetEntityIdsForReset = AZStd::fixed_vector<NetEntityId, MaxAggregateEntityResets>;
 
     AZ_TYPE_SAFE_INTEGRAL(NetComponentId, uint16_t);

@@ -1731,6 +1731,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ RecordName }} record = {{ RecordName }}::AttachRecord(replicationRecord);
 
+        serializer.BeginObject("{{ ComponentBaseName }}");
         if (replicationRecord.ContainsAuthorityToClientBits())
         {
             SerializeAuthorityToClientProperties(record, serializer);
@@ -1747,6 +1748,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {
             SerializeAutonomousToAuthorityProperties(record, serializer);
         }
+        serializer.EndObject("{{ ComponentBaseName }}");
         return serializer.IsValid();
     }
 

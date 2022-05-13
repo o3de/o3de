@@ -166,7 +166,10 @@ namespace Multiplayer
         ReplicationRecord m_predictableRecord = NetEntityRole::Autonomous;
         ReplicationRecord m_localNotificationRecord = NetEntityRole::InvalidRole;
         PrefabEntityId    m_prefabEntityId;
-        AZStd::unordered_map<NetComponentId, MultiplayerComponent*> m_multiplayerComponentMap;
+
+        // It is important that this component map be ordered, as we walk it to generate serialization ordering
+        AZStd::map<NetComponentId, MultiplayerComponent*> m_multiplayerComponentMap;
+
         AZStd::vector<MultiplayerComponent*> m_multiplayerSerializationComponentVector;
         AZStd::vector<MultiplayerComponent*> m_multiplayerInputComponentVector;
 

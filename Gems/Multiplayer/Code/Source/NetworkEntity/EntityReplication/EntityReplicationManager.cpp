@@ -20,9 +20,6 @@
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
-#include <AzNetworking/Serialization/NetworkInputSerializer.h>
-#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
-#include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -767,7 +764,7 @@ namespace Multiplayer
                         // This can happen when Shard A migrates an entity to Shard B, then shard B migrates the entity to Shard C, and Shard A tries to delete a replicator it had to Shard C (which has already made a new replicator for Shard A)
                         result = UpdateValidationResult::DropMessage;
                     }
-                    else if (entityReplicator->GetRemoteNetworkRole() != NetEntityRole::Authority) // We expect to the remote role to be NetEntityRole::Authority
+                    else if (entityReplicator->GetRemoteNetworkRole() != NetEntityRole::Authority) // We expect the remote role to be NetEntityRole::Authority
                     {
                         // This entity has migrated previously, and we haven't heard back that the remove was successful, so we can accept the message
                         AZ_Assert(entityReplicator->IsMarkedForRemoval() && entityReplicator->GetRemoteNetworkRole() == NetEntityRole::Server, "Unexpected server message is not Authority or Server");
@@ -834,7 +831,7 @@ namespace Multiplayer
             return HandleEntityDeleteMessage(entityReplicator, packetHeader, updateMessage);
         }
 
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(updateMessage.GetData()->GetBuffer(), static_cast<uint32_t>(updateMessage.GetData()->GetSize()));
+        OutputSerializer outputSerializer(updateMessage.GetData()->GetBuffer(), static_cast<uint32_t>(updateMessage.GetData()->GetSize()));
 
         PrefabEntityId prefabEntityId;
         if (updateMessage.GetHasValidPrefabId())
@@ -881,6 +878,7 @@ namespace Multiplayer
             {
                 if (!entityReplicator->HandleRpcMessage(invokingConnection, rpcMessage))
                 {
+                    AZ_Assert(false, "Failed processing RPC messages, disconnecting");
                     return false;
                 }
             }
@@ -1186,7 +1184,7 @@ namespace Multiplayer
                 // Send an update packet if it needs one
                 propPublisher->GenerateRecord();
                 bool needsNetworkPropertyUpdate = propPublisher->PrepareSerialization();
-                AzNetworking::NetworkInputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
+                InputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
                 if (needsNetworkPropertyUpdate)
                 {
                     // Write out entity state into the buffer
@@ -1214,7 +1212,7 @@ namespace Multiplayer
         {
             if (message.m_propertyUpdateData.GetSize() > 0)
             {
-                AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetSize()));
+                OutputSerializer outputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetSize()));
                 if (!HandlePropertyChangeMessage
                 (
                     invokingConnection,

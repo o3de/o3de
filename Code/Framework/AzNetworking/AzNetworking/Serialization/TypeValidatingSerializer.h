@@ -9,23 +9,43 @@
 #pragma once
 
 #include <AzNetworking/Serialization/ISerializer.h>
-#include <AzCore/std/containers/map.h>
 
 namespace AzNetworking
 {
-    // StringifySerializer
-    // Generate a debug string of a serializable object
-    class StringifySerializer
-        : public ISerializer
+    enum class ValidateSerializeType : uint8_t
+    {
+        Bool,
+        Char,
+        Int8,
+        Int16,
+        Int32,
+        Int64,
+        Uint8,
+        Uint16,
+        Uint32,
+        Uint64,
+        Float,
+        Double,
+        ByteArray,
+        ObjectStart,
+        ObjectEnd
+    };
+
+    const char* GetEnumString(ValidateSerializeType value);
+
+    //! @class SerializerTypeValidator
+    //! @brief A helper that can be used by any serializer to inject type information into the serialized data.
+    template <typename BASE_TYPE>
+    class TypeValidatingSerializer final
+        : public BASE_TYPE
     {
     public:
 
-        using ValueMap = AZStd::map<AZStd::string, AZStd::string>;
-
-        StringifySerializer() = default;
-
-        //! After serializing objects, get the serialized values as a map of key/value pairs.
-        const ValueMap& GetValueMap() const;
+        //! Constructor.
+        //! @param buffer         output buffer to read from
+        //! @param bufferCapacity capacity of the buffer in bytes
+        TypeValidatingSerializer(uint8_t* buffer, uint32_t bufferCapacity);
+        TypeValidatingSerializer(const uint8_t* buffer, uint32_t bufferCapacity);
 
         // ISerializer interfaces
         SerializerMode GetSerializerMode() const override;
@@ -48,17 +68,17 @@ namespace AzNetworking
         const uint8_t* GetBuffer() const override;
         uint32_t GetCapacity() const override;
         uint32_t GetSize() const override;
-        void ClearTrackedChangesFlag() override {}
-        bool GetTrackedChangesFlag() const override { return false; }
+        void ClearTrackedChangesFlag() override;
+        bool GetTrackedChangesFlag() const override;
         // ISerializer interfaces
 
     private:
 
-        template <typename T>
-        bool ProcessData(const char* name, const T& value);
+        bool Validate(const char* name, ValidateSerializeType type);
 
-        ValueMap m_valueMap;
-        AZStd::string m_prefix;
-        AZStd::deque<AZStd::size_t> m_prefixSizeStack;
+        bool m_enabled = false;
+        bool m_validating = false;
     };
 }
+
+#include <AzNetworking/Serialization/TypeValidatingSerializer.inl>

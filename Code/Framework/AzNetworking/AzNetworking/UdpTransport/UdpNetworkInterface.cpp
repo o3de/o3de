@@ -129,7 +129,7 @@ namespace AzNetworking
     {
         if (m_connectionSet.GetConnection(remoteAddress) != nullptr)
         {
-            AZLOG_INFO("Attempting to connect to an endpoint that already has a connection");
+            AZLOG_INFO("Attempting to connect to an endpoint (%s) that already has a connection", remoteAddress.GetString().c_str());
             return InvalidConnectionId;
         }
 

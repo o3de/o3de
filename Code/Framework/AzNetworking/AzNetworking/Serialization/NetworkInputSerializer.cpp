@@ -97,12 +97,12 @@ namespace AzNetworking
         return SerializeBoundedValue<uint32_t>(0, bufferCapacity, outSize) && SerializeBytes(reinterpret_cast<uint8_t*>(buffer), outSize);
     }
 
-    bool NetworkInputSerializer::BeginObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool NetworkInputSerializer::BeginObject([[maybe_unused]] const char* name)
     {
         return true;
     }
 
-    bool NetworkInputSerializer::EndObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool NetworkInputSerializer::EndObject([[maybe_unused]] const char* name)
     {
         return true;
     }
