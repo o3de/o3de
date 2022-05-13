@@ -102,7 +102,7 @@ namespace EditorPythonBindings
             PythonMarshalTypeRequests::BehaviorTraits traits,
             pybind11::object pythonObj,
             const AZ::TypeId& elementTypeId,
-            AZ::BehaviorValueParameter& outValue);
+            AZ::BehaviorArgument& outValue);
 
     } // namespace Container
 }
