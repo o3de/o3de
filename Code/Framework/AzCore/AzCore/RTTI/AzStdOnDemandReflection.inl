@@ -57,7 +57,7 @@ namespace AZ
 
     namespace OnDemandLuaFunctions
     {
-        inline void AnyToLua(lua_State* lua, BehaviorValueParameter& param);
+        inline void AnyToLua(lua_State* lua, BehaviorArgument& param);
     }
     namespace ScriptCanvasOnDemandReflection
     {
@@ -256,10 +256,10 @@ namespace AZ
         auto behaviorForwardingFunction = [function](T... args)
         {
             AZStd::tuple<decay_array<T>...> lvalueWrapper(AZStd::forward<T>(args)...);
-            using BVPReserveArray = AZStd::array<AZ::BehaviorValueParameter, sizeof...(args)>;
+            using BVPReserveArray = AZStd::array<AZ::BehaviorArgument, sizeof...(args)>;
             auto MakeBVPArrayFunction = [](auto&&... element)
             {
-                return BVPReserveArray{ {AZ::BehaviorValueParameter{&element}...} };
+                return BVPReserveArray{ {AZ::BehaviorArgument{&element}...} };
             };
             BVPReserveArray argsBVPs = AZStd::apply(MakeBVPArrayFunction, lvalueWrapper);
             function(nullptr, argsBVPs.data(), sizeof...(T));
