@@ -54,7 +54,6 @@ namespace AzFramework::Scripts
 
     SpawnableScriptMediator::~SpawnableScriptMediator()
     {
-        m_ptr.reset();
         Clear();
     }
 
