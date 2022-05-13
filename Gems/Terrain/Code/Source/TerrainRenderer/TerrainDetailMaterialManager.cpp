@@ -812,7 +812,7 @@ namespace Terrain
     {
         
         AZ::Aabb untouchedRegion = AZ::Aabb::CreateNull();
-        ClipmapBounds::ClipmapBoundsRegionList edgeUpdatedRegions =
+        ClipmapBoundsRegionList edgeUpdatedRegions =
             m_detailMaterialIdBounds.UpdateCenter(AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY()), &untouchedRegion);
         
         if (!m_detailTextureImage)
@@ -827,7 +827,7 @@ namespace Terrain
             m_detailTextureImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainDetailName, nullptr, nullptr);
             AZ_Error(TerrainDetailMaterialManagerName, m_detailTextureImage, "Failed to initialize the detail texture image.");
 
-            ClipmapBounds::ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_detailMaterialIdBounds.GetWorldBounds());
+            ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_detailMaterialIdBounds.GetWorldBounds());
             for (const auto& region : updateRegions)
             {
                 UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);
@@ -846,7 +846,7 @@ namespace Terrain
                 m_dirtyDetailRegion = m_dirtyDetailRegion.GetClamped(untouchedRegion);
                 if (m_dirtyDetailRegion.IsValid())
                 {
-                    ClipmapBounds::ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_dirtyDetailRegion);
+                    ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_dirtyDetailRegion);
                     for (const auto& region : updateRegions)
                     {
                         UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);

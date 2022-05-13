@@ -25,10 +25,10 @@ namespace EditorPythonBindings
         }
 
         AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> PythonToBehaviorValueParameter(
-            PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue) override;
+            PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue) override;
 
         AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> BehaviorValueParameterToPython(
-            AZ::BehaviorValueParameter& behaviorValue) override;
+            AZ::BehaviorArgument& behaviorValue) override;
 
         bool CanConvertPythonToBehaviorValue(PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj) const override;
 

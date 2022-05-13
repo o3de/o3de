@@ -267,7 +267,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    Dom::Value ReflectionAdapter::GetContents() const
+    Dom::Value ReflectionAdapter::GenerateContents() const
     {
         m_impl->m_builder.BeginAdapter();
         if (m_instance != nullptr)
