@@ -367,6 +367,12 @@
                     },
                     "Debug Options": {
                         "Auto Update in Editor": true
+                    },
+                    "Navigation Mesh Asset": {
+                        "assetId": {
+                            "guid": "{4E0141A9-262C-5A2C-BDD5-5AD295E11F3E}"
+                        },
+                        "assetHint": "levels/navigationuserexperience/navmesh.navmesh"
                     }
                 },
                 "Component_[14022217168872949369]": {

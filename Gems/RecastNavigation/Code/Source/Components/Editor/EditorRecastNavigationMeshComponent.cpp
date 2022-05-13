@@ -10,18 +10,23 @@
 #include "EditorRecastNavigationMeshConfig.h"
 
 #include <DetourDebugDraw.h>
+#include <QString>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <Components/RecastNavigationMeshComponent.h>
 #include <RecastNavigation/RecastNavigationSurveyorBus.h>
+#include <SourceControl/SourceControlAPI.h>
 
 AZ_DECLARE_BUDGET(Navigation);
 
-//#pragma optimize("", off)
+#pragma optimize("", off)
 
 namespace RecastNavigation
 {
@@ -43,6 +48,7 @@ namespace RecastNavigation
                 ->Field("Configurations", &EditorRecastNavigationMeshComponent::m_meshConfig)
                 ->Field("Debug Options", &EditorRecastNavigationMeshComponent::m_meshEditorConfig)
                 ->Field("Update Navigation Mesh", &EditorRecastNavigationMeshComponent::m_updateNavigationMeshComponentFlag)
+                ->Field("Navigation Mesh Asset", &EditorRecastNavigationMeshComponent::m_navigationAsset)
                 ->Version(1)
                 ;
 
@@ -62,6 +68,13 @@ namespace RecastNavigation
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Update Navigation Mesh")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshComponent::UpdatedNavigationMeshInEditor)
+
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export to obj")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshComponent::ExportToFile)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export")
+
+                    ->DataElement(nullptr, &EditorRecastNavigationMeshComponent::m_navigationAsset,
+                        "Navigation Mesh Asset", "Pre-computed Baked navigation mesh data and saved to a disk as an asset")
                     ;
             }
         }
@@ -270,6 +283,126 @@ namespace RecastNavigation
             m_tickEvent.RemoveFromQueue();
         }
     }
+
+    static const char* const ObjExtension = "navmesh";
+    static AZStd::string NavigationPathAtProjectRoot(const AZStd::string_view name, const AZStd::string_view extension)
+    {
+        AZ::IO::Path path;
+        if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+        }
+        path /= AZ::IO::FixedMaxPathString::format("%.*s.%.*s", AZ_STRING_ARG(name), AZ_STRING_ARG(extension));
+        return path.Native();
+    }
+
+    void RequestEditSourceControl(const char* absoluteFilePath)
+    {
+        bool active = false;
+        AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(
+            active, &AzToolsFramework::SourceControlConnectionRequestBus::Events::IsActive);
+
+        if (active)
+        {
+            AzToolsFramework::SourceControlCommandBus::Broadcast(
+                &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, absoluteFilePath, true,
+                []([[maybe_unused]] bool success, [[maybe_unused]] AzToolsFramework::SourceControlFileInfo info)
+                {
+                });
+        }
+    }
+
+    static const int NAVMESHSET_MAGIC = 'M' << 24 | 'S' << 16 | 'E' << 8 | 'T'; //'MSET';
+    static const int NAVMESHSET_VERSION = 1;
+
+    struct NavMeshSetHeader
+    {
+        int magic;
+        int version;
+        int numTiles;
+        dtNavMeshParams params;
+    };
+
+    struct NavMeshTileHeader
+    {
+        dtTileRef tileRef;
+        int dataSize;
+    };
+
+    bool SaveNavigationMesh(const char* path, const dtNavMesh* mesh)
+    {
+        if (!mesh)
+        {
+            return false;
+        }
+
+        AZ::IO::FileIOStream fileStream(path, AZ::IO::OpenMode::ModeWrite);
+        if (!fileStream.IsOpen())
+        {
+            return false;
+        }
+
+        // Store header.
+        NavMeshSetHeader header = {};
+        header.magic = NAVMESHSET_MAGIC;
+        header.version = NAVMESHSET_VERSION;
+        header.numTiles = 0;
+        for (int i = 0; i < mesh->getMaxTiles(); ++i)
+        {
+            const dtMeshTile* tile = mesh->getTile(i);
+            if (!tile || !tile->header || !tile->dataSize) continue;
+            header.numTiles++;
+        }
+        memcpy(&header.params, mesh->getParams(), sizeof(dtNavMeshParams));
+
+        fileStream.Write(sizeof(NavMeshSetHeader), &header);
+        //fwrite(&header, sizeof(NavMeshSetHeader), 1, fp);
+
+        // Store tiles.
+        for (int i = 0; i < mesh->getMaxTiles(); ++i)
+        {
+            const dtMeshTile* tile = mesh->getTile(i);
+            if (!tile || !tile->header || !tile->dataSize) continue;
+
+            NavMeshTileHeader tileHeader;
+            tileHeader.tileRef = mesh->getTileRef(tile);
+            tileHeader.dataSize = tile->dataSize;
+
+            fileStream.Write(sizeof(tileHeader), &tileHeader);
+            //fwrite(&tileHeader, sizeof(tileHeader), 1, fp);
+
+            fileStream.Write(tile->dataSize, tile->data);
+            //fwrite(tile->data, tile->dataSize, 1, fp);
+        }
+
+        fileStream.Close();
+        //fclose(fp);
+
+        return true;
+    }
+
+    void EditorRecastNavigationMeshComponent::ExportToFile()
+    {
+        const AZStd::string initialAbsolutePathToExport =
+            NavigationPathAtProjectRoot(GetEntity()->GetName(), ObjExtension);
+
+        const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
+        const QString absoluteSaveFilePath = AzQtComponents::FileDialog::GetSaveFileName(
+            nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
+
+        const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
+        const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
+        if (SaveNavigationMesh(absoluteSaveFilePathCstr, m_navMesh.get()))
+        {
+            AZ_Printf("EditorRecastNavigationMeshComponent", "Exported navigation mesh to: %s", absoluteSaveFilePathCstr);
+            RequestEditSourceControl(absoluteSaveFilePathCstr);
+        }
+        else
+        {
+            AZ_Warning(
+                "EditorRecastNavigationMeshComponent", false, "Failed to export navigation mesh to: %s", absoluteSaveFilePathCstr);
+        }
+    }
 } // namespace RecastNavigation
 
-//#pragma optimize("", on)
+#pragma optimize("", on)

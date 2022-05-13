@@ -13,6 +13,7 @@
 #include "Components/RecastNavigationMeshConfig.h"
 
 #include <DetourNavMesh.h>
+#include <NavigationMeshAsset.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/ScheduledEvent.h>
@@ -76,5 +77,8 @@ namespace RecastNavigation
 
         AZ::ScheduledEvent m_updateNavMeshEvent;
         void OnUpdateNavMeshEvent();
+
+        AZ::Data::Asset<NavigationMeshAsset> m_navigationAsset;
+        void ExportToFile();        
     };
 } // namespace RecastNavigation

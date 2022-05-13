@@ -11,6 +11,7 @@
 #include <AzCore/Module/Module.h>
 #include <Components/RecastNavigationMeshComponent.h>
 #include <Components/RecastNavigationSurveyorComponent.h>
+#include <Components/RecastNavigationSystemComponent.h>
 #include <Components/RecastNavigationTiledSurveyorComponent.h>
 
 namespace RecastNavigation
@@ -29,10 +30,16 @@ namespace RecastNavigation
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
+                RecastNavigationSystemComponent::CreateDescriptor(),
                 RecastNavigationMeshComponent::CreateDescriptor(),
                 RecastNavigationSurveyorComponent::CreateDescriptor(),
                 RecastNavigationTiledSurveyorComponent::CreateDescriptor(),
                 });
+        }
+
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        {
+            return { azrtti_typeid<RecastNavigationSystemComponent>() };
         }
     };
 }// namespace RecastNavigation
