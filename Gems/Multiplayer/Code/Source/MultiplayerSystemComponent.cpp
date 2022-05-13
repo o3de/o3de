@@ -76,6 +76,8 @@ namespace Multiplayer
 {
     using namespace AzNetworking;
 
+    AZ_CVAR(uint16_t, cl_clientport, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The port to bind to for game traffic when connecting to a remote host, a value of 0 will select any available port");
     AZ_CVAR(AZ::CVarFixedString, cl_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
         "The address of the remote server or host to connect to");
     AZ_CVAR(uint16_t, cl_serverport, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port of the remote host to connect to for game traffic");
