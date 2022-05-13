@@ -32,6 +32,7 @@ namespace RecastNavigation
     class EditorRecastNavigationMeshComponent final
         : public AzToolsFramework::Components::EditorComponentBase
         , public RecastNavigationMeshCommon
+        , public AZ::Data::AssetBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorRecastNavigationMeshComponent, "{22D516D4-C98D-4783-85A4-1ABE23CAB4D4}", AzToolsFramework::Components::EditorComponentBase);
@@ -49,6 +50,9 @@ namespace RecastNavigation
 
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        // AssetBus
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
     private:
         //! Flag used for button placement
@@ -71,6 +75,7 @@ namespace RecastNavigation
         AZStd::unique_ptr<AZ::TaskGraph> m_graph;
 
         AZ::Crc32 UpdatedNavigationMeshInEditor();
+        AZ::Crc32 UpdatedNavigationAsset();
 
         AZ::ScheduledEvent m_tickEvent;
         void OnTick();
@@ -79,6 +84,10 @@ namespace RecastNavigation
         void OnUpdateNavMeshEvent();
 
         AZ::Data::Asset<NavigationMeshAsset> m_navigationAsset;
-        void ExportToFile();        
+        bool SaveNavigationMesh(const char* path, const dtNavMesh* mesh);
+        void ExportToFile();
+        void LoadFromAsset(AZ::Data::Asset<NavigationMeshAsset> asset);
+
+        void ClearNavigationMesh();
     };
 } // namespace RecastNavigation

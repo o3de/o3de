@@ -12,6 +12,9 @@
 
 namespace RecastNavigation
 {
+    static const int NAVMESHSET_MAGIC = 'M' << 24 | 'S' << 16 | 'E' << 8 | 'T'; //'MSET';
+    static const int NAVMESHSET_VERSION = 1;
+
     NavigationMeshAssetHandler::NavigationMeshAssetHandler()
         : AzFramework::GenericAssetHandler<NavigationMeshAsset>(NavigationMeshAsset::DisplayName, NavigationMeshAsset::Group, NavigationMeshAsset::Extension)
     {
@@ -23,33 +26,45 @@ namespace RecastNavigation
         [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
         NavigationMeshAsset* assetData = asset.GetAs<NavigationMeshAsset>();
-        if(assetData && stream->GetLength() > 0)
+        if (assetData && stream->GetLength() > 0)
         {
-            assetData->m_data.resize(stream->GetLength());
-            stream->Read(stream->GetLength(), assetData->m_data.data());
+            assetData->m_header = {};
+            assetData->m_tileHeaders.clear();
+            assetData->m_tileData = AZStd::make_unique<AZStd::vector<AZStd::vector<AZ::u8>>>();
 
-            // use a memory stream instead of AssetDataStream to validate the data,
-            // AssetDataStream does not allow reverse seek
-            AZ::IO::MemoryStream memStream(assetData->m_data.data(), assetData->m_data.size());
-
-            constexpr uint32_t starsfileTag(0x52415453); // "STAR"
-            uint32_t fileTag{0};
-            if (!memStream.Read(sizeof(fileTag), &fileTag) || fileTag != starsfileTag)
+            // Read the header
+            AZ::IO::SizeType bytesRead = stream->Read(sizeof(NavMeshSetHeader), &assetData->m_header);
+            if (bytesRead != sizeof(NavMeshSetHeader))
             {
                 return AZ::Data::AssetHandler::LoadResult::Error;
             }
 
-            constexpr uint32_t starsfileVersion(0x00010001);
-            uint32_t fileVersion{0};
-            if (!memStream.Read(sizeof(fileVersion), &fileVersion) || fileVersion != starsfileVersion)
+            // Read tiles.
+            bool reading = true;
+            while (reading)
             {
-                return AZ::Data::AssetHandler::LoadResult::Error;
-            }
-
-            uint32_t numStars{0};
-            if(!memStream.Read(sizeof(numStars), &numStars))
-            {
-                return AZ::Data::AssetHandler::LoadResult::Error;
+                NavMeshTileHeader tileHeader = {};
+                bytesRead = stream->Read(sizeof(NavMeshTileHeader), &tileHeader);
+                if (bytesRead == sizeof(NavMeshTileHeader))
+                {
+                    AZStd::vector<AZ::u8> tileData;
+                    tileData.resize(tileHeader.dataSize);
+                    bytesRead = stream->Read(tileHeader.dataSize, tileData.data());
+                    if (bytesRead == tileHeader.dataSize)
+                    {
+                        // successful read
+                        assetData->m_tileHeaders.push_back(tileHeader);
+                        assetData->m_tileData->push_back(tileData);
+                    }
+                    else
+                    {
+                        reading = false;
+                    }
+                }
+                else
+                {
+                    reading = false;
+                }
             }
 
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
@@ -61,6 +76,49 @@ namespace RecastNavigation
     bool NavigationMeshAssetHandler::SaveAssetData(
         [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset, [[maybe_unused]] AZ::IO::GenericStream* stream)
     {
+        NavigationMeshAsset* navAsset = asset.GetAs<NavigationMeshAsset>();
+        AZ_Assert(navAsset, "This should be a navigation mesh asset, as this is the only type we process!");
+        if (navAsset && navAsset->m_navMesh)
+        {
+            const dtNavMesh* mesh = navAsset->m_navMesh;
+            return SaveToStream(mesh, stream);
+        }
+
+        return false;
+    }
+
+    bool NavigationMeshAssetHandler::SaveToStream(const dtNavMesh* mesh, AZ::IO::GenericStream* stream)
+    {
+        // Store header.
+        NavMeshSetHeader header = {};
+        header.magic = NAVMESHSET_MAGIC;
+        header.version = NAVMESHSET_VERSION;
+        header.numTiles = 0;
+        for (int i = 0; i < mesh->getMaxTiles(); ++i)
+        {
+            const dtMeshTile* tile = mesh->getTile(i);
+            if (!tile || !tile->header || !tile->dataSize) continue;
+            header.numTiles++;
+        }
+        memcpy(&header.params, mesh->getParams(), sizeof(dtNavMeshParams));
+
+        stream->Write(sizeof(NavMeshSetHeader), &header);
+
+        // Store tiles.
+        for (int i = 0; i < mesh->getMaxTiles(); ++i)
+        {
+            const dtMeshTile* tile = mesh->getTile(i);
+            if (!tile || !tile->header || !tile->dataSize) continue;
+
+            NavMeshTileHeader tileHeader;
+            tileHeader.tileRef = mesh->getTileRef(tile);
+            tileHeader.dataSize = tile->dataSize;
+
+            stream->Write(sizeof(tileHeader), &tileHeader);
+
+            stream->Write(tile->dataSize, tile->data);
+        }
+
         return true;
     }
 } // AZ::Render

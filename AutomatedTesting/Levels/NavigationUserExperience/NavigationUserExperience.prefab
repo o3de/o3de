@@ -364,15 +364,6 @@
                     "Id": 13132592166746386465,
                     "Configurations": {
                         "Cell Size": 0.5
-                    },
-                    "Debug Options": {
-                        "Auto Update in Editor": true
-                    },
-                    "Navigation Mesh Asset": {
-                        "assetId": {
-                            "guid": "{4E0141A9-262C-5A2C-BDD5-5AD295E11F3E}"
-                        },
-                        "assetHint": "levels/navigationuserexperience/navmesh.navmesh"
                     }
                 },
                 "Component_[14022217168872949369]": {
@@ -1091,8 +1082,8 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            6.508195400238037,
-                            -2.5525598526000977,
+                            5.467819690704346,
+                            1.7595863342285156,
                             1.422839641571045
                         ],
                         "UniformScale": 2.0

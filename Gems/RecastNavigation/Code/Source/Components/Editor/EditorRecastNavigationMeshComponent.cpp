@@ -73,8 +73,13 @@ namespace RecastNavigation
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshComponent::ExportToFile)
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Export")
 
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Clears the current navigation mesh data")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshComponent::ClearNavigationMesh)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Clear Navigation Mesh")
+
                     ->DataElement(nullptr, &EditorRecastNavigationMeshComponent::m_navigationAsset,
                         "Navigation Mesh Asset", "Pre-computed Baked navigation mesh data and saved to a disk as an asset")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshComponent::UpdatedNavigationAsset)
                     ;
             }
         }
@@ -134,6 +139,8 @@ namespace RecastNavigation
 
     void EditorRecastNavigationMeshComponent::Deactivate()
     {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
+
         m_autoUpdateHandler.Disconnect();
         m_showMeshHandler.Disconnect();
 
@@ -157,6 +164,8 @@ namespace RecastNavigation
 
     void EditorRecastNavigationMeshComponent::OnTick()
     {
+        AZStd::lock_guard lock(m_navigationMeshMutex);
+
         if (!m_navMesh)
         {
             return;
@@ -257,7 +266,7 @@ namespace RecastNavigation
 
     void EditorRecastNavigationMeshComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        gameEntity->CreateComponent<RecastNavigationMeshComponent>(m_meshConfig, m_meshEditorConfig.m_showNavigationMesh);
+        gameEntity->CreateComponent<RecastNavigationMeshComponent>(m_meshConfig, m_meshEditorConfig.m_showNavigationMesh, m_navigationAsset);
     }
 
     void EditorRecastNavigationMeshComponent::OnAutoUpdateChanged(bool changed)
@@ -312,24 +321,7 @@ namespace RecastNavigation
         }
     }
 
-    static const int NAVMESHSET_MAGIC = 'M' << 24 | 'S' << 16 | 'E' << 8 | 'T'; //'MSET';
-    static const int NAVMESHSET_VERSION = 1;
-
-    struct NavMeshSetHeader
-    {
-        int magic;
-        int version;
-        int numTiles;
-        dtNavMeshParams params;
-    };
-
-    struct NavMeshTileHeader
-    {
-        dtTileRef tileRef;
-        int dataSize;
-    };
-
-    bool SaveNavigationMesh(const char* path, const dtNavMesh* mesh)
+    bool EditorRecastNavigationMeshComponent::SaveNavigationMesh(const char* path, const dtNavMesh* mesh)
     {
         if (!mesh)
         {
@@ -342,41 +334,8 @@ namespace RecastNavigation
             return false;
         }
 
-        // Store header.
-        NavMeshSetHeader header = {};
-        header.magic = NAVMESHSET_MAGIC;
-        header.version = NAVMESHSET_VERSION;
-        header.numTiles = 0;
-        for (int i = 0; i < mesh->getMaxTiles(); ++i)
-        {
-            const dtMeshTile* tile = mesh->getTile(i);
-            if (!tile || !tile->header || !tile->dataSize) continue;
-            header.numTiles++;
-        }
-        memcpy(&header.params, mesh->getParams(), sizeof(dtNavMeshParams));
-
-        fileStream.Write(sizeof(NavMeshSetHeader), &header);
-        //fwrite(&header, sizeof(NavMeshSetHeader), 1, fp);
-
-        // Store tiles.
-        for (int i = 0; i < mesh->getMaxTiles(); ++i)
-        {
-            const dtMeshTile* tile = mesh->getTile(i);
-            if (!tile || !tile->header || !tile->dataSize) continue;
-
-            NavMeshTileHeader tileHeader;
-            tileHeader.tileRef = mesh->getTileRef(tile);
-            tileHeader.dataSize = tile->dataSize;
-
-            fileStream.Write(sizeof(tileHeader), &tileHeader);
-            //fwrite(&tileHeader, sizeof(tileHeader), 1, fp);
-
-            fileStream.Write(tile->dataSize, tile->data);
-            //fwrite(tile->data, tile->dataSize, 1, fp);
-        }
-
+        NavigationMeshAssetHandler::SaveToStream(m_navMesh.get(), &fileStream);
         fileStream.Close();
-        //fclose(fp);
 
         return true;
     }
@@ -402,6 +361,53 @@ namespace RecastNavigation
             AZ_Warning(
                 "EditorRecastNavigationMeshComponent", false, "Failed to export navigation mesh to: %s", absoluteSaveFilePathCstr);
         }
+    }
+
+    void EditorRecastNavigationMeshComponent::LoadFromAsset(AZ::Data::Asset<NavigationMeshAsset> asset)
+    {
+        AZStd::lock_guard lock(m_navigationMeshMutex);
+
+        CreateNavigationMesh(GetEntityId(), m_meshConfig.m_tileSize);
+
+        for (int i = 0; i < asset->m_tileHeaders.size(); ++i)
+        {
+            const NavMeshTileHeader& tile = asset->m_tileHeaders[i];
+
+            NavigationTileData data;
+            data.m_size = tile.dataSize;
+            data.m_data = asset->m_tileData->operator[](i).data();
+
+            AttachNavigationTileToMesh(data, 0);
+        }
+    }
+
+    void EditorRecastNavigationMeshComponent::ClearNavigationMesh()
+    {
+        AZStd::lock_guard lock(m_navigationMeshMutex);
+        m_navQuery = {};
+        m_navMesh = {};
+
+        CreateNavigationMesh(GetEntityId(), m_meshConfig.m_tileSize);
+    }
+
+    AZ::Crc32 EditorRecastNavigationMeshComponent::UpdatedNavigationAsset()
+    {
+        if (m_navigationAsset.QueueLoad())
+        {
+            AZ::Data::AssetBus::Handler::BusConnect(m_navigationAsset.GetId());
+        }
+        else
+        {
+            ClearNavigationMesh();
+        }
+
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    void EditorRecastNavigationMeshComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        AZ::Data::AssetBus::Handler::BusDisconnect(m_navigationAsset.GetId());
+        LoadFromAsset(m_navigationAsset);
     }
 } // namespace RecastNavigation
 
