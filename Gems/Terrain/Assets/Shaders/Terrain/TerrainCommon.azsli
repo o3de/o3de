@@ -76,7 +76,8 @@ option bool o_useClipmap = false;
 
 struct VertexInput
 {
-    float2 m_position : POSITION;
+    float2 m_xyPosition : POSITION0;
+    float1 m_zposition : POSITION1;
 };
 
 // This class is used to calculate heights and normals for terrain. Using a class for this was the easiest way to

@@ -28,6 +28,7 @@ namespace AZ::RPI
 {
     class BufferAsset;
     class ModelAssetCreator;
+    class Scene;
 }
 
 namespace AZ::RHI
@@ -99,21 +100,15 @@ namespace Terrain
 
         struct PatchData
         {
-            AZStd::vector<VertexPosition> m_positions;
+            AZStd::vector<VertexPosition> m_xyPositions;
+            AZStd::vector<float> m_heights;
             AZStd::vector<uint16_t> m_indices;
         };
-        
-        struct SectorData
-        {
-            AZStd::fixed_vector<AZ::RPI::MeshDrawPacket, AZ::RPI::ModelLodAsset::LodCountMax> m_drawPackets;
-            AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RPI::ModelLodAsset::LodCountMax> m_srgs; // Hold on to refs so it's not dropped
-            AZ::Aabb m_aabb;
-        };
-
         struct StackSectorData
         {
-            AZ::RPI::MeshDrawPacket m_drawPacket;
+            AZ::Data::Instance<AZ::RPI::Model> m_model;
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
+            AZ::RPI::MeshDrawPacket m_drawPacket;
             AZ::Aabb m_aabb;
             int32_t m_worldX = AZStd::numeric_limits<int32_t>::max();
             int32_t m_worldY = AZStd::numeric_limits<int32_t>::max();
@@ -146,15 +141,18 @@ namespace Terrain
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
-        void RebuildSectors(MaterialInstance materialInstance, AZ::RPI::Scene& parentScene);
-        void RebuildDrawPackets(AZ::RPI::Scene& scene);
+        void RebuildSectors();
+        void RebuildDrawPackets();
 
         AZ::Outcome<AZ::Data::Asset<AZ::RPI::BufferAsset>> CreateBufferAsset(
             const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
 
         void InitializeTerrainPatch(uint16_t gridSize, PatchData& patchdata);
-        bool CreateLod(AZ::RPI::ModelAssetCreator& modelAssetCreator, const PatchData& patchData);
-        bool InitializeSectorModel();
+        bool CreateLod(AZ::RPI::ModelAssetCreator& modelAssetCreator, const AZ::RPI::BufferAssetView& zPositions);
+        bool InitializeCommonSectorData();
+        bool InitializeDefaultSectorModel();
+        AZ::Data::Instance<AZ::RPI::Model> InitializeSectorModel(uint16_t gridSize, const AZ::Vector2& worldStartPosition, float vertexSpacing);
+        AZ::Data::Instance<AZ::RPI::Model> InitializeSectorModel(const AZ::RPI::BufferAssetView& heights);
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
 
@@ -162,10 +160,17 @@ namespace Terrain
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
 
         MeshConfiguration m_config;
+        MaterialInstance m_materialInstance;
+        AZ::RPI::Scene* m_parentScene;
+
         AZ::RHI::ShaderInputNameIndex m_srgMeshDataIndex = "m_meshData";
         AZ::RHI::ShaderInputNameIndex m_patchDataIndex = "m_patchData";
 
-        AZ::Data::Instance<AZ::RPI::Model> m_sectorModel;
+        AZ::Data::Instance<AZ::RPI::Model> m_defaultSectorModel;
+        AZ::RPI::BufferAssetView m_sectorXyPositionsBufferAssetView;
+        AZ::RPI::BufferAssetView m_sector0PositionsBufferAssetView; // common buffer of 0's for when Z positions are derived from textures instad of baked into the mesh.
+        AZ::RPI::BufferAssetView m_sectorIndicesBufferAssetView;
+
         AZStd::vector<StackData> m_sectorStack;
         uint32_t m_1dSectorCount = 0;
 

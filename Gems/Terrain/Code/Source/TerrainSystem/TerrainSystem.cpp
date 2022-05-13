@@ -1211,10 +1211,12 @@ AZStd::pair<size_t, size_t> TerrainSystem::GetNumSamplesFromRegion(
         const int32_t lastSampleY = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetY() / stepSize.GetY()));
         countX = lastSampleX - firstSampleX + 1;
         countY = lastSampleY - firstSampleY + 1;
+        break;
     }
     default:
         countX = aznumeric_cast<size_t>(AZStd::floorf(inRegion.GetExtents().GetX() / stepSize.GetX()));
         countY = aznumeric_cast<size_t>(AZStd::floorf(inRegion.GetExtents().GetY() / stepSize.GetY()));
+        break;
     }
     
     return AZStd::make_pair(countX, countY);

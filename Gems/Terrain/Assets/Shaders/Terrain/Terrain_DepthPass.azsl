@@ -23,7 +23,7 @@ VSDepthOutput MainVS(in VertexInput input)
     VSDepthOutput output;
 
     HeightContext heightContext;
-    heightContext.Initialize(SceneSrg::m_heightmapImage, input.m_position, ObjectSrg::m_patchData, SceneSrg::m_terrainWorldData.m_min, SceneSrg::m_terrainWorldData.m_max);
+    heightContext.Initialize(SceneSrg::m_heightmapImage, input.m_xyPosition, ObjectSrg::m_patchData, SceneSrg::m_terrainWorldData.m_min, SceneSrg::m_terrainWorldData.m_max);
 
     if (heightContext.IsVertexOutsideOfTerrainBounds())
     {
@@ -40,7 +40,8 @@ VSDepthOutput MainVS(in VertexInput input)
     }
     else
     {
-        height = heightContext.GetHeight(SceneSrg::m_heightmapImage);
+        //height = heightContext.GetHeight(SceneSrg::m_heightmapImage);
+        height = heightContext.m_worldMin.z + IN.m_zposition * heightContext.m_heightScale;
     }
 
     float3 worldPosition = float3(heightContext.m_xyPosition, height);
