@@ -20,7 +20,7 @@ namespace EMotionFX
         : m_rotationManipulators(AZ::Transform::Identity())
     {
         m_rotationManipulators.SetCircleBoundWidth(AzToolsFramework::ManipulatorCicleBoundWidth());
-        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(false);
+        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
         EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 

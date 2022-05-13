@@ -47,7 +47,7 @@ namespace EMotionFX
         ColliderPropertyNotify(ColliderWidget* colliderWidget);
 
         void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* /*pNode*/) override;
+        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
 
         void SetPropertyEditingActive(AzToolsFramework::InstanceDataNode* /*pNode*/) override {}
         void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;

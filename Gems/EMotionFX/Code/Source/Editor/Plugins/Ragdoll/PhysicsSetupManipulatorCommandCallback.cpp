@@ -14,14 +14,14 @@ namespace EMotionFX
     bool PhysicsSetupManipulatorCommandCallback::Execute(
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
-        PhysicsSetupManipulatorRequestBus::Broadcast(&PhysicsSetupManipulatorRequests::OnUnderlyingPropertiesChanged);
+        m_manipulators->Refresh();
         return true;
     }
 
     bool PhysicsSetupManipulatorCommandCallback::Undo(
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
-        PhysicsSetupManipulatorRequestBus::Broadcast(&PhysicsSetupManipulatorRequests::OnUnderlyingPropertiesChanged);
+        m_manipulators->Refresh();
         return true;
     }
 } // namespace EMotionFX
