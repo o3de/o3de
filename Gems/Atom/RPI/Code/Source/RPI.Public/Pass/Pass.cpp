@@ -98,17 +98,10 @@ namespace AZ
             return desc;
         }
 
-        // --- Enable/Disable ---
-
         void Pass::SetEnabled(bool enabled)
         {
             m_flags.m_enabled = enabled;
             OnHierarchyChange();
-        }
-
-        bool Pass::IsEnabled() const
-        {
-            return m_flags.m_enabled;
         }
 
         // --- Error Logging ---
@@ -184,18 +177,6 @@ namespace AZ
             m_state = PassState::Orphaned;
         }
 
-        // --- Getters & Setters ---
-
-        PassState Pass::GetPassState() const
-        {
-            return m_state;
-        }
-
-        ParentPass* Pass::GetParent() const
-        {
-            return m_parent;
-        }
-
         ParentPass* Pass::AsParent()
         {
             return azrtti_cast<ParentPass*>(this);
@@ -206,40 +187,7 @@ namespace AZ
             return azrtti_cast<const ParentPass*>(this);
         }
 
-        const Name& Pass::GetName() const
-        {
-            return m_name;
-        }
-
-        const Name& Pass::GetPathName() const
-        {
-            return m_path;
-        }
-
-        uint32_t Pass::GetTreeDepth() const
-        {
-            return m_treeDepth;
-        }
-
-        PassAttachmentBindingListView Pass::GetAttachmentBindings() const
-        {
-            return m_attachmentBindings;
-        }
-
-        uint32_t Pass::GetInputCount() const
-        {
-            return uint32_t(m_inputBindingIndices.size());
-        }
-
-        uint32_t Pass::GetInputOutputCount() const
-        {
-            return uint32_t(m_inputOutputBindingIndices.size());
-        }
-
-        uint32_t Pass::GetOutputCount() const
-        {
-            return uint32_t(m_outputBindingIndices.size());
-        }
+        // --- Bindings ---
 
         PassAttachmentBinding& Pass::GetInputBinding(uint32_t index)
         {
@@ -257,11 +205,6 @@ namespace AZ
         {
             uint32_t bindingIndex = m_outputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
-        }
-
-        const PassTemplate* Pass::GetPassTemplate() const
-        {
-            return m_template.get();
         }
 
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
@@ -1357,6 +1300,7 @@ namespace AZ
             }
 
             AZ_Assert(m_state == PassState::Idle, "Pass::FrameBegin - Pass [%s] is attempting to render, but is not in the Idle state.", m_path.GetCStr());
+
             m_state = PassState::Rendering;
 
             UpdateConnectedInputBindings();
@@ -1394,21 +1338,11 @@ namespace AZ
         }
 
         // --- RenderPipeline, PipelineViewTag and DrawListTag ---
-        
-        bool Pass::HasDrawListTag() const
-        {
-            return m_flags.m_hasDrawListTag;
-        }
-        
+                
         RHI::DrawListTag Pass::GetDrawListTag() const
         {
             static RHI::DrawListTag invalidTag;
             return invalidTag;
-        }
-
-        bool Pass::HasPipelineViewTag() const
-        {
-            return m_flags.m_hasPipelineViewTag;
         }
 
         const PipelineViewTag& Pass::GetPipelineViewTag() const
@@ -1419,14 +1353,27 @@ namespace AZ
 
         void Pass::SetRenderPipeline(RenderPipeline* pipeline)
         {
-            m_pipeline = pipeline;
+            AZ_Assert(!m_pipeline || !pipeline || m_pipeline == pipeline,
+                "Switching passes between pipelines is not supported and may result in undefined behavior");
+
+            if (m_pipeline != pipeline)
+            {
+                m_pipeline = pipeline;
+
+                // Re-queue for new pipeline. 
+                if (m_pipeline != nullptr)
+                {
+                    PassState currentState = m_state;
+                    m_queueState = PassQueueState::NoQueue;
+                    QueueForBuildAndInitialization();
+                    if (currentState == PassState::Reset)
+                    {
+                        m_state = PassState::Reset;
+                    }
+                }
+            }
         }
         
-        RenderPipeline* Pass::GetRenderPipeline() const
-        {
-            return m_pipeline;
-        }
-
         void Pass::ManualPipelineBuildAndInitialize()
         {
             Build();
@@ -1498,26 +1445,6 @@ namespace AZ
             return GetPipelineStatisticsResultInternal();
         }
 
-        TimestampResult Pass::GetTimestampResultInternal() const
-        {
-            return TimestampResult();
-        }
-
-        PipelineStatisticsResult Pass::GetPipelineStatisticsResultInternal() const
-        {
-            return PipelineStatisticsResult();
-        }
-
-        void Pass::SetTimestampQueryEnabled(bool enable)
-        {
-            m_flags.m_timestampQueryEnabled = enable;
-        }
-
-        void Pass::SetPipelineStatisticsQueryEnabled(bool enable)
-        {
-            m_flags.m_pipelineStatisticsQueryEnabled = enable;
-        }
-
         bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option)
         {
             // Return false if it's already readback
@@ -1575,16 +1502,6 @@ namespace AZ
             {
                 m_attachmentCopy.lock()->FrameBegin(params);
             }
-        }
-
-        bool Pass::IsTimestampQueryEnabled() const
-        {
-            return m_flags.m_timestampQueryEnabled;
-        }
-
-        bool Pass::IsPipelineStatisticsQueryEnabled() const
-        {
-            return m_flags.m_pipelineStatisticsQueryEnabled;
         }
 
         void Pass::PrintIndent(AZStd::string& stringOutput, uint32_t indent) const
@@ -1824,4 +1741,3 @@ namespace AZ
 
     }   // namespace RPI
 }   // namespace AZ
-
