@@ -15,7 +15,7 @@
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 
-#include <ActionManager/PythonActionManagerHandler.h>
+#include <Source/ActionManager/PythonActionManagerHandler.h>
 
 namespace EditorPythonBindings
 {

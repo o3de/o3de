@@ -40,7 +40,7 @@ namespace EditorPythonBindings
     {
         return m_actionManagerInterface->RegisterAction(
             contextIdentifier, identifier, name, description, category, iconPath,
-            [h = AZStd::move(handler)]()
+            [h = AZStd::move(handler)]() mutable
             {
                 PyObject_CallObject(h.GetHandler(), NULL);
             });
@@ -62,7 +62,7 @@ namespace EditorPythonBindings
     }
 
     AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::PythonToBehavior(
-        PyObject* pyObj, [[maybe_unused]] AZ::BehaviorParameter::Traits traits, AZ::BehaviorValueParameter& outValue)
+        PyObject* pyObj, [[maybe_unused]] AZ::BehaviorParameter::Traits traits, AZ::BehaviorArgument& outValue)
     {
         outValue.ConvertTo<PythonEditorAction>();
         outValue.StoreInTempData<PythonEditorAction>({ PythonEditorAction(pyObj) });
@@ -70,7 +70,7 @@ namespace EditorPythonBindings
     }
 
     AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::BehaviorToPython(
-        const AZ::BehaviorValueParameter& behaviorValue, PyObject*& outPyObj)
+        const AZ::BehaviorArgument& behaviorValue, PyObject*& outPyObj)
     {
         PythonEditorAction* value = behaviorValue.GetAsUnsafe<PythonEditorAction>();
         outPyObj = value->GetHandler();

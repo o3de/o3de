@@ -63,7 +63,12 @@ namespace EditorPythonBindings
         }
     }
 
-    PyObject* PythonEditorAction::GetHandler() const
+    PyObject* PythonEditorAction::GetHandler()
+    {
+        return m_handler;
+    }
+
+    const PyObject* PythonEditorAction::GetHandler() const
     {
         return m_handler;
     }

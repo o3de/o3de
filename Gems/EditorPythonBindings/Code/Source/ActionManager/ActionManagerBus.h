@@ -12,7 +12,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 
-#include <ActionManager/PythonEditorAction.h>
+#include <Source/ActionManager/PythonEditorAction.h>
 
 namespace EditorPythonBindings
 {

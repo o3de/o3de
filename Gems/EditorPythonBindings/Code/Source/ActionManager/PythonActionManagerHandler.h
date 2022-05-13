@@ -7,7 +7,7 @@
  */
 
 #include <EditorPythonBindings/CustomTypeBindingBus.h>
-#include <ActionManager/ActionManagerBus.h>
+#include <Source/ActionManager/ActionManagerBus.h>
 
 namespace AzToolsFramework
 {
@@ -43,8 +43,8 @@ namespace EditorPythonBindings
 
         AllocationHandle AllocateDefault() override;
         AZStd::optional<ValueHandle> PythonToBehavior(
-            PyObject* pyObj, AZ::BehaviorParameter::Traits traits, AZ::BehaviorValueParameter& outValue) override;
-        AZStd::optional<ValueHandle> BehaviorToPython(const AZ::BehaviorValueParameter& behaviorValue, PyObject*& outPyObj) override;
+            PyObject* pyObj, AZ::BehaviorParameter::Traits traits, AZ::BehaviorArgument& outValue) override;
+        AZStd::optional<ValueHandle> BehaviorToPython(const AZ::BehaviorArgument& behaviorValue, PyObject*& outPyObj) override;
         bool CanConvertPythonToBehavior(AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const override;
         void CleanUpValue(ValueHandle handle) override;
 

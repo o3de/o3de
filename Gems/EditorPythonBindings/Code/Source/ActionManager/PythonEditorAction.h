@@ -28,7 +28,8 @@ namespace EditorPythonBindings
         PythonEditorAction& operator=(const PythonEditorAction& obj);
         virtual ~PythonEditorAction();
 
-        PyObject* GetHandler() const;
+        PyObject* GetHandler();
+        const PyObject* GetHandler() const;
 
     private:
         PyObject* m_handler = nullptr;
