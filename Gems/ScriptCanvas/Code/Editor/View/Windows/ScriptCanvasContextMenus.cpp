@@ -14,7 +14,7 @@
 #include <QVBoxLayout>
 
 #include <AzCore/UserSettings/UserSettings.h>
-
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
@@ -53,6 +53,8 @@
 #include <ScriptCanvas/GraphCanvas/MappingBus.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
+
+#include <ScriptEvents/ScriptEventsBus.h>
 
 #include "ScriptCanvasContextMenus.h"
 #include "Settings.h"
@@ -1010,8 +1012,39 @@ namespace ScriptCanvasEditor
         ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
         , [[maybe_unused]] const AZ::Vector2&)
     {
-        // tell the model, to save, model will pop-up window or something
-        // always return nothing
+        using namespace ScriptCanvas::ScriptEventGrammar;
+        ScriptCanvas::ScriptCanvasId scriptCanvasId;
+        GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
+        ScriptCanvas::Graph* graph = nullptr;
+        ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
+
+        if (graph)
+        {
+            if (const GraphToScriptEventsResult result = ParseScriptEventsDefinition(*graph); result.m_isScriptEvents)
+            {
+                AZ::IO::FixedMaxPath resolvedProjectRoot;
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
+                const auto fileName = QFileDialog::getSaveFileName
+                    ( nullptr, tr("Save As..."), resolvedProjectRoot.c_str(), tr("All ScriptEvent Files (*.scriptevents)"));
+
+                if (!fileName.isEmpty())
+                {
+                    // use the ScriptEventBus, also to get fundamental types
+                    // ScriptEventsEditor::SaveDefinitionSourceFile(result.m_event, fileName.toUtf8().constData());
+                }
+                else
+                {
+                    // different pop-up window
+                }
+            }
+            else
+            {
+                // different pop-up window
+            }
+        }
+
+        
+
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
 

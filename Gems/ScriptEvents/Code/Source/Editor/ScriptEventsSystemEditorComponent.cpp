@@ -26,6 +26,45 @@ AZ_DECLARE_BUDGET(AzToolsFramework);
 
 namespace ScriptEventsEditor
 {
+    AZ::Outcome<ScriptEvents::ScriptEvent, AZStd::string> LoadDefinitionSource(const AZ::IO::Path& path)
+    {
+
+
+
+        return AZ::Failure(AZStd::string("FINIS ME!"));
+    }
+
+    AZ::Outcome<void, AZStd::string> SaveDefinitionSourceFile(const ScriptEvents::ScriptEvent& events, const AZ::IO::Path& path)
+    {
+        using namespace ScriptEvents;
+
+        auto editorAssetHandler = azrtti_cast<ScriptEventAssetHandler*>(
+            AZ::Data::AssetManager::Instance().GetHandler(azrtti_typeid<ScriptEvents::ScriptEventsAsset>()));
+
+        if (!editorAssetHandler)
+        {
+            return AZ::Failure(AZStd::string::format
+                ( R"(Exporting of .ScriptEvents for "%s" file failed as no editor asset handler was registered for ScriptEvents. "
+                  "The ScriptEvents Gem might not be enabled.)", path.c_str()));
+        }
+
+        AZ::IO::FileIOStream outFileStream(path.c_str(), AZ::IO::OpenMode::ModeWrite);
+        if (!outFileStream.IsOpen())
+        {
+            return AZ::Failure(AZStd::string("Failed to open output file %s", path.c_str()));
+        }
+
+        ScriptEvents::ScriptEventsAsset assetData;
+        assetData.m_definition = events;
+        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset(&assetData, AZ::Data::AssetLoadBehavior::Default);
+        if (editorAssetHandler->SaveAssetData(asset, &outFileStream))
+        {
+            return AZ::Failure(AZStd::string("Failed to save output file %s", path.c_str()));
+        }
+
+        return AZ::Success();
+    }
+
     ////////////////////////////
     // ScriptEventAssetHandler
     ////////////////////////////
