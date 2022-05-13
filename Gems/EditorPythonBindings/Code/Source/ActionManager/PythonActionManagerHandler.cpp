@@ -17,16 +17,21 @@ namespace EditorPythonBindings
     PythonEditorActionHandler::PythonEditorActionHandler()
     {
         m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(m_actionManagerInterface, "Could not get ActionManagerInterface on PythonEditorActionHandler construction.");
 
-        EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusConnect(azrtti_typeid<PythonEditorAction>());
-        ActionManagerRequestBus::Handler::BusConnect();
+        if (m_actionManagerInterface)
+        {
+            EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusConnect(azrtti_typeid<PythonEditorAction>());
+            ActionManagerRequestBus::Handler::BusConnect();
+        }
     }
 
     PythonEditorActionHandler ::~PythonEditorActionHandler()
     {
-        ActionManagerRequestBus::Handler::BusDisconnect();
-        EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusDisconnect();
+        if (m_actionManagerInterface)
+        {
+            ActionManagerRequestBus::Handler::BusDisconnect();
+            EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusDisconnect();
+        }
     }
 
     AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterAction(
