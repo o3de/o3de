@@ -206,4 +206,28 @@ namespace AZ::Dom::Utils
         value.Accept(*writer, copyStrings);
         return copiedValue;
     }
+
+    const AZ::TypeId& GetValueTypeId(const Dom::Value& value)
+    {
+        switch (value.GetType())
+        {
+        case Type::Bool:
+            return azrtti_typeid<bool>();
+        case Type::Double:
+            return azrtti_typeid<double>();
+        case Type::Int64:
+            return azrtti_typeid<int64_t>();
+        case Type::Uint64:
+            return azrtti_typeid<uint64_t>();
+        case Type::String:
+            return azrtti_typeid<AZStd::string_view>();
+        // For compound types, just treat the stored type as Value
+        case Type::Array:
+        case Type::Object:
+        case Type::Node:
+            return azrtti_typeid<Value>();
+        default:
+            return azrtti_typeid<void>();
+        }
+    }
 } // namespace AZ::Dom::Utils

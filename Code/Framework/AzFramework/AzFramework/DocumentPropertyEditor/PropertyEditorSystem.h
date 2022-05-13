@@ -23,18 +23,18 @@ namespace AZ::DocumentPropertyEditor
 
         void RegisterNode(NodeMetadata metadata) override;
         void RegisterPropertyEditor(PropertyEditorMetadata metadata) override;
-        void RegisterAttribute(AttributeMetadata metadata) override;
+        void RegisterNodeAttribute(const NodeMetadata* node, const AttributeDefinitionInterface* attribute) override;
 
         const NodeMetadata* FindNode(AZ::Name name) const override;
         const PropertyEditorMetadata* FindPropertyEditor(AZ::Name name) const override;
-        const AttributeMetadata* FindAttribute(AZ::Name name, const PropertyEditorMetadata* parent) const override;
+        const AttributeDefinitionInterface* FindNodeAttribute(AZ::Name name, const PropertyEditorMetadata* parent) const override;
         AZ::Name LookupNameFromId(AZ::Crc32 crc) const override;
 
     private:
         void AddNameToCrcTable(AZ::Name name);
 
-        AZStd::unordered_map<AZ::Crc32, AZ::Name> m_crcToName;
+        mutable AZStd::unordered_map<AZ::Crc32, AZ::Name> m_crcToName;
         AZStd::unordered_map<AZ::Name, NodeMetadata> m_nodeMetadata;
-        AZStd::unordered_map<AZ::Name, AZStd::unordered_map<AZ::Name, AttributeMetadata>> m_attributeMetadata;
+        AZStd::unordered_map<AZ::Name, AZStd::unordered_map<AZ::Name, const AttributeDefinitionInterface*>> m_attributeMetadata;
     };
 } // namespace AZ::DocumentPropertyEditor

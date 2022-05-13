@@ -36,7 +36,7 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value GetContents() const override;
 
-        void OnContentsChanged(const Dom::Path& path, const Dom::Value& value);
+        void OnContentsChanged(const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType changeType);
 
     private:
         void* m_instance = nullptr;
