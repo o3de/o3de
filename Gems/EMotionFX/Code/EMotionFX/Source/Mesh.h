@@ -647,19 +647,40 @@ namespace EMotionFX
          */
         void Scale(float scaleFactor);
 
+        /**
+         * Get the total number of unique joints that impact this mesh
+         */
+        uint16 GetNumUniqueJoints() const;
+
+        /**
+         * Set the total number of unique joints that impact this mesh
+         */
+        void SetNumUniqueJoints(uint16 numUniqueJoints);
+
+        /**
+         * Get the highest id of all the jointId's used by this mesh
+         */
+        uint16 GetHighestJointIndex() const;
+
+        /**
+         * Get the highest id of all the jointId's used by this mesh
+         */
+        void SetHighestJointIndex(uint16 highestJointIndex);
 
         MCORE_INLINE bool GetIsCollisionMesh() const            { return m_isCollisionMesh; }
         void SetIsCollisionMesh(bool isCollisionMesh)           { m_isCollisionMesh = isCollisionMesh; }
 
     protected:
 
-        AZStd::vector<SubMesh*>  m_subMeshes;         /**< The collection of sub meshes. */
+        AZStd::vector<SubMesh*> m_subMeshes;         /**< The collection of sub meshes. */
         uint32*                 m_indices;           /**< The array of indices, which define the faces. */
         uint8*                  m_polyVertexCounts;  /**< The number of vertices for each polygon, where the length of this array equals the number of polygons. */
         uint32                  m_numPolygons;       /**< The number of polygons in this mesh. */
         uint32                  m_numOrgVerts;       /**< The number of original vertices. */
         uint32                  m_numVertices;       /**< Number of vertices. */
         uint32                  m_numIndices;        /**< Number of indices. */
+        uint16                  m_numUniqueJoints;   /**< Number of unique joints*/
+        uint16                  m_highestJointIndex;    /**< The highest id of all the joints used by this mesh*/
         bool                    m_isCollisionMesh;   /**< Is this mesh a collision mesh? */
 
         /**

@@ -77,7 +77,7 @@ namespace AzToolsFramework
             auto writeOutcome = AZ::Dom::Utils::SerializedStringToValue(jsonBackend, stringBuffer, AZ::Dom::Lifetime::Temporary);
 
             // invoke the actual change on the Dom, it will come back to us as an update
-            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(GetValueFromDom(), writeOutcome.GetValue());
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(GetValueFromDom(), writeOutcome.GetValue(), AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
         }
         return succeeded;
     }
