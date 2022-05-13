@@ -116,13 +116,7 @@ namespace AzFramework
         {
             AzFramework::Spawnable* spawnable = spawnablePair.first;
             const AZStd::string& spawnableName = spawnablePair.second;
-
-            AzFramework::Spawnable::EntityAliasVisitor aliases = spawnable->TryGetAliases();
-            AZ_Assert(aliases.IsValid(), "Unable to obtain lock for spawnable.");
-            if (aliases.HasAliases())
-            {
-                SpawnableAssetUtils::ResolveEntityAliases(spawnable, spawnableName);
-            }
+            SpawnableAssetUtils::ResolveEntityAliases(spawnable, spawnableName);
         }
 
         auto& spawnableAssetDataAdded = m_spawnableAssets.emplace(rootSpawnableName, spawnableAssetData).first->second;

@@ -51,7 +51,7 @@ namespace AzFramework
             const AZStd::string& rootSpawnableName);
 
         //! Creates an in-memory spawnable asset given a single spawnable.
-        //! Used when a network server receives in-memory spawnable data from the client
+        //! Ex. usage is when a network server receives in-memory spawnable data from the client
         CreateSpawnableResult CreateInMemorySpawnableAsset(
             AzFramework::Spawnable* spawnable,
             const AZ::Data::AssetId& assetId,
