@@ -20,6 +20,19 @@ namespace AzToolsFramework
 {
     using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
 
+    struct ActionContextProperties
+    {
+        AZStd::string name = "";
+    };
+
+    struct ActionProperties
+    {
+        AZStd::string name = "";
+        AZStd::string description = "";
+        AZStd::string category = "";
+        AZStd::string iconPath = "";
+    };
+
     //! ActionManagerInterface
     //! Interface to register and trigger actions in the Editor.
     class ActionManagerInterface
@@ -29,19 +42,17 @@ namespace AzToolsFramework
 
         //! Register a new Action Context to the Action Manager.
         virtual ActionManagerOperationResult RegisterActionContext(
-            QWidget* widget,
-            const AZStd::string& identifier,
-            const AZStd::string& name,
-            const AZStd::string& parentIdentifier) = 0;
+            const AZStd::string& parentContextIdentifier,
+            const AZStd::string& contextIdentifier,
+            const ActionContextProperties& properties,
+            QWidget* widget
+        ) = 0;
 
         //! Register a new Action to the Action Manager.
         virtual ActionManagerOperationResult RegisterAction(
             const AZStd::string& contextIdentifier,
-            const AZStd::string& identifier,
-            const AZStd::string& name,
-            const AZStd::string& description,
-            const AZStd::string& category,
-            const AZStd::string& iconPath,
+            const AZStd::string& actionIdentifier,
+            const ActionProperties& properties,
             AZStd::function<void()> handler
         ) = 0;
 

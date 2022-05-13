@@ -50,7 +50,8 @@ namespace EditorPythonBindings
             [h = AZStd::move(handler)]()
             {
                 PyObject_CallObject(h.GetHandler(), NULL);
-            });
+            }
+        );
     }
 
     AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::TriggerAction(const AZStd::string& actionIdentifier)
