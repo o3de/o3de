@@ -147,6 +147,7 @@ def ForceRegion_NoQuiverOnHighLinearDampingForce():
 
     # 5) Validate the Sphere remains in Force Region
     # Must wait for the sphere to slow down
+    # Do not increase wait time beyond this. If tests fail due to timeout here, the test should be redesigned
     Report.result(Tests.sphere_stopped_moving, helper.wait_for_condition(
         lambda: sphere.velocity.IsZero(VELOCITY_THRESHOLD), WAIT_TIME_3))
 
@@ -155,6 +156,7 @@ def ForceRegion_NoQuiverOnHighLinearDampingForce():
     Report.result(Tests.sphere_still_above_force_region, (sphere.position.z - force_region.position.z) < SPHERE_STOP_OFFSET)
 
     # 6) Check to see if the sphere is quivering
+    # Do not increase wait time beyond this. If tests fail due to timeout here, the test should be redesigned
     sphere.quiver_reference = sphere.position.z
     Report.result(Tests.no_quiver, not helper.wait_for_condition(sphere_not_quivering, WAIT_TIME_3))
 
