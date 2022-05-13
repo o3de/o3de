@@ -165,6 +165,21 @@ namespace AZ
                             Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_cascadeBlendingEnabled,
                             "Blend between cascades\n", "Enables smooth blending between shadow map cascades.")
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
+
+                        // Fullscreen Shadow Blur...
+                        ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_fullscreenBlurEnabled,
+                            "Fullscreen Blur\n",
+                            "Enables fullscreen blur on fullscreen sunlight shadows.")
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_fullscreenBlurConstFalloff,
+                                "Fullscreen Blur Strength",
+                                "Affects how strong the fullscreen shadow blur is. Recommended value is 0.67")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 0.95f)
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_fullscreenBlurDepthFalloffStrength,
+                                "Fullscreen Blur Sharpness",
+                                "Affects how sharp the fullscreen shadow blur appears around edges. Recommended value is 50")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 400.0f)
                                 ;
                 }
             }

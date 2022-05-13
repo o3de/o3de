@@ -453,6 +453,32 @@ namespace AZ
             }
         }
 
+        void DirectionalLightComponentController::SetFullscreenBlurEnabled(bool enable)
+        {
+            m_configuration.m_fullscreenBlurEnabled = enable;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetFullscreenBlurEnabled(m_lightHandle, enable);
+            }
+        }
+
+        void DirectionalLightComponentController::SetFullscreenBlurConstFalloff(float blurConstFalloff)
+        {
+            m_configuration.m_fullscreenBlurConstFalloff = blurConstFalloff;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetFullscreenBlurConstFalloff(m_lightHandle, blurConstFalloff);
+            }
+        }
+
+        void DirectionalLightComponentController::SetFullscreenBlurDepthFalloffStrength(float blurDepthFalloffStrength)
+        {
+            m_configuration.m_fullscreenBlurDepthFalloffStrength = blurDepthFalloffStrength;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetFullscreenBlurDepthFalloffStrength(m_lightHandle, blurDepthFalloffStrength);
+            }
+        }
 
         const DirectionalLightComponentConfig& DirectionalLightComponentController::GetConfiguration() const
         {
@@ -541,6 +567,9 @@ namespace AZ
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
             SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
             SetCascadeBlendingEnabled(m_configuration.m_cascadeBlendingEnabled);
+            SetFullscreenBlurEnabled(m_configuration.m_fullscreenBlurEnabled);
+            SetFullscreenBlurConstFalloff(m_configuration.m_fullscreenBlurConstFalloff);
+            SetFullscreenBlurDepthFalloffStrength(m_configuration.m_fullscreenBlurDepthFalloffStrength);
 
             // [GFX TODO][ATOM-1726] share config for multiple light (e.g., light ID).
             // [GFX TODO][ATOM-2416] adapt to multiple viewports.

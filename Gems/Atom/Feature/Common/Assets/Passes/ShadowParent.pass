@@ -75,7 +75,7 @@
                 { 
                     "LocalSlot": "FullscreenShadow",
                     "AttachmentRef": {
-                        "Pass": "FullscreenShadowPass",
+                        "Pass": "FullscreenShadowBlur",
                         "Attachment": "Output"
                     } 
                 }
@@ -156,29 +156,42 @@
                     "TemplateName": "FullscreenShadowTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "DepthShadowmaps",
+                            "LocalSlot": "DirectionalShadowmaps",
                             "AttachmentRef": {
                                 "Pass": "CascadedShadowmapsPass",
                                 "Attachment": "Shadowmap"
                             }
                         },
                         {
-                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "LocalSlot": "DirectionalShadowmapsESM",
                             "AttachmentRef": {
                                 "Pass": "EsmShadowmapsPassDirectional",
                                 "Attachment": "EsmShadowmaps"
                             }
-                        },                        
+                        }
+                    ]
+                },
+                {
+                    "Name": "FullscreenShadowBlur",
+                    "TemplateName": "FastDepthAwareBlurTemplate",
+                    "Connections": [
                         {
-                            "LocalSlot": "Depth",
+                            "LocalSlot": "LinearDepth",
                             "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "Depth"
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "DepthLinear"
                             }
-                        }                          
-                                                                   
-                    ]                    
-                }                
+                        },
+                        {
+                            "LocalSlot": "BlurSource",
+                            "AttachmentRef": {
+                                "Pass": "FullscreenShadowPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                }
+
             ]
         }
     }

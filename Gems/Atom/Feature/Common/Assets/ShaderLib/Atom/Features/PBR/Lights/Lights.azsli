@@ -41,8 +41,14 @@ void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float
             ApplyPolygonLights(surface, lightingData);
         }
     }
-
-    if( UseDebugLight() )
+    else if(GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
+    {
+        if (o_enableDirectionalLights)
+        {
+            ApplyDirectionalLights(surface, lightingData, screenUv);
+        }
+    }
+    else if( UseDebugLight() )
     {
         float3 lightIntensity = SceneSrg::m_debugLightingIntensity;
         float3 lightDirection = SceneSrg::m_debugLightingDirection;

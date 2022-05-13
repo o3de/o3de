@@ -24,6 +24,7 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Obb.h>
+#include <PostProcessing/FastDepthAwareBlurPasses.h>
 #include <Shadows/FullscreenShadowPass.h>
 
 namespace AZ
@@ -605,6 +606,24 @@ namespace AZ
             m_shadowBufferNeedsUpdate = true;
         }
 
+        void DirectionalLightFeatureProcessor::SetFullscreenBlurEnabled(LightHandle handle, bool enable)
+        {
+            ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
+            property.m_fullscreenBlurEnabled = enable;
+        }
+
+        void DirectionalLightFeatureProcessor::SetFullscreenBlurConstFalloff(LightHandle handle, float blurConstFalloff)
+        {
+            ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
+            property.m_fullscreenBlurConstFalloff = blurConstFalloff;
+        }
+
+        void DirectionalLightFeatureProcessor::SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength)
+        {
+            ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
+            property.m_fullscreenBlurDepthFalloffStrength = blurDepthFalloffStrength;
+        }
+
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             PrepareForChangingRenderPipelineAndCameraView();
@@ -681,7 +700,22 @@ namespace AZ
                     {
                         m_fullscreenShadowPass = shadowPass;
                     }
-                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                });
+
+            m_fullscreenShadowBlurPass = nullptr;
+            RPI::PassFilter blurPassFilter = RPI::PassFilter::CreateWithPassName(Name("FullscreenShadowBlur"), GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(blurPassFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    RPI::RenderPipeline* pipeline = pass->GetRenderPipeline();
+                    const RPI::RenderPipelineId pipelineId = pipeline->GetId();
+
+                    RPI::ParentPass* fullscreenShadowBlurPass = azrtti_cast<RPI::ParentPass*>(pass);
+                    if (pipeline->GetDefaultView())
+                    {
+                        m_fullscreenShadowBlurPass = fullscreenShadowBlurPass;
+                    }
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                 });
         }
 
@@ -1653,14 +1687,42 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetFullscreenPassSettings()
         {
+            ShadowProperty& shadowProperty = m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex());
+
             if (m_fullscreenShadowPass)
             {
                 const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
                 m_fullscreenShadowPass->SetLightIndex(m_shadowingLightHandle.GetIndex());
-                m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_blendBetwenCascades);
+                m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && shadowProperty.m_blendBetwenCascades);
                 m_fullscreenShadowPass->SetFilterMethod(static_cast<ShadowFilterMethod>(shadowFilterMethod));
-                m_fullscreenShadowPass->SetReceiverShadowPlaneBiasEnable(m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled);
+                m_fullscreenShadowPass->SetReceiverShadowPlaneBiasEnable(shadowProperty.m_isReceiverPlaneBiasEnabled);
+            }
+
+            if (m_fullscreenShadowBlurPass)
+            {
+                bool fullscreenBlurEnabled = shadowProperty.m_fullscreenBlurEnabled;
+                m_fullscreenShadowBlurPass->SetEnabled(fullscreenBlurEnabled);
+
+                if(fullscreenBlurEnabled)
+                {
+                    RPI::Pass* child_0 = m_fullscreenShadowBlurPass->GetChildren()[0].get();
+                    RPI::Pass* child_1 = m_fullscreenShadowBlurPass->GetChildren()[1].get();
+
+                    FastDepthAwareBlurVerPass* verBlurPass = azrtti_cast<FastDepthAwareBlurVerPass*>(child_0);
+                    FastDepthAwareBlurHorPass* horBlurPass = azrtti_cast<FastDepthAwareBlurHorPass*>(child_1);
+
+                    AZ_Assert(verBlurPass != nullptr, "Could not find vertical blur on fullscreen shadow blur pass");
+                    AZ_Assert(horBlurPass != nullptr, "Could not find horizontal blur on fullscreen shadow blur pass");
+
+                    const float depthThreshold = 0.0f;
+
+                    verBlurPass->SetConstants(shadowProperty.m_fullscreenBlurConstFalloff, depthThreshold,
+                                              shadowProperty.m_fullscreenBlurDepthFalloffStrength);
+
+                    horBlurPass->SetConstants(shadowProperty.m_fullscreenBlurConstFalloff, depthThreshold,
+                                              shadowProperty.m_fullscreenBlurDepthFalloffStrength);
+                }
             }
         }
 

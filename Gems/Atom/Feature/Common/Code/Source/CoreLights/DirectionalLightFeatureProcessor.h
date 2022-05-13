@@ -21,6 +21,11 @@
 
 namespace AZ
 {
+    namespace RPI
+    {
+        class ParentPass;
+    }
+
     namespace Render
     {
         class CascadedShadowmapsPass;
@@ -179,6 +184,17 @@ namespace AZ
                 bool m_isReceiverPlaneBiasEnabled = true;
 
                 bool m_blendBetwenCascades = false;
+
+                // Fullscreen Blur...
+
+                bool m_fullscreenBlurEnabled = true;
+
+                //! How much a value is reduced from pixel to pixel on a perfectly flat surface
+                float m_fullscreenBlurConstFalloff = 2.0f / 3.0f;
+
+                //! How much the difference in depth slopes between pixels affects the blur falloff.
+                //! The higher this value, the sharper edges will appear
+                float m_fullscreenBlurDepthFalloffStrength = 50.0f;
             };
 
             static void Reflect(ReflectContext* context);
@@ -221,6 +237,9 @@ namespace AZ
             void SetCascadeBlendingEnabled(LightHandle handle, bool enable) override;
             void SetShadowBias(LightHandle handle, float bias) override;
             void SetNormalShadowBias(LightHandle handle, float normalShadowBias) override;
+            void SetFullscreenBlurEnabled(LightHandle handle, bool enable) override;
+            void SetFullscreenBlurConstFalloff(LightHandle handle, float blurConstFalloff) override;
+            void SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount() const;
@@ -365,6 +384,8 @@ namespace AZ
             RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
             AZStd::vector<const RPI::View*> m_viewsRetainingAuxGeomDraw;
             FullscreenShadowPass* m_fullscreenShadowPass = nullptr;
+
+            RPI::ParentPass* m_fullscreenShadowBlurPass = nullptr;
 
             bool m_lightBufferNeedsUpdate = false;
             bool m_shadowBufferNeedsUpdate = false;

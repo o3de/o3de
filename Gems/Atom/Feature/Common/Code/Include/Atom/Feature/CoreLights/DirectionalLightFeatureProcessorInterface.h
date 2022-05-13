@@ -166,6 +166,15 @@ namespace AZ
 
             //! Sets whether or not blending between shadow map cascades is enabled.
             virtual void SetCascadeBlendingEnabled(LightHandle handle, bool enable) = 0;
+
+            //! Sets whether or not to apply fullscreen blur after fullscreen shadow pass
+            virtual void SetFullscreenBlurEnabled(LightHandle handle, bool enable) = 0;
+
+            //! Sets the amount of constant falloff on the fullscreen shadow blur
+            virtual void SetFullscreenBlurConstFalloff(LightHandle handle, float blurConstFalloff) = 0;
+
+            //! Sets the strength of the depth falloff on the fullscreen shadow blur
+            virtual void SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength) = 0;
         };
     } // namespace Render
 } // namespace AZ

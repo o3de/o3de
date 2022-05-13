@@ -24,7 +24,8 @@ namespace AZ
 {
     namespace Render
     {
-        class FullscreenShadowPass final : public RPI::FullscreenTrianglePass
+        class FullscreenShadowPass final
+            : public RPI::FullscreenTrianglePass
         {
             AZ_RPI_PASS(FullscreenShadow);
 

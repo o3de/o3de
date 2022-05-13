@@ -87,6 +87,40 @@ class DirectionalShadowCalculator
     DebugInfo m_debugInfo;    
 };
 
+float DirectionalShadowCalculator::GetThickness()
+{
+    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
+    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
+
+    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+    if (size <= 1)
+    {
+        return 0.;
+    }
+
+    Texture2DArray<float> shadowmap = m_directionalLightShadowmap;
+    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+    
+    float3 shadowCoord;
+    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+    {  
+        shadowCoord = m_shadowCoords[indexOfCascade];
+        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
+             shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && shadowCoord.z < (1. - DepthMargin))
+        {
+            const float depthBufferValue = shadowmap.Sample(PassSrg::LinearSampler, float3(shadowCoord.xy, indexOfCascade)).r;
+            
+            // Normalized thickness (avoid negative values given by precision errors or shrinking offsets)
+            const float deltaDepth = max(shadowCoord.z - depthBufferValue,0.0);
+
+            const float viewSpaceThickness = ViewSrg::m_directionalLightShadows[m_lightIndex].m_far_minus_near * deltaDepth;            
+            return viewSpaceThickness;
+        }
+    }
+
+    return 0.;
+}
+
 void DirectionalShadowCalculator::ComputeShadowCoords()
 {
     const float shadowBias = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowBias;
@@ -148,15 +182,38 @@ float DirectionalShadowCalculator::GetVisibility()
 {   
     ComputeShadowCoords();
 
-    // Calculate slope bias
+    // N.L early out
     const float3 lightDirection = normalize(SceneSrg::m_directionalLights[m_lightIndex].m_direction);
-    const float cosTheta = -dot(m_worldNormal, lightDirection);
-    const float sinTheta = sqrt(1 - cosTheta * cosTheta);
-    const float tanTheta = sinTheta / cosTheta;
-    for (uint cascadeIndex = 0; cascadeIndex < ViewSrg::MaxCascadeCount; ++cascadeIndex)
+    float NdotL = dot(m_worldNormal, -lightDirection);    
+
+    // Todo: slope bias exhibits noticeable artifacts, especially with sharp normal values derived from fullscreen
+    // depth values which accentuate geometry polygons. Revisit the math and determine if this can be remedied or
+    // whether it should be removed altogether. In the meantime, normal shadow bias is plenty capable.
+    static const bool useSlopeBias = false;
+
+    if(useSlopeBias)
     {
-        const float slopeBiasBase = ViewSrg::m_directionalLightShadows[m_lightIndex].m_slopeBiasBase[cascadeIndex];
-        m_slopeBias[cascadeIndex] = slopeBiasBase * tanTheta;
+        if(NdotL <= -0.01)
+        {
+            return 0;
+        }
+    
+        // Calculate slope bias
+        NdotL = max(NdotL, 0.01);
+        const float sinTheta = sqrt(1 - NdotL * NdotL);
+        const float tanTheta = sinTheta / NdotL;
+        for (uint cascadeIndex = 0; cascadeIndex < ViewSrg::MaxCascadeCount; ++cascadeIndex)
+        {
+            const float slopeBiasBase = ViewSrg::m_directionalLightShadows[m_lightIndex].m_slopeBiasBase[cascadeIndex];
+            m_slopeBias[cascadeIndex] = slopeBiasBase * tanTheta;
+        }
+    }
+    else
+    {
+        for (uint cascadeIndex = 0; cascadeIndex < ViewSrg::MaxCascadeCount; ++cascadeIndex)
+        {
+            m_slopeBias[cascadeIndex] = 0;
+        }
     }
 
     float lit = 1;
@@ -177,40 +234,6 @@ float DirectionalShadowCalculator::GetVisibility()
     }
                 
     return lit;
-}
-
-float DirectionalShadowCalculator::GetThickness()
-{
-    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
-    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
-
-    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
-    if (size <= 1)
-    {
-        return 0.;
-    }
-
-    Texture2DArray<float> shadowmap = m_directionalLightShadowmap;
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-    
-    float3 shadowCoord;
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
-    {  
-        shadowCoord = m_shadowCoords[indexOfCascade];
-        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
-             shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && shadowCoord.z < (1. - DepthMargin))
-        {
-            const float depthBufferValue = shadowmap.Sample(PassSrg::LinearSampler, float3(shadowCoord.xy, indexOfCascade)).r;
-            
-            // Normalized thickness (avoid negative values given by precision errors or shrinking offsets)
-            const float deltaDepth = max(shadowCoord.z - depthBufferValue,0.0);
-
-            const float viewSpaceThickness = ViewSrg::m_directionalLightShadows[m_lightIndex].m_far_minus_near * deltaDepth;            
-            return viewSpaceThickness;
-        }
-    }
-
-    return 0.;
 }
 
 float DirectionalShadowCalculator::GetVisibilityFromLightNoFilter()

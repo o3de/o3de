@@ -86,6 +86,11 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
+
+        if(IsDebuggingEnabled_PLACEHOLDER() && GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
+        {
+            customDebugFloats.rgb = currentLitRatio.xxx;
+        }
     }
     
     // Add debug coloring for directional light shadow
