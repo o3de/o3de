@@ -27,7 +27,6 @@ namespace AZ::Render
                 ->Field("SunOrientation", &SkyAtmosphereComponentConfig::m_sun)
                 ->Field("SunRadiusFactor", &SkyAtmosphereComponentConfig::m_sunRadiusFactor)
                 ->Field("SunFalloffFactor", &SkyAtmosphereComponentConfig::m_sunFalloffFactor)
-                ->Field("SunColor", &SkyAtmosphereComponentConfig::m_sunColor)
                 ->Field("MinSamples", &SkyAtmosphereComponentConfig::m_minSamples)
                 ->Field("MaxSamples", &SkyAtmosphereComponentConfig::m_maxSamples)
                 ->Field("MieAbsorption", &SkyAtmosphereComponentConfig::m_mieAbsorption)
