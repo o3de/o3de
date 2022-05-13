@@ -19,7 +19,7 @@ namespace ScriptCanvas
 
     namespace Execution
     {
-        using ActivationInputArray = AZStd::array<AZ::BehaviorValueParameter, 128>;
+        using ActivationInputArray = AZStd::array<AZ::BehaviorArgument, 128>;
 
         struct ActivationData
         {
@@ -34,7 +34,7 @@ namespace ScriptCanvas
 
         struct ActivationInputRange
         {
-            AZ::BehaviorValueParameter* inputs = nullptr;
+            AZ::BehaviorArgument* inputs = nullptr;
             bool requiresDependencyConstructionParameters = false;
             size_t nodeableCount = 0;
             size_t variableCount = 0;
