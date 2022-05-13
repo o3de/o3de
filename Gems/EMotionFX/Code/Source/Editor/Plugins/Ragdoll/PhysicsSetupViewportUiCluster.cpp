@@ -20,7 +20,7 @@ namespace EMotionFX
         m_subModes[SubMode::ColliderRotation] = AZStd::make_unique<ColliderRotationManipulators>();
     }
 
-    AZ::s32 PhysicsSetupViewportUiCluster::GetViewportId()
+    AZ::s32 PhysicsSetupViewportUiCluster::GetViewportId() const
     {
         if (!m_viewportId.has_value())
         {

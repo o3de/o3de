@@ -16,6 +16,7 @@
 
 namespace EMotionFX
 {
+    //! Provides functionality for interactively editing character physics collider positions in the Animation Editor Viewport. 
     class ColliderTranslationManipulators
         : public PhysicsSetupManipulatorsBase
         , private PhysicsSetupManipulatorRequestBus::Handler
@@ -34,7 +35,7 @@ namespace EMotionFX
         void BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
         void FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
 
-        // PhysicsSetupManipulatorRequestBus::Handler ...
+        // PhysicsSetupManipulatorRequestBus::Handler overrides ...
         void OnUnderlyingPropertiesChanged() override;
 
         MCore::CommandGroup m_commandGroup;

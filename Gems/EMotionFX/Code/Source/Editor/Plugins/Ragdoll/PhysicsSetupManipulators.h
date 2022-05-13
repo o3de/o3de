@@ -24,7 +24,7 @@ namespace EMotionFX
 
     struct PhysicsSetupManipulatorData
     {
-        bool HasColliders();
+        bool HasColliders() const;
 
         AZ::Transform m_nodeWorldTransform = AZ::Transform::CreateIdentity();
         Physics::CharacterColliderNodeConfiguration* m_colliderNodeConfiguration = nullptr;

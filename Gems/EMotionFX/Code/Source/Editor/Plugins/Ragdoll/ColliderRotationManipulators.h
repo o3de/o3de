@@ -17,6 +17,7 @@
 
 namespace EMotionFX
 {
+    //! Provides functionality for interactively editing character physics collider orientations in the Animation Editor Viewport. 
     class ColliderRotationManipulators
         : public PhysicsSetupManipulatorsBase
         , private AZ::TickBus::Handler
@@ -31,10 +32,10 @@ namespace EMotionFX
         void ResetValues() override;
 
     private:
-        // AZ::TickBus::Handler ...
+        // AZ::TickBus::Handler overrides ...
         void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
 
-        // PhysicsSetupManipulatorRequestBus::Handler ...
+        // PhysicsSetupManipulatorRequestBus::Handler overrides ...
         void OnUnderlyingPropertiesChanged() override;
 
         void OnManipulatorMoved(const AZ::Quaternion& rotation);

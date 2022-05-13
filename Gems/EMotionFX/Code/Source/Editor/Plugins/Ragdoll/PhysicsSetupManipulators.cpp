@@ -11,7 +11,7 @@
 
 namespace EMotionFX
 {
-    bool PhysicsSetupManipulatorData::HasColliders()
+    bool PhysicsSetupManipulatorData::HasColliders() const
     {
         return m_valid && m_colliderNodeConfiguration && !m_colliderNodeConfiguration->m_shapes.empty();
     }

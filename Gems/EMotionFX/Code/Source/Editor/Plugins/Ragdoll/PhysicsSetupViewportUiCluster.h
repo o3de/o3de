@@ -35,7 +35,7 @@ namespace EMotionFX
 
     private:
         void SetCurrentMode(SubMode mode);
-        AZ::s32 GetViewportId();
+        AZ::s32 GetViewportId() const;
 
         AzToolsFramework::ViewportUi::ClusterId m_clusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
         AZStd::vector<AzToolsFramework::ViewportUi::ButtonId> m_buttonIds;
@@ -43,6 +43,6 @@ namespace EMotionFX
         SubMode m_subMode = SubMode::ColliderTranslation;
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_modeSelectionHandler; //!< Event handler for sub mode changes.
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
-        AZStd::optional<AZ::s32> m_viewportId;
+        mutable AZStd::optional<AZ::s32> m_viewportId;
     };
 } // namespace EMotionFX
