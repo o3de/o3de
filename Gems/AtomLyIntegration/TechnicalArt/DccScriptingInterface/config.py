@@ -102,12 +102,13 @@ from azpy.constants import FRMT_LOG_LONG
 # defaults, can be overriden/forced here for development
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def attach_debugger(debugge_typer=_DCCSI_GDEBUGGER):
+def attach_debugger(debugger_type=_DCCSI_GDEBUGGER):
     """!
     This will attemp to attch the WING debugger
     To Do: other IDEs for debugging not yet implemented.
@@ -119,10 +120,10 @@ def attach_debugger(debugge_typer=_DCCSI_GDEBUGGER):
     os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
     
     from azpy.test.entry_test import connect_wing
-    if debugge_typer == 'WING':
+    if debugger_type == 'WING':
         _debugger = connect_wing()
     else:
-        _LOGGER.warning('Debugger type: {}, is Not Implemented!'.format(debugge_typer))
+        _LOGGER.warning('Debugger type: {}, is Not Implemented!'.format(debugger_type))
     
     return _debugger
 # -------------------------------------------------------------------------
