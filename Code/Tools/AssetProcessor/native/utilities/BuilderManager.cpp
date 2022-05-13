@@ -40,7 +40,7 @@ namespace AssetProcessor
         return m_connectionId > 0;
     }
 
-    bool Builder::WaitForConnection()
+    AZ::Outcome<void, AZStd::string> Builder::WaitForConnection()
     {
         if (m_connectionId == 0)
         {
@@ -68,7 +68,7 @@ namespace AssetProcessor
 
             if (result)
             {
-                return true;
+                return AZ::Success();
             }
 
             AZ::u32 exitCode;
@@ -86,10 +86,10 @@ namespace AssetProcessor
                 AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", s_StartupConnectionWaitTimeS);
             }
 
-            return false;
+            return AZ::Failure(AZStd::string("Connection failed, see previous error messages for details."));
         }
 
-        return true;
+        return AZ::Success();
     }
 
     void Builder::SetConnection(AZ::u32 connId)
@@ -139,7 +139,7 @@ namespace AssetProcessor
         }
     }
 
-    bool Builder::Start(bool doRegistration)
+    AZ::Outcome<void, AZStd::string> Builder::Start(bool doRegistration)
     {
         // Get the current BinXXX folder based on the current running AP
         QString applicationDir = QCoreApplication::instance()->applicationDirPath();
@@ -153,7 +153,7 @@ namespace AssetProcessor
 
         if (m_quitListener.WasQuitRequested())
         {
-            return false;
+            return AZ::Failure(AZStd::string("Cannot start builder, quit was requested"));
         }
 
         const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", doRegistration);
@@ -162,7 +162,7 @@ namespace AssetProcessor
 
         if (!m_processWatcher)
         {
-            return false;
+            return AZ::Failure(AZStd::string("Process watcher failed to start. See previous log messages for details."));
         }
 
         m_tracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_processWatcher->GetCommunicator(), "AssetBuilder");
@@ -539,9 +539,10 @@ namespace AssetProcessor
             builderRef = BuilderRef(newBuilder);
         }
 
-        if (!newBuilder->Start(doRegistration))
+        AZ::Outcome<void, AZStd::string> builderStartResult = newBuilder->Start(doRegistration);
+        if (!builderStartResult.IsSuccess())
         {
-            AZ_Error("BuilderManager", false, "Builder failed to start");
+            AZ_Error("BuilderManager", false, "Builder failed to start with error %.*s", AZ_STRING_ARG(builderStartResult.GetError()));
 
             AZStd::unique_lock<AZStd::mutex> lock(m_buildersMutex);
 

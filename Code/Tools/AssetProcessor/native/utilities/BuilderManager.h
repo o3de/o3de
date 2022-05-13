@@ -85,7 +85,7 @@ namespace AssetProcessor
         bool IsConnected() const;
 
         //! Blocks waiting for the builder to establish a connection
-        bool WaitForConnection();
+        AZ::Outcome<void, AZStd::string> WaitForConnection();
 
         AZ::u32 GetConnectionId() const;
         AZ::Uuid GetUuid() const;
@@ -102,7 +102,7 @@ namespace AssetProcessor
     private:
 
         //! Starts the builder process and waits for it to connect
-        bool Start(bool doRegistration);
+        AZ::Outcome<void, AZStd::string> Start(bool doRegistration);
 
         //! Sets the connection id and signals that the builder has connected
         void SetConnection(AZ::u32 connId);
