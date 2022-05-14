@@ -242,7 +242,7 @@ namespace AZ
                 shaderVariantTreeAsset->FindVariantStableId(shaderAsset->GetShaderOptionGroupLayout(), shaderVariantId);
             if (searchResult.IsRoot())
             {
-                return shaderAsset->GetRootVariant();
+                return shaderAsset->GetRootVariantAsset();
             }
 
             // Record the request for metrics.
@@ -312,6 +312,18 @@ namespace AZ
             Data::Asset<ShaderVariantAsset> shaderVariantAsset = variantFindIt->second;
             if (shaderVariantAsset.IsReady())
             {
+                Data::Asset<ShaderVariantAsset> registeredShaderVariantAsset =
+                    AZ::Data::AssetManager::Instance().FindAsset<ShaderVariantAsset>(shaderVariantAssetId, AZ::Data::AssetLoadBehavior::NoLoad);
+                if (!registeredShaderVariantAsset.GetId().IsValid())
+                {
+                    // The shader variant was removed from the asset database, this would normally happen when the source .shadervariantlist file
+                    // is changed to remove a particular variant. Since it should no longer be available for use, remove it from the local map.
+                    // Note that if we don't handle this special case, the AssetManager will fail to report OnAssetReady if/when this asset appears
+                    // again, which might be a bug in the asset system.
+                    shaderVariantsMap.erase(variantFindIt);
+                    return {};
+                }
+
                 return shaderVariantAsset;
             }
             return {};
