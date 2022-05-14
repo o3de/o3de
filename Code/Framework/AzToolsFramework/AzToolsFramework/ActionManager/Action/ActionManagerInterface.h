@@ -22,6 +22,11 @@ namespace AzToolsFramework
 
     struct ActionContextProperties
     {
+        AZ_RTTI(ActionProperties, "{74694A62-E3FF-43EE-98DF-D66731DC2286}");
+
+        ActionContextProperties() = default;
+        virtual ~ActionContextProperties() = default;
+
         AZStd::string m_name = "";
     };
 
