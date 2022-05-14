@@ -43,7 +43,7 @@ namespace AzToolsFramework
         m_actionContexts.insert(
             {
                 contextIdentifier,
-                new EditorActionContext(contextIdentifier, properties.name, parentContextIdentifier, widget)
+                new EditorActionContext(contextIdentifier, properties.m_name, parentContextIdentifier, widget)
             }
         );
 
