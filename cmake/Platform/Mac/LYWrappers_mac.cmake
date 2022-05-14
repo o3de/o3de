@@ -6,6 +6,8 @@
 #
 #
 
+include(cmake/Platform/Common/LYWrappers_default.cmake)
+
 set(LY_ENABLE_HARDENED_RUNTIME OFF CACHE BOOL "Enable hardened runtime capability for Mac builds. This should be ON when building the engine for notarization/distribution.")
 
 define_property(TARGET PROPERTY ENTITLEMENT_FILE_PATH

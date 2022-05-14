@@ -164,7 +164,7 @@ namespace AZ
                         ->DataElement(
                             Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_cascadeBlendingEnabled,
                             "Blend between cascades\n", "Enables smooth blending between shadow map cascades.")
-                            ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
+                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
 
                         // Fullscreen Shadow Blur...
                         ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_fullscreenBlurEnabled,
@@ -180,7 +180,14 @@ namespace AZ
                                 "Affects how sharp the fullscreen shadow blur appears around edges. Recommended value is 50")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 400.0f)
-                                ;
+
+                        ->ClassElement(Edit::ClassElements::Group, "Global Illumination")
+                            ->Attribute(Edit::Attributes::AutoExpand, true)
+                        ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_affectsGI, "Affects GI", "Controls whether this light affects diffuse global illumination.")
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_affectsGIFactor, "Factor", "Multiplier on the amount of contribution to diffuse global illumination.")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 2.0f)
+                        ;
                 }
             }
 

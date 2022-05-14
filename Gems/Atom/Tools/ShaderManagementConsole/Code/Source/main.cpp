@@ -15,8 +15,8 @@ int main(int argc, char** argv)
     ShaderManagementConsole::ShaderManagementConsoleApplication app(&argc, &argv);
     if (app.LaunchLocalServer())
     {
-        app.Start(AZ::ComponentApplication::Descriptor{});
-        app.exec();
+        app.Start({}, {});
+        app.RunMainLoop();
         app.Stop();
     }
 

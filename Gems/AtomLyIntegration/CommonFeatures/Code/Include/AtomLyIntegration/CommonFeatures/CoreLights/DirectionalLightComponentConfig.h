@@ -128,6 +128,10 @@ namespace AZ
             //! The higher this value, the sharper edges will appear
             float m_fullscreenBlurDepthFalloffStrength = 50.0f;
 
+            // Global Illumination
+            bool m_affectsGI = true;
+            float m_affectsGIFactor = 1.0f;
+
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
             bool IsCascadeCorrectionDisabled() const;

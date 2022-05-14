@@ -50,10 +50,6 @@ struct IRemoteConsole;
 struct IRenderer;
 struct ICryFont;
 struct IMovieSystem;
-namespace Audio
-{
-    struct IAudioSystem;
-} // namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;

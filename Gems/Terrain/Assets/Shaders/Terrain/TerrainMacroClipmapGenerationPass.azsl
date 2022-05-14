@@ -22,21 +22,21 @@ void MainCS(
 {
     uint2 pixelPosition = dispatchThreadID.xy;
 
-    for (uint clipmapLevel = 0; clipmapLevel < MacroClipmapStackSize; ++clipmapLevel)
+    for (uint clipmapLevel = 0; clipmapLevel < TerrainSrg::m_clipmapData.m_macroClipmapStackSize; ++clipmapLevel)
     {
-        uint3 texelAddress = uint3(dispatchThreadID.xy, clipmapLevel);
+        uint3 texelIndex = uint3(dispatchThreadID.xy, clipmapLevel);
 
-        float2 worldPosition = GetCurrentWorldPosition(pixelPosition, clipmapLevel);
-        float2 positionDdx = ddxPosition(clipmapLevel);
-        float2 positionDdy = ddyPosition(clipmapLevel);
+        float2 worldPosition = GetCurrentWorldPositionFromMacroClipmaps(pixelPosition, clipmapLevel);
+        float clipmapScaleInv = GetMacroClipmapScaleInv(clipmapLevel);
+        float2 positionDdx = ddxPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius, clipmapScaleInv);
+        float2 positionDdy = ddyPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius, clipmapScaleInv);
 
         float3 macroColor;
         float3 macroNormal;
-        float normalFactor;
         SampleMacroTexture(worldPosition, positionDdx, positionDdy, macroColor, macroNormal);
 
-        PassSrg::m_macroColorClipmaps[texelAddress] = float4(macroColor, 1.0);
-        PassSrg::m_macroNormalClipmaps[texelAddress] = macroNormal.xy;
+        PassSrg::m_macroColorClipmaps[texelIndex] = float4(macroColor, 1.0);
+        PassSrg::m_macroNormalClipmaps[texelIndex] = macroNormal.xy;
     }
 }
 

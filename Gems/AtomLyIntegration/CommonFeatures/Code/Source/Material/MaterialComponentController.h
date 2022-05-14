@@ -48,6 +48,7 @@ namespace AZ
             //! MaterialComponentRequestBus overrides...
             MaterialAssignmentMap GetOriginalMaterialAssignments() const override;
             MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+            AZ::Data::AssetId GetActiveMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
             AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
             AZStd::string GetMaterialSlotLabel(const MaterialAssignmentId& materialAssignmentId) const override;
             void SetMaterialOverrides(const MaterialAssignmentMap& materials) override;

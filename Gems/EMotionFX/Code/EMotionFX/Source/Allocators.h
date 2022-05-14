@@ -49,7 +49,6 @@ namespace EMotionFX
     ((ActorManagerAllocator)                     (ActorAllocator)     ("{E251E70B-C010-4D21-9521-9A53FE8B9C39}")("EMotionFX actor manager memory allocator")) \
     ((ActorUpdateAllocator)                      (ActorAllocator)     ("{03E10078-F8BC-4F5C-B70B-82B87D15E6B6}")("EMotionFX actor update memory allocator")) \
     ((AnimGraphEventHandlerAllocator)            (AnimGraphAllocator) ("{658DC073-5D33-4E08-B3F2-C9856E29AC9E}")("EMotionFX anim graph event handler memory allocator")) \
-    ((AnimGraphGameControllerSettingsAllocator)  (AnimGraphAllocator) ("{8F7CA654-BBDA-4E2D-9916-812AF5A21FBA}")("EMotionFX anim graph controller settings memory allocator")) \
     ((AnimGraphInstanceAllocator)                (AnimGraphAllocator) ("{8C632A30-890C-443C-89F2-F86C6CFD4E15}")("EMotionFX anim graph instance memory allocator")) \
     ((AnimGraphManagerAllocator)                 (AnimGraphAllocator) ("{00A3CA02-55DA-4E21-ADFD-91186CFB4C37}")("EMotionFX anim graph manager memory allocator")) \
     ((AttachmentAllocator)                       (ActorAllocator)     ("{1709A833-ED5C-40BC-B25F-4D61CD148920}")("EMotionFX attachment memory allocator")) \

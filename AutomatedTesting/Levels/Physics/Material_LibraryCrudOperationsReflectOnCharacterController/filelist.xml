@@ -1,6 +1,0 @@
-<download name="NicksTestLevel" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39312" md5="bdffbd774065afda4cd5017c46489270"/>
- </files>
-</download>

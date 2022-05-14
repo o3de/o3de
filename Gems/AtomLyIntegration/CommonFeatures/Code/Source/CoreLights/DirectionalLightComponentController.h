@@ -89,6 +89,10 @@ namespace AZ
             void SetFullscreenBlurEnabled(bool enable);
             void SetFullscreenBlurConstFalloff(float blurConstFalloff);
             void SetFullscreenBlurDepthFalloffStrength(float blurDepthFalloffStrength);
+            bool GetAffectsGI() const override;
+            void SetAffectsGI(bool affectsGI) override;
+            float GetAffectsGIFactor() const override;
+            void SetAffectsGIFactor(float affectsGIFactor) override;
 
         private:
             friend class EditorDirectionalLightComponent;

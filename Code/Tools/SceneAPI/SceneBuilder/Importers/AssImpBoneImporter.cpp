@@ -73,36 +73,32 @@ namespace AZ
                 bool isBone = FindFirstBoneByNodeName(currentNode, boneByNameMap);
                 if (!isBone)
                 {
+                    // In case the bone is not listed in any of the meshes in the scene, populate a set of animated bone names from
+                    // the animations. This set of names will help varify if the current node is a bone.
+                    AZStd::unordered_set<AZStd::string> animatedNodesMap;
                     for(unsigned animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
                     {
                         aiAnimation* animation = scene->mAnimations[animIndex];
-
                         for (unsigned channelIndex = 0; channelIndex < animation->mNumChannels; ++channelIndex)
                         {
                             aiNodeAnim* nodeAnim = animation->mChannels[channelIndex];
-
-                            if (nodeAnim->mNodeName == currentNode->mName)
-                            {
-                                isBone = true;
-                                break;
-                            }
-                        }
-
-                        if (isBone)
-                        {
-                            break;
+                            animatedNodesMap.emplace(nodeAnim->mNodeName.C_Str());
                         }
                     }
 
                     // In case any of the children, or children of children is a bone, make sure to not skip this node.
                     // Don't do this for the scene root itself, else wise all mesh nodes will be exported as bones and pollute the skeleton.
                     if (currentNode != scene->mRootNode &&
-                        RecursiveHasChildBone(currentNode, boneByNameMap))
+                        RecursiveHasChildBone(currentNode, boneByNameMap, animatedNodesMap))
                     {
                         isBone = true;
                     }
                 }
 
+                if (!isBone)
+                {
+                    return Events::ProcessingResult::Ignored;
+                }
 
                 // If the current scene node (our eventual parent) contains bone data, we are not a root bone
                 AZStd::shared_ptr<SceneData::GraphData::BoneData> createdBoneData;

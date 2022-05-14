@@ -1,6 +1,0 @@
-<download name="C14195074_ScriptCanvas_PreUpdateEvents" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39336" md5="a076d06636c2a412907b55b791c2ecbc"/>
- </files>
-</download>

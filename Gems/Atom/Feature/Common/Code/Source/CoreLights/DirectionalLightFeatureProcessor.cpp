@@ -624,6 +624,22 @@ namespace AZ
             property.m_fullscreenBlurDepthFalloffStrength = blurDepthFalloffStrength;
         }
 
+        void DirectionalLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DirectionalLightFeatureProcessor::SetAffectsGI().");
+
+            m_lightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_lightBufferNeedsUpdate = true;
+        }
+
+        void DirectionalLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DirectionalLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_lightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_lightBufferNeedsUpdate = true;
+        }
+
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             PrepareForChangingRenderPipelineAndCameraView();

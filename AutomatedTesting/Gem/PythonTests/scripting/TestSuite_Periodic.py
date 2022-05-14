@@ -217,12 +217,11 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
-
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
-            "File->New action working as expected: True",
-            "File->Open action working as expected: True",
+            "Verified no tabs open: True",
+            "New tab opened successfully: True",
+            "Open file window triggered successfully: True"
         ]
         hydra.launch_and_validate_results(
             request, 
