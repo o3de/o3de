@@ -22,11 +22,16 @@ namespace AzToolsFramework
 
     struct ActionContextProperties
     {
-        AZStd::string name = "";
+        AZStd::string m_name = "";
     };
 
     struct ActionProperties
     {
+        AZ_RTTI(ActionProperties, "{B84A0BDD-4D15-4078-B6AE-240F825358F7}");
+
+        ActionProperties() = default;
+        virtual ~ActionProperties() = default;
+
         AZStd::string m_name = "";
         AZStd::string m_description = "";
         AZStd::string m_category = "";
