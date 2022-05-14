@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/IO/FileIO.h> // for OpenMode
+
 namespace AZ
 {
     namespace IO

@@ -7,6 +7,8 @@
  */
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/IOUtils.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include "ScriptEventSystem.h"
 #include "ScriptEventDefinition.h"
@@ -98,10 +100,35 @@ namespace ScriptEvents
 
     AZ::Outcome<ScriptEvents::ScriptEvent, AZStd::string> ScriptEventsSystemComponentImpl::LoadDefinitionSource([[maybe_unused]] const AZ::IO::Path& path)
     {
+        AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
+        {
+            AZ::IO::FileIOStream filestream(path.c_str(), AZ::IO::OpenMode::ModeRead);
+            if (!AZ::IO::RetryOpenStream(filestream))
+            {
+                return AZ::Failure(AZStd::string::format("Failed to open input file %s", path.c_str()));
+            }
 
+            AZStd::vector<AZ::u8> fileBuffer(filestream.GetLength());
+            const size_t bytesRead = filestream.Read(fileBuffer.size(), fileBuffer.data());
+            if (bytesRead != filestream.GetLength())
+            {
+                return AZ::Failure(AZStd::string::format("Failed to read source file: %s", path.c_str()));
+            }
 
+            assetDataStream->Open(AZStd::move(fileBuffer));
+        }
 
-        return AZ::Failure(AZStd::string("FINIS ME!"));
+        ScriptEvents::ScriptEventsAsset* assetData = aznew ScriptEvents::ScriptEventsAsset();
+        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset(assetData, AZ::Data::AssetLoadBehavior::Default);
+
+        if (ScriptEventAssetRuntimeHandler("assetHandler", "ScriptEvents", ".scriptevents")
+            .LoadAssetDataFromStream(asset, assetDataStream, nullptr) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
+        {
+            return AZ::Failure(AZStd::string::format("Failed to load source file: %s", path.c_str()));
+        }
+
+        ScriptEvents::ScriptEvent definition = AZStd::move(assetData->m_definition);
+        return AZ::Success(definition);
     }
 
     AZ::Outcome<void, AZStd::string> ScriptEventsSystemComponentImpl::SaveDefinitionSourceFile([[maybe_unused]] const ScriptEvents::ScriptEvent& events, [[maybe_unused]] const AZ::IO::Path& path)

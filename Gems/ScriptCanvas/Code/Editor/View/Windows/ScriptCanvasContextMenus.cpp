@@ -10,6 +10,7 @@
 #include <QClipboard>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QMessageBox>
 #include <QMimeData>
 #include <QVBoxLayout>
 
@@ -1018,9 +1019,15 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Graph* graph = nullptr;
         ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
 
+        AZStd::string errorWindowTitle;
+        AZStd::string errorMessage;
+        AZStd::vector<AZStd::string> parseErrors;
+
         if (graph)
         {
-            if (const GraphToScriptEventsResult result = ParseScriptEventsDefinition(*graph); result.m_isScriptEvents)
+            GraphToScriptEventsResult result = ParseScriptEventsDefinition(*graph);
+
+            if (result.m_isScriptEvents)
             {
                 AZ::IO::FixedMaxPath resolvedProjectRoot;
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
@@ -1037,33 +1044,64 @@ namespace ScriptCanvasEditor
                         , &ScriptEvents::ScriptEventRequests::SaveDefinitionSourceFile
                         , result.m_event
                         , fileName.toUtf8().constData());
+
+                    if (!saveOutcome.IsSuccess())
+                    {
+                        errorMessage = saveOutcome.TakeError();
+                    }
                 }
                 else
                 {
-                    // different pop-up window
+                    errorMessage = "Invalid file name.";
                 }
             }
             else
             {
-                // different pop-up window
+                errorMessage = "Changes are required to properly parse graph as ScriptEvents file.";
+                parseErrors = AZStd::move(parseErrors);
             }
         }
+        else
+        {
+            errorMessage = "Graph could not be found with ID: ";
+            errorMessage += graphId.ToString();
+            errorMessage += ".";
+        }
 
-        
+        if (!parseErrors.empty())
+        {
+            for (auto& error : parseErrors)
+            {
+                errorMessage += "\n * ";
+                errorMessage += error;
+            }
+
+            errorWindowTitle = "Changes are required to properly parse graph as ScriptEvents file."; 
+        }
+        else if (!errorMessage.empty())
+        {
+            errorWindowTitle = "Failed to save ScriptEvents file.";
+        }
+
+        QMessageBox mb
+            ( QMessageBox::Warning
+            , errorWindowTitle.c_str()
+            , errorMessage.c_str()
+            , QMessageBox::Close
+            , nullptr);
 
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
 
     OpenScriptEventAction::OpenScriptEventAction(QObject* parent)
         : NodeContextMenuAction("Open Script Event", parent)
-    {
-
-    }
+    {}
 
     void OpenScriptEventAction::RefreshAction
         ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
         , [[maybe_unused]] const AZ::EntityId& targetId)
     {
+        // only enable this if there is only one empty FDN node, and the scene is not set to SE asset flow already
         setEnabled(true);
     }
 
@@ -1074,6 +1112,8 @@ namespace ScriptCanvasEditor
         AZ::IO::FixedMaxPath resolvedProjectRoot;
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
 
+        AZStd::string errorMessage;
+
         const QStringList nameFilters = { "All ScriptEvent Files (*.scriptevents)" };
         QFileDialog dialog(nullptr, tr("Open a single file..."), resolvedProjectRoot.c_str());
         dialog.setFileMode(QFileDialog::ExistingFiles);
@@ -1081,8 +1121,59 @@ namespace ScriptCanvasEditor
 
         if (dialog.exec() == QDialog::Accepted && dialog.selectedFiles().count() == 1)
         {
-            AZ_TracePrintf("ScriptCanvasEditor", "It would work");
+            const AZ::IO::Path path(dialog.selectedFiles().begin()->toUtf8().constData());
+            AZ::Outcome<ScriptEvents::ScriptEvent, AZStd::string> loadOutcome = AZ::Failure(AZStd::string("failed to save"));
+            ScriptEvents::ScriptEventBus::BroadcastResult
+                ( loadOutcome
+                , &ScriptEvents::ScriptEventRequests::LoadDefinitionSource
+                , path);
+
+            if (loadOutcome.IsSuccess())
+            {
+                using namespace ScriptCanvas::ScriptEventGrammar;
+                ScriptCanvas::ScriptCanvasId scriptCanvasId;
+                GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
+                ScriptCanvas::Graph* graph = nullptr;
+                ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
+
+                if (graph)
+                {
+                    // try and and load script canvas data
+                    // maybe embed the data in ScriptEvents ?
+                    // and load it from that handle? it could be easier for all we know
+                    // loadOutcome.GetValue().Flatten();
+                    auto graphOutcome = CreateGraphArtifactsFromScriptEvents(loadOutcome.GetValue(), *graph);
+                    if (graphOutcome.IsSuccess())
+                    {
+                        // I don't know make sure it all ... rendered appropriately, I guess...if it has not already
+                    }
+                    else
+                    {
+                        errorMessage = "Failed to generate ScriptCanvas artifacts from ScriptEvent nodes";
+                    }
+                }
+                else
+                {
+                    errorMessage = "Failed to find graph from Id: ";
+                    errorMessage += graphId.ToString();
+                }
+            }
+            else
+            {
+                errorMessage = "Failed to load selected file.";
+            }
         }
+        else
+        {
+            errorMessage = "Failed to select file.";
+        }
+
+        QMessageBox mb
+            ( QMessageBox::Warning
+            , tr("Failed to open ScriptEvent file into ScriptCanvas Editor.")
+            , errorMessage.c_str()
+            , QMessageBox::Close
+            , nullptr);
 
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }

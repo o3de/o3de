@@ -29,6 +29,8 @@ namespace ScriptCanvas
             ScriptEvents::ScriptEvent m_event;
         };
 
+        AZ::Outcome<void, AZStd::string> CreateGraphArtifactsFromScriptEvents(const ScriptEvents::ScriptEvent& definition, Graph& graph);
+
         GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(Graph& graph);
 
         FunctionNodeToScriptEventResult ParseScriptEvent(const Node& node);

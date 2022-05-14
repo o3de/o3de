@@ -52,6 +52,11 @@ namespace ScriptCanvas::ScriptEventGrammar
     using namespace ScriptCanvas;
     using namespace ParsingUtilitiesScriptEventExtensionCpp;
 
+    AZ::Outcome<void, AZStd::string> CreateGraphArtifactsFromScriptEvents(const ScriptEvents::ScriptEvent& /*definition*/, Graph& /*graph*/)
+    {
+        return AZ::Success();
+    }
+
     GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(Graph& graph)
     {
         GraphToScriptEventsResult result;
