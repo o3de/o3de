@@ -26,7 +26,6 @@ namespace EditorPythonBindings
         }
     }
 
-
     PythonEditorActionHandler::~PythonEditorActionHandler()
     {
         if (m_actionManagerInterface)
@@ -46,7 +45,7 @@ namespace EditorPythonBindings
             contextIdentifier,
             identifier,
             properties,
-            [h = AZStd::move(handler)]()
+            [h = AZStd::move(handler)]() mutable
             {
                 PyObject_CallObject(h.GetHandler(), NULL);
             }
