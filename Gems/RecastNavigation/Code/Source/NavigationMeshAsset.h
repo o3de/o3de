@@ -36,7 +36,6 @@ namespace RecastNavigation
         static constexpr inline const char* DisplayName = "NavigationMeshAsset";
         static constexpr inline const char* Extension = "navmesh";
         static constexpr inline const char* Group = "Navigation";
-        static constexpr inline const size_t HeaderSize = sizeof(uint32_t) * 3;
 
         AZ_RTTI(NavigationMeshAsset, "{5275fa85-c737-4b7b-bee4-375521698f1e}", AZ::Data::AssetData)
         AZ_CLASS_ALLOCATOR(NavigationMeshAsset, AZ::SystemAllocator, 0);

@@ -241,7 +241,11 @@ namespace RecastNavigation
 
                             {
                                 AZStd::lock_guard lock(m_navigationMeshMutex);
-                                m_navMesh->removeTile(m_navMesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0), nullptr, nullptr);
+                                const dtTileRef tileRef = m_navMesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0);
+                                if (tileRef != 0)
+                                {
+                                    m_navMesh->removeTile(tileRef, nullptr, nullptr);
+                                }
 
                                 if (navigationTileData.IsValid())
                                 {
@@ -375,10 +379,12 @@ namespace RecastNavigation
 
             NavigationTileData data;
             data.m_size = tile.dataSize;
+            // let Recast own the tile data
             data.m_data = asset->m_tileData->operator[](i).data();
-
-            AttachNavigationTileToMesh(data, 0);
+            AttachNavigationTileToMesh(data);
         }
+
+        asset->m_tileData.release();
     }
 
     void EditorRecastNavigationMeshComponent::ClearNavigationMesh()
@@ -398,7 +404,8 @@ namespace RecastNavigation
         }
         else
         {
-            ClearNavigationMesh();
+            // the navigation asset was cleared out, we should continue to have the navigation data we have
+            //ClearNavigationMesh();
         }
 
         return AZ::Edit::PropertyRefreshLevels::EntireTree;

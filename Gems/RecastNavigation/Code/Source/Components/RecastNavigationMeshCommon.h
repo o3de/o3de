@@ -26,7 +26,7 @@ namespace RecastNavigation
         virtual ~RecastNavigationMeshCommon() = default;
         
         bool CreateNavigationMesh(AZ::EntityId entityId, float tileSize);
-        bool AttachNavigationTileToMesh(NavigationTileData& navigationTileData, int flags = DT_TILE_FREE_DATA);
+        bool AttachNavigationTileToMesh(NavigationTileData& navigationTileData);
         NavigationTileData CreateNavigationTile(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig, rcContext* context);
         
         RecastNavigationDebugDraw m_customDebugDraw;

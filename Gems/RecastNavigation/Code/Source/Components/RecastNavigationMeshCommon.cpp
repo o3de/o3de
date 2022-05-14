@@ -337,14 +337,14 @@ namespace RecastNavigation
         return true;
     }
 
-    bool RecastNavigationMeshCommon::AttachNavigationTileToMesh(NavigationTileData& navigationTileData, int flags)
+    bool RecastNavigationMeshCommon::AttachNavigationTileToMesh(NavigationTileData& navigationTileData)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: addTile");
 
         dtTileRef tileRef = 0;
         const dtStatus status = m_navMesh->addTile(
             navigationTileData.m_data, navigationTileData.m_size,
-            flags, 0, &tileRef);
+            DT_TILE_FREE_DATA, 0, &tileRef);
         if (dtStatusFailed(status))
         {
             navigationTileData.Free();
