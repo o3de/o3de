@@ -9,6 +9,7 @@
 #include <Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h>
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Console/IConsole.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -16,6 +17,9 @@ namespace AZ
 {
     namespace RPI
     {
+        AZ_CVAR(uint32_t, r_ShaderVariantAsyncLoader_ServiceLoopDelayOverride_ms, 0, nullptr, ConsoleFunctorFlags::Null,
+            "Override the delay between iterations of checking for shader variant assets. 0 means use the default value (1000ms).");
+
         void ShaderVariantAsyncLoader::Init()
         {
             m_isServiceShutdown.store(false);
@@ -145,7 +149,12 @@ namespace AZ
                     }
                 }
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1000));
+                AZStd::chrono::milliseconds delay{1000};
+                if (r_ShaderVariantAsyncLoader_ServiceLoopDelayOverride_ms)
+                {
+                    delay = AZStd::chrono::milliseconds{r_ShaderVariantAsyncLoader_ServiceLoopDelayOverride_ms};
+                }
+                AZStd::this_thread::sleep_for(delay);
             }
         }
 
