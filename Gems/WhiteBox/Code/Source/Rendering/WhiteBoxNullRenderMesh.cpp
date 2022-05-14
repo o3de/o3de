@@ -10,7 +10,7 @@
 
 namespace WhiteBox
 {
-    WhiteBoxNullRenderMesh::WhiteBoxNullRenderMesh([[maybe_unused]] AZ::EntityId entityId)
+WhiteBoxNullRenderMesh::WhiteBoxNullRenderMesh([[maybe_unused]] AZ::EntityId entityId)
     {
         // noop
     }
@@ -27,6 +27,11 @@ namespace WhiteBox
     }
 
     void WhiteBoxNullRenderMesh::UpdateMaterial([[maybe_unused]] const WhiteBoxMaterial& material)
+    {
+        // noop
+    }
+
+    void WhiteBoxNullRenderMesh::SetVisiblity([[maybe_unused]] bool visibility)
     {
         // noop
     }

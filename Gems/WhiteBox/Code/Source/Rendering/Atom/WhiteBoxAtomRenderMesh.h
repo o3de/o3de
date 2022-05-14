@@ -47,6 +47,7 @@ namespace WhiteBox
         void UpdateTransform(const AZ::Transform& worldFromLocal) override;
         void UpdateMaterial(const WhiteBoxMaterial& material) override;
         bool IsVisible() const override;
+        void SetVisiblity(bool visibility) override;
 
     private:
         //! Creates an attribute buffer in the slot dictated by AttributeTypeT.
@@ -82,7 +83,6 @@ namespace WhiteBox
         bool DoesMeshRequireFullRebuild(const WhiteBoxMeshAtomData& meshData) const;
 
         AZ::EntityId m_entityId;
-        bool m_visible = true;
         AZ::Data::Asset<AZ::RPI::ModelLodAsset> m_lodAsset;
         AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
         AZ::Data::Instance<AZ::RPI::Model> m_model;
@@ -98,6 +98,7 @@ namespace WhiteBox
                 AZStd::unique_ptr<UVAttribute>, AZStd::unique_ptr<ColorAttribute>>,
             NumAttributes>
             m_attributes;
+        bool m_visible = true;
 
         //! Default white box mesh material.
         static constexpr AZStd::string_view TexturedMaterialPath = "materials/defaultpbr.azmaterial";

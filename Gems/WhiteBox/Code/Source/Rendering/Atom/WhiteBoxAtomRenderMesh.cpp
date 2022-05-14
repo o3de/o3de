@@ -268,11 +268,12 @@ namespace WhiteBox
         materialAssignment.m_propertyOverrides[AZ::Name("baseColor.useTexture")] = material.m_useTexture;
         materialAssignment.ApplyProperties();
         m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, m_materialMap);
-        if (material.m_visible != m_visible)
-        {
-            m_visible = material.m_visible;
-            m_meshFeatureProcessor->SetVisible(m_meshHandle, m_visible);
-        }
+    }
+
+    void AtomRenderMesh::SetVisiblity(bool visibility)
+    {
+        m_visible = visibility;
+        m_meshFeatureProcessor->SetVisible(m_meshHandle, m_visible);
     }
 
     bool AtomRenderMesh::IsVisible() const
@@ -284,5 +285,4 @@ namespace WhiteBox
     {
         return &m_meshHandle;
     }
-
 } // namespace WhiteBox

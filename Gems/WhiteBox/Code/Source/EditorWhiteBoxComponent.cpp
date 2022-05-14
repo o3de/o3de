@@ -239,9 +239,7 @@ namespace WhiteBox
     {
         if (m_renderMesh.has_value())
         {
-            WhiteBoxMaterial material = m_material;
-            material.m_visible = true;
-            (*m_renderMesh)->UpdateMaterial(material);
+            (*m_renderMesh)->UpdateMaterial(m_material);
             m_renderData.m_material = m_material;
         }
     }
