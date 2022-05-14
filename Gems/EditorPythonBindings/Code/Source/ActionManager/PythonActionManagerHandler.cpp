@@ -39,14 +39,13 @@ namespace EditorPythonBindings
     AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterAction(
         const AZStd::string& contextIdentifier,
         const AZStd::string& identifier,
-        const AZStd::string& name,
-        const AZStd::string& description,
-        const AZStd::string& category,
-        const AZStd::string& iconPath,
+        const AzToolsFramework::ActionProperties& properties,
         PythonEditorAction handler)
     {
         return m_actionManagerInterface->RegisterAction(
-            contextIdentifier, identifier, name, description, category, iconPath,
+            contextIdentifier,
+            identifier,
+            properties,
             [h = AZStd::move(handler)]()
             {
                 PyObject_CallObject(h.GetHandler(), NULL);

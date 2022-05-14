@@ -27,10 +27,10 @@ namespace AzToolsFramework
 
     struct ActionProperties
     {
-        AZStd::string name = "";
-        AZStd::string description = "";
-        AZStd::string category = "";
-        AZStd::string iconPath = "";
+        AZStd::string m_name = "";
+        AZStd::string m_description = "";
+        AZStd::string m_category = "";
+        AZStd::string m_iconPath = "";
     };
 
     //! ActionManagerInterface

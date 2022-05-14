@@ -32,10 +32,7 @@ namespace EditorPythonBindings
         ActionManagerOperationResult RegisterAction(
             const AZStd::string& contextIdentifier,
             const AZStd::string& identifier,
-            const AZStd::string& name,
-            const AZStd::string& description,
-            const AZStd::string& category,
-            const AZStd::string& iconPath,
+            const AzToolsFramework::ActionProperties& properties,
             PythonEditorAction handler) override;
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
 

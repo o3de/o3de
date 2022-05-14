@@ -360,12 +360,26 @@ namespace EditorPythonBindings
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<ActionManagerRequestBus>("ActionManagerPythonRequestBus")
+            behaviorContext
+                ->Class<AzToolsFramework::ActionProperties>("ActionProperties")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Property("name", BehaviorValueProperty(&AzToolsFramework::ActionProperties::m_name))
+                ->Property("description", BehaviorValueProperty(&AzToolsFramework::ActionProperties::m_description))
+                ->Property("category", BehaviorValueProperty(&AzToolsFramework::ActionProperties::m_category))
+                ->Property("iconPath", BehaviorValueProperty(&AzToolsFramework::ActionProperties::m_iconPath))
+                ;
+
+
+            behaviorContext
+                ->EBus<ActionManagerRequestBus>("ActionManagerPythonRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Action")
                 ->Attribute(AZ::Script::Attributes::Module, "action")
                 ->Event("RegisterAction", &ActionManagerRequestBus::Handler::RegisterAction)
-                ->Event("TriggerAction", &ActionManagerRequestBus::Handler::TriggerAction);
+                ->Event("TriggerAction", &ActionManagerRequestBus::Handler::TriggerAction)
+                ;
         }
     }
 

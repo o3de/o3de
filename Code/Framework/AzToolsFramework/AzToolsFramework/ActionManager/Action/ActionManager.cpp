@@ -80,9 +80,9 @@ namespace AzToolsFramework
                 EditorAction(
                     m_actionContexts[contextIdentifier]->GetWidget(),
                     actionIdentifier,
-                    properties.name,
-                    properties.description,
-                    properties.category,
+                    properties.m_name,
+                    properties.m_description,
+                    properties.m_category,
                     handler
                 )
             }
