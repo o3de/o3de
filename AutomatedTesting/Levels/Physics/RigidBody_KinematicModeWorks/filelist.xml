@@ -1,6 +1,0 @@
-<download name="C4976207_PhysXForceRegion_KinematicBehavior" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="9822" md5="047cd8d19ee3ca4a4bf565bc64568150"/>
- </files>
-</download>

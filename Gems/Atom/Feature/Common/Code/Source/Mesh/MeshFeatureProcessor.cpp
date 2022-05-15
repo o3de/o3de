@@ -465,7 +465,18 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->SetVisible(visible);
-                SetRayTracingEnabled(meshHandle, visible);
+
+                if (m_rayTracingFeatureProcessor && meshHandle->m_descriptor.m_isRayTracingEnabled)
+                {
+                    // always remove from ray tracing first
+                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_objectId);
+
+                    // now add if it's visible
+                    if (visible)
+                    {
+                        meshHandle->SetRayTracingData();
+                    }
+                }
             }
         }
 

@@ -19,7 +19,6 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
-
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     OUTER_PREFAB_NAME = 'Outer_prefab'
@@ -58,6 +57,10 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
 
     # Now, create another prefab, based on the child entity that is inside outer_prefab
     _, inner_instance = Prefab.create_prefab([child_entity_on_outer_instance], INNER_PREFAB_FILE_NAME)
+
+    # Test undo/redo on prefab creation
+    prefab_test_utils.validate_undo_redo_on_prefab_creation(inner_instance, parent_entity_on_outer_instance.id)
+
     # The child entity should now be inside the inner prefab instance
     child_entity_on_inner_instance = inner_instance.get_direct_child_entities()[0]
     # We track if the child entity is the same entity by checking the name and if it still contains the component that we created before
