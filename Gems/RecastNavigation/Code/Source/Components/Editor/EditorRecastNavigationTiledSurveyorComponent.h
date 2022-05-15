@@ -9,10 +9,6 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Math/Aabb.h>
-#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <Components/RecastHelpers.h>
-#include <RecastNavigation/RecastNavigationSurveyorBus.h>
 
 namespace RecastNavigation
 {
@@ -24,7 +20,6 @@ namespace RecastNavigation
     //!       which is needed by @RecastNavigationMeshComponent.
     class EditorRecastNavigationTiledSurveyorComponent final
         : public AzToolsFramework::Components::EditorComponentBase
-        , public RecastNavigationSurveyorRequestBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorRecastNavigationTiledSurveyorComponent,
@@ -40,20 +35,5 @@ namespace RecastNavigation
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-
-        // RecastNavigationSurveyorRequestBus interface implementation
-        AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) override;
-        AZ::Aabb GetWorldBounds() const override;
-        bool IsTiled() const override { return true; }
-        int GetNumberOfTiles(float tileSize) const override;
-
-    private:
-        // Append the geometry within a volume
-        void AppendColliderGeometry(TileGeometry& geometry, const AzPhysics::SceneQueryHits& overlapHits);
-
-        void CollectGeometryWithinVolume(const AZ::Aabb& volume, AzPhysics::SceneQueryHits& overlapHits);
-
-        AZStd::vector<AZStd::string> m_tagSelectionList;
-        AZStd::vector<AZ::u32> m_tags;
     };
 } // namespace RecastNavigation

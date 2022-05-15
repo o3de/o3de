@@ -10,7 +10,6 @@
 
 #include <DetourDebugDraw.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RecastNavigation/RecastNavigationSurveyorBus.h>
 
@@ -18,9 +17,8 @@
 
 namespace RecastNavigation
 {
-    RecastNavigationMeshComponent::RecastNavigationMeshComponent(
-        const RecastNavigationMeshConfig& config, bool showNavigationMesh, AZ::Data::Asset<NavigationMeshAsset> navMeshAsset)
-        : m_meshConfig(config), m_showNavigationMesh(showNavigationMesh), m_navigationAsset(navMeshAsset)
+    RecastNavigationMeshComponent::RecastNavigationMeshComponent(const RecastNavigationMeshConfig& config, bool drawDebug)
+        : m_meshConfig(config), m_showNavigationMesh(drawDebug)
     {
     }
 
@@ -180,18 +178,14 @@ namespace RecastNavigation
 
         CreateNavigationMesh(GetEntityId(), m_meshConfig.m_tileSize);
 
-        if (m_navigationAsset.QueueLoad())
+        if (m_showNavigationMesh)
         {
-            AZ::Data::AssetBus::Handler::BusConnect(m_navigationAsset.GetId());
+            m_tickEvent.Enqueue(AZ::TimeMs{ 0 }, true);
         }
-
-        m_tickEvent.Enqueue(AZ::TimeMs{ 0 }, true);
     }
 
     void RecastNavigationMeshComponent::Deactivate()
     {
-        AZ::Data::AssetBus::Handler::BusDisconnect();
-
         m_tickEvent.RemoveFromQueue();
 
         m_context = {};
@@ -199,11 +193,6 @@ namespace RecastNavigation
         m_navMesh = {};
 
         RecastNavigationMeshRequestBus::Handler::BusDisconnect();
-    }
-
-    void RecastNavigationMeshComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
     }
 
     void RecastNavigationMeshComponent::OnTick()

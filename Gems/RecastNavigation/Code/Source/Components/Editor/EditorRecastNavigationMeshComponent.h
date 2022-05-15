@@ -13,7 +13,6 @@
 #include "Components/RecastNavigationMeshConfig.h"
 
 #include <DetourNavMesh.h>
-#include <NavigationMeshAsset.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/ScheduledEvent.h>
@@ -27,8 +26,7 @@
 
 namespace RecastNavigation
 {
-    //! Calculates a navigation mesh with the triangle data provided by @RecastNavigationSurveyorComponent.
-    //! Provides APIs to find a path between two entities or two world positions.
+    //! Editor version of @RecastNavigationMeshComponent.
     class EditorRecastNavigationMeshComponent final
         : public AzToolsFramework::Components::EditorComponentBase
         , public RecastNavigationMeshCommon
@@ -37,7 +35,6 @@ namespace RecastNavigation
     public:
         AZ_EDITOR_COMPONENT(EditorRecastNavigationMeshComponent, "{22D516D4-C98D-4783-85A4-1ABE23CAB4D4}", AzToolsFramework::Components::EditorComponentBase);
 
-        EditorRecastNavigationMeshComponent();
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -51,43 +48,8 @@ namespace RecastNavigation
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
-        // AssetBus
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
     private:
-        //! Flag used for button placement
-        bool m_updateNavigationMeshComponentFlag = false;
-
         RecastNavigationMeshConfig m_meshConfig;
-
         EditorRecastNavigationMeshConfig m_meshEditorConfig;
-        AZ::Event<bool>::Handler m_autoUpdateHandler;
-        void OnAutoUpdateChanged(bool changed);
-
-        AZ::Event<bool>::Handler m_showMeshHandler;
-        void OnShowNavMeshChanged(bool changed);
-
-        AZStd::mutex m_navigationMeshMutex;
-        bool m_updatingNavMeshInProgress = false;
-        AZ::TaskDescriptor m_taskDescriptor{ "UpdatingNavMesh", "RecastNavigation" };
-        AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
-        AZStd::unique_ptr<AZ::TaskExecutor> m_navigationTaskExecutor;
-        AZStd::unique_ptr<AZ::TaskGraph> m_graph;
-
-        AZ::Crc32 UpdatedNavigationMeshInEditor();
-        AZ::Crc32 UpdatedNavigationAsset();
-
-        AZ::ScheduledEvent m_tickEvent;
-        void OnTick();
-
-        AZ::ScheduledEvent m_updateNavMeshEvent;
-        void OnUpdateNavMeshEvent();
-
-        AZ::Data::Asset<NavigationMeshAsset> m_navigationAsset;
-        bool SaveNavigationMesh(const char* path, const dtNavMesh* mesh);
-        void ExportToFile();
-        void LoadFromAsset(AZ::Data::Asset<NavigationMeshAsset> asset);
-
-        void ClearNavigationMesh();
     };
 } // namespace RecastNavigation

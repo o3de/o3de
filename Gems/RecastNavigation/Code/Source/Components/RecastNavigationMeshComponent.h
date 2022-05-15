@@ -9,8 +9,6 @@
 #pragma once
 
 #include <DetourNavMesh.h>
-#include <NavigationMeshAsset.h>
-#include <Recast.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/ScheduledEvent.h>
@@ -29,13 +27,12 @@ namespace RecastNavigation
         : public AZ::Component
         , public RecastNavigationMeshCommon
         , public RecastNavigationMeshRequestBus::Handler
-        , public AZ::Data::AssetBus::Handler
     {
     public:
         AZ_COMPONENT(RecastNavigationMeshComponent, "{a281f314-a525-4c05-876d-17eb632f14b4}");
-
         RecastNavigationMeshComponent() = default;
-        RecastNavigationMeshComponent(const RecastNavigationMeshConfig& config, bool showNavigationMesh, AZ::Data::Asset<NavigationMeshAsset> navMeshAsset);
+        RecastNavigationMeshComponent(const RecastNavigationMeshConfig& config, bool drawDebug);
+
         static void Reflect(AZ::ReflectContext* context);
 
         // RecastNavigationRequestBus interface implementation
@@ -49,17 +46,12 @@ namespace RecastNavigation
         void Activate() override;
         void Deactivate() override;
 
-        // AssetBus
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
     private:
         AZ::ScheduledEvent m_tickEvent{ [this]() { OnTick(); }, AZ::Name("RecastNavigationDebugViewTick")};
         void OnTick();
 
         RecastNavigationMeshConfig m_meshConfig;
         bool m_showNavigationMesh = true;
-
-        AZ::Data::Asset<NavigationMeshAsset> m_navigationAsset;
     };
 
 } // namespace RecastNavigation

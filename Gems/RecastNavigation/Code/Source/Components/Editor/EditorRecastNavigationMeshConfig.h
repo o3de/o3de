@@ -7,7 +7,7 @@
  */
 
 #pragma once
-#include <AzCore/EBus/Event.h>
+
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
 
@@ -21,18 +21,6 @@ namespace RecastNavigation
         static void Reflect(AZ::ReflectContext* context);
 
         bool m_showNavigationMesh = true;
-        bool m_autoUpdateNavigationMesh = false;
-        int m_backgroundThreadsToUse = 4;
-
-        void BindAutoUpdateChangedEventHandler(AZ::Event<bool>::Handler& handler);
-        void BindShowNavMeshChangedEventHandler(AZ::Event<bool>::Handler& handler);
-
-    private:
-        AZ::Crc32 OnShowNavMeshChanged();
-        AZ::Event<bool> m_showNavigationMeshEvent;
-
-        AZ::Crc32 OnAutoUpdateChanged();
-        AZ::Event<bool> m_autoUpdateNavigationMeshEvent;
     };
 
 } // namespace RecastNavigation

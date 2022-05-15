@@ -91,13 +91,13 @@ namespace RecastNavigation
         solid.reset(rcAllocHeightfield());
         if (!solid)
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'solid'.");
+            AZ_Error("Navigation", false, "buildNavigation: Out of memory 'solid'.");
             return {};
         }
         if (!rcCreateHeightfield(context, *solid, config.width, config.height,
             config.bmin, config.bmax, config.cs, config.ch))
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Could not create solid height field.");
+            AZ_Error("Navigation", false, "buildNavigation: Could not create solid height field.");
             return {};
         }
 
@@ -114,7 +114,7 @@ namespace RecastNavigation
         if (!rcRasterizeTriangles(context, vertices, vertexCount, triangleData,
             trianglesAreas.data(), triangleCount, *solid))
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Could not rasterize triangles.");
+            AZ_Error("Navigation", false, "buildNavigation: Could not rasterize triangles.");
             return {};
         }
 
@@ -144,12 +144,12 @@ namespace RecastNavigation
         compactHeightfield.reset(rcAllocCompactHeightfield());
         if (!compactHeightfield)
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'chf'.");
+            AZ_Error("Navigation", false, "buildNavigation: Out of memory 'chf'.");
             return {};
         }
         if (!rcBuildCompactHeightfield(context, config.walkableHeight, config.walkableClimb, *solid, *compactHeightfield))
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Could not build compact data.");
+            AZ_Error("Navigation", false, "buildNavigation: Could not build compact data.");
             return {};
         }
 
@@ -158,7 +158,7 @@ namespace RecastNavigation
         // Erode the walkable area by agent radius.
         if (!rcErodeWalkableArea(context, config.walkableRadius, *compactHeightfield))
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Could not erode.");
+            AZ_Error("Navigation", false, "buildNavigation: Could not erode.");
             return {};
         }
 
@@ -167,7 +167,7 @@ namespace RecastNavigation
         if (!rcBuildRegionsMonotone(context, *compactHeightfield,
             config.borderSize, config.minRegionArea, config.mergeRegionArea))
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Could not build monotone regions.");
+            AZ_Error("Navigation", false, "buildNavigation: Could not build monotone regions.");
             return {};
         }
 
@@ -179,13 +179,13 @@ namespace RecastNavigation
         contourSet.reset(rcAllocContourSet());
         if (!contourSet)
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory while allocating contours.");
+            AZ_Error("Navigation", false, "buildNavigation: Out of memory while allocating contours.");
             return {};
         }
         if (!rcBuildContours(context, *compactHeightfield, config.maxSimplificationError,
             config.maxEdgeLen, *contourSet))
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Could not create contours.");
+            AZ_Error("Navigation", false, "buildNavigation: Could not create contours.");
             return {};
         }
 
@@ -197,12 +197,12 @@ namespace RecastNavigation
         polyMesh.reset(rcAllocPolyMesh());
         if (!polyMesh)
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory while creating poly mesh.");
+            AZ_Error("Navigation", false, "buildNavigation: Out of memory while creating poly mesh.");
             return {};
         }
         if (!rcBuildPolyMesh(context, *contourSet, config.maxVertsPerPoly, *polyMesh))
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Could not triangulate contours.");
+            AZ_Error("Navigation", false, "buildNavigation: Could not triangulate contours.");
             return {};
         }
 
@@ -213,13 +213,13 @@ namespace RecastNavigation
         polyMeshDetail.reset(rcAllocPolyMeshDetail());
         if (!polyMeshDetail)
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Out of memory while allocating detail mesh.");
+            AZ_Error("Navigation", false, "buildNavigation: Out of memory while allocating detail mesh.");
             return {};
         }
 
         if (!rcBuildPolyMeshDetail(context, *polyMesh, *compactHeightfield, config.detailSampleDist, config.detailSampleMaxError, *polyMeshDetail))
         {
-            context->log(RC_LOG_ERROR, "buildNavigation: Could not build detail mesh.");
+            AZ_Error("Navigation", false, "buildNavigation: Could not build detail mesh.");
             return {};
         }
 
@@ -282,7 +282,7 @@ namespace RecastNavigation
 
             if (!dtCreateNavMeshData(&params, &navigationTileData.m_data, &navigationTileData.m_size))
             {
-                context->log(RC_LOG_ERROR, "Could not build navigation tile.");
+                AZ_Error("Navigation", false, "Could not build navigation tile.");
                 return {};
             }
 
@@ -292,7 +292,7 @@ namespace RecastNavigation
         return {};
     }
 
-    bool RecastNavigationMeshCommon::CreateNavigationMesh(AZ::EntityId entityId, float tileSize)
+    bool RecastNavigationMeshCommon::CreateNavigationMesh(AZ::EntityId meshEntityId, float tileSize)
     {
         m_navMesh.reset(dtAllocNavMesh());
         if (!m_navMesh)
@@ -304,12 +304,12 @@ namespace RecastNavigation
         AZ::Aabb worldVolume = AZ::Aabb::CreateNull();
 
         dtNavMeshParams params = {};
-        RecastNavigationSurveyorRequestBus::EventResult(worldVolume, entityId, &RecastNavigationSurveyorRequests::GetWorldBounds);
+        RecastNavigationSurveyorRequestBus::EventResult(worldVolume, meshEntityId, &RecastNavigationSurveyorRequests::GetWorldBounds);
 
         const RecastVector3 worldCenter(worldVolume.GetMin());
         rcVcopy(params.orig, &worldCenter.m_x);
 
-        RecastNavigationSurveyorRequestBus::EventResult(params.maxTiles, entityId, &RecastNavigationSurveyorRequests::GetNumberOfTiles, tileSize);
+        RecastNavigationSurveyorRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationSurveyorRequests::GetNumberOfTiles, tileSize);
 
         // in world units
         params.tileWidth = tileSize;
@@ -322,10 +322,7 @@ namespace RecastNavigation
             return false;
         }
 
-        if (!m_navQuery) // query object is re-usable
-        {
-            m_navQuery.reset(dtAllocNavMeshQuery());
-        }
+        m_navQuery.reset(dtAllocNavMeshQuery());
 
         status = m_navQuery->init(m_navMesh.get(), 2048);
         if (dtStatusFailed(status))

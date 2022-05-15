@@ -175,9 +175,6 @@ namespace RecastNavigation
                 geometryData->m_worldBounds = tileVolume;
                 CollectGeometryWithinVolume(scanVolume, results);
 
-                AZ_Printf("RecastNavigationTiledSurveyorComponent", "Found %llu physx meshes in volume %s",
-                    results.m_hits.size(), AZStd::to_string(tileVolume).c_str());
-
                 AppendColliderGeometry(*geometryData, results);
 
                 geometryData->m_tileX = x;

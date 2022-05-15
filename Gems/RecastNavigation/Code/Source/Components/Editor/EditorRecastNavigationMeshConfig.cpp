@@ -18,8 +18,6 @@ namespace RecastNavigation
 
             serialize->Class<EditorRecastNavigationMeshConfig>()
                 ->Field("Draw Mesh", &Self::m_showNavigationMesh)
-                ->Field("Auto Update in Editor", &Self::m_autoUpdateNavigationMesh)
-                ->Field("Threads", &Self::m_backgroundThreadsToUse)
                 ->Version(1)
                 ;
 
@@ -33,36 +31,8 @@ namespace RecastNavigation
 
                     ->DataElement(nullptr, &Self::m_showNavigationMesh, "Draw Mesh",
                         "Draw the debug view of mesh in Editor viewport")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshConfig::OnShowNavMeshChanged)
-                    ->DataElement(nullptr, &Self::m_autoUpdateNavigationMesh, "Auto Update in Editor",
-                        "Re-calculate the navigation mesh at least every (N) seconds. A negative value disables updates.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRecastNavigationMeshConfig::OnAutoUpdateChanged)
-                    ->DataElement(nullptr, &Self::m_backgroundThreadsToUse, "Threads",
-                        "Number of background threads to use when re-building navigation mesh in Editor viewport")
                     ;
             }
         }
-    }
-
-    void EditorRecastNavigationMeshConfig::BindAutoUpdateChangedEventHandler(AZ::Event<bool>::Handler& handler)
-    {
-        handler.Connect(m_autoUpdateNavigationMeshEvent);
-    }
-
-    void EditorRecastNavigationMeshConfig::BindShowNavMeshChangedEventHandler(AZ::Event<bool>::Handler& handler)
-    {
-        handler.Connect(m_showNavigationMeshEvent);
-    }
-
-    AZ::Crc32 EditorRecastNavigationMeshConfig::OnShowNavMeshChanged()
-    {
-        m_showNavigationMeshEvent.Signal(m_showNavigationMesh);
-        return AZ::Edit::PropertyRefreshLevels::None;
-    }
-
-    AZ::Crc32 EditorRecastNavigationMeshConfig::OnAutoUpdateChanged()
-    {
-        m_autoUpdateNavigationMeshEvent.Signal(m_autoUpdateNavigationMesh);
-        return AZ::Edit::PropertyRefreshLevels::None;
     }
 }

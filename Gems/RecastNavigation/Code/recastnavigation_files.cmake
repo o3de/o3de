@@ -8,18 +8,11 @@
 
 set(FILES
     Source/RecastNavigationModuleInterface.h
-    Source/NavigationMeshAsset.cpp
-    Source/NavigationMeshAsset.h
-
-    Source/Components/RecastNavigationSystemComponent.cpp
-    Source/Components/RecastNavigationSystemComponent.h
 
     Source/Components/RecastNavigationMeshCommon.cpp
     Source/Components/RecastNavigationMeshCommon.h
     Source/Components/RecastNavigationMeshComponent.cpp
     Source/Components/RecastNavigationMeshComponent.h
-    Source/Components/RecastNavigationSurveyorComponent.cpp
-    Source/Components/RecastNavigationSurveyorComponent.h
     Source/Components/RecastNavigationTiledSurveyorComponent.cpp
     Source/Components/RecastNavigationTiledSurveyorComponent.h
 

@@ -25,7 +25,7 @@ namespace RecastNavigation
         AZ_RTTI(RecastNavigationMeshCommon, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
         virtual ~RecastNavigationMeshCommon() = default;
         
-        bool CreateNavigationMesh(AZ::EntityId entityId, float tileSize);
+        bool CreateNavigationMesh(AZ::EntityId meshEntityId, float tileSize);
         bool AttachNavigationTileToMesh(NavigationTileData& navigationTileData);
         NavigationTileData CreateNavigationTile(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig, rcContext* context);
         
