@@ -39,7 +39,7 @@ def ScaleModifierOverrides_InstancesProperlyScale():
     Test Steps:
      1) Open an existing level
      2) Create a new entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
-     3) Set a valid mesh asset on the Vegetation Asset List
+     3) Set a valid model asset on the Vegetation Asset List
      4) Add Vegetation Scale Modifier component to the vegetation and set the values
      5) Toggle on Scale Modifier Override and verify Scale Min and Scale Max are set 0.1 and 1.0
      6) Create a new child entity and add components

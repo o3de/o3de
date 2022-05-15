@@ -940,7 +940,6 @@ finally {
             } else {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
-
             }
             if(env.POST_AR_BUILD_SNS_TOPIC) {
                 message_json = [

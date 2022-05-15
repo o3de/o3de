@@ -49,7 +49,10 @@ namespace ScriptCanvasBuilder
         const ScriptCanvas::GraphData* graphData = nullptr;
         ScriptCanvasEditor::SourceHandle sourceHandle;
 
-        auto sourceOutcome = ScriptCanvasEditor::LoadFromFile(fullPath);
+        // By default, entity IDs are made unique, so that multiple instances of the script canvas file can be loaded at the same time.
+        // However, in this case the file is not loaded multiple times at once, and the entity IDs need to be stable so that
+        // the logic used to generate the fingerprint for this file remains stable.
+        auto sourceOutcome = ScriptCanvasEditor::LoadFromFile(fullPath, /*makeEntityIdsUnique*/ false);
         if (sourceOutcome.IsSuccess())
         {
             sourceHandle = sourceOutcome.GetValue().handle;
@@ -104,7 +107,8 @@ namespace ScriptCanvasBuilder
             return;
         }
 
-        AZStd::unordered_multimap<AZStd::string, AssetBuilderSDK::SourceFileDependency> jobDependenciesByKey;
+        AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZ::Uuid>> jobDependenciesByKey;
+
         auto assetFilter = [this, &jobDependenciesByKey]
             ( void* instancePointer
             , const AZ::SerializeContext::ClassData* classData
@@ -119,7 +123,7 @@ namespace ScriptCanvasBuilder
                 {
                     AssetBuilderSDK::SourceFileDependency dependency;
                     dependency.m_sourceFileDependencyUUID = subgraphAsset->GetId().m_guid;
-                    jobDependenciesByKey.insert({ s_scriptCanvasProcessJobKey, dependency });
+                    jobDependenciesByKey[s_scriptCanvasProcessJobKey].insert(dependency.m_sourceFileDependencyUUID);
                     this->m_processEditorAssetDependencies.push_back
                         ( { subgraphAsset->GetId(), azTypeId, AZ::Data::AssetLoadBehavior::PreLoad });
                 }
@@ -131,7 +135,7 @@ namespace ScriptCanvasBuilder
                 {
                     AssetBuilderSDK::SourceFileDependency dependency;
                     dependency.m_sourceFileDependencyUUID = eventAsset->GetId().m_guid;
-                    jobDependenciesByKey.insert({ ScriptEvents::k_builderJobKey, dependency });
+                    jobDependenciesByKey[ScriptEvents::k_builderJobKey].insert(dependency.m_sourceFileDependencyUUID);
                     this->m_processEditorAssetDependencies.push_back
                         ( { eventAsset->GetId(), azTypeId, AZ::Data::AssetLoadBehavior::PreLoad });
                 }
@@ -165,13 +169,23 @@ namespace ScriptCanvasBuilder
             jobDescriptor.m_critical = true;
             jobDescriptor.m_jobKey = s_scriptCanvasProcessJobKey;
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
-            jobDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
+            jobDescriptor.m_additionalFingerprintInfo
+                = AZStd::string(GetFingerprintString())
+                .append("|")
+                .append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
 
             // Graph process job needs to wait until its dependency asset job finished
-            for (const auto& processingDependency : jobDependenciesByKey)
+            for (const auto& jobDependencies : jobDependenciesByKey)
             {
-                response.m_sourceFileDependencyList.push_back(processingDependency.second);
-                jobDescriptor.m_jobDependencyList.emplace_back(processingDependency.first, info.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Order, processingDependency.second);
+                for (const auto& dependency : jobDependencies.second)
+                {
+                    AssetBuilderSDK::JobDependency jobDependency;
+                    jobDependency.m_sourceFile.m_sourceFileDependencyUUID = dependency;
+                    jobDependency.m_jobKey = jobDependencies.first;
+                    jobDependency.m_platformIdentifier = info.m_identifier;
+                    jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                    jobDescriptor.m_jobDependencyList.push_back(AZStd::move(jobDependency));
+                }
             }
 
             response.m_createJobOutputs.push_back(jobDescriptor);
@@ -207,6 +221,8 @@ namespace ScriptCanvasBuilder
 
     void Worker::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
     {
+        using namespace ScriptCanvas;
+
         AZ_TracePrintf(s_scriptCanvasBuilder, "Start Processing Job");
         // A runtime script canvas component is generated, which creates a .scriptcanvas_compiled file
         AZStd::string fullPath;
@@ -254,7 +270,7 @@ namespace ScriptCanvasBuilder
         {
             AZ::Entity* buildEntity = sourceHandle.Get()->GetEntity();
             ProcessTranslationJobInput input;
-            input.assetID = AZ::Data::AssetId(request.m_sourceFileUUID, AZ_CRC("RuntimeData", 0x163310ae));
+            input.assetID = AZ::Data::AssetId(request.m_sourceFileUUID, RuntimeDataSubId);
             input.request = &request;
             input.response = &response;
             input.runtimeScriptCanvasOutputPath = runtimeScriptCanvasOutputPath;

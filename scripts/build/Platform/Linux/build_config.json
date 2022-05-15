@@ -31,7 +31,7 @@
   "debug": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -46,7 +46,7 @@
   "profile": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
+      "weekly-clean-internal",
       "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
@@ -61,8 +61,8 @@
   },
   "profile_gcc_nounity": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "nightly-incremental-internal",
+      "weekly-clean-internal"
     ],
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
@@ -105,8 +105,8 @@
   },
   "test_profile_gcc_nounity": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "nightly-incremental-internal",
+      "weekly-clean-internal"
     ],
     "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
@@ -137,7 +137,7 @@
     "TAGS": [
       "weekly-build-metrics",
       "nightly-incremental",
-      "nightly-clean"
+      "weekly-clean-internal"
     ],
     "COMMAND": "build_asset_linux.sh",
     "PARAMETERS": {
@@ -170,8 +170,8 @@
   },
   "awsi_test_profile_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "nightly-incremental-internal",
+      "weekly-clean-internal"
     ],
     "steps": [
       "awsi_deployment",
@@ -200,7 +200,7 @@
   "periodic_test_profile": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_linux.sh",
@@ -217,7 +217,7 @@
   "sandbox_test_profile": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "PIPELINE_ENV": {
@@ -236,7 +236,7 @@
   "benchmark_test_profile": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_linux.sh",
@@ -253,7 +253,7 @@
   "release": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -267,8 +267,8 @@
   },
   "monolithic_release": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "nightly-incremental-internal",
+      "weekly-clean-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -286,13 +286,13 @@
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/linux",
-        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
         "CMAKE_TARGET": "install"
     }
   },
   "installer_pipe": { 
     "TAGS": [
-      "nightly-clean",
+      "weekly-clean-internal",
       "nightly-installer"
     ],
     "steps": [
@@ -308,7 +308,7 @@
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/linux",
-        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
         "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license",
         "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
         "CMAKE_TARGET": "all"
@@ -317,7 +317,7 @@
   "install_profile_pipe": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean"
+      "weekly-clean-internal"
     ],
     "PIPELINE_ENV": {
       "PROJECT_REPOSITORY_NAME": "TestProject"
@@ -354,7 +354,9 @@
     },
     "COMMAND": "deploy_cdk_applications.sh",
     "PARAMETERS": {
-      "NVM_VERSION": "v0.39.1"
+      "NVM_VERSION": "v0.39.1",
+      "CDK_VERSION": "1.154.0",
+      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
     }
   },
   "awsi_destruction": {
@@ -364,7 +366,9 @@
     },
     "COMMAND": "destroy_cdk_applications.sh",
     "PARAMETERS": {
-      "NVM_VERSION": "v0.39.1"
+      "NVM_VERSION": "v0.39.1",
+      "CDK_VERSION": "1.154.0",
+      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
     }
   }
 }

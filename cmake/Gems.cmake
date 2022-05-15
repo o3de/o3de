@@ -250,6 +250,8 @@ function(ly_add_gem_dependencies_to_project_variants)
                 ${PREFIX_CLAUSE}
                 TARGETS ${ly_add_gem_dependencies_TARGET}
                 DEPENDENT_TARGETS ${dealiased_gem_target})
+        else()
+            message(VERBOSE "Gem \"${gem_name}\" does not expose a variant of ${ly_add_gem_dependencies_VARIANT}")
         endif()
     endforeach()
 endfunction()

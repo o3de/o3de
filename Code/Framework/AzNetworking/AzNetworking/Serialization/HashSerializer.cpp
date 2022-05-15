@@ -15,6 +15,16 @@ namespace AzNetworking
     static const int32_t FloatHashMinValue = (INT_MIN >> 9);
     static const int32_t FloatHashMaxValue = (INT_MAX >> 9);
 
+    HashSerializer::HashSerializer()
+    {
+        ;
+    }
+
+    HashSerializer::~HashSerializer()
+    {
+        ;
+    }
+
     AZ::HashValue32 HashSerializer::GetHash() const
     {
         // Just truncate the upper bits
