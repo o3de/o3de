@@ -135,22 +135,29 @@ namespace Multiplayer
             }
 
             // We only care about Root.spawnable and Root.network.spawnable
-            // @todo update editor so it only sends Root spawnables in the first place
-            if (assetHint.starts_with("Root"))
+            if (!assetHint.starts_with("Root"))
             {
-                AZ::Data::AssetInfo spawnableAssetInfo;
-                spawnableAssetInfo.m_sizeBytes = m_byteStream.GetCurPos() - assetSize;
-                spawnableAssetInfo.m_assetId = assetId;
-                spawnableAssetInfo.m_assetType = spawnable->GetType();
-                spawnableAssetInfo.m_relativePath = assetHint;
-
-                rootSpawnableAssetDataInfoContainer.emplace_back(spawnable, spawnableAssetInfo);
+                AZ_Assert(false, "Editor sent the server more than just the root (level) spawnable. Ensure the editor code only sends Root.");
             }
+            
+            AZ::Data::AssetInfo spawnableAssetInfo;
+            spawnableAssetInfo.m_sizeBytes = m_byteStream.GetCurPos() - assetSize;
+            spawnableAssetInfo.m_assetId = assetId;
+            spawnableAssetInfo.m_assetType = spawnable->GetType();
+            spawnableAssetInfo.m_relativePath = assetHint;
+            
+            rootSpawnableAssetDataInfoContainer.emplace_back(spawnable, spawnableAssetInfo);
         }
 
         // Now that we've deserialized, clear the byte stream
         m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
         m_byteStream.Truncate();
+
+        if (rootSpawnableAssetDataInfoContainer.empty())
+        {
+            AZ_Assert(false, "MultiplayerEditorConnection failed to create level spawnable. Editor never sent the Root.spawnable; ensure the Editor sends the current Root.spawnable (the level).");
+            return false;
+        }
 
         // Setup the normal multiplayer connection.
         // This needs to be done before in-memory spawnable creation and level loading
@@ -167,7 +174,7 @@ namespace Multiplayer
             m_inMemorySpawnableAssetContainer->CreateInMemorySpawnableAsset(rootSpawnableAssetDataInfoContainer, loadDependentAssets, "Root");
         if (!createSpawnableResult.IsSuccess())
         {
-            AZ_Assert(false, createSpawnableResult.GetError().c_str())
+            AZ_Assert(false, "MultiplayerEditorConnection failed to create level spawnable. Error result: %s", createSpawnableResult.GetError().c_str())
         }
 
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets

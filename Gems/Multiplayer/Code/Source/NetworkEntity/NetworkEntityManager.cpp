@@ -26,7 +26,7 @@
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 
 AZ_DECLARE_BUDGET(MULTIPLAYER);
-
+#pragma optimize("", off)
 namespace Multiplayer
 {
     AZ_CVAR(bool, net_DebugCheckNetworkEntityManager, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables extra debug checks inside the NetworkEntityManager");
@@ -427,47 +427,55 @@ namespace Multiplayer
 
             // Can't use NetworkEntityTracker to do the lookup since the entity has not activated yet
             NetBindComponent* netBindComponent = clone->FindComponent<NetBindComponent>();
-            if (netBindComponent != nullptr)
-            {
-                // Update TransformComponent parent Id. It is guaranteed for the entities array to be sorted from parent->child here.
-                auto* transformComponent = clone->FindComponent<AzFramework::TransformComponent>();
-                AZ::EntityId parentId = transformComponent->GetParentId();
-                if (parentId.IsValid())
-                {
-                    auto it = originalToCloneIdMap.find(parentId);
-                    if (it != originalToCloneIdMap.end())
-                    {
-                        transformComponent->SetParentRelative(it->second);
-                    }
-                    else
-                    {
-                        AZ_Warning("NetworkEntityManager", false, "Entity %s doesn't have the parent entity %s present in network.spawnable",
-                            clone->GetName().c_str(), parentId.ToString().data());
-                    }
-                }
-
-                PrefabEntityId prefabEntityId;
-                prefabEntityId.m_prefabName = m_networkPrefabLibrary.GetSpawnableNameFromAssetId(spawnable.GetId());
-                prefabEntityId.m_entityOffset = aznumeric_cast<uint32_t>(i);
-
-                const NetEntityId netEntityId = NextId();
-                netBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
-                transformComponent->SetWorldTM(transform);
-
-                if (autoActivate == AutoActivate::DoNotActivate)
-                {
-                    clone->SetRuntimeActiveByDefault(false);
-                }
-
-                AzFramework::GameEntityContextRequestBus::Broadcast(
-                    &AzFramework::GameEntityContextRequestBus::Events::AddGameEntity, clone);
-
-                returnList.push_back(netBindComponent->GetEntityHandle());
-            }
-            else
+            if (!netBindComponent)
             {
                 delete clone;
+                continue;
             }
+            
+            // Update TransformComponent parent Id. It is guaranteed for the entities array to be sorted from parent->child here.
+            auto* cloneTransformComponent = clone->FindComponent<AzFramework::TransformComponent>();
+            AZ::EntityId parentId = cloneTransformComponent->GetParentId();
+            bool removeParent = false;
+            if (parentId.IsValid())
+            {
+                auto it = originalToCloneIdMap.find(parentId);
+                if (it != originalToCloneIdMap.end())
+                {
+                    cloneTransformComponent->SetParentRelative(it->second);
+                }
+                else
+                {
+                    // This network entity is referencing a non-network parent
+                    // We need to clear the parent.
+                    // Note: The need to clear the parent will go away once this method replaces serializeContext->CloneObject
+                    //    with the standard AzFramework::SpawnableEntitiesInterface::SpawnEntities
+                    removeParent = true;
+                }
+            }
+
+            PrefabEntityId prefabEntityId;
+            prefabEntityId.m_prefabName = m_networkPrefabLibrary.GetSpawnableNameFromAssetId(spawnable.GetId());
+            prefabEntityId.m_entityOffset = aznumeric_cast<uint32_t>(i);
+
+            const NetEntityId netEntityId = NextId();
+            netBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
+            cloneTransformComponent->SetWorldTM(transform);
+
+            if (autoActivate == AutoActivate::DoNotActivate)
+            {
+                clone->SetRuntimeActiveByDefault(false);
+            }
+
+            AzFramework::GameEntityContextRequestBus::Broadcast(
+                &AzFramework::GameEntityContextRequestBus::Events::AddGameEntity, clone);
+
+            if (removeParent)
+            {
+                cloneTransformComponent->SetParent(AZ::EntityId());
+            }
+            
+            returnList.push_back(netBindComponent->GetEntityHandle());
         }
 
         return returnList;
@@ -708,4 +716,5 @@ namespace Multiplayer
         return safeToExit;
     }
 
-}
+} // namespace Multiplayer
+#pragma optimize("", on)

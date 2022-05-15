@@ -423,11 +423,21 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint)
     {
+        // Only grab the level (Root.spawnable or Root.network.spawnable)
+        // We'll receive OnPreparingSpawnable for other spawnables that are referenced by components in the level,
+        // but these spawnables are already available for the server inside the asset cache.
+        if (assetHint != "Root.spawnable" && assetHint != "Root.network.spawnable")
+        {
+            return;
+        }
+        
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Failed to retrieve application serialization context.")
         AZ_Assert(!assetHint.empty(), "Asset hint is empty!")
 
+        // Store a clone of this spawnable for the server; we make a clone now before the spawnable is modified by aliasing.
+        // Aliasing for this editor (client) is different from aliasing that will happen on the server.
         AZStd::unique_ptr<AzFramework::Spawnable> preAliasedSpawnableClone(serializeContext->CloneObject(&spawnable));
         m_preAliasedSpawnablesForServer.push_back({ AZStd::move(preAliasedSpawnableClone), assetHint, spawnable.GetId() });
     }
