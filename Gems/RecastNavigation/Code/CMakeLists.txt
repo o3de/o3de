@@ -93,6 +93,7 @@ ly_add_target(
             RecastNavigation::Detour
             RecastNavigation::Recast
             Gem::LmbrCentral.Static
+            Gem::DebugDraw.Static
 )
 
 # Here add RecastNavigation target, it depends on the RecastNavigation.Static

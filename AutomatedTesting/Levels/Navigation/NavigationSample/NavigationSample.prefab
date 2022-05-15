@@ -22,7 +22,6 @@
                     "Entity_[1176639161715]",
                     "Entity_[11033547635888]",
                     "Entity_[11265475869872]",
-                    "Entity_[11463044365488]",
                     "Entity_[18584100142256]",
                     "Instance_[316790562534997]/ContainerEntity",
                     "Entity_[2169349350256]"
@@ -72,8 +71,8 @@
                         "Configuration": {
                             "IsFilled": false,
                             "Dimensions": [
-                                60.0,
-                                60.0,
+                                300.0,
+                                30.0,
                                 10.0
                             ]
                         }
@@ -99,8 +98,10 @@
                     "$type": "EditorRecastNavigationMeshComponent",
                     "Id": 2871001223340121833,
                     "Configuration": {
-                        "Cell Size": 0.20000000298023224,
-                        "Border Size": 10
+                        "Agent Radius": 0.3100000023841858,
+                        "Cell Height": 0.25,
+                        "Cell Size": 0.25,
+                        "Border Size": 20
                     }
                 },
                 "Component_[490606516712228268]": {
@@ -109,8 +110,8 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            19.84151840209961,
-                            -19.00634765625,
+                            134.90750122070313,
+                            0.8937492370605469,
                             0.8811788558959961
                         ]
                     }
@@ -167,7 +168,7 @@
                                         },
                                         "isNullPointer": false,
                                         "$type": "double",
-                                        "value": 0.0
+                                        "value": 3.0
                                     },
                                     "VariableId": {
                                         "m_id": "{8F61D3C2-8906-4F3A-A4C0-F95176EC06A2}"
@@ -199,7 +200,7 @@
                                         },
                                         "isNullPointer": false,
                                         "$type": "double",
-                                        "value": 2.0
+                                        "value": 3.0
                                     },
                                     "InputControlVisibility": {
                                         "Value": 850104567
@@ -226,26 +227,6 @@
                                         "m_id": "{F9BD60F2-4899-4080-B49E-19A29D044A95}"
                                     },
                                     "VariableName": "NavMesh",
-                                    "InitialValueSource": 1
-                                }
-                            ],
-                            "overridesUnused": [
-                                {
-                                    "Datum": {
-                                        "scriptCanvasType": {
-                                            "m_type": 1
-                                        },
-                                        "isNullPointer": false,
-                                        "$type": "EntityId",
-                                        "value": ""
-                                    },
-                                    "InputControlVisibility": {
-                                        "Value": 850104567
-                                    },
-                                    "VariableId": {
-                                        "m_id": "{272584A1-0C09-4E96-9ED4-A4AF82597A58}"
-                                    },
-                                    "VariableName": "Goal Marker",
                                     "InitialValueSource": 1
                                 }
                             ]
@@ -277,8 +258,8 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            -1.2658371925354004,
-                            -2.1768460273742676,
+                            -6.714402675628662,
+                            -6.772493839263916,
                             -1.4386320114135742
                         ]
                     }
@@ -309,6 +290,19 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 1830074340823339780
                 },
+                "Component_[2388812801375509992]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 2388812801375509992,
+                    "m_template": {
+                        "$type": "InputConfigurationComponent",
+                        "Input Event Bindings": {
+                            "assetId": {
+                                "guid": "{2642E8FE-4B68-571B-A51F-3DECA5A7F697}"
+                            },
+                            "assetHint": "levels/navigation/navigationsample/game_input.inputbindings"
+                        }
+                    }
+                },
                 "Component_[3947271505408992556]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 3947271505408992556
@@ -335,127 +329,6 @@
                 "Component_[9765818229957364866]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 9765818229957364866
-                }
-            }
-        },
-        "Entity_[11463044365488]": {
-            "Id": "Entity_[11463044365488]",
-            "Name": "Press F to Update NavMesh",
-            "Components": {
-                "Component_[11099241320993084766]": {
-                    "$type": "EditorVisibilityComponent",
-                    "Id": 11099241320993084766
-                },
-                "Component_[13176715610150873899]": {
-                    "$type": "EditorEntitySortComponent",
-                    "Id": 13176715610150873899
-                },
-                "Component_[13622856740149132085]": {
-                    "$type": "EditorLockComponent",
-                    "Id": 13622856740149132085
-                },
-                "Component_[14711892304832210041]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 14711892304832210041,
-                    "m_template": {
-                        "$type": "InputConfigurationComponent",
-                        "Input Event Bindings": {
-                            "assetId": {
-                                "guid": "{2642E8FE-4B68-571B-A51F-3DECA5A7F697}"
-                            },
-                            "assetHint": "levels/navigation/navigationsample/game_input.inputbindings"
-                        }
-                    }
-                },
-                "Component_[16410539802837902428]": {
-                    "$type": "EditorOnlyEntityComponent",
-                    "Id": 16410539802837902428
-                },
-                "Component_[17145057822298937480]": {
-                    "$type": "EditorDisabledCompositionComponent",
-                    "Id": 17145057822298937480
-                },
-                "Component_[18018760070486274716]": {
-                    "$type": "EditorPendingCompositionComponent",
-                    "Id": 18018760070486274716
-                },
-                "Component_[18061743689947250874]": {
-                    "$type": "EditorScriptCanvasComponent",
-                    "Id": 18061743689947250874,
-                    "configuration": {
-                        "sourceHandle": {
-                            "id": "{55162F3C-2669-5812-A9FA-8E989C88AC96}",
-                            "path": "git/o3de/AutomatedTesting/Levels/Navigation/NavigationSample/update_navmesh_on_keyboard_f.scriptcanvas"
-                        },
-                        "sourceName": "update_navmesh_on_keyboard_f.scriptcanvas",
-                        "propertyOverrides": {
-                            "source": {
-                                "id": "{55162F3C-2669-5812-A9FA-8E989C88AC96}",
-                                "path": "git/o3de/AutomatedTesting/Levels/Navigation/NavigationSample/update_navmesh_on_keyboard_f.scriptcanvas"
-                            },
-                            "variables": [
-                                {
-                                    "Datum": {
-                                        "scriptCanvasType": {
-                                            "m_type": 1
-                                        },
-                                        "isNullPointer": false,
-                                        "$type": "EntityId",
-                                        "value": ""
-                                    },
-                                    "VariableId": {
-                                        "m_id": "{E9085481-F327-42F6-986A-FB95EB966024}"
-                                    },
-                                    "VariableName": "NavMeshEntity",
-                                    "InitialValueSource": 1
-                                }
-                            ],
-                            "overrides": [
-                                {
-                                    "Datum": {
-                                        "scriptCanvasType": {
-                                            "m_type": 1
-                                        },
-                                        "isNullPointer": false,
-                                        "$type": "EntityId",
-                                        "value": "Entity_[11033547635888]"
-                                    },
-                                    "InputControlVisibility": {
-                                        "Value": 850104567
-                                    },
-                                    "VariableId": {
-                                        "m_id": "{E9085481-F327-42F6-986A-FB95EB966024}"
-                                    },
-                                    "VariableName": "NavMeshEntity",
-                                    "InitialValueSource": 1
-                                }
-                            ]
-                        }
-                    }
-                },
-                "Component_[2498316883564710153]": {
-                    "$type": "SelectionComponent",
-                    "Id": 2498316883564710153
-                },
-                "Component_[2989675293009867947]": {
-                    "$type": "EditorEntityIconComponent",
-                    "Id": 2989675293009867947
-                },
-                "Component_[3191609816114251482]": {
-                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "Id": 3191609816114251482,
-                    "Parent Entity": "Entity_[1146574390643]",
-                    "Transform Data": {
-                        "Translate": [
-                            -3.0424585342407227,
-                            -9.585918426513672,
-                            -11.073348045349121
-                        ]
-                    }
-                },
-                "Component_[4836339380833622718]": {
-                    "$type": "EditorInspectorComponent",
-                    "Id": 4836339380833622718
                 }
             }
         },
@@ -561,14 +434,14 @@
                     "Parent Entity": "Entity_[11265475869872]",
                     "Transform Data": {
                         "Translate": [
-                            -7.996134281158447,
-                            -7.034382343292236,
-                            12.07427978515625
+                            -6.665241241455078,
+                            -5.551990032196045,
+                            10.576656341552734
                         ],
                         "Rotate": [
-                            -32.97300338745117,
-                            33.999874114990234,
-                            -40.760257720947266
+                            -32.9422492980957,
+                            33.16819763183594,
+                            -40.175018310546875
                         ]
                     }
                 },
@@ -811,6 +684,21 @@
                     "$type": "SelectionComponent",
                     "Id": 10361003406827242932
                 },
+                "Component_[10498514925954067796]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 10498514925954067796,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{1EE46427-D1C2-5698-B30D-B4CCF46B15CD}",
+                                    "subId": 274434668
+                                },
+                                "assetHint": "objects/_primitives/_sphere_1x1.azmodel"
+                            }
+                        }
+                    }
+                },
                 "Component_[14486982586661204257]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 14486982586661204257
@@ -825,9 +713,9 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            4.663224220275879,
-                            14.262219429016113,
-                            -11.697810173034668
+                            0.0,
+                            0.0,
+                            -5.75
                         ]
                     }
                 },
@@ -891,6 +779,21 @@
                                     },
                                     "VariableName": "Street Length",
                                     "InitialValueSource": 1
+                                },
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 10.0
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{28DC0F5A-A0BF-4848-8771-2FBA29AE6A60}"
+                                    },
+                                    "VariableName": "City Block Size",
+                                    "InitialValueSource": 1
                                 }
                             ],
                             "overrides": [
@@ -928,7 +831,7 @@
                                         },
                                         "isNullPointer": false,
                                         "$type": "double",
-                                        "value": 4.0
+                                        "value": 10.0
                                     },
                                     "InputControlVisibility": {
                                         "Value": 850104567
@@ -937,6 +840,24 @@
                                         "m_id": "{11F0A254-9F83-4E22-A78C-6A149E9192A3}"
                                     },
                                     "VariableName": "Street Length",
+                                    "InitialValueSource": 1
+                                },
+                                {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 20.0
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{28DC0F5A-A0BF-4848-8771-2FBA29AE6A60}"
+                                    },
+                                    "VariableName": "City Block Size",
                                     "InitialValueSource": 1
                                 }
                             ]
