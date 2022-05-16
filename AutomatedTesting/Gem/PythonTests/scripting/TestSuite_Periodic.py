@@ -237,7 +237,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_NewScriptEventButton_HappyPath_ContainsSCCategory(self, request, editor, launcher_platform):
         expected_lines = [
             "New Script event action found: True",
