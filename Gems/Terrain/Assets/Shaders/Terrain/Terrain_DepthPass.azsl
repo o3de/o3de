@@ -41,7 +41,7 @@ VSDepthOutput MainVS(in VertexInput input)
     else
     {
         //height = heightContext.GetHeight(SceneSrg::m_heightmapImage);
-        height = heightContext.m_worldMin.z + IN.m_zposition * heightContext.m_heightScale;
+        height = heightContext.m_worldMin.z + input.m_zposition * heightContext.m_heightScale;
     }
 
     float3 worldPosition = float3(heightContext.m_xyPosition, height);

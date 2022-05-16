@@ -136,6 +136,12 @@ namespace Terrain
             float m_firstLodDistance;
         };
 
+        struct SectorUpdateContext
+        {
+            uint32_t m_lodLevel;
+            StackSectorData* m_sector;
+        };
+
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataCreateEnd() override;
         void OnTerrainDataDestroyBegin() override;
@@ -155,6 +161,7 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::Model> InitializeSectorModel(const AZ::RPI::BufferAssetView& heights);
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
+        void ProcessSectorUpdates(AZStd::span<SectorUpdateContext> sectorUpdates);
 
         template<typename Callback>
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);

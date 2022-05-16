@@ -88,7 +88,6 @@ namespace Terrain
 
         void Initialize();
 
-        void UpdateHeightmapImage();
         void PrepareMaterialData();
 
         void TerrainHeightOrSettingsUpdated(const AZ::Aabb& dirtyRegion);
@@ -108,7 +107,6 @@ namespace Terrain
         MaterialInstance m_materialInstance;
 
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_heightmapImage;
 
         AZ::RHI::ShaderInputImageIndex m_heightmapPropertyIndex;
         AZ::RHI::ShaderInputConstantIndex m_worldDataIndex;
@@ -118,9 +116,8 @@ namespace Terrain
         
         float m_sampleSpacing{ 0.0f };
         
-        bool m_heightmapNeedsUpdate{ false };
         bool m_forceRebuildDrawPackets{ false };
-        bool m_imageBindingsNeedUpdate{ false };
+        bool m_terrainBoundsNeedUpdate{ false };
 
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
 

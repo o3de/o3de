@@ -109,13 +109,7 @@ namespace Terrain
 
     void TerrainMeshManager::CheckStacksForUpdate(AZ::Vector3 newPosition)
     {
-        struct UpdateContext
-        {
-            uint32_t m_lodLevel;
-            StackSectorData* m_sector;
-        };
-
-        AZStd::vector<UpdateContext> sectorsToUpdate;
+        AZStd::vector<SectorUpdateContext> sectorsToUpdate;
 
         for (uint32_t i = 0; i < m_sectorStack.size(); ++i)
         {
@@ -161,52 +155,11 @@ namespace Terrain
             }
         }
 
-        if (sectorsToUpdate.size() == 0)
+        if (sectorsToUpdate.size() > 0)
         {
+            ProcessSectorUpdates(sectorsToUpdate);
             return;
         }
-
-        AZ::JobCompletion jobCompletion;
-        for (UpdateContext& updateContext : sectorsToUpdate)
-        {
-            const float gridMeters = (GridSize * m_sampleSpacing) * (1 << updateContext.m_lodLevel);
-
-            const auto jobLambda = [this, updateContext, gridMeters]() -> void
-            {
-                auto& sector = *updateContext.m_sector;
-                const AZ::Vector3 min = AZ::Vector3(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters, m_worldBounds.GetMin().GetZ());
-                const AZ::Vector3 max = min + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetZExtent());
-                sector.m_aabb = AZ::Aabb::CreateFromMinMax(min, max);
-
-                {
-                    sector.m_model = InitializeSectorModel(GridSize, AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters), gridMeters / GridSize);
-                    AZ::RPI::ModelLod& modelLod = *sector.m_model->GetLods().begin()->get();
-                    sector.m_drawPacket = AZ::RPI::MeshDrawPacket(modelLod, 0, m_materialInstance, sector.m_srg);
-
-                    // set the shader option to select forward pass IBL specular if necessary
-                    if (!sector.m_drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
-                    {
-                        AZ_Warning(TerrainMeshManagerName, false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
-                    }
-                    const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
-                    sector.m_drawPacket.SetStencilRef(stencilRef);
-                    sector.m_drawPacket.Update(*m_parentScene, true);
-                }
-
-                ShaderObjectData objectSrgData;
-                objectSrgData.m_xyTranslation = { min.GetX(), min.GetY() };
-                objectSrgData.m_xyScale = gridMeters;
-                objectSrgData.m_lodLevel = updateContext.m_lodLevel;
-
-                sector.m_srg->SetConstant(m_patchDataIndex, objectSrgData);
-                sector.m_srg->Compile();
-            };
-
-            AZ::Job* executeGroupJob = aznew AZ::JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
-            executeGroupJob->SetDependent(&jobCompletion);
-            executeGroupJob->Start();
-        }
-        jobCompletion.StartAndWaitForCompletion();
 
     }
 
@@ -345,6 +298,22 @@ namespace Terrain
 
             m_worldBounds = worldBounds;
             m_sampleSpacing = queryResolution;
+
+            if (!m_rebuildSectors)
+            {
+                // Rebuild any sectors in the dirty region if they aren't all being rebuilt
+                AZStd::vector<SectorUpdateContext> sectorsToUpdate;
+                ForOverlappingSectors(dirtyRegion,
+                    [&sectorsToUpdate](StackSectorData& sectorData, uint32_t lodLevel)
+                    {
+                        sectorsToUpdate.push_back({ lodLevel, &sectorData });
+                    }
+                );
+                if (sectorsToUpdate.size() > 0)
+                {
+                    ProcessSectorUpdates(sectorsToUpdate);
+                }
+            }
         }
     }
 
@@ -540,16 +509,63 @@ namespace Terrain
         return AZ::RPI::Model::FindOrCreate(modelAsset);
     }
 
+    void TerrainMeshManager::ProcessSectorUpdates(AZStd::span<SectorUpdateContext> sectorUpdates)
+    {
+        AZ::JobCompletion jobCompletion;
+        for (SectorUpdateContext& updateContext : sectorUpdates)
+        {
+            const float gridMeters = (GridSize * m_sampleSpacing) * (1 << updateContext.m_lodLevel);
+
+            const auto jobLambda = [this, updateContext, gridMeters]() -> void
+            {
+                auto& sector = *updateContext.m_sector;
+                const AZ::Vector3 min = AZ::Vector3(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters, m_worldBounds.GetMin().GetZ());
+                const AZ::Vector3 max = min + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetZExtent());
+                sector.m_aabb = AZ::Aabb::CreateFromMinMax(min, max);
+
+                {
+                    sector.m_model = InitializeSectorModel(GridSize, AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters), gridMeters / GridSize);
+                    AZ::RPI::ModelLod& modelLod = *sector.m_model->GetLods().begin()->get();
+                    sector.m_drawPacket = AZ::RPI::MeshDrawPacket(modelLod, 0, m_materialInstance, sector.m_srg);
+
+                    // set the shader option to select forward pass IBL specular if necessary
+                    if (!sector.m_drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
+                    {
+                        AZ_Warning(TerrainMeshManagerName, false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                    }
+                    const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
+                    sector.m_drawPacket.SetStencilRef(stencilRef);
+                    sector.m_drawPacket.Update(*m_parentScene, true);
+                }
+
+                ShaderObjectData objectSrgData;
+                objectSrgData.m_xyTranslation = { min.GetX(), min.GetY() };
+                objectSrgData.m_xyScale = gridMeters;
+                objectSrgData.m_lodLevel = updateContext.m_lodLevel;
+
+                sector.m_srg->SetConstant(m_patchDataIndex, objectSrgData);
+                sector.m_srg->Compile();
+            };
+
+            AZ::Job* executeGroupJob = aznew AZ::JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
+            executeGroupJob->SetDependent(&jobCompletion);
+            executeGroupJob->Start();
+        }
+        jobCompletion.StartAndWaitForCompletion();
+
+    }
+
     template<typename Callback>
     void TerrainMeshManager::ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback)
     {
-        for (StackData& stackData : m_sectorStack)
+        for (uint32_t lodLevel = 0; lodLevel < m_sectorStack.size(); ++lodLevel)
         {
+            auto& stackData = m_sectorStack.at(lodLevel);
             for (StackSectorData& sectorData : stackData.m_sectors)
             {
                 if (sectorData.m_aabb.Overlaps(bounds))
                 {
-                    callback(stackData);
+                    callback(sectorData, lodLevel);
                 }
             }
         }
