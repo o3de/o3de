@@ -47,7 +47,7 @@ namespace EditorPythonBindings
             properties,
             [h = AZStd::move(handler)]() mutable
             {
-                PyObject_CallObject(h.GetHandler(), NULL);
+                PyObject_CallObject(h.GetHandler(), nullptr);
             }
         );
 
