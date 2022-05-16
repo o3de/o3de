@@ -22,10 +22,10 @@ namespace AWSCore
             AZ::IO::FixedMaxPath resolvedSchemaPath;
             if (!AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(resolvedSchemaPath, ResourceMapppingJsonSchemaFilePath))
             {
-                return "";
+                return AZ::IO::Path{};
             }
 
-            return resolvedSchemaPath.c_str();
+            return resolvedSchemaPath.String();
         }
     } // namespace Platform
 }
