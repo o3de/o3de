@@ -27,20 +27,16 @@ FetchContent_Declare(
         GIT_REPOSITORY "https://github.com/recastnavigation/recastnavigation"
         GIT_TAG "5a870d427e47abd4a8e4ce58a95582ec049434d5" # main branch
 )
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 set(RECASTNAVIGATION_DEMO OFF)
 set(RECASTNAVIGATION_TESTS OFF)
 set(RECASTNAVIGATION_EXAMPLES OFF)
-# Lower warning level for RecastNavigation::Detour library
 get_property(
     compile_options
     DIRECTORY
     PROPERTY COMPILE_OPTIONS
 )
-set_property(
-    DIRECTORY
-    APPEND
-    PROPERTY COMPILE_OPTIONS /W3
-)
+include(${pal_dir}/PAL_recast_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 set_property(
     DIRECTORY
     APPEND
