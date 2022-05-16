@@ -108,7 +108,7 @@ namespace AZ
         rapidjson::SizeType maximumSize = 0;
         const rapidjson::Value defaultValue(rapidjson::kObjectType);
         JSR::ResultCode retVal(JSR::Tasks::ReadField);
-        if (containerSize > 0 && context.ShouldClearContainers())
+        if (containerSize > 0 && ShouldClearContainer(context))
         {
             JSR::Result result = context.Report(JSR::Tasks::Clear, JSR::Outcomes::Success, "Clearing associative container.");
             if (result.GetResultCode().GetOutcome() == JSR::Outcomes::Success)
@@ -446,6 +446,10 @@ namespace AZ
         return true;
     }
 
+    bool JsonMapSerializer::ShouldClearContainer(const JsonDeserializerContext& context) const
+    {
+        return context.ShouldClearContainers();
+    }
 
     
     // JsonUnorderedMapSerializer
