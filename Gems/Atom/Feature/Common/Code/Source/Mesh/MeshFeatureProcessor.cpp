@@ -243,9 +243,7 @@ namespace AZ
         
         const MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
         {
-            static MeshDrawPacketLods empty;
-
-            return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : empty;
+            return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
         }
 
         const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
