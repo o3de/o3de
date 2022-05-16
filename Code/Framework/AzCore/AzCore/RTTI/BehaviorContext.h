@@ -480,12 +480,11 @@ namespace AZ
             return convertedAddress != nullptr;
         }
 
-        // Assumes parameters array is big enough to store all parameters
-        template<class... Args>
-        void SetParameters(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection = nullptr);
+        template<typename Arg>
+        void SetParameter(BehaviorParameter* parameter, OnDemandReflectionOwner* onDemandReflection, int& parameterIndexInOut);
 
         template<>
-        void SetParameters<void>(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection);
+        void SetParameter<void>(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection, int& parameterIndexInOut);
 
         // call helper
         template<class R, class... Args>
@@ -1446,7 +1445,8 @@ namespace AZ
         template<class Bus, typename AZStd::enable_if<!AZStd::is_same<typename Bus::BusIdType, AZ::NullBusId>::value>::type* = nullptr>
         void EBusSetIdFeatures(BehaviorEBus* ebus)
         {
-            AZ::Internal::SetParameters<typename Bus::BusIdType>(&ebus->m_idParam);
+            int parameterIndexInOut = 0;
+            AZ::Internal::SetParameter<typename Bus::BusIdType>(&ebus->m_idParam, nullptr, parameterIndexInOut);
             ebus->m_getCurrentId = aznew AZ::Internal::BehaviorMethodImpl<const typename Bus::BusIdType*()>(&Bus::GetCurrentBusId, this, AZStd::string(Bus::GetName()) + "::GetCurrentBusId");
         }
 
@@ -2333,7 +2333,8 @@ namespace AZ
     template<typename T>
     inline void BehaviorArgument::StoreInTempData(T&& value)
     {
-        AZ::Internal::SetParameters<T>(this);
+        int inOutIndex = 0;
+        AZ::Internal::SetParameter<T>(this, nullptr, inOutIndex);
         m_value = m_tempData.allocate(sizeof(T), AZStd::alignment_of<T>::value, 0);
         AZStd::construct_at(reinterpret_cast<AZStd::decay_t<T>*>(m_value), AZStd::forward<T>(value));
     }
@@ -2342,7 +2343,8 @@ namespace AZ
     template<class T>
     AZ_FORCE_INLINE void BehaviorArgument::Set(T* value)
     {
-        AZ::Internal::SetParameters<AZStd::decay_t<T>>(this);
+        int inOutIndex = 0;
+        AZ::Internal::SetParameter<AZStd::decay_t<T>>(this, nullptr, inOutIndex);
         m_value = (void*)value;
     }
 
@@ -3917,70 +3919,8 @@ namespace AZ
             (BehaviorOnDemandReflectHelper<typename AZStd::function_traits<Functions>::function_type>::QueueReflect(onDemandReflection), ...);
         }
 
-        template<class... Args>
-        inline void SetParametersStripped(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection)
-        {
-            // +1 to avoid zero array size
-            Uuid argumentTypes[sizeof...(Args)] = { AzTypeInfo<AZStd::remove_pointer_t<AZStd::remove_cvref_t<Args>>>::Uuid()... };
-            const char* argumentNames[sizeof...(Args)] = { AzTypeInfo<Args>::Name()... };
-            bool argumentIsPointer[sizeof...(Args)] = { AZStd::is_pointer<typename AZStd::remove_reference<Args>::type>::value... };
-            bool argumentIsConst[sizeof...(Args)] = { AZStd::is_const<typename AZStd::remove_pointer<Args>::type>::value... };
-            bool argumentIsReference[sizeof...(Args)] = { AZStd::is_reference<Args>::value... };
-            IRttiHelper* rttiHelper[sizeof...(Args)] = { GetRttiHelper<typename AZStd::remove_pointer<typename AZStd::decay<Args>::type>::type>()... };
-            (void)argumentIsPointer; (void)argumentIsConst; (void)argumentIsReference;
-            // function / member function pointer ?
-            for (size_t i = 0; i < sizeof...(Args); ++i)
-            {
-                parameters[i].m_typeId = argumentTypes[i];
-                parameters[i].m_name = argumentNames[i];
-                parameters[i].m_azRtti = rttiHelper[i];
-                parameters[i].m_traits = (argumentIsPointer[i] ? BehaviorParameter::TR_POINTER : 0) |
-                    (argumentIsConst[i] ? BehaviorParameter::TR_CONST : 0) |
-                    (argumentIsReference[i] ? BehaviorParameter::TR_REFERENCE : 0);
-
-                // String parameter detection
-                if ((parameters[i].m_typeId == azrtti_typeid<char>() && (parameters[i].m_traits & (BehaviorParameter::TR_POINTER | BehaviorParameter::TR_CONST))) // const char* detection
-                    || parameters[i].m_typeId == azrtti_typeid<AZStd::string>() || parameters[i].m_typeId == azrtti_typeid<AZStd::string_view>()) // AZStd::string and AZStd::string_view detection
-                {
-                    parameters[i].m_traits |= BehaviorParameter::TR_STRING;
-                }
-            }
-
-            if (onDemandReflection)
-            {
-                // deal with OnDemand reflection
-                StaticReflectionFunctionPtr reflectHooks[sizeof...(Args)] = { OnDemandReflectHook<typename AZStd::remove_pointer<typename AZStd::decay<Args>::type>::type>::Get()... };
-                for (size_t i = 0; i < sizeof...(Args); ++i)
-                {
-                    if (reflectHooks[i])
-                    {
-                        onDemandReflection->AddReflectFunction(argumentTypes[i], reflectHooks[i]);
-                    }
-                }
-            }
-        }
-
-        template<class... Args>
-        inline void SetParameters(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection)
-        {
-            SetParametersStripped<AZStd::RemoveEnumT<Args>...>(parameters, onDemandReflection);
-        }
-
-        template<>
-        inline void SetParametersStripped(BehaviorParameter* /*parameters*/, OnDemandReflectionOwner* /*onDemandReflection*/)
-        {
-        }
-
-        template<>
-        inline void SetParameters<void>(BehaviorParameter* /*parameters*/, OnDemandReflectionOwner* /*onDemandReflection*/)
-        {
-
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // make singular to reduce template burden
-        template<class Arg>
-        inline void SetParameterStripped(BehaviorParameter* parameter, OnDemandReflectionOwner* onDemandReflection, int& parameterIndexInOut)
+        template<typename Arg>
+        inline void SetParameter(BehaviorParameter* parameter, OnDemandReflectionOwner* onDemandReflection, int& parameterIndexInOut)
         {
             ++parameterIndexInOut;
             Uuid argumentType = AzTypeInfo<AZStd::remove_pointer_t<AZStd::remove_cvref_t<Arg>>>::Uuid();
@@ -3989,8 +3929,6 @@ namespace AZ
             bool argumentIsConst = AZStd::is_const<typename AZStd::remove_pointer<Arg>::type>::value;
             bool argumentIsReference = AZStd::is_reference<Arg>::value;
             IRttiHelper* rttiHelper = GetRttiHelper<typename AZStd::remove_pointer<typename AZStd::decay<Arg>::type>::type>();
-
-            //(void)argumentIsPointer; (void)argumentIsConst; (void)argumentIsReference;
 
             parameter->m_typeId = argumentType;
             parameter->m_name = argumentName;
@@ -4016,20 +3954,8 @@ namespace AZ
         }
 
         template<>
-        inline void SetParameterStripped<void>(BehaviorParameter* /*parameters*/, OnDemandReflectionOwner* /*onDemandReflection*/, int& /*parameterIndexInOut*/)
-        {
-        }
-
-        template<class Arg>
-        inline void SetParameter(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection, int& parameterIndexInOut)
-        {
-            SetParameterStripped<AZStd::RemoveEnumT<Arg>>(parameters, onDemandReflection, parameterIndexInOut);
-        }
-
-        template<>
         inline void SetParameter<void>(BehaviorParameter* /*parameters*/, OnDemandReflectionOwner* /*onDemandReflection*/, int& /*parameterIndexInOut*/)
         {
-
         }
 
         //////////////////////////////////////////////////////////////////////////
