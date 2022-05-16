@@ -124,9 +124,12 @@ def AtomEditorComponents_Mesh_AddedToEntity():
 
     import os
 
+    from PySide2 import QtWidgets
+
     import azlmbr.legacy.general as general
     from Atom.atom_utils.atom_constants import (MESH_LOD_TYPE,
                                                 AtomComponentProperties)
+    from editor_python_test_tools import pyside_utils
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, TestHelper, Tracer
@@ -253,8 +256,12 @@ def AtomEditorComponents_Mesh_AddedToEntity():
                           AtomComponentProperties.mesh('Lod Type')) == MESH_LOD_TYPE['default'])
 
         # 16. Set Mesh component Add Material Component and confirm a Material component added
-        mesh_component.set_component_property_value(
-            AtomComponentProperties.mesh('Add Material Component'), value=True)
+        # Make sure the Entity Inspector is open and trigger the "Add Material Component" button
+        general.open_pane("Entity Inspector")
+        editor_window = pyside_utils.get_editor_main_window()
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
+        add_material_component_button = pyside_utils.find_child_by_pattern(entity_inspector, "Add Material Component")
+        add_material_component_button.click()
         Report.result(Tests.has_material, mesh_entity.has_component(AtomComponentProperties.material()))
 
         # 17. Remove Mesh component then UNDO the remove
