@@ -261,6 +261,8 @@ def validate_spawned_entity_transform(entity, expected_position, expected_rotati
     spawned_entity_scale_success = wait_for_condition(lambda: entity.get_local_uniform_scale() == expected_scale, 3.0)
 
     assert spawned_entity_transform == expected_position, \
-        "Entity was not spawned in the position expected"
-    assert rotation_success, "Entity was not spawned with the rotation expected"
-    assert spawned_entity_scale_success, "Entity was not spawned with the scale expected"
+        f"Entity was not spawned in the position expected: Found {spawned_entity_transform}, expected {expected_position}"
+    assert rotation_success, \
+        f"Entity was not spawned with the rotation expected: Found {spawned_entity_rotation}, expected {expected_rotation}"
+    assert spawned_entity_scale_success, \
+        f"Entity was not spawned with the scale expected: Found {entity.get_local_uniform_scale()}, expected {expected_scale}"
