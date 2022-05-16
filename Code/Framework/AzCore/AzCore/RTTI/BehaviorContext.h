@@ -725,6 +725,63 @@ namespace AZ
         template<class EBus, BehaviorEventType EventType, class Function>
         class BehaviorEBusEvent;
 
+        template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
+        class BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)> : public BehaviorMethod
+        {
+        public:
+            using FunctionPointer = R(*)(BusType*, Args...);
+
+            static constexpr int s_isBusIdParameter = (EventType == BE_EVENT_ID || EventType == BE_QUEUE_EVENT_ID) ? 1 : 0;
+            static const int s_startArgumentIndex = 1; // +1 for result type
+            static const int s_startNamedArgumentIndex =
+                s_startArgumentIndex + s_isBusIdParameter; // +1 for result type, +1 (optional for busID)
+
+            AZ_CLASS_ALLOCATOR(BehaviorEBusEvent, AZ::SystemAllocator, 0);
+
+            BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context);
+
+            bool Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const override;
+            bool HasResult() const override;
+            bool IsMember() const override;
+            bool HasBusId() const override;
+
+            const BehaviorParameter* GetBusIdArgument() const override;
+
+            size_t GetNumArguments() const override;
+            size_t GetMinNumberOfArguments() const override;
+
+            const BehaviorParameter* GetArgument(size_t index) const override;
+            const AZStd::string* GetArgumentName(size_t index) const override;
+            void SetArgumentName(size_t index, const AZStd::string& name) override;
+            const AZStd::string* GetArgumentToolTip(size_t index) const override;
+            void SetArgumentToolTip(size_t index, const AZStd::string& name) override;
+            void SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue) override;
+            BehaviorDefaultValuePtr GetDefaultValue(size_t index) const override;
+            const BehaviorParameter* GetResult() const override;
+
+            void OverrideParameterTraits(size_t index, AZ::u32 addTraits, AZ::u32 removeTraits) override;
+
+            FunctionPointer m_functionPtr;
+            BehaviorParameter m_parameters[sizeof...(Args) + s_startNamedArgumentIndex];
+            AZStd::array<BehaviorParameterMetadata, sizeof...(Args) + s_startNamedArgumentIndex>
+                m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values,
+                                      ///< etc... to the parameters
+        };
+
+#if __cpp_noexcept_function_type
+        // C++17 makes exception specifications as part of the type in paper P0012R1
+        // Therefore noexcept overloads must be distinguished from non-noexcept overloads
+        template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
+        class BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...) noexcept> : public BehaviorEBusEvent<EBus, EventType, R(BusType, Args...)>
+        {
+            using base_type = BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>;
+
+        public:
+            using base_type::base_type;
+            using FunctionPointer = R(*)(BusType*, Args...) noexcept;
+        };
+#endif
+
         template<class EBus, BehaviorEventType EventType, class R, class C, class... Args>
         class BehaviorEBusEvent<EBus, EventType, R(C::*)(Args...)> : public BehaviorMethod
         {
@@ -4943,6 +5000,9 @@ namespace AZ
 
     } // namespace Internal
 } // namespace AZ
+
+// Add definitions to allow lambdas to be used with EBus Events on the Behavior Context
+#include <AzCore/RTTI/BehaviorContextEBusEventRawSignature.inl>
 
 // pull AzStd on demand reflection
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>

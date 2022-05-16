@@ -201,7 +201,7 @@ namespace AZ
 
 
             // Helper function to wait for end of TaskGraph and then delete the TaskGraphEvent
-            void WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&& completionTGEvent);
+            void WaitAndCleanTGEvent();
 
             // Helper function for wait and clean up a completion job
             void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
