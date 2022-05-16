@@ -13,6 +13,7 @@
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <Shape/SphereShapeComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <ShapeThreadsafeTest.h>
 
 namespace Constants = AZ::Constants;
 
@@ -339,4 +340,29 @@ namespace UnitTest
 
         EXPECT_NEAR(distance, 2.5f, 1e-2f);
     }
-}
+
+    TEST_F(SphereShapeTest, ShapeHasThreadsafeGetSetCalls)
+    {
+        // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
+        // correct, consistent results.
+
+        // Create our sphere centered at 0 with half our height as the radius.
+        AZ::Entity entity;
+        CreateSphere(
+            AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()), ShapeThreadsafeTest::ShapeHeight / 2.0f, entity);
+
+        // Define the function for setting unimportant dimensions on the shape while queries take place.
+        auto setDimensionFn = [](AZ::EntityId shapeEntityId, float minDimension, uint32_t dimensionVariance, [[maybe_unused]] float height)
+        {
+            [[maybe_unused]] float radius = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+            LmbrCentral::SphereShapeComponentRequestsBus::Event(
+                shapeEntityId, &LmbrCentral::SphereShapeComponentRequestsBus::Events::SetRadius, height / 2.0f);
+        };
+
+        // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
+        // The number of iterations is arbitrary - it's set high enough to catch most failures, but low enough to keep the test
+        // time to a minimum.
+        const int numIterations = 30000;
+        ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
+    }
+} // namespace UnitTest

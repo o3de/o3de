@@ -10,8 +10,14 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-static const uint MacroClipmapStackSize = 3u;
-static const uint DetailClipmapStackSize = 5u;
+static const uint MacroClipmapStackSizeMax = 16u;
+static const uint DetailClipmapStackSizeMax = 16u;
+static const uint StackSizeMax = 16u; // = max(MacroClipmapStackSizeMax, DetailClipmapStackSizeMax)
+// Each clipmap can have at most 6 update regions based on the current algorithm.
+// Due to compilation limitation, the size of arrays must be direct constant.
+static const uint UpdateRegionMax = 6u;
+static const uint MacroClipmapUpdateRegionMax = 96u; // = MacroClipmapStackSizeMax * 6
+static const uint DetailClipmapUpdateRegionMax = 96u; // = DetailClipmapStackSizeMax * 6
 
 ShaderResourceGroupSemantic SRG_Terrain
 {
@@ -20,6 +26,12 @@ ShaderResourceGroupSemantic SRG_Terrain
 
 ShaderResourceGroup TerrainSrg : SRG_Terrain
 {
+    struct MeshData
+    {
+        float3 m_mainCameraPosition;
+        float m_firstLodDistance;
+    };
+
     struct DetailMaterialData
     {
         // Uv
@@ -88,24 +100,52 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float2 m_worldBoundsMin;
         float2 m_worldBoundsMax;
 
-        // The max range that the clipmap is covering.
-        float2 m_maxRenderSize;
+        //! The max range that the clipmap is covering.
+        float m_macroClipmapMaxRenderRadius;
+        float m_detailClipmapMaxRenderRadius;
 
-        // The size of a single clipmap.
-        float2 m_clipmapSize;
+        //! The scale base between two adjacent clipmap layers.
+        //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times
+        //! to what is covered by the nth clipmap.
+        float m_macroClipmapScaleBase;
+        float m_detailClipmapScaleBase;
 
-        // Clipmap centers in normalized UV coordinates [0, 1].
+        //! Size of the clipmap stack.
+        uint m_macroClipmapStackSize;
+        uint m_detailClipmapStackSize;
+
+        //! The size of the clipmap image in each layer.
+        //! Given 2 copies in different types to save casting.
+        float m_clipmapSizeFloat;
+        uint m_clipmapSizeUint;
+
+        // Clipmap centers in texel coordinates ranging [0, size).
         // xy represent previous clipmap centers, zw represent current clipmap centers.
         // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
         // They are used for toroidal addressing and may move each frame based on the view point movement.
         // The move distance is scaled differently in each layer.
-        float4 m_clipmapCenters[DetailClipmapStackSize];
+        uint4 m_macroClipmapCenters[MacroClipmapStackSizeMax];
+        uint4 m_detailClipmapCenters[DetailClipmapStackSizeMax];
 
         // A list of reciprocal the clipmap scale [s],
         // where 1 pixel in the current layer of clipmap represents s meters. 
         // Fast lookup list to avoid redundant calculation in shaders.
-        float4 m_clipmapScaleInv[DetailClipmapStackSize];
+        // x: macro; y: detail
+        float4 m_clipmapScaleInv[StackSizeMax];
+
+        // The region of the clipmap that needs update.
+        // Each clipmap can have 0-6 regions to update each frame.
+        uint4 m_macroClipmapBoundsRegions[MacroClipmapUpdateRegionMax];
+        uint4 m_detailClipmapBoundsRegions[DetailClipmapUpdateRegionMax];
+
+        // Numbers match the compute shader invoking call dispatch(X, Y, 1).
+        uint m_macroDispatchGroupCountX;
+        uint m_macroDispatchGroupCountY;
+        uint m_detailDispatchGroupCountX;
+        uint m_detailDispatchGroupCountY;
     };
+
+    MeshData m_meshData;
 
     // Clipmap SRG
     ClipmapData m_clipmapData;
@@ -115,9 +155,10 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     Texture2DArray<float4> m_detailColorClipmaps;
     Texture2DArray<float2> m_detailNormalClipmaps;
     Texture2DArray<float> m_detailHeightClipmaps;
-    // Miscellany clipmap combining:
-    // roughness, specularF0, metalness, occlusion
-    Texture2DArray<float4> m_detailMiscClipmaps;
+    Texture2DArray<float> m_detailRoughnessClipmaps;
+    Texture2DArray<float> m_detailSpecularF0Clipmaps;
+    Texture2DArray<float> m_detailMetalnessClipmaps;
+    Texture2DArray<float> m_detailOcclusionClipmaps;
 
     Texture2D<uint4> m_detailMaterialIdImage;
     StructuredBuffer<DetailMaterialData> m_detailMaterialData;
@@ -131,6 +172,25 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     uint2 GetMacroGridResolution()
     {
         return uint2(m_macroMaterialGrid.m_resolution >> 16, m_macroMaterialGrid.m_resolution & 0xFFFF);
+    }
+    
+    float2 CalculateCullDistance(uint lodLevel, float3 worldPosition)
+    {
+        float minRange = 0;
+        float maxRange = m_meshData.m_firstLodDistance;
+        if (lodLevel > 0)
+        {
+            maxRange = maxRange * float(1u << lodLevel);
+            minRange = m_meshData.m_firstLodDistance * float(1u<< (lodLevel - 1u));
+        }
+
+        // This is conservative on both the min and max side to avoid holes, but it should be possible to use a single clipping plane when CLOD is implemented.
+        float viewDistanceToWorldPosition = length(m_meshData.m_mainCameraPosition - worldPosition);
+
+        float2 outcullDistance;
+        outcullDistance.x = viewDistanceToWorldPosition - minRange;
+        outcullDistance.y = maxRange - viewDistanceToWorldPosition;
+        return outcullDistance;
     }
 }
 

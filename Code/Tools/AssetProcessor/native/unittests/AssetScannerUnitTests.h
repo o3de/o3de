@@ -7,14 +7,16 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include "UnitTestRunner.h"
-#endif
+#include <AzCore/UnitTest/TestTypes.h>
+#include <QObject>
 
-class AssetScannerUnitTest
-    : public UnitTestRun
+namespace UnitTest
 {
-    Q_OBJECT
-public:
-    virtual void StartTest() override;
-};
+    class AssetScannerUnitTest
+        : public QObject
+        , public AllocatorsFixture
+    {
+        Q_OBJECT
+    public:
+    };
+} // namespace UnitTest

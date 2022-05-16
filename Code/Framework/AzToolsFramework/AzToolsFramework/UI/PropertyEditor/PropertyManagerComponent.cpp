@@ -16,6 +16,7 @@ namespace AzToolsFramework
 {
     void RegisterIntSpinBoxHandlers();
     void RegisterIntSliderHandlers();
+    void RegisterFilePathHandler();
     void RegisterDoubleSpinBoxHandlers();
     void RegisterDoubleSliderHandlers();
     void RegisterColorPropertyHandlers();
@@ -50,6 +51,8 @@ namespace AzToolsFramework
         void PropertyManagerComponent::Activate()
         {
             PropertyTypeRegistrationMessages::Bus::Handler::BusConnect();
+            PropertyEditorGUIMessages::Bus::Handler::BusConnect();
+            m_dpeSystem = AZStd::make_unique<PropertyEditorToolsSystem>();
 
             CreateBuiltInHandlers();
         }
@@ -90,6 +93,8 @@ namespace AzToolsFramework
             m_Handlers.clear();
             m_DefaultHandlers.clear();
 
+            m_dpeSystem.reset();
+            PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
             PropertyTypeRegistrationMessages::Bus::Handler::BusDisconnect();
         }
 
@@ -109,6 +114,8 @@ namespace AzToolsFramework
                 ++it;
             }
     #endif
+            pHandler->RegisterDpeHandler();
+
             m_Handlers.insert(AZStd::make_pair(pHandler->GetHandlerName(), pHandler));
 
             if (pHandler->IsDefaultHandler())
@@ -124,6 +131,8 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::UnregisterPropertyType(PropertyHandlerBase* pHandler)
         {
+            pHandler->UnregisterDpeHandler();
+
             bool foundIt = false;
             auto it = m_Handlers.find(pHandler->GetHandlerName());
             while ((it != m_Handlers.end()) && (it->first == pHandler->GetHandlerName()))
@@ -164,12 +173,26 @@ namespace AzToolsFramework
             }
         }
 
+        void PropertyManagerComponent::RequestWrite(QWidget* editorGUI)
+        {
+            IndividualPropertyHandlerEditNotifications::Bus::Event(
+                editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
+                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::InProgressEdit);
+        }
+
+        void PropertyManagerComponent::OnEditingFinished(QWidget* editorGUI)
+        {
+            IndividualPropertyHandlerEditNotifications::Bus::Event(
+                editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
+                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
+        }
 
         void PropertyManagerComponent::CreateBuiltInHandlers()
         {
             RegisterCrcHandler();
             RegisterIntSpinBoxHandlers();
             RegisterIntSliderHandlers();
+            RegisterFilePathHandler();
             RegisterDoubleSpinBoxHandlers();
             RegisterDoubleSliderHandlers();
             RegisterColorPropertyHandlers();

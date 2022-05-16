@@ -712,7 +712,7 @@ namespace AzToolsFramework
 
     void PropertyAssetCtrl::UpdateTabOrder()
     {
-        setTabOrder(m_browseEdit, m_editButton);
+        setTabOrder(m_browseEdit->lineEdit(), m_editButton);
     }
 
     bool PropertyAssetCtrl::eventFilter(QObject* obj, QEvent* event)

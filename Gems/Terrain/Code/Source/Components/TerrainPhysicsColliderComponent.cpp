@@ -27,6 +27,31 @@ AZ_DECLARE_BUDGET(Terrain);
 
 namespace Terrain
 {
+    Physics::HeightfieldProviderNotifications::HeightfieldChangeMask TerrainToPhysicsHeightfieldChangeMask(AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask mask)
+    {
+        using AzFramework::Terrain::TerrainDataNotifications;
+        using Physics::HeightfieldProviderNotifications;
+
+        HeightfieldProviderNotifications::HeightfieldChangeMask result = HeightfieldProviderNotifications::HeightfieldChangeMask::None;
+
+        if (mask & TerrainDataNotifications::Settings)
+        {
+            result |= HeightfieldProviderNotifications::HeightfieldChangeMask::Settings;
+        }
+
+        if (mask & TerrainDataNotifications::HeightData)
+        {
+            result |= HeightfieldProviderNotifications::HeightfieldChangeMask::HeightData;
+        }
+
+        if (mask & TerrainDataNotifications::SurfaceData)
+        {
+            result |= HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceData;
+        }
+
+        return result;
+    }
+
     void TerrainPhysicsSurfaceMaterialMapping::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -57,7 +82,7 @@ namespace Terrain
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<TerrainPhysicsColliderConfig, AZ::ComponentConfig>()
+            serialize->Class<TerrainPhysicsColliderConfig>()
                 ->Version(3)
                 ->Field("DefaultMaterial", &TerrainPhysicsColliderConfig::m_defaultMaterialSelection)
                 ->Field("Mappings", &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings)
@@ -109,8 +134,6 @@ namespace Terrain
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(entityId);
         Physics::HeightfieldProviderRequestsBus::Handler::BusConnect(entityId);
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-
-        NotifyListenersOfHeightfieldDataChange();
     }
 
     void TerrainPhysicsColliderComponent::Deactivate()
@@ -120,34 +143,15 @@ namespace Terrain
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
     }
 
-    bool TerrainPhysicsColliderComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
-    {
-        if (auto config = azrtti_cast<const TerrainPhysicsColliderConfig*>(baseConfig))
-        {
-            m_configuration = *config;
-            return true;
-        }
-        return false;
-    }
-
-    bool TerrainPhysicsColliderComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
-    {
-        if (auto config = azrtti_cast<TerrainPhysicsColliderConfig*>(outBaseConfig))
-        {
-            *config = m_configuration;
-            return true;
-        }
-        return false;
-    }
-
-    void TerrainPhysicsColliderComponent::NotifyListenersOfHeightfieldDataChange(const AZ::Aabb* dirtyRegion,
-        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask)
+    void TerrainPhysicsColliderComponent::NotifyListenersOfHeightfieldDataChange(
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask,
+        const AZ::Aabb& dirtyRegion)
     {
         AZ::Aabb worldSize = AZ::Aabb::CreateNull();
 
-        if (dirtyRegion)
+        if (dirtyRegion.IsValid())
         {
-            worldSize = *dirtyRegion;
+            worldSize = dirtyRegion;
         }
         else
         {
@@ -164,30 +168,42 @@ namespace Terrain
         // This will notify us of both shape changes and transform changes.
         // It's important to use this event for transform changes instead of listening to OnTransformChanged, because we need to guarantee
         // the shape has received the transform change message and updated its internal state before passing it along to us.
+        Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask =
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings |
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::HeightData;
 
-        NotifyListenersOfHeightfieldDataChange();
+        NotifyListenersOfHeightfieldDataChange(changeMask, AZ::Aabb::CreateNull());
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataCreateEnd()
     {
+        m_terrainDataActive = true;
+
         // The terrain system has finished creating itself, so we should now have data for creating a heightfield.
-        NotifyListenersOfHeightfieldDataChange();
+        NotifyListenersOfHeightfieldDataChange(
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd, AZ::Aabb::CreateNull());
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataDestroyBegin()
     {
+        m_terrainDataActive = false;
+
         // The terrain system is starting to destroy itself, so notify listeners of a change since the heightfield
         // will no longer have any valid data.
-        NotifyListenersOfHeightfieldDataChange();
+        NotifyListenersOfHeightfieldDataChange(
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyBegin, AZ::Aabb::CreateNull());
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataChanged(
-        const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
+        const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask
-            = Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified;
+        if (m_terrainDataActive)
+        {
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask
+                = TerrainToPhysicsHeightfieldChangeMask(dataChangedMask);
 
-        NotifyListenersOfHeightfieldDataChange(&dirtyRegion, physicsMask);
+            NotifyListenersOfHeightfieldDataChange(physicsMask, dirtyRegion);
+        }
     }
 
     AZ::Aabb TerrainPhysicsColliderComponent::GetHeightfieldAabb() const
@@ -318,6 +334,11 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(Terrain);
 
+        if (!m_terrainDataActive)
+        {
+            return;
+        }
+
         AZ::Aabb region = regionIn;
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
@@ -393,6 +414,14 @@ namespace Terrain
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion,
             region, gridResolution, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
+    }
+
+    void TerrainPhysicsColliderComponent::UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration)
+    {
+        m_configuration = newConfiguration;
+
+        NotifyListenersOfHeightfieldDataChange(
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceMapping, AZ::Aabb::CreateNull());
     }
 
     AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const

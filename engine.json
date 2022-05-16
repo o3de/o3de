@@ -64,6 +64,7 @@
         "Gems/SaveData",
         "Gems/SceneLoggingExample",
         "Gems/SceneProcessing",
+        "Gems/ScriptAutomation",
         "Gems/ScriptCanvas",
         "Gems/ScriptCanvasDeveloper",
         "Gems/ScriptCanvasPhysics",
@@ -71,6 +72,7 @@
         "Gems/ScriptedEntityTweener",
         "Gems/ScriptEvents",
         "Gems/SliceFavorites",
+        "Gems/Stars",
         "Gems/StartingPointCamera",
         "Gems/StartingPointInput",
         "Gems/StartingPointMovement",
@@ -90,6 +92,7 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/PrebuiltGem",
         "Templates/GemRepo",
         "Templates/AssetGem",
         "Templates/DefaultComponent",

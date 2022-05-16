@@ -6,7 +6,6 @@
  *
  */
 
-// include required headers
 #include "MotionExtractionWindow.h"
 #include "MotionWindowPlugin.h"
 #include "../SceneManager/ActorPropertiesWindow.h"
@@ -24,41 +23,29 @@
 #include <EMotionFX/Source/MotionManager.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 
-
 namespace EMStudio
 {
-    // constructor
     MotionExtractionWindow::MotionExtractionWindow(QWidget* parent, MotionWindowPlugin* motionWindowPlugin)
         : QWidget(parent)
     {
         m_motionWindowPlugin                 = motionWindowPlugin;
-        m_selectCallback                     = nullptr;
-        m_unselectCallback                   = nullptr;
-        m_clearSelectionCallback             = nullptr;
         m_warningWidget                      = nullptr;
         m_mainVerticalLayout                 = nullptr;
         m_childVerticalLayout                = nullptr;
         m_motionExtractionNodeSelectionWindow= nullptr;
         m_warningSelectNodeLink              = nullptr;
-        m_adjustActorCallback                = nullptr;
         m_captureHeight                      = nullptr;
         m_warningShowed                      = false;
     }
 
-
-    // destructor
     MotionExtractionWindow::~MotionExtractionWindow()
     {
-        GetCommandManager()->RemoveCommandCallback(m_selectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_unselectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_clearSelectionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_adjustActorCallback, false);
-        delete m_adjustActorCallback;
-        delete m_selectCallback;
-        delete m_unselectCallback;
-        delete m_clearSelectionCallback;
+        for (MCore::Command::Callback* callback : m_commandCallbacks)
+        {
+            GetCommandManager()->RemoveCommandCallback(callback, false);
+            delete callback;
+        }
     }
-
 
 #define MOTIONEXTRACTIONWINDOW_HEIGHT 54
 
@@ -114,19 +101,17 @@ namespace EMStudio
         m_childVerticalLayout->addWidget(m_warningWidget);
     }
 
-
     // init after the parent dock window has been created
     void MotionExtractionWindow::Init()
     {
-        // create and register the command callbacks
-        m_selectCallback         = new CommandSelectCallback(false);
-        m_unselectCallback       = new CommandUnselectCallback(false);
-        m_clearSelectionCallback = new CommandClearSelectionCallback(false);
-        m_adjustActorCallback    = new CommandAdjustActorCallback(false);
-        GetCommandManager()->RegisterCommandCallback("AdjustActor", m_adjustActorCallback);
-        GetCommandManager()->RegisterCommandCallback("Select", m_selectCallback);
-        GetCommandManager()->RegisterCommandCallback("Unselect", m_unselectCallback);
-        GetCommandManager()->RegisterCommandCallback("ClearSelection", m_clearSelectionCallback);
+        m_commandCallbacks.emplace_back(new SelectActorCallback(this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback("Select", m_commandCallbacks.back());
+        m_commandCallbacks.emplace_back(new SelectActorCallback(this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback("Unselect", m_commandCallbacks.back());
+        m_commandCallbacks.emplace_back(new UpdateMotionExtractionWindowCallback(this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback("ClearSelection", m_commandCallbacks.back());
+        m_commandCallbacks.emplace_back(new UpdateMotionExtractionWindowCallback(this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback("AdjustActor", m_commandCallbacks.back());
 
         // create the node selection windows
         m_motionExtractionNodeSelectionWindow = new NodeSelectionWindow(this, true);
@@ -418,68 +403,47 @@ namespace EMStudio
     // command callbacks
     //-----------------------------------------------------------------------------------------
 
-    bool UpdateInterfaceMotionExtractionWindow()
+    MotionExtractionWindow::SelectActorCallback::SelectActorCallback(MotionExtractionWindow* motionExtractionWindow)
+        : MCore::Command::Callback(false)
+        , m_motionExtractionWindow(motionExtractionWindow)
     {
-        EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-        if (plugin == nullptr)
+    }
+
+    bool MotionExtractionWindow::SelectActorCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
+    {
+        if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
         {
-            return false;
+            return true;
         }
-
-        MotionWindowPlugin* motionWindowPlugin = (MotionWindowPlugin*)plugin;
-        MotionExtractionWindow* motionExtractionWindow = motionWindowPlugin->GetMotionExtractionWindow();
-
-        // is the plugin visible? only update it if it is visible
-        //if (motionExtractionWindow->visibleRegion().isEmpty() == false) // TODO: enable this again. problem is we need some callback when it gets visible again and as this is not related to the window plugin but a stack dialog we first need to add some callback for "OnHeaderButtonPressed" inside the dialog stack...also let's not forget to add it to the plugin's VisibilityChanged callback then!
-        motionExtractionWindow->UpdateInterface();
-
+        m_motionExtractionWindow->UpdateInterface();
         return true;
     }
 
-    bool MotionExtractionWindow::CommandSelectCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionExtractionWindow::SelectActorCallback::Undo([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
-        MCORE_UNUSED(command);
         if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
         {
             return true;
         }
-        return UpdateInterfaceMotionExtractionWindow();
+        m_motionExtractionWindow->UpdateInterface();
+        return true;
     }
 
-    bool MotionExtractionWindow::CommandSelectCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
+    MotionExtractionWindow::UpdateMotionExtractionWindowCallback::UpdateMotionExtractionWindowCallback(MotionExtractionWindow* motionExtractionWindow)
+        : MCore::Command::Callback(false)
+        , m_motionExtractionWindow(motionExtractionWindow)
     {
-        MCORE_UNUSED(command);
-        if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
-        {
-            return true;
-        }
-        return UpdateInterfaceMotionExtractionWindow();
     }
 
-    bool MotionExtractionWindow::CommandUnselectCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionExtractionWindow::UpdateMotionExtractionWindowCallback::Execute([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
-        MCORE_UNUSED(command);
-        if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
-        {
-            return true;
-        }
-        return UpdateInterfaceMotionExtractionWindow();
+        m_motionExtractionWindow->UpdateInterface();
+        return true;
     }
 
-    bool MotionExtractionWindow::CommandUnselectCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionExtractionWindow::UpdateMotionExtractionWindowCallback::Undo([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
-        MCORE_UNUSED(command);
-        if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
-        {
-            return true;
-        }
-        return UpdateInterfaceMotionExtractionWindow();
+        m_motionExtractionWindow->UpdateInterface();
+        return true;
     }
-
-    bool MotionExtractionWindow::CommandClearSelectionCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine) { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return UpdateInterfaceMotionExtractionWindow(); }
-    bool MotionExtractionWindow::CommandClearSelectionCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)    { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return UpdateInterfaceMotionExtractionWindow(); }
-    bool MotionExtractionWindow::CommandAdjustActorCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)    { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return UpdateInterfaceMotionExtractionWindow(); }
-    bool MotionExtractionWindow::CommandAdjustActorCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)       { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return UpdateInterfaceMotionExtractionWindow(); }
 } // namespace EMStudio
-
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/moc_MotionExtractionWindow.cpp>

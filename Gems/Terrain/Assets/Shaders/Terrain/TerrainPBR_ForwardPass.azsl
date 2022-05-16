@@ -30,6 +30,11 @@ struct VSOutput
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
+
+    // Using two culling planes - cull triangles too close to or too far from the camera for thier LOD
+    // This allows some overlap in polygons along seams which helps reduce the chance of a hole. When 
+    // support for continuous lod is added, we should be able to get away with just one culling plane.
+    float2 m_cullDistance : SV_CullDistance; 
 };
 
 VSOutput TerrainPBR_MainPassVS(VertexInput IN)
@@ -60,6 +65,8 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
     OUT.m_worldPosition = float3(heightContext.m_xyPosition, height);
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
     OUT.m_normal = heightContext.CalculateNormal(SceneSrg::m_heightmapImage);
+
+    OUT.m_cullDistance = TerrainSrg::CalculateCullDistance(ObjectSrg::m_patchData.m_lodLevel, OUT.m_worldPosition);
 
     // directional light shadow 
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
@@ -112,9 +119,13 @@ void GatherSurfaceDataFromClipmaps(
     )
 {
     ClipmapSample clipmapSample = SampleClipmap(position);
-    macroColor = clipmapSample.m_macroColor;
-    macroNormal = clipmapSample.m_macroNormal;
     hasDetailSurface = clipmapSample.m_hasDetail;
+
+    if (clipmapSample.m_hasMacro)
+    {
+        macroColor = clipmapSample.m_macroColor;
+        macroNormal = clipmapSample.m_macroNormal;
+    }
     if (hasDetailSurface)
     {
         detailSurface = clipmapSample.m_detailSurface;
@@ -144,7 +155,6 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     {
         GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
-
 
     const float macroRoughness = 1.0;
     const float macroSpecularF0 = 0.5;

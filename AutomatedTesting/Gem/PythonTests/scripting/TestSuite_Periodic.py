@@ -15,16 +15,25 @@ imports.init()
 
 import hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
+from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 from ly_test_tools import LAUNCHERS
 from base import TestAutomationBase
 
 TEST_DIRECTORY = os.path.dirname(__file__)
 
+#Bat
+@pytest.mark.SUITE_periodic
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestScriptCanvas(EditorTestSuite):
+    class test_NodePalette_HappyPath_CanSelectNode(EditorBatchedTest):
+        import NodePalette_HappyPath_CanSelectNode as test_module
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
+
     def test_Pane_HappyPath_OpenCloseSuccessfully(self, request, workspace, editor, launcher_platform):
         from . import Pane_HappyPath_OpenCloseSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -59,11 +68,6 @@ class TestAutomation(TestAutomationBase):
 
     def test_Graph_HappyPath_ZoomInZoomOut(self, request, workspace, editor, launcher_platform):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
-    def test_NodePalette_HappyPath_CanSelectNode(self, request, workspace, editor, launcher_platform):
-        from . import NodePalette_HappyPath_CanSelectNode as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
@@ -217,12 +221,11 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
-
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
-            "File->New action working as expected: True",
-            "File->Open action working as expected: True",
+            "Verified no tabs open: True",
+            "New tab opened successfully: True",
+            "Open file window triggered successfully: True"
         ]
         hydra.launch_and_validate_results(
             request, 

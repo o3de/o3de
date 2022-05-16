@@ -16,7 +16,6 @@
 #include <EMotionFX/Source/AnimGraphObject.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
-#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <Integration/Assets/MotionSetAsset.h>
 #include <Integration/Assets/AnimGraphAsset.h>
 
@@ -75,7 +74,6 @@ namespace EMotionFX
         EMotionFX::AnimGraphObject::Reflect(context);
         EMotionFX::AnimGraph::Reflect(context);
         EMotionFX::AnimGraphNodeGroup::Reflect(context);
-        EMotionFX::AnimGraphGameControllerSettings::Reflect(context);
 
         // Anim graph objects
         EMotionFX::AnimGraphObjectFactory::ReflectTypes(context);

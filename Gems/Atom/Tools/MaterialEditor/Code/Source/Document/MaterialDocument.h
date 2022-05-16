@@ -56,8 +56,8 @@ namespace MaterialEditor
         AZ::Data::Instance<AZ::RPI::Material> GetInstance() const override;
         const AZ::RPI::MaterialSourceData* GetMaterialSourceData() const override;
         const AZ::RPI::MaterialTypeSourceData* GetMaterialTypeSourceData() const override;
-        void SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value) override;
-        const AZStd::any& GetPropertyValue(const AZ::Name& propertyId) const override;
+        void SetPropertyValue(const AZStd::string& propertyId, const AZStd::any& value) override;
+        const AZStd::any& GetPropertyValue(const AZStd::string& propertyId) const override;
 
     private:
 

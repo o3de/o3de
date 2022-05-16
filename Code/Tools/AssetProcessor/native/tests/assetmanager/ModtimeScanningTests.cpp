@@ -651,6 +651,7 @@ namespace UnitTests
         m_data->m_mockBuilderInfoHandler.m_createJobsCount = 0;
 
         // Reboot the APM since we added stuff to the database that needs to be loaded on-startup of the APM
+        m_assetProcessorManager = nullptr; // Destroy the old instance first so everything can destruct before we construct a new instance
         m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
 
         SetUpAssetProcessorManager();
