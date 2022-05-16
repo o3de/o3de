@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace RecastNavigation
 {
