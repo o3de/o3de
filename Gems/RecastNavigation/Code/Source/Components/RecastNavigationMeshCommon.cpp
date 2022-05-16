@@ -15,10 +15,6 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <RecastNavigation/RecastNavigationSurveyorBus.h>
 
-AZ_CVAR(
-    bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "If enabled, draw debug visual information about a navigation mesh");
-
 AZ_DEFINE_BUDGET(Navigation);
 
 namespace RecastNavigation

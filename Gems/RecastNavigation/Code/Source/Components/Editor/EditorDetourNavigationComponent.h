@@ -8,20 +8,7 @@
 
 #pragma once
 
-#include "EditorRecastNavigationMeshConfig.h"
-#include "Components/RecastNavigationDebugDraw.h"
-#include "Components/RecastNavigationMeshConfig.h"
-
-#include <DetourNavMesh.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/EBus/ScheduledEvent.h>
-#include <AzCore/Task/TaskExecutor.h>
-#include <AzCore/Task/TaskGraph.h>
-#include <AzFramework/Entity/GameEntityContextBus.h>
-#include <AzFramework/Input/Events/InputChannelEventListener.h>
-#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <Components/RecastNavigationMeshCommon.h>
 #include <ToolsComponents/EditorComponentBase.h>
 
 namespace RecastNavigation

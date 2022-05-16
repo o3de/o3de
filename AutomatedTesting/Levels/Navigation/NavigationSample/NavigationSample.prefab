@@ -94,19 +94,10 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 150648677486490270
                 },
-                "Component_[2871001223340121833]": {
+                "Component_[2681084637176744288]": {
                     "$type": "EditorRecastNavigationMeshComponent",
-                    "Id": 2871001223340121833,
-                    "Configuration": {
-                        "Agent Radius": 0.3100000023841858,
-                        "Cell Height": 0.25,
-                        "Cell Size": 0.25,
-                        "Border Size": 20
-                    },
-                    "Debug Options": {
-                        "Draw Mesh": false,
-                        "Draw Mesh": false
-                    }
+                    "Id": 2681084637176744288,
+                    "Debug Draw": true
                 },
                 "Component_[490606516712228268]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",

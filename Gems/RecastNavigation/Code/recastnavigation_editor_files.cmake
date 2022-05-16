@@ -13,6 +13,4 @@ set(FILES
     Source/Components/Editor/EditorRecastNavigationMeshComponent.h
     Source/Components/Editor/EditorRecastNavigationTiledSurveyorComponent.cpp
     Source/Components/Editor/EditorRecastNavigationTiledSurveyorComponent.h
-    Source/Components/Editor/EditorRecastNavigationMeshConfig.cpp
-    Source/Components/Editor/EditorRecastNavigationMeshConfig.h
 )

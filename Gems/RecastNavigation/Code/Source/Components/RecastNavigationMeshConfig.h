@@ -14,6 +14,10 @@ namespace RecastNavigation
 {
     //! See @rcConfig from Recast library for documentation on these parameters.
     //! @Reflect method provides that documentation as tooltips in the Editor.
+    //!
+    //! @note Pay attention to the units of the properties in this configuration,
+    //! some of them are in world units (regular O3DE world space) and others are
+    //! in Recast voxels, which are defined by @m_cellSize. 1 voxel = 1 @m_cellSize in world units.
     class RecastNavigationMeshConfig final
     {
     public:
@@ -22,9 +26,9 @@ namespace RecastNavigation
         static void Reflect(AZ::ReflectContext* context);
 
         float m_tileSize = 32.f;
-        int m_borderSize = 3;
-        float m_cellSize = 0.3f;
-        float m_cellHeight = 0.2f;
+        int m_borderSize = 20;
+        float m_cellSize = 0.4f;
+        float m_cellHeight = 0.4f;
 
         float m_agentMaxSlope = 45.0f;
         float m_agentHeight = 2.0f;

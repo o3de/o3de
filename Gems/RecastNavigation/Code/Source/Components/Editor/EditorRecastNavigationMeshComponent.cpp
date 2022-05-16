@@ -7,25 +7,19 @@
  */
 
 #include "EditorRecastNavigationMeshComponent.h"
-#include "EditorRecastNavigationMeshConfig.h"
 
 #include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/Shape.h>
-#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <Components/RecastNavigationMeshComponent.h>
 
 namespace RecastNavigation
 {
     void EditorRecastNavigationMeshComponent::Reflect(AZ::ReflectContext* context)
     {
-        EditorRecastNavigationMeshConfig::Reflect(context);
-
         if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<EditorRecastNavigationMeshComponent, AZ::Component>()
                 ->Field("Configuration", &EditorRecastNavigationMeshComponent::m_meshConfig)
-                ->Field("Debug Options", &EditorRecastNavigationMeshComponent::m_meshEditorConfig)
+                ->Field("Debug Draw", &EditorRecastNavigationMeshComponent::m_enableDebugDraw)
                 ->Version(1)
                 ;
 
@@ -38,8 +32,8 @@ namespace RecastNavigation
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(nullptr, &EditorRecastNavigationMeshComponent::m_meshConfig,
                         "Configuration", "Navigation Mesh configuration")
-                    ->DataElement(nullptr, &EditorRecastNavigationMeshComponent::m_meshEditorConfig,
-                        "Debug Options", "Various helper options for Editor viewport")
+                    ->DataElement(nullptr, &EditorRecastNavigationMeshComponent::m_enableDebugDraw,
+                        "Debug Draw", "If enabled, draw the navigation mesh")
                     ;
             }
         }
@@ -72,6 +66,6 @@ namespace RecastNavigation
 
     void EditorRecastNavigationMeshComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        gameEntity->CreateComponent<RecastNavigationMeshComponent>(m_meshConfig, m_meshEditorConfig.m_showNavigationMesh);
+        gameEntity->CreateComponent<RecastNavigationMeshComponent>(m_meshConfig, m_enableDebugDraw);
     }
 } // namespace RecastNavigation

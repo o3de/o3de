@@ -10,7 +10,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <Components/RecastNavigationMeshConfig.h>
-#include <Components/Editor/EditorRecastNavigationMeshConfig.h>
 #include <ToolsComponents/EditorComponentBase.h>
 
 namespace RecastNavigation
@@ -37,6 +36,6 @@ namespace RecastNavigation
 
     private:
         RecastNavigationMeshConfig m_meshConfig;
-        EditorRecastNavigationMeshConfig m_meshEditorConfig;
+        bool m_enableDebugDraw = false;
     };
 } // namespace RecastNavigation

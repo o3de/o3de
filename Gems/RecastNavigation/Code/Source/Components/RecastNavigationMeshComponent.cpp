@@ -12,6 +12,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RecastNavigation/RecastNavigationSurveyorBus.h>
 
+AZ_CVAR(
+    bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "If enabled, draw debug visual information about a navigation mesh");
+
 namespace RecastNavigation
 {
     RecastNavigationMeshComponent::RecastNavigationMeshComponent(const RecastNavigationMeshConfig& config, bool drawDebug)
@@ -76,14 +80,14 @@ namespace RecastNavigation
 
         RecastNavigationMeshNotificationBus::Broadcast(&RecastNavigationMeshNotifications::OnNavigationMeshUpdated, GetEntityId());
     }
-    
+
     void RecastNavigationMeshComponent::Activate()
     {
         m_context = AZStd::make_unique<RecastCustomContext>();
 
         CreateNavigationMesh(GetEntityId(), m_meshConfig.m_tileSize);
 
-        if (m_showNavigationMesh)
+        if (cl_navmesh_debug || m_showNavigationMesh)
         {
             m_tickEvent.Enqueue(AZ::TimeMs{ 0 }, true);
         }
@@ -104,12 +108,7 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponent::OnDebugDrawTick()
     {
-        if (!m_navMesh)
-        {
-            return;
-        }
-
-        if (cl_navmesh_debug || m_showNavigationMesh)
+        if (m_navMesh && (cl_navmesh_debug || m_showNavigationMesh))
         {
             duDebugDrawNavMesh(&m_customDebugDraw, *m_navMesh, DU_DRAWNAVMESH_COLOR_TILES);
         }

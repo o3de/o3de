@@ -54,7 +54,7 @@ namespace RecastNavigation
         RecastNavigationMeshConfig m_meshConfig;
 
         //! Debug draw option.
-        bool m_showNavigationMesh = true;
+        bool m_showNavigationMesh = false;
     };
 
 } // namespace RecastNavigation

@@ -18,8 +18,6 @@
 #include <DebugDraw/DebugDrawBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
-#pragma optimize("", off)
-
 AZ_CVAR(
     bool, cl_navmesh_showInputData, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, draws triangle mesh input data that was used for the navigation mesh calculation");
@@ -278,5 +276,3 @@ namespace RecastNavigation
         return tilesAlongX * tilesAlongY;
     }
 } // namespace RecastNavigation
-
-#pragma optimize("", on)

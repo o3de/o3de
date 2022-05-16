@@ -7,21 +7,14 @@
  */
 
 #include "EditorDetourNavigationComponent.h"
-#include "EditorRecastNavigationMeshConfig.h"
 
 #include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/Shape.h>
-#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <Components/DetourNavigationComponent.h>
-#include <Components/RecastNavigationMeshComponent.h>
 
 namespace RecastNavigation
 {
     void EditorDetourNavigationComponent::Reflect(AZ::ReflectContext* context)
     {
-        EditorRecastNavigationMeshConfig::Reflect(context);
-
         if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<EditorDetourNavigationComponent, AZ::Component>()
