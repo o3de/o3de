@@ -48,7 +48,8 @@ namespace UnitTest
         return { AZStd::move(createdPrefab), AZStd::move(instantiatedPrefab) };
     }
 
-    void ValidateEntityState(const InstanceUniquePointer& instanceToLookUnder, AZStd::string_view entityName, AZ::Entity::State expectedEntityState)
+    static void ValidateEntityState(
+        const InstanceUniquePointer& instanceToLookUnder, AZStd::string_view entityName, AZ::Entity::State expectedEntityState)
     {
         bool isEntityFound = false;
         instanceToLookUnder->GetEntities(
@@ -62,6 +63,20 @@ namespace UnitTest
                 return true;
             });
         EXPECT_TRUE(isEntityFound); 
+    }
+
+    static void ValidateTransformComponentValue(const AZStd::unique_ptr<AZ::Entity>& entity, const float worldXValue)
+    {
+        // Validate that the entity is in 'constructed' state, which indicates that it got reloaded.
+        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Constructed);
+        AZStd::vector<AZ::Component*> entityComponents = entity->GetComponents();
+        EXPECT_EQ(1, entityComponents.size());
+        AzToolsFramework::Components::TransformComponent* transformComponentInInstantiatedPrefab =
+            reinterpret_cast<AzToolsFramework::Components::TransformComponent*>(entityComponents.front());
+        EXPECT_NE(nullptr, transformComponentInInstantiatedPrefab);
+
+        // Validate that the transform component is correctly updated after reloading.
+        EXPECT_EQ(transformComponentInInstantiatedPrefab->GetWorldX(), worldXValue);
     }
 
 
@@ -106,16 +121,7 @@ namespace UnitTest
                 }
                 else if (entity->GetName() == "Entity1")
                 {
-                    // Validate that the entity is in 'constructed' state, which indicates that it got reloaded.
-                    EXPECT_EQ(entity->GetState(), AZ::Entity::State::Constructed);
-                    AZStd::vector<AZ::Component*> entity1Components = entity->GetComponents();
-                    EXPECT_EQ(1, entity1Components.size());
-                    AzToolsFramework::Components::TransformComponent* transformComponentInInstantiatedPrefab =
-                        reinterpret_cast<AzToolsFramework::Components::TransformComponent*>(entity1Components.front());
-                    EXPECT_NE(nullptr, transformComponentInInstantiatedPrefab);
-
-                    // Validate that the transform component is correctly updated after reloading.
-                    EXPECT_EQ(transformComponentInInstantiatedPrefab->GetWorldX(), 20.0f);
+                    ValidateTransformComponentValue(entity, 20.0f);
                 }
                 return true;
             });
@@ -483,6 +489,81 @@ namespace UnitTest
                     // Entities under an existing nested instance should be in active state. This indicates that the instance is untouched.
                     ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Active);
                 }
+            });
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceUponNestedInstanceEntityUpdate)
+    {
+        AZ::Entity* entityUnderParentPrefab = CreateEntity("EntityUnderParentPrefab", false);
+        AZ::Entity* entityUnderNestedPrefab = CreateEntity("EntityUnderNestedPrefab", false);
+        entityUnderNestedPrefab->CreateComponent(AZ::EditorTransformComponentTypeId);
+        InstanceUniquePointer nestedInstanceToUseForCreation =
+            m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{ entityUnderNestedPrefab }, {}, "test/nestedPrefabPath");
+
+        // Extract the template id from the instance and store it in a variable before moving the instance.
+        TemplateId nestedPrefabTemplateId = nestedInstanceToUseForCreation->GetTemplateId();
+
+        AZStd::vector<InstanceUniquePointer> nestedInstances;
+        nestedInstances.emplace_back(AZStd::move(nestedInstanceToUseForCreation));
+
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances = SetupPrefabInstances(
+            AzToolsFramework::EntityList{ entityUnderParentPrefab }, AZStd::move(nestedInstances), m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+        ASSERT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 1);
+
+        // Activate the entity to access the transform interface and use it to modify the transform component.
+        entityUnderNestedPrefab->Init();
+        entityUnderNestedPrefab->Activate();
+        AZ::TransformBus::Event(entityUnderNestedPrefab->GetId(), &AZ::TransformInterface::SetWorldX, 20.0f);
+
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        // Validate that the entity remains in active state throughout the reloading process. This indicates that it is untouched.
+        ValidateEntityState(instantiatedPrefab, "EntityUnderParentPrefab", AZ::Entity::State::Active);
+
+        instantiatedPrefab->GetNestedInstances(
+            [](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Constructed);
+            });
+    }
+
+    TEST_F(InstanceDeserializationTest, ReloadInstanceWithoutReloadingNestedInstances)
+    {
+        AZ::Entity* entityUnderParentPrefab = CreateEntity("EntityUnderParentPrefab", false);
+        AZ::Entity* entityUnderNestedPrefab = CreateEntity("EntityUnderNestedPrefab", false);
+        entityUnderParentPrefab->CreateComponent(AZ::EditorTransformComponentTypeId);
+        InstanceUniquePointer nestedInstanceToUseForCreation =
+            m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{ entityUnderNestedPrefab }, {}, "test/nestedPrefabPath");
+
+        // Extract the template id from the instance and store it in a variable before moving the instance.
+        TemplateId nestedPrefabTemplateId = nestedInstanceToUseForCreation->GetTemplateId();
+
+        AZStd::vector<InstanceUniquePointer> nestedInstances;
+        nestedInstances.emplace_back(AZStd::move(nestedInstanceToUseForCreation));
+
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances = SetupPrefabInstances(
+            AzToolsFramework::EntityList{ entityUnderParentPrefab }, AZStd::move(nestedInstances), m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+        InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
+        ASSERT_EQ(instantiatedPrefab->GetNestedInstanceAliases(nestedPrefabTemplateId).size(), 1);
+
+        // Activate the entity to access the transform interface and use it to modify the transform component.
+        entityUnderParentPrefab->Init();
+        entityUnderParentPrefab->Activate();
+        AZ::TransformBus::Event(entityUnderParentPrefab->GetId(), &AZ::TransformInterface::SetWorldX, 20.0f);
+
+        GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
+
+        // Validate that the entity under the parent prefab got reloaded.
+        ValidateEntityState(instantiatedPrefab, "EntityUnderParentPrefab", AZ::Entity::State::Constructed);
+
+        instantiatedPrefab->GetNestedInstances(
+            [](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                // Validate that the entity under the nested prefab remained untouched.
+                ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Active);
             });
     }
 } // namespace UnitTest
