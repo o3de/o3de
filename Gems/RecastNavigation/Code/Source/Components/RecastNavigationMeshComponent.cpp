@@ -9,6 +9,7 @@
 #include "RecastNavigationMeshComponent.h"
 
 #include <DetourDebugDraw.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RecastNavigation/RecastNavigationSurveyorBus.h>
 
