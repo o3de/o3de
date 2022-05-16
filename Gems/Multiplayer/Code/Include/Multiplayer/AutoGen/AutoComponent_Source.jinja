@@ -1521,15 +1521,7 @@ namespace {{ Component.attrib['Namespace'] }}
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                const AZStd::string componentSuffix = " Component";
-                AZStd::string baseComponentEditorName = "{{ ComponentBaseName }}";
-                AZ::StringFunc::SplitCamelCase(baseComponentEditorName);
-                if (baseComponentEditorName.ends_with(componentSuffix))
-                {
-                    baseComponentEditorName.erase(baseComponentEditorName.length()-componentSuffix.length());
-                }
-
-                editContext->Class<{{ ComponentBaseName }}>(baseComponentEditorName.c_str(), "{{ Component.attrib['Description'] }}")
+                editContext->Class<{{ ComponentBaseName }}>("{{ ComponentBaseName }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
@@ -1540,13 +1532,7 @@ namespace {{ Component.attrib['Namespace'] }}
                     {{ DefineArchetypePropertyEditReflection(Component, ComponentBaseName)|indent(20) }};
 {% if ComponentDerived %}
 
-                AZStd::string componentEditorName = "{{ ComponentName }}";
-                AZ::StringFunc::SplitCamelCase(componentEditorName);
-                if (componentEditorName.ends_with(componentSuffix))
-                {
-                    componentEditorName.erase(componentEditorName.length()-componentSuffix.length());
-                }
-                editContext->Class<{{ ComponentName }}>(componentEditorName.c_str(), "{{ Component.attrib['Description'] }}")
+                editContext->Class<{{ ComponentName }}>("{{ ComponentName }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));

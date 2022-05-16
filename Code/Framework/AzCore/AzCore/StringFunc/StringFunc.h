@@ -9,11 +9,13 @@
 #pragma once
 
 #include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 //---------------------------------------------------------------------
 // FILENAME CONSTRAINTS
@@ -254,12 +256,6 @@ namespace AZ
         */
         bool Strip(AZStd::string& inout, const char stripCharacter = ' ', bool bCaseSensitive = false, bool bStripBeginning = false, bool bStripEnding = false);
         bool Strip(AZStd::string& inout, const char* stripCharacters = " ", bool bCaseSensitive = false, bool bStripBeginning = false, bool bStripEnding = false);
-
-        //! SplitCamelCase
-        /*! Utility function that splits camel-case syntax string into separate words
-        Example: StringFunc::SplitCamelCase(s = "NetworkTransformComponent"); s == "Network Transform Component"
-        */
-        void SplitCamelCase(AZStd::string& inout);
 
         //! Tokenize
         /*! Tokenize a c-string, into a vector of AZStd::string(s) optionally keeping empty string
