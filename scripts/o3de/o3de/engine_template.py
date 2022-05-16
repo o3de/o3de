@@ -703,9 +703,7 @@ def create_template(source_path: pathlib.Path,
         if prefer_sanitized_name:
             swap_sanitized_name_and_normal()
 
-        if keep_license_text:
-            t_data = _remove_license_text_markers(t_data)
-        else:
+        if not keep_license_text:
             t_data = _replace_license_text(t_data)
 
         # See if this file has the ModuleClassId
