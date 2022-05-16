@@ -71,6 +71,8 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
 
     OUT.m_cullDistance = TerrainSrg::CalculateCullDistance(ObjectSrg::m_patchData.m_lodLevel, OUT.m_worldPosition);
 
+    OUT.m_cullDistance = TerrainSrg::CalculateCullDistance(ObjectSrg::m_patchData.m_lodLevel, OUT.m_worldPosition);
+
     // directional light shadow 
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)

@@ -195,7 +195,7 @@ namespace AZ::Render
             {
                 EMotionFX::Node* node = instance->GetActor()->GetSkeleton()->GetNode(instance->GetEnabledNode(i));
                 EMotionFX::Mesh* mesh = instance->GetActor()->GetMesh(geomLODLevel, node->GetNodeIndex());
-                const AZ::Transform globalTM = pose->GetWorldSpaceTransform(node->GetNodeIndex()).ToAZTransform();
+                const AZ::Transform globalTM = pose->GetMeshNodeWorldSpaceTransform(geomLODLevel, node->GetNodeIndex()).ToAZTransform();
 
                 m_currentMesh = nullptr;
 

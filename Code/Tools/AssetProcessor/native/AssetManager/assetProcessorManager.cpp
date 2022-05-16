@@ -5033,16 +5033,24 @@ namespace AssetProcessor
         {
             reprocessList.append(normalizedSourcePath);
         }
+        return RequestReprocess(reprocessList);
+    }
 
+    AZ::u64 AssetProcessorManager::RequestReprocess(const QStringList& reprocessList)
+    {
         AZ::u64 filesFound{ 0 };
-        for (const auto& sourcePath : reprocessList)
+        for (QString sourcePath : reprocessList)
         {
+            // Remove invalid characters
+            sourcePath.remove(QRegExp("[\\n\\r]"));
+
             QString scanFolderName;
             QString relativePathToFile;
             if (!m_platformConfig->ConvertToRelativePath(sourcePath, relativePathToFile, scanFolderName))
             {
                 continue;
             }
+
             AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs; //should only find one when we specify builder, job key, platform
             m_stateData->GetJobsBySourceName(relativePathToFile, jobs);
             for (auto& job : jobs)

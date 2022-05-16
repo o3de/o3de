@@ -104,21 +104,20 @@ namespace StandaloneTools
 
     bool BaseApplication::StartDebugService()
     {
-        for (auto& networkInterface : AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces())
+        AzNetworking::INetworkInterface* networkInterface =
+            AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name("TargetManagement"));
+        if (networkInterface)
         {
-            if (networkInterface.first == AZ::Name("TargetManagement"))
+            const auto console = AZ::Interface<AZ::IConsole>::Get();
+            uint16_t target_port = AzFramework::DefaultTargetPort;
+
+            if (console->GetCvarValue("target_port", target_port) != AZ::GetValueResult::Success)
             {
-                const auto console = AZ::Interface<AZ::IConsole>::Get();
-                uint16_t target_port = AzFramework::DefaultTargetPort;
-
-                if (console->GetCvarValue("target_port", target_port) != AZ::GetValueResult::Success)
-                {
-                    AZ_Assert(false, "TargetManagement port could not be found");
-                }
-
-                networkInterface.second->Listen(target_port);
-                return true;
+                AZ_Assert(false, "TargetManagement port could not be found");
             }
+
+            networkInterface->Listen(target_port);
+            return true;
         }
         return false;
     }
