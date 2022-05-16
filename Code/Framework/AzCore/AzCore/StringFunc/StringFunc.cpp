@@ -9,7 +9,7 @@
 
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/std/containers/array.h>
+#include <AzCore/std/string/regex.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/OSAllocator.h>
@@ -20,6 +20,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/AzCore_Traits_Platform.h>
+
 
 namespace AZ::StringFunc::Internal
 {
@@ -739,6 +740,14 @@ namespace AZ::StringFunc
     bool Strip(AZStd::string& inout, const char* stripCharacters, bool bCaseSensitive, bool bStripBeginning, bool bStripEnding)
     {
         return Internal::Strip(inout, stripCharacters, bCaseSensitive, bStripBeginning, bStripEnding);
+    }
+
+    void SplitCamelCase(AZStd::string& inout)
+    {
+        AZStd::regex splitRegex(R"(/[a-z]+|[0-9]+|(?:[A-Z][a-z]+)|(?:[A-Z]+(?=(?:[A-Z][a-z])|[^AZa-z]|[$\d\n]))/g)");
+        inout = regex_replace(inout, splitRegex, " $&");
+        inout = LStrip(inout);
+        Replace(inout, "  ", " ");
     }
 
     AZStd::string& TrimWhiteSpace(AZStd::string& value, bool leading, bool trailing)
