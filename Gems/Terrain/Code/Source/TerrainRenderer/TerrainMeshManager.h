@@ -154,11 +154,11 @@ namespace Terrain
             const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
 
         void InitializeTerrainPatch(uint16_t gridSize, PatchData& patchdata);
-        bool CreateLod(AZ::RPI::ModelAssetCreator& modelAssetCreator, const AZ::RPI::BufferAssetView& zPositions);
+        bool CreateLod(AZ::RPI::ModelAssetCreator& modelAssetCreator, const AZ::RPI::BufferAssetView& zPositions, const AZ::RPI::BufferAssetView& normals);
         bool InitializeCommonSectorData();
         bool InitializeDefaultSectorModel();
         AZ::Data::Instance<AZ::RPI::Model> InitializeSectorModel(uint16_t gridSize, const AZ::Vector2& worldStartPosition, float vertexSpacing);
-        AZ::Data::Instance<AZ::RPI::Model> InitializeSectorModel(const AZ::RPI::BufferAssetView& heights);
+        AZ::Data::Instance<AZ::RPI::Model> InitializeSectorModel(const AZ::RPI::BufferAssetView& heights, const AZ::RPI::BufferAssetView& normals);
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
         void ProcessSectorUpdates(AZStd::span<SectorUpdateContext> sectorUpdates);
@@ -175,7 +175,8 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::Model> m_defaultSectorModel;
         AZ::RPI::BufferAssetView m_sectorXyPositionsBufferAssetView;
-        AZ::RPI::BufferAssetView m_sector0PositionsBufferAssetView; // common buffer of 0's for when Z positions are derived from textures instad of baked into the mesh.
+        AZ::RPI::BufferAssetView m_sectorZPositionsBufferAssetView; // common buffer of 0's for when Z positions are derived from textures instead of baked into the mesh.
+        AZ::RPI::BufferAssetView m_sectorNormalsBufferAssetView; // common buffer of 0's for when normals from textures instead of baked into the mesh.
         AZ::RPI::BufferAssetView m_sectorIndicesBufferAssetView;
 
         AZStd::vector<StackData> m_sectorStack;

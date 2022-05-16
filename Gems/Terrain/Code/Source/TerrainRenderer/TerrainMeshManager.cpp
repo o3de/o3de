@@ -380,7 +380,7 @@ namespace Terrain
         return AZ::Failure();
     }
 
-    bool TerrainMeshManager::CreateLod(AZ::RPI::ModelAssetCreator& modelAssetCreator, const AZ::RPI::BufferAssetView& zPositions)
+    bool TerrainMeshManager::CreateLod(AZ::RPI::ModelAssetCreator& modelAssetCreator, const AZ::RPI::BufferAssetView& zPositions, const AZ::RPI::BufferAssetView& normals)
     {
         AZ::RPI::ModelLodAssetCreator modelLodAssetCreator;
         modelLodAssetCreator.Begin(AZ::Uuid::CreateRandom());
@@ -388,6 +388,7 @@ namespace Terrain
         modelLodAssetCreator.BeginMesh();
         modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "POSITION", 0 }, AZ::Name(), m_sectorXyPositionsBufferAssetView);
         modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "POSITION", 1 }, AZ::Name(), zPositions);
+        modelLodAssetCreator.AddMeshStreamBuffer(AZ::RHI::ShaderSemantic{ "NORMAL" }, AZ::Name(), normals);
         modelLodAssetCreator.SetMeshIndexBuffer(m_sectorIndicesBufferAssetView);
 
         AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0, 0.0, 0.0), AZ::Vector3(GridSize, GridSize, 0.0));
@@ -411,20 +412,25 @@ namespace Terrain
         const auto xyPositionsOutcome = CreateBufferAsset(patchData.m_xyPositions.data(), xyPositionBufferViewDesc, "TerrainPatchXYPositions");
 
         AZStd::vector<uint16_t> zeros (patchData.m_xyPositions.size()); // uint16_t initialize to 0.
-        const auto zerosBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(zeros.size()), AZ::RHI::Format::R16_UNORM);
-        const auto zerosOutcome = CreateBufferAsset(zeros.data(), zerosBufferViewDesc, "TerrainPatchZeroHeights");
+        const auto zPositionBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(zeros.size()), AZ::RHI::Format::R16_UNORM);
+        const auto zPositionOutcome = CreateBufferAsset(zeros.data(), zPositionBufferViewDesc, "TerrainPatchZeroHeights");
+
+        AZStd::vector<AZStd::pair<uint16_t, uint16_t>> normals(patchData.m_xyPositions.size()); // uint16_t initialize to 0.
+        const auto normalsBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(zeros.size()), AZ::RHI::Format::R16G16_SNORM);
+        const auto normalsOutcome = CreateBufferAsset(zeros.data(), normalsBufferViewDesc, "TerrainPatchZeroNormals");
 
         const auto indexBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_indices.size()), AZ::RHI::Format::R16_UINT);
         const auto indicesOutcome = CreateBufferAsset(patchData.m_indices.data(), indexBufferViewDesc, "TerrainPatchIndices");
 
-        if (!xyPositionsOutcome.IsSuccess() || !indicesOutcome.IsSuccess() || !zerosOutcome.IsSuccess())
+        if (!xyPositionsOutcome.IsSuccess() || !indicesOutcome.IsSuccess() || !zPositionOutcome.IsSuccess() || !normalsOutcome.IsSuccess())
         {
             AZ_Error(TerrainMeshManagerName, false, "Failed to create GPU buffers for Terrain");
             return false;
         }
 
         m_sectorXyPositionsBufferAssetView = { xyPositionsOutcome.GetValue(), xyPositionBufferViewDesc };
-        m_sector0PositionsBufferAssetView = { zerosOutcome.GetValue(), zerosBufferViewDesc };
+        m_sectorZPositionsBufferAssetView = { zPositionOutcome.GetValue(), zPositionBufferViewDesc };
+        m_sectorNormalsBufferAssetView = { normalsOutcome.GetValue(), normalsBufferViewDesc };
         m_sectorIndicesBufferAssetView = { indicesOutcome.GetValue(), indexBufferViewDesc };
 
         return true;
@@ -432,70 +438,126 @@ namespace Terrain
 
     bool TerrainMeshManager::InitializeDefaultSectorModel()
     {
-        m_defaultSectorModel = InitializeSectorModel(m_sector0PositionsBufferAssetView);
+        m_defaultSectorModel = InitializeSectorModel(m_sectorZPositionsBufferAssetView, m_sectorNormalsBufferAssetView);
         return m_defaultSectorModel != nullptr;
     }
 
     AZ::Data::Instance<AZ::RPI::Model> TerrainMeshManager::InitializeSectorModel(uint16_t gridSize, const AZ::Vector2& worldStartPosition, float vertexSpacing)
     {
-        uint16_t vertexCount1d = (gridSize + 1); // gridSize is in meters, need an extra vertex in each dimension.
-        uint16_t vertexCount = vertexCount1d * vertexCount1d;
-        AZStd::vector<uint16_t> heights;
-        heights.resize(vertexCount);
+        AZ::Vector3 aabbMin = AZ::Vector3(worldStartPosition.GetX(), worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ());
+        AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(gridSize * vertexSpacing + m_sampleSpacing * 0.5f);
+
+        // expand the bounds in order to calcaulte normals.
+        aabbMin -= AZ::Vector3(vertexSpacing);
+        aabbMax += AZ::Vector3(vertexSpacing);
+
+        // pad the max by half a sample spacing to make sure it's inclusive of the last point.
+        AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(aabbMin, aabbMax);
 
         auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         const AZ::Vector2 stepSize(vertexSpacing);
-
-        AZ::Vector3 AabbMin = AZ::Vector3(worldStartPosition.GetX(), worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ());
-
-        // pad the max by half a sample spacing to make sure it's inclusive of the last point.
-        AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AabbMin, AabbMin + AZ::Vector3(gridSize * vertexSpacing + m_sampleSpacing * 0.5f));
 
         AZStd::pair<size_t, size_t> numSamples;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
             bounds, stepSize, samplerType);
 
-        if (numSamples.first != vertexCount1d || numSamples.second != vertexCount1d)
+        uint16_t vertexCount1d = (gridSize + 1); // grid size is length, need an extra vertex in each dimension to draw the final row / column of quads.
+        uint16_t paddedVertexCount1d = vertexCount1d + 2; // extra row / column on each side for normals.
+
+        if (numSamples.first != paddedVertexCount1d || numSamples.second != paddedVertexCount1d)
         {
             AZ_Assert(false, "Number of samples returned from GetNumSamplesFromRegion does not match expectations");
             return {};
         }
 
-        auto perPositionCallback = [this, &heights, vertexCount1d]
+        uint16_t meshVertexCount = vertexCount1d * vertexCount1d;
+        uint16_t queryVertexCount = paddedVertexCount1d * paddedVertexCount1d;
+        AZStd::vector<float> heights;
+        heights.resize_no_construct(queryVertexCount);
+
+        AZStd::vector<uint16_t> meshHeights;
+        AZStd::vector<AZStd::pair<uint16_t, uint16_t>> meshNormals;
+        meshHeights.resize_no_construct(meshVertexCount);
+        meshNormals.resize_no_construct(meshVertexCount);
+
+        auto perPositionCallback = [this, &heights, paddedVertexCount1d]
         ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
             const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
             [[maybe_unused]] bool terrainExists)
         {
-            const float clampedHeight = AZ::GetClamp((surfacePoint.m_position.GetZ() - m_worldBounds.GetMin().GetZ()) / m_worldBounds.GetExtents().GetZ(), 0.0f, 1.0f);
-            const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
-            const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
-
-            heights.at(yIndex * vertexCount1d + xIndex) = uint16Height;
+            const float height = surfacePoint.m_position.GetZ() - m_worldBounds.GetMin().GetZ();
+            heights.at(yIndex * paddedVertexCount1d + xIndex) = height;
         };
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
             bounds, stepSize, perPositionCallback, samplerType);
 
-        const auto heightsBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(heights.size()), AZ::RHI::Format::R16_UNORM);
-        const auto heightsOutcome = CreateBufferAsset(heights.data(), heightsBufferViewDesc, "TerrainPatchXYPositions");
+        float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
+        float vertexSpacing2 = vertexSpacing * 2.0f;
+
+        for (uint16_t y = 0; y < vertexCount1d; ++y)
+        {
+            const uint16_t offsetY = y + 1;
+
+            for (uint16_t x = 0; x < vertexCount1d; ++x)
+            {
+                const uint16_t offsetX = x + 1;
+                const uint16_t offsetCoord = offsetY * paddedVertexCount1d + offsetX;
+                const uint16_t coord = y * vertexCount1d + x;
+
+                const float height = heights.at(offsetCoord);
+                const float clampedHeight = AZ::GetClamp(height * rcpWorldZ, 0.0f, 1.0f);
+                const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
+                const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
+                meshHeights.at(coord) = uint16Height;
+
+                const float leftHeight = heights.at(offsetCoord - 1);
+                const float rightHeight = heights.at(offsetCoord + 1);
+                const float xSlope = (leftHeight - rightHeight) / vertexSpacing2;
+                const float normalX = xSlope / sqrt(xSlope * xSlope + 1); // sin(arctan(xSlope)
+
+                const float upHeight = heights.at(offsetCoord - paddedVertexCount1d);
+                const float downHeight = heights.at(offsetCoord + paddedVertexCount1d);
+                const float ySlope = (upHeight - downHeight) / vertexSpacing2;
+                const float normalY = ySlope / sqrt(ySlope * ySlope + 1); // sin(arctan(ySlope)
+
+                meshNormals.at(coord) =
+                {
+                    aznumeric_cast<int16_t>(AZStd::roundf(normalX * AZStd::numeric_limits<int16_t>::max())),
+                    aznumeric_cast<int16_t>(AZStd::roundf(normalY * AZStd::numeric_limits<int16_t>::max())),
+                };
+                
+            }
+        }
+        const auto heightsBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(meshHeights.size()), AZ::RHI::Format::R16_UNORM);
+        const auto heightsOutcome = CreateBufferAsset(meshHeights.data(), heightsBufferViewDesc, "TerrainPatchZPositions");
 
         if (!heightsOutcome.IsSuccess())
         {
-            AZ_Error(TerrainMeshManagerName, false, "Failed to create GPU buffers for Terrain");
+            AZ_Error(TerrainMeshManagerName, false, "Failed to create GPU buffer of z positions for Terrain");
             return {};
         }
 
-        return InitializeSectorModel({ heightsOutcome.GetValue(), heightsBufferViewDesc });
+        const auto normalsBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(meshNormals.size()), AZ::RHI::Format::R16G16_SNORM);
+        const auto normalsOutcome = CreateBufferAsset(meshNormals.data(), normalsBufferViewDesc, "TerrainPatchNormals");
+
+        if (!normalsOutcome.IsSuccess())
+        {
+            AZ_Error(TerrainMeshManagerName, false, "Failed to create GPU buffers of normals for Terrain");
+            return {};
+        }
+
+        return InitializeSectorModel({ heightsOutcome.GetValue(), heightsBufferViewDesc }, { normalsOutcome .GetValue(), normalsBufferViewDesc });
     }
 
-    AZ::Data::Instance<AZ::RPI::Model> TerrainMeshManager::InitializeSectorModel(const AZ::RPI::BufferAssetView& heights)
+    AZ::Data::Instance<AZ::RPI::Model> TerrainMeshManager::InitializeSectorModel(const AZ::RPI::BufferAssetView& heights, const AZ::RPI::BufferAssetView& normals)
     {
         AZ::RPI::ModelAssetCreator modelAssetCreator;
         modelAssetCreator.Begin(AZ::Uuid::CreateRandom());
 
-        if (!CreateLod(modelAssetCreator, heights))
+        if (!CreateLod(modelAssetCreator, heights, normals))
         {
             return {};
         }

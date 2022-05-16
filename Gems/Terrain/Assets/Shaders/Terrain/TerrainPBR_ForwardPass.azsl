@@ -66,7 +66,8 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
     OUT.m_worldPosition = float3(heightContext.m_xyPosition, height);
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
     //OUT.m_normal = heightContext.CalculateNormal(SceneSrg::m_heightmapImage);
-    OUT.m_normal = float3(0.0, 0.0, 1.0); // TODO: Pass this in from the mesh.
+    OUT.m_normal = float3(IN.m_xyNormal, 0.0);
+    OUT.m_normal.z = saturate(sqrt(1.0 - OUT.m_normal.x * OUT.m_normal.x - OUT.m_normal.y * OUT.m_normal.y));
 
     OUT.m_cullDistance = TerrainSrg::CalculateCullDistance(ObjectSrg::m_patchData.m_lodLevel, OUT.m_worldPosition);
 
@@ -157,7 +158,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     {
         GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
-
+    
     const float macroRoughness = 1.0;
     const float macroSpecularF0 = 0.5;
     const float macroMetalness = 0.0;
