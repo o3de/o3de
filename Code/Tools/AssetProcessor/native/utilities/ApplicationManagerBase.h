@@ -171,6 +171,8 @@ protected:
 
     AssetProcessor::AssetCatalog* GetAssetCatalog() const { return m_assetCatalog; }
 
+    bool CheckReprocessFileList();
+
     ApplicationServer* m_applicationServer = nullptr;
     ConnectionManager* m_connectionManager = nullptr;
 
@@ -243,6 +245,8 @@ protected:
     QList<QMetaObject::Connection> m_connectionsToRemoveOnShutdown;
     QString m_dependencyScanPattern;
     QString m_fileDependencyScanPattern;
+    QString m_reprocessFileList;
+    QStringList m_filesToReprocess;
     AZStd::vector<AZStd::string> m_dependencyAddtionalScanFolders;
     int m_dependencyScanMaxIteration = AssetProcessor::MissingDependencyScanner::DefaultMaxScanIteration; // The maximum number of times to recurse when scanning a file for missing dependencies.
 };
