@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 namespace RecastNavigation
 {
