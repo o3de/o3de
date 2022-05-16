@@ -1601,11 +1601,10 @@ void MainWindow::ResetBackgroundUpdateTimer()
         m_backgroundUpdateTimer = nullptr;
     }
 
-    ICVar* pBackgroundUpdatePeriod = gEnv->pConsole->GetCVar("ed_backgroundUpdatePeriod");
-    if (pBackgroundUpdatePeriod && pBackgroundUpdatePeriod->GetIVal() > 0)
+    if (gSettings.backgroundUpdatePeriod > 0)
     {
         m_backgroundUpdateTimer = new QTimer(this);
-        m_backgroundUpdateTimer->start(pBackgroundUpdatePeriod->GetIVal());
+        m_backgroundUpdateTimer->start(gSettings.backgroundUpdatePeriod);
         connect(m_backgroundUpdateTimer, &QTimer::timeout, this, [&]() {
             // Make sure that visible editor window get low-fps updates while in the background
 

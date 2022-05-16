@@ -106,10 +106,10 @@ namespace AZ::SceneAPI::Behaviors
         };
 
         using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
-        using MeshTransformMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshNodeData>;
+        using MeshTransformMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, MeshNodeData>;
         using MeshIndexContainer = AZStd::unordered_set<Containers::SceneGraph::NodeIndex>;
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
-        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
+        using NodeEntityMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
         using EntityIdList = AZStd::vector<AZ::EntityId>;
 
         void AssignCustomPropertyMapIndex(
@@ -192,7 +192,7 @@ namespace AZ::SceneAPI::Behaviors
 
         bool AddEditorMaterialComponent(const AZ::EntityId& entityId, const DataTypes::ICustomPropertyData& propertyData)
         {
-            const auto propertyMaterialPathIterator = propertyData.GetPropertyMap().find("o3de.default.material");
+            const auto propertyMaterialPathIterator = propertyData.GetPropertyMap().find("o3de_default_material");
             if (propertyMaterialPathIterator == propertyData.GetPropertyMap().end())
             {
                 // skip these assignment since the default material override was not provided
@@ -202,7 +202,7 @@ namespace AZ::SceneAPI::Behaviors
             const AZStd::any& propertyMaterialPath = propertyMaterialPathIterator->second;
             if (propertyMaterialPath.empty() || propertyMaterialPath.is<AZStd::string>() == false)
             {
-                AZ_Error("prefab", false, "The 'o3de.default.material' custom property value type must be a string."
+                AZ_Error("prefab", false, "The 'o3de_default_material' custom property value type must be a string."
                                           "This will need to be fixed in the DCC tool and re-export the file asset.");
                 return false;
             }

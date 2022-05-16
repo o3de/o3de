@@ -177,6 +177,7 @@ set(FILES
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
+    IO/IStreamerProfiler.h
     IO/IStreamerTypes.h
     IO/IStreamerTypes.inl
     IO/IStreamerTypes.cpp
@@ -453,6 +454,7 @@ set(FILES
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
+    RTTI/BehaviorContextEBusEventRawSignature.inl
     RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
     RTTI/BehaviorInterfaceProxy.h

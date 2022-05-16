@@ -52,6 +52,7 @@ namespace AtomToolsFramework
         bool SaveDocumentAsChild(const AZ::Uuid& documentId, const AZStd::string& targetPath) override;
         bool SaveAllDocuments() override;
         AZ::u32 GetDocumentCount() const override;
+        bool IsDocumentOpen(const AZ::Uuid& documentId) const override;
 
     private:
         // AtomToolsDocumentNotificationBus::Handler overrides...
