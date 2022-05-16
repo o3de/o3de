@@ -7,7 +7,6 @@
  */
 
 #include <Components/RecastNavigationMeshConfig.h>
-#include <AzCore/Serialization/EditContext.h>
 
 namespace RecastNavigation
 {
