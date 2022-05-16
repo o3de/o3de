@@ -23,6 +23,7 @@
 #   include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #   include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #   include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#   include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #   include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #endif // EMOTIONFXANIMATION_EDITOR
 
@@ -114,7 +115,10 @@ namespace EMotionFX
             //////////////////////////////////////////////////////////////////////////////////////
             // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
+            void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
             //////////////////////////////////////////////////////////////////////////////////////
+
+            bool HandlesSource(AZStd::string_view fileName) const;
 
             AZStd::vector<AzToolsFramework::PropertyHandlerBase*> m_propertyHandlers;
 #endif // EMOTIONFXANIMATION_EDITOR
