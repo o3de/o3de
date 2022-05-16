@@ -39,6 +39,8 @@
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
 
+#include <ActionManager/ActionManagerBus.h>
+
 namespace Platform
 {
     // Implemented in each different platform's implementation files, as it differs per platform.
@@ -339,7 +341,7 @@ namespace EditorPythonBindings
 
     void PythonSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<PythonSystemComponent, AZ::Component>()
                 ->Version(1)
@@ -354,6 +356,16 @@ namespace EditorPythonBindings
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<ActionManagerRequestBus>("ActionManagerPythonRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Event("RegisterAction", &ActionManagerRequestBus::Handler::RegisterAction)
+                ->Event("TriggerAction", &ActionManagerRequestBus::Handler::TriggerAction);
         }
     }
 

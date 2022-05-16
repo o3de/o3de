@@ -42,18 +42,18 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNode<Row>();
         system->RegisterNode<Label>();
         system->RegisterNode<PropertyEditor>();
-        system->RegisterAttribute<PropertyEditor>(PropertyEditor::OnChanged);
-        system->RegisterAttribute<PropertyEditor>(PropertyEditor::Type);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::OnChanged);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Type);
 
         system->RegisterPropertyEditor<NumericEditor<>>();
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Min);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Max);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Step);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Suffix);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::SoftMin);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::SoftMax);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Decimals);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::DisplayDecimals);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Min);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Max);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Step);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Suffix);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::SoftMin);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::SoftMax);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Decimals);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::DisplayDecimals);
 
         system->RegisterPropertyEditor<Slider<>, NumericEditor<>>();
         system->RegisterPropertyEditor<SpinBox<>, NumericEditor<>>();
@@ -71,5 +71,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<Vector2>();
         system->RegisterPropertyEditor<Vector3>();
         system->RegisterPropertyEditor<Vector4>();
+        system->RegisterPropertyEditor<FilePath>();
+        system->RegisterPropertyEditor<Asset>();
+        system->RegisterPropertyEditor<AudioControl>();
     }
 } // namespace AZ::DocumentPropertyEditor::Nodes

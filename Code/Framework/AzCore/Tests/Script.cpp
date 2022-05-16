@@ -523,7 +523,7 @@ namespace UnitTest
         return data + 30;
     }
 
-    void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, BehaviorValueParameter* result, int numParameters, BehaviorValueParameter* parameters)
+    void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, BehaviorArgument* result, int numParameters, BehaviorArgument* parameters)
     {
         (void)userData; (void)numParameters; (void)result; (void)eventName; (void)eventIndex;
         AZ_Assert(result == nullptr || strstr(eventName, "OnEventWithResult"), "We don't exepct result here");

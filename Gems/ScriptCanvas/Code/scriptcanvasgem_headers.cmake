@@ -44,6 +44,7 @@ set(FILES
     Include/ScriptCanvas/Core/Nodeable.h
     Include/ScriptCanvas/Core/NodeableNode.h
     Include/ScriptCanvas/Core/NodeableNodeOverloaded.h
+    Include/ScriptCanvas/Core/NodeableOut.h
     Include/ScriptCanvas/Core/NodeFunctionGeneric.h
     Include/ScriptCanvas/Core/SerializationListener.h
     Include/ScriptCanvas/Core/Slot.h
