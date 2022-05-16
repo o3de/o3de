@@ -30,13 +30,14 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
-#include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 namespace DPEDebugView
 {
@@ -167,15 +168,11 @@ namespace DPEDebugView
         {
             AZ::NameDictionary::Create();
             AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
-
-            m_propertyEditorSystem = AZStd::make_unique<AZ::DocumentPropertyEditor::PropertyEditorSystem>();
         }
 
         virtual ~DPEDebugApplication()
         {
             AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
-
-            m_propertyEditorSystem.reset();
         }
 
         void Reflect(AZ::ReflectContext* context) override
@@ -184,9 +181,6 @@ namespace DPEDebugView
 
             TestContainer::Reflect(context);
         }
-
-    private:
-        AZStd::unique_ptr<AZ::DocumentPropertyEditor::PropertyEditorSystem> m_propertyEditorSystem;
     };
 } // namespace DPEDebugView
 

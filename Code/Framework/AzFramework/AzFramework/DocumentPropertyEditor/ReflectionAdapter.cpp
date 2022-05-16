@@ -107,10 +107,10 @@ namespace AZ::DocumentPropertyEditor
             m_builder.BeginPropertyEditor(editorType, AZStd::move(value));
             ForwardAttributes(attributes);
             m_builder.OnEditorChanged(
-                [this, onChanged](const Dom::Path& path, const Dom::Value& value)
+                [this, onChanged](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType changeType)
                 {
                     Dom::Value newValue = onChanged(value);
-                    m_adapter->OnContentsChanged(path, newValue);
+                    m_adapter->OnContentsChanged(path, newValue, changeType);
                 });
             m_builder.EndPropertyEditor();
 
@@ -267,7 +267,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    Dom::Value ReflectionAdapter::GetContents() const
+    Dom::Value ReflectionAdapter::GenerateContents() const
     {
         m_impl->m_builder.BeginAdapter();
         if (m_instance != nullptr)
@@ -278,7 +278,7 @@ namespace AZ::DocumentPropertyEditor
         return m_impl->m_builder.FinishAndTakeResult();
     }
 
-    void ReflectionAdapter::OnContentsChanged(const Dom::Path& path, const Dom::Value& value)
+    void ReflectionAdapter::OnContentsChanged(const Dom::Path& path, const Dom::Value& value, [[maybe_unused]] Nodes::PropertyEditor::ValueChangeType changeType)
     {
         NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, value) });
     }

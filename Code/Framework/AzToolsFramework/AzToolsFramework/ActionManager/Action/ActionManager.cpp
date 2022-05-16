@@ -23,61 +23,68 @@ namespace AzToolsFramework
     }
 
     ActionManagerOperationResult ActionManager::RegisterActionContext(
-        QWidget* widget,
-        const AZStd::string& identifier,
-        const AZStd::string& name,
-        const AZStd::string& parentIdentifier)
+        const AZStd::string& parentContextIdentifier,
+        const AZStd::string& contextIdentifier,
+        const ActionContextProperties& properties,
+        QWidget* widget)
     {
         if (!widget)
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register action context \"%s\" to a null widget.", identifier.c_str())
+                "Action Manager - Could not register action context \"%s\" to a null widget.", contextIdentifier.c_str())
             );
         }
 
-        if (m_actionContexts.contains(identifier))
+        if (m_actionContexts.contains(contextIdentifier))
         {
-            return AZ::Failure(AZStd::string::format("Action Manager - Could not register action context \"%.s\" twice.", identifier.c_str()));
+            return AZ::Failure(AZStd::string::format("Action Manager - Could not register action context \"%.s\" twice.", contextIdentifier.c_str()));
         }
 
         m_actionContexts.insert(
             {
-                identifier,
-                new EditorActionContext(identifier, name, parentIdentifier, widget)
+                contextIdentifier,
+                new EditorActionContext(contextIdentifier, properties.m_name, parentContextIdentifier, widget)
             }
         );
 
         return AZ::Success();
     }
 
+    
     ActionManagerOperationResult ActionManager::RegisterAction(
         const AZStd::string& contextIdentifier,
-        const AZStd::string& identifier,
-        const AZStd::string& name,
-        const AZStd::string& description,
-        const AZStd::string& category,
-        [[maybe_unused]] const AZStd::string& iconPath,
+        const AZStd::string& actionIdentifier,
+        const ActionProperties& properties,
         AZStd::function<void()> handler)
     {
         if (!m_actionContexts.contains(contextIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
-                identifier.c_str(), 
+                actionIdentifier.c_str(), 
                 contextIdentifier.c_str()
             ));
         }
 
-        if (m_actions.contains(identifier))
+        if (m_actions.contains(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register action \"%.s\" twice.", identifier.c_str()));
+                "Action Manager - Could not register action \"%.s\" twice.",
+                actionIdentifier.c_str()
+            ));
         }
 
         m_actions.insert(
             {
-                identifier,
-                EditorAction(m_actionContexts[contextIdentifier]->GetWidget(), identifier, name, description, category, handler)
+                actionIdentifier,
+                EditorAction(
+                    m_actionContexts[contextIdentifier]->GetWidget(),
+                    actionIdentifier,
+                    properties.m_name,
+                    properties.m_description,
+                    properties.m_category,
+                    handler
+                )
             }
         );
         return AZ::Success();

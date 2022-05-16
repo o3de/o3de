@@ -50,7 +50,7 @@ namespace ExecutionInterpretedAPICpp
     [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
 
     template<typename T>
-    T* GetAs(AZ::BehaviorValueParameter& argument)
+    T* GetAs(AZ::BehaviorArgument& argument)
     {
         return argument.m_typeId == azrtti_typeid<T>()
             ? reinterpret_cast<T*>(argument.GetValueAddress())
@@ -152,7 +152,7 @@ namespace ExecutionInterpretedAPICpp
             // Lua: 
             AZStd::pair<void*, AZ::BehaviorContext*> multipleResults = ScriptCanvas::BehaviorContextUtils::ConstructTupleGetContext(typeId);
             AZ_Assert(multipleResults.first, "failure to construct a tuple by typeid from behavior context");
-            AZ::BehaviorValueParameter parameter;
+            AZ::BehaviorArgument parameter;
             parameter.m_value = multipleResults.first;
             parameter.m_typeId = typeId;
             AZ::StackPush(lua, multipleResults.second, parameter);
@@ -278,9 +278,9 @@ namespace ScriptCanvas
             return bcClassIter != behaviorContext.m_typeToClassMap.end() ? bcClassIter->second->m_azRtti : nullptr;
         }
 
-        AZ::BehaviorValueParameter BehaviorValueParameterFromTypeIdString(const char* aztypeidStr, AZ::BehaviorContext& behaviorContext)
+        AZ::BehaviorArgument BehaviorValueParameterFromTypeIdString(const char* aztypeidStr, AZ::BehaviorContext& behaviorContext)
         {
-            AZ::BehaviorValueParameter bvp;
+            AZ::BehaviorArgument bvp;
             bvp.m_typeId = CreateIdFromStringFast(aztypeidStr);
             bvp.m_azRtti = GetRttiHelper(bvp.m_typeId, behaviorContext);
             return bvp;
@@ -339,7 +339,7 @@ namespace ScriptCanvas
             return id;
         }
 
-        void PushActivationArgs(lua_State* lua, AZ::BehaviorValueParameter* arguments, size_t numArguments)
+        void PushActivationArgs(lua_State* lua, AZ::BehaviorArgument* arguments, size_t numArguments)
         {
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext();
 
@@ -528,7 +528,7 @@ namespace ScriptCanvas
         //////////////////////////////////////////////////////////////////////////
         // \todo ScriptCanvas will probably need its own version of all of these functions
         //////////////////////////////////////////////////////////////////////////
-        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorValueParameter& argument)
+        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& argument)
         {
             using namespace ExecutionInterpretedAPICpp;
 
@@ -552,7 +552,7 @@ namespace ScriptCanvas
             }
         }
 
-        bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorValueParameter& param, AZ::StackVariableAllocator* allocator)
+        bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* allocator)
         {
             return AZ::StackRead(lua, index, context, param, allocator);
         }

@@ -30,7 +30,7 @@ namespace AZ::DocumentPropertyEditor
                 functor->GetValue(buffer);
                 builder.BeginPropertyEditor<Nodes::SpinBox<T>>(Dom::Value(buffer));
                 builder.OnEditorChanged(
-                    [this, functor](const Dom::Path& path, const Dom::Value& value)
+                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
                     {
                         T buffer;
                         if constexpr (AZStd::is_integral_v<T> && AZStd::is_signed_v<T>)
@@ -76,7 +76,7 @@ namespace AZ::DocumentPropertyEditor
                 functor->GetValue(buffer);
                 builder.BeginPropertyEditor<Nodes::LineEdit>(Dom::Value(buffer, true));
                 builder.OnEditorChanged(
-                    [this, functor](const Dom::Path& path, const Dom::Value& value)
+                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
                     {
                         (*functor)({ value.GetString() });
                         m_adapter->OnContentsChanged(path, value);
@@ -101,7 +101,7 @@ namespace AZ::DocumentPropertyEditor
                 }
                 builder.BeginPropertyEditor<NodeType>(AZStd::move(contents));
                 builder.OnEditorChanged(
-                    [this, functor](const Dom::Path& path, const Dom::Value& value)
+                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
                     {
                         // ConsoleCommandContainer holds string_views, so ensure we allocate our parameters here
                         AZStd::fixed_vector<CVarFixedString, ElementCount> newValue;
@@ -126,7 +126,7 @@ namespace AZ::DocumentPropertyEditor
                 functor->GetValue(value);
                 builder.BeginPropertyEditor<Nodes::CheckBox>(Dom::Value(value));
                 builder.OnEditorChanged(
-                    [this, functor](const Dom::Path& path, const Dom::Value& value)
+                    [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
                     {
                         (*functor)({ ConsoleTypeHelpers::ValueToString(value.GetBool()) });
                         m_adapter->OnContentsChanged(path, value);
@@ -161,7 +161,7 @@ namespace AZ::DocumentPropertyEditor
     {
     }
 
-    Dom::Value CvarAdapter::GetContents() const
+    Dom::Value CvarAdapter::GenerateContents() const
     {
         AdapterBuilder builder;
         builder.BeginAdapter();
