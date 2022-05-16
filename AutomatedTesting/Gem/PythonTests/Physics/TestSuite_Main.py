@@ -299,6 +299,7 @@ class TestAutomation(EditorTestSuite):
     class ForceRegion_NoQuiverOnHighLinearDampingForce(EditorBatchedTest):
         from .tests.force_region import ForceRegion_NoQuiverOnHighLinearDampingForce as test_module
 
+    @pytest.mark.xfail(reason="GHI #9565: Test periodically fails")
     class RigidBody_ComputeInertiaWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_ComputeInertiaWorks as test_module
 
@@ -325,6 +326,7 @@ class TestAutomation(EditorTestSuite):
     class ForceRegion_WorldSpaceForceOnRigidBodies(EditorBatchedTest):
         from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
         
+    @pytest.mark.xfail(reason="GHI #9566: Test periodically fails")
     class ForceRegion_PointForceOnRigidBodies(EditorBatchedTest):
         from .tests.force_region import ForceRegion_PointForceOnRigidBodies as test_module
         
