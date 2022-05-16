@@ -30,7 +30,8 @@ NODE_PALETTE_QT = "NodePalette"
 TREE_VIEW_QT = "treeView"
 VARIABLE_PALETTE_QT = "variablePalette"
 VARIABLE_MANAGER_QT = "VariableManager"
-
+GRAPH_VARIABLES_QT = "graphVariables"
+ADD_BUTTON_QT = "addButton"
 
 """
 General constants

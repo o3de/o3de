@@ -267,7 +267,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    #@pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_VariableManager_Default_CreateDeleteVars(self, request, editor, launcher_platform):
         var_types = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
         expected_lines = [f"{var_type} variable is created: True" for var_type in var_types]
