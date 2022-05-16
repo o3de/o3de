@@ -9,6 +9,7 @@
 #pragma once
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
+#include <Components/DetourNavigationComponent.h>
 #include <Components/RecastNavigationMeshComponent.h>
 #include <Components/RecastNavigationTiledSurveyorComponent.h>
 
@@ -28,6 +29,7 @@ namespace RecastNavigation
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
+                DetourNavigationComponent::CreateDescriptor(),
                 RecastNavigationMeshComponent::CreateDescriptor(),
                 RecastNavigationTiledSurveyorComponent::CreateDescriptor(),
                 });

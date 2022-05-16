@@ -8,25 +8,35 @@
 
 #pragma once
 
+#include "EditorRecastNavigationMeshConfig.h"
+#include "Components/RecastNavigationDebugDraw.h"
+#include "Components/RecastNavigationMeshConfig.h"
+
+#include <DetourNavMesh.h>
 #include <AzCore/Component/Component.h>
-#include <Components/RecastNavigationMeshConfig.h>
-#include <Components/Editor/EditorRecastNavigationMeshConfig.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/EBus/ScheduledEvent.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
+#include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Input/Events/InputChannelEventListener.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <Components/RecastNavigationMeshCommon.h>
 #include <ToolsComponents/EditorComponentBase.h>
 
 namespace RecastNavigation
 {
-    //! Editor version of @RecastNavigationMeshComponent.
-    class EditorRecastNavigationMeshComponent final
+    //! Editor version of @DetourNavigationComponent.
+    class EditorDetourNavigationComponent final
         : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
-        AZ_EDITOR_COMPONENT(EditorRecastNavigationMeshComponent, "{22D516D4-C98D-4783-85A4-1ABE23CAB4D4}", AzToolsFramework::Components::EditorComponentBase);
+        AZ_EDITOR_COMPONENT(EditorDetourNavigationComponent, "{A8D728AB-FC42-42AE-A904-3CF5F1C83D16}", AzToolsFramework::Components::EditorComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
         //! EditorComponentBase interface implementation
         //! @{
@@ -36,7 +46,7 @@ namespace RecastNavigation
         //! @}
 
     private:
-        RecastNavigationMeshConfig m_meshConfig;
-        EditorRecastNavigationMeshConfig m_meshEditorConfig;
+        AZ::EntityId m_navQueryEntityId;
+        float m_nearestDistance = 3.f;
     };
 } // namespace RecastNavigation

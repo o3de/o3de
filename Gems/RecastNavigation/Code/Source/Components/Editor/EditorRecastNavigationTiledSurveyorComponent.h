@@ -12,12 +12,7 @@
 
 namespace RecastNavigation
 {
-    //! This component requires a box shape component that defines a world space to collect geometry from
-    //! static physical colliders present within the bounds of a shape component on the same entity.
-    //!
-    //! @note You can provide your implementation of collecting geometry instead of this component.
-    //!       If you do, in @GetProvidedServices specify AZ_CRC_CE("RecastNavigationSurveyorService"),
-    //!       which is needed by @RecastNavigationMeshComponent.
+    //! Editor version of @RecastNavigationTiledSurveyorComponent
     class EditorRecastNavigationTiledSurveyorComponent final
         : public AzToolsFramework::Components::EditorComponentBase
     {
@@ -31,9 +26,11 @@ namespace RecastNavigation
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-        // EditorComponentBase interface implementation
+        //! EditorComponentBase interface implementation
+        //! @{
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+        //! @}
     };
 } // namespace RecastNavigation

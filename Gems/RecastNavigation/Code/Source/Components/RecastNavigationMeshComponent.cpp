@@ -9,11 +9,8 @@
 #include "RecastNavigationMeshComponent.h"
 
 #include <DetourDebugDraw.h>
-#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RecastNavigation/RecastNavigationSurveyorBus.h>
-
-#pragma optimize("", off)
 
 namespace RecastNavigation
 {
@@ -40,10 +37,8 @@ namespace RecastNavigation
             behaviorContext->EBus<RecastNavigationMeshRequestBus>("RecastNavigationMeshRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "navigation")
-                ->Attribute(AZ::Script::Attributes::Category, "Navigation")
-                ->Event("UpdateNavigationMesh", &RecastNavigationMeshRequests::UpdateNavigationMesh)
-                ->Event("FindPathToEntity", &RecastNavigationMeshRequests::FindPathToEntity)
-                ->Event("FindPathToPosition", &RecastNavigationMeshRequests::FindPathToPosition)
+                ->Attribute(AZ::Script::Attributes::Category, "Recast Navigation")
+                ->Event("UpdateNavigationMesh", &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted)
                 ;
 
             behaviorContext->Class<RecastNavigationMeshComponent>()->RequestBus("RecastNavigationMeshRequestBus");
@@ -53,7 +48,7 @@ namespace RecastNavigation
         }
     }
 
-    void RecastNavigationMeshComponent::UpdateNavigationMesh()
+    void RecastNavigationMeshComponent::UpdateNavigationMeshBlockUntilCompleted()
     {
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
 
@@ -81,100 +76,10 @@ namespace RecastNavigation
 
         RecastNavigationMeshNotificationBus::Broadcast(&RecastNavigationMeshNotifications::OnNavigationMeshUpdated, GetEntityId());
     }
-
-    AZStd::vector<AZ::Vector3> RecastNavigationMeshComponent::FindPathToEntity(AZ::EntityId fromEntity, AZ::EntityId toEntity)
-    {
-        if (fromEntity.IsValid() && toEntity.IsValid())
-        {
-            AZ::Vector3 start = AZ::Vector3::CreateZero(), end = AZ::Vector3::CreateZero();
-            AZ::TransformBus::EventResult(start, fromEntity, &AZ::TransformBus::Events::GetWorldTranslation);
-            AZ::TransformBus::EventResult(end, toEntity, &AZ::TransformBus::Events::GetWorldTranslation);
-
-            return FindPathToPosition(start, end);
-        }
-
-        return {};
-    }
-
-    AZStd::vector<AZ::Vector3> RecastNavigationMeshComponent::FindPathToPosition(const AZ::Vector3& fromWorldPosition, const AZ::Vector3& targetWorldPosition)
-    {
-        if (!m_navMesh || !m_navQuery)
-        {
-            return {};
-        }
-
-        AZStd::vector<AZ::Vector3> pathPoints;
-        RecastVector3 startRecast{ fromWorldPosition }, endRecast{ targetWorldPosition };
-        constexpr float halfExtents[3] = { 3.F, 3., 3 };
-
-        dtPolyRef startPoly = 0, endPoly = 0;
-
-        RecastVector3 nearestStartPoint, nearestEndPoint;
-
-        const dtQueryFilter filter;
-
-        dtStatus result = m_navQuery->findNearestPoly(startRecast.GetData(), halfExtents, &filter, &startPoly, nearestStartPoint.GetData());
-        if (dtStatusFailed(result))
-        {
-            return {};
-        }
-
-        result = m_navQuery->findNearestPoly(endRecast.GetData(), halfExtents, &filter, &endPoly, nearestEndPoint.GetData());
-        if (dtStatusFailed(result))
-        {
-            return {};
-        }
-
-        constexpr int maxPathLength = 100;
-        dtPolyRef path[maxPathLength] = {};
-        int pathLength = 0;
-
-        // find an approximate path
-        result = m_navQuery->findPath(startPoly, endPoly, nearestStartPoint.GetData(), nearestEndPoint.GetData(), &filter, path, &pathLength, maxPathLength);
-        if (dtStatusFailed(result))
-        {
-            return {};
-        }
-
-        constexpr int maxDetailedPathLength = 100;
-        RecastVector3 detailedPath[maxDetailedPathLength] = {};
-        AZ::u8 detailedPathFlags[maxDetailedPathLength] = {};
-        dtPolyRef detailedPolyPathRefs[maxDetailedPathLength] = {};
-        int detailedPathCount = 0;
-
-        result = m_navQuery->findStraightPath(startRecast.GetData(), endRecast.GetData(), path, pathLength, detailedPath[0].GetData(), detailedPathFlags, detailedPolyPathRefs,
-            &detailedPathCount, maxDetailedPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
-        if (dtStatusFailed(result))
-        {
-            return {};
-        }
-
-        for (int i = 0; i < detailedPathCount; ++i)
-        {
-            pathPoints.push_back(detailedPath[i].AsVector3());
-        }
-
-        return pathPoints;
-    }
-
+    
     void RecastNavigationMeshComponent::Activate()
     {
         m_context = AZStd::make_unique<RecastCustomContext>();
-
-        AZ::Vector3 position = AZ::Vector3::CreateZero();
-        AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
-
-        RecastNavigationMeshRequestBus::Handler::BusConnect(GetEntityId());
-
-        bool usingTiledSurveyor = false;
-        RecastNavigationSurveyorRequestBus::EventResult(usingTiledSurveyor, GetEntityId(), &RecastNavigationSurveyorRequests::IsTiled);
-        if (!usingTiledSurveyor)
-        {
-            // We are using a non-tiled surveyor. Force the tile to cover the entire area.
-            AZ::Aabb entireVolume = AZ::Aabb::CreateNull();
-            RecastNavigationSurveyorRequestBus::EventResult(entireVolume, GetEntityId(), &RecastNavigationSurveyorRequests::GetWorldBounds);
-            m_meshConfig.m_tileSize = AZStd::max(entireVolume.GetExtents().GetX(), entireVolume.GetExtents().GetY());
-        }
 
         CreateNavigationMesh(GetEntityId(), m_meshConfig.m_tileSize);
 
@@ -182,6 +87,8 @@ namespace RecastNavigation
         {
             m_tickEvent.Enqueue(AZ::TimeMs{ 0 }, true);
         }
+
+        RecastNavigationMeshRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void RecastNavigationMeshComponent::Deactivate()
@@ -195,7 +102,7 @@ namespace RecastNavigation
         RecastNavigationMeshRequestBus::Handler::BusDisconnect();
     }
 
-    void RecastNavigationMeshComponent::OnTick()
+    void RecastNavigationMeshComponent::OnDebugDrawTick()
     {
         if (!m_navMesh)
         {
@@ -208,5 +115,3 @@ namespace RecastNavigation
         }
     }
 } // namespace RecastNavigation
-
-#pragma optimize("", on)

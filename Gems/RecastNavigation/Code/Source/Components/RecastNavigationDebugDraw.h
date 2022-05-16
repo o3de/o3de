@@ -42,7 +42,7 @@ namespace RecastNavigation
 
         void AddVertex(float x, float y, float z, unsigned int color);
 
-        //! Debug draw is quite noisy with lines, disabling them by default.
+        //! Recast debug draw is quite noisy with lines, disabling them by default.
         bool m_drawLines = false;
     };
 } // namespace RecastNavigation

@@ -7,7 +7,7 @@
  */
 
 #pragma once
-#include <AzCore/RTTI/ReflectContext.h>
+
 #include <AzCore/RTTI/RTTI.h>
 
 namespace RecastNavigation

@@ -18,8 +18,7 @@ namespace RecastNavigation
 
             serialize->Class<EditorRecastNavigationMeshConfig>()
                 ->Field("Draw Mesh", &Self::m_showNavigationMesh)
-                ->Version(1)
-                ;
+                ->Version(1);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
@@ -30,8 +29,7 @@ namespace RecastNavigation
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(nullptr, &Self::m_showNavigationMesh, "Draw Mesh",
-                        "Draw the debug view of mesh in Editor viewport")
-                    ;
+                        "Draw the debug view of mesh in Editor viewport");
             }
         }
     }

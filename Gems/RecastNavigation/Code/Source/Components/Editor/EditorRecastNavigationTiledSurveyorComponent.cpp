@@ -24,7 +24,7 @@ namespace RecastNavigation
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
                 ec->Class<EditorRecastNavigationTiledSurveyorComponent>("Recast Navigation Tiled Surveyor",
-                    "[Collects the geometry for navigation mesh within the area defined by a shape component]")
+                    "[Collects triangle geometry for navigation mesh within the area defined by a shape component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -47,7 +47,7 @@ namespace RecastNavigation
 
     void EditorRecastNavigationTiledSurveyorComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC_CE("BoxShapeService"));
+        required.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
     
     void EditorRecastNavigationTiledSurveyorComponent::Activate()

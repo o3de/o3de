@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/RecastNavigation/DetourNavigationBus.h
     Include/RecastNavigation/RecastNavigationMeshBus.h
     Include/RecastNavigation/RecastNavigationSurveyorBus.h
 )

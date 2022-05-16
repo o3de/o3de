@@ -13,6 +13,7 @@
 
 namespace RecastNavigation
 {
+    //! Editor-specific configuration of a navigation mesh. Primarily debug visualization.
     class EditorRecastNavigationMeshConfig final
     {
     public:
@@ -20,6 +21,7 @@ namespace RecastNavigation
 
         static void Reflect(AZ::ReflectContext* context);
 
+        //! If true, draw the navigation mesh.
         bool m_showNavigationMesh = true;
     };
 

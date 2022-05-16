@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    Source/Components/Editor/EditorDetourNavigationComponent.cpp
+    Source/Components/Editor/EditorDetourNavigationComponent.h
     Source/Components/Editor/EditorRecastNavigationMeshComponent.cpp
     Source/Components/Editor/EditorRecastNavigationMeshComponent.h
     Source/Components/Editor/EditorRecastNavigationTiledSurveyorComponent.cpp
