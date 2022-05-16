@@ -51,8 +51,8 @@ namespace RecastNavigation
         config.walkableRadius = static_cast<int>(ceilf(meshConfig.m_agentRadius / config.cs));
         config.maxEdgeLen = static_cast<int>(meshConfig.m_edgeMaxLen / meshConfig.m_cellSize);
         config.maxSimplificationError = meshConfig.m_edgeMaxError;
-        config.minRegionArea = rcSqr(meshConfig.m_regionMinSize);		// Note: area = size*size
-        config.mergeRegionArea = rcSqr(meshConfig.m_regionMergeSize);	// Note: area = size*size
+        config.minRegionArea = rcSqr(meshConfig.m_regionMinSize);       // Note: area = size*size
+        config.mergeRegionArea = rcSqr(meshConfig.m_regionMergeSize);   // Note: area = size*size
         config.maxVertsPerPoly = meshConfig.m_maxVerticesPerPoly;
         config.detailSampleDist = meshConfig.m_detailSampleDist < 0.9f ? 0 : meshConfig.m_cellSize * meshConfig.m_detailSampleDist;
         config.detailSampleMaxError = meshConfig.m_cellHeight * meshConfig.m_detailSampleMaxError;
