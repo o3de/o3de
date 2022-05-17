@@ -134,6 +134,7 @@ namespace AzNetworking
         bool Serialize(uint64_t& value, const char* name, uint64_t minValue, uint64_t maxValue) override;
         bool Serialize(float& value, const char* name, float minValue, float maxValue) override;
         bool Serialize(double& value, const char* name, double minValue, double maxValue) override;
+        bool SerializeBytes(uint8_t* buffer, uint32_t bufferCapacity, bool isString, uint32_t& outSize, const char* name) override;
         bool BeginObject(const char* name) override;
         bool EndObject(const char* name) override;
 
