@@ -5,10 +5,13 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import math
+
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.utils import TestHelper as helper
+from editor_python_test_tools.pyside_utils import wait_for_condition
 
 import azlmbr.bus as bus
 import azlmbr.editor as editor
@@ -235,3 +238,31 @@ def validate_undo_redo_on_prefab_creation(prefab_instance, original_parent_id):
     for child_entity in entities_found:
         assert EditorEntity(child_entity).get_parent_id() == prefab_instance.container_entity.id, \
             "Prefab parent was not restored on Redo."
+
+
+def validate_spawned_entity_transform(entity, expected_position, expected_rotation, expected_scale):
+    """
+    This is a helper function which helps validate the transform of entities spawned via the spawnable API
+    :param entity: The spawned entity on which to validate transform values
+    :param expected_position: The expected world position of the spawned entity
+    :param expected_rotation: The expected world rotation of the spawned entity
+    :param expected_scale: The expected local scale of the spawned entity
+    """
+    spawned_entity_transform = entity.get_world_translation()
+    spawned_entity_rotation = entity.get_world_rotation()
+
+    x_rotation_success = math.isclose(spawned_entity_rotation.x, expected_rotation.x,
+                                      rel_tol=1e-5)
+    y_rotation_success = math.isclose(spawned_entity_rotation.y, expected_rotation.y,
+                                      rel_tol=1e-5)
+    z_rotation_success = math.isclose(spawned_entity_rotation.z, expected_rotation.z,
+                                      rel_tol=1e-5)
+    rotation_success = x_rotation_success and y_rotation_success and z_rotation_success
+    spawned_entity_scale_success = wait_for_condition(lambda: entity.get_local_uniform_scale() == expected_scale, 3.0)
+
+    assert spawned_entity_transform == expected_position, \
+        f"Entity was not spawned in the position expected: Found {spawned_entity_transform}, expected {expected_position}"
+    assert rotation_success, \
+        f"Entity was not spawned with the rotation expected: Found {spawned_entity_rotation}, expected {expected_rotation}"
+    assert spawned_entity_scale_success, \
+        f"Entity was not spawned with the scale expected: Found {entity.get_local_uniform_scale()}, expected {expected_scale}"
