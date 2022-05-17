@@ -262,6 +262,34 @@ AzAssetBrowserRequestHandler::~AzAssetBrowserRequestHandler()
     AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
 }
 
+void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string fullFilePath)
+{
+    using namespace AzToolsFramework::AssetBrowser;
+
+    AZStd::string folderPath;
+
+    AzFramework::StringFunc::Path::GetFolderPath(fullFilePath.c_str(), folderPath);
+
+    AZ::Uuid sourceID = AZ::Uuid::CreateNull();
+    SourceFileCreatorList creators;
+    AssetBrowserInteractionNotificationBus::Broadcast(
+        &AssetBrowserInteractionNotificationBus::Events::AddSourceFileCreators, folderPath.c_str(), sourceID, creators);
+    if (!creators.empty())
+    {
+        QMenu* createMenu = menu->addMenu(QObject::tr("Create"));
+        for (const SourceFileCreatorDetails& creatorDetails : creators)
+        {
+            if (creatorDetails.m_creator)
+            {
+                createMenu->addAction(creatorDetails.m_iconToUse, QObject::tr(creatorDetails.m_displayText.c_str()), [sourceID, fullFilePath, creatorDetails]()
+                {
+                    creatorDetails.m_creator(fullFilePath.c_str(), sourceID);
+                });
+            }
+        }
+    }
+}
+
 void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
 {
     using namespace AzToolsFramework::AssetBrowser;
@@ -461,6 +489,8 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         fullFilePath = entry->GetFullPath();
 
         CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
+
+        AddCreateMenu(menu, fullFilePath);
     }
     break;
     default:
@@ -688,6 +718,10 @@ void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFi
             break; // no need to proceed further
         }
     }
+}
+
+void AzAssetBrowserRequestHandler::AddSourceFileCreators([[maybe_unused]] const char* fullSourceFileName, [[maybe_unused]] const AZ::Uuid& sourceUUID, [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
+{
 }
 
 void AzAssetBrowserRequestHandler::OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled)
