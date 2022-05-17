@@ -71,7 +71,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 				lightOnPlane = normalize(lightOnPlane);
 				float lightViewCosAngle = lightOnPlane.x;
 
-				const bool intersectGround = raySphereIntersectNearest(cameraPlanetPosKm, worldDir, float3(0, 0, 0), Atmosphere.BottomRadius) >= 0.0f;
+				const bool intersectGround = RaySphereIntersectNearest(cameraPlanetPosKm, worldDir, float3(0, 0, 0), Atmosphere.BottomRadius) >= 0.0f;
 
 				SkyViewLutParamsToUv(Atmosphere, intersectGround, viewZenithCosAngle, lightViewCosAngle, viewHeight, uv);
 
@@ -93,7 +93,6 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 		// Ray is not intersecting the atmosphere
 		output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0);
 		output.m_reflection = output.m_luminance;
-		//output.m_reflection = float4(1.0,worldDepthKm,worldDepthKm,worldDepthKm);
 		return output;
 	}
 
@@ -102,13 +101,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 	if (depth > 0.0f)
 	{
 		const float3 viewToPositionKm = viewToPosition * worldScale;
-		// the camera was moved so we start tracing at the atmosphere start
-		//const float3 offset = cameraPlanetPosKm - cameraOriginalPosKm;
-		//maxTraceDepth = min(length(viewToPositionKm - offset), maxTraceDepth);
 		maxTraceDepth = min(length(viewToPositionKm) - distanceToTop, maxTraceDepth);
-
-		//maxTraceDepth = min(length(positionWS.xyz * worldScale - (cameraPlanetPosKm + float3(0.0, 0.0, -Atmosphere.BottomRadius))), maxTraceDepth);
-		//maxTraceDepth = length(cameraPlanetPosKm - oldPos);
 	}
 
 	const bool ground = true; 
@@ -122,8 +115,6 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 
 	output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0 - Transmittance);
 	output.m_reflection = output.m_luminance;
-	//output.m_reflection = float4(maxTraceDepth,maxTraceDepth,maxTraceDepth,maxTraceDepth);
-	//output.m_reflection = float4(worldDepthKm,1.0,worldDepthKm,worldDepthKm);
 	return output;
 }
 

@@ -6,11 +6,10 @@
  *
  */
 
-#define ENABLE_ATMOSPHERE_SHADOWS 1
+// SkyViewLUT does not support shadows currently because it does not bind or sample the depth buffer
+#define ENABLE_ATMOSPHERE_SHADOWS 0
 
 #include <viewsrg.srgi>
-
-#include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <SkyAtmosphereCommon.azsli>
@@ -62,7 +61,7 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
 		return OUT;
 	}
 
-	const bool ground = false;
+	const bool ground = true;
 	const float sampleCountIni = 30;
 	const float depthBufferValue = -1.0;
 	const bool variablesampleCount = true;

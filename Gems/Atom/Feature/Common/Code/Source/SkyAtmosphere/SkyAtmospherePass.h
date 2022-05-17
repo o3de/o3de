@@ -12,7 +12,9 @@
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 namespace AZ::Render
 {
@@ -22,6 +24,7 @@ namespace AZ::Render
     //! of rendering the atmosphere resources and atmosphere
     class SkyAtmospherePass final
         : public RPI::ParentPass
+        , public RPI::ShaderReloadNotificationBus::MultiHandler
     {
         using Base = RPI::ParentPass;
         AZ_RPI_PASS(SkyAtmospherePass);
@@ -58,6 +61,7 @@ namespace AZ::Render
             AZ::Vector3 m_mieAbsorption = AZ::Vector3(0.004440f, 0.004440f, 0.004440f);
             AZ::Vector3 m_absorption = AZ::Vector3(0.000650f, 0.001881f, 0.000085f);
             AZ::Vector3 m_groundAlbedo = AZ::Vector3(0.0f, 0.0f, 0.0f);
+            bool m_shadowsEnabled = false;
         };
 
         void UpdateRenderPassSRG(const AtmosphereParams& params);
@@ -121,7 +125,13 @@ namespace AZ::Render
             float m_pad1 = 0.f;
         };
 
+        //! ShaderReloadNotificationBus
+        void OnShaderReinitialized(const RPI::Shader& shader) override;
+
         void InitializeConstants(AtmosphereGPUParams& atmosphereConstants);
+        void RegisterForShaderNotifications();
+        void BindLUTs();
+        void BuildShaderData();
 
         SkyAtmosphereFeatureProcessorInterface::AtmosphereId m_atmosphereId;
 
@@ -130,13 +140,20 @@ namespace AZ::Render
 
         RHI::ShaderInputNameIndex m_constantsIndexName = "m_constants";
 
-        struct PassSrgData
+        struct PassData
         {
-            RHI::ShaderInputConstantIndex index;
-            Data::Instance<RPI::ShaderResourceGroup> srg;
+            RHI::ShaderInputConstantIndex m_index;
+            Data::Instance<RPI::ShaderResourceGroup> m_srg;
+            Data::Instance<RPI::Shader> m_shader;
+            RPI::ShaderOptionGroup m_shaderOptionGroup;
         };
-        AZStd::vector<PassSrgData> m_passSrgData;
+        AZStd::vector<PassData> m_passData;
+        RPI::Ptr<RPI::Pass> m_skyTransmittanceLUTPass = nullptr;
 
         AtmosphereGPUParams m_constants;
+
+        AZ::Name o_enableShadows;
+        AZ::Name o_enableFastSky;
+        AZ::Name o_enableSun;
     };
 } // namespace AZ::Render

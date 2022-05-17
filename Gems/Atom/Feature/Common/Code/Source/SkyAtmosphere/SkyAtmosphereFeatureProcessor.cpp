@@ -200,6 +200,13 @@ namespace AZ::Render
         m_passNeedsUpdate = true;
     }
 
+    void SkyAtmosphereFeatureProcessor::SetShadowsEnabled(AtmosphereId id, bool enabled)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_shadowsEnabled = enabled;
+        m_passNeedsUpdate = true;
+    }
+
     void SkyAtmosphereFeatureProcessor::SetSunEnabled(AtmosphereId id, bool enabled)
     {
         auto& params = m_params.GetElement(id.GetIndex());
@@ -272,6 +279,9 @@ namespace AZ::Render
             {
                 auto& params = m_params.GetElement(id.GetIndex());
                 params.m_lutUpdateRequired = true;
+
+                // make sure all removed atmosphere passes are restored
+                InitializeAtmosphere(id);
             }
         }
 

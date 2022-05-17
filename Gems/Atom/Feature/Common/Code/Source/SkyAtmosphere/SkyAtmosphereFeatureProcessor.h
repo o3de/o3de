@@ -54,6 +54,7 @@ namespace AZ::Render
         void SetPlanetRadius(AtmosphereId id, float radius) override;
         void SetRayleighScattering(AtmosphereId id, const AZ::Vector3& scattering) override;
         void SetRayleighExpDistribution(AtmosphereId id, float distribution) override;
+        void SetShadowsEnabled(AtmosphereId id, bool enabled) override;
         void SetSunEnabled(AtmosphereId id, bool enabled) override;
         void SetSunDirection(AtmosphereId id, const Vector3& direction) override;
         void SetSunColor(AtmosphereId id, const Color& color) override;

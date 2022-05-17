@@ -1,18 +1,26 @@
-//#pragma once
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
 
 #define ENABLE_TRANSMISSION 0
 #define ENABLE_AREA_LIGHTS 0
 #define ENABLE_CLEAR_COAT 0
 
-#if 1
-#define USE_CornetteShanks
-#endif
+#define USE_CORNETTESHANKS 1 // use Cornette Shanks mie phase function
+#define USE_NON_LINEAR_SKY_LUT 1 // improve precision at sunset angles
+#define USE_MULTI_SCATTERING_POWER_SERIES 1
+#define USE_MULTI_SCATTERING_APPROX 0
 
-#define PLANET_RADIUS_OFFSET 0.01f
-//#define PLANET_RADIUS_OFFSET 0.002f
+#define PLANET_RADIUS_OFFSET_KM 0.01f // offset when starting raycast to avoid artifacts 
 
-#define AP_SLICE_COUNT 32.0f
-#define AP_KM_PER_SLICE 4.0f
+option bool o_enableFastSky = true;
+option bool o_enableShadows = false;
 
 #include <Atom/Features/SrgSemantics.azsli>
 
@@ -53,10 +61,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         AddressV = Clamp;
         AddressW = Clamp;
     };
-
-	//
-	// From AtmosphereParameters
-	//
 
 	struct Constants 
 	{
@@ -107,7 +111,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 #include <Atom/RPI/Math.azsli>
 
 #if ENABLE_ATMOSPHERE_SHADOWS
-#include <Atom/Features/PBR/LightingOptions.azsli>
+//#include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #endif // ENABLE_ATMOSPHERE_SHADOWS
 
@@ -178,13 +182,15 @@ AtmosphereParameters GetAtmosphereParameters()
 	return Parameters;
 }
 
+// TODO: replace with Math.azsli RaySphereClosestHitWS() if fast/accurate enough
+
 // - r0: ray origin
 // - rd: normalized ray direction
 // - s0: sphere center
 // - sR: sphere radius
-// - Returns distance from r0 to first intersecion with sphere,
+// - Returns distance from r0 to first intersection with sphere,
 //   or -1.0 if no intersection.
-float raySphereIntersectNearest(float3 r0, float3 rd, float3 s0, float sR)
+float RaySphereIntersectNearest(float3 r0, float3 rd, float3 s0, float sR)
 {
 	float a = dot(rd, rd);
 	float3 s0_r0 = r0 - s0;
@@ -234,9 +240,9 @@ float CornetteShanksMiePhaseFunction(float g, float cosTheta)
 	return k * (1.0 + cosTheta * cosTheta) / pow(1.0 + g * g - 2.0 * g * -cosTheta, 1.5);
 }
 
-float hgPhase(float g, float cosTheta)
+float HgPhase(float g, float cosTheta)
 {
-#ifdef USE_CornetteShanks
+#if USE_CORNETTESHANKS
 	return CornetteShanksMiePhaseFunction(g, cosTheta);
 #else
 	// Reference implementation (i.e. not schlick approximation). 
@@ -249,15 +255,15 @@ float hgPhase(float g, float cosTheta)
 
 float RayleighPhase(float cosTheta)
 {
-	float factor = 3.0f / (16.0f * PI);
+	const float factor = 3.0f / (16.0f * PI);
 	return factor * (1.0f + cosTheta * cosTheta);
 }
 
-float getAlbedo(float scattering, float extinction)
+float GetAlbedo(float scattering, float extinction)
 {
 	return scattering / max(0.001, extinction);
 }
-float3 getAlbedo(float3 scattering, float3 extinction)
+float3 GetAlbedo(float3 scattering, float3 extinction)
 {
 	return scattering / max(0.001, extinction);
 }
@@ -283,7 +289,7 @@ struct MediumSampleRGB
 	float3 albedo;
 };
 
-MediumSampleRGB sampleMediumRGB(in float3 WorldPos, in AtmosphereParameters Atmosphere)
+MediumSampleRGB SampleMediumRGB(in float3 WorldPos, in AtmosphereParameters Atmosphere)
 {
 	const float viewHeight = length(WorldPos) - Atmosphere.BottomRadius;
 
@@ -310,19 +316,18 @@ MediumSampleRGB sampleMediumRGB(in float3 WorldPos, in AtmosphereParameters Atmo
 	s.scattering = s.scatteringMie + s.scatteringRay + s.scatteringOzo;
 	s.absorption = s.absorptionMie + s.absorptionRay + s.absorptionOzo;
 	s.extinction = s.extinctionMie + s.extinctionRay + s.extinctionOzo;
-	s.albedo = getAlbedo(s.scattering, s.extinction);
+	s.albedo = GetAlbedo(s.scattering, s.extinction);
 
 	return s;
 }
 
-#define NONLINEARSKYVIEWLUT 1
-void UvToSkyViewLutParams(AtmosphereParameters Atmosphere, out float viewZenithCosAngle, out float lightViewCosAngle, in float viewHeight, in float2 uv)
+void UvToSkyViewLutParams(in AtmosphereParameters Atmosphere, out float viewZenithCosAngle, out float lightViewCosAngle, in float viewHeight, in float2 uv)
 {
 	// Constrain uvs to valid sub texel range (avoid zenith derivative issue making LUT usage visible)
 	uv = float2(fromSubUvsToUnit(uv.x, 192.0f), fromSubUvsToUnit(uv.y, 108.0f));
 
 	float Vhorizon = sqrt(viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius);
-	float cosBeta = Vhorizon / viewHeight;				// GroundToHorizonCos
+	float cosBeta = Vhorizon / viewHeight;
 	float Beta = acos(cosBeta);
 	float zenithHorizonAngle = PI - Beta;
 
@@ -330,7 +335,7 @@ void UvToSkyViewLutParams(AtmosphereParameters Atmosphere, out float viewZenithC
 	{
 		float coord = 2.0*uv.y;
 		coord = 1.0 - coord;
-#if NONLINEARSKYVIEWLUT
+#if USE_NON_LINEAR_SKY_LUT
 		coord *= coord;
 #endif
 		coord = 1.0 - coord;
@@ -339,7 +344,7 @@ void UvToSkyViewLutParams(AtmosphereParameters Atmosphere, out float viewZenithC
 	else
 	{
 		float coord = uv.y*2.0 - 1.0;
-#if NONLINEARSKYVIEWLUT
+#if USE_NON_LINEAR_SKY_LUT
 		coord *= coord;
 #endif
 		viewZenithCosAngle = cos(zenithHorizonAngle + Beta * coord);
@@ -353,7 +358,7 @@ void UvToSkyViewLutParams(AtmosphereParameters Atmosphere, out float viewZenithC
 void SkyViewLutParamsToUv(AtmosphereParameters Atmosphere, in bool intersectGround, in float viewZenithCosAngle, in float lightViewCosAngle, in float viewHeight, out float2 uv)
 {
 	float Vhorizon = sqrt(viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius);
-	float cosBeta = Vhorizon / viewHeight;				// GroundToHorizonCos
+	float cosBeta = Vhorizon / viewHeight;
 	float Beta = acos(cosBeta);
 	float ZenithHorizonAngle = PI - Beta;
 
@@ -361,7 +366,7 @@ void SkyViewLutParamsToUv(AtmosphereParameters Atmosphere, in bool intersectGrou
 	{
 		float coord = acos(viewZenithCosAngle) / ZenithHorizonAngle;
 		coord = 1.0 - coord;
-#if NONLINEARSKYVIEWLUT
+#if USE_NON_LINEAR_SKY_LUT
 		coord = sqrt(coord);
 #endif
 		coord = 1.0 - coord;
@@ -370,7 +375,7 @@ void SkyViewLutParamsToUv(AtmosphereParameters Atmosphere, in bool intersectGrou
 	else
 	{
 		float coord = (acos(viewZenithCosAngle) - ZenithHorizonAngle) / Beta;
-#if NONLINEARSKYVIEWLUT
+#if USE_NON_LINEAR_SKY_LUT
 		coord = sqrt(coord);
 #endif
 		uv.y = coord * 0.5f + 0.5f;
@@ -391,11 +396,11 @@ bool MoveToTopAtmosphere(inout float3 WorldPos, inout float distanceToTop, in fl
 	const float viewHeight = length(WorldPos);
 	if (viewHeight > AtmosphereTopRadius)
 	{
-		distanceToTop = raySphereIntersectNearest(WorldPos, WorldDir, float3(0.0f, 0.0f, 0.0f), AtmosphereTopRadius);
+		distanceToTop = RaySphereIntersectNearest(WorldPos, WorldDir, float3(0.0f, 0.0f, 0.0f), AtmosphereTopRadius);
 		if (distanceToTop >= 0.0f && distanceToTop < depth)
 		{
-			const float3 UpVector = WorldPos / viewHeight;
-			const float3 UpOffset = UpVector * -PLANET_RADIUS_OFFSET;
+			const float3 upVector = WorldPos / viewHeight;
+			const float3 UpOffset = upVector * -PLANET_RADIUS_OFFSET_KM;
 			WorldPos = WorldPos + WorldDir * distanceToTop + UpOffset;
 		}
 		else
@@ -412,11 +417,10 @@ float3 GetSunLuminance(float3 WorldPos, float3 WorldDir, float PlanetRadius)
 	if(PassSrg::m_constants.m_sunEnabled > 0)
 	{
 		const float angle = dot(WorldDir, PassSrg::m_constants.m_sunDirection);
-		//const float sunAngle = cos(0.5 * 0.505 * 3.14159 / 180.0);
 		const float sunAngle = cos(0.5 * (PassSrg::m_constants.m_sunRadiusFactor + PassSrg::m_constants.m_sunFalloffFactor) * 3.14159 / 180.0);
 		if (angle > sunAngle)
 		{
-			float t = raySphereIntersectNearest(WorldPos, WorldDir, float3(0.0f, 0.0f, 0.0f), PlanetRadius);
+			float t = RaySphereIntersectNearest(WorldPos, WorldDir, float3(0.0f, 0.0f, 0.0f), PlanetRadius);
 			if (t < 0.0f) // no intersection with surface
 			{
 				const float d = (1.0 - angle) / (1.0 - sunAngle) ;
@@ -426,7 +430,6 @@ float3 GetSunLuminance(float3 WorldPos, float3 WorldDir, float PlanetRadius)
 	}
 	return 0;
 }
-
 
 struct SingleScatteringResult
 {
@@ -448,8 +451,8 @@ SingleScatteringResult IntegrateScatteredLuminance(
 
 	// Compute next intersection with atmosphere or ground 
 	float3 earthO = float3(0.0f, 0.0f, 0.0f);
-	float tBottom = raySphereIntersectNearest(WorldPos, WorldDir, earthO, Atmosphere.BottomRadius);
-	float tTop = raySphereIntersectNearest(WorldPos, WorldDir, earthO, Atmosphere.TopRadius);
+	float tBottom = RaySphereIntersectNearest(WorldPos, WorldDir, earthO, Atmosphere.BottomRadius);
+	float tTop = RaySphereIntersectNearest(WorldPos, WorldDir, earthO, Atmosphere.TopRadius);
 	float tMax = 0.0f;
 	if (tBottom < 0.0f)
 	{
@@ -470,23 +473,25 @@ SingleScatteringResult IntegrateScatteredLuminance(
 			// when in the sky looking down we hit the bottom and the top
 			// but we just want the distance to the bottom
 			tMax = min(tTop, tBottom);
-			//if(tTop > tBottom)
-			//{
-			//	result.L.x = 1.0;
-			//	return result;
-			//}
 		}
 	}
 
 	tMax = min(tMax, tMaxMax);
 
-	// Sample count 
 	float SampleCount = SampleCountIni;
 	float SampleCountFloor = SampleCountIni;
 	float tMaxFloor = tMax;
 	if (VariableSampleCount)
 	{
-		SampleCount = lerp(PassSrg::m_constants.m_rayMarchMin, PassSrg::m_constants.m_rayMarchMax, saturate(tMax * 0.01));
+		// tMax which indicates the maximum distance we will trace is in kilometers
+		// if min rays = 4 and max rays = 14 (14 - 4 = 10 steps)
+		// if tMax is < 1Km then floor(1 * 0.01) = 0, so 4 ray segments
+		// if tMax is > 100Km then floor(100 * 0.01) = 1, so 14 ray segments
+
+		// use max samples for anything >= atmosphere height 
+		const float sampleRange = 1.0  / (Atmosphere.TopRadius - Atmosphere.BottomRadius);
+
+		SampleCount = lerp(PassSrg::m_constants.m_rayMarchMin, PassSrg::m_constants.m_rayMarchMax, saturate(tMax * sampleRange));
 		SampleCountFloor = floor(SampleCount);
 		tMaxFloor = tMax * SampleCountFloor / SampleCount;	// rescale tMax to map to the last entire step segment.
 	}
@@ -496,16 +501,15 @@ SingleScatteringResult IntegrateScatteredLuminance(
 	const float uniformPhase = 1.0 / (4.0 * PI);
 	const float3 wi = SunDir;
 	const float3 wo = WorldDir;
-	float cosTheta = dot(wi, wo);
-	float MiePhaseValue = hgPhase(Atmosphere.MiePhaseG, -cosTheta);	// mnegate cosTheta because due to WorldDir being a "in" direction. 
-	float RayleighPhaseValue = RayleighPhase(cosTheta);
-
-	float3 globalL = PassSrg::m_constants.m_luminanceFactor;
+	const float cosTheta = dot(wi, wo);
+	const float MiePhaseValue = HgPhase(Atmosphere.MiePhaseG, -cosTheta);	// mnegate cosTheta because due to WorldDir being a "in" direction. 
+	const float RayleighPhaseValue = RayleighPhase(cosTheta);
+	const float3 globalL = PassSrg::m_constants.m_luminanceFactor;
 
 	// Ray march the atmosphere to integrate optical depth
 	float3 L = 0.0f;
 	float3 throughput = 1.0;
-	float3 OpticalDepth = 0.0;
+	float3 opticalDepth = 0.0;
 	float t = 0.0f;
 	float tPrev = 0.0;
 	const float SampleSegmentT = 0.3f;
@@ -524,20 +528,18 @@ SingleScatteringResult IntegrateScatteredLuminance(
 			if (t1 > 1.0)
 			{
 				t1 = tMax;
-				//	t1 = tMaxFloor;	// this reveal depth slices
+				//t1 = tMaxFloor;	// reveal depth slices
 			}
 			else
 			{
 				t1 = tMaxFloor * t1;
 			}
-			//t = t0 + (t1 - t0) * (whangHashNoise(pixPos.x, pixPos.y, gFrameId * 1920 * 1080)); // With dithering required to hide some sampling artefact relying on TAA later? This may even allow volumetric shadow?
 			t = t0 + (t1 - t0) * SampleSegmentT;
 			dt = t1 - t0;
 		}
 		else
 		{
-			//t = tMax * (s + SampleSegmentT) / SampleCount;
-			// Exact difference, important for accuracy of multiple scattering
+			// use xact difference, important for accuracy of multiple scattering
 			float NewT = tMax * (s + SampleSegmentT) / SampleCount;
 			dt = NewT - t;
 			t = NewT;
@@ -545,135 +547,119 @@ SingleScatteringResult IntegrateScatteredLuminance(
 		float3 P = WorldPos + t * WorldDir;
 
 
-		MediumSampleRGB medium = sampleMediumRGB(P, Atmosphere);
-		const float3 SampleOpticalDepth = medium.extinction * dt;
-		const float3 SampleTransmittance = exp(-SampleOpticalDepth);
-		OpticalDepth += SampleOpticalDepth;
+		MediumSampleRGB medium = SampleMediumRGB(P, Atmosphere);
+		const float3 sampleOpticalDepth = medium.extinction * dt;
+		const float3 sampleTransmittance = exp(-sampleOpticalDepth);
+		opticalDepth += sampleOpticalDepth;
 
 		float pHeight = length(P);
-		const float3 UpVector = P / pHeight;
-		float SunZenithCosAngle = dot(SunDir, UpVector);
+		const float3 upVector = P / pHeight;
+		float sunZenithCosAngle = dot(SunDir, upVector);
 		float2 uv;
-		LutTransmittanceParamsToUv(Atmosphere, pHeight, SunZenithCosAngle, uv);
-		float3 TransmittanceToSun = PassSrg::m_transmittanceLUT.SampleLevel(PassSrg::samplerLinearClamp, uv, 0).rgb;
+		LutTransmittanceParamsToUv(Atmosphere, pHeight, sunZenithCosAngle, uv);
+		float3 transmittanceToSun = PassSrg::m_transmittanceLUT.SampleLevel(PassSrg::samplerLinearClamp, uv, 0).rgb;
 
-		float3 PhaseTimesScattering;
+		float3 phaseTimesScattering;
 		if (MieRayPhase)
 		{
-			PhaseTimesScattering = medium.scatteringMie * MiePhaseValue + medium.scatteringRay * RayleighPhaseValue;
+			phaseTimesScattering = medium.scatteringMie * MiePhaseValue + medium.scatteringRay * RayleighPhaseValue;
 		}
 		else
 		{
-			PhaseTimesScattering = medium.scattering * uniformPhase;
+			phaseTimesScattering = medium.scattering * uniformPhase;
 		}
 
 		// Earth shadow 
-		float tEarth = raySphereIntersectNearest(P, SunDir, earthO + PLANET_RADIUS_OFFSET * UpVector, Atmosphere.BottomRadius);
-		float earthShadow = tEarth >= 0.0f ? 0.0f : 1.0f;
+		const float tEarth = RaySphereIntersectNearest(P, SunDir, earthO + PLANET_RADIUS_OFFSET_KM * upVector, Atmosphere.BottomRadius);
+		const float earthShadow = tEarth >= 0.0f ? 0.0f : 1.0f;
 
 		// Dual scattering for multi scattering 
 		float3 multiScatteredLuminance = 0.0f;
-#if MULTISCATAPPROX_ENABLED
-		//multiScatteredLuminance = GetMultipleScattering(Atmosphere, medium.scattering, medium.extinction, P, SunZenithCosAngle);
+#if USE_MULTI_SCATTERING_APPROX
+		// TODO implement
+		multiScatteredLuminance = GetMultipleScattering(Atmosphere, medium.scattering, medium.extinction, P, sunZenithCosAngle);
 #endif
 
 		float shadow = 1.0f;
 
 #if ENABLE_ATMOSPHERE_SHADOWS
-		if (o_enableShadows && tEarth >= 0.0f)
-		//if (tEarth >= 0.0f)
+		if (o_enableShadows && earthShadow == 1.0f)
 		{
 			const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
             float3 shadowCoords[ViewSrg::MaxCascadeCount];
+			const float3 shadowWorldPosition = (P + Atmosphere.PlanetOrigin) * 1000.f;
 			DirectionalLightShadow::GetShadowCoords(
                 shadowIndex,
-                P, // this might be in km instead of m
-                UpVector,
+                shadowWorldPosition,
+                upVector,
                 shadowCoords);
 
 			DirectionalLightShadow::DebugInfo debugInfo;
 			shadow = DirectionalLightShadow::GetVisibility(
 				shadowIndex,
 				shadowCoords,
-				UpVector,
+				upVector,
 				debugInfo);
 		}
 #endif // ENABLE_ATMOSPHERE_SHADOWS
 
-		float3 S = globalL * (earthShadow * shadow * TransmittanceToSun * PhaseTimesScattering + multiScatteredLuminance * medium.scattering);
-		if(shadow < 1.f)
-		{
-			S.y = 1.f;
-		}
-		if(earthShadow < 1.f)
-		{
-			//S.x = 1.f;
-		}
+		float3 S = globalL * (earthShadow * shadow * transmittanceToSun * phaseTimesScattering + multiScatteredLuminance * medium.scattering);
 
 		// When using the power series to accumulate all scattering order, series r must be <1 for a series to converge.
 		// Under extreme coefficients, MultiScatAs1 can grow larger and thus result in broken visuals.
-		// The way to fix that is to use a proper analytical integration as proposed in slide 28 of http://www.frostbite.com/2015/08/physically-based-unified-volumetric-rendering-in-frostbite/
-		// However, it is possible to disable as it can also work using simple power series sum unroll up to 5th order. The rest of the orders has a really low contribution.
-#define MULTI_SCATTERING_POWER_SERIE 1
-
-#if MULTI_SCATTERING_POWER_SERIE==0
+		// The way to fix that is to use a proper analytical integration as proposed in slide 28 of 
+		// http://www.frostbite.com/2015/08/physically-based-unified-volumetric-rendering-in-frostbite/
+		// However, it is possible to disable as it can also work using simple power series sum unroll up to 5th order. 
+		// The rest of the orders have really low contributions.
+#if USE_MULTI_SCATTERING_POWER_SERIES
+		float3 MS = medium.scattering * 1;
+		float3 MSint = (MS - MS * sampleTransmittance) / medium.extinction;
+		result.MultiScatAs1 += throughput * MSint;
+#else
 		// 1 is the integration of luminance over the 4pi of a sphere, and assuming an isotropic phase function of 1.0/(4*PI)
 		result.MultiScatAs1 += throughput * medium.scattering * 1 * dt;
-#else
-		float3 MS = medium.scattering * 1;
-		float3 MSint = (MS - MS * SampleTransmittance) / medium.extinction;
-		result.MultiScatAs1 += throughput * MSint;
 #endif
 
 		// Evaluate input to multi scattering 
 		{
 			float3 newMS;
 
-			newMS = earthShadow * TransmittanceToSun * medium.scattering * uniformPhase * 1;
-			result.NewMultiScatStep0Out += throughput * (newMS - newMS * SampleTransmittance) / medium.extinction;
-			//	result.NewMultiScatStep0Out += SampleTransmittance * throughput * newMS * dt;
+			newMS = earthShadow * transmittanceToSun * medium.scattering * uniformPhase * 1;
+			result.NewMultiScatStep0Out += throughput * (newMS - newMS * sampleTransmittance) / medium.extinction;
 
 			newMS = medium.scattering * uniformPhase * multiScatteredLuminance;
-			result.NewMultiScatStep1Out += throughput * (newMS - newMS * SampleTransmittance) / medium.extinction;
-			//	result.NewMultiScatStep1Out += SampleTransmittance * throughput * newMS * dt;
+			result.NewMultiScatStep1Out += throughput * (newMS - newMS * sampleTransmittance) / medium.extinction;
 		}
 
-#if 0
-		L += throughput * S * dt;
-		throughput *= SampleTransmittance;
-#else
 		// See slide 28 at http://www.frostbite.com/2015/08/physically-based-unified-volumetric-rendering-in-frostbite/ 
-		float3 Sint = (S - S * SampleTransmittance) / medium.extinction;	// integrate along the current step segment 
-		L += throughput * Sint;														// accumulate and also take into account the transmittance from previous steps
-		throughput *= SampleTransmittance;
-#endif
+		// integrate along the current step segment
+		float3 Sint = (S - S * sampleTransmittance) / medium.extinction;	 
+
+		// accumulate and also take into account the transmittance from previous steps
+		L += throughput * Sint;														
+		throughput *= sampleTransmittance;
 
 		tPrev = t;
 	}
 
-	if (ground && tMax == tBottom && tBottom > 0.0)
+	if (ground && tMax == tBottom && tBottom > 0.0 && DepthBufferValue <= 0.0)
 	{
 		// Account for bounced light off the earth
-		float3 P = WorldPos + tBottom * WorldDir;
-		float pHeight = length(P);
+		float3 pos = WorldPos + tBottom * WorldDir;
+		float posHeight = length(pos);
 
-		const float3 UpVector = P / pHeight;
-		float SunZenithCosAngle = dot(SunDir, UpVector);
+		const float3 upVector = pos / posHeight;
+		float sunZenithCosAngle = dot(SunDir, upVector);
 		float2 uv;
-		LutTransmittanceParamsToUv(Atmosphere, pHeight, SunZenithCosAngle, uv);
-		float3 TransmittanceToSun = PassSrg::m_transmittanceLUT.SampleLevel(PassSrg::samplerLinearClamp, uv, 0).rgb;
+		LutTransmittanceParamsToUv(Atmosphere, posHeight, sunZenithCosAngle, uv);
+		float3 transmittanceToSun = PassSrg::m_transmittanceLUT.SampleLevel(PassSrg::samplerLinearClamp, uv, 0).rgb;
 
-		const float NdotL = saturate(dot(normalize(UpVector), normalize(SunDir)));
-		L += globalL * TransmittanceToSun * throughput * NdotL * Atmosphere.GroundAlbedo / PI;
-		//L.y = 0.1f;
-	}
-	if(tMax == tBottom && tBottom > 0.0)
-	{
-		//L.y = 0.1f;
+		const float ndotL = saturate(dot(normalize(upVector), normalize(SunDir)));
+		L += globalL * transmittanceToSun * throughput * ndotL * Atmosphere.GroundAlbedo / PI;
 	}
 
 	result.L = L;
-	result.OpticalDepth = OpticalDepth;
+	result.OpticalDepth = opticalDepth;
 	result.Transmittance = throughput;
 	return result;
 }

@@ -11,7 +11,10 @@
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
-
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
+#include <Atom/RPI.Public/Pass/ComputePass.h>
 
 namespace AZ::Render
 {
@@ -19,6 +22,10 @@ namespace AZ::Render
         : RPI::ParentPass(descriptor)
         , m_atmosphereId(id)
     {
+        o_enableShadows = AZ::Name("o_enableShadows");
+        o_enableFastSky = AZ::Name("o_enableFastSky");
+        o_enableSun = AZ::Name("o_enableSun");
+
         InitializeConstants(m_constants);
     }
 
@@ -73,24 +80,107 @@ namespace AZ::Render
         image = AZ::RPI::AttachmentImage::Create(*pool.get(), desc, Name(imageName), &clearValue, nullptr);
     }
 
-	void SkyAtmospherePass::BuildInternal()
+    void SkyAtmospherePass::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
     {
-        Base::BuildInternal();
+        BuildShaderData(); 
 
-        for (auto child : m_children)
+        for (auto passData : m_passData)
         {
-            if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
+            passData.m_srg->SetConstant(passData.m_index, m_constants);
+            auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
+            passData.m_srg->SetShaderVariantKeyFallbackValue(key);
+        }
+
+        //if (!m_children.empty())
+        //{
+        //    //BindLUTs();
+
+        //    // just locate the srg and constant every time for now to support shader reloading
+        //    for (auto child : m_children)
+        //    {
+        //        if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
+        //        {
+        //            if (auto srg = renderPass->GetShaderResourceGroup())
+        //            {
+        //                if (auto index = srg->FindShaderInputConstantIndex(Name("m_constants")); index.IsValid())
+        //                {
+        //                    srg->SetConstant(index, m_constants);
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //}
+
+        if (m_skyTransmittanceLUTPass)
+        {
+            // enable the LUT child pass to update the LUT render target
+            m_skyTransmittanceLUTPass->SetEnabled(true);
+        }
+    }
+
+    void SkyAtmospherePass::RegisterForShaderNotifications()
+    {
+        RPI::ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
+
+        for (const auto passData : m_passData)
+        {
+            RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(passData.m_shader->GetAssetId());
+        }
+        //for (auto child : m_children)
+        //{
+        //    if (auto fullscreenTrianglePass = azdynamic_cast<RPI::FullscreenTrianglePass>(child); fullscreenTrianglePass != nullptr)
+        //    {
+        //        RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(fullscreenTrianglePass->GetShader()->GetAssetId());
+        //    }
+        //    else if (auto computePass = azdynamic_cast<RPI::ComputePass>(child); computePass != nullptr)
+        //    {
+        //        RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(computePass->GetShader()->GetAssetId());
+        //    }
+        //}
+
+        /*
+        if (m_shaders.empty())
+        {
+            const AZStd::vector<AZStd::string> shaderPaths = {
+                "Shaders/skyatmosphere/skytransmittancelut.azshader",
+                "Shaders/skyatmosphere/skyviewlut.azshader",
+                "Shaders/skyatmosphere/skyraymarching.azshader"
+            };
+            m_shaders.reserve(shaderPaths.size());
+
+            for (const auto shaderPath : shaderPaths)
             {
-                if (auto srg = renderPass->GetShaderResourceGroup())
+                auto asset = RPI::FindShaderAsset(shaderPath.c_str());
+                if (!asset.GetId().IsValid())
                 {
-                    if (auto index = srg->FindShaderInputConstantIndex(Name("m_constants")); index.IsValid())
-                    {
-                        m_passSrgData.push_back({ index, srg });
-                    }
+                    AZ_Error("SkyAtmospherePass", false, "Failed to find shader asset %s", shaderPath.c_str());
+                    continue;
                 }
+                auto shader = RPI::Shader::FindOrCreate(asset);
+                if (!shader)
+                {
+                    AZ_Error("SkyAtmospherePass", false, "Failed to find or create %s", shaderPath.c_str());
+                    continue;
+                }
+                m_shaders.emplace_back(AZStd::move(shader));
+            }
+
+            if (m_shaders.size() != shaderPaths.size())
+            {
+                m_shaders.clear();
             }
         }
 
+        for (const auto shader : m_shaders)
+        {
+            RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(shader->GetAssetId());
+        }
+        */
+    }
+
+    void SkyAtmospherePass::BindLUTs()
+    {
         {
             // create and bind transmittance LUT
 
@@ -151,6 +241,59 @@ namespace AZ::Render
                 childPass->AttachImageToSlot(Name("SkyViewLUTInput"), m_skyViewLUTImage);
             }
         }
+
+    }
+
+    void SkyAtmospherePass::BuildShaderData()
+    {
+        for (auto child : m_children)
+        {
+            if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
+            {
+                auto srg = renderPass->GetShaderResourceGroup();
+                if (!srg)
+                {
+                    continue;
+                }
+
+                auto index = srg->FindShaderInputConstantIndex(Name("m_constants"));
+                if(!index.IsValid())
+                {
+                    continue;
+                }
+
+                Data::Instance<RPI::Shader> shader;
+                if (auto fullscreenPass = azrtti_cast<RPI::FullscreenTrianglePass*>(renderPass); fullscreenPass != nullptr)
+                {
+                    shader = fullscreenPass->GetShader();
+                }
+                else if (auto computePass = azrtti_cast<RPI::ComputePass*>(renderPass); computePass != nullptr)
+                {
+                    shader = computePass->GetShader();
+                }
+
+                if (!shader)
+                {
+                    continue;
+                }
+
+                RPI::ShaderOptionGroup shaderOptionGroup = shader->CreateShaderOptionGroup();
+                m_passData.push_back({ index, srg, AZStd::move(shader), AZStd::move(shaderOptionGroup) });
+            }
+        }
+    }
+
+	void SkyAtmospherePass::BuildInternal()
+    {
+        Base::BuildInternal();
+
+        BuildShaderData();
+
+        m_skyTransmittanceLUTPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
+
+        RegisterForShaderNotifications();
+
+        BindLUTs();
     }
 
     void SkyAtmospherePass::FrameBeginInternal(AZ::RPI::Pass::FramePrepareParams params)
@@ -162,10 +305,9 @@ namespace AZ::Render
     {
         Base::FrameEndInternal(); 
 
-        auto childPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
-        if (childPass && childPass->IsEnabled())
+        if (m_skyTransmittanceLUTPass && m_skyTransmittanceLUTPass->IsEnabled())
         {
-            childPass->SetEnabled(false);
+            m_skyTransmittanceLUTPass->SetEnabled(false);
         }
     }
 
@@ -230,32 +372,80 @@ namespace AZ::Render
             m_constants.m_absorptionDensity1ConstantTerm = 8.f / 3.f;
         }
 
-        if (!m_children.empty())
+        for (auto passData : m_passData)
         {
-            // just locate the srg and constant every time for now to support shader reloading
-            for (auto child : m_children)
-            {
-                if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
-                {
-                    if (auto srg = renderPass->GetShaderResourceGroup())
-                    {
-                        if (auto index = srg->FindShaderInputConstantIndex(Name("m_constants")); index.IsValid())
-                        {
-                            srg->SetConstant(index, m_constants);
-                        }
-                    }
-                }
-            }
+            passData.m_srg->SetConstant(passData.m_index, m_constants);
 
-            if (params.m_lutUpdateRequired)
-            {
-                // enable the LUT child pass to update the LUT render target
-                auto childPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
-                if (childPass)
-                {
-                    childPass->SetEnabled(true);
-                }
-            }
+            passData.m_shaderOptionGroup.SetValue(o_enableShadows, AZ::RPI::ShaderOptionValue{ params.m_shadowsEnabled });
+            passData.m_shaderOptionGroup.SetValue(o_enableFastSky, AZ::RPI::ShaderOptionValue{ params.m_fastSkyEnabled });
+            passData.m_shaderOptionGroup.SetValue(o_enableSun, AZ::RPI::ShaderOptionValue{ params.m_sunEnabled });
+
+            auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
+
+            passData.m_srg->SetShaderVariantKeyFallbackValue(key);
+        }
+
+        //if (!m_children.empty())
+        //{
+        //    for (auto shader : m_shaders)
+        //    {
+        //        RPI::ShaderOptionGroup shaderOption = shader->CreateShaderOptionGroup();
+
+        //        shaderOption.SetValue(o_enableShadows, AZ::RPI::ShaderOptionValue{ params.m_shadowsEnabled });
+        //        shaderOption.SetValue(o_enableFastSky, AZ::RPI::ShaderOptionValue{ params.m_fastSkyEnabled });
+        //        shaderOption.SetValue(o_enableSun, AZ::RPI::ShaderOptionValue{ params.m_sunEnabled });
+
+        //        auto key = shaderOption.GetShaderVariantKeyFallbackValue();
+        //    }
+
+        //    // just locate the srg and constant every time for now to support shader reloading
+        //    for (auto child : m_children)
+        //    {
+
+        //        RPI::ShaderOptionGroup shaderOption;
+        //        if (auto fullscreenTrianglePass = azdynamic_cast<RPI::FullscreenTrianglePass>(child); fullscreenTrianglePass != nullptr)
+        //        {
+        //            shaderOption = fullscreenTrianglePass->GetShader()->CreateShaderOptionGroup();
+        //        }
+        //        else if (auto computePass = azdynamic_cast<RPI::ComputePass>(child); computePass != nullptr)
+        //        {
+        //            shaderOption = computePass->GetShader()->CreateShaderOptionGroup();
+        //        }
+
+        //        shaderOption.SetValue(o_enableShadows, AZ::RPI::ShaderOptionValue{ params.m_shadowsEnabled });
+        //        shaderOption.SetValue(o_enableFastSky, AZ::RPI::ShaderOptionValue{ params.m_fastSkyEnabled });
+        //        shaderOption.SetValue(o_enableSun, AZ::RPI::ShaderOptionValue{ params.m_sunEnabled });
+
+        //        auto key = shaderOption.GetShaderVariantKeyFallbackValue();
+
+        //        if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
+        //        {
+        //            if (auto srg = renderPass->GetShaderResourceGroup())
+        //            {
+        //                if (auto index = srg->FindShaderInputConstantIndex(Name("m_constants")); index.IsValid())
+        //                {
+        //                    srg->SetConstant(index, m_constants);
+        //                    srg->SetShaderVariantKeyFallbackValue(key);
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    if (params.m_lutUpdateRequired)
+        //    {
+        //        // enable the LUT child pass to update the LUT render target
+        //        auto childPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
+        //        if (childPass)
+        //        {
+        //            childPass->SetEnabled(true);
+        //        }
+        //    }
+        //}
+
+
+        if (params.m_lutUpdateRequired && m_skyTransmittanceLUTPass)
+        {
+            m_skyTransmittanceLUTPass->SetEnabled(true);
         }
     }
 
@@ -304,7 +494,7 @@ namespace AZ::Render
         // not sure about this cleanup...
         m_transmittanceLUTImage.reset();
         m_skyViewLUTImage.reset();
-        m_passSrgData.clear();
+        m_passData.clear();
 
         Base::ResetInternal();
     }

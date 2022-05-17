@@ -59,6 +59,9 @@ namespace AZ::Render
         virtual void SetRayleighScattering(AtmosphereId id, const AZ::Vector3& scattering) = 0;
         virtual void SetRayleighExpDistribution(AtmosphereId id, float distribution) = 0;
 
+        //! Enable/disable atmosphere shadowing
+        virtual void SetShadowsEnabled(AtmosphereId id, bool enabled) = 0;
+
         //! Sun options
         virtual void SetSunEnabled(AtmosphereId id, bool enabled) = 0;
         virtual void SetSunDirection(AtmosphereId id, const AZ::Vector3& direction) = 0;
