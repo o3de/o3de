@@ -26,7 +26,7 @@ namespace AzToolsFramework
 
     private:
         // MenuManagerInterface overrides ...
-        MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier, const AZStd::string& name) override;
+        MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier, const MenuProperties& properties) override;
         MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& actionIdentifier, const AZStd::string& menuIdentifier, int sortIndex) override;
         QMenu* GetMenu(const AZStd::string& menuIdentifier) override;

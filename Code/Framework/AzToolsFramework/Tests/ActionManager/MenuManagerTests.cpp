@@ -13,15 +13,14 @@ namespace UnitTest
 {
     TEST_F(ActionManagerFixture, RegisterMenu)
     {
-        auto outcome =
-            m_menuManagerInterface->RegisterMenu("o3de.menu.test", "Test");
+        auto outcome = m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, RegisterMenuTwice)
     {
-        m_menuManagerInterface->RegisterMenu("o3de.menu.test", "Test");
-        auto outcome = m_menuManagerInterface->RegisterMenu("o3de.menu.test", "Test");
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        auto outcome = m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
@@ -53,7 +52,7 @@ namespace UnitTest
             }
         );
 
-        m_menuManagerInterface->RegisterMenu("o3de.menu.test", "Test");
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
         auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.action.test", "o3de.menu.test", 42);
         EXPECT_TRUE(outcome.IsSuccess());
@@ -67,7 +66,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, GetMenu)
     {
-        m_menuManagerInterface->RegisterMenu("o3de.menu.test", "Test");
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
         QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
         EXPECT_TRUE(menu != nullptr);

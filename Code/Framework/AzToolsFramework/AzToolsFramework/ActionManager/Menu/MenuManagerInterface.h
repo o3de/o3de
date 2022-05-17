@@ -17,6 +17,16 @@ namespace AzToolsFramework
 {
     using MenuManagerOperationResult = AZ::Outcome<void, AZStd::string>;
 
+    struct MenuProperties
+    {
+        AZ_RTTI(MenuProperties, "{E46CF861-2A19-43EC-8CD7-42E4C03AD6CF}");
+
+        MenuProperties() = default;
+        virtual ~MenuProperties() = default;
+
+        AZStd::string m_name = "";
+    };
+
     //! MenuManagerInterface
     //! Interface to register and manage menus in the Editor.
     class MenuManagerInterface
@@ -25,8 +35,7 @@ namespace AzToolsFramework
         AZ_RTTI(MenuManagerInterface, "{D70B7989-62BD-447E-ADF6-0971EC4B7DEE}");
 
         //! Register a new Menu to the Menu Manager.
-        virtual MenuManagerOperationResult RegisterMenu(
-            const AZStd::string& identifier, const AZStd::string& name) = 0;
+        virtual MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier, const MenuProperties& properties) = 0;
 
         //! Bind an action to a menu.
         virtual MenuManagerOperationResult AddActionToMenu(

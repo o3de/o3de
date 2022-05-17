@@ -26,7 +26,7 @@ namespace AzToolsFramework
         AZ::Interface<MenuManagerInterface>::Unregister(this);
     }
 
-    MenuManagerOperationResult MenuManager::RegisterMenu(const AZStd::string& identifier, const AZStd::string& name)
+    MenuManagerOperationResult MenuManager::RegisterMenu(const AZStd::string& identifier, const MenuProperties& properties)
     {
         if (m_menus.contains(identifier))
         {
@@ -37,7 +37,7 @@ namespace AzToolsFramework
         m_menus.insert(
             {
                 identifier,
-                EditorMenu(name)
+                EditorMenu(properties.m_name)
             }
         );
 
