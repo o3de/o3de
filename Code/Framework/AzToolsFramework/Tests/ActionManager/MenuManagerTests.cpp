@@ -27,10 +27,10 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, AddActionToUnregisteredMenu)
     {
-        m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
 
         m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
+            "o3de.context.test", "o3de.action.test", {},
             []()
             {
                 ;
@@ -43,10 +43,10 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, AddActionToMenu)
     {
-        m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
 
         m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
+            "o3de.context.test", "o3de.action.test", {},
             []()
             {
                 ;

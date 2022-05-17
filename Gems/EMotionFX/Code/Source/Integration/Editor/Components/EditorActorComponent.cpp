@@ -59,7 +59,6 @@ namespace EMotionFX
                     ->Field("UpdateJointTransformsWhenOutOfView", &EditorActorComponent::m_forceUpdateJointsOOV)
                     ->Field("LodLevel", &EditorActorComponent::m_lodLevel)
                     ->Field("BBoxConfig", &EditorActorComponent::m_bboxConfig)
-                    ->Field("AddMaterialComponentFlag", &EditorActorComponent::m_addMaterialComponentFlag)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -161,7 +160,7 @@ namespace EMotionFX
                         ->DataElement(0, &EditorActorComponent::m_bboxConfig,
                                       "Bounding box configuration", "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnBBoxConfigChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Button, &EditorActorComponent::m_addMaterialComponentFlag, "Add Material Component", "Add Material Component")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::AddEditorMaterialComponent)

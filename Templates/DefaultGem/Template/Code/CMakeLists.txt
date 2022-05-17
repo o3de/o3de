@@ -34,16 +34,16 @@ ly_add_target(
            AZ::AzCore
 )
 
-# Add the ${Name}.Private.Object target
-# Note: We include the common files and the platform specific files which are set in
-# 1.${NameLower}_private_files.cmake
-# 2.${pal_dir}/${NameLower}_private_files.cmake
+# The ${Name}.Private.Object target is an internal target
+# It should not be used outside of this Gems CMakeLists.txt
 ly_add_target(
-    NAME ${Name}.Private.Object OBJECT
+    NAME ${Name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
         ${NameLower}_private_files.cmake
         ${pal_dir}/${NameLower}_private_files.cmake
+    TARGET_PROPERTIES
+        O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
         PRIVATE
             Include
@@ -101,13 +101,15 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     # The ${Name}.Editor.Private.Object target is an internal target
-    # which is only to be used by this Gem's CMakeLists.txt and any Subdirectories
-    # Other Gems should not use this target
+    # which is only to be used by this gems CMakeLists.txt and any subdirectories
+    # Other gems should not use this target
     ly_add_target(
-        NAME ${Name}.Editor.Private.Object OBJECT
+        NAME ${Name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         FILES_CMAKE
             ${NameLower}_editor_private_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
             PRIVATE
                 Include

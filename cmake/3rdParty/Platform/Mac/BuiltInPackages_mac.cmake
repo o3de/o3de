@@ -35,7 +35,7 @@ ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-mac                
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-mac                             TARGETS OpenMesh                    PACKAGE_HASH af92db02a25c1f7e1741ec898f49d81d52631e00336bf9bddd1e191590063c2f)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1m-rev1-mac                           TARGETS OpenSSL                     PACKAGE_HASH 277ee9920e54614bac9f8aaf821ecf0857e535e8b616f4d194476448ba03e363)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev4-mac                            TARGETS OpenEXR Imath               PACKAGE_HASH 927b8ca6cc5815fa8ee4efe6ea2845487cba2540f7958d537692e7c9481a68fc)
-ly_associate_package(PACKAGE_NAME qt-5.15.2-rev7-mac                                TARGETS Qt                          PACKAGE_HASH d3d450e36d22b82e275457ac25c4d2d6fbf04536b952018d4de6a955519fc546)
+ly_associate_package(PACKAGE_NAME qt-5.15.2-rev8-mac                                TARGETS Qt                          PACKAGE_HASH d0f97579ea2822c73f0b316a26c68ceb5332763e691d7e78d6b02fe3104b1d31)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-mac                               TARGETS PNG                         PACKAGE_HASH 515252226a6958c459f53d8598d80ec4f90df33d2f1637104fd1a636f4962f07)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac                      TARGETS libsamplerate               PACKAGE_HASH b912af40c0ac197af9c43d85004395ba92a6a859a24b7eacd920fed5854a97fe)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-mac                              TARGETS ZLIB                        PACKAGE_HASH b6fea9c79b8bf106d4703b67fecaa133f832ad28696c2ceef45fb5f20013c096)
