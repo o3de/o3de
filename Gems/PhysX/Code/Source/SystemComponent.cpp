@@ -10,8 +10,9 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <PhysX/MeshAsset.h>
-#include <PhysX/HeightFieldAsset.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+
+#include <Source/Material/PhysXMaterialManager.h>
 #include <Source/Utils.h>
 #include <Source/Collision.h>
 #include <Source/Shape.h>
@@ -20,8 +21,9 @@
 #include <Source/PhysXCharacters/API/CharacterUtils.h>
 #include <Source/PhysXCharacters/API/CharacterController.h>
 #include <Source/WindProvider.h>
-#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
+#include <PhysX/MeshAsset.h>
+#include <PhysX/HeightFieldAsset.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
 #include <System/PhysXSystem.h>
 
@@ -191,19 +193,12 @@ namespace PhysX
             return;
         }
 
-        m_materialManager.Connect();
         m_defaultWorldComponent.Activate();
 
-        // Assets related work
-        auto* materialAsset = aznew AzFramework::GenericAssetHandler<Physics::MaterialLibraryAsset>("Physics Material", "Physics Material", "physmaterial");
+        // TODO: This shouldn't be here in PhysX Gem, but in AzFramework.
+        auto* materialAsset = aznew AzFramework::GenericAssetHandler<Physics::MaterialAsset>("Physics Material", "Physics Material", "physmaterial");
         materialAsset->Register();
         m_assetHandlers.emplace_back(materialAsset);
-
-        // TODO: "physmaterial2" is temporary until the "physmaterial2" is removed.
-        // TODO: This shouldn't be here in PhysX Gem, but in AzFramework.
-        auto* materialAsset2 = aznew AzFramework::GenericAssetHandler<Physics::MaterialAsset>("Physics Material 2", "Physics Material", "physmaterial2");
-        materialAsset2->Register();
-        m_assetHandlers.emplace_back(materialAsset2);
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         RegisterAsset<Pipeline::MeshAssetHandler, Pipeline::MeshAsset>(m_assetHandlers);
@@ -224,12 +219,9 @@ namespace PhysX
         PhysX::SystemRequestsBus::Handler::BusDisconnect();
         Physics::SystemRequestBus::Handler::BusDisconnect();
 
-        // Reset material manager
-        m_materialManager.ReleaseAllMaterials();
-
         m_defaultWorldComponent.Deactivate();
-        m_materialManager.Disconnect();
 
+        m_materialManager.reset();
         m_windProvider.reset();
 
         m_onSystemInitializedHandler.Disconnect();
@@ -239,6 +231,7 @@ namespace PhysX
             m_physXSystem->Shutdown();
             m_physXSystem = nullptr;
         }
+
         m_assetHandlers.clear(); //this need to be after m_physXSystem->Shutdown(); For it will drop the default material library reference.
     }
 
@@ -358,11 +351,6 @@ namespace PhysX
         AZ_Error("PhysX", false, "SystemComponent::CreateShape error. Unable to create a shape from configuration.");
 
         return nullptr;
-    }
-
-    AZStd::shared_ptr<Physics::Material> SystemComponent::CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration)
-    {
-        return AZStd::make_shared<PhysX::Material>(materialConfiguration);
     }
 
     void SystemComponent::ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject)
@@ -541,5 +529,7 @@ namespace PhysX
         }
 
         m_windProvider = AZStd::make_unique<WindProvider>();
+        m_materialManager = AZStd::make_unique<MaterialManager>();
+        m_materialManager->Init();
     }
 } // namespace PhysX

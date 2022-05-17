@@ -9,7 +9,8 @@
 #pragma once
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterial.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -21,8 +22,6 @@ namespace AZ
 
 namespace Physics
 {
-    class Material;
-
     class ColliderConfiguration
     {
     public:
@@ -51,7 +50,7 @@ namespace Physics
 
         AZ::Crc32 GetIsTriggerVisibility() const;
         AZ::Crc32 GetCollisionLayerVisibility() const;
-        AZ::Crc32 GetMaterialSelectionVisibility() const;
+        AZ::Crc32 GetMaterialSlotsVisibility() const;
         AZ::Crc32 GetOffsetVisibility() const;
 
         AzPhysics::CollisionLayer m_collisionLayer; ///< Which collision layer is this collider on.
@@ -62,7 +61,7 @@ namespace Physics
         bool m_isExclusive = true; ///< Can this collider be shared between multiple bodies?
         AZ::Vector3 m_position = AZ::Vector3::CreateZero(); /// Shape offset relative to the connected rigid body.
         AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity(); ///< Shape rotation relative to the connected rigid body.
-        Physics::MaterialSelection m_materialSelection; ///< Materials for the collider.
+        MaterialSlots m_materialSlots; ///< Material slots for the collider.
         AZ::u8 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u8>::max)(); ///< Visibility flags for collider.
                                                                                  ///< Note: added parenthesis for std::numeric_limits is
                                                                                  ///< to avoid collision with `max` macro in uber builds.
@@ -84,8 +83,8 @@ namespace Physics
         AZ_RTTI(Shape, "{0A47DDD6-2BD7-43B3-BF0D-2E12CC395C13}");
         virtual ~Shape() = default;
 
-        virtual void SetMaterial(const AZStd::shared_ptr<Material>& material) = 0;
-        virtual AZStd::shared_ptr<Material> GetMaterial() const = 0;
+        virtual void SetMaterial(const AZStd::shared_ptr<Material2>& material) = 0;
+        virtual AZStd::shared_ptr<Material2> GetMaterial() const = 0;
 
         virtual void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) = 0;
         virtual AzPhysics::CollisionLayer GetCollisionLayer() const = 0;

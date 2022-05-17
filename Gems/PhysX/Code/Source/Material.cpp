@@ -405,7 +405,7 @@ namespace PhysX
         }
 
         // Set the slots from the mesh asset
-        materialSelection.SetMaterialSlots(meshAsset->m_assetData.m_materialNames);
+        materialSelection.SetMaterialSlots(meshAsset->m_assetData.m_materialSlots.GetSlotsNames());
 
         if (!assetConfiguration.m_useMaterialsFromAsset)
         {
@@ -414,7 +414,7 @@ namespace PhysX
         }
 
         // Update material IDs in the selection for each slot
-        const AZStd::vector<AZStd::string>& physicsMaterialNames = meshAsset->m_assetData.m_physicsMaterialNames;
+        /*const AZStd::vector<AZStd::string>& physicsMaterialNames = meshAsset->m_assetData.m_physicsMaterialNames;
         for (size_t slotIndex = 0; slotIndex < physicsMaterialNames.size(); ++slotIndex)
         {
             const AZStd::string& physicsMaterialNameFromPhysicsAsset = physicsMaterialNames[slotIndex];
@@ -438,7 +438,7 @@ namespace PhysX
                     meshAsset->m_assetData.m_materialNames[slotIndex].c_str());
                 materialSelection.SetMaterialId(Physics::MaterialId(), static_cast<int>(slotIndex));
             }
-        }
+        }*/
     }
 
     AZStd::shared_ptr<Physics::Material> MaterialsManager::GetGenericDefaultMaterial()

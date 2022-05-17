@@ -145,9 +145,9 @@ namespace PhysX
                 serializeContext->ClassDeprecate("MeshAssetCookedData", "{82955F2F-4DA1-4AEF-ACEF-0AE16BA20EF4}");
 
                 serializeContext->Class<MeshAssetData>()
+                    ->Version(2)
                     ->Field("ColliderShapes", &MeshAssetData::m_colliderShapes)
-                    ->Field("SurfaceNames", &MeshAssetData::m_materialNames)
-                    ->Field("MaterialNames", &MeshAssetData::m_physicsMaterialNames)
+                    ->Field("MaterialSlots", &MeshAssetData::m_materialSlots)
                     ->Field("MaterialIndexPerShape", &MeshAssetData::m_materialIndexPerShape)
                     ;
             }

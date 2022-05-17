@@ -13,12 +13,12 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <Source/Utils.h>
 
+#include <PhysX/Material/PhysXMaterial.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
 #include <PhysX/MathConversion.h>
 
@@ -447,16 +447,13 @@ namespace PhysX
             {
             case GlobalCollisionDebugColorMode::MaterialColor:
             {
-                const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
+                const auto materialAsset = colliderConfig.m_materialSlots.GetMaterialAsset(elementDebugInfo.m_materialSlotIndex);
 
-                AZStd::shared_ptr<Physics::Material> physicsMaterial;
-                Physics::PhysicsMaterialRequestBus::BroadcastResult(
-                    physicsMaterial,
-                    &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
-                    materialId);
-                if (physicsMaterial)
+                AZStd::shared_ptr<Material2> material = Material2::FindOrCreateMaterial(materialAsset);
+
+                if (material)
                 {
-                    debugColor = physicsMaterial->GetDebugColor();
+                    debugColor = material->GetDebugColor();
                 }
                 break;
             }

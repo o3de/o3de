@@ -6,11 +6,6 @@
  *
  */
 
-
-#include "Utils.h"
-#include "Material.h"
-#include "Shape.h"
-
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/AnimationConfiguration.h>
@@ -31,10 +26,13 @@
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
+#include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/Utils.h>
 
 namespace Physics
 {

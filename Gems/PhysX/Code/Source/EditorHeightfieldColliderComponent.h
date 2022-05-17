@@ -90,13 +90,12 @@ namespace PhysX
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
             const AZ::Aabb& dirtyRegion = AZ::Aabb::CreateNull());
 
-        void UpdateHeightfieldMaterialSelection(const Physics::MaterialSelection& updatedMaterialSelection);
+        void UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots);
 
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider
         AzPhysics::SceneInterface* m_sceneInterface{ nullptr };
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
 
         Physics::ColliderConfiguration m_colliderConfig; //!< Stores collision layers, whether the collider is a trigger, etc.
         AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> m_shapeConfig{ new Physics::HeightfieldShapeConfiguration() };

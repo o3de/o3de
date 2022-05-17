@@ -13,7 +13,7 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/std/optional.h>
@@ -40,7 +40,6 @@ namespace PhysX
 {
     class Shape;
     class ActorData;
-    class Material;
     struct TerrainConfiguration;
 
     namespace Pipeline
@@ -199,7 +198,20 @@ namespace PhysX
         Physics::HeightfieldShapeConfiguration CreateBaseHeightfieldShapeConfiguration(AZ::EntityId entityId);
         Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId);
 
-        void SetMaterialsFromHeightfieldProvider(const AZ::EntityId& heightfieldProviderId, Physics::MaterialSelection& materialSelection);
+        //! Sets an array of material slots from Physics Asset.
+        //! If the configuration indicates that it should use the physics materials
+        //! assignment from the physics asset it will also use those materials for the slots.
+        //! If the shape configuration passed does not use Physics Asset this call won't do any operations.
+        //! @param shapeConfiguration Shape configuration with the information about Physics Assets.
+        //! @param materialSlots Output materials slots.
+        void SetMaterialsFromPhysicsAssetShape(const Physics::ShapeConfiguration& shapeConfiguration, Physics::MaterialSlots& materialSlots);
+
+        //! Sets an array of material slots from a heightfield provider, plus
+        //! it will also set materials to the slots.
+        //! If the entity doesn't have a heightfield provider then the default slot will be used.
+        //! @param heightfieldProviderId Entity id for the heightfield provider.
+        //! @param materialSlots Output materials slots.
+        void SetMaterialsFromHeightfieldProvider(const AZ::EntityId& heightfieldProviderId, Physics::MaterialSlots& materialSlots);
 
         namespace Geometry
         {

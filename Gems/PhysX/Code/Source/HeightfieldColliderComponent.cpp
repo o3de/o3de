@@ -142,7 +142,7 @@ namespace PhysX
 
         // Update material selection from the mapping
         Physics::ColliderConfiguration* colliderConfig = m_shapeConfig.first.get();
-        Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), colliderConfig->m_materialSelection);
+        Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), colliderConfig->m_materialSlots);
     }
 
     void HeightfieldColliderComponent::RefreshHeightfield( 

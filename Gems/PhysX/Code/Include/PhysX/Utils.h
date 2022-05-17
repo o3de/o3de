@@ -24,7 +24,7 @@ namespace AzPhysics
 
 namespace Physics
 {
-    class Material;
+    class Material2;
     class Shape;
 }
 
@@ -35,7 +35,7 @@ namespace PhysX
     namespace Utils
     {
         ActorData* GetUserData(const physx::PxActor* actor);
-        Physics::Material* GetUserData(const physx::PxMaterial* material);
+        Physics::Material2* GetUserData(const physx::PxMaterial* material);
         Physics::Shape* GetUserData(const physx::PxShape* shape);
         AzPhysics::Scene* GetUserData(physx::PxScene* scene);
 
