@@ -22,14 +22,34 @@ namespace AzToolsFramework
         EditorMenu();
         explicit EditorMenu(const AZStd::string& name);
 
-        void AddMenuItem(int sortKey, QAction* action);
+        void AddAction(int sortKey, QAction* action);
+        void AddSeparator(int sortKey);
+        void AddSubMenu(int sortKey, QMenu* submenu);
         QMenu* GetMenu();
 
     private:
         void RefreshMenu();
 
+        enum class MenuItemType
+        {
+            Action = 0,
+            Separator,
+            SubMenu
+        };
+
+        struct MenuItem
+        {
+            MenuItem();
+            MenuItem(QAction* action);
+            MenuItem(QMenu* menu);
+
+            MenuItemType m_type;
+            QAction* m_action;
+            QMenu* m_submenu;
+        };
+
         QMenu* m_menu = nullptr;
-        AZStd::multimap<int, QAction*> m_menuItems;
+        AZStd::multimap<int, MenuItem> m_menuItems;
     };
 
 } // namespace AzToolsFramework

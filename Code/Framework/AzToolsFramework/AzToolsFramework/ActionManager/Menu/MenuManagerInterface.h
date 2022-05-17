@@ -39,7 +39,15 @@ namespace AzToolsFramework
 
         //! Bind an action to a menu.
         virtual MenuManagerOperationResult AddActionToMenu(
-            const AZStd::string& actionIdentifier, const AZStd::string& menuIdentifier, int sortIndex) = 0;
+            const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
+
+        //! Add a separator to a menu.
+        virtual MenuManagerOperationResult AddSeparatorToMenu(
+            const AZStd::string& menuIdentifier, int sortIndex) = 0;
+
+        //! Add a separator to a menu.
+        virtual MenuManagerOperationResult AddSubMenuToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
 
         //! Retrieve a QMenu from its identifier.
         virtual QMenu* GetMenu(const AZStd::string& menuIdentifier) = 0;

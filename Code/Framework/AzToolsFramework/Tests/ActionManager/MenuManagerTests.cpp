@@ -36,7 +36,7 @@ namespace UnitTest
             }
         );
 
-        auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.action.test", "o3de.menu.test", 42);
+        auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
@@ -54,7 +54,7 @@ namespace UnitTest
 
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
-        auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.action.test", "o3de.menu.test", 42);
+        auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
