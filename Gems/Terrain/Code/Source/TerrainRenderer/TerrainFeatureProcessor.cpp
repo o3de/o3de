@@ -402,7 +402,7 @@ namespace Terrain
             {
                 auto* rasterPass = azrtti_cast<AZ::RPI::RasterPass*>(pass);
 
-                if (rasterPass)
+                if (rasterPass && rasterPass->GetPassState() != AZ::RPI::PassState::Orphaned)
                 {
                     if (rasterPass->GetDrawListTag() == forwardTag ||
                         rasterPass->GetDrawListTag() == depthTag ||
