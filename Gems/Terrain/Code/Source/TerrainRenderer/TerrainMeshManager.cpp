@@ -442,17 +442,17 @@ namespace Terrain
         return m_defaultSectorModel != nullptr;
     }
 
-    AZ::Data::Instance<AZ::RPI::Model> TerrainMeshManager::InitializeSectorModel(uint16_t gridSize, const AZ::Vector2& worldStartPosition, float vertexSpacing)
+    AZ::Data::Instance<AZ::RPI::Model> TerrainMeshManager::InitializeSectorModel(uint16_t gridSize, const AZ::Vector2& worldStartPosition, float vertexSpacing, AZ::Aabb& modelAabb)
     {
         AZ::Vector3 aabbMin = AZ::Vector3(worldStartPosition.GetX(), worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ());
-        AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(gridSize * vertexSpacing + m_sampleSpacing * 0.5f);
+        AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(gridSize * vertexSpacing);
 
         // expand the bounds in order to calcaulte normals.
         aabbMin -= AZ::Vector3(vertexSpacing);
-        aabbMax += AZ::Vector3(vertexSpacing);
+        aabbMax += AZ::Vector3(vertexSpacing) + AZ::Vector3(m_sampleSpacing * 0.5f); // extra padding to catch the last vertex
 
         // pad the max by half a sample spacing to make sure it's inclusive of the last point.
-        AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(aabbMin, aabbMax);
+        AZ::Aabb queryBounds = AZ::Aabb::CreateFromMinMax(aabbMin, aabbMax);
 
         auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         const AZ::Vector2 stepSize(vertexSpacing);
@@ -460,7 +460,7 @@ namespace Terrain
         AZStd::pair<size_t, size_t> numSamples;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-            bounds, stepSize, samplerType);
+            queryBounds, stepSize, samplerType);
 
         uint16_t vertexCount1d = (gridSize + 1); // grid size is length, need an extra vertex in each dimension to draw the final row / column of quads.
         uint16_t paddedVertexCount1d = vertexCount1d + 2; // extra row / column on each side for normals.
@@ -492,10 +492,12 @@ namespace Terrain
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-            bounds, stepSize, perPositionCallback, samplerType);
+            queryBounds, stepSize, perPositionCallback, samplerType);
 
         float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
         float vertexSpacing2 = vertexSpacing * 2.0f;
+        float minHeight = AZStd::numeric_limits<float>::max();
+        float maxHeight = AZStd::numeric_limits<float>::min();
 
         for (uint16_t y = 0; y < vertexCount1d; ++y)
         {
@@ -512,6 +514,15 @@ namespace Terrain
                 const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
                 const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
                 meshHeights.at(coord) = uint16Height;
+
+                if (minHeight > height)
+                {
+                    minHeight = height;
+                }
+                else if (maxHeight < height)
+                {
+                    maxHeight = height;
+                }
 
                 const float leftHeight = heights.at(offsetCoord - 1);
                 const float rightHeight = heights.at(offsetCoord + 1);
@@ -549,6 +560,10 @@ namespace Terrain
             return {};
         }
 
+        aabbMin.SetZ(minHeight);
+        aabbMax.SetZ(maxHeight);
+        modelAabb.Set(aabbMin, aabbMax);
+
         return InitializeSectorModel({ heightsOutcome.GetValue(), heightsBufferViewDesc }, { normalsOutcome .GetValue(), normalsBufferViewDesc });
     }
 
@@ -581,27 +596,25 @@ namespace Terrain
             const auto jobLambda = [this, updateContext, gridMeters]() -> void
             {
                 auto& sector = *updateContext.m_sector;
-                const AZ::Vector3 min = AZ::Vector3(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters, m_worldBounds.GetMin().GetZ());
-                const AZ::Vector3 max = min + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetZExtent());
-                sector.m_aabb = AZ::Aabb::CreateFromMinMax(min, max);
 
+                AZ::Aabb modelAabb = AZ::Aabb::CreateNull();
+                sector.m_model = InitializeSectorModel(GridSize, AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters), gridMeters / GridSize, modelAabb);
+                sector.m_aabb = modelAabb;
+
+                AZ::RPI::ModelLod& modelLod = *sector.m_model->GetLods().begin()->get();
+                sector.m_drawPacket = AZ::RPI::MeshDrawPacket(modelLod, 0, m_materialInstance, sector.m_srg);
+
+                // set the shader option to select forward pass IBL specular if necessary
+                if (!sector.m_drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
                 {
-                    sector.m_model = InitializeSectorModel(GridSize, AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters), gridMeters / GridSize);
-                    AZ::RPI::ModelLod& modelLod = *sector.m_model->GetLods().begin()->get();
-                    sector.m_drawPacket = AZ::RPI::MeshDrawPacket(modelLod, 0, m_materialInstance, sector.m_srg);
-
-                    // set the shader option to select forward pass IBL specular if necessary
-                    if (!sector.m_drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
-                    {
-                        AZ_Warning(TerrainMeshManagerName, false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
-                    }
-                    const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
-                    sector.m_drawPacket.SetStencilRef(stencilRef);
-                    sector.m_drawPacket.Update(*m_parentScene, true);
+                    AZ_Warning(TerrainMeshManagerName, false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
+                const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
+                sector.m_drawPacket.SetStencilRef(stencilRef);
+                sector.m_drawPacket.Update(*m_parentScene, true);
 
                 ShaderObjectData objectSrgData;
-                objectSrgData.m_xyTranslation = { min.GetX(), min.GetY() };
+                objectSrgData.m_xyTranslation = { modelAabb.GetMin().GetX(), modelAabb.GetMin().GetY()};
                 objectSrgData.m_xyScale = gridMeters;
                 objectSrgData.m_lodLevel = updateContext.m_lodLevel;
 
