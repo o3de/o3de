@@ -286,6 +286,7 @@ class TestAutomation(EditorTestSuite):
     class Material_NoEffectIfNoColliderShape(EditorBatchedTest):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
 
+    @pytest.mark.xfail(reason="GHI #9579: Test periodically fails")
     class Collider_TriggerPassThrough(EditorBatchedTest):
         from .tests.collider import Collider_TriggerPassThrough as test_module
 
