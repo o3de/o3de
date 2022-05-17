@@ -49,6 +49,14 @@ namespace AzToolsFramework
 
     void DPERowWidget::Clear()
     {
+        // propertyHandlers own their widgets, so don't destroy them here. Set them free!
+        for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
+             propertyWidgetIter != endIter; ++propertyWidgetIter)
+        {
+            m_columnLayout->removeWidget(propertyWidgetIter->first);
+        }
+        m_widgetToPropertyHandler.clear();
+
         DestroyLayoutContents(m_columnLayout);
         DestroyLayoutContents(m_childRowLayout);
         m_domOrderedChildren.clear();
@@ -329,7 +337,8 @@ namespace AzToolsFramework
                 auto rowWidget =
                     static_cast<DPERowWidget*>(GetVerticalLayout()->itemAt(static_cast<int>(firstAddressEntry.GetIndex()))->widget());
 
-                rowWidget->HandleOperationAtPath(*operationIterator, 1);
+                constexpr size_t pathDepth = 1; // top level has been handled, start the next operation at path depth 1
+                rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
             }
         }
     }

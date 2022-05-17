@@ -51,7 +51,7 @@ namespace AzToolsFramework
 
         AZStd::deque<QWidget*> m_domOrderedChildren;
 
-        // <apm> fix Clear(), it will blow away these widgets, which will cause a double deletion
+        // a map from the propertyHandler widgets to the propertyHandlers that created them
         AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
     };
 
