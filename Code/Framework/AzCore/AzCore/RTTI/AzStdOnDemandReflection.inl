@@ -277,8 +277,9 @@ namespace AZ
         template<typename U>
         static AZ::BehaviorParameter CreateBehaviorEventParameter()
         {
+            int parameterIndexInOut = 0;
             AZ::BehaviorParameter param;
-            AZ::Internal::SetParametersStripped<U>(&param, nullptr);
+            AZ::Internal::SetParameter<U>(&param, nullptr, parameterIndexInOut);
             return param;
         }
         static void Reflect(ReflectContext* context)

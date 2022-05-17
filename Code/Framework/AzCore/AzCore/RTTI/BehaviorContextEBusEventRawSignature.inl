@@ -15,13 +15,14 @@ namespace AZ::Internal
         : BehaviorMethod(context)
         , m_functionPtr(functionPointer)
     {
-        SetParameters<R>(m_parameters, this);
+        int parameterIndexInOut = 0;
+        AZ::Internal::SetParameter<R>(m_parameters, this, parameterIndexInOut);
         if constexpr (s_isBusIdParameter == 1)
         {
             // optional ID parameter
-            SetParameters<typename EBus::BusIdType>(&m_parameters[s_startArgumentIndex]);
+            AZ::Internal::SetParameter<typename EBus::BusIdType>(&m_parameters[parameterIndexInOut], this, parameterIndexInOut);
         }
-        SetParameters<Args...>(&m_parameters[s_startNamedArgumentIndex], this);
+        (AZ::Internal::SetParameter<Args>(&m_parameters[parameterIndexInOut], this, parameterIndexInOut), ...);
     }
 
     //////////////////////////////////////////////////////////////////////////
