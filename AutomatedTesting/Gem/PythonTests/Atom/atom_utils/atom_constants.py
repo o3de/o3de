@@ -730,7 +730,6 @@ class AtomComponentProperties:
           - 'Minimum Screen Coverage' portion of the screen at which the mesh is culled; 0 (never culled) to 1
           - 'Quality Decay Rate' rate at which the mesh degrades; 0 (never) to 1 (lowest quality imediately)
           - 'Lod Override' which specific LOD to always use; default or other named LOD
-          - 'Add Material Component' the button to add a material; set True to add a material component
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
@@ -747,7 +746,6 @@ class AtomComponentProperties:
             'Minimum Screen Coverage': 'Controller|Configuration|Lod Configuration|Minimum Screen Coverage',
             'Quality Decay Rate': 'Controller|Configuration|Lod Configuration|Quality Decay Rate',
             'Lod Override': 'Controller|Configuration|Lod Configuration|Lod Override',
-            'Add Material Component': 'Add Material Component',
         }
         return properties[property]
 
