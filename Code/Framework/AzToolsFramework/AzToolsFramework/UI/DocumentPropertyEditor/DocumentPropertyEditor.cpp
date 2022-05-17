@@ -98,7 +98,7 @@ namespace AzToolsFramework
             auto handler = dpeSystem->CreateHandlerInstance(handlerId);
             handler->SetValueFromDom(childValue);
             addedWidget = handler->GetWidget();
-            m_widgetToPropertyHandler[addedWidget] = std::move(handler);
+            m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
             layoutForWidget = m_columnLayout;
         }
         else
@@ -208,13 +208,13 @@ namespace AzToolsFramework
                 {
                     subPath.Pop();
                 }
-                const auto valueAtSubPath = getDPE()->GetAdapter()->GetContents()[subPath];
+                const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
                 m_widgetToPropertyHandler[childWidget]->SetValueFromDom(valueAtSubPath);
             }
         }
     }
 
-    DocumentPropertyEditor* DPERowWidget::getDPE()
+    DocumentPropertyEditor* DPERowWidget::GetDPE()
     {
         DocumentPropertyEditor* theDPE = nullptr;
         QWidget* ancestorWidget = parentWidget();

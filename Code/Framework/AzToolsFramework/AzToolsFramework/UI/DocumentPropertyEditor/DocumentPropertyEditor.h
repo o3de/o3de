@@ -43,7 +43,7 @@ namespace AzToolsFramework
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
 
     protected:
-        DocumentPropertyEditor* getDPE();
+        DocumentPropertyEditor* GetDPE();
 
         QVBoxLayout* m_mainLayout = nullptr;
         QHBoxLayout* m_columnLayout = nullptr;
