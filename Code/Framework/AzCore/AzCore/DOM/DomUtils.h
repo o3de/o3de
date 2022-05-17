@@ -10,6 +10,7 @@
 
 #include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/DomValue.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
 
 namespace AZ::Dom::Utils
 {
@@ -21,6 +22,29 @@ namespace AZ::Dom::Utils
 
     AZ::Outcome<Value, AZStd::string> WriteToValue(const Backend::WriteCallback& writeCallback);
 
+    Value TypeIdToDomValue(const AZ::TypeId& typeId);
+    AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);
+    JsonSerializationResult::ResultCode LoadViaJsonSerialization(void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings = {});
+    JsonSerializationResult::ResultCode StoreViaJsonSerialization(void* object, void* defaultObject, const AZ::TypeId& typeId, Value& output, const JsonSerializerSettings& settings = {});
+
+    template <typename T>
+    JsonSerializationResult::ResultCode LoadViaJsonSerialization(T& object, const Value& root, const JsonDeserializerSettings& settings = {})
+    {
+        return LoadViaJsonSerialization(&object, azrtti_typeid<T>(), root, settings);
+    }
+
+    template <typename T>
+    JsonSerializationResult::ResultCode StoreViaJsonSerialization(T& object, Value& output, const JsonSerializerSettings& settings = {})
+    {
+        return StoreViaJsonSerialization(&object, nullptr, azrtti_typeid<T>(), output, settings);
+    }
+
+    template<typename T>
+    JsonSerializationResult::ResultCode StoreViaJsonSerialization(T& object, T& defaultObject, Value& output, const JsonSerializerSettings& settings = {})
+    {
+        return StoreViaJsonSerialization(&object, &defaultObject, azrtti_typeid<T>(), output, settings);
+    }
+
     bool DeepCompareIsEqual(const Value& lhs, const Value& rhs);
     Value DeepCopy(const Value& value, bool copyStrings = true);
 
@@ -31,7 +55,7 @@ namespace AZ::Dom::Utils
         {
             return value;
         }
-        else if constexpr (AZStd::is_same_v<AZStd::string_view, T>)
+        else if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string> || AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string_view>)
         {
             return Dom::Value(value, true);
         }
