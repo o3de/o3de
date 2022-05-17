@@ -71,3 +71,6 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_SC_Spawnables_MultipleSpawnsFromSingleTicket(EditorSharedTest):
         from .tests.spawnables import SC_Spawnables_MultipleSpawnsFromSingleTicket as test_module
+
+    class test_SC_Spawnables_NestedSpawn(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_NestedSpawn as test_module

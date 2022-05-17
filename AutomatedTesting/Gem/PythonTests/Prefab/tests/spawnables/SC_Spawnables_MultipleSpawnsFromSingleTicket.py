@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
-def SC_Spawnables_SimpleSpawnAndDespawn():
+def SC_Spawnables_MultipleSpawnsFromSingleTicket():
 
     import azlmbr.entity as entity
     import azlmbr.bus as bus
@@ -41,4 +41,4 @@ def SC_Spawnables_SimpleSpawnAndDespawn():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(SC_Spawnables_SimpleSpawnAndDespawn)
+    Report.start_test(SC_Spawnables_MultipleSpawnsFromSingleTicket)
