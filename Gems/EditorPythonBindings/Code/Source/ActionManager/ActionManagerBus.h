@@ -12,6 +12,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <Source/ActionManager/PythonEditorAction.h>
 
 namespace EditorPythonBindings
@@ -30,11 +31,9 @@ namespace EditorPythonBindings
         virtual ActionManagerOperationResult RegisterAction(
             const AZStd::string& contextIdentifier,
             const AZStd::string& identifier,
-            const AZStd::string& name,
-            const AZStd::string& description,
-            const AZStd::string& category,
-            const AZStd::string& iconPath,
-            PythonEditorAction handler) = 0;
+            const AzToolsFramework::ActionProperties& properties,
+            PythonEditorAction handler
+        ) = 0;
 
         //! Trigger an Action via its identifier.
         virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;

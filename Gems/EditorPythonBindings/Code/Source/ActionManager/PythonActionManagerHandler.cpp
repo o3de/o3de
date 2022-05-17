@@ -14,6 +14,7 @@
 
 namespace EditorPythonBindings
 {
+
     PythonEditorActionHandler::PythonEditorActionHandler()
     {
         m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
@@ -25,7 +26,7 @@ namespace EditorPythonBindings
         }
     }
 
-    PythonEditorActionHandler ::~PythonEditorActionHandler()
+    PythonEditorActionHandler::~PythonEditorActionHandler()
     {
         if (m_actionManagerInterface)
         {
@@ -37,18 +38,18 @@ namespace EditorPythonBindings
     AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterAction(
         const AZStd::string& contextIdentifier,
         const AZStd::string& identifier,
-        const AZStd::string& name,
-        const AZStd::string& description,
-        const AZStd::string& category,
-        const AZStd::string& iconPath,
+        const AzToolsFramework::ActionProperties& properties,
         PythonEditorAction handler)
     {
         return m_actionManagerInterface->RegisterAction(
-            contextIdentifier, identifier, name, description, category, iconPath,
+            contextIdentifier,
+            identifier,
+            properties,
             [h = AZStd::move(handler)]() mutable
             {
                 PyObject_CallObject(h.GetHandler(), NULL);
-            });
+            }
+        );
     }
 
     AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::TriggerAction(const AZStd::string& actionIdentifier)
