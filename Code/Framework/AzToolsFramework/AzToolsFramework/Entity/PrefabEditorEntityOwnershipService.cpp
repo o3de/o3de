@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
@@ -233,6 +234,8 @@ namespace AzToolsFramework
         m_rootInstance->SetTemplateId(templateId);
         m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filename));
         m_rootInstance->SetContainerEntityName("Level");
+
+        AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get()->SetRootPrefabInstanceAsNotLoaded();
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
         m_isRootPrefabAssigned = true;
 
@@ -333,6 +336,7 @@ namespace AzToolsFramework
             m_prefabSystemComponent->RemoveTemplate(prevTemplateId);
         }
 
+        AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get()->SetRootPrefabInstanceAsNotLoaded();
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
         m_isRootPrefabAssigned = true;
     }

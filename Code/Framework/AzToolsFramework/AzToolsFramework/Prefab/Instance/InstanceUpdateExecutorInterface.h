@@ -30,6 +30,10 @@ namespace AzToolsFramework
 
             // Remove an Instance from the waiting queue.
             virtual void RemoveTemplateInstanceFromQueue(const Instance* instance) = 0;
+
+            virtual void SetRootPrefabInstanceAsNotLoaded() = 0;
+
+            virtual bool HasRootPrefabInstanceLoaded() const = 0;
         };
     }
 }
