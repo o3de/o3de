@@ -235,11 +235,11 @@ namespace AzToolsFramework
                             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
 
-                            if (!m_hasRootPrefabInstanceLoaded &&
+                            if (!m_isRootPrefabInstanceFirstLoadEnded &&
                                 instanceToUpdate->GetTemplateSourcePath() == m_rootPrefabInstanceSourcePath)
                             {
-                                PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnRootPrefabInstanceFirstLoaded);
-                                m_hasRootPrefabInstanceLoaded = true;
+                                PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnRootPrefabInstanceFirstLoadEnd);
+                                m_isRootPrefabInstanceFirstLoadEnded = true;
                             }
                         }
                     }
@@ -265,9 +265,9 @@ namespace AzToolsFramework
             return isUpdateSuccessful;
         }
 
-        void InstanceUpdateExecutor::SetRootPrefabInstanceAsNotLoaded()
+        void InstanceUpdateExecutor::SetRootPrefabInstanceAsNeverLoaded()
         {
-            m_hasRootPrefabInstanceLoaded = false;
+            m_isRootPrefabInstanceFirstLoadEnded = false;
 
             PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                 AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
@@ -275,9 +275,9 @@ namespace AzToolsFramework
                 prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetTemplateSourcePath();
         }
 
-        bool InstanceUpdateExecutor::HasRootPrefabInstanceLoaded() const
+        bool InstanceUpdateExecutor::IsRootPrefabInstanceFirstLoadEnded() const
         {
-            return m_hasRootPrefabInstanceLoaded;
+            return m_isRootPrefabInstanceFirstLoadEnded;
         }
     }
 }

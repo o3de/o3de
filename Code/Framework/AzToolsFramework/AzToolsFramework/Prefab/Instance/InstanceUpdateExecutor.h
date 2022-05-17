@@ -35,8 +35,8 @@ namespace AzToolsFramework
             bool UpdateTemplateInstancesInQueue() override;
             void RemoveTemplateInstanceFromQueue(const Instance* instance) override;
 
-            void SetRootPrefabInstanceAsNotLoaded() override;
-            bool HasRootPrefabInstanceLoaded() const override;
+            void SetRootPrefabInstanceAsNeverLoaded() override;
+            bool IsRootPrefabInstanceFirstLoadEnded() const override;
 
             void RegisterInstanceUpdateExecutorInterface();
             void UnregisterInstanceUpdateExecutorInterface();
@@ -45,7 +45,7 @@ namespace AzToolsFramework
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             int m_instanceCountToUpdateInBatch = 0;
-            bool m_hasRootPrefabInstanceLoaded = false;
+            bool m_isRootPrefabInstanceFirstLoadEnded = false;
             AZ::IO::Path m_rootPrefabInstanceSourcePath;
             AZStd::deque<Instance*> m_instancesUpdateQueue;
             bool m_updatingTemplateInstancesInQueue { false };
