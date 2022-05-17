@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialId.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 
 namespace Nv::Blast
@@ -25,7 +25,7 @@ namespace Blast
     {
         BlastFamily* m_family;
         Nv::Blast::TkActor* m_tkActor;
-        Physics::MaterialId m_physicsMaterialId;
+        Physics::MaterialId2 m_physicsMaterialId;
         AZ::Vector3 m_parentLinearVelocity = AZ::Vector3::CreateZero();
         AZ::Vector3 m_parentCenterOfMass = AZ::Vector3::CreateZero();
         AzPhysics::RigidBodyConfiguration m_bodyConfiguration; //!< Either rigid dynamic or rigid static

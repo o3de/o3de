@@ -49,15 +49,15 @@ namespace Blast
         //! a separate Spawn method that invokes CalculateColliderConfiguration, since if it's invoked from
         //! constructor it does not call override method.
         virtual Physics::ColliderConfiguration CalculateColliderConfiguration(
-            const AZ::Transform& transform, Physics::MaterialId material);
+            const AZ::Transform& transform, const AZ::Data::Asset<Physics::MaterialAsset>& physicsMaterialAsset);
 
         //! Static function to add shapes, based on a list of indices that references chunks in a Blast asset.
         //! @param chunkIndices The indices of chunks in the asset parameter that will instantiate shapes.
         //! @param asset The Blast asset that stores chunk data based on indices.
-        //! @param material The PhysX material to use to create shapes.
+        //! @param physicsMaterialAsset The physics material assset to use to create shapes.
         void AddShapes(
             const AZStd::vector<uint32_t>& chunkIndices, const Nv::Blast::ExtPxAsset& asset,
-            const Physics::MaterialId& material);
+            const AZ::Data::Asset<Physics::MaterialAsset>& physicsMaterialAsset);
 
         const BlastFamily& m_family;
         Nv::Blast::TkActor& m_tkActor;
@@ -69,7 +69,7 @@ namespace Blast
         bool m_isStatic;
 
         // Stored from BlastActorDescription, because we can't use them right away in constructor
-        Physics::MaterialId m_physicsMaterialId;
+        Physics::MaterialId2 m_physicsMaterialId;
         AZ::Vector3 m_parentLinearVelocity = AZ::Vector3::CreateZero();
         AZ::Vector3 m_parentCenterOfMass = AZ::Vector3::CreateZero();
         AzPhysics::RigidBodyConfiguration m_bodyConfiguration;
