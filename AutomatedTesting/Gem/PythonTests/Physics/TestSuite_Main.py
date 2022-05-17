@@ -324,6 +324,7 @@ class TestAutomation(EditorTestSuite):
     class Joints_BallLeadFollowerCollide(EditorBatchedTest):
         from .tests.joints import Joints_BallLeadFollowerCollide as test_module
         
+    @pytest.mark.xfail(reason="GHI #9582: Test periodically fails")
     class ForceRegion_WorldSpaceForceOnRigidBodies(EditorBatchedTest):
         from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
         
