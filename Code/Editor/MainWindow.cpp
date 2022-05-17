@@ -42,6 +42,8 @@
 #include <AzFramework/Viewport/CameraInput.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
@@ -477,6 +479,16 @@ void MainWindow::Initialize()
         InitToolBars();
 
         m_levelEditorMenuHandler->Initialize();
+    }
+    else if (m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+    {
+        InitializeActionContext();
+        InitializeActions();
+
+        if (m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get())
+        {
+            InitializeMenus();
+        }
     }
 
     InitStatusBar();
@@ -2135,6 +2147,99 @@ bool MainWindow::focusNextPrevChild(bool next)
     }
 
     return QMainWindow::focusNextPrevChild(next);
+}
+
+void MainWindow::InitializeActionContext()
+{
+    ActionContextProperties contextProperties;
+    contextProperties.m_name = "O3DE Editor";
+
+    m_actionManagerInterface->RegisterActionContext("", "o3de.context.editor.mainwindow", contextProperties, this);
+}
+
+void MainWindow::InitializeActions()
+{
+    auto cryEdit = CCryEditApp::instance();
+
+    // --- Level Actions
+
+    // New Level
+    {
+        ActionProperties actionProperties;
+        actionProperties.m_name = "New Level";
+        actionProperties.m_description = "Create a new level";
+        actionProperties.m_category = "Level";
+
+        m_actionManagerInterface->RegisterAction(
+            "o3de.context.editor.mainwindow", "o3de.action.level.new", actionProperties,
+            [cryEdit]()
+            {
+                cryEdit->OnCreateLevel();
+            }
+        );
+    }
+
+    // Open Level
+    {
+        ActionProperties actionProperties;
+        actionProperties.m_name = "Open Level...";
+        actionProperties.m_description = "Open an existing level";
+        actionProperties.m_category = "Level";
+
+        m_actionManagerInterface->RegisterAction(
+            "o3de.context.editor.mainwindow", "o3de.action.level.open", actionProperties,
+            [cryEdit]()
+            {
+                cryEdit->OnOpenLevel();
+            }
+        );
+    }
+
+    // Save
+    {
+        ActionProperties actionProperties;
+        actionProperties.m_name = "Save";
+        actionProperties.m_description = "Save the current level";
+        actionProperties.m_category = "Level";
+
+        m_actionManagerInterface->RegisterAction(
+            "o3de.context.editor.mainwindow", "o3de.action.level.save", actionProperties,
+            [cryEdit]()
+            {
+                cryEdit->OnFileSave();
+            }
+        );
+    }
+}
+
+void MainWindow::InitializeMenus()
+{
+    // Initialize Menus
+    m_menuManagerInterface->RegisterMenu("o3de.menu.editor.file", "&File");
+    m_menuManagerInterface->RegisterMenu("o3de.menu.editor.edit", "&Edit");
+    m_menuManagerInterface->RegisterMenu("o3de.menu.editor.game", "&Game");
+    m_menuManagerInterface->RegisterMenu("o3de.menu.editor.tools", "&Tools");
+    m_menuManagerInterface->RegisterMenu("o3de.menu.editor.view", "&View");
+    m_menuManagerInterface->RegisterMenu("o3de.menu.editor.help", "&Help");
+
+    // Add Menus to MenuBar
+    QMenuBar* menuBar = this->menuBar();
+    menuBar->clear();
+    menuBar->addMenu(m_menuManagerInterface->GetMenu("o3de.menu.editor.file"));
+    menuBar->addMenu(m_menuManagerInterface->GetMenu("o3de.menu.editor.edit"));
+    menuBar->addMenu(m_menuManagerInterface->GetMenu("o3de.menu.editor.game"));
+    menuBar->addMenu(m_menuManagerInterface->GetMenu("o3de.menu.editor.tools"));
+    menuBar->addMenu(m_menuManagerInterface->GetMenu("o3de.menu.editor.view"));
+    menuBar->addMenu(m_menuManagerInterface->GetMenu("o3de.menu.editor.help"));
+
+    // Add actions to each menu
+
+    // File
+    {
+        m_menuManagerInterface->AddActionToMenu("o3de.action.level.new", "o3de.menu.editor.file", 20);
+        m_menuManagerInterface->AddActionToMenu("o3de.action.level.open", "o3de.menu.editor.file", 25);
+        m_menuManagerInterface->AddActionToMenu("o3de.action.level.save", "o3de.menu.editor.file", 30);
+    }
 }
 
 namespace AzToolsFramework
