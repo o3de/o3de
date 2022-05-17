@@ -14,4 +14,4 @@ namespace Streamer
     };
 }// namespace Streamer
 
-AZ_DECLARE_MODULE_CLASS(Gem_Streamer, Streamer::StreamerProfilerModule)
+AZ_DECLARE_MODULE_CLASS(Gem_StreamerProfiler, Streamer::StreamerProfilerModule)

@@ -6,7 +6,6 @@
     "O3DECopyrightYear": 2021,
     "O3DEBuildNumber": 0,
     "external_subdirectories": [
-        "Gems/Streamer",
         "Gems/Achievements",
         "Gems/AssetValidation",
         "Gems/Atom",
@@ -59,6 +58,7 @@
         "Gems/Prefab/PrefabBuilder",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
+        "Gems/Streamer",
         "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",

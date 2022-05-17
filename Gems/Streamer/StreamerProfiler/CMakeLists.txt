@@ -1,64 +1,14 @@
 
-# Add the Streamer.Static target
-ly_add_target(
-    NAME StreamerProfiler.Static STATIC
-    NAMESPACE Gem
-    FILES_CMAKE
-        streamerprofiler_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            Code
-    BUILD_DEPENDENCIES
-        PUBLIC
-            AZ::AzCore
-            Gem::ImGui.imguilib
-)
+set(gem_path ${CMAKE_CURRENT_LIST_DIR})
+set(gem_json ${gem_path}/gem.json)
+o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
 
-# Here add Streamer target, it depends on the Streamer.Static
-ly_add_target(
-    NAME StreamerProfiler ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-    NAMESPACE Gem
-    FILES_CMAKE
-        streamerprofiler_shared_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            Code
-    BUILD_DEPENDENCIES
-        PRIVATE
-            Gem::StreamerProfiler.Static
-)
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
-# By default, we will specify that the above target Streamer would be used by
-# Client and Server type targets when this gem is enabled.  If you don't want it
-# active in Clients or Servers by default, delete one of both of the following lines:
-ly_create_alias(NAME StreamerProfiler.Clients NAMESPACE Gem TARGETS Gem::StreamerProfiler)
-ly_create_alias(NAME StreamerProfiler.Servers NAMESPACE Gem TARGETS Gem::StreamerProfiler)
+# Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
+# project cmake for this platform.
+include(${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_gem.cmake)
 
-################################################################################
-# Tests
-################################################################################
-# See if globally, tests are supported
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    # We support Streamer.Tests on this platform, add Streamer.Tests target which depends on Streamer.Static
-    ly_add_target(
-        NAME StreamerProfiler.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            streamerprofiler_files.cmake
-            streamerprofiler_tests_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Tests
-                Code
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzTest
-                AZ::AzFramework
-                Gem::StreamerProfiler.Static
-    )
+ly_add_external_target_path(${CMAKE_CURRENT_LIST_DIR}/3rdParty)
 
-    # Add Streamer.Tests to googletest
-    ly_add_googletest(
-        NAME Gem::StreamerProfiler.Tests
-    )
-endif()
+add_subdirectory(Code)
