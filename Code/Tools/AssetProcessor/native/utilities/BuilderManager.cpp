@@ -381,6 +381,8 @@ namespace AssetProcessor
 
     BuilderManager::~BuilderManager()
     {
+        PrintDebugOutput();
+
         BusDisconnect();
         m_quitListener.BusDisconnect();
         m_quitListener.ApplicationShutdownRequested();
@@ -489,6 +491,11 @@ namespace AssetProcessor
         return builder;
     }
 
+    void BuilderManager::AddAssetToBuilderProcessedList(const AZ::Uuid& builderId, const AZStd::string& sourceAsset)
+    {
+        m_builderDebugOutput[builderId].m_assetsProcessed.push_back(sourceAsset);
+    }
+
     BuilderRef BuilderManager::GetBuilder(bool doRegistration)
     {
         AZStd::shared_ptr<Builder> newBuilder;
@@ -564,4 +571,24 @@ namespace AssetProcessor
             }
         }
     }
+
+    void BuilderManager::PrintDebugOutput()
+    {
+        // If debug output was tracked, print it on shutdown.
+        // This prints each asset that was processed by each builder, in the order they were processed.
+        // This is useful for tracing issues like memory leaks across assets processed by the same builder.
+        for (auto builderInfo : m_builderDebugOutput)
+        {
+            AZ_TracePrintf("BuilderManager", "Builder %.*s processed these assets:\n",
+                AZ_STRING_ARG(builderInfo.first.ToString<AZStd::string>()));
+            for (auto asset : builderInfo.second.m_assetsProcessed)
+            {
+                AZ_TracePrintf(
+                    "BuilderManager", "Builder with ID %.*s processed %.*s\n",
+                    AZ_STRING_ARG(builderInfo.first.ToFixedString()),
+                    AZ_STRING_ARG(asset));
+            }
+        }
+    }
+
 } // namespace AssetProcessor

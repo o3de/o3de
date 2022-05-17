@@ -1242,27 +1242,35 @@ namespace UnitTest
     {
     public:
         class UIElementContainer
+            : public AZ::Component
         {
         public:
-            AZ_TYPE_INFO(UIElementContainer, "{83B7BDFD-8B60-4C52-B7C5-BF3C824620F5}");
-            AZ_CLASS_ALLOCATOR(UIElementContainer, AZ::SystemAllocator, 0);
+            AZ_COMPONENT(UIElementContainer, "{83B7BDFD-8B60-4C52-B7C5-BF3C824620F5}", AZ::Component);
 
             int m_data;
 
-            static void Reflect(AZ::SerializeContext& context)
+            static void Reflect(AZ::ReflectContext* context)
             {
-                context.Class<UIElementContainer>()
-                    ->Field("data", &UIElementContainer::m_data);
-
-                if (auto editContext = context.GetEditContext())
+                if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
                 {
-                    editContext->Class<UIElementContainer>("Test", "")
-                        ->UIElement("TestHandler", "UIElement")
-                        ->DataElement(nullptr, &UIElementContainer::m_data)
-                        ->UIElement(AZ_CRC("TestHandler2"), "UIElement2")
-                    ;
+                    serialize->Class<UIElementContainer, AZ::Component>()
+                        ->Field("data", &UIElementContainer::m_data)
+                        ;
+
+                    if (auto editContext = serialize->GetEditContext())
+                    {
+                        editContext->Class<UIElementContainer>("Test", "")
+                            ->UIElement("TestHandler", "UIElement")
+                            ->DataElement(nullptr, &UIElementContainer::m_data)
+                            ->UIElement(AZ_CRC("TestHandler2"), "UIElement2")
+                            ;
+                    }
                 }
             }
+
+            // AZ::Component overrides ...
+            void Activate() override {}
+            void Deactivate() override {}
         };
 
         void run()
@@ -1271,7 +1279,8 @@ namespace UnitTest
 
             AZ::SerializeContext serializeContext;
             serializeContext.CreateEditContext();
-            UIElementContainer::Reflect(serializeContext);
+            AZ::Entity::Reflect(&serializeContext);
+            UIElementContainer::Reflect(&serializeContext);
 
             UIElementContainer test;
             InstanceDataHierarchy idh;
@@ -1279,18 +1288,27 @@ namespace UnitTest
             idh.Build(&serializeContext, 0);
 
             auto children = idh.GetChildren();
-            ASSERT_EQ(children.size(), 3);
+            ASSERT_EQ(children.size(), 4);
             auto it = children.begin();
 
+            // The first child will be the AZ::Component Id data that isn't
+            // exposed to the EditContext, so it has no edit metadata
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "BaseClass1");
+            EXPECT_EQ(it->GetElementEditMetadata(), nullptr);
+
+            ++it;
             Crc32 uiHandler = 0;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC("TestHandler"));
             EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement");
             EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC("UIElement"));
 
+            // The "data" element is in between the two UIElements
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "data");
+
+            ++it;
             uiHandler = 0;
-            ++it;
-            ++it;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC("TestHandler2"));
             EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement2");

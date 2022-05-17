@@ -156,23 +156,7 @@ namespace ScriptCanvasEditorTools
 
                 if (method->HasResult())
                 {
-                    Argument result;
-
-                    auto resultType = method->GetResult()->m_typeId;
-
-                    Helpers::GetTypeNameAndDescription(resultType, result.m_details.m_name, result.m_details.m_tooltip);
-
-                    auto tooltip = method->GetArgumentToolTip(0);
-                    if (tooltip && !tooltip->empty())
-                    {
-                        result.m_details.m_tooltip = *tooltip;
-                    }
-
-                    result.m_typeId = resultType.ToString<AZStd::string>();
-
-                    SplitCamelCase(result.m_details.m_name);
-
-                    eventEntry.m_results.push_back(result);
+                    TranslateMethodResults(method->GetResult(), eventEntry);
                 }
 
                 entry.m_methods.push_back(eventEntry);
