@@ -108,7 +108,6 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;
 
-        AZ::RHI::ShaderInputImageIndex m_heightmapPropertyIndex;
         AZ::RHI::ShaderInputConstantIndex m_worldDataIndex;
 
         AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };

@@ -448,11 +448,11 @@ namespace Terrain
         AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(gridSize * vertexSpacing);
 
         // expand the bounds in order to calcaulte normals.
-        aabbMin -= AZ::Vector3(vertexSpacing);
-        aabbMax += AZ::Vector3(vertexSpacing) + AZ::Vector3(m_sampleSpacing * 0.5f); // extra padding to catch the last vertex
+        AZ::Vector3 queryAabbMin = aabbMin - AZ::Vector3(vertexSpacing);
+        AZ::Vector3 queryAabbMax = aabbMax + AZ::Vector3(vertexSpacing) + AZ::Vector3(m_sampleSpacing * 0.5f); // extra padding to catch the last vertex
 
         // pad the max by half a sample spacing to make sure it's inclusive of the last point.
-        AZ::Aabb queryBounds = AZ::Aabb::CreateFromMinMax(aabbMin, aabbMax);
+        AZ::Aabb queryBounds = AZ::Aabb::CreateFromMinMax(queryAabbMin, queryAabbMax);
 
         auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         const AZ::Vector2 stepSize(vertexSpacing);
@@ -499,6 +499,10 @@ namespace Terrain
         float minHeight = AZStd::numeric_limits<float>::max();
         float maxHeight = AZStd::numeric_limits<float>::min();
 
+        // float versions of int max to make sure a int->float conversion doesn't happen at each loop iteration.
+        constexpr float maxUint16 = AZStd::numeric_limits<uint16_t>::max();
+        constexpr float maxInt16 = AZStd::numeric_limits<int16_t>::max();
+
         for (uint16_t y = 0; y < vertexCount1d; ++y)
         {
             const uint16_t offsetY = y + 1;
@@ -511,8 +515,7 @@ namespace Terrain
 
                 const float height = heights.at(offsetCoord);
                 const float clampedHeight = AZ::GetClamp(height * rcpWorldZ, 0.0f, 1.0f);
-                const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
-                const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
+                const uint16_t uint16Height = aznumeric_cast<uint16_t>(clampedHeight * maxUint16 + 0.5f); // always positive, so just add 0.5 to round.
                 meshHeights.at(coord) = uint16Height;
 
                 if (minHeight > height)
@@ -536,8 +539,8 @@ namespace Terrain
 
                 meshNormals.at(coord) =
                 {
-                    aznumeric_cast<int16_t>(AZStd::roundf(normalX * AZStd::numeric_limits<int16_t>::max())),
-                    aznumeric_cast<int16_t>(AZStd::roundf(normalY * AZStd::numeric_limits<int16_t>::max())),
+                    aznumeric_cast<int16_t>(AZStd::lround(normalX * maxInt16)),
+                    aznumeric_cast<int16_t>(AZStd::lround(normalY * maxInt16)),
                 };
                 
             }

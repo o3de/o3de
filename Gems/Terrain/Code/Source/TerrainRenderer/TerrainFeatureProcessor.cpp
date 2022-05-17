@@ -32,12 +32,10 @@ namespace Terrain
     namespace
     {
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
-        const char* TerrainHeightmapChars = "TerrainHeightmap";
     }
 
     namespace SceneSrgInputs
     {
-        static const char* const HeightmapImage("m_heightmapImage");
         static const char* const TerrainWorldData("m_terrainWorldData");
     }
 
@@ -75,9 +73,6 @@ namespace Terrain
         m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
-        
-        m_heightmapPropertyIndex = sceneSrgLayout->FindShaderInputImageIndex(AZ::Name(SceneSrgInputs::HeightmapImage));
-        AZ_Error(TerrainFPName, m_heightmapPropertyIndex.IsValid(), "Failed to find scene srg input constant %s.", SceneSrgInputs::HeightmapImage);
         
         m_worldDataIndex = sceneSrgLayout->FindShaderInputConstantIndex(AZ::Name(SceneSrgInputs::TerrainWorldData));
         AZ_Error(TerrainFPName, m_worldDataIndex.IsValid(), "Failed to find scene srg input constant %s.", SceneSrgInputs::TerrainWorldData);
