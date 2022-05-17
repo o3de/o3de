@@ -161,7 +161,7 @@ namespace AZ::DocumentPropertyEditor
     {
     }
 
-    Dom::Value CvarAdapter::GetContents() const
+    Dom::Value CvarAdapter::GenerateContents() const
     {
         AdapterBuilder builder;
         builder.BeginAdapter();

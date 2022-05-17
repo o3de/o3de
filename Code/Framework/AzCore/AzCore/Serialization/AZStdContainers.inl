@@ -2874,6 +2874,11 @@ namespace AZ
         }
     };
 
+    AZ_INLINE const Uuid GetGenericClassTupleTypeId()
+    {
+        return Uuid("{F98DF943-F870-4FE2-B6A9-3E8BC5861782}");
+    };
+
     /// Generic specialization for AZStd::tuple
     template<typename... Types>
     struct SerializeGenericTypeInfo< AZStd::tuple<Types...> >
@@ -2884,7 +2889,7 @@ namespace AZ
             : public GenericClassInfo
         {
         public:
-            AZ_TYPE_INFO(GenericClassTuple, "{F98DF943-F870-4FE2-B6A9-3E8BC5861782}");
+            AZ_TYPE_INFO(GenericClassTuple, GetGenericClassTupleTypeId());
             GenericClassTuple()
                 : m_classData{ SerializeContext::ClassData::Create<TupleType>("AZStd::tuple", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_tupleContainer) }
             {

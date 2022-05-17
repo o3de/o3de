@@ -28,17 +28,17 @@ namespace AzToolsFramework
     private:
         // ActionManagerInterface overrides ...
         ActionManagerOperationResult RegisterActionContext(
-            QWidget* widget,
-            const AZStd::string& identifier,
-            const AZStd::string& name, const AZStd::string& parentIdentifier) override;
+            const AZStd::string& parentContextIdentifier,
+            const AZStd::string& contextIdentifier,
+            const ActionContextProperties& properties,
+            QWidget* widget
+        ) override;
         ActionManagerOperationResult RegisterAction(
             const AZStd::string& contextIdentifier,
-            const AZStd::string& identifier,
-            const AZStd::string& name,
-            const AZStd::string& description,
-            const AZStd::string& category,
-            const AZStd::string& iconPath,
-            AZStd::function<void()> handler) override;
+            const AZStd::string& actionIdentifier,
+            const ActionProperties& properties,
+            AZStd::function<void()> handler
+        ) override;
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
         QAction* GetAction(const AZStd::string& actionIdentifier) override;
         const QAction* GetActionConst(const AZStd::string& actionIdentifier) override;

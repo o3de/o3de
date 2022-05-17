@@ -24,6 +24,8 @@ Usage example:
 """
 from __future__ import annotations
 
+import tempfile
+
 import pytest
 import _pytest.python
 import _pytest.outcomes
@@ -876,12 +878,22 @@ class EditorTestSuite:
         editor_utils.cycle_crash_report(run_id, workspace)
 
         results = {}
-        test_filenames_str = ";".join(editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
+
+        # We create a file containing a semicolon separated list for the Editor to read
+        temp_batched_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+        for test_spec in test_spec_list[:-1]:
+            temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec.test_module)
+                                    .replace('\\', '\\\\')+';')
+        # The last entry does not have a semicolon
+        temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec_list[-1].test_module)
+                                .replace('\\', '\\\\'))
+        temp_batched_file.flush()
+        temp_batched_file.close()
+
         cmdline = [
-            "--runpythontest", test_filenames_str,
+            "--runpythontest", temp_batched_file.name,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
-
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
@@ -975,6 +987,9 @@ class EditorTestSuite:
                 results[test_spec_name] = Result.Timeout(timed_out_result.test_spec,
                                                          results[test_spec_name].output,
                                                          self.timeout_editor_shared_test, result.editor_log)
+        finally:
+            if temp_batched_file:
+                os.unlink(temp_batched_file.name)
         return results
     
     def _run_single_test(self, request: _pytest.fixtures.FixtureRequest,
