@@ -243,11 +243,11 @@ namespace Blast
         }
 
         // Create physx material instance
-        m_physxMaterial = PhysX::Material2::FindOrCreateMaterial(m_physicsMaterialAsset);
+        m_physxMaterial = PhysX::Material::FindOrCreateMaterial(m_physicsMaterialAsset);
         if (!m_physxMaterial)
         {
             m_physxMaterial =
-                AZStd::rtti_pointer_cast<PhysX::Material2>(
+                AZStd::rtti_pointer_cast<PhysX::Material>(
                     AZ::Interface<Physics::MaterialManager>::Get()->GetDefaultMaterial());
         }
 

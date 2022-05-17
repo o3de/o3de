@@ -10,20 +10,20 @@
 
 namespace Physics
 {
-    Material2::Material2(
-        const MaterialId2& id,
+    Material::Material(
+        const MaterialId& id,
         const AZ::Data::Asset<MaterialAsset>& materialAsset)
         : m_id(id)
         , m_materialAsset(materialAsset)
     {
     }
 
-    MaterialId2 Material2::GetId() const
+    MaterialId Material::GetId() const
     {
         return m_id;
     }
 
-    AZ::Data::Asset<MaterialAsset> Material2::GetMaterialAsset() const
+    AZ::Data::Asset<MaterialAsset> Material::GetMaterialAsset() const
     {
         return m_materialAsset;
     }

@@ -12,7 +12,7 @@
 
 namespace Physics
 {
-    class MaterialId;
+    struct MaterialId;
 }
 
 namespace PhysX

@@ -45,7 +45,7 @@ namespace PhysX::Utils::Characters
     static void AppendShapeIndependentProperties(physx::PxControllerDesc& controllerDesc,
         const Physics::CharacterConfiguration& characterConfig, CharacterControllerCallbackManager* callbackManager)
     {
-        AZStd::vector<AZStd::shared_ptr<Material2>> materials = Material2::FindOrCreateMaterials(characterConfig.m_materialSlots);
+        AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(characterConfig.m_materialSlots);
         AZ_Assert(!materials.empty(), "Material list is empty, it should at least include the default material.");
 
         controllerDesc.material = const_cast<physx::PxMaterial*>(materials.front()->GetPxMaterial());

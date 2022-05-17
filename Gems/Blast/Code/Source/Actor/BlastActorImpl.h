@@ -69,7 +69,7 @@ namespace Blast
         bool m_isStatic;
 
         // Stored from BlastActorDescription, because we can't use them right away in constructor
-        Physics::MaterialId2 m_physicsMaterialId;
+        Physics::MaterialId m_physicsMaterialId;
         AZ::Vector3 m_parentLinearVelocity = AZ::Vector3::CreateZero();
         AZ::Vector3 m_parentCenterOfMass = AZ::Vector3::CreateZero();
         AzPhysics::RigidBodyConfiguration m_bodyConfiguration;

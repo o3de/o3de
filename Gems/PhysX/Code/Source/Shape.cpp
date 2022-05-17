@@ -105,9 +105,9 @@ namespace PhysX
         return nullptr;
     }
 
-    void Shape::SetMaterial(const AZStd::shared_ptr<Physics::Material2>& material)
+    void Shape::SetMaterial(const AZStd::shared_ptr<Physics::Material>& material)
     {
-        if (auto materialWrapper = AZStd::rtti_pointer_cast<PhysX::Material2>(material))
+        if (auto materialWrapper = AZStd::rtti_pointer_cast<PhysX::Material>(material))
         {
             m_materials.clear();
             m_materials.emplace_back(materialWrapper);
@@ -120,7 +120,7 @@ namespace PhysX
         }
     }
 
-    AZStd::shared_ptr<Physics::Material2> Shape::GetMaterial() const
+    AZStd::shared_ptr<Physics::Material> Shape::GetMaterial() const
     {
         if (!m_materials.empty())
         {
@@ -129,7 +129,7 @@ namespace PhysX
         return nullptr;
     }
 
-    void Shape::SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material2>>& materials)
+    void Shape::SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials)
     {
         m_materials = materials;
 
@@ -182,7 +182,7 @@ namespace PhysX
                 continue;
             }
 
-            AZStd::shared_ptr<PhysX::Material2> physxMaterial = static_cast<PhysX::Material2*>(PhysX::Utils::GetUserData(assignedMaterials[i]))->shared_from_this();
+            AZStd::shared_ptr<PhysX::Material> physxMaterial = static_cast<PhysX::Material*>(PhysX::Utils::GetUserData(assignedMaterials[i]))->shared_from_this();
             if (!physxMaterial)
             {
                 AZ_Error("PhysX Shape", false, "Invalid user data of a physx material. Make sure you are creating materials using MaterialManager");
@@ -193,7 +193,7 @@ namespace PhysX
         }
     }
 
-    const AZStd::vector<AZStd::shared_ptr<PhysX::Material2>>& Shape::GetMaterials()
+    const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& Shape::GetMaterials()
     {
         return m_materials;
     }

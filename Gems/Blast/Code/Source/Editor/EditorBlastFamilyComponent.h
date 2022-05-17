@@ -48,9 +48,6 @@ namespace Blast
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
-        /// Return the physics material library asset id. Used to supply MaterialIdWidget with material library.
-        AZ::Data::AssetId GetPhysicsMaterialLibraryAssetId() const;
-
         AZ::Data::AssetId GetDefaultBlastAssetId() const;
         AZ::Data::AssetId GetDefaultPhysicsAssetId() const;
 

@@ -13,34 +13,34 @@
 namespace Physics
 {
     //! Class that is used to identify a material.
-    struct MaterialId2
+    struct MaterialId
     {
-        AZ_TYPE_INFO(Physics::MaterialId2, "{30DED897-0E19-40B7-9BE1-0E92CBD307F9}");
+        AZ_TYPE_INFO(Physics::MaterialId, "{30DED897-0E19-40B7-9BE1-0E92CBD307F9}");
 
         //! Creates an instance id from an asset id. The two will share the same guid and
         //! sub id. This is an explicit create method rather than a constructor in order
         //! to make it explicit.
-        static MaterialId2 CreateFromAssetId(const AZ::Data::AssetId& assetId);
+        static MaterialId CreateFromAssetId(const AZ::Data::AssetId& assetId);
 
         //! Creates an InstanceId by hashing the provided name.
-        static MaterialId2 CreateName(const char* name);
+        static MaterialId CreateName(const char* name);
 
         //! Creates an InstanceId by hashing the provided data.
-        static MaterialId2 CreateData(const void* data, size_t dataSize);
+        static MaterialId CreateData(const void* data, size_t dataSize);
 
         //! Creates a random id.
-        static MaterialId2 CreateRandom();
+        static MaterialId CreateRandom();
 
         //! Create a null id by default.
-        MaterialId2() = default;
+        MaterialId() = default;
 
-        explicit MaterialId2(const AZ::Uuid& guid);
-        explicit MaterialId2(const AZ::Uuid& guid, uint32_t subId);
+        explicit MaterialId(const AZ::Uuid& guid);
+        explicit MaterialId(const AZ::Uuid& guid, uint32_t subId);
 
         bool IsValid() const;
 
-        bool operator==(const MaterialId2& rhs) const;
-        bool operator!=(const MaterialId2& rhs) const;
+        bool operator==(const MaterialId& rhs) const;
+        bool operator!=(const MaterialId& rhs) const;
 
         template<class StringType>
         StringType ToString() const;
@@ -53,7 +53,7 @@ namespace Physics
     };
 
     template<class StringType>
-    inline StringType MaterialId2::ToString() const
+    inline StringType MaterialId::ToString() const
     {
         StringType result;
         ToString(result);
@@ -61,7 +61,7 @@ namespace Physics
     }
 
     template<class StringType>
-    inline void MaterialId2::ToString(StringType& result) const
+    inline void MaterialId::ToString(StringType& result) const
     {
         result = StringType::format("%s:%x", m_guid.ToString<StringType>().c_str(), m_subId);
     }
@@ -71,11 +71,11 @@ namespace AZStd
 {
     // hash specialization
     template<>
-    struct hash<Physics::MaterialId2>
+    struct hash<Physics::MaterialId>
     {
         typedef AZ::Uuid argument_type;
         typedef size_t result_type;
-        AZ_FORCE_INLINE size_t operator()(const Physics::MaterialId2& id) const
+        AZ_FORCE_INLINE size_t operator()(const Physics::MaterialId& id) const
         {
             return id.m_guid.GetHash() ^ static_cast<size_t>(id.m_subId);
         }

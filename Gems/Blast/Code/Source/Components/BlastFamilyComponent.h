@@ -33,7 +33,7 @@ namespace AzPhysics
 
 namespace PhysX
 {
-    class Material2;
+    class Material;
 }
 
 namespace Blast
@@ -121,7 +121,7 @@ namespace Blast
         AZStd::unique_ptr<Material> m_blastMaterial;
 
         // PhysX material instance
-        AZStd::shared_ptr<PhysX::Material2> m_physxMaterial;
+        AZStd::shared_ptr<PhysX::Material> m_physxMaterial;
 
         // Dependencies
         BlastMeshData* m_meshDataComponent = nullptr;

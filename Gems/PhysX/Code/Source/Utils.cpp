@@ -360,7 +360,7 @@ namespace PhysX
                 return nullptr;
             }
 
-            AZStd::vector<AZStd::shared_ptr<Material2>> materials = Material2::FindOrCreateMaterials(colliderConfiguration.m_materialSlots);
+            AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(colliderConfiguration.m_materialSlots);
             AZStd::vector<const physx::PxMaterial*> pxMaterials(materials.size(), nullptr);
             for (size_t materialIndex = 0; materialIndex < materials.size(); ++materialIndex)
             {

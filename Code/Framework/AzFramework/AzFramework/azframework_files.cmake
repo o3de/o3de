@@ -269,8 +269,6 @@ set(FILES
     Physics/Character.h
     Physics/CollisionBus.h
     Physics/CollisionBus.cpp
-    Physics/Material.cpp
-    Physics/Material.h
     Physics/NameConstants.cpp
     Physics/NameConstants.h
     Physics/RigidBodyBus.h
@@ -289,7 +287,6 @@ set(FILES
     Physics/Utils.cpp
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
-    Physics/MaterialBus.h
     Physics/WindBus.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h

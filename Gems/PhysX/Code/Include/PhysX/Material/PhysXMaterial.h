@@ -27,22 +27,21 @@ namespace PhysX
     //! It handles the reloading of its data if the material asset it
     //! was created from is modified.
     //! It also provides functions to create PhysX materials.
-    // TODO: Material2 is temporary until old Material class is removed.
-    class Material2
-        : public Physics::Material2
-        , public AZStd::enable_shared_from_this<Material2>
+    class Material
+        : public Physics::Material
+        , public AZStd::enable_shared_from_this<Material>
         , protected AZ::Data::AssetBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(Material2, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysX::Material2, "{57A9681F-4025-4D66-891B-80CBC78BDEB9}", Physics::Material2);
+        AZ_CLASS_ALLOCATOR(Material, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysX::Material, "{57A9681F-4025-4D66-891B-80CBC78BDEB9}", Physics::Material);
 
         //! Function to create a material instance from an asset.
         //! The material id will be constructed from the asset id.
         //! If the material id is found in the manager it returns the existing material instance.
         //! @param materialAsset Material asset to create the material instance from.
         //! @return Material instance created or found. It can return nullptr if the creation failed or if the asset passed is invalid.
-        static AZStd::shared_ptr<Material2> FindOrCreateMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset);
+        static AZStd::shared_ptr<Material> FindOrCreateMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset);
 
         //! Function to create material instances from material slots.
         //! The material ids will be constructed from the asset ids of the assets assigned to the slots.
@@ -50,17 +49,17 @@ namespace PhysX
         //! the default material instance.
         //! @param materialSlots Material slots with the list of material assets to create the material instances from.
         //! @return List of material instances created. It will always return a valid list.
-        static AZStd::vector<AZStd::shared_ptr<Material2>> FindOrCreateMaterials(const Physics::MaterialSlots& materialSlots);
+        static AZStd::vector<AZStd::shared_ptr<Material>> FindOrCreateMaterials(const Physics::MaterialSlots& materialSlots);
 
         //! Function to create a material instance from an asset.
         //! A random material will be used. This function is useful to create several instances from the same asset.
         //! @param materialAsset Material asset to create the material instance from.
         //! @return Material instance created. It can return nullptr if the creation failed or if the asset passed is invalid.
-        static AZStd::shared_ptr<Material2> CreateMaterialWithRandomId(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset);
+        static AZStd::shared_ptr<Material> CreateMaterialWithRandomId(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset);
 
-        ~Material2() override;
+        ~Material() override;
 
-        // Physics::Material2 overrides ...
+        // Physics::Material overrides ...
         float GetDynamicFriction() const override;
         void SetDynamicFriction(float dynamicFriction) override;
         float GetStaticFriction() const override;
@@ -85,8 +84,8 @@ namespace PhysX
     private:
         friend class MaterialManager;
 
-        Material2(
-            const Physics::MaterialId2& id,
+        Material(
+            const Physics::MaterialId& id,
             const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset);
 
         using PxMaterialUniquePtr = AZStd::unique_ptr<physx::PxMaterial, AZStd::function<void(physx::PxMaterial*)>>;

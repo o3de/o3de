@@ -178,8 +178,8 @@ namespace ScriptCanvasPhysicsTests
         : public Physics::Shape
     {
     public:
-        MOCK_METHOD1(SetMaterial, void(const AZStd::shared_ptr<Physics::Material2>& material));
-        MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material2>());
+        MOCK_METHOD1(SetMaterial, void(const AZStd::shared_ptr<Physics::Material>& material));
+        MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material>());
         MOCK_METHOD1(SetCollisionLayer, void(const AzPhysics::CollisionLayer& layer));
         MOCK_CONST_METHOD0(GetCollisionLayer, AzPhysics::CollisionLayer());
         MOCK_METHOD1(SetCollisionGroup, void(const AzPhysics::CollisionGroup& group));
@@ -223,7 +223,7 @@ namespace ScriptCanvasPhysicsTests
             m_hit.m_distance = 2.5f;
             m_hit.m_normal = AZ::Vector3(-1.f, 3.5f, 0.5f);
             m_hit.m_shape = &m_shape;
-            m_hit.m_physicsMaterialId = Physics::MaterialId2::CreateName("Default");
+            m_hit.m_physicsMaterialId = Physics::MaterialId::CreateName("Default");
             m_hit.m_resultFlags = AzPhysics::SceneQuery::ResultFlags::Position |
                 AzPhysics::SceneQuery::ResultFlags::Distance |
                 AzPhysics::SceneQuery::ResultFlags::Normal |

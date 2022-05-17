@@ -66,8 +66,6 @@ set(FILES
     Editor/CollisionFilteringWidget.cpp
     Editor/PropertyTypes.h
     Editor/PropertyTypes.cpp
-    Editor/MaterialIdWidget.h
-    Editor/MaterialIdWidget.cpp
     Editor/EditorClassConverters.cpp
     Editor/EditorClassConverters.h
     Editor/PvdWidget.h
@@ -76,10 +74,6 @@ set(FILES
     Editor/DocumentationLinkWidget.cpp
     Editor/InertiaPropertyHandler.h
     Editor/InertiaPropertyHandler.cpp
-    Editor/ConfigStringLineEditCtrl.h
-    Editor/ConfigStringLineEditCtrl.cpp
-    Editor/UniqueStringContainer.h
-    Editor/UniqueStringContainer.cpp
     Editor/ComboBoxEditButtonPair.h
     Editor/ComboBoxEditButtonPair.cpp
     Editor/ColliderComponentMode.h

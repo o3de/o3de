@@ -12,7 +12,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/RTTI/ReflectContext.h>
-#include <AzFramework/Physics/Material.h>
 
 namespace PhysX
 {

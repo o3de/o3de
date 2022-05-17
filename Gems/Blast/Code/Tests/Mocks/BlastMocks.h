@@ -234,17 +234,17 @@ namespace Blast
         MOCK_CONST_METHOD0(GetDefaultSceneHandle, AzPhysics::SceneHandle());
     };
 
-    class DummyPhysicsMaterial : public Physics::Material2
+    class DummyPhysicsMaterial : public Physics::Material
     {
     public:
         DummyPhysicsMaterial(
-            const Physics::MaterialId2& id,
+            const Physics::MaterialId& id,
             const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
-            : Physics::Material2(id, materialAsset)
+            : Physics::Material(id, materialAsset)
         {
         }
 
-        // Physics::Material2 overrides ...
+        // Physics::Material overrides ...
         float GetDynamicFriction() const override { return 0.0f; }
         void SetDynamicFriction(float) override {}
         float GetStaticFriction() const override { return 0.0f; }
@@ -267,18 +267,18 @@ namespace Blast
         DummyPhysicsMaterialManager() = default;
 
     protected:
-        AZStd::shared_ptr<Physics::Material2> CreateDefaultMaterialInternal() override
+        AZStd::shared_ptr<Physics::Material> CreateDefaultMaterialInternal() override
         {
             return CreateMaterialInternal(
-                Physics::MaterialId2::CreateRandom(),
+                Physics::MaterialId::CreateRandom(),
                 AZ::Data::Asset<Physics::MaterialAsset>());
         }
 
-        AZStd::shared_ptr<Physics::Material2> CreateMaterialInternal(
-            [[maybe_unused]] const Physics::MaterialId2& id,
+        AZStd::shared_ptr<Physics::Material> CreateMaterialInternal(
+            [[maybe_unused]] const Physics::MaterialId& id,
             [[maybe_unused]] const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) override
         {
-            return AZStd::shared_ptr<Physics::Material2>(
+            return AZStd::shared_ptr<Physics::Material>(
                 new DummyPhysicsMaterial(id, materialAsset));
         }
     };
@@ -350,8 +350,8 @@ namespace Blast
     class MockShape : public Physics::Shape
     {
     public:
-        MOCK_METHOD1(SetMaterial, void(const AZStd::shared_ptr<Physics::Material2>&));
-        MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material2>());
+        MOCK_METHOD1(SetMaterial, void(const AZStd::shared_ptr<Physics::Material>&));
+        MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material>());
         MOCK_METHOD1(SetCollisionLayer, void (const AzPhysics::CollisionLayer&));
         MOCK_CONST_METHOD0(GetCollisionLayer, AzPhysics::CollisionLayer ());
         MOCK_METHOD1(SetCollisionGroup, void (const AzPhysics::CollisionGroup&));

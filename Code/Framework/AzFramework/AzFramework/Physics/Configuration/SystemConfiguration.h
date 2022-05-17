@@ -8,8 +8,8 @@
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Math/Vector4.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
-#include <AzFramework/Physics/Material.h>
 
 namespace AZ
 {
@@ -42,9 +42,6 @@ namespace AzPhysics
         //! Each Physics Scene uses this as a base and will override as needed.
         CollisionConfiguration m_collisionConfig;
 
-        Physics::DefaultMaterialConfiguration m_defaultMaterialConfiguration; //!< Default material parameters for the project.
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibraryAsset = AZ::Data::AssetLoadBehavior::NoLoad; //!< Material Library exposed by the system component SystemBus API.
-
         //! Controls whether the Physics System will self register to the TickBus and call StartSimulation / FinishSimulation on each Scene.
         //! Disable this to manually control Physics Scene simulation logic.
         bool m_autoManageSimulationUpdate = true;
@@ -56,5 +53,11 @@ namespace AzPhysics
         // helpers for edit context
         AZ::u32 OnMaxTimeStepChanged();
         float GetFixedTimeStepMax() const;
+
+        // Padding with a 16 byte aligned type to make the class aligned to 16 bytes too.
+        // This is used instead of adding alignas(16) to the struct because that generates
+        // warnings everywhere the struct is used indicating that padding is added, which 
+        // causes compilation errors.
+        AZ::Vector4 m_unusedPadding;
     };
 }

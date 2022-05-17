@@ -14,24 +14,24 @@
 
 namespace PhysX
 {
-    AZStd::shared_ptr<Physics::Material2> MaterialManager::CreateDefaultMaterialInternal()
+    AZStd::shared_ptr<Physics::Material> MaterialManager::CreateDefaultMaterialInternal()
     {
         AZ::Data::Asset<Physics::MaterialAsset> defaultMaterialAsset =
             AZ::Data::AssetManager::Instance().CreateAsset<Physics::MaterialAsset>(
                 AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
 
-        defaultMaterialAsset->SetData(Physics::MaterialConfiguration2{});
+        defaultMaterialAsset->SetData(Physics::MaterialConfiguration{});
 
         return CreateMaterialInternal(
-            Physics::MaterialId2::CreateFromAssetId(defaultMaterialAsset.GetId()),
+            Physics::MaterialId::CreateFromAssetId(defaultMaterialAsset.GetId()),
             defaultMaterialAsset);
     }
 
-    AZStd::shared_ptr<Physics::Material2> MaterialManager::CreateMaterialInternal(
-        const Physics::MaterialId2& id,
+    AZStd::shared_ptr<Physics::Material> MaterialManager::CreateMaterialInternal(
+        const Physics::MaterialId& id,
         const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
     {
-        return AZStd::shared_ptr<Physics::Material2>(
-            aznew Material2(id, materialAsset));
+        return AZStd::shared_ptr<Physics::Material>(
+            aznew Material(id, materialAsset));
     }
 } // namespace PhysX

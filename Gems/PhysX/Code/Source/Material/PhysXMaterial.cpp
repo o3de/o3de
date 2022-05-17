@@ -49,23 +49,23 @@ namespace PhysX
         }
     }
 
-    AZStd::shared_ptr<Material2> Material2::FindOrCreateMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+    AZStd::shared_ptr<Material> Material::FindOrCreateMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
     {
-        return AZStd::rtti_pointer_cast<Material2>(
+        return AZStd::rtti_pointer_cast<Material>(
             AZ::Interface<Physics::MaterialManager>::Get()->FindOrCreateMaterial(
-                Physics::MaterialId2::CreateFromAssetId(materialAsset.GetId()),
+                Physics::MaterialId::CreateFromAssetId(materialAsset.GetId()),
                 materialAsset));
     }
 
-    AZStd::vector<AZStd::shared_ptr<Material2>> Material2::FindOrCreateMaterials(const Physics::MaterialSlots& materialSlots)
+    AZStd::vector<AZStd::shared_ptr<Material>> Material::FindOrCreateMaterials(const Physics::MaterialSlots& materialSlots)
     {
-        AZStd::shared_ptr<Material2> defaultMaterial =
-            AZStd::rtti_pointer_cast<Material2>(
+        AZStd::shared_ptr<Material> defaultMaterial =
+            AZStd::rtti_pointer_cast<Material>(
                 AZ::Interface<Physics::MaterialManager>::Get()->GetDefaultMaterial());
 
         const size_t slotsCount = materialSlots.GetSlotsCount();
 
-        AZStd::vector<AZStd::shared_ptr<Material2>> materials;
+        AZStd::vector<AZStd::shared_ptr<Material>> materials;
         materials.reserve(slotsCount);
 
         for (size_t slotIndex = 0; slotIndex < slotsCount; ++slotIndex)
@@ -73,7 +73,7 @@ namespace PhysX
             if (const auto materialAsset = materialSlots.GetMaterialAsset(slotIndex);
                 materialAsset.GetId().IsValid())
             {
-                auto material = Material2::FindOrCreateMaterial(materialAsset);
+                auto material = Material::FindOrCreateMaterial(materialAsset);
                 if (material)
                 {
                     materials.push_back(material);
@@ -92,20 +92,20 @@ namespace PhysX
         return materials;
     }
 
-    AZStd::shared_ptr<Material2> Material2::CreateMaterialWithRandomId(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+    AZStd::shared_ptr<Material> Material::CreateMaterialWithRandomId(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
     {
-        return AZStd::rtti_pointer_cast<Material2>(
+        return AZStd::rtti_pointer_cast<Material>(
             AZ::Interface<Physics::MaterialManager>::Get()->FindOrCreateMaterial(
-                Physics::MaterialId2::CreateRandom(),
+                Physics::MaterialId::CreateRandom(),
                 materialAsset));
     }
 
-    Material2::Material2(
-        const Physics::MaterialId2& id,
+    Material::Material(
+        const Physics::MaterialId& id,
         const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
-        : Physics::Material2(id, materialAsset)
+        : Physics::Material(id, materialAsset)
     {
-        const Physics::MaterialConfiguration2 defaultMaterialConf;
+        const Physics::MaterialConfiguration defaultMaterialConf;
 
         m_pxMaterial = PxMaterialUniquePtr(
             PxGetPhysics().createMaterial(
@@ -132,17 +132,17 @@ namespace PhysX
         AZ::Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
     }
 
-    Material2::~Material2()
+    Material::~Material()
     {
         AZ::Data::AssetBus::Handler::BusDisconnect();
     }
 
-    float Material2::GetDynamicFriction() const
+    float Material::GetDynamicFriction() const
     {
         return m_pxMaterial->getDynamicFriction();
     }
 
-    void Material2::SetDynamicFriction(float dynamicFriction)
+    void Material::SetDynamicFriction(float dynamicFriction)
     {
         AZ_Warning(
             "PhysX Material", dynamicFriction >= 0.0f, "Dynamic friction value %f is out of range, 0 will be used.", dynamicFriction);
@@ -150,24 +150,24 @@ namespace PhysX
         m_pxMaterial->setDynamicFriction(AZ::GetMax(0.0f, dynamicFriction));
     }
 
-    float Material2::GetStaticFriction() const
+    float Material::GetStaticFriction() const
     {
         return m_pxMaterial->getStaticFriction();
     }
 
-    void Material2::SetStaticFriction(float staticFriction)
+    void Material::SetStaticFriction(float staticFriction)
     {
         AZ_Warning("PhysX Material", staticFriction >= 0.0f, "Static friction value %f is out of range, 0 will be used.", staticFriction);
 
         m_pxMaterial->setStaticFriction(AZ::GetMax(0.0f, staticFriction));
     }
 
-    float Material2::GetRestitution() const
+    float Material::GetRestitution() const
     {
         return m_pxMaterial->getRestitution();
     }
 
-    void Material2::SetRestitution(float restitution)
+    void Material::SetRestitution(float restitution)
     {
         AZ_Warning(
             "PhysX Material", restitution >= 0.0f && restitution <= 1.0f, "Restitution value %f will be clamped into range [0, 1]",
@@ -176,57 +176,57 @@ namespace PhysX
         m_pxMaterial->setRestitution(AZ::GetClamp(restitution, 0.0f, 1.0f));
     }
 
-    Physics::CombineMode Material2::GetFrictionCombineMode() const
+    Physics::CombineMode Material::GetFrictionCombineMode() const
     {
         return FromPxCombineMode(m_pxMaterial->getFrictionCombineMode());
     }
 
-    void Material2::SetFrictionCombineMode(Physics::CombineMode mode)
+    void Material::SetFrictionCombineMode(Physics::CombineMode mode)
     {
         m_pxMaterial->setFrictionCombineMode(ToPxCombineMode(mode));
     }
 
-    Physics::CombineMode Material2::GetRestitutionCombineMode() const
+    Physics::CombineMode Material::GetRestitutionCombineMode() const
     {
         return FromPxCombineMode(m_pxMaterial->getRestitutionCombineMode());
     }
 
-    void Material2::SetRestitutionCombineMode(Physics::CombineMode mode)
+    void Material::SetRestitutionCombineMode(Physics::CombineMode mode)
     {
         m_pxMaterial->setRestitutionCombineMode(ToPxCombineMode(mode));
     }
 
-    float Material2::GetDensity() const
+    float Material::GetDensity() const
     {
         return m_density;
     }
 
-    void Material2::SetDensity(float density)
+    void Material::SetDensity(float density)
     {
         AZ_Warning(
-            "PhysX Material", density >= Physics::MaterialConfiguration2::MinDensityLimit && density <= Physics::MaterialConfiguration2::MaxDensityLimit,
-            "Density value %f will be clamped into range [%f, %f].", density, Physics::MaterialConfiguration2::MinDensityLimit,
-            Physics::MaterialConfiguration2::MaxDensityLimit);
+            "PhysX Material", density >= Physics::MaterialConfiguration::MinDensityLimit && density <= Physics::MaterialConfiguration::MaxDensityLimit,
+            "Density value %f will be clamped into range [%f, %f].", density, Physics::MaterialConfiguration::MinDensityLimit,
+            Physics::MaterialConfiguration::MaxDensityLimit);
 
-        m_density = AZ::GetClamp(density, Physics::MaterialConfiguration2::MinDensityLimit, Physics::MaterialConfiguration2::MaxDensityLimit);
+        m_density = AZ::GetClamp(density, Physics::MaterialConfiguration::MinDensityLimit, Physics::MaterialConfiguration::MaxDensityLimit);
     }
 
-    const AZ::Color& Material2::GetDebugColor() const
+    const AZ::Color& Material::GetDebugColor() const
     {
         return m_debugColor;
     }
 
-    void Material2::SetDebugColor(const AZ::Color& debugColor)
+    void Material::SetDebugColor(const AZ::Color& debugColor)
     {
         m_debugColor = debugColor;
     }
 
-    const physx::PxMaterial* Material2::GetPxMaterial() const
+    const physx::PxMaterial* Material::GetPxMaterial() const
     {
         return m_pxMaterial.get();
     }
 
-    void Material2::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void Material::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         m_materialAsset = asset;
 

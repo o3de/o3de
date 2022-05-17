@@ -30,9 +30,9 @@ namespace PhysX
         return actorData;
     }
 
-    inline Physics::Material2* Utils::GetUserData(const physx::PxMaterial* material)
+    inline Physics::Material* Utils::GetUserData(const physx::PxMaterial* material)
     {
-        return (material == nullptr) ? nullptr : static_cast<Physics::Material2*>(material->userData);
+        return (material == nullptr) ? nullptr : static_cast<Physics::Material*>(material->userData);
     }
 
     inline Physics::Shape* Utils::GetUserData(const physx::PxShape* pxShape)

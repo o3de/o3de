@@ -29,11 +29,11 @@ namespace Physics
 
         //! Sets the data for this material asset and marks it as ready.
         //! This is necessary to be called when creating an in-memory material asset.
-        void SetData(const MaterialConfiguration2& materialConfiguraiton);
+        void SetData(const MaterialConfiguration& materialConfiguraiton);
 
-        const MaterialConfiguration2& GetMaterialConfiguration() const;
+        const MaterialConfiguration& GetMaterialConfiguration() const;
 
     protected:
-        MaterialConfiguration2 m_materialConfiguration;
+        MaterialConfiguration m_materialConfiguration;
     };
 } // namespace Physics

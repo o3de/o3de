@@ -36,13 +36,13 @@ namespace Physics
         }
     }
 
-    void MaterialAsset::SetData(const MaterialConfiguration2& materialConfiguraiton)
+    void MaterialAsset::SetData(const MaterialConfiguration& materialConfiguraiton)
     {
         m_materialConfiguration = materialConfiguraiton;
         m_status = AZ::Data::AssetData::AssetStatus::Ready;
     }
 
-    const MaterialConfiguration2& MaterialAsset::GetMaterialConfiguration() const
+    const MaterialConfiguration& MaterialAsset::GetMaterialConfiguration() const
     {
         return m_materialConfiguration;
     }

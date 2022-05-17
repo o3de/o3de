@@ -132,11 +132,6 @@ namespace Blast
             m_blastAsset, m_blastMaterialAsset, m_physicsMaterialAsset, m_actorConfiguration);
     }
 
-    AZ::Data::AssetId EditorBlastFamilyComponent::GetPhysicsMaterialLibraryAssetId() const
-    {
-        return AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_materialLibraryAsset.GetId();
-    }
-
     AZ::Data::AssetId EditorBlastFamilyComponent::GetDefaultBlastAssetId() const
     {
         // Used for Edit Context.

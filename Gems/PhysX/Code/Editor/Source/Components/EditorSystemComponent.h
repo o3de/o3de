@@ -66,9 +66,6 @@ namespace PhysX
         // AztoolsFramework::EditorEvents::Bus::Handler
         void NotifyRegisterViews() override;
 
-        AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> RetrieveDefaultMaterialLibrary();
-
-        AzPhysics::SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler m_onMaterialLibraryLoadErrorEventHandler;
         AzPhysics::SceneHandle m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
     };
 }

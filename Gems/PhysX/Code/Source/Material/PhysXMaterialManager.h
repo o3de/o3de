@@ -22,7 +22,7 @@ namespace PhysX
         MaterialManager() = default;
 
     protected:
-        AZStd::shared_ptr<Physics::Material2> CreateDefaultMaterialInternal() override;
-        AZStd::shared_ptr<Physics::Material2> CreateMaterialInternal(const Physics::MaterialId2& id, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) override;
+        AZStd::shared_ptr<Physics::Material> CreateDefaultMaterialInternal() override;
+        AZStd::shared_ptr<Physics::Material> CreateMaterialInternal(const Physics::MaterialId& id, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) override;
     };
 } // namespace PhysX

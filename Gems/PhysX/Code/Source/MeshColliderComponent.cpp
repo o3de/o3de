@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <Source/MeshColliderComponent.h>
 #include <Source/Utils.h>
 

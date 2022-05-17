@@ -26,7 +26,7 @@ namespace AZ
 
 namespace Physics
 {
-    class Material2;
+    class Material;
     class Shape;
     class ShapeConfiguration;
 }
@@ -261,7 +261,7 @@ namespace AzPhysics
         Physics::Shape* m_shape = nullptr;
         //! The physics material id on the shape (or face) that was hit.
         //! Valid if SceneQuery::ResultFlags::Material is set.
-        Physics::MaterialId2 m_physicsMaterialId;
+        Physics::MaterialId m_physicsMaterialId;
         //! The position of the hit in world space.
         //! Valid if SceneQuery::ResultFlags::Position is set.
         AZ::Vector3 m_position = AZ::Vector3::CreateZero();

@@ -232,7 +232,7 @@ namespace PhysX
             m_physXSystem = nullptr;
         }
 
-        m_assetHandlers.clear(); //this need to be after m_physXSystem->Shutdown(); For it will drop the default material library reference.
+        m_assetHandlers.clear(); //this need to be after m_physXSystem->Shutdown();
     }
 
     physx::PxConvexMesh* SystemComponent::CreateConvexMesh(const void* vertices, AZ::u32 vertexNum, AZ::u32 vertexStride)

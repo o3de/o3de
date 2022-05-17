@@ -48,19 +48,19 @@ namespace PhysXEditorTests
             AZ::Data::AssetManager::Instance().FindOrCreateAsset<Physics::MaterialAsset>(
                 AZ::Data::AssetId(AZ::Uuid::CreateString("{EC976D51-2C26-4C1E-BBF2-75BAAAFA162C}")),
                 AZ::Data::AssetLoadBehavior::Default);
-        materialAsset1->SetData(Physics::MaterialConfiguration2{});
+        materialAsset1->SetData(Physics::MaterialConfiguration{});
 
         AZ::Data::Asset<Physics::MaterialAsset> materialAsset2 =
             AZ::Data::AssetManager::Instance().FindOrCreateAsset<Physics::MaterialAsset>(
                 AZ::Data::AssetId(AZ::Uuid::CreateString("{B9836F51-A235-4781-95E3-A6302BEE9EFF}")),
                 AZ::Data::AssetLoadBehavior::Default);
-        materialAsset2->SetData(Physics::MaterialConfiguration2{});
+        materialAsset2->SetData(Physics::MaterialConfiguration{});
 
         AZ::Data::Asset<Physics::MaterialAsset> materialAsset3 =
             AZ::Data::AssetManager::Instance().FindOrCreateAsset<Physics::MaterialAsset>(
                 AZ::Data::AssetId(AZ::Uuid::CreateString("{7E060707-BB03-47EB-B046-4503C7145B6E}")),
                 AZ::Data::AssetLoadBehavior::Default);
-        materialAsset3->SetData(Physics::MaterialConfiguration2{});
+        materialAsset3->SetData(Physics::MaterialConfiguration{});
 
         return {
             materialAsset1,
@@ -159,7 +159,7 @@ namespace PhysXEditorTests
             PhysXEditorFixture::TearDown();
         }
 
-        Physics::MaterialId2 GetMaterialFromRaycast(float x, float y)
+        Physics::MaterialId GetMaterialFromRaycast(float x, float y)
         {
             AzPhysics::RayCastRequest request;
             request.m_start = AZ::Vector3(x, y, 5.0f);
@@ -354,17 +354,17 @@ namespace PhysXEditorTests
                     float rayX = x_offset + sampleColumn;
                     float rayY = y_offset + sampleRow;
 
-                    Physics::MaterialId2 matId1 = GetMaterialFromRaycast(rayX, rayY);
+                    Physics::MaterialId matId1 = GetMaterialFromRaycast(rayX, rayY);
                     EXPECT_TRUE(matId1.IsValid());
 
-                    Physics::MaterialId2 matId2 = GetMaterialFromRaycast(rayX + secondRayOffset, rayY + secondRayOffset);
+                    Physics::MaterialId matId2 = GetMaterialFromRaycast(rayX + secondRayOffset, rayY + secondRayOffset);
                     EXPECT_TRUE(matId2.IsValid());
 
                     if (matId1.IsValid())
                     {
                         const AZ::Data::Asset<Physics::MaterialAsset> expectedMaterialAsset = physicsMaterialAssets[physicsMaterialsValidationDataIndex[sampleRow * 2 + sampleColumn]];
 
-                        AZStd::shared_ptr<Physics::Material2> mat1 = AZ::Interface<Physics::MaterialManager>::Get()->GetMaterial(matId1);
+                        AZStd::shared_ptr<Physics::Material> mat1 = AZ::Interface<Physics::MaterialManager>::Get()->GetMaterial(matId1);
 
                         EXPECT_TRUE(mat1.get() != nullptr);
                         if (mat1)

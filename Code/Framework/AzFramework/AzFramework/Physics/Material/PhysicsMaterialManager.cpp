@@ -26,7 +26,7 @@ namespace Physics
         m_defaultMaterial.reset();
     }
 
-    AZStd::shared_ptr<Material2> MaterialManager::FindOrCreateMaterial(const MaterialId2& id, const AZ::Data::Asset<MaterialAsset>& materialAsset)
+    AZStd::shared_ptr<Material> MaterialManager::FindOrCreateMaterial(const MaterialId& id, const AZ::Data::Asset<MaterialAsset>& materialAsset)
     {
         if (!id.IsValid() || !materialAsset.GetId().IsValid())
         {
@@ -67,7 +67,7 @@ namespace Physics
         return newMaterial;
     }
 
-    void MaterialManager::DeleteMaterial(const MaterialId2& id)
+    void MaterialManager::DeleteMaterial(const MaterialId& id)
     {
         if (!id.IsValid() ||
             id == m_defaultMaterial->GetId()) // Do not remove the default material from the list
@@ -84,13 +84,13 @@ namespace Physics
     }
 
     //! Get default material.
-    AZStd::shared_ptr<Material2> MaterialManager::GetDefaultMaterial()
+    AZStd::shared_ptr<Material> MaterialManager::GetDefaultMaterial()
     {
         return m_defaultMaterial;
     }
 
     //! Returns a weak pointer to physics material with the given id.
-    AZStd::shared_ptr<Material2> MaterialManager::GetMaterial(const MaterialId2& id)
+    AZStd::shared_ptr<Material> MaterialManager::GetMaterial(const MaterialId& id)
     {
         if (!id.IsValid())
         {

@@ -72,8 +72,6 @@ set(FILES
     Source/Collision.h
     Source/Shape.h
     Source/Shape.cpp
-    Source/Material.cpp
-    Source/Material.h
     Source/ForceRegionForces.cpp
     Source/ForceRegionForces.h
     Source/ForceRegion.cpp

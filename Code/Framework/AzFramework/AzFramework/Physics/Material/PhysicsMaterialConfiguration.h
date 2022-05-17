@@ -25,10 +25,9 @@ namespace Physics
     };
 
     //! Properties of a Physics material.
-    // TODO: MaterialConfiguration2 is temporary until old MaterialConfiguration class is removed.
-    struct MaterialConfiguration2
+    struct MaterialConfiguration
     {
-        AZ_TYPE_INFO(Physics::MaterialConfiguration2, "{675AF04D-CF51-479C-9D6A-4D7E264D1DBE}");
+        AZ_TYPE_INFO(Physics::MaterialConfiguration, "{675AF04D-CF51-479C-9D6A-4D7E264D1DBE}");
 
         static void Reflect(AZ::ReflectContext* context);
 

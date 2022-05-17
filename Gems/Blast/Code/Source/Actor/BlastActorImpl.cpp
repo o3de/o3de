@@ -57,7 +57,7 @@ namespace Blast
     void BlastActorImpl::Spawn()
     {
         // Get physics material from id
-        AZStd::shared_ptr<Physics::Material2> physicsMaterial = AZ::Interface<Physics::MaterialManager>::Get()->GetMaterial(m_physicsMaterialId);
+        AZStd::shared_ptr<Physics::Material> physicsMaterial = AZ::Interface<Physics::MaterialManager>::Get()->GetMaterial(m_physicsMaterialId);
         if (!physicsMaterial)
         {
             physicsMaterial = AZ::Interface<Physics::MaterialManager>::Get()->GetDefaultMaterial();

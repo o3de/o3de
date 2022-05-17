@@ -82,7 +82,7 @@ namespace Blast
         auto actorDesc = BlastActorDesc
             {m_mockFamily.get(),
              m_mockTkActor.get(),
-             Physics::MaterialId2(),
+             Physics::MaterialId(),
              AZ::Vector3::CreateZero(),
              AZ::Vector3::CreateZero(),
              configuration,

@@ -34,27 +34,27 @@ namespace Physics
         //! @param id Material id used to identify the material.
         //! @param materialAsset Material asset to create the material from.
         //! @return Material instance created or found. It can return nullptr if the creation failed.
-        AZStd::shared_ptr<Material2> FindOrCreateMaterial(const MaterialId2& id, const AZ::Data::Asset<MaterialAsset>& materialAsset);
+        AZStd::shared_ptr<Material> FindOrCreateMaterial(const MaterialId& id, const AZ::Data::Asset<MaterialAsset>& materialAsset);
 
         //! Deletes a physics material instance with the given id.
         //! Default material will not be destroyed.
-        void DeleteMaterial(const MaterialId2& id);
+        void DeleteMaterial(const MaterialId& id);
 
         //! Deletes all physics material instances.
         //! Default material will not be destroyed.
         void DeleteAllMaterials();
 
         //! Get default material.
-        AZStd::shared_ptr<Material2> GetDefaultMaterial();
+        AZStd::shared_ptr<Material> GetDefaultMaterial();
 
         //! Returns a physics material instance with the given id.
-        AZStd::shared_ptr<Material2> GetMaterial(const MaterialId2& id);
+        AZStd::shared_ptr<Material> GetMaterial(const MaterialId& id);
 
     protected:
-        virtual AZStd::shared_ptr<Material2> CreateDefaultMaterialInternal() = 0;
-        virtual AZStd::shared_ptr<Material2> CreateMaterialInternal(const MaterialId2& id, const AZ::Data::Asset<MaterialAsset>& materialAsset) = 0;
+        virtual AZStd::shared_ptr<Material> CreateDefaultMaterialInternal() = 0;
+        virtual AZStd::shared_ptr<Material> CreateMaterialInternal(const MaterialId& id, const AZ::Data::Asset<MaterialAsset>& materialAsset) = 0;
 
-        AZStd::shared_ptr<Material2> m_defaultMaterial;
-        AZStd::unordered_map<MaterialId2, AZStd::shared_ptr<Material2>> m_materials;
+        AZStd::shared_ptr<Material> m_defaultMaterial;
+        AZStd::unordered_map<MaterialId, AZStd::shared_ptr<Material>> m_materials;
     };
 } // namespace Physics

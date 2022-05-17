@@ -11,7 +11,6 @@
 #include <Editor/ColliderComponentMode.h>
 #include <EditorHeightfieldColliderComponent.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <Source/HeightfieldColliderComponent.h>
@@ -438,8 +437,8 @@ namespace PhysX
         AZStd::shared_ptr<Physics::Shape> shape = rigidBody->GetShape(0);
         PhysX::Shape* physxShape = azdynamic_cast<PhysX::Shape*>(shape.get());
 
-        AZStd::vector<AZStd::shared_ptr<Material2>> materials =
-            Material2::FindOrCreateMaterials(updatedMaterialSlots);
+        AZStd::vector<AZStd::shared_ptr<Material>> materials =
+            Material::FindOrCreateMaterials(updatedMaterialSlots);
 
         physxShape->SetMaterials(materials);
 

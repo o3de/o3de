@@ -18,12 +18,12 @@
 
 namespace Physics
 {
-    class Material2;
+    class Material;
 }
 
 namespace PhysX
 {
-    class Material2;
+    class Material;
 
     class Shape
         : public Physics::Shape
@@ -44,11 +44,11 @@ namespace PhysX
 
         physx::PxShape* GetPxShape();
 
-        void SetMaterial(const AZStd::shared_ptr<Physics::Material2>& material) override;
-        AZStd::shared_ptr<Physics::Material2> GetMaterial() const override;
+        void SetMaterial(const AZStd::shared_ptr<Physics::Material>& material) override;
+        AZStd::shared_ptr<Physics::Material> GetMaterial() const override;
 
-        void SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material2>>& materials);
-        const AZStd::vector<AZStd::shared_ptr<PhysX::Material2>>& GetMaterials();
+        void SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials);
+        const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& GetMaterials();
 
         void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) override;
         AzPhysics::CollisionLayer GetCollisionLayer() const override;
@@ -104,7 +104,7 @@ namespace PhysX
         Shape() = default;
 
         PxShapeUniquePtr m_pxShape;
-        AZStd::vector<AZStd::shared_ptr<PhysX::Material2>> m_materials;
+        AZStd::vector<AZStd::shared_ptr<PhysX::Material>> m_materials;
         AzPhysics::CollisionLayer m_collisionLayer;
         AzPhysics::CollisionGroup m_collisionGroup;
         AZ::Crc32 m_tag;

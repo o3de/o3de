@@ -83,8 +83,8 @@ namespace Physics
         AZ_RTTI(Shape, "{0A47DDD6-2BD7-43B3-BF0D-2E12CC395C13}");
         virtual ~Shape() = default;
 
-        virtual void SetMaterial(const AZStd::shared_ptr<Material2>& material) = 0;
-        virtual AZStd::shared_ptr<Material2> GetMaterial() const = 0;
+        virtual void SetMaterial(const AZStd::shared_ptr<Material>& material) = 0;
+        virtual AZStd::shared_ptr<Material> GetMaterial() const = 0;
 
         virtual void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) = 0;
         virtual AzPhysics::CollisionLayer GetCollisionLayer() const = 0;

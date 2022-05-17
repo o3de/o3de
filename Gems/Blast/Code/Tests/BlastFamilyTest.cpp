@@ -95,7 +95,7 @@ namespace Blast
                 {*m_asset,
                  m_mockListener.get(),
                  nullptr,
-                 Physics::MaterialId2(),
+                 Physics::MaterialId(),
                  m_blastMaterial.get(),
                  m_fakeActorFactory,
                  m_fakeEntityProvider,
