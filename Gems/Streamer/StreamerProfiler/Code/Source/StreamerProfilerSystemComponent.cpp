@@ -183,7 +183,7 @@ namespace Streamer
 #endif // #if defined(IMGUI_ENABLED)
     }
 
-    void StreamerProfilerSystemComponent::DrawLiveStats(AZ::IO::IStreamer& streamer)
+    void StreamerProfilerSystemComponent::DrawLiveStats([[maybe_unused]] AZ::IO::IStreamer& streamer)
     {
 #if defined(IMGUI_ENABLED)
         if (ImGui::Button("Reset graphs"))
@@ -314,7 +314,7 @@ namespace Streamer
 #endif //#if defined(IMGUI_ENABLED)
     }
 
-    void StreamerProfilerSystemComponent::DrawStackConfiguration(AZ::IO::IStreamer& streamer)
+    void StreamerProfilerSystemComponent::DrawStackConfiguration([[maybe_unused]] AZ::IO::IStreamer& streamer)
     {
 #if defined(IMGUI_ENABLED)
         if (!m_stackConfigurationAvailable)
@@ -369,7 +369,7 @@ namespace Streamer
 #endif // #if defined(IMGUI_ENABLED)
     }
 
-    void StreamerProfilerSystemComponent::DrawFileLocks(AZ::IO::IStreamer& streamer)
+    void StreamerProfilerSystemComponent::DrawFileLocks([[maybe_unused]] AZ::IO::IStreamer& streamer)
     {
 #if defined(IMGUI_ENABLED)
         // Queue next request for update if needed.
@@ -407,7 +407,7 @@ namespace Streamer
 
         // Draw the display list. One should always be assigned.
         AZ_Assert(m_displayingFileLocks, "Expected to always have a valid list of file locks, even if it's empty.");
-        ImGui::Text("Total file lock count: %llu", m_displayingFileLocks->size());
+        ImGui::Text("Total file lock count: %zu", m_displayingFileLocks->size());
         if (ImGui::Button("Flush all"))
         {
             streamer.QueueRequest(streamer.FlushCaches());
@@ -457,7 +457,8 @@ namespace Streamer
 #endif // #if defined(IMGUI_ENABLED)
     }
 
-    void StreamerProfilerSystemComponent::DrawGraph(const AZ::IO::Statistic::Value& value, GraphStore& values, bool useHistogram)
+    void StreamerProfilerSystemComponent::DrawGraph(
+        [[maybe_unused]] const AZ::IO::Statistic::Value& value, [[maybe_unused]] GraphStore& values, [[maybe_unused]] bool useHistogram)
     {
 #if defined(IMGUI_ENABLED)
         auto visitor = [&values](auto&& value)
@@ -502,7 +503,8 @@ namespace Streamer
 #endif // #if defined(IMGUI_ENABLED)
     }
 
-    void StreamerProfilerSystemComponent::DrawStatisticValue(const AZ::IO::Statistic::Value& value, float capturedMin, float capturedMax)
+    void StreamerProfilerSystemComponent::DrawStatisticValue(
+        [[maybe_unused]] const AZ::IO::Statistic::Value& value, [[maybe_unused]] float capturedMin, [[maybe_unused]] float capturedMax)
     {
 #if defined(IMGUI_ENABLED)
         auto visitor = [capturedMin, capturedMax](auto&& value)
@@ -543,7 +545,7 @@ namespace Streamer
                 if (value.m_min != AZStd::numeric_limits<decltype(value.m_min)>::max() &&
                     value.m_max != AZStd::numeric_limits<decltype(value.m_max)>::min())
                 {
-                    ImGui::Text("%lld", value);
+                    ImGui::Text("%lld", value.m_value);
                     DrawToolTipV("Min: %lld\nMax: %lld", value.m_min, value.m_max);
                 }
                 else
@@ -656,7 +658,11 @@ namespace Streamer
         static constexpr AZ::u64 gigabyte = 1024 * megabyte;
         static constexpr AZ::u64 terabyte = 1024 * gigabyte;
 
-        if (value > gigabyte)
+        if (value > terabyte)
+        {
+            text += AZStd::fixed_string<64>::format("%.2f terabytes (%llu bytes)", value * (1.0f / terabyte), value);
+        }
+        else if (value > gigabyte)
         {
             text += AZStd::fixed_string<64>::format("%.2f gigabytes (%llu bytes)", value * (1.0f / gigabyte), value);
         }
@@ -716,17 +722,21 @@ namespace Streamer
         static constexpr AZ::u64 gigabyte = 1024 * megabyte;
         static constexpr AZ::u64 terabyte = 1024 * gigabyte;
 
-        if (value > gigabyte)
+        if (value > terabyte)
         {
-            text += AZStd::fixed_string<64>::format("%.2f gigabytes per second", value * (1.0 / gigabyte), value);
+            text += AZStd::fixed_string<64>::format("%.2f terabytes per second", value * (1.0 / terabyte));
+        }
+        else if (value > gigabyte)
+        {
+            text += AZStd::fixed_string<64>::format("%.2f gigabytes per second", value * (1.0 / gigabyte));
         }
         else if (value > megabyte)
         {
-            text += AZStd::fixed_string<32>::format("%.2f megabytes per second", value * (1.0 / megabyte), value);
+            text += AZStd::fixed_string<32>::format("%.2f megabytes per second", value * (1.0 / megabyte));
         }
         else if (value > kilobyte)
         {
-            text += AZStd::fixed_string<32>::format("%.2f kilobytes per second", value * (1.0 / kilobyte), value);
+            text += AZStd::fixed_string<32>::format("%.2f kilobytes per second", value * (1.0 / kilobyte));
         }
         else
         {
@@ -758,7 +768,7 @@ namespace Streamer
         return AZStd::visit(visitor, value);
     }
 
-    void StreamerProfilerSystemComponent::DrawToolTip(AZStd::string_view text)
+    void StreamerProfilerSystemComponent::DrawToolTip([[maybe_unused]] AZStd::string_view text)
     {
 #if defined(IMGUI_ENABLED)
         if (ImGui::IsItemHovered())
@@ -772,7 +782,7 @@ namespace Streamer
 #endif // #if defined(IMGUI_ENABLED)
     }
 
-    void StreamerProfilerSystemComponent::DrawToolTipV(const char* text, ...)
+    void StreamerProfilerSystemComponent::DrawToolTipV([[maybe_unused]] const char* text, ...)
     {
 #if defined(IMGUI_ENABLED)
         if (ImGui::IsItemHovered())
