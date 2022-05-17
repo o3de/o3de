@@ -53,7 +53,7 @@ namespace AZ::DocumentPropertyEditor
     template<typename NodeDefinition>
     Name GetNodeName()
     {
-        return AZ::Name(NodeDefinition::Name);
+        return AZ_NAME_LITERAL(NodeDefinition::Name);
     }
 
     //! Runtime data describing a NodeDescriptor.

@@ -139,7 +139,6 @@ namespace PhysX
                 serializeContext->Class<Collider>()
                     ->Version(1)
                     ->Field("LocallyEnabled", &Collider::m_locallyEnabled)
-                    ->Field("GlobalButtonState", &Collider::m_globalButtonState)
                     ;
 
                 if (auto editContext = serializeContext->GetEditContext())
@@ -156,7 +155,7 @@ namespace PhysX
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
-                        ->DataElement(AZ::Edit::UIHandlers::Button, &Collider::m_globalButtonState, "Draw collider",
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Draw collider",
                             "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
                             ->Attribute(AZ::Edit::Attributes::ButtonTooltip,

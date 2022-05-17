@@ -554,6 +554,14 @@ namespace AzToolsFramework
 
                 // If we're looking at element data that's part of the child list, keep track of the index for adjacent UIElement insertion
                 // Children appear in the order specified by m_elements, so we can scan as we go
+                // There can be elements in the child list that have no edit data, so they won't appear
+                // in nodeEditData->m_elements, so we need to skip over them but still need to track
+                // them as a valid child index since they do appear in the nodes child list
+                while (nodeIt != node->m_children.end() && !nodeIt->m_classElement->m_editData)
+                {
+                    ++m_childIndexOverride;
+                    ++nodeIt;
+                }
                 if (nodeIt != node->m_children.end() && nodeIt->m_classElement->m_editData == &element)
                 {
                     ++m_childIndexOverride;

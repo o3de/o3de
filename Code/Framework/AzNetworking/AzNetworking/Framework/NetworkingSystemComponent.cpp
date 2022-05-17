@@ -63,27 +63,21 @@ namespace AzNetworking
 
     void NetworkingSystemComponent::Activate()
     {
-        AZ::TickBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
     }
 
     void NetworkingSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    void NetworkingSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void NetworkingSystemComponent::OnSystemTick()
     {
-        AZ::TimeMs elapsedMs = aznumeric_cast<AZ::TimeMs>(aznumeric_cast<int64_t>(deltaTime / 1000.0f));
         m_readerThread->SwapBuffers();
         for (auto& networkInterface : m_networkInterfaces)
         {
-            networkInterface.second->Update(elapsedMs);
+            networkInterface.second->Update();
         }
-    }
-
-    int NetworkingSystemComponent::GetTickOrder()
-    {
-        return AZ::TICK_PLACEMENT;
     }
 
     INetworkInterface* NetworkingSystemComponent::CreateNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener)
