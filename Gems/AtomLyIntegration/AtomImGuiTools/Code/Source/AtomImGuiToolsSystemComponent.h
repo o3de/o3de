@@ -16,6 +16,7 @@
 #include <ImGuiBus.h>
 #include <imgui/imgui.h>
 #include <Atom/Utils/ImGuiGpuProfiler.h>
+#include <Atom/Utils/ImGuiMaterialDetails.h>
 #include <Atom/Utils/ImGuiPassTree.h>
 #include <Atom/Utils/ImGuiShaderMetrics.h>
 #include <Atom/Utils/ImGuiTransientAttachmentProfiler.h>
