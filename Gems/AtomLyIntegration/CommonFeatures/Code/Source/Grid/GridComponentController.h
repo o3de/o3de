@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/TransformBus.h>
+#include <Atom/RPI.Public/SceneBus.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
-#include <Atom/RPI.Public/SceneBus.h>
+#include <AzCore/Component/Component.h>
+#include <AzCore/Component/TransformBus.h>
 
 namespace AZ
 {
@@ -50,18 +50,18 @@ namespace AZ
             AZ_DISABLE_COPY(GridComponentController);
 
             //! GridComponentRequestBus overrides...
-            void SetSize(float gridSize) override;
+            void SetSize(float size) override;
             float GetSize() const override;
-            void SetPrimarySpacing(float gridPrimarySpacing) override;
+            void SetPrimarySpacing(float spacing) override;
             float GetPrimarySpacing() const override;
-            void SetSecondarySpacing(float gridSecondarySpacing) override;
+            void SetSecondarySpacing(float spacing) override;
             float GetSecondarySpacing() const override;
 
-            void SetAxisColor(const AZ::Color& gridAxisColor) override;
+            void SetAxisColor(const AZ::Color& color) override;
             AZ::Color GetAxisColor() const override;
-            void SetPrimaryColor(const AZ::Color& gridPrimaryColor) override;
+            void SetPrimaryColor(const AZ::Color& color) override;
             AZ::Color GetPrimaryColor() const override;
-            void SetSecondaryColor(const AZ::Color& gridSecondaryColor) override;
+            void SetSecondaryColor(const AZ::Color& color) override;
             AZ::Color GetSecondaryColor() const override;
 
             //! AZ::TransformNotificationBus::Handler overrides ...
@@ -80,4 +80,4 @@ namespace AZ
             bool m_dirty = true; // must be set to true for any configuration change that rebuilds the grid
         };
     } // namespace Render
-} // namespace AZeneccccckfdljrndicnfefjdklthhfifnnvkffebgkbd
+} // namespace AZ
