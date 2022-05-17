@@ -87,10 +87,10 @@ namespace AzToolsFramework
             }
 
             // store, then reference the unique_ptr that will manage the handler's lifetime
-            m_widgetToPropertyHandler[addedWidget] = dpeSystem->CreateHandlerInstance(handlerId);
-            auto& handler = m_widgetToPropertyHandler[addedWidget];
+            auto handler = dpeSystem->CreateHandlerInstance(handlerId);
             handler->SetValueFromDom(childValue);
             addedWidget = handler->GetWidget();
+            m_widgetToPropertyHandler[addedWidget] = std::move(handler);
             layoutForWidget = m_columnLayout;
         }
         else
@@ -194,9 +194,29 @@ namespace AzToolsFramework
             }
             else // child must be a label or a PropertyEditor
             {
-                // todo: handle this when PropertyHandlerWidgets are done, note that a PropertyEditor could theoretically be a QLabel too...
+                // pare down the path to this node, then look up and set the value from the DOM
+                auto subPath = fullPath;
+                for (size_t pathEntryIndex = fullPath.size() - 1; pathEntryIndex > pathIndex; --pathEntryIndex)
+                {
+                    subPath.Pop();
+                }
+                const auto valueAtSubPath = getDPE()->GetAdapter()->GetContents()[subPath];
+                m_widgetToPropertyHandler[childWidget]->SetValueFromDom(valueAtSubPath);
             }
         }
+    }
+
+    DocumentPropertyEditor* DPERowWidget::getDPE()
+    {
+        DocumentPropertyEditor* theDPE = nullptr;
+        QWidget* ancestorWidget = parentWidget();
+        while (ancestorWidget && !theDPE)
+        {
+            theDPE = qobject_cast<DocumentPropertyEditor*>(ancestorWidget);
+            ancestorWidget = ancestorWidget->parentWidget();
+        }
+        AZ_Assert(theDPE, "the top level widget in any DPE hierarchy must be the DocumentPropertyEditor itself!");
+        return theDPE;
     }
 
     DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)
@@ -309,7 +329,7 @@ namespace AzToolsFramework
                 auto rowWidget =
                     static_cast<DPERowWidget*>(GetVerticalLayout()->itemAt(static_cast<int>(firstAddressEntry.GetIndex()))->widget());
 
-                rowWidget->HandleOperationAtPath(*operationIterator);
+                rowWidget->HandleOperationAtPath(*operationIterator, 1);
             }
         }
     }

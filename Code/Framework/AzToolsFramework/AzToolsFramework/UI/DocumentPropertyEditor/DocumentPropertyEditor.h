@@ -23,6 +23,8 @@ class QHBoxLayout;
 
 namespace AzToolsFramework
 {
+    class DocumentPropertyEditor;
+
     class DPERowWidget : public QWidget
     {
         Q_OBJECT
@@ -41,6 +43,8 @@ namespace AzToolsFramework
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
 
     protected:
+        DocumentPropertyEditor* getDPE();
+
         QVBoxLayout* m_mainLayout = nullptr;
         QHBoxLayout* m_columnLayout = nullptr;
         QVBoxLayout* m_childRowLayout = nullptr;
@@ -63,6 +67,7 @@ namespace AzToolsFramework
 
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
+        AZ::DocumentPropertyEditor::DocumentAdapter* GetAdapter() { return m_adapter; }
 
     protected:
         QVBoxLayout* GetVerticalLayout();
