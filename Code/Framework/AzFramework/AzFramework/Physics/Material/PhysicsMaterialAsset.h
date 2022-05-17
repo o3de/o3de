@@ -27,6 +27,10 @@ namespace Physics
 
         static void Reflect(AZ::ReflectContext* context);
 
+        //! Sets the data for this material asset and marks it as ready.
+        //! This is necessary to be called when creating an in-memory material asset.
+        void SetData(const MaterialConfiguration2& materialConfiguraiton);
+
         const MaterialConfiguration2& GetMaterialConfiguration() const;
 
     protected:

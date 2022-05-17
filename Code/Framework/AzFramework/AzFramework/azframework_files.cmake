@@ -242,12 +242,17 @@ set(FILES
     Physics/DebugDraw/CharacterPhysicsDebugDraw.h
     Physics/DebugDraw/CharacterPhysicsDebugDraw.cpp
     Physics/Material/PhysicsMaterial.h
+    Physics/Material/PhysicsMaterial.cpp
+    Physics/Material/PhysicsMaterialId.h
+    Physics/Material/PhysicsMaterialId.cpp
     Physics/Material/PhysicsMaterialAsset.h
     Physics/Material/PhysicsMaterialAsset.cpp
     Physics/Material/PhysicsMaterialConfiguration.h
     Physics/Material/PhysicsMaterialConfiguration.cpp
     Physics/Material/PhysicsMaterialSlots.h
     Physics/Material/PhysicsMaterialSlots.cpp
+    Physics/Material/PhysicsMaterialManager.h
+    Physics/Material/PhysicsMaterialManager.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h

@@ -36,6 +36,12 @@ namespace Physics
         }
     }
 
+    void MaterialAsset::SetData(const MaterialConfiguration2& materialConfiguraiton)
+    {
+        m_materialConfiguration = materialConfiguraiton;
+        m_status = AZ::Data::AssetData::AssetStatus::Ready;
+    }
+
     const MaterialConfiguration2& MaterialAsset::GetMaterialConfiguration() const
     {
         return m_materialConfiguration;

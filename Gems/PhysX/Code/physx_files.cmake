@@ -27,6 +27,7 @@ set(FILES
     Include/PhysX/PhysXLocks.h
     Include/PhysX/CharacterControllerBus.h
     Include/PhysX/CharacterGameplayBus.h
+    Include/PhysX/Material/PhysXMaterial.h
     Source/RigidBodyComponent.cpp
     Source/RigidBodyComponent.h
     Source/BaseColliderComponent.cpp
@@ -114,8 +115,9 @@ set(FILES
     Source/Joint/PhysXJointUtils.h
     Source/Joint/PhysXJointUtils.cpp
     Source/Joint/Configuration/PhysXJointConfiguration.cpp
-    Source/Material/PhysXMaterial.h
     Source/Material/PhysXMaterial.cpp
+    Source/Material/PhysXMaterialManager.h
+    Source/Material/PhysXMaterialManager.cpp
     Source/Scene/PhysXScene.h
     Source/Scene/PhysXScene.cpp
     Source/Scene/PhysXSceneInterface.h

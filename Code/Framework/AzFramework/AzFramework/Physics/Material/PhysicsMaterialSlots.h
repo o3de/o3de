@@ -10,12 +10,18 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string_view.h>
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
 namespace Physics
 {
+    enum class MaterialDefaultSlot
+    {
+        Default
+    };
+
     //! The class is used to store a list of material assets.
     //! Each material will be assigned to a slot and when reflected
     //! to edit context it will show it for each slot entry.
@@ -25,35 +31,57 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(Physics::MaterialSlots, AZ::SystemAllocator, 0);
         AZ_RTTI(Physics::MaterialSlots, "{8A0D64CB-C98E-42E3-96A9-B81D7118CA6F}");
 
+        static void Reflect(AZ::ReflectContext* context);
+
+        //! Contstructor will already provide a valid default slot.
         MaterialSlots();
         virtual ~MaterialSlots() = default;
 
-        static void Reflect(AZ::ReflectContext* context);
+        //! Sets one material slot with the default label "Entire Object".
+        //! It will resize the material slots but without reassigning the material assets in them.
+        void SetSlots(MaterialDefaultSlot);
 
-        //! Sets an array of material slots to pick MaterialAssets for.
-        //! Having multiple slots is required for assigning multiple materials
-        //! on a mesh or heightfield object.
-        //! @param slots List of labels for slots. It can be empty, in which case a slot will the default label "Entire Object" will be created.
+        //! Sets an array of material slots.
+        //! It will resize the material slots but without reassigning the material assets in them.
+        //! @param slots List of labels for slots. It can be empty, in which case it's the same as calling SetSlots(MaterialDefaultSlot::Default).
         void SetSlots(const AZStd::vector<AZStd::string>& slots);
 
-        //! Sets an array of material slots from Physics Asset.
-        //! If the configuration indicates that it should use the physics materials
-        //! assignment from the physics asset it will also use those materials for the slots.
-        //! If the shape configuration passed do not use Physics Asset this call won't do any operations.
-        //! @param shapeConfiguration Shape configuration with the information about Physics Assets.
-        void SetSlotsFromPhysicsAsset(const Physics::ShapeConfiguration& shapeConfiguration);
+        //! Sets a material asset to a specific slot.
+        void SetMaterialAsset(size_t slotIndex, const AZ::Data::Asset<MaterialAsset>& materialAsset);
+
+        //! Returns the number of slots.
+        size_t GetSlotsCount() const;
+
+        //! Returns the name of a specific slot.
+        AZStd::string_view GetSlotName(size_t slotIndex) const;
+
+        //! Returns the names of all slots.
+        AZStd::vector<AZStd::string> GetSlotsNames() const;
+
+        //! Returns the material assigned assigned to a specific slots.
+        //! A slot can have no asset assigned, in which case it will return
+        //! a null asset.
+        const AZ::Data::Asset<MaterialAsset> GetMaterialAsset(size_t slotIndex) const;
 
         //! Set if the material slots are editable in the edit context.
         void SetSlotsReadOnly(bool readOnly);
 
     protected:
-        AZStd::vector<AZStd::string> m_slots; //!< List of labels for slots
-        AZStd::vector<AZ::Data::Asset<MaterialAsset>> m_materialAssets; //!< List of material assets assigned to slots
+        struct MaterialSlot
+        {
+            AZ_TYPE_INFO(Physics::MaterialSlots::MaterialSlot, "{B5AA3CC9-637F-44FB-A4AE-4621D37884BA}");
 
-    private:
-        AZStd::string GetSlotLabel(int index) const;
-        AZ::Data::AssetId GetDefaultMaterialAssetId() const;
+            static void Reflect(AZ::ReflectContext* context);
 
-        bool m_slotsReadOnly = false;
+            AZStd::string m_name;
+            AZ::Data::Asset<MaterialAsset> m_materialAsset;
+
+        private:
+            friend class MaterialSlots;
+            AZ::Data::AssetId GetDefaultMaterialAssetId() const;
+            bool m_slotsReadOnly = false;
+        };
+
+        AZStd::vector<MaterialSlot> m_slots;
     };
 } // namespace Physics

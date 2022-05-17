@@ -6,7 +6,12 @@
  *
  */
 
-#include <Material/PhysXMaterial.h>
+#include <AzCore/Interface/Interface.h>
+
+#include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
+
+#include <PhysX/Material/PhysXMaterial.h>
 
 namespace PhysX
 {
@@ -44,7 +49,61 @@ namespace PhysX
         }
     }
 
-    Material2::Material2(const Physics::MaterialConfiguration2& materialConfiguration)
+    AZStd::shared_ptr<Material2> Material2::FindOrCreateMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+    {
+        return AZStd::rtti_pointer_cast<Material2>(
+            AZ::Interface<Physics::MaterialManager>::Get()->FindOrCreateMaterial(
+                Physics::MaterialId2::CreateFromAssetId(materialAsset.GetId()),
+                materialAsset));
+    }
+
+    AZStd::vector<AZStd::shared_ptr<Material2>> Material2::FindOrCreateMaterials(const Physics::MaterialSlots& materialSlots)
+    {
+        AZStd::shared_ptr<Material2> defaultMaterial =
+            AZStd::rtti_pointer_cast<Material2>(
+                AZ::Interface<Physics::MaterialManager>::Get()->GetDefaultMaterial());
+
+        const size_t slotsCount = materialSlots.GetSlotsCount();
+
+        AZStd::vector<AZStd::shared_ptr<Material2>> materials;
+        materials.reserve(slotsCount);
+
+        for (size_t slotIndex = 0; slotIndex < slotsCount; ++slotIndex)
+        {
+            if (const auto materialAsset = materialSlots.GetMaterialAsset(slotIndex);
+                materialAsset.GetId().IsValid())
+            {
+                auto material = Material2::FindOrCreateMaterial(materialAsset);
+                if (material)
+                {
+                    materials.push_back(material);
+                }
+                else
+                {
+                    materials.push_back(defaultMaterial);
+                }
+            }
+            else
+            {
+                materials.push_back(defaultMaterial);
+            }
+        }
+
+        return materials;
+    }
+
+    AZStd::shared_ptr<Material2> Material2::CreateMaterialWithRandomId(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+    {
+        return AZStd::rtti_pointer_cast<Material2>(
+            AZ::Interface<Physics::MaterialManager>::Get()->FindOrCreateMaterial(
+                Physics::MaterialId2::CreateRandom(),
+                materialAsset));
+    }
+
+    Material2::Material2(
+        const Physics::MaterialId2& id,
+        const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+        : Physics::Material2(id, materialAsset)
     {
         const Physics::MaterialConfiguration2 defaultMaterialConf;
 
@@ -59,6 +118,8 @@ namespace PhysX
         AZ_Assert(m_pxMaterial, "Failed to create physx material");
         m_pxMaterial->userData = this;
 
+        const auto& materialConfiguration = m_materialAsset->GetMaterialConfiguration();
+
         SetStaticFriction(materialConfiguration.m_staticFriction);
         SetDynamicFriction(materialConfiguration.m_dynamicFriction);
         SetRestitution(materialConfiguration.m_restitution);
@@ -66,6 +127,14 @@ namespace PhysX
         SetRestitutionCombineMode(materialConfiguration.m_restitutionCombine);
         SetDensity(materialConfiguration.m_density);
         SetDebugColor(materialConfiguration.m_debugColor);
+
+        // Connect to asset bus to listen to asset reloads notifications
+        AZ::Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
+    }
+
+    Material2::~Material2()
+    {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
     }
 
     float Material2::GetDynamicFriction() const
@@ -152,8 +221,23 @@ namespace PhysX
         m_debugColor = debugColor;
     }
 
-    const void* Material2::GetNativePointer() const
+    const physx::PxMaterial* Material2::GetPxMaterial() const
     {
         return m_pxMaterial.get();
+    }
+
+    void Material2::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        m_materialAsset = asset;
+
+        const auto& materialConfiguration = m_materialAsset->GetMaterialConfiguration();
+
+        SetStaticFriction(materialConfiguration.m_staticFriction);
+        SetDynamicFriction(materialConfiguration.m_dynamicFriction);
+        SetRestitution(materialConfiguration.m_restitution);
+        SetFrictionCombineMode(materialConfiguration.m_frictionCombine);
+        SetRestitutionCombineMode(materialConfiguration.m_restitutionCombine);
+        SetDensity(materialConfiguration.m_density);
+        SetDebugColor(materialConfiguration.m_debugColor);
     }
 } // namespace PhysX

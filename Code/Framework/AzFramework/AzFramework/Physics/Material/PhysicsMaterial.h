@@ -8,16 +8,20 @@
 
 #pragma once
 
-#include <AzFramework/Physics/Material/PhysicsMaterialConfiguration.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialId.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
 namespace Physics
 {
-    //! Runtime Physics material interface.
+    //! Runtime Physics material instance.
     // TODO: Material2 is temporary until old Material class is removed.
     class Material2
     {
     public:
+        AZ_RTTI(Physics::MaterialAsset2, "{B0C593B9-F58E-47BF-856B-2F202A9E8813}");
+
         Material2() = default;
+        Material2(const MaterialId2& id, const AZ::Data::Asset<MaterialAsset>& materialAsset);
         virtual ~Material2() = default;
 
         virtual float GetDynamicFriction() const = 0;
@@ -41,6 +45,12 @@ namespace Physics
         virtual const AZ::Color& GetDebugColor() const = 0;
         virtual void SetDebugColor(const AZ::Color& debugColor) = 0;
 
-        virtual const void* GetNativePointer() const = 0;
+        MaterialId2 GetId() const;
+
+        AZ::Data::Asset<MaterialAsset> GetMaterialAsset() const;
+
+    protected:
+        MaterialId2 m_id;
+        AZ::Data::Asset<MaterialAsset> m_materialAsset;
     };
 } // namespace Physics
