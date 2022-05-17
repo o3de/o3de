@@ -136,7 +136,7 @@ namespace AZ
             uint32_t GetTreeDepth() const { return m_treeDepth; }
 
             //! Returns the index in the parent's array of children that this pass occupies (used for sorting passes)
-            uint32_t GetParentChildIndex() const;
+            uint32_t GetParentChildIndex() const { return m_parentChildIndex; }
 
             //! Returns the number of input attachment bindings
             uint32_t GetInputCount() const { return uint32_t(m_inputBindingIndices.size()); }
