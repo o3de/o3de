@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
 
 #if defined(IMGUI_ENABLED)
@@ -31,6 +32,10 @@ namespace Streamer
         : m_minValue(minValue)
         , m_maxValue(maxValue)
     {
+        AZ_Assert(
+            minValue <= maxValue,
+            "A GraphStore object in the Streamer Profiler received a min value (%f) that's not smaller or equal to the max value (%f).",
+            minValue, maxValue);
         memset(m_values.data(), 0, sizeof(float) * GraphStoreElementCount);
     }
 
@@ -427,9 +432,19 @@ namespace Streamer
                 const AZStd::string* path = AZStd::get_if<AZStd::string>(&stat.GetValue());
                 if (path)
                 {
+                    constexpr static size_t StringCacheSize = AZ::IO::MaxPathLength + 7; // +7 for the characters in "Flush##".
                     ImGui::TableNextColumn();
-                    AZStd::fixed_string<1024> name = "Flush##";
-                    name += *path;
+                    AZStd::fixed_string<StringCacheSize> name = "Flush##";
+                    size_t remainingStringSpace = StringCacheSize - name.length() - 1;
+                    if (path->length() < remainingStringSpace)
+                    {
+                        name += *path;
+                    }
+                    else
+                    {
+                        name += AZStd::string_view(*path).substr(path->length() - remainingStringSpace);
+                    }
+
                     if (ImGui::Button(name.c_str()))
                     {
                         streamer.QueueRequest(streamer.FlushCache(*path));
