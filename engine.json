@@ -6,7 +6,6 @@
     "O3DECopyrightYear": 2021,
     "O3DEBuildNumber": 0,
     "external_subdirectories": [
-        "Gems/RecastNavigation",
         "Gems/Achievements",
         "Gems/AssetValidation",
         "Gems/Atom",
