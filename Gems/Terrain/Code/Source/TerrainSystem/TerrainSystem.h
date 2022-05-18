@@ -264,15 +264,7 @@ namespace Terrain
 
     private:
         //! Given a set of async parameters, calculate the max number of jobs that we can use for the async call.
-        int32_t CalculateMaxJobs(AZStd::shared_ptr<ProcessAsyncParams> params) const
-        {
-            // Determine the maximum number of jobs available to split the work across for async calls.
-            const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
-            const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
-            const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
-
-            return numJobsMax;
-        }
+        int32_t CalculateMaxJobs(AZStd::shared_ptr<ProcessAsyncParams> params) const;
 
         //! Given the number of samples in a region and the desired number of jobs, choose the best subdivision of the region into jobs.
         static void SubdivideRegionForJobs(

@@ -1220,6 +1220,17 @@ AZStd::pair<size_t, size_t> TerrainSystem::GetNumSamplesFromRegion(
     return AZStd::make_pair(countX, countY);
 }
 
+//! Given a set of async parameters, calculate the max number of jobs that we can use for the async call.
+int32_t TerrainSystem::CalculateMaxJobs(AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    // Determine the maximum number of jobs available to split the work across for async calls.
+    const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
+    const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
+    const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
+
+    return numJobsMax;
+}
+
 void TerrainSystem::SubdivideRegionForJobs(
     int32_t numSamplesX, int32_t numSamplesY, int32_t maxNumJobs, int32_t minPointsPerJob, int32_t& subdivisionsX, int32_t& subdivisionsY)
 {
