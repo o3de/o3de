@@ -14,8 +14,8 @@ import azlmbr.editor as editor
 import azlmbr.bus as bus
 import azlmbr.paths as paths
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, SCRIPT_EVENT_UI,
-                                                 NODE_PALETTE_QT, NODE_TEST_METHOD, DEFAULT_SCRIPT_EVENT,
-                                                 WAIT_TIME_3)
+                                                 NODE_PALETTE_QT, EVENTS_QT, NODE_TEST_METHOD, DEFAULT_SCRIPT_EVENT,
+                                                 DEFAULT_METHOD_NAME, SAVE_STRING, WAIT_TIME_3)
 
 class Tests():
     new_event_created = ("New Script Event created", "New Script Event not created")
@@ -86,7 +86,7 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
 
     def save_file(self):
         editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", FILE_PATH)
-        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "iconText": "Save"})
+        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
         action.trigger()
         # wait till file is saved, to validate that check the text of QLabel at the bottom of the AssetEditor,
         # if there are no unsaved changes we will not have any * in the text
@@ -105,13 +105,6 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
         helper.wait_for_condition(lambda: self.search_box.text() == node_name, WAIT_TIME_3)
         QtTest.QTest.keyClick(self.search_box, QtCore.Qt.Key_Enter, QtCore.Qt.NoModifier)
 
-        """
-        # Try clicking ENTER in search box multiple times
-        for _ in range(10):
-            QtTest.QTest.keyClick(self.search_box, QtCore.Qt.Key_Enter, QtCore.Qt.NoModifier)
-            if pyside_utils.find_child_by_pattern(self.tree, {"text": node_name}) is not None:
-                break
-        """
     @pyside_utils.wrap_async
     async def run_test(self):
 
@@ -130,13 +123,13 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
         action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
         action.trigger()
         result = helper.wait_for_condition(
-            lambda: self.container.findChild(QtWidgets.QFrame, "Events") is not None
-            and self.container.findChild(QtWidgets.QFrame, "Events").findChild(QtWidgets.QToolButton, "") is not None,
+            lambda: self.container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None
+            and self.container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "") is not None,
             WAIT_TIME_3,
         )
         Report.result(Tests.new_event_created, result)
         # Add new method
-        add_event = self.container.findChild(QtWidgets.QFrame, "Events").findChild(QtWidgets.QToolButton, "")
+        add_event = self.container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
         add_event.click()
         result = helper.wait_for_condition(
             lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_3
@@ -145,11 +138,11 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
 
         # 3) Verify if file is created and saved
         file_saved = self.save_file()
-        result = helper.wait_for_condition(lambda: os.path.exists(FILE_PATH), 10.0)
+        result = helper.wait_for_condition(lambda: os.path.exists(FILE_PATH), WAIT_TIME_3)
         Report.result(Tests.file_saved, result and file_saved)
 
         # 4) Add a new child element
-        add_event = self.container.findChild(QtWidgets.QFrame, "Events").findChild(QtWidgets.QToolButton, "")
+        add_event = self.container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
         add_event.click()
         result = helper.wait_for_condition(
             lambda: len(self.asset_editor_widget.findChildren(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT)) == NUM_TEST_METHODS,
@@ -167,7 +160,7 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
         children = container.findChildren(QtWidgets.QFrame, "Name")
         for child in children:
             line_edit = child.findChild(QtWidgets.QLineEdit)
-            if line_edit and line_edit.text() == "MethodName":
+            if line_edit and line_edit.text() == DEFAULT_METHOD_NAME:
                 line_edit.setText(f"{NODE_TEST_METHOD}_{count}")
                 count += 1
         self.save_file()
