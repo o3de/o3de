@@ -16,17 +16,13 @@
 
 namespace EditorPythonBindings
 {
-    class PythonEditorAction
+    class PythonEditorAction final
     {
     public:
         AZ_TYPE_INFO(PythonEditorAction, "{1A5676D2-767B-4C2F-BC35-9CDDCE1430BB}");
         AZ_CLASS_ALLOCATOR(PythonEditorAction, AZ::SystemAllocator, 0);
 
         explicit PythonEditorAction(PyObject* handler);
-        PythonEditorAction(const PythonEditorAction& obj);
-        PythonEditorAction(PythonEditorAction&& obj);
-        PythonEditorAction& operator=(const PythonEditorAction& obj);
-        virtual ~PythonEditorAction();
 
         PyObject* GetHandler();
         const PyObject* GetHandler() const;

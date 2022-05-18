@@ -303,6 +303,7 @@ namespace Blast
                 targetSourceFile.c_str(), true,
                 [targetSourceFile]([[maybe_unused]] bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
                 {
+                    AZ_UNUSED(targetSourceFile);
                     AZ_Warning("BlastMaterialConversion", success, "Unable to mark for add '%s' in source control.", targetSourceFile.c_str());
                 }
             );

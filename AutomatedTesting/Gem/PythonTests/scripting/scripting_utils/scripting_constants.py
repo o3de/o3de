@@ -13,6 +13,7 @@ Constants for window and tab names
 """
 SCRIPT_CANVAS_UI = "Script Canvas"
 NODE_PALETTE_UI = "Node Palette"
+ASSET_EDITOR_UI = "Asset Editor"
 
 """
 String constants for Node Palette
