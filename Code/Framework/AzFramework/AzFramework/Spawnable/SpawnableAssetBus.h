@@ -19,7 +19,7 @@ namespace AzFramework
     public:
         using MutexType = AZStd::recursive_mutex;
 
-        //! Callback to allow the entity aliases in a spawnable to adjusted based on runtime requirements.
+        //! Callback to allow the entity aliases in a spawnable to be adjusted based on runtime requirements.
         //! This will be called by the Asset Manager as part of the creation of the spawnable asset from loaded file data. Any work done
         //! in this callback will be counted towards the maximum amount of time allocated to asset handlers to construct their assets,
         //! it's recommended to keep work done in this callback to a minimum and prefer delaying any complex processing.
@@ -31,13 +31,13 @@ namespace AzFramework
         //!     loading and no job threads become free as they're all waiting for assets to complete. It is however safe to queue
         //!     an asset for loading.
         virtual void OnResolveAliases(
-            [[maybe_unused]] Spawnable::EntityAliasVisitor& aliases,
-            [[maybe_unused]] const SpawnableMetaData& metadata,
-            [[maybe_unused]] const Spawnable::EntityList& entities) {}
+            Spawnable::EntityAliasVisitor& aliases, const SpawnableMetaData& metadata, const Spawnable::EntityList& entities) = 0;
 
-        //! Notification to allow systems to access a spawnable before it's been modified by aliasing.
-        //! This ebus function will be called for all spawnables, even if there are no aliases on the spawnable.
-        virtual void OnPreparingSpawnable([[maybe_unused]]const Spawnable& spawnable, [[maybe_unused]]const AZStd::string& assetHint) {}
+        //! Notification to allow systems to access a spawnable before it's been modified, for example, by aliasing
+        //! @param spawnable the spawnable that is being prepared
+        //! @param assetHint the spawnable asset name
+        virtual void OnPreparingSpawnable(
+            [[maybe_unused]] const Spawnable& spawnable, [[maybe_unused]] const AZStd::string& assetHint) {}
     };
 
     using SpawnableAssetEventsBus = AZ::EBus<SpawnableAssetEvents>;

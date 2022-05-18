@@ -97,7 +97,7 @@ namespace AzToolsFramework
         AZ::Color TransformColor(const AZ::Color& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const;
         QColor TransformColor(const QColor& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const;
 
-        QRegExpValidator* CreateTextEditValidator() const;
+        QRegExpValidator* CreateTextEditValidator();
 
         QToolButton* m_pDefaultButton;
         AzQtComponents::ColorPicker* m_pColorDialog;

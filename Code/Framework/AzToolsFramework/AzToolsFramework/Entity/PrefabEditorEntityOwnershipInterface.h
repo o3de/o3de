@@ -15,7 +15,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
-#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetUtils.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
 
 namespace AzToolsFramework
 {

@@ -42,6 +42,7 @@ namespace WhiteBox
 
         // generate the mesh
         m_renderMesh->BuildMesh(m_whiteBoxRenderData, worldFromLocal);
+        m_renderMesh->UpdateMaterial(m_whiteBoxRenderData.m_material);
         m_renderMesh->SetVisiblity(m_whiteBoxRenderData.m_material.m_visible);
 
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);

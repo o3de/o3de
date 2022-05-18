@@ -53,8 +53,8 @@ class TestAutomation(EditorTestSuite):
             if os.path.isfile(dbgsg_path) == False:
                 raise Exception(f"Missing file {dbgsg_path}")
 
-            # find the user defined property o3de.default.material in the .dbgsg file
-            material_UDP = 'o3de.default.material: gem/sponza/assets/objects/sponza_mat_bricks.azmaterial'
+            # find the user defined property o3de_default_material in the .dbgsg file
+            material_UDP = 'o3de_default_material: gem/sponza/assets/objects/sponza_mat_bricks.azmaterial'
             found_UDP = False
             with open(dbgsg_path) as f:
                 content = f.readlines()

@@ -161,7 +161,7 @@ namespace AzNetworking
         return connectionId;
     }
 
-    void UdpNetworkInterface::Update([[maybe_unused]] AZ::TimeMs deltaTimeMs)
+    void UdpNetworkInterface::Update()
     {
         if (!m_socket->IsOpen())
         {

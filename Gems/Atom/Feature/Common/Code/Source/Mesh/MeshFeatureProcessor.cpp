@@ -1080,8 +1080,8 @@ namespace AZ
                     {
                         AZ_Warning(
                             "MeshFeatureProcessor", false,
-                            "No irradiance.manualColor or irradiance.color field found. Defaulting to black.");
-                        subMesh.m_irradianceColor = AZ::Colors::Black;
+                            "No irradiance.manualColor or irradiance.color field found. Defaulting to 1.0f.");
+                        subMesh.m_irradianceColor = AZ::Colors::White;
                     }
                 }
             }
@@ -1159,8 +1159,8 @@ namespace AZ
             else
             {
                 AZ_Warning("MeshFeatureProcessor", false, "Unknown irradianceColorSource value: %s, "
-                        "defaulting to black.", irradianceColorSource.GetCStr());
-                subMesh.m_irradianceColor = AZ::Colors::Black;
+                        "defaulting to 1.0f.", irradianceColorSource.GetCStr());
+                subMesh.m_irradianceColor = AZ::Colors::White;
             }
 
 

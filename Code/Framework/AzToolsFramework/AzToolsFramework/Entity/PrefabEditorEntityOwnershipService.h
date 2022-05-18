@@ -15,7 +15,7 @@
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
-#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetUtils.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
 
 namespace AzToolsFramework
 {
@@ -183,7 +183,7 @@ namespace AzToolsFramework
 
         struct PlayInEditorData
         {
-            AzToolsFramework::Prefab::PrefabConversionUtils::InMemorySpawnableAssetProcessor m_assetsCache;
+            AzToolsFramework::Prefab::PrefabConversionUtils::PrefabInMemorySpawnableConverter m_assetsCache;
             AZStd::vector<AZ::Entity*> m_deactivatedEntities;
             AzFramework::SpawnableEntitiesContainer m_entities;
             bool m_isEnabled{ false };
