@@ -15,6 +15,8 @@
 
 namespace AzFramework
 {
+    class Spawnable;
+
     class InMemorySpawnableAssetContainer
     {
     public:
@@ -45,18 +47,28 @@ namespace AzFramework
         const SpawnableAssets& GetAllInMemorySpawnableAssets() const;
 
         //! Creates an in-memory spawnable asset given a list of product asset data
+        //! @param assetDataInfoContainer a list of asset data/info pairs to be converted into a spawnable asset
+        //! @param loadReferencedAssets a boolean that indicates whether to load the assets referenced from the asset data
+        //! @param targetSpawnableName the name of the target spawnable whose asset should be returned upon success
+        //! @return an outcome containing the target spawnable asset upon success
         CreateSpawnableResult CreateInMemorySpawnableAsset(
             AssetDataInfoContainer& assetDataInfoContainer,
             bool loadReferencedAssets,
-            const AZStd::string& rootSpawnableName);
+            const AZStd::string& targetSpawnableName);
 
-        //! Creates an in-memory spawnable asset given a single spawnable.
-        //! Ex. usage is when a network server receives in-memory spawnable data from the client
+        //! Creates an in-memory spawnable asset given a single spawnable asset data.
+        //! Ex. a network server receives in-memory spawnable data from client and creates a spawnable asset
+        //! @param spawnable the spawnable asset data to be converted into a spawnable asset
+        //! @param assetId the Id of the new asset
+        //! @param assetSize the size of the new asset
+        //! @param loadReferencedAssets a boolean that indicates whether to load the assets referenced from the asset data
+        //! @param targetSpawnableName the name of the target spawnable whose asset should be returned upon success
+        //! @return an outcome containing the target spawnable asset upon success
         CreateSpawnableResult CreateInMemorySpawnableAsset(
             Spawnable* spawnable,
             const AZ::Data::AssetId& assetId,
             bool loadReferencedAssets,
-            const AZStd::string& rootSpawnableName);
+            const AZStd::string& targetSpawnableName);
 
     private:
         void LoadReferencedAssets(SpawnableAssetData& spawnable);

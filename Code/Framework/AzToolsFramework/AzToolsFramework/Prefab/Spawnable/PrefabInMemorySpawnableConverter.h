@@ -35,7 +35,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZStd::string_view GetStackProfile() const;
 
         //! Converts a prefab file into an in-memory spawnable asset.
-        //! Example use case: convert an unsaved prefab into a spawnable asset to be spawned in editor game mode
         AzFramework::InMemorySpawnableAssetContainer::CreateSpawnableResult CreateInMemorySpawnableAsset(
             AZStd::string_view prefabFilePath, AZStd::string_view spawnableName, bool loadReferencedAssets = false);
 
