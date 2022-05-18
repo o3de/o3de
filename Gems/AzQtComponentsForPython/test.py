@@ -6,12 +6,28 @@ package_path='C:\\ly\\3rd_party\\packages\\pyside2-qt-5.15.2-rev1-windows\\pysid
 # Location of the top directory of the o3de project.
 project_path='C:\\ly\\git\\o3de'
 
+
 import sys
+import os
+
+if not os.path.exists(package_path):
+    print("Error: pyside2-qt-5.15.2-rev1-windows not found")
+    sys.exit()
+    
+toRemove = []
+
+# Look for the old pyside module being in the path and remove it if it is - remove this when new package is official.
+for pathItem in sys.path:
+    if "pyside2-qt-5.15.1-rev2" in pathItem:
+        sys.path.remove(pathItem)
+
+#sys.path.pop()
 
 # Add the path to the new version of pyside. Modify this to match your location.
 sys.path.append(package_path)
 
 sys.path.append('.')
+
 
 # Now the path is correct, import Qt libs.
 from PySide2 import QtWidgets, QtCore
@@ -24,36 +40,38 @@ import azqtpyside
 from azqtpyside import AzQtComponents as az
 
 # Create a window and add some content.
-win = az.DockMainWindow()
+dialog = az.DockMainWindow()
 
-centralWidget = QtWidgets.QWidget(win);
+centralWidget = QtWidgets.QWidget(dialog);
+
 layout = QtWidgets.QVBoxLayout(centralWidget);
 layout.setMargin(0);
 layout.setContentsMargins(0, 0, 0, 0);
 centralWidget.setLayout(layout);
-win.setCentralWidget(centralWidget);
-        
-one = QtWidgets.QPushButton("One")
-two = QtWidgets.QPushButton("two")
-three = QtWidgets.QPushButton("three")
 
-layout.addWidget(one)
-layout.addWidget(two)
-layout.addWidget(three)
+dialog.setCentralWidget(centralWidget);
+
+buttonOne = QtWidgets.QPushButton("One")
+buttonTwo = QtWidgets.QPushButton("Two")
+buttonThree = QtWidgets.QPushButton("Three")
+
+layout.addWidget(buttonOne)
+layout.addWidget(buttonTwo)
+layout.addWidget(buttonThree)
 
 # Set up an event loop to wait for the window to close.
-win.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+dialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 eventLoop = QtCore.QEventLoop()
-win.destroyed.connect(eventLoop.quit)
+dialog.destroyed.connect(eventLoop.quit)
 
 # Set up the StyleManager and load the stylesheet so that window looks correct.
-style = az.StyleManager(win)
+style = az.StyleManager(dialog)
 
 style.initializePath(project_path)
-style.setStyleSheet(win, 'Code\\Editor\\Style\\Editor.qss')
+style.setStyleSheet(dialog, 'Code\\Editor\\Style\\Editor.qss')
 
-win.resize(600, 400)
-win.show()
+dialog.resize(600, 400)
+dialog.show()
 
 # Wait for the window to close.
 eventLoop.exec_()
