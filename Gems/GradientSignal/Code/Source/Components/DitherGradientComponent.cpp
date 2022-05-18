@@ -44,6 +44,7 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DitherGradientConfig::m_patternType, "Pattern Type", "")
                     ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_4x4, "4x4")
                     ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_8x8, "8x8")
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Sample Settings")
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DitherGradientConfig::m_useSystemPointsPerUnit, "Use System Points Per Unit", "Automatically sets points per unit.  Value is equal to Sector Density / Sector Size")
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &DitherGradientConfig::m_pointsPerUnit, "Points Per Unit", "Scales input position before sampling")
@@ -51,8 +52,8 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->EndGroup()
+
                     ->DataElement(0, &DitherGradientConfig::m_gradientSampler, "Gradient", "Input gradient whose values will be dithered.")
                     ;
             }
