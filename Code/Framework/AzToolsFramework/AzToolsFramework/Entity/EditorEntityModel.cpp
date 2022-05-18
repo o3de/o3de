@@ -425,18 +425,7 @@ namespace AzToolsFramework
 
         childInfo.SetParentId(parentId);
 
-        bool isDuringUndoRedo = false;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(isDuringUndoRedo, &AzToolsFramework::ToolsApplicationRequestBus::Events::IsDuringUndoRedo);
-        if (isDuringUndoRedo)
-        {
-            // Undoing the parent entity's transform will first delete the parent entity and then re-create it with its
-            // old transform. Keep child entities' local transform so they stay put in their parent's space after undo actions.
-            AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParentRelative, parentId);
-        }
-        else
-        {
-            AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParent, parentId);
-        }
+        AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParentRelative, parentId);
 
         //creating/pushing slices doesn't always destroy/de-register the original entity before adding the replacement
         if (!parentInfo.HasChild(childId))

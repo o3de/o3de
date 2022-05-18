@@ -27,6 +27,9 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSharedTest):
         from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module
 
+    class test_EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform(EditorSharedTest):
+        from .EditorScripts import EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform as test_module
+
     class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
         # Custom teardown to remove level created during test
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
