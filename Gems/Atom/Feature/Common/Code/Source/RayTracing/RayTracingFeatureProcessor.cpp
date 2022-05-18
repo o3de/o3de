@@ -87,6 +87,9 @@ namespace AZ
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             uint32_t objectIndex = objectId.GetIndex();
 
+            // lock the mutex to protect the mesh and BLAS lists
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+
             // check to see if we already have this mesh
             MeshMap::iterator itMesh = m_meshes.find(objectIndex);
             if (itMesh != m_meshes.end())
@@ -94,9 +97,6 @@ namespace AZ
                 AZ_Assert(false, "SetMesh called on an existing Mesh objectId, call RemoveMesh first");
                 return;
             }
-
-            // lock the mutex to protect the mesh and BLAS lists
-            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
             // add the mesh
             m_meshes.insert(AZStd::make_pair(objectIndex, Mesh{ assetId }));

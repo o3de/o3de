@@ -28,7 +28,6 @@ namespace AZ
 
                 serializeContext->Class<EditorMeshComponent, BaseClass>()
                     ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
-                    ->Field("addMaterialComponentFlag", &EditorMeshComponent::m_addMaterialComponentFlag)
                     ->Field("meshStats", &EditorMeshComponent::m_stats)
                     ;
 
@@ -49,7 +48,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/mesh/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
-                        ->DataElement(AZ::Edit::UIHandlers::Button, &EditorMeshComponent::m_addMaterialComponentFlag, "Add Material Component", "Add Material Component")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)

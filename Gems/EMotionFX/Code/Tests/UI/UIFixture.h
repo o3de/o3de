@@ -51,6 +51,8 @@ namespace EMotionFX
 
     protected:
         QApplication* m_uiApp = nullptr;
+    private:
+        static inline int s_argc{0};
     };
 
     using UIFixtureBase = ComponentFixture<
