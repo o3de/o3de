@@ -13,12 +13,9 @@
 
 class ISprite;
 
-namespace AZ
+namespace AZ::RPI
 {
-    namespace RPI
-    {
-        class AttachmentImageAsset;
-    }
+    class AttachmentImageAsset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

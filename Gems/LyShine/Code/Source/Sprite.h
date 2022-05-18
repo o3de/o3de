@@ -18,6 +18,11 @@
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
 
+namespace AZ::RPI
+{
+    class AttachmentImageAsset;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class CSprite
     : public ISprite
