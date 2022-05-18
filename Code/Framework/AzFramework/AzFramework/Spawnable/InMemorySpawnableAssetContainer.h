@@ -72,7 +72,7 @@ namespace AzFramework
 
     private:
         void LoadReferencedAssets(SpawnableAssetData& spawnable);
-
+        
         SpawnableAssets m_spawnableAssets;
     };
 } // namespace AzFramework

@@ -342,11 +342,11 @@ namespace AzToolsFramework
                         // Clean up our entity associations
                         if (!m_instanceEntityMapper->UnregisterEntity(entity->GetId()))
                         {
-                            AZ_Assert(
-                                false,
+                            AZ_Assert(false,
                                 "Prefab - Attempted to Unregister entity with id '%s' from Prefab Instance derived from source asset '%s' "
                                 "Entity may never have been registered or was Unregistered early.",
-                                entity->GetId().ToString().c_str(), m_templateSourcePath.c_str());
+                                entity->GetId().ToString().c_str(),
+                                m_templateSourcePath.c_str());
                         }
                     }
                 }

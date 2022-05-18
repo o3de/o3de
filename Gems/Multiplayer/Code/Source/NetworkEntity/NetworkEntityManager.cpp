@@ -26,7 +26,6 @@
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 
 AZ_DECLARE_BUDGET(MULTIPLAYER);
-#pragma optimize("", off)
 namespace Multiplayer
 {
     AZ_CVAR(bool, net_DebugCheckNetworkEntityManager, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables extra debug checks inside the NetworkEntityManager");
@@ -717,4 +716,3 @@ namespace Multiplayer
     }
 
 } // namespace Multiplayer
-#pragma optimize("", on)
