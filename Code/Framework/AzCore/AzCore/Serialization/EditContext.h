@@ -236,6 +236,9 @@ namespace AZ
              */
             ClassBuilder*  ClassElement(Crc32 elementIdCrc, const char* description);
 
+            //! Helper method to end the current group (if any). This is shorthand for:
+            //!     ->ClassElement(AZ::Edit::ClassElements::Group, "")
+            ClassBuilder* EndGroup();
 
              /**
              * Declare element with attributes that belong to the class SerializeContext::Class, this is a logical structure, you can have one or more GroupElementToggles.
@@ -533,6 +536,13 @@ namespace AZ
     inline EditContext::ClassBuilder* EditContext::ClassBuilder::GroupElementToggle(const char* name, T memberVariable)
     {
         return DataElement(AZ::Edit::ClassElements::Group, memberVariable, name, name, "");
+    }
+
+    inline EditContext::ClassBuilder*
+    EditContext::ClassBuilder::EndGroup()
+    {
+        // Starting a new group with no description ends the current group
+        return ClassElement(AZ::Edit::ClassElements::Group, "");
     }
 
     //=========================================================================

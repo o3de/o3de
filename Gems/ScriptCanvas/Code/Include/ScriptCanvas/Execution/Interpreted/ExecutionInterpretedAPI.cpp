@@ -426,7 +426,6 @@ namespace ScriptCanvas
                 {
                     AZ::ScriptLoadResult result{};
                     AZ::ScriptSystemRequestBus::BroadcastResult(result, &AZ::ScriptSystemRequests::LoadAndGetNativeContext, runtimeData.m_script, AZ::k_scriptLoadBinary, AZ::ScriptContextIds::DefaultScriptContextId);
-                    AZ_Assert(result.status == AZ::ScriptLoadResult::Status::Initial, "ExecutionStateInterpreted script asset was valid but failed to load.");
                     AZ_Assert(result.lua, "Must have a default script context and a lua_State");
                     AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
 
