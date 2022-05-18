@@ -42,6 +42,8 @@ namespace EMotionFX::MotionMatching
         size_t maxDepth,
         size_t minFramesPerLeaf)
     {
+        AZ_PROFILE_SCOPE(Animation, "MotionMatchingData::InitKdTree");
+
 #if !defined(_RELEASE)
         AZ::Debug::Timer timer;
         timer.Stamp();
@@ -72,6 +74,12 @@ namespace EMotionFX::MotionMatching
             return false;
         }
 
+        if (frameDatabase.GetNumFrames() == 0)
+        {
+            AZ_Error("Motion Matching", false, "Skipping to initialize KD-tree. No frames in the motion database.");
+            return true;
+        }
+
         m_maxDepth = maxDepth;
         m_minFramesPerLeaf = minFramesPerLeaf;
 
@@ -84,8 +92,9 @@ namespace EMotionFX::MotionMatching
 
 #if !defined(_RELEASE)
         const float initTime = timer.GetDeltaTimeInSeconds();
-        AZ_TracePrintf("EMotionFX", "KdTree initialized in %f seconds (numNodes = %d  numDims = %d  Memory used = %.2f MB).",
-            initTime, m_nodes.size(),
+        AZ_TracePrintf("Motion Matching", "KD-Tree initialized in %.2f ms (numNodes = %d  numDims = %d  Memory used = %.2f MB).",
+            initTime * 1000.0f,
+            m_nodes.size(),
             m_numDimensions,
             static_cast<float>(CalcMemoryUsageInBytes()) / 1024.0f / 1024.0f);
 
@@ -370,12 +379,13 @@ namespace EMotionFX::MotionMatching
             maxDepth = AZ::GetMax(maxDepth, node->m_dimension);
         }
 
-        AZ_TracePrintf("EMotionFX", "KdTree Balance Info: leftSide=%d rightSide=%d score=%.2f totalFrames=%d maxDepth=%d", leftNumFrames, rightNumFrames, balanceScore, leftNumFrames + rightNumFrames, maxDepth);
+        AZ_TracePrintf("Motion Matching", "    KdTree Balance Info: leftSide=%d rightSide=%d score=%.2f totalFrames=%d maxDepth=%d", leftNumFrames, rightNumFrames, balanceScore, leftNumFrames + rightNumFrames, maxDepth);
 
         size_t numLeafNodes = 0;
         size_t numZeroNodes = 0;
         size_t minFrames = 1000000000;
         size_t maxFrames = 0;
+        AZStd::string framesString;
         for (const Node* node : m_nodes)
         {
             if (node->m_leftNode || node->m_rightNode)
@@ -390,14 +400,19 @@ namespace EMotionFX::MotionMatching
                 numZeroNodes++;
             }
 
-            AZ_TracePrintf("EMotionFX", "Frames = %d", node->m_frames.size());
+            if (!framesString.empty())
+            {
+                framesString += ", ";
+            }
+            framesString += AZStd::to_string(node->m_frames.size());
 
             minFrames = AZ::GetMin(minFrames, node->m_frames.size());
             maxFrames = AZ::GetMax(maxFrames, node->m_frames.size());
         }
+        AZ_TracePrintf("Motion Matching", "    Frames = (%s)", framesString.c_str());
 
         const size_t avgFrames = (leftNumFrames + rightNumFrames) / numLeafNodes;
-        AZ_TracePrintf("EMotionFX", "KdTree Node Info: leafs=%d avgFrames=%d zeroFrames=%d minFrames=%d maxFrames=%d", numLeafNodes, avgFrames, numZeroNodes, minFrames, maxFrames);
+        AZ_TracePrintf("Motion Matching", "    KdTree Node Info: leafs=%d avgFrames=%d zeroFrames=%d minFrames=%d maxFrames=%d", numLeafNodes, avgFrames, numZeroNodes, minFrames, maxFrames);
 #endif
     }
 

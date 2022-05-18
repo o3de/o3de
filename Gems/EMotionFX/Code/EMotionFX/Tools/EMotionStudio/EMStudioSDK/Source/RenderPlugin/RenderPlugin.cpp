@@ -68,13 +68,11 @@ namespace EMStudio
         SaveRenderOptions();
         CleanEMStudioActors();
 
-        // Get rid of the OpenGL view widgets.
-        // Don't delete them directly as there might be still paint events in the Qt message queue which will cause a crash.
-        // deleteLater will make sure all events will be processed before actually destructing the object.
         for (RenderViewWidget* viewWidget : m_viewWidgets)
         {
-            viewWidget->deleteLater();
+            delete viewWidget;
         }
+        m_viewWidgets.clear();
 
         for (Layout* layout : m_layouts)
         {
