@@ -831,8 +831,16 @@ namespace Multiplayer
                 {
                     ServerToClientConnectionData* connectionData =
                         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
-                    const ReplicationSet& replicationSet = connectionData->GetReplicationManager().GetReplicationWindow()->GetReplicationSet();
-                    spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
+                    IReplicationWindow* replicationWindow = connectionData->GetReplicationManager().GetReplicationWindow();
+                    if (replicationWindow)
+                    {
+                        const ReplicationSet& replicationSet = replicationWindow->GetReplicationSet();
+                        spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
+                    }
+                    else
+                    {
+                        AZLOG_ERROR("No IReplicationWindow found OnPlayerDisconnect.");
+                    }
                 }
                 else
                 {

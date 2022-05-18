@@ -36,7 +36,7 @@ namespace PhysX
     /*static*/ bool Environment::s_enablePvd = false;
 
     PhysXApplication::PhysXApplication()
-        : m_physXSystem(new TestUtils::Test_PhysXSettingsRegistryManager(), PxCooking::GetRealTimeCookingParams())
+        : m_physXSystem(AZStd::make_unique<TestUtils::Test_PhysXSettingsRegistryManager>(), PxCooking::GetRealTimeCookingParams())
     {
 
     }

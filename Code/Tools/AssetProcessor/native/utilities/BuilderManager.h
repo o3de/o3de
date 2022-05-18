@@ -40,6 +40,10 @@ namespace AssetProcessor
 
         //! Returns a builder for doing work
         virtual BuilderRef GetBuilder(bool doRegistration) = 0;
+
+        virtual void AddAssetToBuilderProcessedList(const AZ::Uuid& /*builderId*/, const AZStd::string& /*sourceAsset*/)
+        {
+        }
     };
 
     using BuilderManagerBus = AZ::EBus<BuilderManagerBusTraits>;
@@ -157,6 +161,12 @@ namespace AssetProcessor
         AZStd::shared_ptr<Builder> m_builder = nullptr;
     };
 
+    class BuilderDebugOutput
+    {
+    public:
+        AZStd::list<AZStd::string> m_assetsProcessed;
+    };
+
     //! Manages the builder pool
     class BuilderManager
         : public BuilderManagerBus::Handler
@@ -172,6 +182,7 @@ namespace AssetProcessor
 
         //BuilderManagerBus
         BuilderRef GetBuilder(bool doRegistration) override;
+        void AddAssetToBuilderProcessedList(const AZ::Uuid& builderId, const AZStd::string& sourceAsset) override;
 
     private:
 
@@ -183,10 +194,16 @@ namespace AssetProcessor
 
         void PumpIdleBuilders();
 
+        void PrintDebugOutput();
+
         AZStd::mutex m_buildersMutex;
 
         //! Map of builders, keyed by the builder's unique ID.  Must be locked before accessing
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<Builder>> m_builders;
+
+        // Track debug output generated per builder.
+        // This is done this way so that it can be output in order, to track down race conditions with asset builders.
+        AZStd::unordered_map<AZ::Uuid, BuilderDebugOutput> m_builderDebugOutput;
 
         //! Indicates if we allow builders to connect that we haven't started up ourselves.  Useful for debugging
         bool m_allowUnmanagedBuilderConnections = false;

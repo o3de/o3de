@@ -116,6 +116,8 @@ namespace EMotionFX::MotionMatching
 
         editContext->Class<FeatureSchema>("FeatureSchema", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureSchema::m_features, "Features", "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ;

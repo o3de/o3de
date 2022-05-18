@@ -678,6 +678,8 @@ class TestRunningTests(unittest.TestCase):
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.unlink', mock.MagicMock())
+    @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.splitext', mock.MagicMock())
     def test_ExecEditorMultitest_AllTestsPass_ReturnsPasses(self, mock_cycle_crash, mock_get_filepath):
@@ -707,6 +709,8 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.unlink', mock.MagicMock())
+    @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.splitext', mock.MagicMock())
     def test_ExecEditorMultitest_OneFailure_CallsCorrectFunc(self, mock_cycle_crash, mock_get_testcase_filepath,
@@ -735,6 +739,8 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.unlink', mock.MagicMock())
+    @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     def test_ExecEditorMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
@@ -771,6 +777,8 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.unlink', mock.MagicMock())
+    @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     def test_ExecEditorMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
