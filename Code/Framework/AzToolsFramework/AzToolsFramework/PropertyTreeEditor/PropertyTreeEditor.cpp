@@ -199,7 +199,9 @@ namespace AzToolsFramework
         const AZ::TypeId& underlyingTypeId = AZ::Internal::GetUnderlyingTypeId(*pteNode.m_nodePtr->GetClassMetadata()->m_azRtti);
         AZ::TypeId typeId = pteNode.m_nodePtr->GetClassMetadata()->m_typeId;
 
-        if (!underlyingTypeId.IsNull() && underlyingTypeId != pteNode.m_nodePtr->GetClassMetadata()->m_typeId)
+        // If the type can be downcasted to its underlying type, we return the value in the latter.
+        // For example, this allows to get the value of enums defined with AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE.
+        if (!underlyingTypeId.IsNull() && m_serializeContext->CanDowncast(typeId, underlyingTypeId))
         {
             typeId = underlyingTypeId;
         }
