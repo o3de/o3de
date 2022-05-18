@@ -34,9 +34,7 @@ namespace AzToolsFramework
             void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) override;
             bool UpdateTemplateInstancesInQueue() override;
             void RemoveTemplateInstanceFromQueue(const Instance* instance) override;
-
-            void SetRootPrefabInstanceAsNeverLoaded() override;
-            bool IsRootPrefabInstanceFirstLoadEnded() const override;
+            void QueueRootPrefabLoadedNotificationForNextPropagation() override;
 
             void RegisterInstanceUpdateExecutorInterface();
             void UnregisterInstanceUpdateExecutorInterface();
