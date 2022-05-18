@@ -6,7 +6,7 @@
  *
  */
  
-#include <Pass/EditorModeTintPass.h>
+#include <Pass/Child/EditorModeTintPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -18,7 +18,7 @@ AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeTintPass, 0.0f, 0.0f, 0.0f, 1.
 AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeTintPass, TintAmount, 0.5f);
 AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeTintPass, TintColor, AZ::Color(0.0f, 0.0f, 0.0f, 0.0f));
 
- namespace AZ
+namespace AZ
 {
     namespace Render
     {
@@ -29,20 +29,20 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeTintPass, TintColor, AZ::Color(
         }
         
         EditorModeTintPass::EditorModeTintPass(const RPI::PassDescriptor& descriptor)
-            : EditorModeFeedbackPassBase(descriptor)
+            : EditorModeFeedbackChildPassBase(descriptor)
         {
         }
         
         void EditorModeTintPass::InitializeInternal()
         {
-            EditorModeFeedbackPassBase::InitializeInternal();
+            EditorModeFeedbackChildPassBase::InitializeInternal();
             m_tintAmountIndex.Reset();
         }
         
         void EditorModeTintPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
-            EditorModeFeedbackPassBase::FrameBeginInternal(params);
+            EditorModeFeedbackChildPassBase::FrameBeginInternal(params);
         }
 
         void EditorModeTintPass::SetTintAmount(const float amount)

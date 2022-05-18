@@ -6,19 +6,19 @@
  *
  */
 
-#include <Pass/EditorModeFeedbackPassBase.h>
+#include <Pass/Child/EditorModeFeedbackChildPassBase.h>
 
 namespace AZ
 {
     namespace Render
     {
-        RPI::Ptr<EditorModeFeedbackPassBase> EditorModeFeedbackPassBase::Create(const RPI::PassDescriptor& descriptor)
+        RPI::Ptr<EditorModeFeedbackChildPassBase> EditorModeFeedbackChildPassBase::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<EditorModeFeedbackPassBase> pass = aznew EditorModeFeedbackPassBase(descriptor);
+            RPI::Ptr<EditorModeFeedbackChildPassBase> pass = aznew EditorModeFeedbackChildPassBase(descriptor);
             return AZStd::move(pass);
         }
 
-        EditorModeFeedbackPassBase::EditorModeFeedbackPassBase(
+        EditorModeFeedbackChildPassBase::EditorModeFeedbackChildPassBase(
             const RPI::PassDescriptor& descriptor,
             const DepthTransition& depthTransition,
             float finalBlendAmount)
@@ -28,7 +28,7 @@ namespace AZ
         {
         }
 
-        void EditorModeFeedbackPassBase::InitializeInternal()
+        void EditorModeFeedbackChildPassBase::InitializeInternal()
         {
             FullscreenTrianglePass::InitializeInternal();
             m_minDepthTransitionValueIndex.Reset();
@@ -37,33 +37,33 @@ namespace AZ
             m_finalBlendAmountIndex.Reset();
         }
 
-        void EditorModeFeedbackPassBase::FrameBeginInternal(FramePrepareParams params)
+        void EditorModeFeedbackChildPassBase::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
             FullscreenTrianglePass::FrameBeginInternal(params);
         }
 
-        void EditorModeFeedbackPassBase::SetMinDepthTransitionValue(const float minValue)
+        void EditorModeFeedbackChildPassBase::SetMinDepthTransitionValue(const float minValue)
         {
             m_depthransition.m_minDepthTransitionValue = minValue;
         }
 
-        void EditorModeFeedbackPassBase::SetDepthTransitionStart(const float start)
+        void EditorModeFeedbackChildPassBase::SetDepthTransitionStart(const float start)
         {
             m_depthransition.m_depthTransitionStart = start;
         }
 
-        void EditorModeFeedbackPassBase::SetDepthTransitionDuration(const float duration)
+        void EditorModeFeedbackChildPassBase::SetDepthTransitionDuration(const float duration)
         {
             m_depthransition.m_depthTransitionDuration = duration;
         }
 
-        void EditorModeFeedbackPassBase::SetFinalBlendAmount(const float amount)
+        void EditorModeFeedbackChildPassBase::SetFinalBlendAmount(const float amount)
         {
             m_finalBlendAmount = amount;
         }
 
-        void EditorModeFeedbackPassBase::SetSrgConstants()
+        void EditorModeFeedbackChildPassBase::SetSrgConstants()
         {
             m_shaderResourceGroup->SetConstant(m_minDepthTransitionValueIndex, m_depthransition.m_minDepthTransitionValue);
             m_shaderResourceGroup->SetConstant(m_depthTransitionStartIndex, m_depthransition.m_depthTransitionStart);

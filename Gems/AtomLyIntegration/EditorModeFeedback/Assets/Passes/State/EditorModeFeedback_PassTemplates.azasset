@@ -1,0 +1,17 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [            
+            {
+                "Name": "EditorModeFocusedEntityParentTemplate",
+                "Path": "Passes/State/EditorModeFocusedEntityParent.pass"
+            },
+            {
+                "Name": "EditorModeSelectedEntityParentTemplate",
+                "Path": "Passes/State/EditorModeSelectedEntityParent.pass"
+            }
+        ]
+    }
+}
