@@ -5,9 +5,21 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
+import editor_python_test_tools.pyside_utils as pyside_utils
+from editor_python_test_tools.utils import TestHelper as helper
+from editor_python_test_tools.utils import Report as report
+from editor_python_test_tools.utils import Tracer as tracer
+import editor_python_test_tools.hydra_editor_utils as hydra
+import azlmbr.legacy.general as general
+import azlmbr.math as math
+import azlmbr.asset as asset
+import azlmbr.bus as bus
+import azlmbr.paths as paths
+
 
 # fmt: off
-class Tests():
+class Tests:
     level_created     = ("New level created",              "New level not created")
     game_mode_entered = ("Game Mode successfully entered", "Game mode failed to enter")
     game_mode_exited  = ("Game Mode successfully exited",  "Game mode failed to exited")
@@ -19,7 +31,13 @@ class LogLines:
     expected_lines = ["Greetings from the first script", "Greetings from the second script"]
 
 
-def ScriptCanvas_TwoComponents_InteractSuccessfully():
+LEVEL_NAME = "tmp_level"
+ASSET_1 = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevents")
+ASSET_2 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
+WAIT_TIME = 3.0  # SECONDS
+
+
+class TestScriptCanvasTwoComponentsInteractSuccessfully:
     """
     Summary:
      A test entity contains two Script Canvas components with different unique script canvas files.
@@ -44,67 +62,49 @@ def ScriptCanvas_TwoComponents_InteractSuccessfully():
 
     :return: None
     """
-    import os
 
-    from utils import TestHelper as helper
-    import hydra_editor_utils as hydra
-    from utils import Report
-    from utils import Tracer
-
-    import azlmbr.legacy.general as general
-    import azlmbr.math as math
-    import azlmbr.asset as asset
-    import azlmbr.bus as bus
-
-    LEVEL_NAME = "tmp_level"
-    ASSET_1 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
-    ASSET_2 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
-    WAIT_TIME = 3.0  # SECONDS
-
-    def get_asset(asset_path):
+    def get_asset(self, asset_path):
         return asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", asset_path, math.Uuid(), False)
 
-    def locate_expected_lines():
+    def locate_expected_lines(self, section_tracer):
         found_lines = []
         for printInfo in section_tracer.prints:
             found_lines.append(printInfo.message.strip())
 
         return all(line in found_lines for line in LogLines.expected_lines)
 
-    # 1) Create level
-    general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
-    general.close_pane("Error Report")
+    @pyside_utils.wrap_async
+    async def run_test(self):
 
-    # 2) Create entity with SC components
-    position = math.Vector3(512.0, 512.0, 32.0)
-    test_entity = hydra.Entity("test_entity")
-    test_entity.create_entity(position, ["Script Canvas", "Script Canvas"])
-    test_entity.get_set_test(0, "Script Canvas Asset|Script Canvas Asset", get_asset(ASSET_1))
-    test_entity.get_set_test(1, "Script Canvas Asset|Script Canvas Asset", get_asset(ASSET_2))
+        # 1) Create level
+        general.idle_enable(True)
+        result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
+        report.critical_result(Tests.level_created, result == 0)
+        helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
+        general.close_pane("Error Report")
 
-    # 3) Start Tracer
-    with Tracer() as section_tracer:
+        # 2) Create entity with SC components
+        position = math.Vector3(512.0, 512.0, 32.0)
+        test_entity = hydra.Entity("test_entity")
+        test_entity.create_entity(position, ["Script Canvas", "Script Canvas"])
+        test_entity.get_set_test(0, "Script Canvas Asset|Script Canvas Asset", self.get_asset(ASSET_1))
+        test_entity.get_set_test(1, "Script Canvas Asset|Script Canvas Asset", self.get_asset(ASSET_2))
 
-        # 4) Enter game mode
-        helper.enter_game_mode(Tests.game_mode_entered)
+        # 3) Start Tracer
+        with tracer as section_tracer:
 
-        # 5) Wait for expected lines to be found
-        helper.wait_for_condition(locate_expected_lines, WAIT_TIME)
+            # 4) Enter game mode
+            helper.enter_game_mode(Tests.game_mode_entered)
 
-        # 6) Report if expected lines were found
-        Report.result(Tests.found_lines, locate_expected_lines())
+            # 5) Wait for expected lines to be found
+            helper.wait_for_condition(self.locate_expected_lines(section_tracer), WAIT_TIME)
 
-    # 7) Exit game mode
-    helper.exit_game_mode(Tests.game_mode_exited)
+            # 6) Report if expected lines were found
+            report.result(Tests.found_lines, self.locate_expected_lines())
+
+        # 7) Exit game mode
+        helper.exit_game_mode(Tests.game_mode_exited)
 
 
-if __name__ == "__main__":
-    import ImportPathHelper as imports
-
-    imports.init()
-    from utils import Report
-
-    Report.start_test(ScriptCanvas_TwoComponents_InteractSuccessfully)
+test = TestScriptCanvasTwoComponentsInteractSuccessfully()
+test.run_test()
