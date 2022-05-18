@@ -8,7 +8,7 @@
 
 
 #include <CompressionModuleInterface.h>
-#include <CompressionSystemComponent.h>
+#include "CompressionSystemComponent.h"
 
 namespace Compression
 {

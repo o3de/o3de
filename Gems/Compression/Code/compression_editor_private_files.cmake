@@ -5,6 +5,8 @@
 #
 
 set(FILES
-    Source/CompressionEditorSystemComponent.cpp
-    Source/CompressionEditorSystemComponent.h
+    Source/Tools/CompressionEditorSystemComponent.cpp
+    Source/Tools/CompressionEditorSystemComponent.h
+    Source/Tools/CompressionFactoryImpl.h
+    Source/Tools/CompressionFactoryImpl.cpp
 )

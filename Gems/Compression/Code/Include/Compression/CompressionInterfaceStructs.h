@@ -5,15 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/std/containers/span.h>
+#include <AzCore/base.h>
+#include <AzCore/std/limits.h>
 
 namespace Compression
 {
     // Structure represent a compression algorithmId
-    enum class CompressionAlgorithmId : u32 {};
+    enum class CompressionAlgorithmId : AZ::u32 {};
     constexpr CompressionAlgorithmId Uncompressed{};
+    constexpr CompressionAlgorithmId Invalid{ AZStd::numeric_limits<AZ::u32>::max() };
 
 } // namespace Compression

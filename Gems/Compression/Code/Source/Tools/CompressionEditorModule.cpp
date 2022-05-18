@@ -6,8 +6,9 @@
  *
  */
 
+#include "CompressionFactoryImpl.h"
 #include <CompressionModuleInterface.h>
-#include <CompressionEditorSystemComponent.h>
+#include "CompressionEditorSystemComponent.h"
 
 namespace Compression
 {
@@ -27,6 +28,20 @@ namespace Compression
             m_descriptors.insert(m_descriptors.end(), {
                 CompressionEditorSystemComponent::CreateDescriptor(),
             });
+
+            m_compressionFactoryInterface = AZStd::make_unique<CompressionFactoryImpl>();
+            if (CompressionFactory::Get() == nullptr)
+            {
+                CompressionFactory::Register(m_compressionFactoryInterface.get());
+            }
+        }
+
+        ~CompressionEditorModule()
+        {
+            if (CompressionFactory::Get() == m_compressionFactoryInterface.get())
+            {
+                CompressionFactory::Unregister(m_compressionFactoryInterface.get());
+            }
         }
 
         /**
@@ -39,6 +54,11 @@ namespace Compression
                 azrtti_typeid<CompressionEditorSystemComponent>(),
             };
         }
+
+    private:
+        // CompressionFactory interface used to register Compression interfaces
+        // Available in tooling applications to allow compression algorithms to run
+        AZStd::unique_ptr<CompressionFactoryInterface> m_compressionFactoryInterface;
     };
 }// namespace Compression
 

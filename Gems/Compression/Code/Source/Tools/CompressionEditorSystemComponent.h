@@ -8,16 +8,13 @@
 
 #pragma once
 
-#include <CompressionSystemComponent.h>
-
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <Clients/CompressionSystemComponent.h>
 
 namespace Compression
 {
     /// System component for Compression editor
     class CompressionEditorSystemComponent
         : public CompressionSystemComponent
-        , private AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = CompressionSystemComponent;
     public:

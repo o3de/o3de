@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <CompressionEditorSystemComponent.h>
+#include "CompressionEditorSystemComponent.h"
 
 namespace Compression
 {
@@ -49,12 +49,10 @@ namespace Compression
     void CompressionEditorSystemComponent::Activate()
     {
         CompressionSystemComponent::Activate();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void CompressionEditorSystemComponent::Deactivate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         CompressionSystemComponent::Deactivate();
     }
 

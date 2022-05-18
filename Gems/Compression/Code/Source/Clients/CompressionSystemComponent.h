@@ -17,7 +17,6 @@ namespace Compression
     class CompressionSystemComponent
         : public AZ::Component
         , protected CompressionRequestBus::Handler
-        , public AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT(CompressionSystemComponent, "{7E220BA3-B665-4225-9023-F0520E4B436E}");
@@ -43,11 +42,6 @@ namespace Compression
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // AZTickBus interface implementation
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
     };
 

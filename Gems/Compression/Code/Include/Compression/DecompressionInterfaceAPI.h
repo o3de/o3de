@@ -5,15 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/span.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Compression/CompressionInterfaceStructs.h>
 
 namespace Compression
 {
-    enum class DecompressionResult : u8
+    enum class DecompressionResult : AZ::u8
     {
         Started,
         Complete,
@@ -60,7 +63,7 @@ namespace Compression
         virtual CompressionAlgorithmId GetCompressionAlgorithmId() const = 0;
         //! Decompresses the input compressed data into the uncompressed buffer
         //! Both parameters are specified as spans which encapsulates the contiguous buffer and it's size.
-        virtual [[nodiscard]] DecompressionResultData DecompressBlock(
+        [[nodiscard]] virtual DecompressionResultData DecompressBlock(
             AZStd::span<AZStd::byte> uncompressedBuffer, const AZStd::span<const AZStd::byte>& compressedData) = 0;
     };
 
@@ -70,8 +73,28 @@ namespace Compression
         AZ_RTTI(DecompressionFactoryInterface, "{DB1ACA55-B36F-469B-9704-EC486D9FC810}");
         virtual ~DecompressionFactoryInterface() = default;
 
-        virtual void GetRegisteredDeompressionInterfaces(AZStd::span<IDecompressionInterface* const>) = 0;
-        virtual bool RegisterDecompressionInterface(AZStd::unique_ptr<IDecompressionInterface>) = 0;
+        //! Returns a span containing all registered Decompression Interfaces
+        //! @return span off registered Decompression Interfaces.
+        virtual AZStd::span<IDecompressionInterface* const> GetDecompressionInterfaces() = 0;
+
+        //! Registers a decompression interface with the decompression factory.
+        //! If a decompression interface with a CompressionAlgorithmId is registered that
+        //! matches the input decompression interface, then registration does not occur
+        //! and the unique_ptr refererence is unmodified and can be re-used by the caller
+        //!
+        //! @param decompressionInterface unique pointer to decompression interface to register
+        //! @return true if the IDecompressionInterface was successfully registered, otherwise false
+        virtual bool RegisterDecompressionInterface(AZStd::unique_ptr<IDecompressionInterface>&&) = 0;
+
+        //! Unregisters the Decompression Interface with the specified Id if it is registered with the factory
+        //!
+        //! @param compressionAlgorithmId unique Id that identifies the Decompression Interface
+        //! @return true if the IDecompressionInterface was unregistered, otherwise false
+        virtual bool UnregisterCompressionInterface(CompressionAlgorithmId) = 0;
+
+        //! Queries the Decompression Interface with the compression algorithmd Id
+        //! @param compressionAlgorithmId unique Id of Decompression Interface to query
+        //! @return pointer to the DeCompression Interface or nullptr if not found
         virtual IDecompressionInterface* FindDecompressionInterface(CompressionAlgorithmId) const = 0;
     };
 

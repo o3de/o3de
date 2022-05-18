@@ -5,5 +5,5 @@
 #
 
 set(FILES
-    Tests/CompressionEditorTest.cpp
+    Tests/Tools/CompressionEditorTest.cpp
 )

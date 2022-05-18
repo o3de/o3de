@@ -6,6 +6,6 @@
 
 set(FILES
     Source/CompressionModuleInterface.h
-    Source/CompressionSystemComponent.cpp
-    Source/CompressionSystemComponent.h
+    Source/Clients/CompressionSystemComponent.cpp
+    Source/Clients/CompressionSystemComponent.h
 )

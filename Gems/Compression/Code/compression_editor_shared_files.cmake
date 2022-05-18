@@ -5,5 +5,5 @@
 #
 
 set(FILES
-    Source/CompressionEditorModule.cpp
+    Source/Tools/CompressionEditorModule.cpp
 )

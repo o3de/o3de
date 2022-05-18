@@ -8,7 +8,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
-#include <CompressionSystemComponent.h>
+#include <Clients/CompressionSystemComponent.h>
 
 namespace Compression
 {

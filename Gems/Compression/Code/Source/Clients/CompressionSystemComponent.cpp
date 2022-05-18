@@ -6,7 +6,7 @@
  *
  */
 
-#include <CompressionSystemComponent.h>
+#include "CompressionSystemComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -74,17 +74,11 @@ namespace Compression
     void CompressionSystemComponent::Activate()
     {
         CompressionRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void CompressionSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
         CompressionRequestBus::Handler::BusDisconnect();
-    }
-
-    void CompressionSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
     }
 
 } // namespace Compression

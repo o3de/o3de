@@ -5,5 +5,5 @@
 #
 
 set(FILES
-    Source/CompressionModule.cpp
+    Source/Clients/CompressionModule.cpp
 )
