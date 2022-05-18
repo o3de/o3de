@@ -48,8 +48,18 @@ namespace AZ
         {
             return m_entity->GetId();
         }
+        else if (m_id == InvalidComponentId)
+        {
+            AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
+        }
+        else
+        {
+            // If m_entity is null but m_id is not equal to InvalidComponentId, then this object may have been deleted already.
+            // At this point RTTI_GetTypeName() on Linux causes a seg-fault. This is a work-around to prevent the crash and allow
+            // the call to partially warn about the detached entity and still return an Invalid EntityId()
+            AZ_Warning("System", false, "Can't get component (id: %ld) entity ID as it has detached its Entity.", m_id);
+        }
 
-        AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
         return EntityId();
     }
 
