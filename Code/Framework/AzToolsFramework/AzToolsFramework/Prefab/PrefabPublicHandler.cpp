@@ -1391,7 +1391,7 @@ namespace AzToolsFramework
                     command->SetParent(undoBatch.GetUndoBatch());
                     {
                         AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DetachPrefab:RunRedo");
-                        command->Redo(parentInstance);
+                        command->Redo();
                     }
 
                     instancePtr->DetachNestedInstances(

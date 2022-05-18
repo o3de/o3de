@@ -31,7 +31,7 @@ namespace AzToolsFramework
             , m_GameModeEventHandler(
                   [this](GameModeState state)
                   {
-                      m_isGameModeInProgress = (state == GameModeState::Started);
+                      m_shouldPausePropagation = (state == GameModeState::Started);
                   })
         {
         }
@@ -51,10 +51,12 @@ namespace AzToolsFramework
                 "Check that it is being correctly initialized.");
 
             AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
+            PropertyEditorGUIMessages::Bus::Handler::BusConnect();
         }
 
         void InstanceUpdateExecutor::UnregisterInstanceUpdateExecutorInterface()
         {
+            PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
             m_GameModeEventHandler.Disconnect();
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
@@ -113,7 +115,7 @@ namespace AzToolsFramework
             LazyConnectGameModeEventHandler();
 
             bool isUpdateSuccessful = true;
-            if (!m_updatingTemplateInstancesInQueue && !m_isGameModeInProgress)
+            if (!m_updatingTemplateInstancesInQueue && !m_shouldPausePropagation)
             {
                 m_updatingTemplateInstancesInQueue = true;
 
@@ -275,6 +277,16 @@ namespace AzToolsFramework
             }
 
             return isUpdateSuccessful;
+        }
+
+        void InstanceUpdateExecutor::RequestWrite(QWidget*)
+        {
+            m_shouldPausePropagation = true;
+        }
+
+        void InstanceUpdateExecutor::OnEditingFinished(QWidget*)
+        {
+            m_shouldPausePropagation = false;
         }
     }
 }
