@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <FocusedEntity/FocusedMeshEntity.h>
+#include <Draw/DrawableMeshEntity.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
@@ -76,7 +76,7 @@ namespace AZ
             RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
 
             //! Map of focused entity
-            AZStd::unordered_map<EntityId, FocusedMeshEntity> m_focusedEntities;
+            AZStd::unordered_map<EntityId, DrawableMeshEntity> m_focusedEntities;
         };
     } // namespace Render
 } // namespace AZ

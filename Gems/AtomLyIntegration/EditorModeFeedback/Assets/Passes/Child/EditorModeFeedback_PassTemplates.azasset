@@ -5,6 +5,10 @@
     "ClassData": {
         "AssetPaths": [
             {
+                "Name": "EditorModeFeedbackParentTemplate",
+                "Path": "Passes/Child/EditorModeFeedbackParent.pass"
+            },
+            {
                 "Name": "EditorModeMaskTemplate",
                 "Path": "Passes/Child/EditorModeMask.pass"
             },

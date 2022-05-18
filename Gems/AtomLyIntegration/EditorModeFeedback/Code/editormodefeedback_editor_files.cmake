@@ -8,6 +8,8 @@
 
 set(FILES
     Include/EditorModeFeedback/EditorModeFeedbackInterface.h
+    Source/Pass/Child/EditorModeFeedbackParentPass.cpp
+    Source/Pass/Child/EditorModeFeedbackParentPass.h
     Source/Pass/Child/EditorModeFeedbackChildPassBase.cpp
     Source/Pass/Child/EditorModeFeedbackChildPassBase.h
     Source/Pass/Child/EditorModeDesaturationPass.cpp

@@ -8,11 +8,11 @@
 
 #include <EditorModeFeedbackSystemComponent.h>
 #include <EditorModeFeedbackFeatureProcessor.h>
-#include <Pass/EditorModeFeedbackParentPass.h>
-#include <Pass/EditorModeDesaturationPass.h>
-#include <Pass/EditorModeTintPass.h>
-#include <Pass/EditorModeBlurPass.h>
-#include <Pass/EditorModeOutlinePass.h>
+#include <Pass/Child/EditorModeFeedbackParentPass.h>
+#include <Pass/Child/EditorModeDesaturationPass.h>
+#include <Pass/Child/EditorModeTintPass.h>
+#include <Pass/Child/EditorModeBlurPass.h>
+#include <Pass/Child/EditorModeOutlinePass.h>
 
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <Atom/Utils/Utils.h>
