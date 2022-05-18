@@ -72,7 +72,7 @@ void ComputeWorldNormalAndPosition(VSOutput IN, out float3 outPositionWS, out fl
     const float2 pixelSize = rcp(PassSrg::m_constantData.m_screenSize.xy);  // How big a pixel is in screen UV space
     const float2 halfPixel = pixelSize * 0.5f;
 
-    // Do 2 depth gather to get 5 depth values (cross centered on pixel being shaded). Reminder that gather is laid out like so:
+    // Do 2 depth gather ops to get 5 depth values (cross centered on pixel being shaded). Reminder that gather is laid out like so:
     //  W Z
     //  X Y
     float4 depthUpLeft = PassSrg::m_depthLinear.Gather(PassSrg::PointSampler, screenUV - halfPixel);

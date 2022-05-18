@@ -12,7 +12,7 @@
 
 partial ShaderResourceGroup ViewSrg
 {
-    row_major float4x4 m_viewProjectionMatrix;          // World -> Screen Projection
+    row_major float4x4 m_viewProjectionMatrix;          // World -> Projection
     row_major float4x4 m_viewMatrix;                    // World -> View
     row_major float4x4 m_viewMatrixInverse;             // View -> World
     row_major float4x4 m_projectionMatrix;              // View -> Projection

@@ -8,6 +8,11 @@
  
 enum class ShadowFilterMethod {None, Pcf, Esm, EsmPcf};
 
+// avoiding artifact between cascade levels.
+#define PIXEL_MARGIN (1.5)
+
+// avoiding artifact when near depth bounds.
+#define DEPTH_MARGIN (1e-8)
 
 // Call GetVisibility() to determine if an object is shadowed by a directional light.
 // The reason this is a standalone class is because it can be used either in a Forward Shader or in a fullscreen pass shader.
@@ -89,9 +94,6 @@ class DirectionalShadowCalculator
 
 float DirectionalShadowCalculator::GetThickness()
 {
-    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
-    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
-
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
     if (size <= 1)
     {
@@ -101,12 +103,12 @@ float DirectionalShadowCalculator::GetThickness()
     Texture2DArray<float> shadowmap = m_directionalLightShadowmap;
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     
-    float3 shadowCoord;
     for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
     {  
-        shadowCoord = m_shadowCoords[indexOfCascade];
-        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
-             shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && shadowCoord.z < (1. - DepthMargin))
+        float3 shadowCoord = m_shadowCoords[indexOfCascade];
+        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PIXEL_MARGIN &&
+            shadowCoord.y >= 0. && shadowCoord.y * size < size - PIXEL_MARGIN &&
+            shadowCoord.z < (1. - DEPTH_MARGIN))
         {
             const float depthBufferValue = shadowmap.Sample(PassSrg::LinearSampler, float3(shadowCoord.xy, indexOfCascade)).r;
             
@@ -153,23 +155,20 @@ void DirectionalShadowCalculator::ComputeShadowCoords()
 
 bool2 DirectionalShadowCalculator::IsShadowed(const float3 shadowCoord, const uint indexOfCascade)
 {
-    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
-    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
-
     // size is the shadowap's width and height.
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
 
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
 
     [branch]
-    if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
-        shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin)
+    if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PIXEL_MARGIN &&
+        shadowCoord.y >= 0. && shadowCoord.y * size < size - PIXEL_MARGIN)
     {
         const float3 coord = float3(shadowCoord.xy, indexOfCascade);
         const float depthInShadowmap = m_directionalLightShadowmap.Sample(PassSrg::LinearSampler, coord).r;
         // Test the case where the shadowed pixel is nearer than the maximal depth
         // of the cascade.  Otherwise, escalate the next cascade.
-        if (shadowCoord.z < 1. - DepthMargin)
+        if (shadowCoord.z < 1. - DEPTH_MARGIN)
         {
             const float depthDiff = shadowCoord.z - depthInShadowmap;
             return bool2(true, (depthDiff > m_slopeBias[indexOfCascade]));
@@ -287,9 +286,6 @@ float DirectionalShadowCalculator::SamplePcfBicubic(const float3 shadowCoord, co
 
 float DirectionalShadowCalculator::GetVisibilityFromLightPcf()
 {   
-    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
-    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
-
     bool cascadeFound = false;
     int currentCascadeIndex = 0;
 
@@ -299,9 +295,9 @@ float DirectionalShadowCalculator::GetVisibilityFromLightPcf()
     {
         const float3 shadowCoord = m_shadowCoords[indexOfCascade];
         
-        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
-            shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
-            shadowCoord.z < 1. - DepthMargin)
+        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PIXEL_MARGIN &&
+            shadowCoord.y >= 0. && shadowCoord.y * size < size - PIXEL_MARGIN && 
+            shadowCoord.z < 1. - DEPTH_MARGIN)
         {
             currentCascadeIndex = m_debugInfo.m_cascadeIndex = indexOfCascade;
             cascadeFound = true;
