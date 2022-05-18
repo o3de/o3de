@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -37,9 +38,9 @@ namespace PhysX
         Module()
             : AZ::Module()
 #if defined(PHYSX_EDITOR)
-            , m_physXSystem(new PhysXEditorSettingsRegistryManager(), PxCooking::GetEditTimeCookingParams())
+            , m_physXSystem(AZStd::make_unique<PhysXEditorSettingsRegistryManager>(), PxCooking::GetEditTimeCookingParams())
 #else
-            , m_physXSystem(new PhysXSettingsRegistryManager(), PxCooking::GetRealTimeCookingParams())
+            , m_physXSystem(AZStd::make_unique<PhysXSettingsRegistryManager>(), PxCooking::GetRealTimeCookingParams())
 #endif
         {
             static_assert(alignof(PhysX::PhysXSystemConfiguration) == 16);
