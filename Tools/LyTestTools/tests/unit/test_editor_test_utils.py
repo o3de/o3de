@@ -129,7 +129,7 @@ class TestEditorTestUtils(unittest.TestCase):
         mock_log = 'mock log info'
 
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
-            assert f'[{mock_logname}]  {mock_log}' == editor_test_utils.retrieve_editor_log_content(0, mock_logname, mock_workspace)
+            assert f'[{mock_logname}]  {mock_log}' == editor_test_utils.retrieve_test_log_content(0, mock_logname, mock_workspace)
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.environment.waiter.wait_for', mock.MagicMock())
@@ -139,7 +139,7 @@ class TestEditorTestUtils(unittest.TestCase):
         mock_workspace = mock.MagicMock()
         expected = f"-- Error reading {mock_logname}"
 
-        assert expected in editor_test_utils.retrieve_editor_log_content(0, mock_logname, mock_workspace)
+        assert expected in editor_test_utils.retrieve_test_log_content(0, mock_logname, mock_workspace)
 
     def test_RetrieveLastRunTestIndexFromOutput_SecondTestFailed_Returns0(self):
         mock_test = mock.MagicMock()

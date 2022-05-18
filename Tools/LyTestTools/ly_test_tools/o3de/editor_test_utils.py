@@ -3,9 +3,10 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Utility functions mostly for the editor_test module. They can also be used for assisting Editor tests.
 """
+# Utility functions mostly for the multi_test_framework module.
+# They can also be used for assisting in Editor, MaterialEditor, or other o3de tests.
+
 from __future__ import annotations
 import os
 import time
@@ -20,13 +21,13 @@ logger = logging.getLogger(__name__)
 
 def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     """
-    Kills all common O3DE processes such as the Editor, Game Launchers, and optionally Asset Processor. Defaults to
-    killing the Asset Processor.
+    Kills all common O3DE processes such as the Editor, Game Launchers, and optionally Asset Processor.
+    Defaults to killing the Asset Processor.
     :param include_asset_processor: Boolean flag whether or not to kill the AP
     :return: None
     """
     LY_PROCESSES = [
-        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher'
+        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher', 'MaterialEditor'
     ]
     AP_PROCESSES = [
         'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder'
@@ -61,9 +62,9 @@ def get_module_filename(testcase_module: Module):
 def retrieve_log_path(run_id: int, workspace: AbstractWorkspaceManager) -> str:
     """
     return the log/ project path for this test run.
-    :param run_id: editor id that will be used for differentiating paths
+    :param run_id: run id that will be used for differentiating paths
     :param workspace: Workspace fixture
-    :return str: The full path to the given editor the log/ path
+    :return str: The full path to the given project log/ path
     """
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
 
@@ -71,10 +72,10 @@ def retrieve_log_path(run_id: int, workspace: AbstractWorkspaceManager) -> str:
 def retrieve_crash_output(run_id: int, workspace: AbstractWorkspaceManager, timeout: float = 10) -> str:
     """
     returns the crash output string for the given test run.
-    :param run_id: editor id that will be used for differentiating paths
+    :param run_id: run id that will be used for differentiating paths
     :param workspace: Workspace fixture
     :timeout: Maximum time (seconds) to wait for crash output file to appear
-    :return str: The contents of the editor crash file (error.log)
+    :return str: The contents of the project crash file (error.log)
     """
     crash_info = "-- No crash log available --"
     # Grab the file name of the crash log which can be different depending on platform
@@ -97,7 +98,7 @@ def retrieve_crash_output(run_id: int, workspace: AbstractWorkspaceManager, time
 def cycle_crash_report(run_id: int, workspace: AbstractWorkspaceManager) -> None:
     """
     Attempts to rename error.log and error.dmp(crash files) into new names with the timestamp on it.
-    :param run_id: editor id that will be used for differentiating paths
+    :param run_id: run id that will be used for differentiating paths
     :param workspace: Workspace fixture
     """
     log_path = retrieve_log_path(run_id, workspace)
@@ -115,39 +116,40 @@ def cycle_crash_report(run_id: int, workspace: AbstractWorkspaceManager) -> None
                 logger.warning(f"Couldn't cycle file {filepath}. Error: {str(ex)}")
 
 
-def retrieve_editor_log_content(run_id: int, log_name: str, workspace: AbstractWorkspaceManager, timeout: int = 10) -> str:
+def retrieve_test_log_content(
+        run_id: int, log_name: str, workspace: AbstractWorkspaceManager, timeout: int = 10) -> str:
     """
-    Retrieves the contents of the given editor log file.
-    :param run_id: editor id that will be used for differentiating paths
-    :log_name: The name of the editor log to retrieve
+    Retrieves the contents of the given test log file.
+    :param run_id: run id that will be used for differentiating paths
+    :param log_name: The name of the test log to retrieve
     :param workspace: Workspace fixture
-    :timeout: Maximum time to wait for the log file to appear
+    :param timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
     """
-    editor_info = "-- No editor log available --"
-    editor_log = os.path.join(retrieve_log_path(run_id, workspace), log_name)
+    test_info = "-- No test log available --"
+    test_log = os.path.join(retrieve_log_path(run_id, workspace), log_name)
     try:
-        waiter.wait_for(lambda: os.path.exists(editor_log), timeout=timeout)
+        waiter.wait_for(lambda: os.path.exists(test_log), timeout=timeout)
     except AssertionError:              
         pass
         
     # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
     try:
-        with open(editor_log) as f:
-            editor_info = ""
+        with open(test_log) as f:
+            test_info = ""
             for line in f:
-                editor_info += f"[{log_name}]  {line}"
+                test_info += f"[{log_name}]  {line}"
     except Exception as ex:
-        editor_info = f"-- Error reading {log_name}: {str(ex)} --"
-    return editor_info
+        test_info = f"-- Error reading {log_name}: {str(ex)} --"
+    return test_info
 
 
-def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTestBase], output: str) -> int:
+def retrieve_last_run_test_index_from_output(test_spec_list: list[AbstractTestBase], output: str) -> int:
     """
     Finds out what was the last test that was run by inspecting the input.
-    This is used for determining what was the batched test has crashed the editor
-    :param test_spec_list: List of tests that were run in this editor
-    :output: Editor output to inspect
+    This is used for determining what was the batched test has crashed the instance
+    :param test_spec_list: List of tests that were run in this instance
+    :output: Test output to inspect
     :return: Index in the given test_spec_list of the last test that ran
     """
     index = -1
@@ -155,7 +157,7 @@ def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTestBase
     for test_spec in test_spec_list:
         find_pos = output.find(test_spec.__name__, find_pos)
         if find_pos == -1:
-            index = max(index, 0) # <- if we didn't even find the first test, assume its been the first one that crashed
+            index = max(index, 0)  # <- if we didn't even find the first test, assume its the first one that crashed
             return index
         else:
             index += 1
