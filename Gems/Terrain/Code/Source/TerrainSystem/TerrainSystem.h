@@ -174,12 +174,6 @@ namespace Terrain
         AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize, Sampler sampler) const override;
 
-        //! Given the number of samples in a region and the desired number of jobs, choose the best subdivision of the region into jobs.
-        static void SubdivideRegionForJobs(
-            int32_t numSamplesX, int32_t numSamplesY, int32_t maxNumJobs, int32_t minPointsPerJob,
-            int32_t& subdivisionsX, int32_t& subdivisionsY);
-
-
         //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
         //! coordinates in the region.
         void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
@@ -269,6 +263,22 @@ namespace Terrain
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
 
     private:
+        //! Given a set of async parameters, calculate the max number of jobs that we can use for the async call.
+        int32_t CalculateMaxJobs(AZStd::shared_ptr<ProcessAsyncParams> params) const
+        {
+            // Determine the maximum number of jobs available to split the work across for async calls.
+            const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
+            const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
+            const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
+
+            return numJobsMax;
+        }
+
+        //! Given the number of samples in a region and the desired number of jobs, choose the best subdivision of the region into jobs.
+        static void SubdivideRegionForJobs(
+            int32_t numSamplesX, int32_t numSamplesY, int32_t maxNumJobs, int32_t minPointsPerJob,
+            int32_t& subdivisionsX, int32_t& subdivisionsY);
+
         template<typename SynchronousFunctionType, typename VectorType>
         AZStd::shared_ptr<TerrainJobContext> ProcessFromListAsync(
             SynchronousFunctionType synchronousFunction,
@@ -390,15 +400,14 @@ namespace Terrain
             return nullptr;
         }
 
-        // Determine the maximum number of jobs to split the work into based on:
-        // 1. The maximum number of jobs desired and available.
-        // 2. The minimum number of positions to process per job.
-        // 3. The total number of positions being processed.
-        const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
-        const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
-        const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
+        // Determine the maximum number of jobs, and the minimum number of positions that should be processed per job.
+        const int32_t numJobsMax = CalculateMaxJobs(params);
         const int32_t minPositionsPerJob =
             params && (params->m_minPositionsPerJob > 0) ? params->m_minPositionsPerJob : ProcessAsyncParams::MinPositionsPerJobDefault;
+
+        // Based on the above, we'll create the maximum number of jobs possible that meet both criteria:
+        // - processes at least minPositionsPerJob for each job
+        // - creates no more than numJobsMax
         const int32_t numJobs = AZStd::clamp(numPositionsToProcess / minPositionsPerJob, 1, numJobsMax);
 
         // Create a terrain job context, track it, and split the work across multiple jobs.
@@ -473,26 +482,21 @@ namespace Terrain
             return nullptr;
         }
 
-        // Determine the *ideal* maximum number of jobs to split the work into based on:
-        // 1. The maximum number of jobs desired and available.
-        // 2. The minimum number of positions to process per job.
-        // 3. The total number of positions being processed.
-        const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
-        const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
-        const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
+        // Determine the maximum number of jobs, and the minimum number of positions that should be processed per job.
+        const int32_t numJobsMax = CalculateMaxJobs(params);
         const int32_t minPositionsPerJob =
             params && (params->m_minPositionsPerJob > 0) ? params->m_minPositionsPerJob : ProcessAsyncParams::MinPositionsPerJobDefault;
-        int32_t numJobs = AZStd::clamp(aznumeric_cast<int32_t>(numPositionsToProcess / minPositionsPerJob), 1, numJobsMax);
 
         // Calculate the best subdivision of the region along both the X and Y axes to use as close to the maximum number of jobs
         // as possible while also keeping all the regions effectively the same size.
         int32_t xJobs, yJobs;
         SubdivideRegionForJobs(
-            aznumeric_cast<int32_t>(numSamplesX), aznumeric_cast<int32_t>(numSamplesY), numJobs, minPositionsPerJob, xJobs, yJobs);
+            aznumeric_cast<int32_t>(numSamplesX), aznumeric_cast<int32_t>(numSamplesY), numJobsMax, minPositionsPerJob, xJobs, yJobs);
 
         // The number of jobs returned might be less than the total requested maximum number of jobs, so recalculate it here
-        AZ_Assert((xJobs * yJobs) <= numJobs, "The region was subdivided into too many jobs: %d x %d vs %d max", xJobs, yJobs, numJobs);
-        numJobs = xJobs * yJobs;
+        AZ_Assert((xJobs * yJobs) <= numJobsMax, "The region was subdivided into too many jobs: %d x %d vs %d max",
+            xJobs, yJobs, numJobsMax);
+        const int32_t numJobs = xJobs * yJobs;
 
         // Get the number of samples in each direction that we'll use for each query. We calculate this as a fractional value
         // so that we can keep each query pretty evenly balanced, with just +/- 1 count variation on each axis.

@@ -1242,10 +1242,14 @@ void TerrainSystem::SubdivideRegionForJobs(
         return;
     }
 
+    // Clamp the maximum number of jobs to whichever is smaller - the maximum number of jobs that have minPointsPerJob, or the
+    // requested maxNumJobs. We can't have a solution that violates either constraint.
+    int32_t clampedMaxNumJobs = AZStd::clamp(aznumeric_cast<int32_t>((numSamplesX * numSamplesY) / minPointsPerJob), 1, maxNumJobs);
+
     // MaxNumJobs will generally be a small value, so we can just brute-force the problem and try every solution to see what will
     // produce the most optimal results. We stop early if we find a solution that uses the maximum number of jobs.
     // We loop on X subdivisions first so that we bias towards solutions with a lower number of X subdivisions.
-    for (int32_t xChoice = 1; xChoice <= maxNumJobs; xChoice++)
+    for (int32_t xChoice = 1; xChoice <= clampedMaxNumJobs; xChoice++)
     {
         // For a given number of X subdivisions, find the maximum number of Y subdivisions that produces at least the
         // minimum number of points per job.
@@ -1256,7 +1260,7 @@ void TerrainSystem::SubdivideRegionForJobs(
 
         // Get the maximum number of subdivisions for Y that will produce minPointsPerJob (numSamplesY / minXRowsNeeded), but
         // also clamp it by the maximum number of jobs that we're allowed to produce (maxNumJobs / xChoice).
-        int32_t yChoice = AZStd::min(numSamplesY / minXRowsNeeded, maxNumJobs / xChoice);
+        int32_t yChoice = AZStd::min(numSamplesY / minXRowsNeeded, clampedMaxNumJobs / xChoice);
 
         // The maximum number of subdivisions in Y will decrease with increasing X subdivisions. If we've reached the point
         // where even the entire Y range (i.e. yChoice == 1) isn't sufficient, we can stop checking, we won't find any more solutions. 
@@ -1274,7 +1278,7 @@ void TerrainSystem::SubdivideRegionForJobs(
             bestJobUsage = jobUsage;
 
             // If we've found an optimal solution, early-out and return.
-            if (jobUsage == maxNumJobs)
+            if (jobUsage == clampedMaxNumJobs)
             {
                 return;
             }
