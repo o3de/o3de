@@ -66,8 +66,8 @@ namespace PhysX
         m_onMaterialLibraryReloadedCallback(asset);
     }
 
-    PhysXSystem::PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams)
-        : m_registryManager(*registryManager)
+    PhysXSystem::PhysXSystem(AZStd::unique_ptr<PhysXSettingsRegistryManager> registryManager, const physx::PxCookingParams& cookingParams)
+        : m_registryManager(AZStd::move(registryManager))
         , m_materialLibraryAssetHelper(
             [this](const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
             {
@@ -484,7 +484,7 @@ namespace PhysX
 
     const PhysXSettingsRegistryManager& PhysXSystem::GetSettingsRegistryManager() const
     {
-        return m_registryManager;
+        return *m_registryManager;
     }
 
     void PhysXSystem::UpdateMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)

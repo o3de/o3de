@@ -44,7 +44,6 @@ namespace AzToolsFramework
             void UnregisterThumbnailProvider(const char* providerName) override;
             AzToolsFramework::Thumbnailer::SharedThumbnail GetThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey) override;
             bool IsLoading(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey) override;
-            QThreadPool* GetThreadPool() override;
 
         private:
             AzToolsFramework::Thumbnailer::SharedThumbnail m_nullThumbnail;
