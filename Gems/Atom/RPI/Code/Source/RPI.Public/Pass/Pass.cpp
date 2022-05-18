@@ -173,6 +173,7 @@ namespace AZ
             m_parent = nullptr;
             m_flags.m_partOfHierarchy = false;
             m_treeDepth = 0;
+            m_parentChildIndex = 0;
             m_queueState = PassQueueState::NoQueue;
             m_state = PassState::Orphaned;
         }
