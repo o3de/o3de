@@ -772,8 +772,8 @@ namespace UnitTest
             // EBus
             const AZStd::string_view defaultStringViewValue = "DEFAULT!!!!";
             AZStd::string expectedDefaultValueAndStringResult = AZStd::string::format("Default Value: %s", defaultStringViewValue.data());
-            BehaviorDefaultValuePtr defaultStringViewBehaviorValue = aznew BehaviorDefaultValue(defaultStringViewValue);
-            BehaviorDefaultValuePtr superDefaultStringViewBehaviorValue = aznew BehaviorDefaultValue(AZStd::string_view("SUPER DEFAULT!!!!"));
+            BehaviorDefaultValuePtr defaultStringViewBehaviorValue = m_behaviorContext->MakeDefaultValue(defaultStringViewValue);
+            BehaviorDefaultValuePtr superDefaultStringViewBehaviorValue = m_behaviorContext->MakeDefaultValue(AZStd::string_view("SUPER DEFAULT!!!!"));
 
             m_behaviorContext->EBus<BehaviorTestBus>("TestBus")
                     ->Attribute("EBusAttr", 40)
