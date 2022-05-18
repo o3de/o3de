@@ -1370,15 +1370,13 @@ namespace UnitTest
 
         void run()
         {
-            using namespace AzToolsFramework;
-
             AZ::SerializeContext serializeContext;
             serializeContext.CreateEditContext();
             AZ::Entity::Reflect(&serializeContext);
             EndGroupContainer::Reflect(&serializeContext);
 
             EndGroupContainer test;
-            InstanceDataHierarchy idh;
+            AzToolsFramework::InstanceDataHierarchy idh;
             idh.AddRootInstance(&test, azrtti_typeid<EndGroupContainer>());
             idh.Build(&serializeContext, 0);
 
