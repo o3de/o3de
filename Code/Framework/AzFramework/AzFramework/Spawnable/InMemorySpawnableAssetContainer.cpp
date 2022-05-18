@@ -115,7 +115,6 @@ namespace AzFramework
         {
             Spawnable* spawnable = spawnablePair.first;
             const AZStd::string& spawnableName = spawnablePair.second;
-            
             SpawnableAssetUtils::ResolveEntityAliases(spawnable, spawnableName);
         }
 
