@@ -40,7 +40,7 @@ get_filename_component(filename_only ${STRIP_TARGET} NAME)
 
 if (${DEBUG_SYMBOL_OPTION} STREQUAL "DISCARD")
 
-    message(STATUS "Stripping debug symbols from ${STRIP_TARGET}")
+    message(VERBOSE "Stripping debug symbols from ${STRIP_TARGET}")
 
 elseif (${DEBUG_SYMBOL_OPTION} STREQUAL "DETACH")
 
@@ -50,7 +50,7 @@ elseif (${DEBUG_SYMBOL_OPTION} STREQUAL "DETACH")
         return ()
     endif()
 
-    message(STATUS "Detaching debug symbols from ${STRIP_TARGET} into ${filename_only}.${DEBUG_SYMBOL_EXT}")
+    message(VERBOSE "Detaching debug symbols from ${STRIP_TARGET} into ${filename_only}.${DEBUG_SYMBOL_EXT}")
 
 endif()
 
