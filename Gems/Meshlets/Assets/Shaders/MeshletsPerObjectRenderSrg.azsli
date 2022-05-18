@@ -10,17 +10,17 @@
 
 #include <scenesrg.srgi>
 
-ShaderResourceGroup ObjectSrg : SRG_PerObject
+ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
 {
     // used for instancing and matrix retrieval
     uint m_objectId;
 
     // vertex streams 
-    buffer<float3> m_positions;
-    buffer<float3> m_normals;
-    buffer<float4> m_tangents; 
-    buffer<float3> m_bitangents; 
-    buffer<float2> m_uvs;
+    Buffer<float3> m_positions;
+    Buffer<float3> m_normals;
+    Buffer<float4> m_tangents; 
+    Buffer<float3> m_bitangents; 
+    Buffer<float2> m_uvs;
 
     //! Returns the matrix for transforming points from Object Space to World Space.
     float4x4 GetWorldMatrix()
@@ -37,27 +37,27 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
     float3 GetPosition(uint vertexIndex)
     {
-        return ObjectSrg::m_positions[vertexIndex];
+        return m_positions[vertexIndex];
     }
 
     float3 GetNormal(uint vertexIndex)
     {
-        return ObjectSrg::m_normals[vertexIndex];
+        return m_normals[vertexIndex];
     }
 
     // The last element of the tangents indicates face direction / winding
     float4 GetTangent(uint vertexIndex)
     {
-        return ObjectSrg::m_tangents[vertexIndex];
+        return m_tangents[vertexIndex];
     }
 
     float3 GetBiTangent(uint vertexIndex)
     {
-        return ObjectSrg::m_bitangents[vertexIndex];
+        return m_bitangents[vertexIndex];
     }
 
     float2 GetUV(uint vertexIndex)
     {
-        return ObjectSrg::m_uvs[vertexIndex];
+        return m_uvs[vertexIndex];
     }
 }

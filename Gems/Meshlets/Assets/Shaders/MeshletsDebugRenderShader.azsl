@@ -14,27 +14,22 @@
 //------------------------------------------------------------------------------
 //ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 ShaderResourceGroup PassSrg : SRG_PerPass
-{   
+{   // [Adi] No needto use StructuredBuffer - change to buffer
     StructuredBuffer<int>     m_MeshletsSharedBuffer;
-//  RWStructuredBuffer<int>     m_MeshletsSharedBuffer;
-}
-
-ShaderResourceGroup DebugShaderPBRSrg : SRG_PerMaterial
-{
-    float3 m_baseColor;
-    float m_metallic;
-    float m_roughness;
 }
 
 // Vertex Assembly streams will NOT be used
 struct VSInput
 {
     uint m_vertexIndex : SV_VertexID;
-//    float3 m_position : POSITION;
-//    float3 m_normal : NORMAL;
-//    float4 m_tangent : TANGENT; 
-//    float3 m_bitangent : BITANGENT; 
-//    float2 m_uv : UV0;
+
+/*  Use the following if ever passed as vertex assembly streams
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float2 m_uv : UV0;
+*/
 };
 
 struct VSOutput
@@ -59,10 +54,9 @@ struct MeshletsPassOutputWithDepth
 };
 
 // Shader Resource Groups
-#include <scenesrg.srgi>
+//#include <scenesrg.srgi>
 #include <viewsrg.srgi>
-
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <MeshletsPerObjectRenderSrg.azsli>
 
 // Math
 #include <Atom/RPI/Math.azsli>
@@ -79,13 +73,13 @@ void VertexHelper(uint vertexIndex, inout VSOutput OUT, float3 worldPosition)
 
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
 
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    float4x4 objectToWorld = MeshletsObjectRenderSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = MeshletsObjectRenderSrg::GetWorldMatrixInverseTranspose();
 
     ConstructTBN( 
-        ObjectSrg::GetNormal(vertexIndex),  
-        ObjectSrg::GetTangent(vertexIndex), 
-        ObjectSrg::GetBitangent(vertexIndex), 
+        MeshletsObjectRenderSrg::GetNormal(vertexIndex),  
+        MeshletsObjectRenderSrg::GetTangent(vertexIndex), 
+        MeshletsObjectRenderSrg::GetBiTangent(vertexIndex), 
         objectToWorld, objectToWorldIT, 
         OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
 }
@@ -94,12 +88,12 @@ VSOutput MeshletsDebugRender_MainPassVS(VSInput IN)
 {
     VSOutput OUT;
  
-    float3 localPosition = ObjectSrg::GetPosition(IN.vertexIndex);
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(localPosition, 1.0)).xyz;
+    float3 localPosition = MeshletsObjectRenderSrg::GetPosition(IN.m_vertexIndex);
+    float3 worldPosition = mul(MeshletsObjectRenderSrg::GetWorldMatrix(), float4(localPosition, 1.0)).xyz;
  
-    VertexHelper(IN.vertexIndex, OUT, worldPosition);
+    VertexHelper(IN.m_vertexIndex, OUT, worldPosition);
 
-    OUT.m_uv = ObjectSrg::GetUV(IN.vertexIndex);
+    OUT.m_uv = MeshletsObjectRenderSrg::GetUV(IN.m_vertexIndex);
 
     return OUT;
 }

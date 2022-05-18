@@ -55,7 +55,9 @@ namespace AZ
         SharedBuffer::SharedBuffer(AZStd::string bufferName, uint32_t sharedBufferSize, uint32_t maxRequiredAlignment)
         {
             m_sizeInBytes = sharedBufferSize;
-            m_alignment = AZStd::max(maxRequiredAlignment, uint32_t(4)) + (maxRequiredAlignment % 4) ? (4 - maxRequiredAlignment % 4) : 0;
+            m_alignment = AZStd::max(maxRequiredAlignment, MinAllowedAlignment) +
+                (maxRequiredAlignment % MinAllowedAlignment) ?
+                (MinAllowedAlignment - maxRequiredAlignment % MinAllowedAlignment) : 0;
             m_bufferName = bufferName;
             Init(bufferName);
         }
@@ -68,13 +70,15 @@ namespace AZ
         //! always kept, given the various possible buffer descriptors using the buffer.
         void SharedBuffer::CalculateAlignment(AZStd::vector<SrgBufferDescriptor>& buffersDescriptors)
         {
-            m_alignment = 4;
+            m_alignment = MinAllowedAlignment;
             for (uint8_t bufferIndex = 0; bufferIndex < buffersDescriptors.size(); ++bufferIndex)
             {
                 // Using the least common multiple enables resource views to be typed and ensures they can get
                 // an offset in bytes that is a multiple of an element count
                 m_alignment = std::lcm(m_alignment, buffersDescriptors[bufferIndex].m_elementSize);
             }
+            m_alignment = AZStd::max(m_alignment, MinAllowedAlignment) +
+                (MinAllowedAlignment - m_alignment % MinAllowedAlignment);
         }
 
         void SharedBuffer::InitAllocator()
@@ -111,7 +115,7 @@ namespace AZ
             SrgBufferDescriptor  bufferDesc = SrgBufferDescriptor(
                 RPI::CommonBufferPoolType::ReadWrite, 
                 RHI::Format::Unknown,
-                RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite,
+                RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite,
                 sizeof(uint32_t), uint32_t(m_sizeInBytes / sizeof(uint32_t)),
                 Name{ bufferName }, Name{ sufferNameInShader }, 0, 0, nullptr
             );

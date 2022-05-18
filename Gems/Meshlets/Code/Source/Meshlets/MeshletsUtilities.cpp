@@ -15,6 +15,8 @@
 
 #include <MeshletsUtilities.h>
 
+#pragma optimize("",off)
+
 namespace AZ
 {
     namespace Meshlets
@@ -142,6 +144,7 @@ namespace AZ
 
         // Returns the buffer view instance as well as the buffer allocator
         Data::Instance<RHI::BufferView> UtilityClass::CreateSharedBufferView(
+            const char* warningHeader,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator)
         {
@@ -149,7 +152,7 @@ namespace AZ
             outputBufferAllocator = Meshlets::SharedBufferInterface::Get()->Allocate(requiredSize);
             if (!outputBufferAllocator)
             {
-                AZ_Error("Meshlets", false, "Shared buffer out of memory for [%s]", bufferDesc.m_bufferName.GetCStr());
+                AZ_Error(warningHeader, false, "Shared buffer out of memory for [%s]", bufferDesc.m_bufferName.GetCStr());
                 return Data::Instance<RHI::BufferView>();
             }
 
@@ -159,10 +162,14 @@ namespace AZ
             AZ_Assert(bufferDesc.m_viewOffsetInBytes % bufferDesc.m_elementSize == 0, "Offset of buffer within The SharedBuffer is NOT aligned.");
 
             // And here we create resource view from the shared buffer 
-            const RHI::BufferViewDescriptor viewDescriptor = SharedBuffer::CreateResourceViewWithDifferentFormat(
+            RHI::BufferViewDescriptor viewDescriptor = SharedBuffer::CreateResourceViewWithDifferentFormat(
                 bufferDesc.m_viewOffsetInBytes, bufferDesc.m_elementCount, bufferDesc.m_elementSize,
                 bufferDesc.m_elementFormat, bufferDesc.m_bindFlags
             );
+            // Notice the following - this is crucial in order to pass the RHI validation
+            // and force it not to fail the buffers views due to missing attachment.
+            // The attachment itself is created for the PerPass shared buffer.
+            viewDescriptor.m_ignoreFrameAttachmentValidation = true;
 
             RHI::Buffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
             Data::Instance<RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
@@ -170,7 +177,7 @@ namespace AZ
 
             if (resultCode != RHI::ResultCode::Success)
             {
-                AZ_Error("Meshlets", false, "BufferView could not be retrieved for [%s]", bufferDesc.m_bufferName.GetCStr());
+                AZ_Error(warningHeader, false, "BufferView could not be retrieved for [%s]", bufferDesc.m_bufferName.GetCStr());
                 return Data::Instance<RHI::BufferView>();
             }
 
@@ -212,7 +219,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> srg)
         {
             // BufferView creation
-            Data::Instance<RHI::BufferView> bufferView = CreateSharedBufferView(bufferDesc, outputBufferAllocator);
+            Data::Instance<RHI::BufferView> bufferView = CreateSharedBufferView(warningHeader, bufferDesc, outputBufferAllocator);
 
             if (!BindBufferViewToSrg(warningHeader, bufferView, bufferDesc, srg))
             {
@@ -224,3 +231,5 @@ namespace AZ
 
     } // namespace Meshlets
 } // namespace AZ
+
+#pragma optimize("",on)

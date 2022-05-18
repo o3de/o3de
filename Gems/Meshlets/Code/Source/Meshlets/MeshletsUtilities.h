@@ -50,7 +50,7 @@ namespace AZ
             static Data::Instance<RPI::Buffer> CreateBuffer(
                 const char* warningHeader,
                 SrgBufferDescriptor& bufferDesc,
-                Data::Instance<RPI::ShaderResourceGroup> srg
+                Data::Instance<RPI::ShaderResourceGroup> srg = nullptr
             );
 
             static Data::Instance<RPI::Buffer> CreateBufferAndBindToSrg(
@@ -67,6 +67,7 @@ namespace AZ
             );
 
             static Data::Instance<RHI::BufferView> CreateSharedBufferView(
+                const char* warningHeader,
                 SrgBufferDescriptor& bufferDesc,
                 Data::Instance<Meshlets::SharedBufferAllocation>& bufferAllocator
             );

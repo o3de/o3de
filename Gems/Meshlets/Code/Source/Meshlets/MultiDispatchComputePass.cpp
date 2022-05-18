@@ -52,7 +52,7 @@ namespace AZ
             // Output
             // This is the buffer that is shared between all objects and dispatches and contains
             // the dynamic data that can be changed between passes.
-            Name bufferName = Name{ "MeshletsSharedBufferOutput" };
+            Name bufferName = Name{ "MeshletsSharedBuffer" };
             RPI::PassAttachmentBinding* localBinding = FindAttachmentBinding(bufferName);
             if (localBinding && !localBinding->GetAttachment() && Meshlets::SharedBufferInterface::Get())
             {
@@ -69,6 +69,8 @@ namespace AZ
             {
                 BindPassSrg(context, m_shaderResourceGroup);
                 m_shaderResourceGroup->Compile();
+
+
             }
 
             // Instead of compiling per frame, have everything compiled only once after data initialization!

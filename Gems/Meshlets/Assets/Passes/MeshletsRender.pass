@@ -9,7 +9,7 @@
             "Slots": [
                 // OUtput shared buffer for dynamic meshlets data
                 {
-                    "Name": "MeshletsSharedBufferInput",
+                    "Name": "MeshletsSharedBuffer",
                     "ShaderInputName": "m_MeshletsSharedBuffer",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
@@ -29,10 +29,10 @@
             ],
             "Connections": [
                 {
-                    "LocalSlot": "MeshletsSharedBufferInput",
+                    "LocalSlot": "MeshletsSharedBuffer",
                     "AttachmentRef": {
-                        "Pass": "MeshletsComputePassTemplate",
-                        "Attachment": "MeshletsSharedBufferOutput"
+                        "Pass": "MeshletsComputePass",
+                        "Attachment": "MeshletsSharedBuffer"
                     }
                 }
             ]

@@ -8,7 +8,7 @@
             "PassClass": "MultiDispatchComputePass",
             "Slots": [
                 {
-                    "Name": "MeshletsSharedBufferOutput",
+                    "Name": "MeshletsSharedBuffer",
                     "ShaderInputName": "m_MeshletsSharedBuffer",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "Shader"
@@ -21,13 +21,6 @@
                 }
             },
             "Connections": [
-//                {
-//                    "LocalSlot": "MeshletsSharedBuffer",
-//                    "AttachmentRef": {
-//                        "Pass": "This",
-//                        "Attachment": "MeshletsSharedBuffer"
-//                    }
-//                }
             ]
         }
     }
