@@ -22,7 +22,9 @@ namespace AzFramework::Scripts
             serializeContext
                 ->Class<SpawnableScriptAssetRef>()
                 ->Version(0)
-                ->Field("asset", &SpawnableScriptAssetRef::m_asset);
+                ->EventHandler<SerializationEvents>()
+                ->Field("asset", &SpawnableScriptAssetRef::m_asset)
+            ;
 
             serializeContext->RegisterGenericType<AZStd::vector<SpawnableScriptAssetRef>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, SpawnableScriptAssetRef>>();
@@ -61,20 +63,20 @@ namespace AzFramework::Scripts
     }
 
     SpawnableScriptAssetRef::SpawnableScriptAssetRef(const SpawnableScriptAssetRef& rhs)
-        : m_asset(rhs.m_asset)
     {
+        SetAsset(rhs.m_asset);
     }
 
     SpawnableScriptAssetRef::SpawnableScriptAssetRef(SpawnableScriptAssetRef&& rhs)
-        : m_asset(AZStd::move(rhs.m_asset))
     {
+        SetAsset(AZStd::move(rhs.m_asset));
     }
 
     SpawnableScriptAssetRef& SpawnableScriptAssetRef::operator=(const SpawnableScriptAssetRef& rhs)
     {
         if (this != &rhs)
         {
-            m_asset = rhs.m_asset;
+            SetAsset(rhs.m_asset);
         }
         return *this;
     }
@@ -83,14 +85,19 @@ namespace AzFramework::Scripts
     {
         if (this != &rhs)
         {
-            m_asset = AZStd::move(rhs.m_asset);
+            SetAsset(AZStd::move(rhs.m_asset));
         }
         return *this;
     }
 
     void SpawnableScriptAssetRef::SetAsset(const AZ::Data::Asset<Spawnable>& asset)
     {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
         m_asset = asset;
+        if (m_asset.GetId().IsValid())
+        {
+            AZ::Data::AssetBus::Handler::BusConnect(m_asset.GetId());
+        }
     }
 
     AZ::Data::Asset<Spawnable> SpawnableScriptAssetRef::GetAsset() const
@@ -100,31 +107,7 @@ namespace AzFramework::Scripts
 
     void SpawnableScriptAssetRef::OnSpawnAssetChanged()
     {
-        // Disconnect from the bus beforehand in case the new asset is not valid
-        AZ::Data::AssetBus::Handler::BusDisconnect();
-
-        if (m_asset.GetId().IsValid())
-        {
-            AZStd::string spawnableAssetFile;
-            StringFunc::Path::GetFileName(m_asset.GetHint().c_str(), spawnableAssetFile);
-            StringFunc::Path::ReplaceExtension(spawnableAssetFile, Spawnable::DotFileExtension);
-            AZ::u32 spawnableAssetSubId = SpawnableAssetHandler::BuildSubId(spawnableAssetFile);
-
-            if (m_asset.GetId().m_subId != spawnableAssetSubId)
-            {
-                AZ::Data::AssetId spawnableAssetId = m_asset.GetId();
-                spawnableAssetId.m_subId = spawnableAssetSubId;
-
-                m_asset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<Spawnable>(
-                    spawnableAssetId, AZ::Data::AssetLoadBehavior::Default);
-            }
-            else
-            {
-                m_asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::Default);
-            }
-
-            AZ::Data::AssetBus::Handler::BusConnect(m_asset.GetId());
-        }
+        SetAsset(m_asset);
     }
 
     void SpawnableScriptAssetRef::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)

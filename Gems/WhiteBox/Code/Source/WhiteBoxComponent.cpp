@@ -33,7 +33,7 @@ namespace WhiteBox
 
     void WhiteBoxComponent::Activate()
     {
-        WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface);
+        WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface, GetEntityId());
 
         const AZ::EntityId entityId = GetEntityId();
 
@@ -41,8 +41,8 @@ namespace WhiteBox
         AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         // generate the mesh
-        // TODO: LYN-786
-        m_renderMesh->BuildMesh(m_whiteBoxRenderData, worldFromLocal, GetEntityId());
+        m_renderMesh->BuildMesh(m_whiteBoxRenderData, worldFromLocal);
+        m_renderMesh->UpdateMaterial(m_whiteBoxRenderData.m_material);
         m_renderMesh->SetVisiblity(m_whiteBoxRenderData.m_material.m_visible);
 
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);

@@ -26,6 +26,7 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h
     Include/AtomLyIntegration/CommonFeatures/Material/MaterialComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h
+    Include/AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h
     Include/AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h
     Include/AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerBus.h

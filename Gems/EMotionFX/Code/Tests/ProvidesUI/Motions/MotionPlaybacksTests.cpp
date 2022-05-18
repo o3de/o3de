@@ -59,5 +59,7 @@ namespace EMotionFX
         CommandSystem::SelectionList* renderPluginSelectionList = renderPlugin->GetCurrentSelection();
         EXPECT_TRUE(renderPluginSelectionList->GetSingleMotion()) << "Motion not selected in render window.";
         EXPECT_TRUE(renderPluginSelectionList->GetSingleMotion()->GetFileName() == m_motionFileName) << "Motion file name does not match.";
+
+        m_actorInstance->Destroy();
     }
 }

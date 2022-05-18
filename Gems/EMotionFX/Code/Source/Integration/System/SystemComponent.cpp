@@ -30,7 +30,6 @@
 #include <EMotionFX/Source/EventDataFootIK.h>
 #include <EMotionFX/Source/MotionEvent.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
-#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <EMotionFX/Source/MotionEventTable.h>
 #include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
@@ -300,7 +299,6 @@ namespace EMotionFX
             EMotionFX::AnimGraphObject::Reflect(context);
             EMotionFX::AnimGraph::Reflect(context);
             EMotionFX::AnimGraphNodeGroup::Reflect(context);
-            EMotionFX::AnimGraphGameControllerSettings::Reflect(context);
 
             // Anim graph objects
             EMotionFX::AnimGraphObjectFactory::ReflectTypes(context);
@@ -570,12 +568,16 @@ namespace EMotionFX
 #endif
 
             REGISTER_CVAR2("emfx_updateEnabled", &CVars::emfx_updateEnabled, 1, VF_DEV_ONLY, "Enable main EMFX update");
+            REGISTER_CVAR2(
+                "emfx_ragdollManipulatorsEnabled", &CVars::emfx_ragdollManipulatorsEnabled, 0, VF_DEV_ONLY,
+                "Feature flag for in development ragdoll manipulators");
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::OnCrySystemShutdown(ISystem&)
         {
             gEnv->pConsole->UnregisterVariable("emfx_updateEnabled");
+            gEnv->pConsole->UnregisterVariable("emfx_ragdollManipulatorsEnabled");
 
 #if !defined(AZ_MONOLITHIC_BUILD)
             gEnv = nullptr;

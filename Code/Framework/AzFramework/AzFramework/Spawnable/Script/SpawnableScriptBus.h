@@ -21,6 +21,7 @@ namespace AzFramework::Scripts
         // EBusTraits overrides
         using BusIdType = EntitySpawnTicket::Id;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
         //! Notifies that spawn operation was completed
         virtual void OnSpawn(

@@ -36,6 +36,7 @@ namespace EMotionFX
             , private AZ::TransformNotificationBus::Handler
             , private AZ::TickBus::Handler
             , private ActorComponentRequestBus::Handler
+            , private ActorComponentNotificationBus::Handler
             , private EditorActorComponentRequestBus::Handler
             , private LmbrCentral::AttachmentComponentNotificationBus::Handler
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
@@ -76,7 +77,7 @@ namespace EMotionFX
                 const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
             bool SupportsEditorRayIntersect() override { return true; }
 
-            // AZ::Data::AssetBus::Handler overrides ...
+            // AZ::Data::AssetBus overrides ...
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
@@ -134,14 +135,21 @@ namespace EMotionFX
             // Called at edit-time when creating the component directly from an asset.
             void SetPrimaryAsset(const AZ::Data::AssetId& assetId) override;
 
-            // AZ::TickBus::Handler
+            // AZ::TickBus overrides ...
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-            // LmbrCentral::AttachmentComponentNotificationBus::Handler
+            // LmbrCentral::AttachmentComponentNotificationBus overrides ...
             void OnAttached(AZ::EntityId targetId) override;
             void OnDetached(AZ::EntityId targetId) override;
 
+            // ActorComponentNotificationBus overrides ...
+            void OnActorInstanceCreated(ActorInstance* actorInstance) override;
+            void OnActorInstanceDestroyed(ActorInstance* actorInstance) override;
+
             void CheckActorCreation();
+            void CheckAttachToEntity();
+            void DetachFromEntity() override;
+            void AttachToInstance(ActorInstance* targetActorInstance);
             void BuildGameEntity(AZ::Entity* gameEntity) override;
 
             void LoadActorAsset();
@@ -170,7 +178,6 @@ namespace EMotionFX
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
             ActorRenderFlags                    m_renderFlags;              ///< Actor render flag               
-            bool m_addMaterialComponentFlag = false;                        ///< Flag used for button placement
             // \todo attachmentTarget node nr
 
             // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.
