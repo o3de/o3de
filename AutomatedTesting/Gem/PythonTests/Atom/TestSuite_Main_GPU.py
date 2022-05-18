@@ -153,6 +153,7 @@ class TestAutomation(EditorTestSuite):
                                                       similarity_threshold=0.96) is True
 
 
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_material_editor'])
 class TestMaterialEditor(MaterialEditorTestSuite):
     # Remove -BatchMode from global_extra_cmdline_args since we need rendering for these tests.
