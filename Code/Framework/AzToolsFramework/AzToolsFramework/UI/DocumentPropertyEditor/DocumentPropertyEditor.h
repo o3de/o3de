@@ -36,7 +36,7 @@ namespace AzToolsFramework
         void SetChildrenFromDomArray(const AZ::Dom::Value& domArray);
 
         //! handles a patch operation at the given path, or delegates to a child that will
-        void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex);
+        void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
 
     protected:
         QVBoxLayout* m_mainLayout = nullptr;

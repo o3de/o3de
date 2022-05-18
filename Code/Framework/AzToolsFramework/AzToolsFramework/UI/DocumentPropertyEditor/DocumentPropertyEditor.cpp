@@ -273,8 +273,8 @@ namespace AzToolsFramework
                     (rowIndex <= rowLayout->count() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add),
                 "received a patch for a row that doesn't exist");
 
-            // if there's only one path entry, this operation is for the top level layout
-            if (patchPath.size() == 1)
+            // if the patch points at our root, this operation is for the top level layout
+            if (patchPath.IsEmpty())
             {
                 if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
                 {
@@ -301,8 +301,7 @@ namespace AzToolsFramework
                 auto rowWidget =
                     static_cast<DPERowWidget*>(GetVerticalLayout()->itemAt(static_cast<int>(firstAddressEntry.GetIndex()))->widget());
 
-                constexpr size_t pathIndex = 1; // tell the rowWidget to use the next index into the path, which is 1
-                rowWidget->HandleOperationAtPath(*operationIterator, pathIndex);
+                rowWidget->HandleOperationAtPath(*operationIterator);
             }
         }
     }

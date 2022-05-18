@@ -386,11 +386,8 @@ namespace AzToolsFramework
 
     DPEModelNode* DPEDebugModel::GetNodeFromPath(const AZ::Dom::Path& thePath) const
     {
-        auto pathIter = thePath.begin();
-        AZ_Assert(pathIter->IsIndex() && pathIter->GetIndex() == 0, "start of the path should always be the one and only adapter");
-        ++pathIter;
         DPEModelNode* returnedNode = m_rootNode;
-        for (auto endIter = thePath.end(); pathIter != endIter && returnedNode != nullptr; ++pathIter)
+        for (auto pathIter = thePath.begin(), endIter = thePath.end(); pathIter != endIter && returnedNode != nullptr; ++pathIter)
         {
             // non-index subpaths are for properties not nodes, so only handle the index paths
             if (pathIter->IsIndex())

@@ -96,11 +96,11 @@ namespace EMStudio
         if (m_scrollArea->widget() != widget)
         {
             // Get back ownership of the cached widgets to avoid recreating it each time.
-            if (m_scrollArea->widget())
+            if (QWidget* oldWidget = m_scrollArea->takeWidget())
             {
-                m_scrollArea->widget()->hide();
+                oldWidget->hide();
+                oldWidget->deleteLater();
             }
-            m_scrollArea->takeWidget();
 
             // Set the no selection widget and destroy the previous one.
             m_scrollArea->setWidget(widget);
