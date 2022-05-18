@@ -2195,7 +2195,10 @@ void EditorWindow::closeEvent(QCloseEvent* closeEvent)
     // Save the current window state
     SaveEditorWindowSettings();
 
-    QMainWindow::closeEvent(closeEvent);
+    // Instead of closing this window, replicate the action of unchecking UI Editor from the Editor toolbar by
+    // hiding the parent view pane instead
+    nativeParentWidget()->hide();
+    closeEvent->ignore();
 }
 
 void EditorWindow::dragEnterEvent(QDragEnterEvent* event)
