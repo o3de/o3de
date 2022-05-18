@@ -46,8 +46,6 @@ namespace Terrain
 
     void TerrainMeshManager::Initialize(AZ::RPI::Scene& parentScene)
     {
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-
         m_parentScene = &parentScene;
 
         bool success = true;
@@ -59,13 +57,15 @@ namespace Terrain
             return;
         }
 
-        m_isInitialized = true;
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         m_handleGlobalShaderOptionUpdate = AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
         {
             [this](const AZ::Name&, AZ::RPI::ShaderOptionValue) { m_forceRebuildDrawPackets = true; }
         };
         AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
+
+        m_isInitialized = true;
     }
 
     void TerrainMeshManager::SetConfiguration(const MeshConfiguration& config)
@@ -105,6 +105,7 @@ namespace Terrain
         {
             RebuildSectors();
             m_rebuildSectors = false;
+            m_forceRebuildDrawPackets = false;
         }
         else if (m_forceRebuildDrawPackets)
         {
@@ -166,7 +167,7 @@ namespace Terrain
             }
         }
 
-        if (sectorsToUpdate.size() > 0)
+        if (!sectorsToUpdate.empty())
         {
             ProcessSectorUpdates(sectorsToUpdate);
             return;
@@ -321,7 +322,7 @@ namespace Terrain
                         sectorsToUpdate.push_back({ lodLevel, &sectorData });
                     }
                 );
-                if (sectorsToUpdate.size() > 0)
+                if (!sectorsToUpdate.empty())
                 {
                     ProcessSectorUpdates(sectorsToUpdate);
                 }
@@ -459,7 +460,7 @@ namespace Terrain
         AZ::Vector3 aabbMin = AZ::Vector3(worldStartPosition.GetX(), worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ());
         AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(gridSize * vertexSpacing);
 
-        // expand the bounds in order to calcaulte normals.
+        // expand the bounds in order to calculate normals.
         AZ::Vector3 queryAabbMin = aabbMin - AZ::Vector3(vertexSpacing);
         AZ::Vector3 queryAabbMax = aabbMax + AZ::Vector3(vertexSpacing) + AZ::Vector3(m_sampleSpacing * 0.5f); // extra padding to catch the last vertex
 
@@ -494,9 +495,7 @@ namespace Terrain
         meshNormals.resize_no_construct(meshVertexCount);
 
         auto perPositionCallback = [this, &heights, paddedVertexCount1d]
-        ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-            const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
-            [[maybe_unused]] bool terrainExists)
+            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             const float height = surfacePoint.m_position.GetZ() - m_worldBounds.GetMin().GetZ();
             heights.at(yIndex * paddedVertexCount1d + xIndex) = height;
@@ -506,10 +505,12 @@ namespace Terrain
             &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
             queryBounds, stepSize, perPositionCallback, samplerType);
 
-        float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
-        float vertexSpacing2 = vertexSpacing * 2.0f;
-        float minHeight = AZStd::numeric_limits<float>::max();
-        float maxHeight = AZStd::numeric_limits<float>::min();
+        const float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
+        const float vertexSpacing2 = vertexSpacing * 2.0f;
+
+        // initialize min/max heights to the first height
+        float minHeight = heights.at(paddedVertexCount1d + 1);
+        float maxHeight = heights.at(paddedVertexCount1d + 1);
 
         // float versions of int max to make sure a int->float conversion doesn't happen at each loop iteration.
         constexpr float maxUint16 = AZStd::numeric_limits<uint16_t>::max();
@@ -554,7 +555,6 @@ namespace Terrain
                     aznumeric_cast<int16_t>(AZStd::lround(normalX * maxInt16)),
                     aznumeric_cast<int16_t>(AZStd::lround(normalY * maxInt16)),
                 };
-                
             }
         }
         const auto heightsBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(meshHeights.size()), AZ::RHI::Format::R16_UNORM);

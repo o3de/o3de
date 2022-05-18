@@ -147,7 +147,6 @@ namespace Terrain
         float queryResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
-        // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
 
         if (m_terrainBounds != worldBounds || m_sampleSpacing != queryResolution)
         {

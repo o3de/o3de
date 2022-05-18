@@ -179,7 +179,7 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::Model> m_defaultSectorModel;
         AZ::RPI::BufferAssetView m_sectorXyPositionsBufferAssetView;
         AZ::RPI::BufferAssetView m_sectorZPositionsBufferAssetView; // common buffer of 0's for when Z positions are derived from textures instead of baked into the mesh.
-        AZ::RPI::BufferAssetView m_sectorNormalsBufferAssetView; // common buffer of 0's for when normals from textures instead of baked into the mesh.
+        AZ::RPI::BufferAssetView m_sectorNormalsBufferAssetView; // common buffer of 0's for when normals are derived from textures instead of baked into the mesh.
         AZ::RPI::BufferAssetView m_sectorIndicesBufferAssetView;
 
         AZStd::vector<StackData> m_sectorStack;
