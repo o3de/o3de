@@ -37,16 +37,19 @@ namespace Terrain
 
     TerrainMeshManager::TerrainMeshManager()
     {   
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
     }
 
     TerrainMeshManager::~TerrainMeshManager()
-    {   
+    {
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
 
-    void TerrainMeshManager::Initialize()
+    void TerrainMeshManager::Initialize(AZ::RPI::Scene& parentScene)
     {
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+
+        m_parentScene = &parentScene;
+
         bool success = true;
         success = success && InitializeCommonSectorData();
         success = success && InitializeDefaultSectorModel();
@@ -56,8 +59,13 @@ namespace Terrain
             return;
         }
 
-        OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
         m_isInitialized = true;
+
+        m_handleGlobalShaderOptionUpdate = AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
+        {
+            [this](const AZ::Name&, AZ::RPI::ShaderOptionValue) { m_forceRebuildDrawPackets = true; }
+        };
+        AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
     }
 
     void TerrainMeshManager::SetConfiguration(const MeshConfiguration& config)
@@ -70,6 +78,16 @@ namespace Terrain
         }
     }
 
+    void TerrainMeshManager::SetMaterial(MaterialInstance materialInstance)
+    {
+        if (m_materialInstance != materialInstance || m_materialInstance->GetCurrentChangeId() != m_lastMaterialChangeId)
+        {
+            m_lastMaterialChangeId = materialInstance->GetCurrentChangeId();
+            m_materialInstance = materialInstance;
+            m_forceRebuildDrawPackets = true;
+        }
+    }
+
     bool TerrainMeshManager::IsInitialized() const
     {
         return m_isInitialized;
@@ -77,25 +95,18 @@ namespace Terrain
 
     void TerrainMeshManager::Reset()
     {
-        m_defaultSectorModel = {};
         m_sectorStack.clear();
         m_rebuildSectors = true;
-        m_isInitialized = false;
     }
 
-    void TerrainMeshManager::Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
-        MaterialInstance materialInstance, AZ::RPI::Scene& parentScene, bool forceRebuildDrawPackets)
+    void TerrainMeshManager::Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        // TODO: move m_materialInstance & m_parentScene to SetConfiguration(), may eliminate the need to pass in forceRebuildDrawPackets
-        m_materialInstance = materialInstance;
-        m_parentScene = &parentScene;
-
         if (m_rebuildSectors)
         {
             RebuildSectors();
             m_rebuildSectors = false;
         }
-        else if (forceRebuildDrawPackets)
+        else if (m_forceRebuildDrawPackets)
         {
             // The draw packets may need to be forcibly rebuilt in cases like a shader reload.
             RebuildDrawPackets();
@@ -267,12 +278,13 @@ namespace Terrain
 
     void TerrainMeshManager::OnTerrainDataCreateEnd()
     {
-        Initialize();
+        OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
     }
 
     void TerrainMeshManager::OnTerrainDataDestroyBegin()
     {
-        Reset();
+        m_sectorStack.clear();
+        m_rebuildSectors = true;
     }
 
     void TerrainMeshManager::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)

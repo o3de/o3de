@@ -19,7 +19,6 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
-#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 
 namespace AZ::RPI
 {
@@ -117,8 +116,6 @@ namespace Terrain
         
         bool m_forceRebuildDrawPackets{ false };
         bool m_terrainBoundsNeedUpdate{ false };
-
-        AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
 
         AZStd::vector<AZ::RPI::RenderPass*> m_passes;
     };

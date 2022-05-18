@@ -18,6 +18,7 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 #include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 
@@ -78,13 +79,13 @@ namespace Terrain
         TerrainMeshManager();
         ~TerrainMeshManager();
 
-        void Initialize();
+        void Initialize(AZ::RPI::Scene& parentScene);
         void SetConfiguration(const MeshConfiguration& config);
         bool IsInitialized() const;
         void Reset();
+        void SetMaterial(MaterialInstance materialInstance);
 
-        void Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
-            MaterialInstance materialInstance, AZ::RPI::Scene& parentScene, bool forceRebuildDrawPackets);
+        void Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
         void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView);
 
@@ -109,7 +110,7 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::Model> m_model;
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
             AZ::RPI::MeshDrawPacket m_drawPacket;
-            AZ::Aabb m_aabb;
+            AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
             int32_t m_worldX = AZStd::numeric_limits<int32_t>::max();
             int32_t m_worldY = AZStd::numeric_limits<int32_t>::max();
         };
@@ -170,6 +171,8 @@ namespace Terrain
         MaterialInstance m_materialInstance;
         AZ::RPI::Scene* m_parentScene;
 
+        AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
+
         AZ::RHI::ShaderInputNameIndex m_srgMeshDataIndex = "m_meshData";
         AZ::RHI::ShaderInputNameIndex m_patchDataIndex = "m_patchData";
 
@@ -186,9 +189,11 @@ namespace Terrain
 
         AZ::Aabb m_worldBounds{ AZ::Aabb::CreateNull() };
         float m_sampleSpacing = 1.0f;
+        AZ::RPI::Material::ChangeId m_lastMaterialChangeId;
 
         bool m_isInitialized{ false };
         bool m_rebuildSectors{ true };
+        bool m_forceRebuildDrawPackets{ false };
 
     };
 }

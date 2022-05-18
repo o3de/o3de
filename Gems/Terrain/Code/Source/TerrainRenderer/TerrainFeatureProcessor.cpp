@@ -60,12 +60,6 @@ namespace Terrain
 
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-        
-        m_handleGlobalShaderOptionUpdate = AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
-        {
-            [this](const AZ::Name&, AZ::RPI::ShaderOptionValue) { m_forceRebuildDrawPackets = true; }
-        };
-        AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
     }
 
     void TerrainFeatureProcessor::Initialize()
@@ -100,7 +94,7 @@ namespace Terrain
             }
         );
         OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
-
+        m_meshManager.Initialize(*GetParentScene());
     }
 
     void TerrainFeatureProcessor::Deactivate()
@@ -270,6 +264,7 @@ namespace Terrain
             {
                 m_clipmapManager.Initialize(m_terrainSrg);
             }
+            m_meshManager.SetMaterial(m_materialInstance);
         }
         else
         {
@@ -307,8 +302,7 @@ namespace Terrain
             {
                 if (m_meshManager.IsInitialized())
                 {
-                    m_meshManager.Update(mainView, m_terrainSrg, m_materialInstance, *GetParentScene(), m_forceRebuildDrawPackets);
-                    m_forceRebuildDrawPackets = false;
+                    m_meshManager.Update(mainView, m_terrainSrg);
                 }
 
                 if (m_macroMaterialManager.IsInitialized())
