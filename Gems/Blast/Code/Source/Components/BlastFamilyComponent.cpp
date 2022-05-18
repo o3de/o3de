@@ -75,33 +75,33 @@ namespace Blast
                     "Radial Damage", &BlastFamilyDamageRequests::RadialDamage,
                     {{{"position", "The global position of the damage's hit."},
                       {"minRadius", "Damages all chunks/bonds that are in the range [0, minRadius] with full damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(0.0)))},
+                       behaviorContext->MakeDefaultValue(0.0f)},
                       {"maxRadius",
                        "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing "
                        "damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(1.0)))},
+                       behaviorContext->MakeDefaultValue(1.0f)},
                       {"damage", "How much damage to deal."}}})
                 ->Event(
                     "Capsule Damage", &BlastFamilyDamageRequests::CapsuleDamage,
                     {{{"position0", "The global position of one of the capsule's ends."},
                       {"position1", "The global position of another of the capsule's ends."},
                       {"minRadius", "Damages all chunks/bonds that are in the range [0, minRadius] with full damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(0.0)))},
+                       behaviorContext->MakeDefaultValue(0.0f)},
                       {"maxRadius",
                        "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing "
                        "damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(1.0)))},
+                       behaviorContext->MakeDefaultValue(1.0f)},
                       {"damage", "How much damage to deal."}}})
                 ->Event(
                     "Shear Damage", &BlastFamilyDamageRequests::ShearDamage,
                     {{{"position", "The global position of the damage's hit."},
                       {"normal", "The normal of the damage's hit."},
                       {"minRadius", "Damages all chunks/bonds that are in the range [0, minRadius] with full damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(0.0)))},
+                       behaviorContext->MakeDefaultValue(0.0f)},
                       {"maxRadius",
                        "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing "
                        "damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(1.0)))},
+                       behaviorContext->MakeDefaultValue(1.0f)},
                       {"damage", "How much damage to deal."}}})
                 ->Event(
                     "Triangle Damage", &BlastFamilyDamageRequests::TriangleDamage,
@@ -113,11 +113,11 @@ namespace Blast
                     "Impact Spread Damage", &BlastFamilyDamageRequests::ImpactSpreadDamage,
                     {{{"position", "The global position of the damage's hit."},
                       {"minRadius", "Damages all chunks/bonds that are in the range [0, minRadius] with full damage",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(0.0)))},
+                       behaviorContext->MakeDefaultValue(0.0f)},
                       {"maxRadius",
                        "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing "
                        "damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(1.0)))},
+                       behaviorContext->MakeDefaultValue(1.0f)},
                       {"damage", "How much damage to deal."}}})
                 ->Event(
                     "Stress Damage",

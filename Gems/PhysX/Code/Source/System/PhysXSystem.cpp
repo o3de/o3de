@@ -41,8 +41,8 @@ namespace PhysX
     AZ_CVAR(bool, physx_reportTimestepWarnings, false, nullptr, AZ::ConsoleFunctorFlags::Null, "A flag providing ability to turn on/off reporting of PhysX timestep warnings");
 #endif
 
-    PhysXSystem::PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams)
-        : m_registryManager(*registryManager)
+    PhysXSystem::PhysXSystem(AZStd::unique_ptr<PhysXSettingsRegistryManager> registryManager, const physx::PxCookingParams& cookingParams)
+        : m_registryManager(AZStd::move(registryManager))
         , m_sceneInterface(this)
     {
         // Start PhysX allocator
@@ -412,7 +412,7 @@ namespace PhysX
 
     const PhysXSettingsRegistryManager& PhysXSystem::GetSettingsRegistryManager() const
     {
-        return m_registryManager;
+        return *m_registryManager;
     }
 
     //TEMP -- until these are fully moved over here

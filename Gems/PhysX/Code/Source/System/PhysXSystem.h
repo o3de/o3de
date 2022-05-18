@@ -39,7 +39,7 @@ namespace PhysX
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(PhysXSystem, "{B6F4D92A-061B-4CB3-AAB5-984B599A53AE}", AzPhysics::SystemInterface);
 
-        PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams);
+        PhysXSystem(AZStd::unique_ptr<PhysXSettingsRegistryManager> registryManager, const physx::PxCookingParams& cookingParams);
         virtual ~PhysXSystem();
 
         // SystemInterface interface ...
@@ -115,7 +115,7 @@ namespace PhysX
         State m_state = State::Uninitialized;
 
         Debug::PhysXDebug m_physXDebug; //! Handler for the PhysXDebug Interface.
-        PhysXSettingsRegistryManager& m_registryManager; //! Handles all settings registry interactions.
+        AZStd::unique_ptr<PhysXSettingsRegistryManager> m_registryManager; //! Handles all settings registry interactions.
         PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
         PhysXJointHelpersInterface m_jointHelperInterface; //! Implementation of the JointHelpersInterface.
     };
