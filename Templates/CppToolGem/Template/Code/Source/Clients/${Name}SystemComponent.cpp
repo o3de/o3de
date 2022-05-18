@@ -8,7 +8,7 @@
  */
 // {END_LICENSE}
 
-#include <${Name}SystemComponent.h>
+#include "${Name}SystemComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

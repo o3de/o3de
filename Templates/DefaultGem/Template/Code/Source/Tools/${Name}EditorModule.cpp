@@ -9,7 +9,7 @@
 // {END_LICENSE}
 
 #include <${Name}ModuleInterface.h>
-#include <${Name}EditorSystemComponent.h>
+#include "${Name}EditorSystemComponent.h"
 
 namespace ${SanitizedCppName}
 {

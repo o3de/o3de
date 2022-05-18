@@ -9,10 +9,7 @@
 // {END_LICENSE}
 
 #include <${Name}ModuleInterface.h>
-#include <${Name}EditorSystemComponent.h>
-#include <AzToolsFramework/API/PythonLoader.h>
-
-#include <QtGlobal>
+#include "${Name}EditorSystemComponent.h"
 
 void Init${SanitizedCppName}Resources()
 {
@@ -24,7 +21,6 @@ namespace ${SanitizedCppName}
 {
     class ${SanitizedCppName}EditorModule
         : public ${SanitizedCppName}ModuleInterface
-        , public AzToolsFramework::EmbeddedPython::PythonLoader
     {
     public:
         AZ_RTTI(${SanitizedCppName}EditorModule, "${ModuleClassId}", ${SanitizedCppName}ModuleInterface);

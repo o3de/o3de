@@ -13,7 +13,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-#include <${Name}Widget.h>
+#include "${Name}Widget.h"
 
 namespace ${SanitizedCppName}
 {

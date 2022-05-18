@@ -8,8 +8,9 @@
  */
 // {END_LICENSE}
 
+
 #include <${Name}ModuleInterface.h>
-#include <${Name}SystemComponent.h>
+#include "${Name}SystemComponent.h"
 
 namespace ${SanitizedCppName}
 {

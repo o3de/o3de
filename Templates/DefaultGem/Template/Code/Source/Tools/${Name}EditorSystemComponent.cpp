@@ -6,14 +6,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-// {END_LICENSE}
+ // {END_LICENSE}
 
 #include <AzCore/Serialization/SerializeContext.h>
-
-#include <AzToolsFramework/API/ViewPaneOptions.h>
-
-#include <${Name}Widget.h>
-#include <${Name}EditorSystemComponent.h>
+#include "${Name}EditorSystemComponent.h"
 
 namespace ${SanitizedCppName}
 {
@@ -62,17 +58,6 @@ namespace ${SanitizedCppName}
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ${SanitizedCppName}SystemComponent::Deactivate();
-    }
-
-    void ${SanitizedCppName}EditorSystemComponent::NotifyRegisterViews()
-    {
-        AzToolsFramework::ViewPaneOptions options;
-        options.paneRect = QRect(100, 100, 500, 400);
-        options.showOnToolsToolbar = true;
-        options.toolbarIcon = ":/${Name}/toolbar_icon.svg";
-
-        // Register our custom widget as a dockable tool with the Editor under an Examples sub-menu
-        AzToolsFramework::RegisterViewPane<${SanitizedCppName}Widget>("${Name}", "Examples", options);
     }
 
 } // namespace ${SanitizedCppName}

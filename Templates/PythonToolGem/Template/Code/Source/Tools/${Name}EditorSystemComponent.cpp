@@ -9,7 +9,7 @@
  // {END_LICENSE}
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <${Name}EditorSystemComponent.h>
+#include "${Name}EditorSystemComponent.h"
 
 namespace ${SanitizedCppName}
 {
@@ -17,47 +17,52 @@ namespace ${SanitizedCppName}
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<${SanitizedCppName}EditorSystemComponent, ${SanitizedCppName}SystemComponent>()
-                ->Version(0);
+            serializeContext->Class<${SanitizedCppName}EditorSystemComponent, AZ::Component>();
         }
     }
 
-    ${SanitizedCppName}EditorSystemComponent::${SanitizedCppName}EditorSystemComponent() = default;
+    ${SanitizedCppName}EditorSystemComponent::${SanitizedCppName}EditorSystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == nullptr)
+        {
+            ${SanitizedCppName}Interface::Register(this);
+        }
+    }
 
-    ${SanitizedCppName}EditorSystemComponent::~${SanitizedCppName}EditorSystemComponent() = default;
+    ${SanitizedCppName}EditorSystemComponent::~${SanitizedCppName}EditorSystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == this)
+        {
+            ${SanitizedCppName}Interface::Unregister(this);
+        }
+    }
 
     void ${SanitizedCppName}EditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        BaseSystemComponent::GetProvidedServices(provided);
         provided.push_back(AZ_CRC_CE("${SanitizedCppName}EditorService"));
     }
 
     void ${SanitizedCppName}EditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        BaseSystemComponent::GetIncompatibleServices(incompatible);
         incompatible.push_back(AZ_CRC_CE("${SanitizedCppName}EditorService"));
     }
 
     void ${SanitizedCppName}EditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        BaseSystemComponent::GetRequiredServices(required);
     }
 
     void ${SanitizedCppName}EditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        BaseSystemComponent::GetDependentServices(dependent);
     }
 
     void ${SanitizedCppName}EditorSystemComponent::Activate()
     {
-        ${SanitizedCppName}SystemComponent::Activate();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        ${SanitizedCppName}RequestBus::Handler::BusConnect();
     }
 
     void ${SanitizedCppName}EditorSystemComponent::Deactivate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        ${SanitizedCppName}SystemComponent::Deactivate();
+        ${SanitizedCppName}RequestBus::Handler::BusDisconnect();
     }
 
 } // namespace ${SanitizedCppName}

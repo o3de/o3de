@@ -6,20 +6,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-// {END_LICENSE}
+ // {END_LICENSE}
 
 #pragma once
 
-#include <${Name}SystemComponent.h>
-
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <Clients/${Name}SystemComponent.h>
 
 namespace ${SanitizedCppName}
 {
     /// System component for ${SanitizedCppName} editor
     class ${SanitizedCppName}EditorSystemComponent
         : public ${SanitizedCppName}SystemComponent
-        , private AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = ${SanitizedCppName}SystemComponent;
     public:
@@ -38,8 +35,5 @@ namespace ${SanitizedCppName}
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
-
-        // AzToolsFramework::EditorEventsBus overrides ...
-        void NotifyRegisterViews() override;
     };
 } // namespace ${SanitizedCppName}
