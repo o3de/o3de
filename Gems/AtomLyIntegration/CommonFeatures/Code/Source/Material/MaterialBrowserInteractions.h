@@ -41,8 +41,10 @@ namespace AZ
         private:
             //! AssetBrowserInteractionNotificationBus::Handler overrides...
             void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
+            void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
             
             bool HandlesSource(AZStd::string_view fileName) const;
+
         };
     } // namespace Render
 } // namespace AZ
