@@ -557,28 +557,47 @@ namespace AssetUtilities
 
     bool CheckServerMode()
     {
+        bool inServerMode = false;
         QStringList args = QCoreApplication::arguments();
         for (const QString& arg : args)
         {
             if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
             {
-                bool isValid = false;
-                AssetProcessor::AssetServerBus::BroadcastResult(isValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
-                if (isValid)
-                {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
-                    return true;
-                }
-                else
-                {
-                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
-                        " to ensure that the address is correct. Asset Processor won't be running in server mode.");
-                }
-
+                inServerMode = true;
                 break;
             }
         }
 
+        if (!inServerMode)
+        {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                bool enableAssetCacheServerMode = false;
+                AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
+                if (settingsRegistry->Get(enableAssetCacheServerMode, key + "/Server/enableCacheServer"))
+                {
+                    inServerMode = enableAssetCacheServerMode;
+                }
+            }
+        }
+
+        if (inServerMode)
+        {
+            bool isServerAddressValid = false;
+            AssetProcessor::AssetServerBus::BroadcastResult(isServerAddressValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
+            if (isServerAddressValid)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
+                return true;
+            }
+            else
+            {
+                AZ_Warning(AssetProcessor::ConsoleChannel, false,
+                    "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
+                    " to ensure that the address is correct. Asset Processor won't be running in server mode.");
+            }
+        }
         return false;
     }
 
