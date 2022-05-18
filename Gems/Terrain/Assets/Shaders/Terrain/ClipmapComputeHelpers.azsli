@@ -38,71 +38,89 @@ float GetDetailClipmapScaleInv(uint clipmapLevel)
     return TerrainSrg::m_clipmapData.m_clipmapScaleInv[clipmapLevel].y;
 }
 
-float2 GetPreviousMacroClipmapCenter(uint clipmapLevel)
+uint2 GetPreviousMacroClipmapCenter(uint clipmapLevel)
 {
     return TerrainSrg::m_clipmapData.m_macroClipmapCenters[clipmapLevel].xy;
 }
 
-float2 GetCurrentMacroClipmapCenter(uint clipmapLevel)
+uint2 GetCurrentMacroClipmapCenter(uint clipmapLevel)
 {
     return TerrainSrg::m_clipmapData.m_macroClipmapCenters[clipmapLevel].zw;
 }
 
-float2 GetPreviousDetailClipmapCenter(uint clipmapLevel)
+uint2 GetPreviousDetailClipmapCenter(uint clipmapLevel)
 {
     return TerrainSrg::m_clipmapData.m_detailClipmapCenters[clipmapLevel].xy;
 }
 
-float2 GetCurrentDetailClipmapCenter(uint clipmapLevel)
+uint2 GetCurrentDetailClipmapCenter(uint clipmapLevel)
 {
     return TerrainSrg::m_clipmapData.m_detailClipmapCenters[clipmapLevel].zw;
 }
 
+float GetClipmapToWorldScale(float maxRenderRadius, float clipmapScaleInv)
+{
+    // maxRenderRadius only covers half of the clipmap, needs double.
+    return maxRenderRadius * 2.0 * clipmapScaleInv / TerrainSrg::m_clipmapData.m_clipmapSizeFloat;
+}
+
 // Get the world position at the pixel position in a clipmap.
 // Note: clipmap center is dynamic because we are using toroidal addressing. It's not always at the middle.
-float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapLevel, float clipmapScaleInv, float maxRenderDistance)
+float2 GetWorldPosition(uint2 clipmapCenter, uint2 pixelPosition, uint clipmapLevel, float clipmapScaleInv, float maxRenderRadius)
 {
-    float2 normalizedPixelPosition = (pixelPosition.xy + 0.5) / TerrainSrg::m_clipmapData.m_clipmapSize;
+    /*
+     ___________________________
+    |-2,-2 |      |      |      |   Taking a 4x4 clipmap as an example.
+    |      |      |      |      |   Due to discreteness, center is set at the bottom right of
+    |______|______|______|______|   the actual geometrical center,
+    |      |-1,-1 |      |      |   The distance to the clipmap center is ranged between
+    |      |      |      |      |   [-clipmapSize/2, clipmapSize/2 - 1].
+    |______|______|______|______|   This property fits the modulate operation, at shifted clipmapSize/2,
+    |      |      |center|      |   assuming the size of the clipmap is always even.
+    |      |      |0,0   |      |
+    |______|______|______|______|
+    |      |      |      |1,1   |
+    |      |      |      |      |
+    |______|______|______|______|
 
-    float2 distance = normalizedPixelPosition - clipmapCenter;
+    */
+    int2 distance = int2(pixelPosition) - int2(clipmapCenter);
+    int2 clipmapSize = int2(TerrainSrg::m_clipmapData.m_clipmapSizeUint, TerrainSrg::m_clipmapData.m_clipmapSizeUint);
+    int2 halfClipmapSize = clipmapSize / 2;
+    // Biggest distance is both pixels are at diagnal vertices. distance would be -(size - 1).
+    // See the above illustration for adding halfClipmapSize.
+    // Adding another clipmapSize will guarantee the distance to be positive, and fall into the next periodical interval.
+    distance = (distance + halfClipmapSize + clipmapSize) % clipmapSize - halfClipmapSize;
 
-    // Toroidal addressing:
-    // If distance is out of the normalized range (-0.5, 0.5), meaning we need to start from the other side.
-    // The logic is equivalent to a modulation. Using step function for acceleration.
-    distance.x -= step(0.5, distance.x);
-    distance.x += step(distance.x, -0.5);
-    distance.y -= step(0.5, distance.y);
-    distance.y += step(distance.y, -0.5);
-
-    float2 viewRelativePosition = distance * (maxRenderDistance * 2.0f * clipmapScaleInv);
+    float2 viewRelativePosition = distance * GetClipmapToWorldScale(maxRenderRadius, clipmapScaleInv);
     return TerrainSrg::m_clipmapData.m_currentViewPosition + viewRelativePosition;
 }
 
 float2 GetCurrentWorldPositionFromMacroClipmaps(uint2 pixelPosition, uint clipmapLevel)
 {
-    float2 currentClipmapCenter = GetCurrentMacroClipmapCenter(clipmapLevel);
+    uint2 currentClipmapCenter = GetCurrentMacroClipmapCenter(clipmapLevel);
     float clipmapScaleInv = GetMacroClipmapScaleInv(clipmapLevel);
-    float maxRenderDistance = TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius;
-    return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel, clipmapScaleInv, maxRenderDistance);
+    float maxRenderRadius = TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius;
+    return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel, clipmapScaleInv, maxRenderRadius);
 }
 
 float2 GetCurrentWorldPositionFromDetailClipmaps(uint2 pixelPosition, uint clipmapLevel)
 {
-    float2 currentClipmapCenter = GetCurrentDetailClipmapCenter(clipmapLevel);
+    uint2 currentClipmapCenter = GetCurrentDetailClipmapCenter(clipmapLevel);
     float clipmapScaleInv = GetDetailClipmapScaleInv(clipmapLevel);
-    float maxRenderDistance = TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius;
-    return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel, clipmapScaleInv, maxRenderDistance);
+    float maxRenderRadius = TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius;
+    return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel, clipmapScaleInv, maxRenderRadius);
 }
 
-float2 ddxPosition(float maxRenderDistance, float clipmapScaleInv)
+float2 ddxPosition(float maxRenderRadius, float clipmapScaleInv)
 {
-    float dx = maxRenderDistance * 2.0 * clipmapScaleInv / TerrainSrg::m_clipmapData.m_clipmapSize;
+    float dx = GetClipmapToWorldScale(maxRenderRadius, clipmapScaleInv);
     return float2(dx, 0.0);
 }
 
-float2 ddyPosition(float maxRenderDistance, float clipmapScaleInv)
+float2 ddyPosition(float maxRenderRadius, float clipmapScaleInv)
 {
-    float dy = maxRenderDistance * 2.0 * clipmapScaleInv / TerrainSrg::m_clipmapData.m_clipmapSize;
+    float dy = GetClipmapToWorldScale(maxRenderRadius, clipmapScaleInv);
     return float2(0.0, dy);
 }
 
@@ -177,9 +195,8 @@ ClipmapLevel CalculateClosestClipmapLevel(
 
 BilinearUvs GetBilinearUvs(uint2 u0v0)
 {
-    uint clipmapSize = (uint)TerrainSrg::m_clipmapData.m_clipmapSize;
-    uint u1 = (u0v0.x + 1) % clipmapSize;
-    uint v1 = (u0v0.y + 1) % clipmapSize;
+    uint u1 = (u0v0.x + 1) % TerrainSrg::m_clipmapData.m_clipmapSizeUint;
+    uint v1 = (u0v0.y + 1) % TerrainSrg::m_clipmapData.m_clipmapSizeUint;
 
     BilinearUvs uvs;
     uvs.m_u0v0 = u0v0;
@@ -194,16 +211,16 @@ BilinearUvs CalculateClipmapUv(
     float2 distanceFromViewPosition,
     float maxRenderDistance,
     float clipmapScaleInv,
-    float2 clipmapCenter
+    uint2 clipmapCenter
 )
 {
     float2 normalizedDistance = distanceFromViewPosition / (maxRenderDistance * 2.0 * clipmapScaleInv);
-    float2 normalizedPixelPosition = clipmapCenter + normalizedDistance;
+    float2 normalizedPixelPosition = (clipmapCenter + float2(0.5, 0.5)) / TerrainSrg::m_clipmapData.m_clipmapSizeFloat + normalizedDistance;
     // By toroidal addressing, the normalized position can only fall into [-1.0, 2.0].
     // We can use fraction after shifting 1.0 to get the actual position.
     normalizedPixelPosition = frac(normalizedPixelPosition + float2(1.0, 1.0));
 
-    float2 exactUV = normalizedPixelPosition * TerrainSrg::m_clipmapData.m_clipmapSize;
+    float2 exactUV = normalizedPixelPosition * TerrainSrg::m_clipmapData.m_clipmapSizeFloat;
 
     uint2 u0v0 = uint2(exactUV);
     BilinearUvs uvs = GetBilinearUvs(u0v0);

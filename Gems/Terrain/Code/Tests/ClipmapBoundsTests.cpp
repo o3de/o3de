@@ -52,7 +52,7 @@ namespace UnitTest
         };
         
         // Check each quadrant returned
-        AZStd::vector<Terrain::ClipmapBoundsRegion> expected;
+        Terrain::ClipmapBoundsRegionList expected;
         expected.resize(4);
 
         expected.at(0).m_localAabb = Terrain::Aabb2i({localBoundary.m_x, localBoundary.m_y}, {intSize, intSize});
@@ -333,4 +333,29 @@ namespace UnitTest
         }
 
     }
+
+    // This test is to ensure clipmap update compute shader receives 6 regions at most.
+    TEST_F(ClipmapBoundsTests, MaxUpdateRegionTest)
+    {
+        // The initial clipmap is divided into 4 parts.
+        // By traversing the 11x11 grid, all possible overlapping cases can be covered.
+        for (int32_t i = -5; i <= 5; ++i)
+        {
+            for (int32_t j = -5; j <= 5; ++j)
+            {
+                Terrain::ClipmapBoundsDescriptor desc;
+                desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
+                desc.m_clipmapUpdateMultiple = 0;
+                desc.m_clipToWorldScale = 1.0f;
+                desc.m_size = 1024;
+                Terrain::ClipmapBounds bounds(desc);
+
+                auto list = bounds.UpdateCenter(AZ::Vector2(256.0f * i, 256.0f * j));
+
+                uint32_t size = aznumeric_cast<uint32_t>(list.size());
+                EXPECT_LE(size, Terrain::ClipmapBounds::MaxUpdateRegions);
+            }
+        }
+    }
+
 }

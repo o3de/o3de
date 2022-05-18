@@ -34,6 +34,9 @@ namespace Terrain
 
         // recalculate m_center
         m_center = GetSnappedCenter(GetClipSpaceVector(desc.m_worldSpaceCenter));
+
+        m_modCenter.m_x = (m_size + (m_center.m_x % m_size)) % m_size;
+        m_modCenter.m_y = (m_size + (m_center.m_y % m_size)) % m_size;
     }
     
     auto ClipmapBounds::UpdateCenter(const AZ::Vector2& newCenter, AZ::Aabb* untouchedRegion) -> ClipmapBoundsRegionList
@@ -276,11 +279,9 @@ namespace Terrain
         );
     }
 
-    AZ::Vector2 ClipmapBounds::GetNormalizedCenter() const
+    Vector2i ClipmapBounds::GetModCenter() const
     {
-        AZ::Vector2 normalizedCenter(aznumeric_cast<float>(m_modCenter.m_x) + 0.5f, aznumeric_cast<float>(m_modCenter.m_y) + 0.5f);
-        normalizedCenter /= aznumeric_cast<float>(m_size);
-        return normalizedCenter;
+        return m_modCenter;
     }
 
 }

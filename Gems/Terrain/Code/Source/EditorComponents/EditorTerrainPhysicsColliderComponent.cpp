@@ -14,15 +14,14 @@ namespace Terrain
 {
     void EditorTerrainPhysicsColliderComponent::Reflect(AZ::ReflectContext* context)
     {
-        // Call ReflectSubClass in EditorWrappedComponentBase to handle all the boilerplate reflection.
-        BaseClassType::ReflectSubClass<EditorTerrainPhysicsColliderComponent, BaseClassType>(
-            context, 1,
-            &LmbrCentral::EditorWrappedComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType,
-            typename BaseClassType::WrappedConfigType, 1>
-        );
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serialize->Class<EditorTerrainPhysicsColliderComponent, AzToolsFramework::Components::EditorComponentBase>()
+                ->Version(1)
+                ->Field("Configuration", &EditorTerrainPhysicsColliderComponent::m_configuration)
+                ;
+
             if (auto edit = serialize->GetEditContext())
             {
                 edit->Class<TerrainPhysicsSurfaceMaterialMapping>(
@@ -55,14 +54,64 @@ namespace Terrain
                         AZ::Edit::UIHandlers::Default, &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings,
                         "Surface to Material Mappings", "Maps surfaces to physics materials")
                     ;
+
+                edit->Class<EditorTerrainPhysicsColliderComponent>(
+                    EditorTerrainPhysicsColliderComponent::s_componentName,
+                    EditorTerrainPhysicsColliderComponent::s_componentDescription)
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Icon, EditorTerrainPhysicsColliderComponent::s_icon)
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, EditorTerrainPhysicsColliderComponent::s_viewportIcon)
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, EditorTerrainPhysicsColliderComponent::s_helpUrl)
+                    ->Attribute(AZ::Edit::Attributes::Category, EditorTerrainPhysicsColliderComponent::s_categoryName)
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTerrainPhysicsColliderComponent::m_configuration, "Config", "Terrain Physics Collider configuration")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorTerrainPhysicsColliderComponent::ConfigurationChanged);
+                    ;
             }
         }
+    }
+
+    void EditorTerrainPhysicsColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("PhysicsHeightfieldProviderService"));
+    }
+
+    void EditorTerrainPhysicsColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("PhysicsHeightfieldProviderService"));
+    }
+
+    void EditorTerrainPhysicsColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
+    }
+
+    void EditorTerrainPhysicsColliderComponent::Init()
+    {
+        m_component.Init();
     }
 
     void EditorTerrainPhysicsColliderComponent::Activate()
     {
         UpdateConfigurationTagProvider();
-        BaseClassType::Activate();
+        m_component.SetEntity(GetEntity());
+        m_component.UpdateConfiguration(m_configuration);
+        m_component.Activate();
+        AzToolsFramework::Components::EditorComponentBase::Activate();
+    }
+
+    void EditorTerrainPhysicsColliderComponent::Deactivate()
+    {
+        AzToolsFramework::Components::EditorComponentBase::Deactivate();
+        m_component.Deactivate();
+    }
+
+    void EditorTerrainPhysicsColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    {
+        gameEntity->AddComponent(aznew TerrainPhysicsColliderComponent(m_configuration));
     }
 
     AZStd::unordered_set<SurfaceData::SurfaceTag> EditorTerrainPhysicsColliderComponent::GetSurfaceTagsInUse() const
@@ -79,8 +128,9 @@ namespace Terrain
 
     AZ::u32 EditorTerrainPhysicsColliderComponent::ConfigurationChanged()
     {
+        m_component.UpdateConfiguration(m_configuration);
         UpdateConfigurationTagProvider();
-        return BaseClassType::ConfigurationChanged();
+        return AZ::Edit::PropertyRefreshLevels::None;
     }
 
     void EditorTerrainPhysicsColliderComponent::UpdateConfigurationTagProvider()
