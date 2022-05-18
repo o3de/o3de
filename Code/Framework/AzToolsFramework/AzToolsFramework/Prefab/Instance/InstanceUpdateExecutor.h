@@ -43,7 +43,7 @@ namespace AzToolsFramework
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             int m_instanceCountToUpdateInBatch = 0;
-            bool m_isRootPrefabInstanceFirstLoadEnded = false;
+            bool m_isRootPrefabInstanceLoaded = false;
             AZ::IO::Path m_rootPrefabInstanceSourcePath;
             AZStd::deque<Instance*> m_instancesUpdateQueue;
             bool m_updatingTemplateInstancesInQueue { false };

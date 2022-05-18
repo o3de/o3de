@@ -235,11 +235,11 @@ namespace AzToolsFramework
                             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
 
-                            if (!m_isRootPrefabInstanceFirstLoadEnded &&
+                            if (!m_isRootPrefabInstanceLoaded &&
                                 instanceToUpdate->GetTemplateSourcePath() == m_rootPrefabInstanceSourcePath)
                             {
                                 PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnRootPrefabInstanceLoaded);
-                                m_isRootPrefabInstanceFirstLoadEnded = true;
+                                m_isRootPrefabInstanceLoaded = true;
                             }
                         }
                     }
@@ -267,7 +267,7 @@ namespace AzToolsFramework
 
         void InstanceUpdateExecutor::QueueRootPrefabLoadedNotificationForNextPropagation()
         {
-            m_isRootPrefabInstanceFirstLoadEnded = false;
+            m_isRootPrefabInstanceLoaded = false;
 
             PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                 AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
