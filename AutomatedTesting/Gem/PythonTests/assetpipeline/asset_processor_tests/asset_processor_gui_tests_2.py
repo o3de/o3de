@@ -113,12 +113,14 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
     @pytest.mark.test_case_id("C3635822")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip("Not working in Jenkins")
+    @pytest.mark.SUITE_sandbox
     # fmt:off
     def test_WindowsMacPlatforms_GUIFastScanEnabled_GameLauncherWorksWithAP(self, asset_processor, workspace,
                                                                             fast_scan_backup):
         # fmt:on
         """
+        Sandboxed: Not working on Jenkins
+
         Make sure game launcher working with Asset Processor set to turbo mode
         Validate that no fatal errors (crashes) are reported within a certain
         time frame for the AP and the GameLauncher
@@ -275,9 +277,11 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
     @pytest.mark.test_case_id("C4874114")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip("Flaky test")
+    @pytest.mark.SUITE_sandbox
     def test_AllSupportedPlatforms_InvalidAddress_AssetsProcessed(self, workspace, request, asset_processor):
         """
+        Sandboxed: Flaky Test
+
         Launch AP with invalid address in bootstrap.cfg
         Assets should process regardless of the new address
 
