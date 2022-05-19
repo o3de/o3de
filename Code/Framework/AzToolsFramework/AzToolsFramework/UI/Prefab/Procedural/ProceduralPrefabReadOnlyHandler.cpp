@@ -50,12 +50,16 @@ namespace AzToolsFramework
         {
             if(m_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(entityId))
             {
+                // TODO - update comments if removing commented out code
+                // Also, this currently only partially works cause opening/closing a prefab only
+                // clears the readonly cache for the container, we will need to do it for all entities.
+                /*
                 // All entities nested inside a procedural prefabs should always be marked as read-only.
                 if (!m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
                 {
                     isReadOnly = true;
                 }
-
+                */
                 // The container entity of a procedural prefab should only be marked as read-only when the prefab is being edited.
                 if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
                 {
