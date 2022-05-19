@@ -69,6 +69,7 @@ namespace AZ::Render
         void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
         
         void InitializeAtmosphere(AtmosphereId id);
+        void UpdateBackgroundClearColor();
             
         void CachePasses();
             

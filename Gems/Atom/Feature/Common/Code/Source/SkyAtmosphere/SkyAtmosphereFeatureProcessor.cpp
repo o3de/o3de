@@ -247,11 +247,13 @@ namespace AZ::Render
     void SkyAtmosphereFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
     {
         CachePasses();
+        UpdateBackgroundClearColor();
     }
 
     void SkyAtmosphereFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]]RPI::RenderPipelinePtr renderPipeline)
     {
         CachePasses();
+        UpdateBackgroundClearColor();
     }
 
     void SkyAtmosphereFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
@@ -311,5 +313,36 @@ namespace AZ::Render
 
             m_passNeedsUpdate = false;
         }
+    }
+
+    void SkyAtmosphereFeatureProcessor::UpdateBackgroundClearColor()
+    {
+        // This function is only necessary for now because the default clear value
+        // color is not black, and is set in various .pass files in places a user
+        // is unlikely to find.  Unfortunately, the viewport will revert to the
+        // grey color when resizing momentarily.
+        const RHI::ClearValue blackClearValue = RHI::ClearValue::CreateVector4Float(0.f, 0.f, 0.f, 0.f);
+        RPI::PassFilter passFilter;
+        AZStd::string slot;
+
+        auto setClearValue = [&](RPI::Pass* pass)-> RPI::PassFilterExecutionFlow
+        {
+            Name slotName = Name::FromStringLiteral(slot);
+            if (auto binding = pass->FindAttachmentBinding(slotName))
+            {
+                binding->m_unifiedScopeDesc.m_loadStoreAction.m_clearValue = blackClearValue;
+            }
+            return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+        };
+
+        slot = "SpecularOutput";
+        passFilter= RPI::PassFilter::CreateWithTemplateName(Name("ForwardPassTemplate"), GetParentScene());
+        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
+        passFilter = RPI::PassFilter::CreateWithTemplateName(Name("ForwardMSAAPassTemplate"), GetParentScene());
+        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
+
+        slot = "ReflectionOutput";
+        passFilter = RPI::PassFilter::CreateWithTemplateName(Name("ReflectionGlobalFullscreenPassTemplate"), GetParentScene());
+        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
     }
 }
