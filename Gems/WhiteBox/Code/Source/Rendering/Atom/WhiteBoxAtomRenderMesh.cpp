@@ -33,6 +33,7 @@ namespace WhiteBox
     AtomRenderMesh::~AtomRenderMesh()
     {
         AZ::Render::MeshHandleStateRequestBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     bool AtomRenderMesh::AreAttributesValid() const
@@ -261,13 +262,37 @@ namespace WhiteBox
         m_meshFeatureProcessor->SetTransform(m_meshHandle, worldFromLocal);
     }
 
+
+
     void AtomRenderMesh::UpdateMaterial(const WhiteBoxMaterial& material)
     {
+        if (m_meshFeatureProcessor)
+        {
+            auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
+            materialAssignment.m_propertyOverrides[AZ::Name("baseColor.color")] = AZ::Color(material.m_tint);
+            materialAssignment.m_propertyOverrides[AZ::Name("baseColor.useTexture")] = material.m_useTexture;
+            if (materialAssignment.ApplyProperties())
+            {
+                if (AZ::TickBus::Handler::BusIsConnected())
+                {
+                    AZ::TickBus::Handler::BusDisconnect();
+                }
+                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, m_materialMap);
+            }
+            else if (!AZ::TickBus::Handler::BusIsConnected())
+            {
+                AZ::TickBus::Handler::BusConnect();
+            }
+        }
+    }
+
+    void AtomRenderMesh::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time) {
         auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
-        materialAssignment.m_propertyOverrides[AZ::Name("baseColor.color")] = AZ::Color(material.m_tint);
-        materialAssignment.m_propertyOverrides[AZ::Name("baseColor.useTexture")] = material.m_useTexture;
-        materialAssignment.ApplyProperties();
-        m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, m_materialMap);
+        if (materialAssignment.ApplyProperties()) 
+        {
+            m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, m_materialMap);
+            AZ::TickBus::Handler::BusDisconnect();
+        }
     }
 
     void AtomRenderMesh::SetVisiblity(bool visibility)
