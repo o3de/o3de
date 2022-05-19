@@ -5,10 +5,6 @@
     "ClassData": {
         "AssetPaths": [
             {
-                "Name": "EditorModeMaskTemplate",
-                "Path": "Passes/Child/EditorModeMask.pass"
-            },
-            {
                 "Name": "EditorModeDesaturationTemplate",
                 "Path": "Passes/Child/EditorModeDesaturation.pass"
             },

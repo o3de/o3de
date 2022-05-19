@@ -30,6 +30,61 @@ namespace AZ::Render
     //    return masks;
     //}
 
+    AZStd::shared_ptr<RPI::PassTemplate> CreateMaskPassTemplate(const AZStd::string& drawTag)
+    {
+        auto maskPassTemplate = AZStd::make_shared<RPI::PassTemplate>();
+        maskPassTemplate->m_name = Name(drawTag + "_EditorModeMaskTemplate");
+        maskPassTemplate->m_passClass = Name("RasterPass");
+
+        // Input depth slot
+        {
+            RPI::PassSlot slot;
+            slot.m_name = Name("InputDepth");
+            slot.m_slotType = RPI::PassSlotType::Input;
+            slot.m_shaderInputName = Name("m_existingDepth");
+            slot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
+            slot.m_shaderImageDimensionsName = Name("m_existingDepthDimensions");
+            maskPassTemplate->AddSlot(slot);
+        }
+
+        // Output entity mask slot
+        {
+            RPI::PassSlot slot;
+            slot.m_name = Name("OutputEntityMask");
+            slot.m_slotType = RPI::PassSlotType::Output;
+            slot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
+            slot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Clear;
+            slot.m_loadStoreAction.m_clearValue = RHI::ClearValue::CreateVector4Float(0.0, 0.0, 0.0, 0.0);
+            maskPassTemplate->AddSlot(slot);
+        }
+
+        // Output entity mask attachment
+        RPI::PassImageAttachmentDesc imageAttachment;
+        imageAttachment.m_name = Name("OutputEntityMaskAttachment");
+        imageAttachment.m_sizeSource.m_source.m_pass = Name("This");
+        imageAttachment.m_sizeSource.m_source.m_attachment = Name("InputDepth");
+        imageAttachment.m_imageDescriptor.m_format = RHI::Format::R8G8_UNORM;
+        imageAttachment.m_imageDescriptor.m_sharedQueueMask = RHI::HardwareQueueClassMask::Graphics;
+        maskPassTemplate->AddImageAttachment(imageAttachment);
+
+        // Output entity mask
+        RPI::PassConnection connection;
+        connection.m_localSlot = Name("OutputEntityMask");
+        connection.m_attachmentRef = { Name("This"), Name("OutputEntityMaskAttachment") };
+        maskPassTemplate->AddOutputConnection(connection);
+
+        // Pass data
+        {
+            auto passData = AZStd::make_shared<RPI::RasterPassData>();
+            passData->m_drawListTag = Name("editormodemask");
+            passData->m_passSrgShaderReference.m_filePath = "shaders/editormodemask.azshader";
+            passData->m_pipelineViewTag = "MainCamera";
+            maskPassTemplate->m_passData = passData;
+        }
+
+        return maskPassTemplate;
+    }
+
     EditorStatePassSystem::EditorStatePassSystem(EditorStateParentPassList&& editorStateParentPasses)
         : m_editorStateParentPasses(AZStd::move(editorStateParentPasses))
     {
@@ -74,9 +129,11 @@ namespace AZ::Render
         
         // Entity mask pass
         {
+            const auto maskPassTemplate = CreateMaskPassTemplate("editormodemask");
+            RPI::PassSystemInterface::Get()->AddPassTemplate(maskPassTemplate->m_name, maskPassTemplate);
             RPI::PassRequest pass;
             pass.m_passName = Name("EntityMaskPass");
-            pass.m_templateName = Name("EditorModeMaskTemplate");
+            pass.m_templateName = maskPassTemplate->m_name;
         
             // Input depth
             {
@@ -87,13 +144,13 @@ namespace AZ::Render
             }
 
             // Pass data
-            {
-                auto passData = AZStd::make_shared<RPI::RasterPassData>();
-                passData->m_drawListTag = Name("editormodemask");
-                passData->m_passSrgShaderReference.m_filePath = "shaders/editormodemask.azshader";
-                passData->m_pipelineViewTag = "MainCamera";
-                pass.m_passData = passData;
-            }
+            //{
+            //    auto passData = AZStd::make_shared<RPI::RasterPassData>();
+            //    passData->m_drawListTag = Name("editormodemask");
+            //    passData->m_passSrgShaderReference.m_filePath = "shaders/editormodemask.azshader";
+            //    passData->m_pipelineViewTag = "MainCamera";
+            //    pass.m_passData = passData;
+            //}
         
             mainParentPassTemplate->AddPassRequest(pass);
         }
