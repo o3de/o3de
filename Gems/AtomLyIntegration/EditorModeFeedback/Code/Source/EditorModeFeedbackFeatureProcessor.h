@@ -8,8 +8,11 @@
 
 #pragma once
 
+#include <Pass/EditorStatePassSystem.h>
+
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
 {
@@ -32,6 +35,9 @@ namespace AZ
         private:
             //! Cache the pass request data for creating an editor mode feedback parent pass.
             AZ::Data::Asset<AZ::RPI::AnyAsset> m_parentPassRequestAsset;
+
+            //!
+            AZStd::unique_ptr<EditorStatePassSystem> m_editorStatePassSystem;
         };
     } // namespace Render
 } // namespace AZ

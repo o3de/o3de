@@ -23,14 +23,18 @@ namespace AZ::Render
     };
 
     //
-    static const PassDescriptorList SelectedEntityChildPasses =
+    static PassDescriptorList CreateSelectedEntityChildPasses()
     {
-        // Outline effect for the entities in the selected entity mask
-        { AZ::Name("EntityOutlinePass"), AZ::Name("EditorModeOutlineTemplate") }
-    };
+        return PassDescriptorList
+        {
+            // Outline effect for the entities in the selected entity mask
+            { AZ::Name("EntityOutlinePass"), AZ::Name("EditorModeOutlineTemplate") }
+        };
+    }
+    
 
     SelectedEntityParentPass::SelectedEntityParentPass(const AZStd::string& stateName)
-        : EditorStateParentPassBase(stateName, SelectedEntityChildPasses, SelectedEntityMaskName)
+        : EditorStateParentPassBase(stateName, CreateSelectedEntityChildPasses(), SelectedEntityMaskName)
     {
     }
 

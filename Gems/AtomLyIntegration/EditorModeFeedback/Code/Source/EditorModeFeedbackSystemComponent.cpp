@@ -8,11 +8,6 @@
 
 #include <EditorModeFeedbackSystemComponent.h>
 #include <EditorModeFeedbackFeatureProcessor.h>
-#include <Pass/Child/EditorModeFeedbackParentPass.h>
-#include <Pass/Child/EditorModeDesaturationPass.h>
-#include <Pass/Child/EditorModeTintPass.h>
-#include <Pass/Child/EditorModeBlurPass.h>
-#include <Pass/Child/EditorModeOutlinePass.h>
 
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <Atom/Utils/Utils.h>
@@ -87,12 +82,7 @@ namespace AZ
                 {
                     LoadPassTemplateMappings();
                 });
-           
-            passSystem->AddPassCreator(Name("EditorModeFeedbackParentPass"), &EditorModeFeedbackParentPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
+
             passSystem->ConnectEvent(m_loadTemplatesHandler);
         }
 
@@ -117,7 +107,7 @@ namespace AZ
             auto* passSystem = RPI::PassSystemInterface::Get();
             AZ_Assert(passSystem, "Cannot get the pass system.");
 
-            const char* passTemplatesFile = "Passes/EditorModeFeedback_PassTemplates.azasset";
+            const char* passTemplatesFile = "Passes/Child/EditorModeFeedback_PassTemplates.azasset";
             passSystem->LoadPassTemplateMappings(passTemplatesFile);
         }
 

@@ -13,20 +13,23 @@
 
 namespace AZ::Render
 {
-    static const PassDescriptorList FocusedEntityChildPasses =
+    static PassDescriptorList CreateFocusedEntityChildPasses()
     {
-        // Black and white effect for unfocused entities (scaled by distance)
-        { AZ::Name("DesaturationPass"), AZ::Name("EditorModeDesaturationTemplate") },
+        return PassDescriptorList
+        {
+            // Black and white effect for unfocused entities (scaled by distance)
+            { AZ::Name("DesaturationPass"), AZ::Name("EditorModeDesaturationTemplate") },
 
-        // Darkening effect for unfocused entities (scaled by distance)
-        { AZ::Name("TintPass"), AZ::Name("EditorModeTintTemplate") },
+            // Darkening effect for unfocused entities (scaled by distance)
+            { AZ::Name("TintPass"), AZ::Name("EditorModeTintTemplate") },
 
-        // Blurring effect for unfocused entities (scaled by distance)
-        { AZ::Name("BlurPass"), AZ::Name("EditorModeBlurParentTemplate") }
-    };
+            // Blurring effect for unfocused entities (scaled by distance)
+            { AZ::Name("BlurPass"), AZ::Name("EditorModeBlurParentTemplate") }
+        };
+    }
 
     FocusedEntityParentPass::FocusedEntityParentPass(const AZStd::string& stateName)
-        : EditorStateParentPassBase(stateName, FocusedEntityChildPasses)
+        : EditorStateParentPassBase(stateName, CreateFocusedEntityChildPasses())
     {
     }
 

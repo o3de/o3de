@@ -7,6 +7,9 @@
  */
 
 #include <EditorModeFeedbackFeatureProcessor.h>
+#include <Pass/State/FocusedEntityParentPass.h>
+#include <Pass/State/SelectedEntityParentPass.h>
+
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
@@ -31,10 +34,16 @@ namespace AZ
         void EditorModeFeatureProcessor::Activate()
         {
             EnableSceneNotification();
+
+            EditorStateParentPassList editorStatePasses;
+            editorStatePasses.push_back(AZStd::make_unique<FocusedEntityParentPass>("FocusMode"));
+            editorStatePasses.push_back(AZStd::make_unique<SelectedEntityParentPass>("EntitySelection"));
+            m_editorStatePassSystem = AZStd::make_unique<EditorStatePassSystem>(AZStd::move(editorStatePasses));
         }
 
         void EditorModeFeatureProcessor::Deactivate()
         {
+            m_editorStatePassSystem.reset();
             DisableSceneNotification();
             m_parentPassRequestAsset.Reset();
         }
@@ -47,11 +56,11 @@ namespace AZ
 
             // Load the pass request file containing the editor EditorModeFeadback parent pass
             const AZ::RPI::PassRequest* passRequest = nullptr;
-            const char* passRequestAssetFilePath = "Passes/EditorModeFeedback_PassRequest.azasset";
+            const char* passRequestAssetFilePath = "Passes/Child/EditorModeFeedback_PassRequest.azasset";
             m_parentPassRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                 passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
 
-            if (m_parentPassRequestAsset->IsReady())
+            if (m_parentPassRequestAsset && m_parentPassRequestAsset->IsReady())
             {
                 passRequest = m_parentPassRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
             }
