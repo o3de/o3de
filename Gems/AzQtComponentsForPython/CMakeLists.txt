@@ -101,8 +101,6 @@ ly_package_get_target_folder(${qt_package_name} qt_DOWNLOAD_LOCATION)
 set(qt_module_dir ${qt_DOWNLOAD_LOCATION}/${qt_package_name}/qt)
 
 
-# ==================================== RPATH configuration ====================================
-
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH ${shiboken_module_path} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -175,6 +173,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzQtComponents
+            Gem::EditorPythonBindings.Static
 )
 
 add_custom_command(TARGET ${bindings_library}.bindings
