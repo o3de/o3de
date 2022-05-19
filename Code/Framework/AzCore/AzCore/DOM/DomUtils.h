@@ -25,7 +25,7 @@ namespace AZ::Dom::Utils
     Value TypeIdToDomValue(const AZ::TypeId& typeId);
     AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings = {});
-    JsonSerializationResult::ResultCode StoreViaJsonSerialization(void* object, void* defaultObject, const AZ::TypeId& typeId, Value& output, const JsonSerializerSettings& settings = {});
+    JsonSerializationResult::ResultCode StoreViaJsonSerialization(const void* object, const void* defaultObject, const AZ::TypeId& typeId, Value& output, const JsonSerializerSettings& settings = {});
 
     template <typename T>
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(T& object, const Value& root, const JsonDeserializerSettings& settings = {})
@@ -34,13 +34,13 @@ namespace AZ::Dom::Utils
     }
 
     template <typename T>
-    JsonSerializationResult::ResultCode StoreViaJsonSerialization(T& object, Value& output, const JsonSerializerSettings& settings = {})
+    JsonSerializationResult::ResultCode StoreViaJsonSerialization(const T& object, Value& output, const JsonSerializerSettings& settings = {})
     {
         return StoreViaJsonSerialization(&object, nullptr, azrtti_typeid<T>(), output, settings);
     }
 
     template<typename T>
-    JsonSerializationResult::ResultCode StoreViaJsonSerialization(T& object, T& defaultObject, Value& output, const JsonSerializerSettings& settings = {})
+    JsonSerializationResult::ResultCode StoreViaJsonSerialization(const T& object, const T& defaultObject, Value& output, const JsonSerializerSettings& settings = {})
     {
         return StoreViaJsonSerialization(&object, &defaultObject, azrtti_typeid<T>(), output, settings);
     }
@@ -62,6 +62,10 @@ namespace AZ::Dom::Utils
         else if constexpr (AZStd::is_constructible_v<Dom::Value, const T&>)
         {
             return Dom::Value(value);
+        }
+        else if constexpr (AZStd::is_enum_v<T>)
+        {
+            return ValueFromType(static_cast<AZStd::underlying_type_t<T>>(value));
         }
         else
         {
@@ -85,6 +89,10 @@ namespace AZ::Dom::Utils
         else if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string> || AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string_view>)
         {
             return value.IsString();
+        }
+        else if constexpr (AZStd::is_enum_v<T>)
+        {
+            return CanConvertValueToType<AZStd::underlying_type_t<T>>(value);
         }
         else
         {
@@ -143,6 +151,10 @@ namespace AZ::Dom::Utils
                 return {};
             }
             return value.GetString();
+        }
+        else if constexpr (AZStd::is_enum_v<T>)
+        {
+            return static_cast<T>(ValueToType<AZStd::underlying_type_t<T>>(value));
         }
         else
         {

@@ -18,44 +18,25 @@ namespace AZ::DocumentPropertyEditor
     {
         ReflectionAdapter* m_adapter;
         AdapterBuilder m_builder;
-        AZStd::unordered_map<AZ::TypeId, AZStd::string_view> m_defaultEditorMap;
-
-        void PopulateDefaultEditors()
-        {
-            m_defaultEditorMap[azrtti_typeid<bool>()] = Nodes::CheckBox::Name;
-            m_defaultEditorMap[azrtti_typeid<AZ::u8>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<AZ::u16>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<AZ::u32>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<AZ::u64>()] = Nodes::UintSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<AZ::s8>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<AZ::s16>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<AZ::s32>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<AZ::s64>()] = Nodes::IntSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<float>()] = Nodes::DoubleSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<double>()] = Nodes::DoubleSpinBox::Name;
-            m_defaultEditorMap[azrtti_typeid<AZStd::string>()] = Nodes::LineEdit::Name;
-        }
 
         ReflectionAdapterReflectionImpl(ReflectionAdapter* adapter)
             : m_adapter(adapter)
         {
-            PopulateDefaultEditors();
         }
 
-        AZStd::string_view GetPropertyEditor(const AZ::TypeId& id, const Reflection::IAttributes& attributes)
+        AZStd::string_view GetPropertyEditor(const Reflection::IAttributes& attributes)
         {
-            (void)attributes;
             const Dom::Value handler = attributes.Find(Reflection::DescriptorAttributes::Handler);
             if (handler.IsString())
             {
                 return handler.GetString();
             }
-            if (auto it = m_defaultEditorMap.find(id); it != m_defaultEditorMap.end())
+            // Special case defaulting to ComboBox for enum types, as ComboBox isn't a default handler.
+            if (!attributes.Find(Nodes::PropertyEditor::EnumType.GetName()).IsNull())
             {
-                return it->second;
+                return Nodes::ComboBox::Name;
             }
-            AZ_Assert(false, "Attempted to create primitive property editor for unknown type");
-            return "Unknown";
+            return {};
         }
 
         void ExtractLabel(const Reflection::IAttributes& attributes)
@@ -121,7 +102,7 @@ namespace AZ::DocumentPropertyEditor
         void VisitPrimitive(T& value, const Reflection::IAttributes& attributes)
         {
             VisitValue(
-                Dom::Utils::ValueFromType(value), GetPropertyEditor(azrtti_typeid<T>(), attributes), attributes,
+                Dom::Utils::ValueFromType(value), GetPropertyEditor(attributes), attributes,
                 [&value](const Dom::Value& newValue)
                 {
                     AZStd::optional<T> extractedValue = Dom::Utils::ValueToType<T>(newValue);
@@ -204,7 +185,7 @@ namespace AZ::DocumentPropertyEditor
         void Visit(const AZStd::string_view value, Reflection::IStringAccess& access, const Reflection::IAttributes& attributes) override
         {
             VisitValue(
-                Dom::Utils::ValueFromType(value), GetPropertyEditor(azrtti_typeid<AZStd::string_view>(), attributes), attributes,
+                Dom::Utils::ValueFromType(value), GetPropertyEditor(attributes), attributes,
                 [&access](const Dom::Value& newValue)
                 {
                     access.Set(newValue.GetString());

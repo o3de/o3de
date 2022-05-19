@@ -97,7 +97,7 @@ namespace AZ::Dom::Utils
     }
 
     JsonSerializationResult::ResultCode StoreViaJsonSerialization(
-        void* object, void* defaultObject, const AZ::TypeId& typeId, Value& output, const JsonSerializerSettings& settings)
+        const void* object, const void* defaultObject, const AZ::TypeId& typeId, Value& output, const JsonSerializerSettings& settings)
     {
         rapidjson::Document buffer;
         auto result = JsonSerialization::Store(buffer, buffer.GetAllocator(), object, defaultObject, typeId, settings);
