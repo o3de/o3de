@@ -142,7 +142,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     {
         GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
-    
+
     const float macroRoughness = 1.0;
     const float macroSpecularF0 = 0.5;
     const float macroMetalness = 0.0;
