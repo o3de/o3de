@@ -73,16 +73,23 @@ def ForceRegion_WorldSpaceForceOnRigidBodies():
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
-    class Ball:
-        start_position_z = None
-        fell = False
-
     # Constants
-    TIMEOUT = 2.0
+    TIMEOUT = 0.5
     BALL_MIN_MOVED_UP = 5  # Minimum amount to indicate Z movement
     MAGNITUDE_TOLERANCE = 0.26  # Force region magnitude tolerance
 
-    # Helper Functions
+    # Helpers
+    class Ball:
+        start_position_z = None
+        fell = False
+    
+    class ForceRegionTrigger:
+        entered = False
+        exited = False
+
+    class NetForceMagnitude:
+        value = 0
+
     def ball_falls():
         if not Ball.fell:
             ball_after_frame_z = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldZ", ball_id)
@@ -95,10 +102,6 @@ def ForceRegion_WorldSpaceForceOnRigidBodies():
         ball_z = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldZ", ball_id)
         return ball_z > Ball.start_position_z + BALL_MIN_MOVED_UP
 
-    class ForceRegionTrigger:
-        entered = False
-        exited = False
-
     def on_enter(args):
         other_id = args[0]
         if other_id.Equal(ball_id):
@@ -110,9 +113,6 @@ def ForceRegion_WorldSpaceForceOnRigidBodies():
         if other_id.Equal(ball_id):
             Report.info("Trigger exited")
             ForceRegionTrigger.exited = True
-
-    class NetForceMagnitude:
-        value = 0
 
     def on_calc_net_force(args):
         """
@@ -137,18 +137,13 @@ def ForceRegion_WorldSpaceForceOnRigidBodies():
 
     # 3) Retrieve entities
     ball_id = general.find_game_entity("Ball")
-    Report.critical_result(Tests.find_ball, ball_id.IsValid())
-
     box_id = general.find_game_entity("ForceRegion")
-    Report.critical_result(Tests.find_box, box_id.IsValid())
 
     # 4) Get the starting z position of the ball
     Ball.start_position_z = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldZ", ball_id)
-    Report.info("Starting Height of the ball: {}".format(Ball.start_position_z))
 
     # 5) Check that gravity works and the ball falls
     helper.wait_for_condition(ball_falls, TIMEOUT)
-    Report.result(Tests.gravity_works, Ball.fell)
 
     # 6) Check that the ball enters the trigger area
     handler = azlmbr.physics.TriggerNotificationBusHandler()
@@ -157,7 +152,6 @@ def ForceRegion_WorldSpaceForceOnRigidBodies():
     handler.add_callback("OnTriggerExit", on_exit)
 
     helper.wait_for_condition(lambda: ForceRegionTrigger.entered, TIMEOUT)
-    Report.result(Tests.ball_triggers_force_region, ForceRegionTrigger.entered)
 
     # 7) Get the magnitude of the collision
     force_notification_handler = azlmbr.physics.ForceRegionNotificationBusHandler()
@@ -165,25 +159,30 @@ def ForceRegion_WorldSpaceForceOnRigidBodies():
     force_notification_handler.add_callback("OnCalculateNetForce", on_calc_net_force)
 
     # 8) Check that the ball moved up
-    if helper.wait_for_condition(lambda: ball_moved_up and ForceRegionTrigger.exited, TIMEOUT):
-        Report.success(Tests.ball_moved_up)
-    else:
-        Report.failure(Tests.ball_moved_up)
+    ball_moved_up = helper.wait_for_condition(lambda: ball_moved_up and ForceRegionTrigger.exited, TIMEOUT)
 
     # 9) Verify that the magnitude of the collision is as expected
     valid_force_region = helper.wait_for_condition(
         lambda: is_close_float(NetForceMagnitude.value, get_entity_magnitude(box_id), MAGNITUDE_TOLERANCE), TIMEOUT)
 
-    Report.info("NetForce magnitude is {}, Force Region magnitude is {}".format(NetForceMagnitude.value,
-                                                                                    get_entity_magnitude(box_id)))
+    # 10 Report Results
+    Report.info("Starting Height of the ball: {}".format(Ball.start_position_z))
+    Report.critical_result(Tests.find_ball, ball_id.IsValid())
+    Report.critical_result(Tests.find_box, box_id.IsValid())
+    Report.result(Tests.gravity_works, Ball.fell)
+    Report.result(Tests.ball_triggers_force_region, ForceRegionTrigger.entered)
+    Report.critical_result(Tests.ball_moved_up, ball_moved_up)
 
     if valid_force_region:
         Report.success(Tests.net_force_magnitude)
     else:
+        Report.info("NetForce magnitude is {}, Force Region magnitude is {}".format(NetForceMagnitude.value,
+                                                                                    get_entity_magnitude(box_id)))
         Report.failure(Tests.net_force_magnitude)
 
-    # 10) Exit game mode
+    # 11) Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)
+    
 
 
 if __name__ == "__main__":
