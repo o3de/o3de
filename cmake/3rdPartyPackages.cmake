@@ -434,6 +434,7 @@ function(ly_validate_package package_name)
         endif()
 
         if (NOT "${existing_hash}" STREQUAL "${expected_package_hash}" )
+            ly_package_message(STATUS "hash mismatch - package has ${existing_hash} but expected hash is ${expected_package_hash}!")
             # either the hash doesn't match or the file doesn't exist.  Either way, we need to force download it again
             ly_package_message(STATUS "LY_PACKAGE_VALIDATE_PACKAGE : $[package_name}${LY_PACKAGE_EXT} is either missing or has the wrong hash, re-downloading")
             return()
@@ -489,6 +490,7 @@ function(ly_force_download_package package_name)
     endif()
 
     if (NOT "${existing_hash}" STREQUAL "${expected_package_hash}" )
+        ly_package_message(STATUS "hash mismatch - package has ${existing_hash} but expected hash is ${expected_package_hash}!")
         file(REMOVE ${temp_download_target})
         # we print this message unconditionally because downloading a package
         # can take time and we only get here if its missing in the first place, so 

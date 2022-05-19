@@ -75,6 +75,8 @@ namespace AZ
             m_materialFunctorRegistration = aznew MaterialFunctorSourceDataRegistration;
             m_materialFunctorRegistration->Init();
         #endif
+
+            XRRegisterInterface::Register(this);
         }
 
         RPISystemComponent::~RPISystemComponent()
@@ -86,6 +88,8 @@ namespace AZ
                 delete m_materialFunctorRegistration;
             }
         #endif
+
+            XRRegisterInterface::Unregister(this);
         }
 
         void RPISystemComponent::Activate()
@@ -145,6 +149,16 @@ namespace AZ
 
             // Stop execution since we can't recover from device removal error
             Debug::Trace::Crash();
+        }
+
+        void RPISystemComponent::RegisterXRInterface(XRRenderingInterface* xrSystemInterface)
+        {
+            m_rpiSystem.RegisterXRSystem(xrSystemInterface);
+        }
+
+        void RPISystemComponent::UnRegisterXRInterface()
+        {
+            m_rpiSystem.UnRegisterXRSystem();
         }
 
     } // namespace RPI

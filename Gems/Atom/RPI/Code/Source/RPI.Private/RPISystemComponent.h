@@ -17,6 +17,7 @@
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystem.h>
+#include <Atom/RPI.Public/XR/XRRenderingInterface.h>
 
 namespace AZ
 {
@@ -35,6 +36,7 @@ namespace AZ
             : public AZ::Component
             , public AZ::SystemTickBus::Handler
             , public AZ::RHI::RHISystemNotificationBus::Handler
+            , public IXRRegisterInterface
         {
         public:
             AZ_COMPONENT(RPISystemComponent, "{83E301F3-7A0C-4099-B530-9342B91B1BC0}");
@@ -48,6 +50,12 @@ namespace AZ
 
             void Activate() override;
             void Deactivate() override;
+
+            ///////////////////////////////////////////////////////////////////
+            //! IXRRegisterInterface
+            void RegisterXRInterface(XRRenderingInterface* xrSystemInterface) override;
+            void UnRegisterXRInterface() override;
+            ///////////////////////////////////////////////////////////////////
 
         private:
             RPISystemComponent(const RPISystemComponent&) = delete;
