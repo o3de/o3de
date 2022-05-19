@@ -262,8 +262,6 @@ namespace WhiteBox
         m_meshFeatureProcessor->SetTransform(m_meshHandle, worldFromLocal);
     }
 
-
-
     void AtomRenderMesh::UpdateMaterial(const WhiteBoxMaterial& material)
     {
         if (m_meshFeatureProcessor)
@@ -271,6 +269,8 @@ namespace WhiteBox
             auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
             materialAssignment.m_propertyOverrides[AZ::Name("baseColor.color")] = AZ::Color(material.m_tint);
             materialAssignment.m_propertyOverrides[AZ::Name("baseColor.useTexture")] = material.m_useTexture;
+            // if ApplyProperties fails, defer updating the material assignment map 
+            // on the next tick, and try applying properties again
             if (materialAssignment.ApplyProperties())
             {
                 if (AZ::TickBus::Handler::BusIsConnected())
@@ -286,9 +286,10 @@ namespace WhiteBox
         }
     }
 
-    void AtomRenderMesh::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time) {
+    void AtomRenderMesh::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
         auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
-        if (materialAssignment.ApplyProperties()) 
+        if (materialAssignment.ApplyProperties())
         {
             m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, m_materialMap);
             AZ::TickBus::Handler::BusDisconnect();

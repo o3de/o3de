@@ -51,7 +51,7 @@ namespace WhiteBox
         bool IsVisible() const override;
         void SetVisiblity(bool visibility) override;
 
-        // AZ::TickBus overrides...
+        // AZ::TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
     private:
