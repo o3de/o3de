@@ -130,9 +130,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
     # Maximum time for a single editor to stay open on a shared test
     timeout_editor_shared_test = 300
     # Maximum time (seconds) for waiting for a crash file, in seconds
-    timeout_crash_log = 20
+    _TIMEOUT_CRASH_LOG = 20
     # Return code for test failure
-    test_fail_return_code = 0xF
+    _TEST_FAIL_RETURN_CODE = 0xF
     # Test class to use for single test collection
     single_test_class = MaterialEditorSingleTest
     # Test class to use for shared test collection
@@ -411,9 +411,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             if return_code == 0:
                 test_result = Result.Pass(test_spec, output, material_editor_log_content)
             else:
-                has_crashed = return_code != MaterialEditorTestSuite.test_fail_return_code
+                has_crashed = return_code != MaterialEditorTestSuite._TEST_FAIL_RETURN_CODE
                 if has_crashed:
-                    crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self.timeout_crash_log)
+                    crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                     test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
                     # Save the .dmp file which is generated on Windows only
                     dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
@@ -526,7 +526,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                     "bug in _get_results_using_output(), the number of results don't match the tests ran")
 
                 # If the editor crashed, find out in which test it happened and update the results
-                has_crashed = return_code != MaterialEditorTestSuite.test_fail_return_code
+                has_crashed = return_code != MaterialEditorTestSuite._TEST_FAIL_RETURN_CODE
                 if has_crashed:
                     crashed_result = None
                     for test_spec_name, result in results.items():
@@ -534,7 +534,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                             if not crashed_result:
                                 # The first test with "Unknown" result (no data in output) is likely the crash source.
                                 crash_error = editor_utils.retrieve_crash_output(run_id, workspace,
-                                                                                 self.timeout_crash_log)
+                                                                                 self._TIMEOUT_CRASH_LOG)
                                 # Save the .dmp file which is generated on Windows only
                                 dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
                                                              'error.dmp')
@@ -559,7 +559,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                                                                      f"crashed before this test could be executed"
                     # if all the tests ran, the one that has caused the crash is the last test
                     if not crashed_result:
-                        crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self.timeout_crash_log)
+                        crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash(
                             crashed_result.test_spec, output, return_code, crash_error, crashed_result.editor_log)

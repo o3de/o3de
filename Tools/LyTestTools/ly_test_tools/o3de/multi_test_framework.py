@@ -82,9 +82,9 @@ class SingleTest(AbstractTestBase):
 
 class SharedTest(AbstractTestBase):
     """
-    Can be one of two different test types:
-    1. Test that will be run in parallel with tests in multiple instances.
-    2. Test that will be run as serially batched with other tests in a single instance.
+    Runs both of the following test types:
+    1. Tests that will be run in parallel with tests in multiple instances.
+    2. Tests that will be run as serially batched with other tests in a single instance.
 
     Minimizes total test run duration by reducing repeated overhead from starting the instance.
     Does not support per test setup/teardown to avoid creating race conditions.

@@ -125,9 +125,9 @@ class EditorTestSuite(AbstractTestSuite):
     # Maximum time for a single editor to stay open on a shared test
     timeout_editor_shared_test = 300
     # Maximum time (seconds) for waiting for a crash file, in seconds
-    timeout_crash_log = 20
+    _TIMEOUT_CRASH_LOG = 20
     # Return code for test failure
-    test_fail_return_code = 0xF
+    _TEST_FAIL_RETURN_CODE = 0xF
     # Test class to use for single test collection
     single_test_class = EditorSingleTest
     # Test class to use for shared test collection
@@ -383,7 +383,7 @@ class EditorTestSuite(AbstractTestSuite):
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
             "--runpythontest", test_filename,
-            "-logfile", f"@log@/{LOG_NAME}",
+            "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -392,16 +392,16 @@ class EditorTestSuite(AbstractTestSuite):
             editor.wait(test_spec.timeout)
             output = editor.get_output()
             return_code = editor.get_returncode()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
             # Save the editor log
             workspace.artifact_manager.save_artifact(os.path.join(
-                editor_utils.retrieve_log_path(run_id, workspace), LOG_NAME), f'({run_id}){LOG_NAME}')
+                editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
             if return_code == 0:
                 test_result = Result.Pass(test_spec, output, editor_log_content)
             else:
-                has_crashed = return_code != EditorTestSuite.test_fail_return_code
+                has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETURN_CODE
                 if has_crashed:
-                    crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self.timeout_crash_log)
+                    crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                     test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
                     # Save the .dmp file which is generated on Windows only
                     dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
@@ -421,10 +421,10 @@ class EditorTestSuite(AbstractTestSuite):
         except WaitTimeoutError:
             output = editor.get_output()
             editor.stop()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout(test_spec, output, test_spec.timeout, editor_log_content)
     
-        editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+        editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, editor_log_content)
         results[test_spec.__name__] = test_result
         return results
@@ -481,7 +481,7 @@ class EditorTestSuite(AbstractTestSuite):
 
         cmdline = [
             "--runpythontest", temp_batched_file.name,
-            "-logfile", f"@log@/{LOG_NAME}",
+            "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -492,11 +492,11 @@ class EditorTestSuite(AbstractTestSuite):
             editor.wait(self.timeout_editor_shared_test)
             output = editor.get_output()
             return_code = editor.get_returncode()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
             # Save the editor log
             try:
                 workspace.artifact_manager.save_artifact(
-                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), LOG_NAME), f'({run_id}){LOG_NAME}')
+                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test
                 pass
@@ -513,7 +513,7 @@ class EditorTestSuite(AbstractTestSuite):
                     "bug in _get_results_using_output(), the number of results don't match the tests ran")
 
                 # If the editor crashed, find out in which test it happened and update the results
-                has_crashed = return_code != EditorTestSuite.test_fail_return_code
+                has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETURN_CODE
                 if has_crashed:
                     crashed_result = None
                     for test_spec_name, result in results.items():
@@ -521,7 +521,7 @@ class EditorTestSuite(AbstractTestSuite):
                             if not crashed_result:
                                 # The first test with "Unknown" result (no data in output) is likely the one that crashed
                                 crash_error = editor_utils.retrieve_crash_output(run_id, workspace,
-                                                                                 self.timeout_crash_log)
+                                                                                 self._TIMEOUT_CRASH_LOG)
                                 # Save the .dmp file which is generated on Windows only
                                 dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
                                                              'error.dmp')
@@ -546,14 +546,14 @@ class EditorTestSuite(AbstractTestSuite):
                                                                      f"crashed before this test could be executed"
                     # if all the tests ran, the one that has caused the crash is the last test
                     if not crashed_result:
-                        crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self.timeout_crash_log)
+                        crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash(crashed_result.test_spec, output, return_code,
                                                                crash_error, crashed_result.editor_log)
         except WaitTimeoutError:            
             editor.stop()
             output = editor.get_output()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
 
             # The editor timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, editor_log_content)
