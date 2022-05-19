@@ -194,11 +194,16 @@ namespace AzToolsFramework
         {
             // find the next widget in the path and delegate the operation to them
             const size_t childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : m_domOrderedChildren.size() - 1);
+            AZ_Assert(childIndex <= m_domOrderedChildren.size(), "DPE: Patch failed to apply, invalid child index specified");
+            if (childIndex > m_domOrderedChildren.size())
+            {
+                return;
+            }
             QWidget* childWidget = m_domOrderedChildren[childIndex];
             if (m_childRowLayout->indexOf(childWidget) != -1)
             {
                 // child is a DPERowWidget if it's in this layout, pass patch processing to it
-                static_cast<DPERowWidget>(childWidget).HandleOperationAtPath(domOperation, pathIndex + 1);
+                static_cast<DPERowWidget*>(childWidget)->HandleOperationAtPath(domOperation, pathIndex + 1);
             }
             else // child must be a label or a PropertyEditor
             {
