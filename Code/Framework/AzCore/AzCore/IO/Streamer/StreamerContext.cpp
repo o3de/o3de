@@ -162,6 +162,11 @@ namespace AZ
             m_externalRecycleBin.push_back(request);
         }
 
+        size_t StreamerContext::GetOutstandingTaskCount() const
+        {
+            return m_outstandingTaskCount.load();
+        }
+
         bool StreamerContext::FinalizeCompletedRequests()
         {
             AZ_PROFILE_FUNCTION(AzCore);
@@ -259,7 +264,8 @@ namespace AZ
                     {
                         if (top->m_onCompletion)
                         {
-                            task.AddTask(
+                            m_outstandingTaskCount++;
+                            TaskToken completionTask = task.AddTask(
                                 m_taskDescriptor,
                                 [this, top]()
                                 {
@@ -279,7 +285,19 @@ namespace AZ
                                         if (parent->m_dependencies-- == 1)
                                         {
                                             MarkRequestAsCompleted(parent);
+                                            if (m_outstandingTaskCount-- == 1)
+                                            {
+                                                WakeUpSchedulingThread();
+                                            }
                                         }
+                                        else
+                                        {
+                                            m_outstandingTaskCount--;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        m_outstandingTaskCount--;
                                     }
                                 });
                         }
@@ -305,8 +323,11 @@ namespace AZ
                 }
             }
 
-            task.Detach();
-            task.SubmitOnExecutor(m_taskExecutor);
+            if (!task.IsEmpty())
+            {
+                task.Detach();
+                task.SubmitOnExecutor(m_taskExecutor);
+            }
             return hasCompletedRequests;
         }
 
@@ -356,6 +377,9 @@ namespace AZ
             statistics.push_back(Statistic::CreateInteger(
                 ContextName, "Total requests", aznumeric_caster(m_pendingIdCounter), "The total number of requests Streamer has processed.",
                 Statistic::GraphType::None));
+            statistics.push_back(Statistic::CreateInteger(
+                ContextName, "Outstanding tasks", aznumeric_caster(m_outstandingTaskCount.load()),
+                "The number of tasks, such as completion tasks, the context is still waiting to be completed by the Task Graph."));
             statistics.push_back(Statistic::CreateInteger(
                 ContextName, "Internal bucket size", aznumeric_caster(m_internalRecycleBin.size()),
                 "The total number of requests available in the internal recycle bin. Having at least a few available helps avoids memory "

@@ -10,11 +10,13 @@
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/Scheduler.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <Tests/FileIOBaseTestTypes.h>
 #include <Tests/Streamer/IStreamerTypesMock.h>
 #include <Tests/Streamer/StreamStackEntryMock.h>
 
@@ -22,17 +24,23 @@ namespace AZ::IO
 {
     class Streamer_SchedulerTest
         : public UnitTest::LeakDetectionFixture
+        , public UnitTest::SetRestoreFileIOBaseRAII
     {
     protected:
         StreamerContext* m_streamerContext{ nullptr };
 
     public:
+        Streamer_SchedulerTest()
+            : UnitTest::SetRestoreFileIOBaseRAII(m_fileIoBase)
+        {
+        }
         void SetUp() override
         {
             using ::testing::_;
             using ::testing::AnyNumber;
 
             UnitTest::LeakDetectionFixture::SetUp();
+            TaskExecutor::SetInstance(&m_taskExecutor);
             // a regular mock warns every time functions are called without being expected
             // a NiceMock only pays attention to calls you tell it to pay attention to.
             m_mock = AZStd::make_shared<testing::NiceMock<StreamStackEntryMock>>();
@@ -73,7 +81,8 @@ namespace AZ::IO
             }
             m_mock.reset();
 
-            UnitTest::LeakDetectionFixture::TearDown();
+            TaskExecutor::SetInstance(nullptr);
+            UnitTest::AllocatorsFixture::TearDown();
         }
 
         void MockForRead()
@@ -158,9 +167,11 @@ namespace AZ::IO
         // Using Streamer to interact with the Scheduler as not all functionality
         // is publicly exposed. Since Streamer is mostly the threaded front end for
         // the Scheduler, this is fine.
+        UnitTest::TestFileIOBase m_fileIoBase;
         Streamer* m_streamer{ nullptr };
         AZStd::shared_ptr<testing::NiceMock<StreamStackEntryMock>> m_mock;
         AZStd::atomic_bool m_isStackIdle = false;
+        TaskExecutor m_taskExecutor;
     };
 
     TEST_F(Streamer_SchedulerTest, QueueNextRequest_QueueUnclaimedFireAndForgetReadWithAllocator_AllocatorCalledAndMemoryFreedAgain)

@@ -9,6 +9,7 @@
 #include <AzCore/IO/IStreamerTypes.h>
 #include <AzCore/IO/Streamer/ReadSplitter.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <Tests/FileIOBaseTestTypes.h>
 #include <Tests/Streamer/StreamStackEntryConformityTests.h>
@@ -64,18 +65,21 @@ namespace AZ::IO
 
         void SetUp() override
         {
+            TaskExecutor::SetInstance(&m_taskExecutor);
+            m_context = AZStd::make_unique<StreamerContext>();
+
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
         }
 
         void TearDown() override
         {
-            if (m_readSplitter)
-            {
-                delete m_readSplitter;
-                m_readSplitter = nullptr;
-            }
+            m_readSplitter.reset();
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
+
+            m_mock.reset();
+            m_context.reset();
+            TaskExecutor::SetInstance(nullptr);
         }
 
         void CreateReadSplitter(u64 maxReadSize, u32 memoryAlignment, u32 sizeAlignment, size_t bufferSize,
@@ -83,12 +87,12 @@ namespace AZ::IO
         {
             using ::testing::_;
 
-            m_readSplitter = new ReadSplitter(maxReadSize, memoryAlignment, sizeAlignment, bufferSize,
+            m_readSplitter = AZStd::make_unique<ReadSplitter>(maxReadSize, memoryAlignment, sizeAlignment, bufferSize,
                 adjustOffset, splitAlignedRequests);
 
             m_readSplitter->SetNext(m_mock);
             EXPECT_CALL(*m_mock, SetContext(_));
-            m_readSplitter->SetContext(m_context);
+            m_readSplitter->SetContext(*m_context);
         }
 
         void CreateStandardReadSplitter()
@@ -112,16 +116,17 @@ namespace AZ::IO
     protected:
         UnitTest::TestFileIOBase m_fileIO;
         FileIOBase* m_prevFileIO{};
-        StreamerContext m_context;
-        ReadSplitter* m_readSplitter{ nullptr };
+        AZStd::unique_ptr<StreamerContext> m_context;
+        AZStd::unique_ptr<ReadSplitter> m_readSplitter;
         AZStd::shared_ptr<StreamStackEntryMock> m_mock;
+        TaskExecutor m_taskExecutor;
     };
 
     TEST_F(Streamer_ReadSplitterTest, QueueRequest_LessThanSplitSize_RequestIsForwarded)
     {
         CreateStandardReadSplitter();
 
-        FileRequest* readRequest = m_context.GetNewInternalRequest();
+        FileRequest* readRequest = m_context->GetNewInternalRequest();
         RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, nullptr, SplitSize / 2, path, 0, SplitSize / 2);
 
@@ -129,7 +134,7 @@ namespace AZ::IO
 
         m_readSplitter->QueueRequest(readRequest);
 
-        m_context.RecycleRequest(readRequest);
+        m_context->RecycleRequest(readRequest);
     }
 
     TEST_F(Streamer_ReadSplitterTest, QueueRequest_TwiceTheSplitSize_TwoSubRequestsCreated)
@@ -139,7 +144,7 @@ namespace AZ::IO
         CreateStandardReadSplitter();
 
         char buffer[SplitSize * 2];
-        FileRequest* readRequest = m_context.GetNewInternalRequest();
+        FileRequest* readRequest = m_context->GetNewInternalRequest();
         RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer, SplitSize * 2, path, 0, SplitSize * 2);
 
@@ -160,16 +165,16 @@ namespace AZ::IO
             EXPECT_EQ(buffer + (SplitSize * i), data->m_output);
             EXPECT_EQ(path, data->m_path);
 
-            m_context.MarkRequestAsCompleted(subRequests[i]);
+            m_context->MarkRequestAsCompleted(subRequests[i]);
         }
-        m_context.FinalizeCompletedRequests();
+        m_context->FinalizeCompletedRequests();
     }
 
     TEST_F(Streamer_ReadSplitterTest, QueueRequest_NoSplitOnAlignedEnabled_RequestIsForwardedWithoutChange)
     {
         CreatePassThroughReadSplitter();
 
-        FileRequest* readRequest = m_context.GetNewInternalRequest();
+        FileRequest* readRequest = m_context->GetNewInternalRequest();
         RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, nullptr, SplitSize * 2, path, 0, SplitSize * 2);
 
@@ -177,7 +182,7 @@ namespace AZ::IO
 
         m_readSplitter->QueueRequest(readRequest);
 
-        m_context.RecycleRequest(readRequest);
+        m_context->RecycleRequest(readRequest);
     }
 
     TEST_F(Streamer_ReadSplitterTest, QueueRequest_MoreSubRequestsThanDepenencies_AdditionalDependenciesAreDelayed)
@@ -187,21 +192,22 @@ namespace AZ::IO
         CreateStandardReadSplitter();
 
         constexpr size_t batchSize = FileRequest::GetMaxNumDependencies();
+        constexpr size_t maxNumSubRequests = batchSize - 1; // - 1 because the splitter will reserve one spot to add a wait to, if necessary.
         constexpr size_t numSubReads = batchSize + 2;
         constexpr size_t size = numSubReads * SplitSize;
         auto buffer = AZStd::unique_ptr<u8[]>(new u8[size]);
-        FileRequest* readRequest = m_context.GetNewInternalRequest();
+        FileRequest* readRequest = m_context->GetNewInternalRequest();
         RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer.get(), size, path, 0, size);
 
         AZStd::vector<FileRequest*> subRequests;
         subRequests.reserve(numSubReads);
         EXPECT_CALL(*m_mock, QueueRequest(_))
-            .Times(batchSize)
+            .Times(maxNumSubRequests)
             .WillRepeatedly([&subRequests](FileRequest* request) { subRequests.push_back(request); });
 
         m_readSplitter->QueueRequest(readRequest);
-        ASSERT_EQ(subRequests.size(), batchSize);
+        ASSERT_EQ(subRequests.size(), maxNumSubRequests);
         for (size_t i = 0; i < subRequests.size(); ++i)
         {
             EXPECT_EQ(subRequests[i]->GetParent(), readRequest);
@@ -213,14 +219,14 @@ namespace AZ::IO
             EXPECT_EQ(buffer.get() + (SplitSize * i), data->m_output);
             EXPECT_EQ(path, data->m_path);
 
-            m_context.MarkRequestAsCompleted(subRequests[i]);
+            m_context->MarkRequestAsCompleted(subRequests[i]);
         }
 
         subRequests.clear();
         EXPECT_CALL(*m_mock, QueueRequest(_))
-            .Times(numSubReads - batchSize)
+            .Times(numSubReads - maxNumSubRequests)
             .WillRepeatedly([&subRequests](FileRequest* request) { subRequests.push_back(request); });
-        m_context.FinalizeCompletedRequests();
+        m_context->FinalizeCompletedRequests();
 
         for (size_t i = 0; i < subRequests.size(); ++i)
         {
@@ -229,13 +235,13 @@ namespace AZ::IO
             Requests::ReadData* data = AZStd::get_if<Requests::ReadData>(&subRequests[i]->GetCommand());
             ASSERT_NE(nullptr, data);
             EXPECT_EQ(SplitSize, data->m_size);
-            EXPECT_EQ(SplitSize * (batchSize + i), data->m_offset);
-            EXPECT_EQ(buffer.get() + (SplitSize * (batchSize + i)), data->m_output);
+            EXPECT_EQ(SplitSize * (maxNumSubRequests + i), data->m_offset);
+            EXPECT_EQ(buffer.get() + (SplitSize * (maxNumSubRequests + i)), data->m_output);
             EXPECT_EQ(path, data->m_path);
 
-            m_context.MarkRequestAsCompleted(subRequests[i]);
+            m_context->MarkRequestAsCompleted(subRequests[i]);
         }
-        m_context.FinalizeCompletedRequests();
+        m_context->FinalizeCompletedRequests();
     }
 
     TEST_F(Streamer_ReadSplitterTest, QueueRequest_UnalignedMemoryAdjusted_BuffersAreUsedToReadTo)
@@ -248,7 +254,7 @@ namespace AZ::IO
 
         u8* memory = reinterpret_cast<u8*>(azmalloc(readSize + 3, MemoryAlignment));
         u8* buffer = memory + 3; // Adjust the starting address so it doesn't align
-        FileRequest* readRequest = m_context.GetNewInternalRequest();
+        FileRequest* readRequest = m_context->GetNewInternalRequest();
         RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer, readSize, path, 0, readSize);
 
@@ -271,8 +277,8 @@ namespace AZ::IO
             subRequestBuffer[i] = aznumeric_caster(i);
         }
 
-        m_context.MarkRequestAsCompleted(subRequest);
-        m_context.FinalizeCompletedRequests();
+        m_context->MarkRequestAsCompleted(subRequest);
+        m_context->FinalizeCompletedRequests();
 
         u32* readBuffer = reinterpret_cast<u32*>(buffer);
         for (u64 i = 0; i < readSize / sizeof(u32); ++i)
@@ -293,7 +299,7 @@ namespace AZ::IO
         constexpr u64 readSize = SplitSize / 2;
         ASSERT_GT(MemoryAlignment, offsetAdjustment);
         u8* buffer = reinterpret_cast<u8*>(azmalloc(readSize, MemoryAlignment));
-        FileRequest* readRequest = m_context.GetNewInternalRequest();
+        FileRequest* readRequest = m_context->GetNewInternalRequest();
         RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer, readSize, path, offsetAdjustment, readSize);
 
@@ -316,8 +322,8 @@ namespace AZ::IO
             subRequestBuffer[i] = aznumeric_caster(i);
         }
 
-        m_context.MarkRequestAsCompleted(subRequest);
-        m_context.FinalizeCompletedRequests();
+        m_context->MarkRequestAsCompleted(subRequest);
+        m_context->FinalizeCompletedRequests();
 
         u32* readBuffer = reinterpret_cast<u32*>(buffer);
         for (u64 i = 0; i < readSize / sizeof(u32); ++i)
@@ -338,20 +344,20 @@ namespace AZ::IO
 
         u8* memory = reinterpret_cast<u8*>(azmalloc(readSize + 3, MemoryAlignment));
         u8* buffer = memory + 3; // Adjust the starting address so it doesn't align
-        FileRequest* readRequest = m_context.GetNewInternalRequest();
+        FileRequest* readRequest = m_context->GetNewInternalRequest();
         RequestPath path("TestPath");
         readRequest->CreateRead(nullptr, buffer, readSize, path, 0, readSize);
 
         EXPECT_CALL(*m_mock, QueueRequest(_))
             .Times(4)
-            .WillRepeatedly([this](FileRequest* request) { m_context.MarkRequestAsCompleted(request); });
+            .WillRepeatedly([this](FileRequest* request) { m_context->MarkRequestAsCompleted(request); });
 
         m_readSplitter->QueueRequest(readRequest);
 
         EXPECT_CALL(*m_mock, QueueRequest(_))
             .Times(2)
-            .WillRepeatedly([this](FileRequest* request) { m_context.MarkRequestAsCompleted(request); });
-        m_context.FinalizeCompletedRequests();
+            .WillRepeatedly([this](FileRequest* request) { m_context->MarkRequestAsCompleted(request); });
+        m_context->FinalizeCompletedRequests();
 
         azfree(memory);
     }
@@ -368,13 +374,13 @@ namespace AZ::IO
 
         u8* memory0 = reinterpret_cast<u8*>(azmalloc(readSize + 3, MemoryAlignment));
         u8* buffer = memory0 + 3; // Adjust the starting address so it doesn't align
-        FileRequest* readRequestDelayed = m_context.GetNewInternalRequest();
+        FileRequest* readRequestDelayed = m_context->GetNewInternalRequest();
         RequestPath path("TestPath");
         readRequestDelayed->CreateRead(nullptr, buffer, readSize, path, 0, readSize);
         readRequestDelayed->SetCompletionCallback([&completedRequests](FileRequestHandle) { ++completedRequests; });
 
         u8* memory1 = reinterpret_cast<u8*>(azmalloc(readSize, MemoryAlignment));
-        FileRequest* readRequestAligned = m_context.GetNewInternalRequest();
+        FileRequest* readRequestAligned = m_context->GetNewInternalRequest();
         readRequestAligned->CreateRead(nullptr, memory1, readSize, path, 0, readSize);
         readRequestAligned->SetCompletionCallback([&completedRequests](FileRequestHandle) { ++completedRequests; });
 
@@ -383,7 +389,7 @@ namespace AZ::IO
             .WillRepeatedly([this, parent = readRequestDelayed](FileRequest* request)
                 {
                     EXPECT_EQ(request->GetParent(), parent);
-                    m_context.MarkRequestAsCompleted(request);
+                    m_context->MarkRequestAsCompleted(request);
                 });
 
         m_readSplitter->QueueRequest(readRequestDelayed);
@@ -392,19 +398,19 @@ namespace AZ::IO
         auto delayedCallback = [this, parent = readRequestDelayed](FileRequest* request)
         {
             EXPECT_EQ(request->GetParent(), parent);
-            m_context.MarkRequestAsCompleted(request);
+            m_context->MarkRequestAsCompleted(request);
         };
         auto alignedCallback = [this, parent = readRequestAligned](FileRequest* request)
         {
             EXPECT_EQ(request->GetParent(), parent);
-            m_context.MarkRequestAsCompleted(request);
+            m_context->MarkRequestAsCompleted(request);
         };
         EXPECT_CALL(*m_mock, QueueRequest(_))
             .Times(2 + 6)
             .WillOnce(delayedCallback)
             .WillOnce(delayedCallback)
             .WillRepeatedly(alignedCallback);
-        m_context.FinalizeCompletedRequests();
+        m_context->FinalizeCompletedRequests();
 
         EXPECT_EQ(2, completedRequests);
 
@@ -424,14 +430,14 @@ namespace AZ::IO
 
         u8* memory0 = reinterpret_cast<u8*>(azmalloc(readSize + 3, MemoryAlignment));
         u8* buffer0 = memory0 + 3; // Adjust the starting address so it doesn't align
-        FileRequest* readRequestDelayed = m_context.GetNewInternalRequest();
+        FileRequest* readRequestDelayed = m_context->GetNewInternalRequest();
         RequestPath path("TestPath");
         readRequestDelayed->CreateRead(nullptr, buffer0, readSize, path, 0, readSize);
         readRequestDelayed->SetCompletionCallback([&completedRequests](FileRequestHandle) { ++completedRequests; });
 
         u8* memory1 = reinterpret_cast<u8*>(azmalloc(readSize + 3, MemoryAlignment));
         u8* buffer1 = memory1 + 3;
-        FileRequest* readRequestBuffered = m_context.GetNewInternalRequest();
+        FileRequest* readRequestBuffered = m_context->GetNewInternalRequest();
         readRequestBuffered->CreateRead(nullptr, buffer1, readSize, path, 0, readSize);
         readRequestBuffered->SetCompletionCallback([&completedRequests](FileRequestHandle) { ++completedRequests; });
 
@@ -440,7 +446,7 @@ namespace AZ::IO
             .WillRepeatedly([this, parent = readRequestDelayed](FileRequest* request)
                 {
                     EXPECT_EQ(request->GetParent(), parent);
-                    m_context.MarkRequestAsCompleted(request);
+                    m_context->MarkRequestAsCompleted(request);
                 });
 
         m_readSplitter->QueueRequest(readRequestDelayed);
@@ -449,19 +455,19 @@ namespace AZ::IO
         auto delayedCallback = [this, parent = readRequestDelayed](FileRequest* request)
         {
             EXPECT_EQ(request->GetParent(), parent);
-            m_context.MarkRequestAsCompleted(request);
+            m_context->MarkRequestAsCompleted(request);
         };
         auto alignedCallback = [this, parent = readRequestBuffered](FileRequest* request)
         {
             EXPECT_EQ(request->GetParent(), parent);
-            m_context.MarkRequestAsCompleted(request);
+            m_context->MarkRequestAsCompleted(request);
         };
         EXPECT_CALL(*m_mock, QueueRequest(_))
             .Times(2 + 6)
             .WillOnce(delayedCallback)
             .WillOnce(delayedCallback)
             .WillRepeatedly(alignedCallback);
-        m_context.FinalizeCompletedRequests();
+        m_context->FinalizeCompletedRequests();
 
         EXPECT_EQ(2, completedRequests);
 
