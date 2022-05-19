@@ -50,12 +50,14 @@ namespace AzToolsFramework::Prefab
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
+        PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityIdWithoutClosingCurrent(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
         PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) override;
+        PrefabFocusOperationResult FocusOnParentOfFocusedPrefabWithoutClosingCurrent(AzFramework::EntityContextId entityContextId) override;
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
@@ -74,8 +76,17 @@ namespace AzToolsFramework::Prefab
         void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
         
     private:
-        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
+        enum FocusChangeBehavior
+        {
+            CloseCurrentlyFocusedItems,
+            IgnoreCurrentlyFocusedItems
+        };
+
+        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance, FocusChangeBehavior focusBehavior);
         void RefreshInstanceFocusPath();
+
+        PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId, FocusChangeBehavior focusBehavior);
+        bool FindFocusedInstance(AZ::EntityId entityId, InstanceOptionalReference& outFocusedInstance);
 
         void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
 

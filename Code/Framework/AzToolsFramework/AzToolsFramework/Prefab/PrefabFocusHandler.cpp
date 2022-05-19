@@ -108,7 +108,8 @@ namespace AzToolsFramework::Prefab
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnParentOfFocusedPrefab(
-        [[maybe_unused]] AzFramework::EntityContextId entityContextId)
+        [[maybe_unused]] AzFramework::EntityContextId entityContextId,
+        FocusChangeBehavior focusBehavior)
     {
         // If only one instance is in the hierarchy, this operation is invalid
         if (m_rootAliasFocusPathLength <= 1)
@@ -126,8 +127,8 @@ namespace AzToolsFramework::Prefab
         // If only one instance is in the hierarchy, this operation is invalid
         if (!parentInstance.has_value())
         {
-            return AZ::Failure(AZStd::string(
-                "Prefab Focus Handler: Could not retrieve parent of current focus in FocusOnParentOfFocusedPrefab."));
+            return AZ::Failure(
+                AZStd::string("Prefab Focus Handler: Could not retrieve parent of current focus in FocusOnParentOfFocusedPrefab."));
         }
 
         // Use container entity of parent Instance for focus operations.
@@ -149,10 +150,28 @@ namespace AzToolsFramework::Prefab
             auto editUndo = aznew PrefabFocusUndo("Focus Prefab");
             editUndo->Capture(entityId);
             editUndo->SetParent(undoBatch.GetUndoBatch());
-            FocusOnPrefabInstanceOwningEntityId(entityId);
+
+            if (focusBehavior == FocusChangeBehavior::CloseCurrentlyFocusedItems)
+            {
+                FocusOnPrefabInstanceOwningEntityId(entityId);
+            }
+            else
+            {
+                FocusOnPrefabInstanceOwningEntityIdWithoutClosingCurrent(entityId);
+            }
         }
 
         return AZ::Success();
+    }
+
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnParentOfFocusedPrefab([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    {
+        return FocusOnParentOfFocusedPrefab(entityContextId, FocusChangeBehavior::CloseCurrentlyFocusedItems);
+    }
+
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnParentOfFocusedPrefabWithoutClosingCurrent(AzFramework::EntityContextId entityContextId)
+    {
+        return FocusOnParentOfFocusedPrefab(entityContextId, FocusChangeBehavior::IgnoreCurrentlyFocusedItems);
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPathIndex([[maybe_unused]] AzFramework::EntityContextId entityContextId, int index)
@@ -186,7 +205,7 @@ namespace AzToolsFramework::Prefab
         return FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
     }
 
-    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId)
+    bool PrefabFocusHandler::FindFocusedInstance(AZ::EntityId entityId, InstanceOptionalReference& outFocusedInstance)
     {
         InstanceOptionalReference focusedInstance;
 
@@ -197,29 +216,59 @@ namespace AzToolsFramework::Prefab
 
             if (!prefabEditorEntityOwnershipInterface)
             {
-                return AZ::Failure(AZStd::string("Could not focus on root prefab instance - internal error "
-                                                 "(PrefabEditorEntityOwnershipInterface unavailable)."));
+                return false;
             }
 
-            focusedInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+            outFocusedInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
         }
         else
         {
-            focusedInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            outFocusedInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         }
 
-        return FocusOnPrefabInstance(focusedInstance);
+        return true;
     }
 
-    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstance(InstanceOptionalReference focusedInstance)
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId)
+    {
+        InstanceOptionalReference focusedInstance;
+
+        if (!FindFocusedInstance(entityId, focusedInstance))
+        {
+            return AZ::Failure(AZStd::string("Could not focus on root prefab instance - internal error "
+                                             "(PrefabEditorEntityOwnershipInterface unavailable)."));
+        }
+
+        return FocusOnPrefabInstance(focusedInstance, FocusChangeBehavior::CloseCurrentlyFocusedItems);
+    }
+
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityIdWithoutClosingCurrent(AZ::EntityId entityId)
+    {
+        InstanceOptionalReference focusedInstance;
+
+        if (!FindFocusedInstance(entityId, focusedInstance))
+        {
+            return AZ::Failure(AZStd::string("Could not focus on root prefab instance - internal error "
+                                             "(PrefabEditorEntityOwnershipInterface unavailable)."));
+        }
+
+        return FocusOnPrefabInstance(focusedInstance, FocusChangeBehavior::IgnoreCurrentlyFocusedItems);
+    }
+
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstance(
+        InstanceOptionalReference focusedInstance,
+        FocusChangeBehavior focusBehavior)
     {
         if (!focusedInstance.has_value())
         {
             return AZ::Failure(AZStd::string("Prefab Focus Handler: invalid instance to focus on."));
         }
 
-        // Close all container entities in the old path.
-        SetInstanceContainersOpenState(m_rootAliasFocusPath, false);
+        // Close all container entities in the old path if required.
+        if (focusBehavior == FocusChangeBehavior::CloseCurrentlyFocusedItems)
+        {
+            SetInstanceContainersOpenState(m_rootAliasFocusPath, false);
+        }
 
         const RootAliasPath previousContainerRootAliasPath = m_rootAliasFocusPath;
         const InstanceOptionalReference previousFocusedInstance = GetInstanceReference(previousContainerRootAliasPath);
