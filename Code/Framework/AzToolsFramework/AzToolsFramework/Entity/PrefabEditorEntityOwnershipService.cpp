@@ -235,7 +235,14 @@ namespace AzToolsFramework
         m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filename));
         m_rootInstance->SetContainerEntityName("Level");
 
-        AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get()->QueueRootPrefabLoadedNotificationForNextPropagation();
+        auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get();
+        if (!instanceUpdateExecutorInterface)
+        {
+            AZ_Assert(false, "InstanceUpdateExecutorInterface is unavailable for LoadFromStream.");
+            return false;
+        }
+        instanceUpdateExecutorInterface->QueueRootPrefabLoadedNotificationForNextPropagation();
+
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
         m_isRootPrefabAssigned = true;
 
@@ -336,7 +343,14 @@ namespace AzToolsFramework
             m_prefabSystemComponent->RemoveTemplate(prevTemplateId);
         }
 
-        AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get()->QueueRootPrefabLoadedNotificationForNextPropagation();
+        auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get();
+        if (!instanceUpdateExecutorInterface)
+        {
+            AZ_Assert(false, "InstanceUpdateExecutorInterface is unavailable for CreateNewLevelPrefab.");
+            return;
+        }
+        instanceUpdateExecutorInterface->QueueRootPrefabLoadedNotificationForNextPropagation();
+
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
         m_isRootPrefabAssigned = true;
     }
