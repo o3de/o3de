@@ -105,3 +105,8 @@ namespace AZ::DocumentPropertyEditor
         mutable Dom::Value m_cachedContents;
     };
 } // namespace AZ::DocumentPropertyEditor
+
+namespace AZ
+{
+    namespace Dpe = AZ::DocumentPropertyEditor;
+} // namespace AZ

@@ -3778,7 +3778,7 @@ namespace ScriptCanvasEditor
         m_upgradeSM.SetAsset(source);
         m_upgradeSM.SetConfig(upgradeConfig);
 
-        if (upgradeRequest == UpgradeRequest::Forced || !GetVersion().IsLatest())
+        if (upgradeRequest == UpgradeRequest::Forced || !GetVersion().IsLatest() || HasDeprecatedNode())
         {
             m_upgradeSM.Run(Start::StateID());
             return true;
