@@ -80,6 +80,9 @@ namespace UnitTest
         m_jobContext = aznew AZ::JobContext(*m_jobManager);
         AZ::JobContext::SetGlobalContext(m_jobContext);
 
+        m_taskExecutor = aznew TaskExecutor();
+        TaskExecutor::SetInstance(m_taskExecutor);
+
         m_prevFileIO = IO::FileIOBase::GetInstance();
         IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -109,6 +112,9 @@ namespace UnitTest
         m_assetsWritten.shrink_to_fit();
 
         IO::FileIOBase::SetInstance(m_prevFileIO);
+
+        TaskExecutor::SetInstance(nullptr);
+        delete m_taskExecutor;
 
         AZ::JobContext::SetGlobalContext(nullptr);
         delete m_jobContext;

@@ -10,29 +10,36 @@
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/Scheduler.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <Tests/FileIOBaseTestTypes.h>
 #include <Tests/Streamer/IStreamerTypesMock.h>
 #include <Tests/Streamer/StreamStackEntryMock.h>
 
 namespace AZ::IO
 {
     class Streamer_SchedulerTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::ScopedAllocatorSetupFixture
+        , public UnitTest::SetRestoreFileIOBaseRAII
     {
     protected:
         StreamerContext* m_streamerContext{ nullptr };
 
     public:
+        Streamer_SchedulerTest()
+            : UnitTest::SetRestoreFileIOBaseRAII(m_fileIoBase)
+        {
+        }
         void SetUp() override
         {
             using ::testing::_;
             using ::testing::AnyNumber;
 
-            UnitTest::AllocatorsFixture::SetUp();
+            TaskExecutor::SetInstance(&m_taskExecutor);
 
             m_mock = AZStd::make_shared<StreamStackEntryMock>();
             ON_CALL(*m_mock, PrepareRequest(_)).WillByDefault([this](FileRequest* request) { m_mock->ForwardPrepareRequest(request); });
@@ -72,7 +79,7 @@ namespace AZ::IO
             }
             m_mock.reset();
 
-            UnitTest::AllocatorsFixture::TearDown();
+            TaskExecutor::SetInstance(nullptr);
         }
 
         void MockForRead()
@@ -157,9 +164,11 @@ namespace AZ::IO
         // Using Streamer to interact with the Scheduler as not all functionality
         // is publicly exposed. Since Streamer is mostly the threaded front end for
         // the Scheduler, this is fine.
+        UnitTest::TestFileIOBase m_fileIoBase;
         Streamer* m_streamer{ nullptr };
         AZStd::shared_ptr<StreamStackEntryMock> m_mock;
         AZStd::atomic_bool m_isStackIdle = false;
+        TaskExecutor m_taskExecutor;
     };
 
     TEST_F(Streamer_SchedulerTest, QueueNextRequest_QueueUnclaimedFireAndForgetReadWithAllocator_AllocatorCalledAndMemoryFreedAgain)
