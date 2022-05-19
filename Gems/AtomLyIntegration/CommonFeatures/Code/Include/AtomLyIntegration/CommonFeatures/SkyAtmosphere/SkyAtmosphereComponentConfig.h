@@ -11,7 +11,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Vector2.h>
 
 namespace AZ::Render
 {
@@ -57,13 +56,14 @@ namespace AZ::Render
         bool m_drawSun = true;
         AZ::EntityId m_sun; // optional sun entity to use for orientation
         AZ::Color m_sunColor = AZ::Color(1.f, 1.f, 1.f, 1.f);
+        AZ::Color m_sunLimbColor = AZ::Color(1.f, 1.f, 1.f, 1.f);
+        float m_sunLuminanceFactor = 0.05f;
         float m_sunRadiusFactor = 1.0f;
         float m_sunFalloffFactor = 1.0f;
 
         // advanced
         bool m_fastSkyEnabled = true;
         bool m_shadowsEnabled = false;
-        AZ::Vector2 m_fastSkyLUTSize = AZ::Vector2(192.0f, 108.0f);
         uint32_t m_minSamples = 4;
         uint32_t m_maxSamples = 14;
 

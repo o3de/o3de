@@ -164,7 +164,7 @@ namespace AZ::Render
     void SkyAtmosphereFeatureProcessor::SetAbsorption(AtmosphereId id, const AZ::Vector3& absorption)
     {
         auto& params = m_params.GetElement(id.GetIndex());
-        params.m_mieAbsorption = absorption;
+        params.m_absorption = absorption;
         params.m_lutUpdateRequired = true;
         m_passNeedsUpdate = true;
     }
@@ -218,6 +218,13 @@ namespace AZ::Render
     {
         auto& params = m_params.GetElement(id.GetIndex());
         params.m_sunColor = color;
+        m_passNeedsUpdate = true;
+    }
+
+    void SkyAtmosphereFeatureProcessor::SetSunLimbColor(AtmosphereId id, const Color& color)
+    {
+        auto& params = m_params.GetElement(id.GetIndex());
+        params.m_sunLimbColor = color;
         m_passNeedsUpdate = true;
     }
 

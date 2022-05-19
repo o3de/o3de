@@ -25,8 +25,6 @@ namespace AZ::Render
         o_enableShadows = AZ::Name("o_enableShadows");
         o_enableFastSky = AZ::Name("o_enableFastSky");
         o_enableSun = AZ::Name("o_enableSun");
-
-        InitializeConstants(m_constants);
     }
 
     RPI::Ptr<SkyAtmospherePass> SkyAtmospherePass::CreateWithPassRequest(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id)
@@ -80,6 +78,18 @@ namespace AZ::Render
         image = AZ::RPI::AttachmentImage::Create(*pool.get(), desc, Name(imageName), &clearValue, nullptr);
     }
 
+    void SkyAtmospherePass::OnShaderVariantReinitialized([[maybe_unused]] const RPI::ShaderVariant& shaderVariant)
+    {
+        BuildShaderData(); 
+
+        for (auto passData : m_passData)
+        {
+            passData.m_srg->SetConstant(passData.m_index, m_constants);
+            auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
+            passData.m_srg->SetShaderVariantKeyFallbackValue(key);
+        }
+    }
+
     void SkyAtmospherePass::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
     {
         BuildShaderData(); 
@@ -90,27 +100,6 @@ namespace AZ::Render
             auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
             passData.m_srg->SetShaderVariantKeyFallbackValue(key);
         }
-
-        //if (!m_children.empty())
-        //{
-        //    //BindLUTs();
-
-        //    // just locate the srg and constant every time for now to support shader reloading
-        //    for (auto child : m_children)
-        //    {
-        //        if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
-        //        {
-        //            if (auto srg = renderPass->GetShaderResourceGroup())
-        //            {
-        //                if (auto index = srg->FindShaderInputConstantIndex(Name("m_constants")); index.IsValid())
-        //                {
-        //                    srg->SetConstant(index, m_constants);
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //}
 
         if (m_skyTransmittanceLUTPass)
         {
@@ -127,56 +116,6 @@ namespace AZ::Render
         {
             RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(passData.m_shader->GetAssetId());
         }
-        //for (auto child : m_children)
-        //{
-        //    if (auto fullscreenTrianglePass = azdynamic_cast<RPI::FullscreenTrianglePass>(child); fullscreenTrianglePass != nullptr)
-        //    {
-        //        RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(fullscreenTrianglePass->GetShader()->GetAssetId());
-        //    }
-        //    else if (auto computePass = azdynamic_cast<RPI::ComputePass>(child); computePass != nullptr)
-        //    {
-        //        RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(computePass->GetShader()->GetAssetId());
-        //    }
-        //}
-
-        /*
-        if (m_shaders.empty())
-        {
-            const AZStd::vector<AZStd::string> shaderPaths = {
-                "Shaders/skyatmosphere/skytransmittancelut.azshader",
-                "Shaders/skyatmosphere/skyviewlut.azshader",
-                "Shaders/skyatmosphere/skyraymarching.azshader"
-            };
-            m_shaders.reserve(shaderPaths.size());
-
-            for (const auto shaderPath : shaderPaths)
-            {
-                auto asset = RPI::FindShaderAsset(shaderPath.c_str());
-                if (!asset.GetId().IsValid())
-                {
-                    AZ_Error("SkyAtmospherePass", false, "Failed to find shader asset %s", shaderPath.c_str());
-                    continue;
-                }
-                auto shader = RPI::Shader::FindOrCreate(asset);
-                if (!shader)
-                {
-                    AZ_Error("SkyAtmospherePass", false, "Failed to find or create %s", shaderPath.c_str());
-                    continue;
-                }
-                m_shaders.emplace_back(AZStd::move(shader));
-            }
-
-            if (m_shaders.size() != shaderPaths.size())
-            {
-                m_shaders.clear();
-            }
-        }
-
-        for (const auto shader : m_shaders)
-        {
-            RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(shader->GetAssetId());
-        }
-        */
     }
 
     void SkyAtmospherePass::BindLUTs()
@@ -283,7 +222,7 @@ namespace AZ::Render
         }
     }
 
-	void SkyAtmospherePass::BuildInternal()
+    void SkyAtmospherePass::BuildInternal()
     {
         Base::BuildInternal();
 
@@ -313,13 +252,12 @@ namespace AZ::Render
 
     void SkyAtmospherePass::UpdateRenderPassSRG(const AtmosphereParams& params)
     {
-        m_constants.m_fastSkyEnabled = params.m_fastSkyEnabled ? 1.f : 0.f;
         m_constants.m_bottomRadius = params.m_planetRadius;
         m_constants.m_topRadius = params.m_atmosphereRadius;
-        m_constants.m_sunEnabled = params.m_sunEnabled ? 1.f : 0.f;
         m_constants.m_sunRadiusFactor = params.m_sunRadiusFactor;
         m_constants.m_sunFalloffFactor = params.m_sunFalloffFactor;
         params.m_sunColor.GetAsVector3().StoreToFloat3(m_constants.m_sunColor);
+        params.m_sunLimbColor.GetAsVector3().StoreToFloat3(m_constants.m_sunLimbColor);
         params.m_sunDirection.GetNormalized().StoreToFloat3(m_constants.m_sunDirection);
         params.m_planetOrigin.StoreToFloat3(m_constants.m_planetOrigin);
 
@@ -370,6 +308,11 @@ namespace AZ::Render
             m_constants.m_absorptionDensity0ConstantTerm = -2.f / 3.f;
             m_constants.m_absorptionDensity1LinearTerm = -1.f / 15.f;
             m_constants.m_absorptionDensity1ConstantTerm = 8.f / 3.f;
+
+            if (m_skyTransmittanceLUTPass)
+            {
+                m_skyTransmittanceLUTPass->SetEnabled(true);
+            }
         }
 
         for (auto passData : m_passData)
@@ -384,114 +327,10 @@ namespace AZ::Render
 
             passData.m_srg->SetShaderVariantKeyFallbackValue(key);
         }
-
-        //if (!m_children.empty())
-        //{
-        //    for (auto shader : m_shaders)
-        //    {
-        //        RPI::ShaderOptionGroup shaderOption = shader->CreateShaderOptionGroup();
-
-        //        shaderOption.SetValue(o_enableShadows, AZ::RPI::ShaderOptionValue{ params.m_shadowsEnabled });
-        //        shaderOption.SetValue(o_enableFastSky, AZ::RPI::ShaderOptionValue{ params.m_fastSkyEnabled });
-        //        shaderOption.SetValue(o_enableSun, AZ::RPI::ShaderOptionValue{ params.m_sunEnabled });
-
-        //        auto key = shaderOption.GetShaderVariantKeyFallbackValue();
-        //    }
-
-        //    // just locate the srg and constant every time for now to support shader reloading
-        //    for (auto child : m_children)
-        //    {
-
-        //        RPI::ShaderOptionGroup shaderOption;
-        //        if (auto fullscreenTrianglePass = azdynamic_cast<RPI::FullscreenTrianglePass>(child); fullscreenTrianglePass != nullptr)
-        //        {
-        //            shaderOption = fullscreenTrianglePass->GetShader()->CreateShaderOptionGroup();
-        //        }
-        //        else if (auto computePass = azdynamic_cast<RPI::ComputePass>(child); computePass != nullptr)
-        //        {
-        //            shaderOption = computePass->GetShader()->CreateShaderOptionGroup();
-        //        }
-
-        //        shaderOption.SetValue(o_enableShadows, AZ::RPI::ShaderOptionValue{ params.m_shadowsEnabled });
-        //        shaderOption.SetValue(o_enableFastSky, AZ::RPI::ShaderOptionValue{ params.m_fastSkyEnabled });
-        //        shaderOption.SetValue(o_enableSun, AZ::RPI::ShaderOptionValue{ params.m_sunEnabled });
-
-        //        auto key = shaderOption.GetShaderVariantKeyFallbackValue();
-
-        //        if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
-        //        {
-        //            if (auto srg = renderPass->GetShaderResourceGroup())
-        //            {
-        //                if (auto index = srg->FindShaderInputConstantIndex(Name("m_constants")); index.IsValid())
-        //                {
-        //                    srg->SetConstant(index, m_constants);
-        //                    srg->SetShaderVariantKeyFallbackValue(key);
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    if (params.m_lutUpdateRequired)
-        //    {
-        //        // enable the LUT child pass to update the LUT render target
-        //        auto childPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
-        //        if (childPass)
-        //        {
-        //            childPass->SetEnabled(true);
-        //        }
-        //    }
-        //}
-
-
-        if (params.m_lutUpdateRequired && m_skyTransmittanceLUTPass)
-        {
-            m_skyTransmittanceLUTPass->SetEnabled(true);
-        }
-    }
-
-    void SkyAtmospherePass::InitializeConstants(AtmosphereGPUParams& atmosphereConstants)
-    {
-        atmosphereConstants.m_fastSkyEnabled = 1.f; // enabled
-        atmosphereConstants.m_bottomRadius = 6360.f; // km
-        atmosphereConstants.m_topRadius = atmosphereConstants.m_bottomRadius + 100.f; // 100km
-
-        AZ::Vector3(0.000650f, 0.001881f, 0.000085f).StoreToFloat3(atmosphereConstants.m_absorption);
-        AZ::Vector3(0.005802f, 0.013558f, 0.033100f).StoreToFloat3(atmosphereConstants.m_rayleighScattering);
-
-        constexpr float mieScattering = 0.004440f;
-        constexpr float mieExtinction = 0.003996f;
-        constexpr float mieAbsorption = mieScattering - mieExtinction;
-        AZ::Vector3(mieScattering, mieScattering, mieScattering).StoreToFloat3(atmosphereConstants.m_mieScattering);
-        AZ::Vector3(mieExtinction, mieExtinction, mieExtinction).StoreToFloat3(atmosphereConstants.m_mieExtinction);
-        AZ::Vector3(mieAbsorption, mieAbsorption, mieAbsorption).StoreToFloat3(atmosphereConstants.m_mieAbsorption);
-
-        atmosphereConstants.m_miePhaseFunctionG = 0.8f;
-
-        AZ::Vector3(0.0, 0.0, 0.0).StoreToFloat3(atmosphereConstants.m_groundAlbedo);
-
-        constexpr float EarthRayleighScaleHeight = 8.0f;
-        constexpr float EarthMieScaleHeight = 1.2f;
-
-        atmosphereConstants.m_rayleighDensityExpScale = -1.f / EarthRayleighScaleHeight;
-        atmosphereConstants.m_mieDensityExpScale = -1.f / EarthMieScaleHeight;
-        atmosphereConstants.m_absorptionDensity0LayerWidth = 25.f;
-        atmosphereConstants.m_absorptionDensity0ConstantTerm = -2.f / 3.f; 
-        atmosphereConstants.m_absorptionDensity0LinearTerm = 1.5f / 15.f;
-        atmosphereConstants.m_absorptionDensity1ConstantTerm = 8.f / 3.f;
-        atmosphereConstants.m_absorptionDensity1LinearTerm = -1.f / 15.f;
-
-        AZ::Vector3(1.0, 1.0, 1.0).StoreToFloat3(atmosphereConstants.m_luminanceFactor);
-
-        atmosphereConstants.m_sunEnabled = 1.f;
-        atmosphereConstants.m_sunRadiusFactor = 1.f;
-        atmosphereConstants.m_sunFalloffFactor = 1.f;
-        AZ::Vector3(1.0, 1.0, 1.0).StoreToFloat3(atmosphereConstants.m_sunColor);
-        AZ::Vector3(-0.76823, 0.6316, 0.10441).GetNormalized().StoreToFloat3(atmosphereConstants.m_sunDirection);
     }
 
     void SkyAtmospherePass::ResetInternal()
     {
-        // not sure about this cleanup...
         m_transmittanceLUTImage.reset();
         m_skyViewLUTImage.reset();
         m_passData.clear();

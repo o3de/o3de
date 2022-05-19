@@ -66,6 +66,7 @@ namespace AZ::Render
         virtual void SetSunEnabled(AtmosphereId id, bool enabled) = 0;
         virtual void SetSunDirection(AtmosphereId id, const AZ::Vector3& direction) = 0;
         virtual void SetSunColor(AtmosphereId id, const AZ::Color& color) = 0;
+        virtual void SetSunLimbColor(AtmosphereId id, const AZ::Color& color) = 0;
         virtual void SetSunFalloffFactor(AtmosphereId id, float factor) = 0;
         virtual void SetSunRadiusFactor(AtmosphereId id, float factor) = 0;
     };

@@ -58,6 +58,7 @@ namespace AZ::Render
         void SetSunEnabled(AtmosphereId id, bool enabled) override;
         void SetSunDirection(AtmosphereId id, const Vector3& direction) override;
         void SetSunColor(AtmosphereId id, const Color& color) override;
+        void SetSunLimbColor(AtmosphereId id, const Color& color) override;
         void SetSunFalloffFactor(AtmosphereId id, float factor) override;
         void SetSunRadiusFactor(AtmosphereId id, float factor) override;
 

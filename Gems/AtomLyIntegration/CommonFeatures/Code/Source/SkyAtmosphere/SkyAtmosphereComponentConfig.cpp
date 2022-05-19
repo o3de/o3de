@@ -24,6 +24,8 @@ namespace AZ::Render
                 ->Field("LuminanceFactor", &SkyAtmosphereComponentConfig::m_luminanceFactor)
                 ->Field("DrawSun", &SkyAtmosphereComponentConfig::m_drawSun)
                 ->Field("SunColor", &SkyAtmosphereComponentConfig::m_sunColor)
+                ->Field("SunLuminanceFactor", &SkyAtmosphereComponentConfig::m_sunLuminanceFactor)
+                ->Field("SunLimbColor", &SkyAtmosphereComponentConfig::m_sunLimbColor)
                 ->Field("SunOrientation", &SkyAtmosphereComponentConfig::m_sun)
                 ->Field("SunRadiusFactor", &SkyAtmosphereComponentConfig::m_sunRadiusFactor)
                 ->Field("SunFalloffFactor", &SkyAtmosphereComponentConfig::m_sunFalloffFactor)
@@ -41,7 +43,6 @@ namespace AZ::Render
                 ->Field("RayleighExpDistribution", &SkyAtmosphereComponentConfig::m_rayleighExponentialDistribution)
                 ->Field("ShadowsEnabled", &SkyAtmosphereComponentConfig::m_shadowsEnabled)
                 ->Field("FastSkyEnabled", &SkyAtmosphereComponentConfig::m_fastSkyEnabled)
-                ->Field("FastSkyLUTSize", &SkyAtmosphereComponentConfig::m_fastSkyLUTSize)
                 ;
         }
     }

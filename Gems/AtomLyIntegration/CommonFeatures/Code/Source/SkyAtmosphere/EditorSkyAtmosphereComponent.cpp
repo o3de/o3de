@@ -129,11 +129,15 @@ namespace AZ::Render
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_drawSun, "Show sun", "Whether to show the sun or not")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_sun, "Sun orientation", "Optional sun entity to use for orientation")
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_sunColor, "Sun color", "Sun color")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_sunLuminanceFactor, "Sun luminance factor", "Sun luminance factor")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100000.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_sunLimbColor, "Sun limb color", "Sun limb color, for adjusting outer edge color of sun.")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunRadiusFactor, "Sun radius factor", "Sun radius factor")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_sunFalloffFactor, "Sun falloff factor", "Sun falloff factor")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 200.0f)
                         ->EndGroup()
 
@@ -159,28 +163,6 @@ namespace AZ::Render
     {
     }
 
-    AZ::u32 EditorSkyAtmosphereComponent::OnLUTConfigurationChanged()
-    {
-        if (auto featureProcessor = m_controller.m_featureProcessorInterface)
-        {
-            auto id = m_controller.m_atmosphereId;
-            auto config = m_controller.m_configuration;
-
-            featureProcessor->SetAtmosphereRadius(id, config.m_groundRadius + config.m_atmosphereHeight);
-            featureProcessor->SetAbsorption(id, config.m_absorption * config.m_absorptionScale);
-            featureProcessor->SetGroundAlbedo(id, config.m_groundAlbedo);
-            featureProcessor->SetLuminanceFactor(id, config.m_luminanceFactor);
-            featureProcessor->SetMieScattering(id, config.m_mieScattering * config.m_mieScatteringScale);
-            featureProcessor->SetMieAbsorption(id, config.m_mieAbsorption * config.m_mieAbsorptionScale);
-            featureProcessor->SetMieExpDistribution(id, config.m_mieExponentialDistribution);
-            featureProcessor->SetPlanetRadius(id, config.m_groundRadius);
-            featureProcessor->SetRayleighScattering(id, config.m_rayleighScattering * config.m_rayleighScatteringScale);
-            featureProcessor->SetRayleighExpDistribution(id, config.m_rayleighExponentialDistribution);
-        }
-
-        return Edit::PropertyRefreshLevels::AttributesAndValues;
-    }
-
     AZ::u32 EditorSkyAtmosphereComponent::OnConfigurationChanged()
     {
         if(auto featureProcessor = m_controller.m_featureProcessorInterface)
@@ -190,7 +172,16 @@ namespace AZ::Render
 
             if (config.m_lutPropertyChanged)
             {
-                OnLUTConfigurationChanged();
+                featureProcessor->SetAtmosphereRadius(id, config.m_groundRadius + config.m_atmosphereHeight);
+                featureProcessor->SetAbsorption(id, config.m_absorption * config.m_absorptionScale);
+                featureProcessor->SetGroundAlbedo(id, config.m_groundAlbedo);
+                featureProcessor->SetLuminanceFactor(id, config.m_luminanceFactor);
+                featureProcessor->SetMieScattering(id, config.m_mieScattering * config.m_mieScatteringScale);
+                featureProcessor->SetMieAbsorption(id, config.m_mieAbsorption * config.m_mieAbsorptionScale);
+                featureProcessor->SetMieExpDistribution(id, config.m_mieExponentialDistribution);
+                featureProcessor->SetPlanetRadius(id, config.m_groundRadius);
+                featureProcessor->SetRayleighScattering(id, config.m_rayleighScattering * config.m_rayleighScatteringScale);
+                featureProcessor->SetRayleighExpDistribution(id, config.m_rayleighExponentialDistribution);
 
                 config.m_lutPropertyChanged = false;
             }
@@ -198,10 +189,10 @@ namespace AZ::Render
             featureProcessor->SetFastSkyEnabled(id, config.m_fastSkyEnabled);
             featureProcessor->SetShadowsEnabled(id, config.m_shadowsEnabled);
             featureProcessor->SetSunEnabled(id, config.m_drawSun);
-            featureProcessor->SetSunColor(id, config.m_sunColor);
+            featureProcessor->SetSunColor(id, config.m_sunColor * config.m_sunLuminanceFactor);
+            featureProcessor->SetSunLimbColor(id, config.m_sunLimbColor * config.m_sunLuminanceFactor);
             featureProcessor->SetSunRadiusFactor(id, config.m_sunRadiusFactor);
             featureProcessor->SetSunFalloffFactor(id, config.m_sunFalloffFactor);
-
             featureProcessor->SetMinMaxSamples(id, config.m_minSamples, config.m_maxSamples);
             
             // update the transform again in case the sun entity changed

@@ -76,9 +76,11 @@ namespace AZ::Render
             m_featureProcessorInterface->SetPlanetRadius(m_atmosphereId, m_configuration.m_groundRadius);
             m_featureProcessorInterface->SetRayleighScattering(m_atmosphereId, m_configuration.m_rayleighScattering * m_configuration.m_rayleighScatteringScale);
             m_featureProcessorInterface->SetRayleighExpDistribution(m_atmosphereId, m_configuration.m_rayleighExponentialDistribution);
+            m_featureProcessorInterface->SetShadowsEnabled(m_atmosphereId, m_configuration.m_shadowsEnabled);
             m_featureProcessorInterface->SetSunEnabled(m_atmosphereId, m_configuration.m_drawSun);
             m_featureProcessorInterface->SetSunDirection(m_atmosphereId, -sunTransform.GetBasisY());
-            m_featureProcessorInterface->SetSunColor(m_atmosphereId, m_configuration.m_sunColor);
+            m_featureProcessorInterface->SetSunColor(m_atmosphereId, m_configuration.m_sunColor * m_configuration.m_sunLuminanceFactor);
+            m_featureProcessorInterface->SetSunLimbColor(m_atmosphereId, m_configuration.m_sunLimbColor * m_configuration.m_sunLuminanceFactor);
             m_featureProcessorInterface->SetSunFalloffFactor(m_atmosphereId, m_configuration.m_sunFalloffFactor);
             m_featureProcessorInterface->SetSunRadiusFactor(m_atmosphereId, m_configuration.m_sunRadiusFactor);
 

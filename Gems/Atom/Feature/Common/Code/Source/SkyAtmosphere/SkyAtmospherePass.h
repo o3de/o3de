@@ -47,6 +47,7 @@ namespace AZ::Render
             AZ::Vector3 m_planetOrigin = AZ::Vector3(0,0,0);
             AZ::Vector3 m_sunDirection = AZ::Vector3(0,0,-1);
             AZ::Color m_sunColor = AZ::Color(1.f, 1.f, 1.f, 1.f);
+            AZ::Color m_sunLimbColor = AZ::Color(1.f, 1.f, 1.f, 1.f);
             float m_sunRadiusFactor = 1.f;
             float m_sunFalloffFactor = 1.f;
             AZ::Vector3 m_luminanceFactor = AZ::Vector3(1.f,1.f,1.f);
@@ -85,7 +86,7 @@ namespace AZ::Render
         struct AtmosphereGPUParams 
         {
             float m_absorption[3] = {.000650f, 0.001881f, 0.000085f};
-            float m_fastSkyEnabled = 1.0f;
+            float m_pad0 = 0.f; // not used
 
             float m_rayleighScattering[3] = {0.005802f, 0.013558f, 0.033100f};
             float m_miePhaseFunctionG = 0.8f;
@@ -110,25 +111,28 @@ namespace AZ::Render
             float m_absorptionDensity0LinearTerm = 1.5f / 15.f;
             float m_absorptionDensity1ConstantTerm = 8.f / 3.f;
             float m_absorptionDensity1LinearTerm = -1.f / 15.f;
-            float m_pad0; // not used
+            float m_pad1; // not used
 
             float m_sunColor[3];
-            float m_sunEnabled = 1.0f;
-
-            float m_sunDirection[3] = {0.f,0.f,-1.f};
             float m_sunRadiusFactor = 1.f;
 
-            float m_luminanceFactor[3] = {1.f, 1.f, 1.f};
+            float m_sunDirection[3] = {0.f,0.f,-1.f};
             float m_sunFalloffFactor = 1.f;
 
+            float m_sunLimbColor[3];
+            float m_pad2 = 0.f; // not used
+
+            float m_luminanceFactor[3] = {1.f, 1.f, 1.f};
+            float m_pad3 = 0.f; // not used
+
             float m_planetOrigin[3] = {0.f, 0.f, 0.f};
-            float m_pad1 = 0.f;
+            float m_pad4 = 0.f;
         };
 
         //! ShaderReloadNotificationBus
         void OnShaderReinitialized(const RPI::Shader& shader) override;
+        void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
 
-        void InitializeConstants(AtmosphereGPUParams& atmosphereConstants);
         void RegisterForShaderNotifications();
         void BindLUTs();
         void BuildShaderData();
