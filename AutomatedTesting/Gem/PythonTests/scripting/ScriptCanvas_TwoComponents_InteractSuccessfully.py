@@ -11,6 +11,8 @@ from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report as report
 from editor_python_test_tools.utils import Tracer as tracer
 import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_entity_utils import EditorEntity
+from editor_python_test_tools.asset_utils import Asset
 import azlmbr.legacy.general as general
 import azlmbr.math as math
 import azlmbr.asset as asset
@@ -33,7 +35,7 @@ class LogLines:
 
 LEVEL_NAME = "tmp_level"
 ASSET_1 = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevents")
-ASSET_2 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
+ASSET_2 = os.path.join(paths.projectroot, 'ScriptCanvas', 'ScriptCanvas_TwoComponents1.scriptcanvas')
 WAIT_TIME = 3.0  # SECONDS
 
 
@@ -75,7 +77,16 @@ class TestScriptCanvasTwoComponentsInteractSuccessfully:
 
     @pyside_utils.wrap_async
     async def run_test(self):
+        test_entity = hydra.Entity("test_entity")
+        test_entity2 = EditorEntity.create_editor_entity("test_entity2")
+        sc_component2 = test_entity2.add_component("Script Canvas")
+        asset2 = Asset.find_asset_by_path(ASSET_2)
+        print(asset2.get_path())
+        #asset2 = Asset.find_asset_by_path(ASSET_2)
+        sc_component2.set_component_property_value('Configuration|Source File', asset2)
 
+
+        """
         # 1) Create level
         general.idle_enable(True)
         result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
@@ -87,7 +98,7 @@ class TestScriptCanvasTwoComponentsInteractSuccessfully:
         position = math.Vector3(512.0, 512.0, 32.0)
         test_entity = hydra.Entity("test_entity")
         test_entity.create_entity(position, ["Script Canvas", "Script Canvas"])
-        test_entity.get_set_test(0, "Script Canvas Asset|Script Canvas Asset", self.get_asset(ASSET_1))
+        test_entity.get_set_test(0, "Source File", self.get_asset(ASSET_1))
         test_entity.get_set_test(1, "Script Canvas Asset|Script Canvas Asset", self.get_asset(ASSET_2))
 
         # 3) Start Tracer
@@ -104,7 +115,7 @@ class TestScriptCanvasTwoComponentsInteractSuccessfully:
 
         # 7) Exit game mode
         helper.exit_game_mode(Tests.game_mode_exited)
-
+        """
 
 test = TestScriptCanvasTwoComponentsInteractSuccessfully()
 test.run_test()
