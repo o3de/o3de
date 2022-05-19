@@ -114,6 +114,29 @@ namespace Multiplayer
             ImGui::Checkbox("Multiplayer Entity Stats", &m_displayPerEntityStats);
             ImGui::Checkbox("Multiplayer Hierarchy Debugger", &m_displayHierarchyDebugger);
             ImGui::Checkbox("Multiplayer Audit Trail", &m_displayNetAuditTrail);
+
+            if (auto multiplayerInterface = AZ::Interface<IMultiplayer>::Get())
+            {
+                if (auto console = AZ::Interface<AZ::IConsole>::Get())
+                {
+                    const MultiplayerAgentType multiplayerAgentType = multiplayerInterface->GetAgentType();
+                    if (multiplayerAgentType == MultiplayerAgentType::Uninitialized)
+                    {
+                        if (ImGui::Button("Host"))
+                        {
+                            console->PerformCommand("host");
+                        }
+                    }
+                    else if (multiplayerAgentType == MultiplayerAgentType::DedicatedServer ||
+                        multiplayerAgentType == MultiplayerAgentType::ClientServer)
+                    {
+                        if (ImGui::Button("Launch Local Client"))
+                        {
+                            console->PerformCommand("launch_local_client");
+                        }
+                    }
+                }
+            }
             ImGui::EndMenu();
         }
     }
