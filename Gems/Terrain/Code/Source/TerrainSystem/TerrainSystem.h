@@ -495,10 +495,13 @@ namespace Terrain
         const float xSamplesPerQuery = aznumeric_cast<float>(numSamplesX) / xJobs;
         const float ySamplesPerQuery = aznumeric_cast<float>(numSamplesY) / yJobs;
 
+        // Make sure our subdivisions are producing at least minPositionsPerJob unless the *total* requested point count is
+        // less than minPositionsPerJob.
         AZ_Assert(
-            (aznumeric_cast<int32_t>(xSamplesPerQuery) * aznumeric_cast<int32_t>(ySamplesPerQuery)) >= minPositionsPerJob,
-             "Too few positions per job: %d vs %d",
-             aznumeric_cast<int32_t>(xSamplesPerQuery) * aznumeric_cast<int32_t>(ySamplesPerQuery), minPositionsPerJob);
+            ((numSamplesX * numSamplesY) < minPositionsPerJob) ||
+                (aznumeric_cast<int32_t>(xSamplesPerQuery) * aznumeric_cast<int32_t>(ySamplesPerQuery)) >= minPositionsPerJob,
+            "Too few positions per job: %d vs %d", aznumeric_cast<int32_t>(xSamplesPerQuery) * aznumeric_cast<int32_t>(ySamplesPerQuery),
+            minPositionsPerJob);
 
         // Create a terrain job context and split the work across multiple jobs.
         AZStd::shared_ptr<TerrainJobContext> jobContext = AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager, numJobs);
