@@ -46,7 +46,7 @@ namespace AzToolsFramework
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // PropertyEditorGUIMessages::Bus::Handler
             //! When making property changes in the editor, listening to the below notifications and pausing propagation accordingly will
-            //! prevent the user from losing control of the properties they are editng.
+            //! prevent the user from losing control of the properties they are editing.
             void RequestWrite(QWidget* editorGUI) override;
             void OnEditingFinished(QWidget* editorGUI) override;
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
