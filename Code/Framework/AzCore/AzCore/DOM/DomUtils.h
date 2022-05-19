@@ -173,9 +173,15 @@ namespace AZ::Dom::Utils
             const AZStd::any& opaqueValue = value.GetOpaqueValue();
             if (!opaqueValue.is<T>())
             {
+                // Marshal void* into our type - CanConvertToType will not register this as correct,
+                // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
+                if (opaqueValue.is<void*>())
+                {
+                    return *reinterpret_cast<T*>(AZStd::any_cast<void*>(opaqueValue));
+                }
                 return {};
             }
-            return AZStd::any_cast<T>(value.GetOpaqueValue());
+            return AZStd::any_cast<T>(opaqueValue);
         }
     }
 } // namespace AZ::Dom::Utils
