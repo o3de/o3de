@@ -395,7 +395,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
                       "--runpythontest", test_filename,
-                      "-logfile", f"@log@/{LOG_NAME}",
+                      "-logfile", f"@log@/{log_name}",
                       "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -404,10 +404,10 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             material_editor.wait(test_spec.timeout)
             output = material_editor.get_output()
             return_code = material_editor.get_returncode()
-            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
             # Save the editor log
             workspace.artifact_manager.save_artifact(
-                os.path.join(editor_utils.retrieve_log_path(run_id, workspace), LOG_NAME), f'({run_id}){LOG_NAME}')
+                os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
             if return_code == 0:
                 test_result = Result.Pass(test_spec, output, material_editor_log_content)
             else:
@@ -433,10 +433,10 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         except WaitTimeoutError:
             output = material_editor.get_output()
             material_editor.stop()
-            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout(test_spec, output, test_spec.timeout, material_editor_log_content)
 
-        material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+        material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, material_editor_log_content)
         results[test_spec.__name__] = test_result
         return results
@@ -493,7 +493,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
 
         cmdline = [
                       "--runpythontest", temp_batched_file.name,
-                      "-logfile", f"@log@/{LOG_NAME}",
+                      "-logfile", f"@log@/{log_name}",
                       "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -504,11 +504,11 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             material_editor.wait(self.timeout_editor_shared_test)
             output = material_editor.get_output()
             return_code = material_editor.get_returncode()
-            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
             # Save the MaterialEditor log
             try:
                 workspace.artifact_manager.save_artifact(
-                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), LOG_NAME), f'({run_id}){LOG_NAME}')
+                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test
                 pass
@@ -566,7 +566,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         except WaitTimeoutError:
             material_editor.stop()
             output = material_editor.get_output()
-            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
 
             # The MaterialEditor timed out when running the tests, get data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, material_editor_log_content)
@@ -657,8 +657,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
 
         self._setup_test_run(workspace, collected_test_data)
         material_editor.configure_settings()
-        results = self._exec_editor_multitest(request, workspace, material_editor, 1, LOG_NAME, test_spec_list,
-                                              extra_cmdline_args)
+        results = self._exec_editor_multitest(
+            request, workspace, material_editor, 1, LOG_NAME, test_spec_list, extra_cmdline_args)
         collected_test_data.results.update(results)
         # If at least one test did not pass, save assets with errors and warnings
         for result in results:
@@ -706,8 +706,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             for i in range(total_threads):
                 def make_func(test_spec, index, my_material_editor):
                     def run(request, workspace, extra_cmdline_args):
-                        results = self._exec_material_editor_test(request, workspace, my_material_editor, index + 1, LOG_NAME,
-                                                         test_spec, extra_cmdline_args)
+                        results = self._exec_material_editor_test(
+                            request, workspace, my_material_editor, index + 1, LOG_NAME, test_spec, extra_cmdline_args)
                         assert results is not None
                         results_per_thread[index] = results
 
