@@ -105,6 +105,15 @@ namespace Terrain
         services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
+    void TerrainPhysicsColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        // If any of the following appear on the same entity as this one, they should get activated first as their data will
+        // affect this component.
+        services.push_back(AZ_CRC_CE("TerrainAreaService"));
+        services.push_back(AZ_CRC_CE("TerrainHeightProviderService"));
+        services.push_back(AZ_CRC_CE("TerrainSurfaceProviderService"));
+    }
+
     void TerrainPhysicsColliderComponent::Reflect(AZ::ReflectContext* context)
     {
         TerrainPhysicsColliderConfig::Reflect(context);
@@ -147,20 +156,28 @@ namespace Terrain
         const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask,
         const AZ::Aabb& dirtyRegion)
     {
-        AZ::Aabb worldSize = AZ::Aabb::CreateNull();
+        AZ::Aabb colliderBounds = AZ::Aabb::CreateNull();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            colliderBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
         if (dirtyRegion.IsValid())
         {
-            worldSize = dirtyRegion;
+            // If we have a dirty region, only update this collider if the dirty region overlaps the collider bounds.
+            if (dirtyRegion.Overlaps(colliderBounds))
+            {
+                // Find the intersection of the dirty region and the collider, and only notify about that area as changing.
+                AZ::Aabb dirtyBounds = colliderBounds.GetClamped(dirtyRegion);
+
+                Physics::HeightfieldProviderNotificationBus::Broadcast(
+                    &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, dirtyBounds, heightfieldChangeMask);
+            }
         }
         else
         {
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+            // No valid dirty region, so update the entire collider bounds.
+            Physics::HeightfieldProviderNotificationBus::Broadcast(
+                &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, colliderBounds, heightfieldChangeMask);
         }
-
-        Physics::HeightfieldProviderNotificationBus::Broadcast(
-            &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, worldSize, heightfieldChangeMask);
     }
 
     void TerrainPhysicsColliderComponent::OnShapeChanged([[maybe_unused]] ShapeChangeReasons changeReason)
