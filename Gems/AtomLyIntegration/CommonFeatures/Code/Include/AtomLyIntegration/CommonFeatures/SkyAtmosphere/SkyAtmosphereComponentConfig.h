@@ -62,8 +62,13 @@ namespace AZ::Render
 
         // advanced
         bool m_fastSkyEnabled = true;
+        bool m_shadowsEnabled = false;
         AZ::Vector2 m_fastSkyLUTSize = AZ::Vector2(192.0f, 108.0f);
         uint32_t m_minSamples = 4;
         uint32_t m_maxSamples = 14;
+
+        // track when properties are changed that require LUT regeneration
+        bool m_lutPropertyChanged = false;
+        AZ::u32 OnLUTConfigurationChanged();
     };
 } // namespace AZ::Render

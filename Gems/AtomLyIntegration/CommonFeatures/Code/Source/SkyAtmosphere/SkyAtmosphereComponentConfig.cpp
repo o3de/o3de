@@ -39,6 +39,7 @@ namespace AZ::Render
                 ->Field("RayleighScattering", &SkyAtmosphereComponentConfig::m_rayleighScattering)
                 ->Field("RayleighScatteringScale", &SkyAtmosphereComponentConfig::m_rayleighScatteringScale)
                 ->Field("RayleighExpDistribution", &SkyAtmosphereComponentConfig::m_rayleighExponentialDistribution)
+                ->Field("ShadowsEnabled", &SkyAtmosphereComponentConfig::m_shadowsEnabled)
                 ->Field("FastSkyEnabled", &SkyAtmosphereComponentConfig::m_fastSkyEnabled)
                 ->Field("FastSkyLUTSize", &SkyAtmosphereComponentConfig::m_fastSkyLUTSize)
                 ;

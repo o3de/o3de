@@ -16,12 +16,30 @@
 
 #include <SkyAtmosphereCommon.azsli>
 
-
 struct RayMarchPixelOutputStruct
 {
 	float4 m_luminance : SV_Target0;
 	float4 m_reflection : SV_Target1;
 };
+
+float3 GetSunLuminance(float3 WorldPos, float3 WorldDir, float PlanetRadius)
+{
+	if(o_enableSun)
+	{
+		const float angle = dot(WorldDir, PassSrg::m_constants.m_sunDirection);
+		const float sunAngle = cos(0.5 * (PassSrg::m_constants.m_sunRadiusFactor + PassSrg::m_constants.m_sunFalloffFactor) * 3.14159 / 180.0);
+		if (angle > sunAngle)
+		{
+			float t = RaySphereIntersectNearest(WorldPos, WorldDir, float3(0.0f, 0.0f, 0.0f), PlanetRadius);
+			if (t < 0.0f) // no intersection with surface
+			{
+				const float d = (1.0 - angle) / (1.0 - sunAngle) ;
+				return PassSrg::m_constants.m_sunColor * pow(1.0 - d, PassSrg::m_constants.m_sunFalloffFactor);
+			}
+		}
+	}
+	return 0;
+}
 
 RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV_SampleIndex)
 {
@@ -56,7 +74,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 		// nothing is obstructing, add any luminance from the sun
 		luminance = GetSunLuminance(cameraPlanetPosKm, worldDir, Atmosphere.BottomRadius);
 
-		if(PassSrg::m_constants.m_fastSkyEnabled > 0.0f)
+		if(o_enableFastSky)
 		{
 			float viewHeight = length(cameraPlanetPosKm);
 			if(viewHeight < Atmosphere.TopRadius)

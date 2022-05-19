@@ -16,11 +16,13 @@
 #define USE_NON_LINEAR_SKY_LUT 1 // improve precision at sunset angles
 #define USE_MULTI_SCATTERING_POWER_SERIES 1
 #define USE_MULTI_SCATTERING_APPROX 0
+#define USE_SINGLE_SHADOW_SAMPLE 1
 
 #define PLANET_RADIUS_OFFSET_KM 0.01f // offset when starting raycast to avoid artifacts 
 
-option bool o_enableFastSky = true;
 option bool o_enableShadows = false;
+option bool o_enableSun = true;
+option bool o_enableFastSky = true;
 
 #include <Atom/Features/SrgSemantics.azsli>
 
@@ -412,25 +414,6 @@ bool MoveToTopAtmosphere(inout float3 WorldPos, inout float distanceToTop, in fl
 	return true; // ok to start tracing
 }
 
-float3 GetSunLuminance(float3 WorldPos, float3 WorldDir, float PlanetRadius)
-{
-	if(PassSrg::m_constants.m_sunEnabled > 0)
-	{
-		const float angle = dot(WorldDir, PassSrg::m_constants.m_sunDirection);
-		const float sunAngle = cos(0.5 * (PassSrg::m_constants.m_sunRadiusFactor + PassSrg::m_constants.m_sunFalloffFactor) * 3.14159 / 180.0);
-		if (angle > sunAngle)
-		{
-			float t = RaySphereIntersectNearest(WorldPos, WorldDir, float3(0.0f, 0.0f, 0.0f), PlanetRadius);
-			if (t < 0.0f) // no intersection with surface
-			{
-				const float d = (1.0 - angle) / (1.0 - sunAngle) ;
-				return PassSrg::m_constants.m_sunColor * pow(1.0 - d, PassSrg::m_constants.m_sunFalloffFactor);
-			}
-		}
-	}
-	return 0;
-}
-
 struct SingleScatteringResult
 {
 	float3 L;						// Scattered light (luminance)
@@ -528,7 +511,6 @@ SingleScatteringResult IntegrateScatteredLuminance(
 			if (t1 > 1.0)
 			{
 				t1 = tMax;
-				//t1 = tMaxFloor;	// reveal depth slices
 			}
 			else
 			{
@@ -587,6 +569,7 @@ SingleScatteringResult IntegrateScatteredLuminance(
 		{
 			const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
             float3 shadowCoords[ViewSrg::MaxCascadeCount];
+
 			const float3 shadowWorldPosition = (P + Atmosphere.PlanetOrigin) * 1000.f;
 			DirectionalLightShadow::GetShadowCoords(
                 shadowIndex,
@@ -594,12 +577,28 @@ SingleScatteringResult IntegrateScatteredLuminance(
                 upVector,
                 shadowCoords);
 
+#if USE_SINGLE_SHADOW_SAMPLE
+			// sampling one cascade is slightly faster ~1ms
+			DirectionalLightShadow dlShadow;
+			dlShadow.m_lightIndex = shadowIndex;
+			dlShadow.m_shadowCoords = shadowCoords;
+			dlShadow.m_normalVector = upVector;
+
+    		const uint cascadeIndex = ViewSrg::m_directionalLightShadows[shadowIndex].m_cascadeCount - 1;
+			const bool2 checkedShadowed = dlShadow.IsShadowed(shadowCoords[cascadeIndex], cascadeIndex);
+			if(checkedShadowed.y)
+			{
+				shadow = 0.f;
+			}
+#else
 			DirectionalLightShadow::DebugInfo debugInfo;
 			shadow = DirectionalLightShadow::GetVisibility(
 				shadowIndex,
 				shadowCoords,
 				upVector,
 				debugInfo);
+#endif
+
 		}
 #endif // ENABLE_ATMOSPHERE_SHADOWS
 
