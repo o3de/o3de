@@ -14,6 +14,7 @@
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <Tests/FileIOBaseTestTypes.h>
@@ -85,6 +86,7 @@ namespace UnitTest
         IO::IStreamer* m_streamer{ nullptr };
         TestFileIOBase m_fileIO;
         AZStd::vector<AZStd::string> m_assetsWritten;
+        TaskExecutor* m_taskExecutor{ nullptr };
     };
 
     
