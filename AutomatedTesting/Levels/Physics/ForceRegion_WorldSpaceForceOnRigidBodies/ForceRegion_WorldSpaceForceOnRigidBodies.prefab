@@ -38,7 +38,12 @@
             },
             "Component_[7874177159288365422]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 7874177159288365422
+                "Id": 7874177159288365422,
+                "Child Entity Order": [
+                    "Entity_[265641614290]",
+                    "Entity_[268866031149]",
+                    "Entity_[261346646994]"
+                ]
             },
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
@@ -62,6 +67,20 @@
                 "Component_[10988342756720823337]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 10988342756720823337
+                },
+                "Component_[12840451298612265041]": {
+                    "$type": "EditorBoxShapeComponent",
+                    "Id": 12840451298612265041,
+                    "GameView": true,
+                    "BoxShape": {
+                        "Configuration": {
+                            "Dimensions": [
+                                3.0,
+                                3.0,
+                                3.0
+                            ]
+                        }
+                    }
                 },
                 "Component_[14912243583686116341]": {
                     "$type": "EditorForceRegionComponent",
@@ -197,8 +216,24 @@
                     "Id": 17240895190085733413,
                     "Configuration": {
                         "entityId": "",
-                        "Compute Mass": false
+                        "Compute Mass": false,
+                        "Centre of mass offset": [
+                            0.0,
+                            0.0,
+                            0.5
+                        ],
+                        "Inertia tensor": {
+                            "roll": 0.0,
+                            "pitch": 0.0,
+                            "yaw": 0.0,
+                            "scale": 10.000000953674316
+                        }
                     }
+                },
+                "Component_[17313103929028864179]": {
+                    "$type": "EditorSphereShapeComponent",
+                    "Id": 17313103929028864179,
+                    "GameView": true
                 },
                 "Component_[2183527080045548877]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -208,11 +243,6 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4612975352259350314,
                     "ColliderConfiguration": {
-                        "Position": [
-                            0.0,
-                            0.0,
-                            0.5
-                        ],
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
