@@ -60,9 +60,6 @@ namespace AZ
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
             int GetTickOrder() override;
 
-            //! Loads the pass templates mapping file.
-            void LoadPassTemplateMappings();
-
             //! Flag to specify whether or not the editor feedback effects are active.
             bool m_enabled = false;
 
@@ -71,9 +68,6 @@ namespace AZ
 
             //! Settings registery override for enabling/disabling editor mode feedback.
             bool m_registeryEnabled = false;
-
-            //! Used for loading the pass templates.
-            RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
 
             //! Map of focused entity
             AZStd::unordered_map<EntityId, DrawableMeshEntity> m_focusedEntities;

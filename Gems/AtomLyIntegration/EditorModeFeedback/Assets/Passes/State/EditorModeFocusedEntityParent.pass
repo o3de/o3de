@@ -107,34 +107,6 @@
                             }
                         }
                     ]
-                },
-                // Applied the outlining effect to entities of interest
-                {
-                    "Name": "EntityOutlinePass",
-                    "TemplateName": "EditorModeOutlineTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "InputDepth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputEntityMask",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "InputEntityMask"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputColor",
-                            "AttachmentRef": {
-                                "Pass": "BlurPass",
-                                "Attachment": "OutputColor"
-                            }
-                        }
-                    ]
                 }
             ]
         }

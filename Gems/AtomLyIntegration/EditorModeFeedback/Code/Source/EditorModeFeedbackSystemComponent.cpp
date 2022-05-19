@@ -75,15 +75,6 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<EditorModeFeatureProcessor>();
             auto* passSystem = RPI::PassSystemInterface::Get();
             AZ_Assert(passSystem, "Cannot get the pass system.");
-
-            // Setup handler for load pass templates mappings
-            m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler(
-                [this]()
-                {
-                    LoadPassTemplateMappings();
-                });
-
-            passSystem->ConnectEvent(m_loadTemplatesHandler);
         }
 
         void EditorModeFeedbackSystemComponent::Deactivate()
@@ -98,17 +89,7 @@ namespace AZ
             AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<EditorModeFeatureProcessor>();
-            m_loadTemplatesHandler.Disconnect();
             AZ::Interface<EditorModeFeedbackInterface>::Unregister(this);
-        }
-
-        void EditorModeFeedbackSystemComponent::LoadPassTemplateMappings()
-        {
-            auto* passSystem = RPI::PassSystemInterface::Get();
-            AZ_Assert(passSystem, "Cannot get the pass system.");
-
-            const char* passTemplatesFile = "Passes/Child/EditorModeFeedback_PassTemplates.azasset";
-            passSystem->LoadPassTemplateMappings(passTemplatesFile);
         }
 
         bool EditorModeFeedbackSystemComponent::IsEnabled() const

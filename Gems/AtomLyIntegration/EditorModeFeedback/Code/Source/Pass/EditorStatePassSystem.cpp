@@ -25,9 +25,18 @@ namespace AZ::Render
         passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
         passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
         passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
+
+        /// Editor state pass sysem parent
+        passSystem->LoadPassTemplateMappings("Passes/EditorModeFeedback_PassTemplates.azasset");
+
+        // Editor state child effect passes
+        passSystem->LoadPassTemplateMappings("Passes/Child/EditorModeFeedback_ChildPassTemplates.azasset");
+
+        // Editor state parent passes
+        //passSystem->LoadPassTemplateMappings("Passes/State/EditorModeFeedback_StatePassTemplates.azasset");
     }
 
-    void EditorStatePassSystem::AddStatePassesToRenderPipeline([[maybe_unused]] RPI::RenderPipeline* renderPipeline) const
+    void EditorStatePassSystem::AddPassesToRenderPipeline([[maybe_unused]] RPI::RenderPipeline* renderPipeline) const
     {
 
     }

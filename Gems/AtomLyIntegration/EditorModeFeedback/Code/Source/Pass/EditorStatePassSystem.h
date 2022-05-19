@@ -30,7 +30,7 @@ namespace AZ::Render
         EditorStatePassSystem(EditorStateParentPassList&& editorStateParentPasses);
 
         //!
-        void AddStatePassesToRenderPipeline(RPI::RenderPipeline* renderPipeline) const;
+        void AddPassesToRenderPipeline(RPI::RenderPipeline* renderPipeline) const;
 
         //! 
         EntityMaskMap GetEntitiesForEditorStatePasses() const;
