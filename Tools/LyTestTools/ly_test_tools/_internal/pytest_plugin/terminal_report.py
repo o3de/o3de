@@ -77,6 +77,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                     if UNKNOWN_TEST_RESULT in str(section):
                         if not have_printed_header:
                             terminalreporter.write_line("\nThe following tests had an unknown result:\n")
+                            have_printed_header = True
                         terminalreporter.write_line(re.search(test_name_pattern, report.nodeid).group(1))
                         break
 
