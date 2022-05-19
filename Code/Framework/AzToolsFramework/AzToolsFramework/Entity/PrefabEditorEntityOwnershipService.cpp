@@ -238,7 +238,8 @@ namespace AzToolsFramework
         auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get();
         if (!instanceUpdateExecutorInterface)
         {
-            AZ_Assert(false, "InstanceUpdateExecutorInterface is unavailable for LoadFromStream.");
+            AZ_Assert(false,
+                "InstanceUpdateExecutorInterface is unavailable for PrefabEditorEntityOwnershipService::LoadFromStream.");
             return false;
         }
         instanceUpdateExecutorInterface->QueueRootPrefabLoadedNotificationForNextPropagation();
@@ -346,7 +347,8 @@ namespace AzToolsFramework
         auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get();
         if (!instanceUpdateExecutorInterface)
         {
-            AZ_Assert(false, "InstanceUpdateExecutorInterface is unavailable for CreateNewLevelPrefab.");
+            AZ_Assert(false,
+                "InstanceUpdateExecutorInterface is unavailable for PrefabEditorEntityOwnershipService::CreateNewLevelPrefab.");
             return;
         }
         instanceUpdateExecutorInterface->QueueRootPrefabLoadedNotificationForNextPropagation();
