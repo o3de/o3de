@@ -224,14 +224,12 @@ namespace Terrain
     {
         auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         const AZ::Vector2 stepSize(m_sampleSpacing);
-        AZStd::pair<size_t, size_t> numSamples;
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-            m_terrainBounds, stepSize, samplerType);
+        AzFramework::Terrain::TerrainQueryRegion terrainRegion =
+            AzFramework::Terrain::TerrainQueryRegion::CreateFromAabbAndStepSize(m_terrainBounds, stepSize);
 
         const AZ::RHI::Size heightmapSize = AZ::RHI::Size(
-            aznumeric_cast<uint32_t>(numSamples.first),
-            aznumeric_cast<uint32_t>(numSamples.second),
+            aznumeric_cast<uint32_t>(terrainRegion.m_numPointsX),
+            aznumeric_cast<uint32_t>(terrainRegion.m_numPointsY),
             1);
 
         if (!m_heightmapImage || m_heightmapImage->GetDescriptor().m_size != heightmapSize)
@@ -257,12 +255,11 @@ namespace Terrain
         
         if (m_heightmapImage)
         {
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-                m_dirtyRegion, stepSize, samplerType);
+            AzFramework::Terrain::TerrainQueryRegion dirtyRegion =
+                AzFramework::Terrain::TerrainQueryRegion::CreateFromAabbAndStepSize(m_dirtyRegion, stepSize);
         
-            const uint32_t updateWidth = aznumeric_cast<uint32_t>(numSamples.first);
-            const uint32_t updateHeight = aznumeric_cast<uint32_t>(numSamples.second);
+            const uint32_t updateWidth = aznumeric_cast<uint32_t>(dirtyRegion.m_numPointsX);
+            const uint32_t updateHeight = aznumeric_cast<uint32_t>(dirtyRegion.m_numPointsY);
 
             // If there aren't any samples in the region, there's nothing to update, so just return.
             if ((updateWidth == 0) || (updateHeight == 0))
@@ -286,9 +283,12 @@ namespace Terrain
                 pixels.push_back(uint16Height);
             };
 
+            AzFramework::Terrain::TerrainQueryRegion queryRegion =
+                AzFramework::Terrain::TerrainQueryRegion::CreateFromAabbAndStepSize(m_dirtyRegion, stepSize);
             AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-                m_dirtyRegion, stepSize, perPositionCallback, samplerType);
+                &AzFramework::Terrain::TerrainDataRequests::QueryRegion,
+                queryRegion, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
+                perPositionCallback, samplerType);
 
             constexpr uint32_t BytesPerPixel = sizeof(uint16_t);
             const float left = AZStd::floorf(m_dirtyRegion.GetMin().GetX() / m_sampleSpacing) - AZStd::floorf(m_terrainBounds.GetMin().GetX() / m_sampleSpacing);

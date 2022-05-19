@@ -297,8 +297,12 @@ namespace Terrain
             heights.emplace_back(surfacePoint.m_position.GetZ() - worldCenterZ);
         };
 
-        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-            worldSize, gridResolution, perPositionHeightCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
+        AzFramework::Terrain::TerrainQueryRegion queryRegion =
+            AzFramework::Terrain::TerrainQueryRegion::CreateFromAabbAndStepSize(worldSize, gridResolution);
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequests::QueryRegion, queryRegion,
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
+            perPositionHeightCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
     }
 
     uint8_t TerrainPhysicsColliderComponent::GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const
@@ -363,12 +367,10 @@ namespace Terrain
 
             offsetRegion = AZ::Aabb::CreateFromMinMaxValues(worldSizeMin.GetX(),worldSizeMin.GetY(),worldSizeMin.GetZ(),regionMin.GetX(), regionMin.GetY(), worldMaxZ);
 
-            AZStd::pair<size_t, size_t> numSamples;
-            auto sampler = AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT;
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion, offsetRegion, gridResolution, sampler);
-
-            xOffset = numSamples.first;
-            yOffset = numSamples.second;
+            AzFramework::Terrain::TerrainQueryRegion offsetQueryRegion =
+                AzFramework::Terrain::TerrainQueryRegion::CreateFromAabbAndStepSize(offsetRegion, gridResolution);
+            xOffset = offsetQueryRegion.m_numPointsX;
+            yOffset = offsetQueryRegion.m_numPointsY;
         }
 
         const float worldCenterZ = worldSize.GetCenter().GetZ();
@@ -412,8 +414,12 @@ namespace Terrain
             updateHeightsMaterialsCallback(row, column, point);
         };
 
-        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion,
-            region, gridResolution, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
+        AzFramework::Terrain::TerrainQueryRegion queryRegion =
+            AzFramework::Terrain::TerrainQueryRegion::CreateFromAabbAndStepSize(region, gridResolution);
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequests::QueryRegion,
+            queryRegion, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::All,
+            perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
     }
 
     void TerrainPhysicsColliderComponent::UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration)

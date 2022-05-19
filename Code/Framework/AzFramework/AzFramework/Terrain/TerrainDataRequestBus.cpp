@@ -12,6 +12,64 @@
 
 namespace AzFramework::Terrain
 {
+    TerrainQueryRegion::TerrainQueryRegion(
+        const AZ::Vector3& startPoint, size_t numPointsX, size_t numPointsY, const AZ::Vector2& stepSize)
+        : m_startPoint(startPoint)
+        , m_numPointsX(numPointsX)
+        , m_numPointsY(numPointsY)
+        , m_stepSize(stepSize)
+    {
+    }
+
+    TerrainQueryRegion::TerrainQueryRegion(const AZ::Vector2& startPoint, size_t numPointsX, size_t numPointsY, const AZ::Vector2& stepSize)
+        : m_startPoint(startPoint)
+        , m_numPointsX(numPointsX)
+        , m_numPointsY(numPointsY)
+        , m_stepSize(stepSize)
+    {
+    }
+
+    TerrainQueryRegion TerrainQueryRegion::CreateFromAabbAndStepSize(const AZ::Aabb& region, const AZ::Vector2& stepSize)
+    {
+        TerrainQueryRegion queryRegion;
+
+        if (region.IsValid() && (stepSize.GetX() > 0.0f) && (stepSize.GetY() > 0.0f))
+        {
+            queryRegion.m_startPoint = region.GetMin();
+            queryRegion.m_stepSize = stepSize;
+
+            const AZ::Vector3 regionExtents = region.GetExtents();
+
+            // We'll treat the region as min-inclusive, max-exclusive. Ex: (1,1) - (6,6) with stepSize(1) will
+            // process 1, 2, 3, 4, 5 but not 6 in each direction.
+            queryRegion.m_numPointsX = aznumeric_cast<size_t>(AZStd::floorf(regionExtents.GetX() / stepSize.GetX()));
+            queryRegion.m_numPointsY = aznumeric_cast<size_t>(AZStd::floorf(regionExtents.GetY() / stepSize.GetY()));
+
+            // If the region is > 0 but smaller than stepSize, make sure we still process at least the start point.
+            if ((regionExtents.GetX() > 0.0f) && (queryRegion.m_numPointsX == 0))
+            {
+                queryRegion.m_numPointsX = 1;
+            }
+            if ((regionExtents.GetY() > 0.0f) && (queryRegion.m_numPointsY == 0))
+            {
+                queryRegion.m_numPointsY = 1;
+            }
+        }
+
+        // TODO: What to do with "Clamp" logic?
+        /*
+        // Only consider points that line up with the query resolution
+        const int32_t firstSampleX = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetX() / stepSize.GetX()));
+        const int32_t lastSampleX = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetX() / stepSize.GetX()));
+        const int32_t firstSampleY = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetY() / stepSize.GetY()));
+        const int32_t lastSampleY = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetY() / stepSize.GetY()));
+        countX = lastSampleX - firstSampleX + 1;
+        countY = lastSampleY - firstSampleY + 1;
+        */
+
+        return queryRegion;
+    }
+
     // Create a handler that can be accessed from Python scripts to receive terrain change notifications.
     class TerrainDataNotificationHandler final
         : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
