@@ -3,14 +3,14 @@
     "Version": 1,
     "ClassName": "AssetAliasesSourceData",
     "ClassData": {
-        "AssetPaths": [            
+        "AssetPaths": [
             {
-                "Name": "EditorModeFocusedEntityParentTemplate",
-                "Path": "Passes/State/EditorModeFocusedEntityParent.pass"
+                "Name": "EditorStateFocusedEntityParentTemplate",
+                "Path": "Passes/State/EditorStateFocusedEntityParent.pass"
             },
             {
-                "Name": "EditorModeSelectedEntityParentTemplate",
-                "Path": "Passes/State/EditorModeSelectedEntityParent.pass"
+                "Name": "EditorStateSelectedEntityParentTemplate",
+                "Path": "Passes/State/EditorStateSelectedEntityParent.pass"
             }
         ]
     }

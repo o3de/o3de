@@ -59,15 +59,7 @@
                         "Attachment": "OutputEntityMaskAttachment"
                     }
                 }
-            ],
-            "PassData": {
-                "$type": "RasterPassData",
-                "DrawListTag": "editormodemask",
-                "PipelineViewTag": "MainCamera",
-                "PassSrgShaderAsset": {
-                    "FilePath": "Shaders/EditorModeMask.shader"
-                }
-            }
+            ]
         }
     }
 }

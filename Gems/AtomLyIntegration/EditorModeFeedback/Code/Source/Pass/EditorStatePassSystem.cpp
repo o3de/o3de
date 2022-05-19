@@ -13,8 +13,23 @@
 #include <Pass/Child/EditorModeBlurPass.h>
 #include <Pass/Child/EditorModeOutlinePass.h>
 
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Reflect/Pass/RasterPassData.h>
+
 namespace AZ::Render
 {
+    //static AZStd::unordered_set<Name> GetMasksFromStateParentPasses(const EditorStateParentPassList& editorStateParentPasses)
+    //{
+    //    AZStd::unordered_set<Name> masks;
+    //    for (const auto& state : editorStateParentPasses)
+    //    {
+    //        masks.insert(state->GetEntityMaskDrawList());
+    //    }
+    //
+    //    return masks;
+    //}
+
     EditorStatePassSystem::EditorStatePassSystem(EditorStateParentPassList&& editorStateParentPasses)
         : m_editorStateParentPasses(AZStd::move(editorStateParentPasses))
     {
@@ -26,19 +41,251 @@ namespace AZ::Render
         passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
         passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
 
-        /// Editor state pass sysem parent
-        passSystem->LoadPassTemplateMappings("Passes/EditorModeFeedback_PassTemplates.azasset");
-
         // Editor state child effect passes
         passSystem->LoadPassTemplateMappings("Passes/Child/EditorModeFeedback_ChildPassTemplates.azasset");
 
         // Editor state parent passes
-        //passSystem->LoadPassTemplateMappings("Passes/State/EditorModeFeedback_StatePassTemplates.azasset");
+        passSystem->LoadPassTemplateMappings("Passes/State/EditorModeFeedback_StatePassTemplates.azasset");
     }
 
-    void EditorStatePassSystem::AddPassesToRenderPipeline([[maybe_unused]] RPI::RenderPipeline* renderPipeline) const
+    void EditorStatePassSystem::AddPassesToRenderPipeline(RPI::RenderPipeline* renderPipeline) const
     {
+        //const auto masks = GetMasksFromStateParentPasses(m_editorStateParentPasses);
 
+        auto mainParentPassTemplate = AZStd::make_shared<RPI::PassTemplate>();
+        mainParentPassTemplate->m_name = Name("EditorModeFeedbackParentTemplate");
+        mainParentPassTemplate->m_passClass = Name("EditorModeFeedbackParentPass");
+        
+        // Input depth slot
+        {
+            RPI::PassSlot slot;
+            slot.m_name = Name("InputDepth");
+            slot.m_slotType = RPI::PassSlotType::Input;
+            mainParentPassTemplate->AddSlot(slot);
+        }
+        
+        // Input/output color slot
+        {
+            RPI::PassSlot slot;
+            slot.m_name = Name("ColorInputOutput");
+            slot.m_slotType = RPI::PassSlotType::InputOutput;
+            mainParentPassTemplate->AddSlot(slot);
+        }
+        
+        // Entity mask pass
+        {
+            RPI::PassRequest pass;
+            pass.m_passName = Name("EntityMaskPass");
+            pass.m_templateName = Name("EditorModeMaskTemplate");
+        
+            // Input depth
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputDepth");
+                connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+                pass.AddInputConnection(connection);
+            }
+
+            // Pass data
+            {
+                auto passData = AZStd::make_shared<RPI::RasterPassData>();
+                passData->m_drawListTag = Name("editormodemask");
+                passData->m_passSrgShaderReference.m_filePath = "shaders/editormodemask.azshader";
+                passData->m_pipelineViewTag = "MainCamera";
+                pass.m_passData = passData;
+            }
+        
+            mainParentPassTemplate->AddPassRequest(pass);
+        }
+        
+        // Desaturation pass
+        {
+            RPI::PassRequest pass;
+            pass.m_passName = Name("DesaturationPass");
+            pass.m_templateName = Name("EditorModeDesaturationTemplate");
+        
+            // Input depth
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputDepth");
+                connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input entity mask
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputEntityMask");
+                connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input color
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputColor");
+                connection.m_attachmentRef = { Name("Parent"), Name("ColorInputOutput") };
+                pass.AddInputConnection(connection);
+            }
+        
+            mainParentPassTemplate->AddPassRequest(pass);
+        }
+        
+        // Tint pass
+        {
+            RPI::PassRequest pass;
+            pass.m_passName = Name("TintPass");
+            pass.m_templateName = Name("EditorModeTintTemplate");
+        
+            // Input depth
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputDepth");
+                connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input entity mask
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputEntityMask");
+                connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input color
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputColor");
+                connection.m_attachmentRef = { Name("DesaturationPass"), Name("OutputColor") };
+                pass.AddInputConnection(connection);
+            }
+        
+            mainParentPassTemplate->AddPassRequest(pass);
+        }
+        
+        // Blur pass
+        {
+            RPI::PassRequest pass;
+            pass.m_passName = Name("BlurPass");
+            pass.m_templateName = Name("EditorModeBlurParentTemplate");
+        
+            // Input depth
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputDepth");
+                connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input entity mask
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputEntityMask");
+                connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input color
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputColor");
+                connection.m_attachmentRef = { Name("TintPass"), Name("OutputColor") };
+                pass.AddInputConnection(connection);
+            }
+        
+            mainParentPassTemplate->AddPassRequest(pass);
+        }
+        
+        // Blur pass
+        {
+            RPI::PassRequest pass;
+            pass.m_passName = Name("BlurPass");
+            pass.m_templateName = Name("EditorModeBlurParentTemplate");
+        
+            // Input depth
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputDepth");
+                connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input entity mask
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputEntityMask");
+                connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input color
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputColor");
+                connection.m_attachmentRef = { Name("TintPass"), Name("OutputColor") };
+                pass.AddInputConnection(connection);
+            }
+        
+            mainParentPassTemplate->AddPassRequest(pass);
+        }
+        
+        // Outline pass
+        {
+            RPI::PassRequest pass;
+            pass.m_passName = Name("EntityOutlinePass");
+            pass.m_templateName = Name("EditorModeOutlineTemplate");
+        
+            // Input depth
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputDepth");
+                connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input entity mask
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputEntityMask");
+                connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+                pass.AddInputConnection(connection);
+            }
+        
+            // Input color
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputColor");
+                connection.m_attachmentRef = { Name("BlurPass"), Name("OutputColor") };
+                pass.AddInputConnection(connection);
+            }
+        
+            mainParentPassTemplate->AddPassRequest(pass);
+        }
+
+        RPI::PassSystemInterface::Get()->AddPassTemplate(mainParentPassTemplate->m_name, mainParentPassTemplate);
+        AZ::RPI::PassRequest passRequest;
+        passRequest.m_passName = Name("EditorModeFeedbackPassParent");
+        passRequest.m_templateName = mainParentPassTemplate->m_name;
+        passRequest.AddInputConnection(
+            RPI::PassConnection{ Name("ColorInputOutput"), RPI::PassAttachmentRef{ Name("PostProcessPass"), Name("Output") } });
+        passRequest.AddInputConnection(
+            RPI::PassConnection{ Name("InputDepth"), RPI::PassAttachmentRef{ Name("DepthPrePass"), Name("Depth") } });
+
+        RPI::Ptr<RPI::Pass> parentPass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(&passRequest);
+        if (!parentPass)
+        {
+            AZ_Error("", false, "Create editor mode feedback parent pass from pass request failed", renderPipeline->GetId().GetCStr());
+            return;
+        }
+
+        // Inject the parent pass after the PostProcess pass
+        if (!renderPipeline->AddPassAfter(parentPass, Name("PostProcessPass")))
+        {
+            AZ_Error(
+                "", false, "Add editor mode feedback parent pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());
+            return;
+        }
     }
 
     EntityMaskMap EditorStatePassSystem::GetEntitiesForEditorStatePasses() const

@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeFocusParentTemplate",
+            "Name": "EditorStateFocusedEntityParentTemplate",
             "PassClass": "ParentPass",
             "Slots": [
                 // Depth data for mask geometry and feedback effects
