@@ -220,12 +220,14 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                                 wrap, types.GeneratorType), "wrap_run must return a generator, did you forget 'yield'?"
                             next(wrap, None)
                             # Setup step
-                            test_spec.setup(self, request, workspace, material_editor, collected_test_data, launcher_platform)
+                            test_spec.setup(
+                                self, request, workspace, material_editor, collected_test_data, launcher_platform)
                         # Run
                         self._run_single_test(request, workspace, material_editor, collected_test_data, test_spec)
                         if is_single_test:
                             # Teardown
-                            test_spec.teardown(self, request, workspace, material_editor, collected_test_data, launcher_platform)
+                            test_spec.teardown(
+                                self, request, workspace, material_editor, collected_test_data, launcher_platform)
                             # Teardown step for wrap_run
                             next(wrap, None)
 
@@ -246,7 +248,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                 def make_func():
                     @set_marks({"runner": runner, "run_type": "run_shared"})
                     def shared_run(self, request, workspace, material_editor, collected_test_data, launcher_platform):
-                        getattr(self, function.__name__)(request, workspace, material_editor, collected_test_data, runner.tests)
+                        getattr(self, function.__name__)(
+                            request, workspace, material_editor, collected_test_data, runner.tests)
 
                     return shared_run
 
@@ -355,12 +358,12 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         items[:] = items + new_items
 
     def _exec_material_editor_test(self, request: _pytest.fixtures.FixtureRequest,
-                          workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                          material_editor: ly_test_tools.launchers.platforms.base.Launcher,
-                          run_id: int,
-                          log_name: str,
-                          test_spec: AbstractTestBase,
-                          cmdline_args: list[str] = None) -> dict[str, Result]:
+                                   workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                                   material_editor: ly_test_tools.launchers.platforms.base.Launcher,
+                                   run_id: int,
+                                   log_name: str,
+                                   test_spec: AbstractTestBase,
+                                   cmdline_args: list[str] = None) -> dict[str, Result]:
         """
         Starts the editor with the given test and retuns an result dict with a single element specifying the result
         :request: The pytest request
@@ -392,7 +395,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
                       "--runpythontest", test_filename,
-                      "-logfile", f"@log@/{log_name}",
+                      "-logfile", f"@log@/{LOG_NAME}",
                       "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -401,13 +404,12 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             material_editor.wait(test_spec.timeout)
             output = material_editor.get_output()
             return_code = material_editor.get_returncode()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
+            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
             # Save the editor log
             workspace.artifact_manager.save_artifact(
-                os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
-                f'({run_id}){log_name}')
+                os.path.join(editor_utils.retrieve_log_path(run_id, workspace), LOG_NAME), f'({run_id}){LOG_NAME}')
             if return_code == 0:
-                test_result = Result.Pass(test_spec, output, editor_log_content)
+                test_result = Result.Pass(test_spec, output, material_editor_log_content)
             else:
                 has_crashed = return_code != MaterialEditorTestSuite.test_fail_return_code
                 if has_crashed:
@@ -427,15 +429,15 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                     else:
                         logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                 else:
-                    test_result = Result.Fail(test_spec, output, editor_log_content)
+                    test_result = Result.Fail(test_spec, output, material_editor_log_content)
         except WaitTimeoutError:
             output = material_editor.get_output()
             material_editor.stop()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
-            test_result = Result.Timeout(test_spec, output, test_spec.timeout, editor_log_content)
+            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+            test_result = Result.Timeout(test_spec, output, test_spec.timeout, material_editor_log_content)
 
-        editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
-        results = self._get_results_using_output([test_spec], output, editor_log_content)
+        material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
+        results = self._get_results_using_output([test_spec], output, material_editor_log_content)
         results[test_spec.__name__] = test_result
         return results
 
@@ -491,7 +493,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
 
         cmdline = [
                       "--runpythontest", temp_batched_file.name,
-                      "-logfile", f"@log@/{log_name}",
+                      "-logfile", f"@log@/{LOG_NAME}",
                       "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -502,11 +504,11 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             material_editor.wait(self.timeout_editor_shared_test)
             output = material_editor.get_output()
             return_code = material_editor.get_returncode()
-            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
+            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
             # Save the MaterialEditor log
             try:
                 workspace.artifact_manager.save_artifact(
-                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
+                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), LOG_NAME), f'({run_id}){LOG_NAME}')
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test
                 pass
@@ -550,7 +552,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                                     result.test_spec, output, return_code, crash_error, result.editor_log)
                                 crashed_result = result
                             else:
-                                # If there are remaning "Unknown" results, these couldn't execute because of the crash,
+                                # If there are remaining "Unknown" results, these couldn't execute because of the crash,
                                 # update with info about the offender
                                 results[test_spec_name].extra_info = f"This test has unknown result," \
                                                                      f"test '{crashed_result.test_spec.__name__}'" \
@@ -564,9 +566,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         except WaitTimeoutError:
             material_editor.stop()
             output = material_editor.get_output()
-            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
+            material_editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
 
-            # The editor timed out when running the tests, get the data from the output to find out which ones ran
+            # The MaterialEditor timed out when running the tests, get data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, material_editor_log_content)
             assert len(results) == len(
                 test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
@@ -576,20 +578,21 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                 if isinstance(result, Result.Unknown):
                     if not timed_out_result:
                         results[test_spec_name] = Result.Timeout(result.test_spec, result.output,
-                                                                           self.timeout_editor_shared_test,
-                                                                           result.editor_log)
+                                                                 self.timeout_editor_shared_test,
+                                                                 result.material_editor_log)
                         timed_out_result = result
                     else:
                         # If there are remaning "Unknown" results, these couldn't execute because of the timeout,
                         # update with info about the offender
-                        results[test_spec_name].extra_info = f"This test has unknown result, test " \
-                                                             f"'{timed_out_result.test_spec.__name__}' timed out " \
-                                                             f"before this test could be executed"
+                        results[test_spec_name].extra_info = (
+                            f"This test has unknown result, test '{timed_out_result.test_spec.__name__}' timed out " 
+                            "before this test could be executed")
             # if all the tests ran, the one that has caused the timeout is the last test, as it didn't close the editor
             if not timed_out_result:
                 results[test_spec_name] = Result.Timeout(timed_out_result.test_spec,
-                                                                   results[test_spec_name].output,
-                                                                   self.timeout_editor_shared_test, result.editor_log)
+                                                         results[test_spec_name].output,
+                                                         self.timeout_editor_shared_test,
+                                                         result.material_editor_log)
         finally:
             if temp_batched_file:
                 os.unlink(temp_batched_file.name)
@@ -615,7 +618,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
 
-        result = self._exec_material_editor_test(request, workspace, material_editor, 1, LOG_NAME, test_spec, extra_cmdline_args)
+        result = self._exec_material_editor_test(
+            request, workspace, material_editor, 1, LOG_NAME, test_spec, extra_cmdline_args)
         if result is None:
             logger.error(f"Unexpectedly found no test run in the editor log during {test_spec}")
             result = {"Unknown":
@@ -700,7 +704,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             threads = []
             results_per_thread = [None] * total_threads
             for i in range(total_threads):
-                def make_func(test_spec, index, my_editor):
+                def make_func(test_spec, index, my_material_editor):
                     def run(request, workspace, extra_cmdline_args):
                         results = self._exec_material_editor_test(request, workspace, my_material_editor, index + 1, LOG_NAME,
                                                          test_spec, extra_cmdline_args)

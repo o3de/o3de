@@ -383,7 +383,7 @@ class EditorTestSuite(AbstractTestSuite):
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
             "--runpythontest", test_filename,
-            "-logfile", f"@log@/{log_name}",
+            "-logfile", f"@log@/{LOG_NAME}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -392,10 +392,10 @@ class EditorTestSuite(AbstractTestSuite):
             editor.wait(test_spec.timeout)
             output = editor.get_output()
             return_code = editor.get_returncode()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
+            editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
             # Save the editor log
-            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
-                                                     f'({run_id}){log_name}')
+            workspace.artifact_manager.save_artifact(os.path.join(
+                editor_utils.retrieve_log_path(run_id, workspace), LOG_NAME), f'({run_id}){LOG_NAME}')
             if return_code == 0:
                 test_result = Result.Pass(test_spec, output, editor_log_content)
             else:
@@ -421,10 +421,10 @@ class EditorTestSuite(AbstractTestSuite):
         except WaitTimeoutError:
             output = editor.get_output()
             editor.stop()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
+            editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
             test_result = Result.Timeout(test_spec, output, test_spec.timeout, editor_log_content)
     
-        editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
+        editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
         results = self._get_results_using_output([test_spec], output, editor_log_content)
         results[test_spec.__name__] = test_result
         return results
@@ -481,7 +481,7 @@ class EditorTestSuite(AbstractTestSuite):
 
         cmdline = [
             "--runpythontest", temp_batched_file.name,
-            "-logfile", f"@log@/{log_name}",
+            "-logfile", f"@log@/{LOG_NAME}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -492,11 +492,11 @@ class EditorTestSuite(AbstractTestSuite):
             editor.wait(self.timeout_editor_shared_test)
             output = editor.get_output()
             return_code = editor.get_returncode()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
+            editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
             # Save the editor log
             try:
                 workspace.artifact_manager.save_artifact(
-                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
+                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), LOG_NAME), f'({run_id}){LOG_NAME}')
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test
                 pass
@@ -506,9 +506,11 @@ class EditorTestSuite(AbstractTestSuite):
                     results[test_spec.__name__] = Result.Pass(test_spec, output, editor_log_content)
             else:
                 # Scrape the output to attempt to find out which tests failed.
-                # This function should always populate the result list, if it didn't find it, it will have "Unknown" type of result
+                # This function should always populate the result list.
+                # If it didn't find it, it will have "Unknown" type of result.
                 results = self._get_results_using_output(test_spec_list, output, editor_log_content)
-                assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
+                assert len(results) == len(test_spec_list), (
+                    "bug in _get_results_using_output(), the number of results don't match the tests ran")
 
                 # If the editor crashed, find out in which test it happened and update the results
                 has_crashed = return_code != EditorTestSuite.test_fail_return_code
@@ -551,11 +553,12 @@ class EditorTestSuite(AbstractTestSuite):
         except WaitTimeoutError:            
             editor.stop()
             output = editor.get_output()
-            editor_log_content = editor_utils.retrieve_test_log_content(run_id, log_name, workspace)
+            editor_log_content = editor_utils.retrieve_test_log_content(run_id, LOG_NAME, workspace)
 
             # The editor timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, editor_log_content)
-            assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
+            assert len(results) == len(test_spec_list), (
+                "bug in _get_results_using_output(), the number of results don't match the tests ran")
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None
             for test_spec_name, result in results.items():
@@ -566,7 +569,7 @@ class EditorTestSuite(AbstractTestSuite):
                                                                  result.editor_log)
                         timed_out_result = result
                     else:
-                        # If there are remaning "Unknown" results, these couldn't execute because of the timeout,
+                        # If there are remaining "Unknown" results, these couldn't execute because of the timeout,
                         # update with info about the offender
                         results[test_spec_name].extra_info = f"This test has unknown result, test " \
                                                              f"'{timed_out_result.test_spec.__name__}' timed out " \

@@ -131,7 +131,7 @@ class AbstractTestSuite(object):
         if log:
             return log
         else:
-            return "-- No instance (executable or app under test) log found --"
+            return "-- No test log found --"
 
     @classmethod
     def get_output_str(cls):
@@ -397,6 +397,7 @@ class AbstractTestSuite(object):
 
 
 class Result(object):
+
 
     class UnknownResultException(Exception):
         """Indicates that an unknown result was found during the tests."""

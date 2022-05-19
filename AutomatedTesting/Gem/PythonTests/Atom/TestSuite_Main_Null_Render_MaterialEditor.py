@@ -18,6 +18,10 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 @pytest.mark.parametrize("launcher_platform", ['windows_material_editor'])
 class TestMaterialEditor(MaterialEditorTestSuite):
 
-    class MaterialEditor_Atom_LaunchMaterialEditor(MaterialEditorBatchedTest):
+    class MaterialEditor_Atom_LaunchMaterialEditor_1(MaterialEditorBatchedTest):
+
+        from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
+
+    class MaterialEditor_Atom_LaunchMaterialEditor_2(MaterialEditorBatchedTest):
 
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
