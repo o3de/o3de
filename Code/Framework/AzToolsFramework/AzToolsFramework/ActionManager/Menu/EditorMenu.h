@@ -44,8 +44,12 @@ namespace AzToolsFramework
             MenuItem(QMenu* menu);
 
             MenuItemType m_type;
-            QAction* m_action;
-            QMenu* m_submenu;
+
+            union
+            {
+                QAction* m_action;
+                QMenu* m_submenu;
+            };
         };
 
         QMenu* m_menu = nullptr;

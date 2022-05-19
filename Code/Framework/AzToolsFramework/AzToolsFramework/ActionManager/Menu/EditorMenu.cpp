@@ -26,7 +26,6 @@ namespace AzToolsFramework
     {
         m_menuItems.insert({ sortKey, MenuItem(action) });
         RefreshMenu();
-
     }
 
     void EditorMenu::AddSeparator(int sortKey)
@@ -50,7 +49,7 @@ namespace AzToolsFramework
     {
         m_menu->clear();
 
-        for (auto elem : m_menuItems)
+        for (const auto& elem : m_menuItems)
         {
             switch (elem.second.m_type)
             {
